@@ -1,0 +1,18 @@
+title = "GEOMETRY run"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = ["D:/fl.lutz/FAST/FAST-OAD/FAST-GA2-MODELS"]
+
+# Input and output files
+input_file = "./aerodynamics_inputs.xml"
+output_file = "./aerodynamics_outputs.xml"
+
+[model]
+	[model.aerodynamics_highspeed]
+		id = "fastga.aerodynamics.highspeed.legacy"
+		propulsion_id = "fastga.wrapper.propulsion.basicIC_engine"
+		use_openvsp = true
+	[model.aerodynamics_lowspeed]
+		id = "fastga.aerodynamics.lowspeed.legacy"
+		propulsion_id = "fastga.wrapper.propulsion.basicIC_engine"
+		use_openvsp = true

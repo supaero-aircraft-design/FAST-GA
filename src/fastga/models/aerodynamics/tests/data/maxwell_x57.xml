@@ -1,0 +1,85 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+		  	<v_approach units="kn">75.0<!--top-level requirement: approach speed--></v_approach>
+			<v_cruise units="kn">152.0<!--top-level requirement: cruise speed--></v_cruise>
+		</TLAR>
+		<geometry>
+			<flap>
+				<chord_ratio>0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+				<span_ratio>0.3<!--ratio (width of flaps)/(total span)--></span_ratio>
+			</flap>
+			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
+			<fuselage>
+				<maximum_height units="m">1.45</maximum_height>
+				<maximum_width units="m">1.22</maximum_width>
+			</fuselage>
+			<has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+			</horizontal_tail>
+			<landing_gear>
+			</landing_gear>
+			<propulsion>
+			</propulsion>
+			<vertical_tail>
+			</vertical_tail>
+			<wing>
+				<area units="m**2">6.2</area>
+				<span units="m">9.6</span>
+				<sweep_0 units="deg">1.9</sweep_0>
+				<MAC>
+					<length units="m">0.565</length>
+					<leading_edge>
+						<x>
+							<local units="m">0.0</local>
+						</x>
+					</leading_edge>
+					<at25percent>
+						<x units="m">3.94</x>
+					</at25percent>
+				</MAC>
+				<tip>
+					<chord units="m">0.53</chord>
+					<y units="m">4.8</y>
+					<leading_edge>
+						<x>
+							<local units="m">0.16</local>
+						</x>
+					</leading_edge>
+				</tip>
+				<root>
+					<chord units="m">0.6</chord>
+					<y units="m">0.61</y>
+				</root>
+			</wing>
+		</geometry>
+		<mission>
+			<sizing>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000.</altitude>
+					</cruise>
+				</main_route>
+			</sizing>
+		</mission>
+		<propulsion>
+		</propulsion>
+		<weight>
+		</weight>
+	</data>
+</FASTOAD_model>

@@ -1,0 +1,28 @@
+Sref = Sref_wing
+Cref = l0_wing
+Bref = span_wing
+X_cg = fa_length
+Y_cg = 0.000000
+Z_cg = 0.000000
+Mach = mach_
+AoA  = AOAValue
+Beta = 0.000000
+Vinf = V_inf
+Rho  = rho_
+ReCref = reynolds
+ClMax = -1.000000
+MaxTurningAngle = -1.000000
+Symmetry = No
+FarDist = -1.000000
+NumWakeNodes = 0
+WakeIters = 1
+NumberOfRotors = 1
+Prop_1_name
+Disc_1_ID
+Disc_1_x Disc_1_y Disc_1_z
+Disc_1_nx Disc_1_ny Disc_1_nz
+Disc_1_radiusd
+Disc_1_hub_radius
+Disc_1_rpm
+Disc_1_CT
+Disc_1_CP

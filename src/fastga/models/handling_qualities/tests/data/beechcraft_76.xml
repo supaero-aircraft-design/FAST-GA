@@ -1,0 +1,215 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+			<v_approach units="kn">78.0<!--top-level requirement: approach speed--></v_approach>
+			<v_cruise units="kn">158.0<!--top-level requirement: cruise speed--></v_cruise>
+		</TLAR>
+		<aerodynamics>
+			<aircraft>
+				<landing>
+					<CL_max>2.0272<!--maximum lift coefficient in landing conditions--></CL_max>
+				</landing>
+				<takeoff>
+					<CL_max>1.5702<!--maximum lift coefficient in takeoff conditions--></CL_max>
+				</takeoff>
+				<low_speed>
+					<CD0>0.04513</CD0>
+				</low_speed>
+			</aircraft>
+			<elevator>
+				<low_speed>
+					<CL_delta units="rad**-1">0.6167<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_delta>
+				</low_speed>
+			</elevator>
+			<flaps>
+				<landing>
+					<CL>0.7321<!--increment of CL due to flaps for landing phase--></CL>
+					<CL_max>0.5788</CL_max>
+					<CD>0.01383</CD>
+					<CM>-0.0988<!--increment of CM due to flaps for landing phase--></CM>
+				</landing>
+				<takeoff>
+					<CL>0.2805<!--increment of CL due to flaps for takeoff phase--></CL>
+					<CL_max>0.1218</CL_max>
+					<CD>0.00111811</CD>
+					<CM>-0.0378<!--increment of CM due to flaps for landing phase--></CM>
+				</takeoff>
+			</flaps>
+			<horizontal_tail>
+				<efficiency>1.0<!--horizontal_tail efficiency--></efficiency>
+				<area units="m**2">4.422<!--horizontal_tail area--></area>
+				<cruise>
+					<CL_alpha units="rad**-1">1.2589<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+					<hinge_moment>
+						<CH_alpha units="rad**-1">-0.2486</CH_alpha>
+						<CH_delta units="rad**-1">-0.6765</CH_delta>
+					</hinge_moment>
+				</cruise>
+				<low_speed>
+					<CL_alpha units="rad**-1">0.6760<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
+					<CL_alpha_isolated units="rad**-1">1.0198<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha_isolated>
+					<CL0>-0.00754<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
+					<clean>
+						<alpha_aircraft_min>25.34</alpha_aircraft_min>
+						<alpha_aircraft_max>25.353</alpha_aircraft_max>
+					</clean>
+					<induced_drag_coefficient>0.2800</induced_drag_coefficient>
+				</low_speed>
+			</horizontal_tail>
+			<vertical_tail>
+				<cruise>
+					<CL_alpha units="rad**-1">2.8553<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+					<CnBeta>1.9563<!--derivative of yawing moment against side-slip angle for vertical tail in cruise conditions--></CnBeta>
+				</cruise>
+			</vertical_tail>
+			<wing>
+				<area units="m**2">19.15<!--wing reference area--></area>
+				<cruise>
+					<CL_alpha units="rad**-1">4.5935<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+				</cruise>
+				<low_speed>
+					<induced_drag_coefficient>0.0482</induced_drag_coefficient>
+					<CL_alpha units="rad**-1">4.5164<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
+					<CL_max_clean>1.5070<!--maximum lift coefficient with clean wing--></CL_max_clean>
+					<CM_alpha units="rad**-1">0.5011<!--derivative of moment coefficient with respect to angle of attack in low speed conditions--></CM_alpha>
+					<CL0_clean>0.1152<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0_clean>
+					<CM0_clean>-0.02597<!--value of induced moment at angle of attack 0 in clean configuration at low speed--></CM0_clean>
+				</low_speed>
+			</wing>
+		</aerodynamics>
+		<geometry>
+			<fuselage>
+				<length units="m">8.888<!--total fuselage length--></length>
+				<maximum_width units="m">1.198<!--maximum fuselage width--></maximum_width>
+			</fuselage>
+			<has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.334<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+						</x>
+					</at25percent>
+				</MAC>
+				<elevator_chord_ratio>0.3</elevator_chord_ratio>
+			</horizontal_tail>
+			<propulsion>
+				<layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+				<count>2.0<!--number of engines--></count>
+				<y_ratio>0.34<!--engine position with respect to total span--></y_ratio>
+				<nacelle>
+					<height units="m">0.691<!--nacelle height--></height>
+					<wet_area units="m**2">4.499<!--wet area of nacelle--></wet_area>
+					<y units="m">2.102<!--Y-position of nacelle center--></y>
+				</nacelle>
+			</propulsion>
+			<wing>
+				<MAC>
+					<at25percent>
+						<x units="m">3.449<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+					</at25percent>
+					<leading_edge>
+						<x>
+							<local units="m">0.0<!--X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+					<length units="m">1.549<!--length of mean aerodynamic chord of wing--></length>
+				</MAC>
+				<area units="m**2">19.15<!--wing reference area--></area>
+				<aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+				<root>
+					<virtual_chord units="m">1.549<!--virtual chord length at wing root--></virtual_chord>
+				</root>
+				<span units="m">12.363<!--wing span--></span>
+			</wing>
+			<vertical_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.334<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
+						</x>
+					</at25percent>
+				</MAC>
+			</vertical_tail>
+		</geometry>
+		<mission>
+			<sizing>
+				<landing>
+					<elevator_angle units="deg">-25.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
+				</landing>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000<!--altitude during cruise phase in sizing mission--></altitude>
+					</cruise>
+				</main_route>
+				<takeoff>
+					<elevator_angle units="deg">-25.0<!--elevator maximum angle during takeoff phase in sizing mission--></elevator_angle>
+					<thrust_rate>1.0<!--thrust rate (between 0.0 and 1.0) during takeoff phase in sizing mission--></thrust_rate>
+				</takeoff>
+			</sizing>
+		</mission>
+		<propulsion>
+			<IC_engine>
+				<fuel_type>1.0<!--1=gasoline ICE engine / 2=gasoil ICE engine--></fuel_type>
+				<max_power units="W">130000.0<!--max power @ see level--></max_power>
+				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
+			</IC_engine>
+		</propulsion>
+		<weight>
+			<aircraft_empty>
+				<CG>
+					<z units="m">1.216</z>
+				</CG>
+			</aircraft_empty>
+			<aircraft>
+				<CG>
+					<aft>
+						<x units="m">3.46<!--most aft X-position of aircraft center of gravity--></x>
+					</aft>
+				</CG>
+				<MTOW units="kg">1915.02<!--maximum takeoff weight--></MTOW>
+				<MLW units="kg">1692.37<!--maximum landing weight--></MLW>
+			</aircraft>
+			<airframe>
+				<landing_gear>
+					<main>
+						<CG>
+							<x units="m">3.97<!--main landing gear (A51): X-position of center of gravity--></x>
+						</CG>
+					</main>
+				</landing_gear>
+			</airframe>
+			<propulsion>
+				<engine>
+					<CG>
+						<z units="m">1.145</z>
+					</CG>
+				</engine>
+			</propulsion>
+		</weight>
+	</data>
+	<settings>
+		<weight>
+			<aircraft>
+				<CG>
+					<range>0.15<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
+				</CG>
+			</aircraft>
+		</weight>
+	</settings>
+</FASTOAD_model>

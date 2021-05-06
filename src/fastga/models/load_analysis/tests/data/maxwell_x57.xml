@@ -1,0 +1,196 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+		  	<v_approach units="kn">75.0<!--top-level requirement: approach speed--></v_approach>
+			<v_cruise units="kn">152.0<!--top-level requirement: cruise speed--></v_cruise>
+			<v_max_sl units="m/s">85.0<!--top-level requirement: cruise speed--></v_max_sl>
+		</TLAR>
+		<geometry>
+			<flap>
+				<chord_ratio>0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+				<span_ratio>0.3<!--ratio (width of flaps)/(total span)--></span_ratio>
+			</flap>
+			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
+			<fuselage>
+				<maximum_height units="m">1.45</maximum_height>
+				<maximum_width units="m">1.22</maximum_width>
+				<length units="m">9.645</length>
+			</fuselage>
+			<has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.80</from_wingMAC25>
+						</x>
+					</at25percent>
+				</MAC>
+			</horizontal_tail>
+			<landing_gear>
+				<height units="m">0.623</height>
+				<type>0.0</type>
+			</landing_gear>
+			<propulsion>
+				<nacelle>
+					<width units="m">0.20</width>
+				</nacelle>
+				<y_ratio>0.2</y_ratio>
+				<count>14.</count>
+				<layout>1.</layout>
+			</propulsion>
+			<vertical_tail>
+			</vertical_tail>
+			<wing>
+				<area units="m**2">6.2</area>
+				<span units="m">9.6</span>
+				<sweep_0 units="deg">1.9</sweep_0>
+				<sweep_25 units="deg">1.9</sweep_25>
+				<taper_ratio>0.697</taper_ratio>
+				<aspect_ratio>14.86</aspect_ratio>
+				<thickness_ratio>0.12</thickness_ratio>
+				<MAC>
+					<length units="m">0.565</length>
+					<leading_edge>
+						<x>
+							<local units="m">0.0</local>
+						</x>
+					</leading_edge>
+					<at25percent>
+						<x units="m">3.94</x>
+					</at25percent>
+				</MAC>
+				<tip>
+					<chord units="m">0.53</chord>
+					<y units="m">4.8</y>
+					<leading_edge>
+						<x>
+							<local units="m">0.16</local>
+						</x>
+					</leading_edge>
+				</tip>
+				<root>
+					<virtual_chord units="m">0.76</virtual_chord>
+					<chord units="m">0.76</chord>
+					<y units="m">0.61</y>
+				</root>
+				<aileron>
+					<max_deflection units="deg">30.</max_deflection>
+					<span_ratio>0.22</span_ratio>
+					<chord_ratio>0.25</chord_ratio>
+				</aileron>
+			</wing>
+		</geometry>
+		<aerodynamics>
+			<aircraft>
+				<mach_interpolation>
+					<mach_vector>[0,0.14999999999999994,0.20864287100964807,0.2640364254920024,0.3165219175482435,0.36638951338367887]</mach_vector>
+					<CL_alpha_vector>[6.438258856706611,6.438258856706611,6.493230182509093,6.562792374733209,6.647808042771131,6.743969149187499]</CL_alpha_vector>
+				</mach_interpolation>
+				<landing>
+					<CL_max>4.2</CL_max>
+				</landing>
+			</aircraft>
+			<slipstream>
+				<wing>
+					<prop_on>
+						<velocity units="m/s">78.196</velocity>
+					</prop_on>
+				</wing>
+			</slipstream>
+			<wing>
+				<low_speed>
+					<CL_max_clean>1.7</CL_max_clean>
+					<CL_min_clean>-1.236</CL_min_clean>
+					<CL_alpha units="rad**-1">5.259</CL_alpha>
+					<CL0_clean>0.130</CL0_clean>
+				</low_speed>
+				<cruise>
+					<CL0_clean>0.133</CL0_clean>
+					<CL_alpha units="rad**-1">5.356</CL_alpha>
+					<CM0_clean>-0.026</CM0_clean>
+				</cruise>
+			</wing>
+			<horizontal_tail>
+				<efficiency>0.9</efficiency>
+				<cruise>
+					<CL_alpha units="rad**-1">1.169</CL_alpha>
+				</cruise>
+				<low_speed>
+					<CL_alpha units="rad**-1">1.155</CL_alpha>
+				</low_speed>
+			</horizontal_tail>
+		</aerodynamics>
+		<mission>
+			<sizing>
+				<fuel units="kg">0.0</fuel>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000.</altitude>
+					</cruise>
+				</main_route>
+			</sizing>
+		</mission>
+		<propulsion>
+		</propulsion>
+		<weight>
+			<aircraft_empty>
+				<CG>
+					<z units="m">-0.35</z>
+				</CG>
+			</aircraft_empty>
+			<aircraft>
+				<MTOW units="kg">1361.0</MTOW>
+				<MZFW units="kg">1361.0</MZFW>
+				<CG>
+					<aft>
+						<x units="m">3.09</x>
+					</aft>
+					<fwd>
+						<x units="m">2.76</x>
+					</fwd>
+				</CG>
+				<in_flight_variation>
+					<fixed_mass_comp>
+						<mass units="kg">100.0</mass> #Does not matter since we give fixed CG position
+						<equivalent_moment units="kg*m">100.0</equivalent_moment> #Does not matter since we give fixed CG position
+					</fixed_mass_comp>
+				</in_flight_variation>
+			</aircraft>
+			<airframe>
+				<wing>
+					<mass units="kg">166.7</mass>
+				</wing>
+				<landing_gear>
+					<main>
+						<mass units="kg">0.0</mass>
+					</main>
+				</landing_gear>
+			</airframe>
+			<propulsion>
+				<engine>
+					<mass units="kg">0.0</mass>
+				</engine>
+				<tank>
+					<CG>
+						<x units="m">0.0</x>
+					</CG>
+				</tank>
+			</propulsion>
+		</weight>
+	</data>
+</FASTOAD_model>

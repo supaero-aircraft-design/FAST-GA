@@ -1,0 +1,197 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+			<NPAX_design>2.0<!--top-level requirement: number of passengers in cabin for design mission--></NPAX_design>
+			<luggage_mass_design units="kg">30.0<!--luggage mass to carry during design mission--></luggage_mass_design>
+			<range units="NM">780.0</range>
+			<v_cruise units="kn">164.0<!--top-level requirement: cruise speed--></v_cruise>
+		</TLAR>
+		<aerodynamics>
+			<aircraft>
+				<cruise>
+					<CD0>0.02003</CD0>
+					<L_D_max>18.0</L_D_max>
+					<optimal_CL>0.5778</optimal_CL>
+				</cruise>
+				<low_speed>
+					<CD0>0.0454</CD0>
+				</low_speed>
+			</aircraft>
+			<horizontal_tail>
+				<cruise>
+					<induced_drag_coefficient>0.715</induced_drag_coefficient>
+					<CL_alpha>0.6826</CL_alpha>
+				</cruise>
+				<low_speed>
+					<CL_alpha>0.6760</CL_alpha>
+				</low_speed>
+			</horizontal_tail>
+			<flaps>
+				<landing>
+					<CD>0.0196</CD>
+					<CL>0.7321</CL>
+				</landing>
+				<takeoff>
+					<CD>0.0034</CD>
+					<CL>0.2805</CL>
+				</takeoff>
+			</flaps>
+			<wing>
+				<cruise>
+					<CL_alpha units="rad**-1">4.650</CL_alpha>
+					<CL0_clean>0.0906</CL0_clean>
+					<CM0_clean>-0.0264</CM0_clean>
+					<induced_drag_coefficient>0.0480</induced_drag_coefficient>
+				</cruise>
+				<low_speed>
+					<CL_alpha units="rad**-1">4.569</CL_alpha>
+					<CL_max_clean>1.5070</CL_max_clean>
+					<CL0_clean>0.0889</CL0_clean>
+					<CM0_clean>-0.0258</CM0_clean>
+					<induced_drag_coefficient>0.0480</induced_drag_coefficient>
+				</low_speed>
+			</wing>
+		</aerodynamics>
+		<geometry>
+			<cabin>
+				<seats>
+					<pilot>
+						<length units="m">0.75<!--pilot seats length--></length>
+					</pilot>
+					<passenger>
+						<count_by_row>2.0<!--passenger seats per row--></count_by_row>
+						<length units="m">0.8<!--passenger seats length--></length>
+					</passenger>
+				</seats>
+			</cabin>
+			<fuselage>
+				<front_length units="m">2.274<!--length of front non-cylindrical part of the fuselage--></front_length>
+				<length units="m">8.888<!--total fuselage length--></length>
+				<maximum_width units="m">1.198<!--maximum fuselage width--></maximum_width>
+				<rear_length units="m">2.924<!--length of front non-cylindrical part of the fuselage--></rear_length>
+			</fuselage>
+			<horizontal_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.334<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+						</x>
+					</at25percent>
+				</MAC>
+			</horizontal_tail>
+			<landing_gear>
+				<height units="m">1.22<!--mean value of (flap chord)/(section chord)--></height>
+			</landing_gear>
+			<propulsion>
+				<layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+				<count>2.0<!--number of engines--></count>
+				<y_ratio>0.34<!--engine position with respect to total span--></y_ratio>
+			</propulsion>
+			<wing>
+				<MAC>
+					<at25percent>
+						<x units="m">3.449<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+					</at25percent>
+					<leading_edge>
+						<x>
+							<local units="m">0.0<!--X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+					<length units="m">1.549<!--length of mean aerodynamic chord of wing--></length>
+				</MAC>
+				<area units="m**2">19.151<!--wing reference area--></area>
+				<root>
+					<virtual_chord units="m">0.868</virtual_chord>
+				</root>
+				<span units="m">12.363<!--wing span--></span>
+			</wing>
+		</geometry>
+		<mission>
+		  	<sizing>
+				<main_route>
+					<climb>
+						<thrust_rate>0.93</thrust_rate>
+					</climb>
+					<cruise>
+						<altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
+					</cruise>
+					<descent>
+						<descent_rate>0.05</descent_rate>
+					</descent>
+					<reserve>
+						<duration units="min">45.0<!--reserve fuel to extend cruise phase duration--></duration>
+					</reserve>
+				</main_route>
+				<takeoff>
+					<elevator_angle units="deg">-25.0<!--elevator maximum angle during takeoff phase in sizing mission--></elevator_angle>
+					<flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+					<friction_coefficient_no_brake>0.03</friction_coefficient_no_brake>
+					<thrust_rate>1.0</thrust_rate>
+				</takeoff>
+				<taxi_in>
+					<duration units="s">300</duration>
+					<speed units="kn">30.0</speed>
+					<thrust_rate>0.3</thrust_rate>
+				</taxi_in>
+				<taxi_out>
+					<duration units="s">300</duration>
+					<speed units="kn">30.0</speed>
+					<thrust_rate>0.3</thrust_rate>
+				</taxi_out>
+		  	</sizing>
+		</mission>
+		<propulsion>
+			<IC_engine>
+				<fuel_type>1.0<!--1=gasoline ICE engine / 2=gasoil ICE engine--></fuel_type>
+				<max_power units="W">130000.0<!--max power @ see level--></max_power>
+				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
+			</IC_engine>
+		</propulsion>
+		<weight>
+			<aircraft>
+				<CG>
+					<aft>
+						<x units="m">3.6</x>
+					</aft>
+				</CG>
+				<MTOW units="kg">1785.5<!--maximum takeoff weight--></MTOW>
+				<payload units="kg">350.0<!--design payload weight--></payload>
+			</aircraft>
+			<aircraft_empty>
+				<mass units="kg">950.3</mass>
+				<CG>
+					<x units="m">2.66</x>
+				</CG>
+			</aircraft_empty>
+			<payload>
+				<rear_fret>
+					<CG>
+						<x units="m">5.68</x>
+					</CG>
+				</rear_fret>
+			</payload>
+			<propulsion>
+				<tank>
+					<CG>
+						<x units="m">3.83</x>
+					</CG>
+				</tank>
+			</propulsion>
+		</weight>
+	</data>
+</FASTOAD_model>

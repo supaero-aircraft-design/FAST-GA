@@ -1,0 +1,166 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+		  	<v_approach units="kn">78.0<!--top-level requirement: approach speed--></v_approach>
+			<v_cruise units="kn">164.0<!--top-level requirement: cruise speed--></v_cruise>
+		</TLAR>
+		<geometry>
+			<flap>
+				<chord_ratio>0.197<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+				<span_ratio>0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
+			</flap>
+			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
+			<fuselage>
+				<front_length units="m">2.274<!--length of front non-cylindrical part of the fuselage--></front_length>
+				<length units="m">8.888<!--total fuselage length--></length>
+				<maximum_height units="m">1.338<!--maximum fuselage height--></maximum_height>
+				<maximum_width units="m">1.198<!--maximum fuselage width--></maximum_width>
+				<rear_length units="m">0.0<!--length of rear non-cylindrical part of the fuselage--></rear_length>
+				<wet_area units="m**2">33.354<!--wet area of fuselage--></wet_area>
+			</fuselage>
+			<has_T_tail>1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.334<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+							<local units="m">0.0890<!--X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord--></local>
+						</x>
+					</at25percent>
+					<length units="m">0.868<!--mean aerodynamic chord length of horizontal tail--></length>
+				</MAC>
+				<area units="m**2">4.422<!--horizontal_tail area--></area>
+				<aspect_ratio>5.871<!--aspect ratio of horizontal tail--></aspect_ratio>
+				<elevator_chord_ratio>0.30<!--ratio between elevator chord and tail chord--></elevator_chord_ratio>
+				<root>
+					<chord units="m">0.868<!--chord length at root of horizontal tail--></chord>
+				</root>
+				<span units="m">5.095<!--horizontal tail span--></span>
+				<sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+				<taper_ratio>1.0<!--taper ratio of horizontal tail--></taper_ratio>
+				<thickness_ratio>0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
+				<tip>
+					<chord units="m">0.868<!--chord length at tip of horizontal tail--></chord>
+				</tip>
+				<wet_area units="m**2">7.428<!--wet area of horizontal tail--></wet_area>
+				<z>
+					<from_wingMAC25 units="m">1.734<!--height of horizontal tail from 25% MAC of wing--></from_wingMAC25>
+				</z>
+			</horizontal_tail>
+			<landing_gear>
+				<height units="m">1.22<!--mean value of (flap chord)/(section chord)--></height>
+				<type>1.0<!--0=non-retractable landing gears / 1=retractable landing gear--></type>
+			</landing_gear>
+			<propulsion>
+				<layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+				<count>2.0<!--number of engines--></count>
+				<y_ratio>0.34<!--engine position with respect to total span--></y_ratio>
+				<nacelle>
+					<length units="m">1.237182293354255<!--nacelle length--></length>
+				</nacelle>
+				<propeller>
+					<diameter units="m" is_input="False">1.889363997543781</diameter>
+        		</propeller>
+			</propulsion>
+			<vertical_tail>
+				<aspect_ratio>1.2<!--aspect ratio of vertical tail--></aspect_ratio>
+				<root>
+					<chord units="m">1.785<!--chord length at root of vertical tail--></chord>
+				</root>
+				<sweep_25 units="deg">10.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+				<thickness_ratio>0.1<!--thickness ratio of vertical tail--></thickness_ratio>
+				<tip>
+					<chord units="m">1.106<!--chord length at tip of vertical tail--></chord>
+				</tip>
+				<wet_area units="m**2">5.266<!--wet area of vertical tail--></wet_area>
+			</vertical_tail>
+			<wing>
+				<MAC>
+					<at25percent>
+						<x units="m">3.449<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+					</at25percent>
+					<leading_edge>
+						<x>
+							<local units="m">0.0<!--X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+					<length units="m">1.549<!--length of mean aerodynamic chord of wing--></length>
+				</MAC>
+				<area units="m**2">19.15<!--wing reference area--></area>
+				<aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+				<kink>
+					<span_ratio>0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+				</kink>
+				<root>
+					<chord units="m">1.549<!--chord length at wing root--></chord>
+					<y units="m">0.599<!--Y-position of wing root--></y>
+				</root>
+				<span units="m">12.363<!--wing span--></span>
+				<sweep_0 units="deg">0.0<!--sweep angle at leading edge of wing--></sweep_0>
+				<sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+				<taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
+				<thickness_ratio>0.12<!--mean thickness ratio of wing--></thickness_ratio>
+				<tip>
+					<leading_edge>
+						<x>
+							<local units="m">0.0<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+					<chord units="m">1.549<!--chord length at wing tip--></chord>
+					<y units="m">6.181<!--Y-position of wing tip--></y>
+				</tip>
+				<wet_area units="m**2">37.011<!--wet area of wing--></wet_area>
+			</wing>
+		</geometry>
+		<aerodynamics>
+			<horizontal_tail>
+				<efficiency>1.0</efficiency>
+			</horizontal_tail>
+		</aerodynamics>
+		<mission>
+		  	<sizing>
+				<landing>
+			  		<elevator_angle units="deg">-25.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
+			  		<flap_angle units="deg">30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
+				</landing>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
+					</cruise>
+				</main_route>
+				<takeoff>
+				  	<elevator_angle units="deg">-25.0<!--elevator maximum angle during takeoff phase in sizing mission--></elevator_angle>
+				  	<flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+				</takeoff>
+		  	</sizing>
+		</mission>
+		<propulsion>
+			<IC_engine>
+				<max_rpm units="rpm" is_input="True">2700.0</max_rpm>
+				<fuel_type>1.0<!--1=gasoline ICE engine / 2=gasoil ICE engine--></fuel_type>
+				<max_power units="W">130000.0<!--max power @ see level--></max_power>
+				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
+			</IC_engine>
+		</propulsion>
+		<weight>
+			<aircraft>
+				<MZFW units="kg">1720.0<!--maximum zero fuel weight--></MZFW>
+			</aircraft>
+		</weight>
+	</data>
+</FASTOAD_model>

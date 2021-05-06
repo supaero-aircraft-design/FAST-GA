@@ -1,0 +1,244 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+			<NPAX_design>2.0<!--number of passengers (2 pilots not included)--></NPAX_design>
+			<v_cruise units="kn">160.0<!--top-level requirement: cruise speed--></v_cruise>
+		</TLAR>
+		<aerodynamics>
+			<aircraft>
+				<cruise>
+					<CD0>0.02718</CD0>
+				</cruise>
+			</aircraft>
+			<wing>
+				<cruise>
+					<induced_drag_coefficient>0.03819</induced_drag_coefficient>
+				</cruise>
+			</wing>
+		</aerodynamics>
+		<geometry>
+			<cabin>
+				<NPAX>3.0<!--number of passengers seats if all rows filled-up--></NPAX>
+				<aisle_width units="m">0.0<!--cabin aisle width--></aisle_width>
+				<luggage>
+					<mass_max units="kg">60.0<!--maximum luggage mass to carry--></mass_max>
+				</luggage>
+				<seats>
+					<pilot>
+						<length units="m">0.75<!--pilot seats length--></length>
+						<width units="m">0.565<!--pilot seats width--></width>
+					</pilot>
+					<passenger>
+						<NPAX_max>2.0<!--maximum number of passengers in cabin (2 pilots seats not included)--></NPAX_max>
+						<count_by_row>3.0<!--passenger seats per row--></count_by_row>
+						<length units="m">0.8<!--passenger seats length--></length>
+						<width units="m">0.4<!--passenger seats width--></width>
+					</passenger>
+				</seats>
+			</cabin>
+			<fuselage>
+				<PAX_length units="m">1.55<!--length of passenger-dedicated zone--></PAX_length>
+				<front_length units="m">1.298<!--length of front non-cylindrical part of the fuselage--></front_length>
+				<rear_length units="m">3.275<!--length of front non-cylindrical part of the fuselage--></rear_length>
+				<length units="m">7.235<!--total fuselage length--></length>
+				<luggage_length units="m">0.4118<!--total luggage length--></luggage_length>
+				<maximum_height units="m">1.412</maximum_height>
+			</fuselage>
+			<has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+				<z>
+					<from_wingMAC25 units="m">0.0</from_wingMAC25>
+				</z>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">3.91<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+							<local units="m">0.1015<!--X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord--></local>
+						</x>
+					</at25percent>
+					<length units="m">0.722<!--mean aerodynamic chord length of horizontal tail--></length>
+				</MAC>
+				<root>
+					<chord units="m">0.878<!--chord length at root of horizontal tail--></chord>
+				</root>
+				<span units="m">3.879<!--horizontal tail span--></span>
+				<sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+				<tip>
+					<chord units="m">0.538<!--chord length at tip of horizontal tail--></chord>
+				</tip>
+			</horizontal_tail>
+			<propulsion>
+				<count>1.0<!--number of engines--></count>
+				<layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+				<nacelle>
+					<length units="m">1.148<!--nacelle length--></length>
+					<y units="m">0.0<!--Y-position of nacelle center--></y>
+				</nacelle>
+				<propeller>
+					<depth units="m">0.149<!--propeller depth--></depth>
+					<diameter units="m">2.05</diameter>
+				</propeller>
+			</propulsion>
+			<vertical_tail>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">3.91<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
+							<local units="m">0.200<!--X-position of the 25% of mean aerodynamic chord of vertical tail w.r.t. leading edge of root chord--></local>
+						</x>
+					</at25percent>
+					<length units="m">0.900<!--mean aerodynamic chord length of vertical tail--></length>
+				</MAC>
+				<root>
+					<chord units="m">1.157<!--chord length at root of vertical tail--></chord>
+				</root>
+				<span units="m">1.737<!--vertical tail span--></span>
+				<sweep_25 units="deg">10.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+				<tip>
+					<chord units="m">0.580<!--chord length at tip of vertical tail--></chord>
+				</tip>
+			</vertical_tail>
+			<wing>
+				<MAC>
+					<at25percent>
+						<x units="m">2.65<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+					</at25percent>
+					<y units="m">2.579<!--Y-position of mean aerodynamic chord of wing--></y>
+					<length units="m">1.2002<!--length of mean aerodynamic chord of wing--></length>
+					<leading_edge>
+						<x>
+							<local units="m">0.070<!--X-position of leading edge of mean aerodynamic chord w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+				</MAC>
+				<area units="m**2">13.46<!--wing reference area--></area>
+				<root>
+					<chord units="m">1.483<!--chord length at wing root--></chord>
+					<virtual_chord units="m">1.483<!--virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)--></virtual_chord>
+					<y units="m">0.636<!--Y-position of wing root--></y>
+				</root>
+				<sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+				<span units="m">11.67<!--wing span--></span>
+				<thickness_ratio>0.12</thickness_ratio>
+				<tip>
+					<chord units="m">0.7418<!--chord length at wing tip--></chord>
+					<leading_edge>
+						<x>
+							<local units="m">0.185<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
+						</x>
+					</leading_edge>
+					<y units="m">5.835<!--Y-position of wing tip--></y>
+				</tip>
+			</wing>
+			<flap>
+				<chord_ratio>0.25<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+				<span_ratio>0.6<!--ratio (width of flaps)/(total span)--></span_ratio>
+			</flap>
+			<landing_gear>
+				<height units="m">0.842</height>
+			</landing_gear>
+		</geometry>
+		<mission>
+		  	<sizing>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
+					</cruise>
+				</main_route>
+		  	</sizing>
+		</mission>
+		<propulsion>
+			<IC_engine>
+				<fuel_type>1.0<!--1=gasoline ICE engine / 2=gasoil ICE engine--></fuel_type>
+				<max_power units="W">231000.0<!--max power @ see level--></max_power>
+				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
+			</IC_engine>
+		</propulsion>
+		<weight>
+			<aircraft>
+				<MFW units="kg">302.093<!--maximum fuel weight--></MFW>
+				<MTOW units="kg">1642.912<!--maximum takeoff weight--></MTOW>
+			</aircraft>
+			<airframe>
+				<flight_controls>
+					<mass units="kg">21.51<!--flight controls (A4): total mass--></mass>
+				</flight_controls>
+				<fuselage>
+					<mass units="kg">134.860<!--fuselage (A2): total mass--></mass>
+				</fuselage>
+				<horizontal_tail>
+					<mass units="kg">15.129<!--horizontal tail (A31): mass--></mass>
+				</horizontal_tail>
+				<landing_gear>
+					<front>
+						<mass units="kg">17.051<!--front landing gear (A52): mass--></mass>
+					</front>
+					<main>
+						<mass units="kg">41.228<!--main landing gear (A51): mass--></mass>
+					</main>
+				</landing_gear>
+				<vertical_tail>
+					<mass units="kg">6.603<!--vertical tail (A32): mass--></mass>
+				</vertical_tail>
+				<wing>
+					<mass units="kg">165.234<!--wing (A1): total mass--></mass>
+				</wing>
+			</airframe>
+			<furniture>
+				<passenger_seats>
+					<mass units="kg">50.26<!--passenger seats (D2): mass--></mass>
+				</passenger_seats>
+			</furniture>
+			<propulsion>
+				<engine>
+					<mass units="kg">331.25<!--engine (B1): mass--></mass>
+				</engine>
+				<fuel_lines>
+					<mass units="kg">31.7256111<!--fuel lines (B2): mass--></mass>
+				</fuel_lines>
+			</propulsion>
+			<systems>
+				<life_support>
+					<air_conditioning>
+						<mass units="kg">45.7421<!--air conditioning (C22): mass--></mass>
+					</air_conditioning>
+				</life_support>
+				<navigation>
+					<mass units="kg">59.8742<!--navigation (C3): mass--></mass>
+				</navigation>
+				<power>
+					<electric_systems>
+						<mass units="kg">85.455<!--electric power (C12): mass--></mass>
+					</electric_systems>
+					<hydraulic_systems>
+						<mass units="kg">11.499<!--hydraulic power (C13): mass--></mass>
+					</hydraulic_systems>
+				</power>
+			</systems>
+		</weight>
+	</data>
+	<settings>
+		<weight>
+			<aircraft>
+				<CG>
+					<range>0.15<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
+				</CG>
+			</aircraft>
+		</weight>
+	</settings>
+</FASTOAD_model>

@@ -1,0 +1,125 @@
+<!--
+  ~ This file is part of FAST : A framework for rapid Overall Aircraft Design
+  ~ Copyright (C) 2020  ONERA & ISAE-SUPAERO
+  ~ FAST is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<FASTOAD_model>
+	<data>
+		<TLAR>
+			<NPAX_design>2.0<!--top-level requirement: number of passengers in cabin for design mission--></NPAX_design>
+			<luggage_mass_design units="kg">30.0<!--luggage mass to carry during design mission--></luggage_mass_design>
+			<v_cruise units="kn">158.0<!--top-level requirement: cruise speed--></v_cruise>
+			<v_limit units="kn">194.0<!--top-level requirement: limit speed--></v_limit>
+			<v_max_sl units="kn">171.0<!--top-level requirement: max level velocity--></v_max_sl>
+		</TLAR>
+		<geometry>
+			<cabin>
+				<luggage>
+					<mass_max units="kg">50.0<!--maximum luggage mass to carry--></mass_max>
+				</luggage>
+				<seats>
+					<passenger>
+						<NPAX_max>2.0<!--maximum number of passengers in cabin (2 pilots seats not included)--></NPAX_max>
+					</passenger>
+				</seats>
+			</cabin>
+			<fuselage>
+				<length units="m">8.888<!--total fuselage length--></length>
+				<front_length units="m">2.274<!--length of front non-cylindrical part of the fuselage--></front_length>
+				<rear_length units="m">2.924<!--length of front non-cylindrical part of the fuselage--></rear_length>
+				<maximum_height units="m">1.338<!--maximum fuselage height--></maximum_height>
+				<maximum_width units="m">1.198<!--maximum fuselage width--></maximum_width>
+				<wet_area units="m**2">33.354<!--wet area of fuselage--></wet_area>
+			</fuselage>
+			<has_T_tail>1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+			<horizontal_tail>
+				<root>
+					<chord units="m">0.868<!--horizontal tail root chord--></chord>
+				</root>
+				<MAC>
+					<at25percent>
+						<x>
+							<from_wingMAC25 units="m">4.334<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+						</x>
+					</at25percent>
+				</MAC>
+				<span units="m">5.095<!--horizontal tail span--></span>
+				<aspect_ratio>5.85<!--aspect ratio of vertical tail--></aspect_ratio>
+				<thickness_ratio>0.1<!--horizontal tail thickness ratio--></thickness_ratio>
+				<area units="m**2">4.422<!--horizontal tail area--></area>
+				<sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+				<taper_ratio>1.0<!--taper ratio of horizontal tail--></taper_ratio>
+			</horizontal_tail>
+			<landing_gear>
+				<is_retractable>1.0<!--0=LG is NOT retractable / 1=LG is retractable--></is_retractable>
+				<height units="m">0.791<!--height of landing gear--></height>
+				<type>1.0<!--type of landing gear (non retractable=0.0, retractable=1.0) --></type>
+			</landing_gear>
+			<propulsion>
+				<layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+				<count>2.0<!--number of engines--></count>
+				<y_ratio>0.34<!--engine position with respect to total span--></y_ratio>
+			</propulsion>
+			<vertical_tail>
+				<root>
+					<chord units="m">1.566<!--horizontal tail root chord--></chord>
+				</root>
+				<area units="m**2">2.655<!--horizontal tail area--></area>
+				<span units="m">1.785<!--horizontal tail span--></span>
+				<taper_ratio>0.62<!--taper ratio of vertical tail--></taper_ratio>
+				<aspect_ratio>1.2<!--aspect ratio of vertical tail--></aspect_ratio>
+				<sweep_25 units="deg">30.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+				<thickness_ratio>0.1<!--horizontal tail thickness ratio--></thickness_ratio>
+			</vertical_tail>
+			<wing>
+				<area units="m**2">19.15<!--wing reference area--></area>
+				<span units="m">12.36<!--wing span--></span>
+				<aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+				<sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+				<taper_ratio>1.0<!--wing taper ratio--></taper_ratio>
+				<thickness_ratio>0.12<!--mean thickness ratio of wing--></thickness_ratio>
+			</wing>
+		</geometry>
+		<mission>
+			<sizing>
+				<cs23>
+					<sizing_factor_ultimate>5.7<!--over-sizing coefficient--></sizing_factor_ultimate>
+				</cs23>
+			</sizing>
+		</mission>
+		<propulsion>
+			<IC_engine>
+				<fuel_type>1.0<!--1=gasoline ICE engine / 2=Diesel ICE engine--></fuel_type>
+				<max_power units="W">130000.0<!--max power @ see level--></max_power>
+				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
+			</IC_engine>
+		</propulsion>
+		<mission>
+		  	<sizing>
+				<main_route>
+					<cruise>
+						<altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
+					</cruise>
+				</main_route>
+		  	</sizing>
+		</mission>
+		<weight>
+			<aircraft>
+				<MFW units="kg">587.15<!--maximum fuel weight--></MFW>
+				<MLW units="kg">1746.53<!--maximum landing weight--></MLW>
+				<MTOW units="kg">1915.02<!--maximum takeoff weight--></MTOW>
+				<max_payload units="kg">478.0<!--max payload weight--></max_payload>
+			</aircraft>
+		</weight>
+	</data>
+</FASTOAD_model>

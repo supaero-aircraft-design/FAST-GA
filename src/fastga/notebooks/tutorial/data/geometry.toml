@@ -1,0 +1,13 @@
+title = "GEOMETRY run"
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders = ["D:/fl.lutz/FAST/FAST-OAD/FAST-GA2-MODELS"]
+
+# Input and output files
+input_file = "./geometry_inputs.xml"
+output_file = "./geometry_outputs.xml"
+
+[model]
+	[model.geometry]
+		id = "fastga.geometry.legacy"
+		propulsion_id = "fastga.wrapper.propulsion.basicIC_engine"

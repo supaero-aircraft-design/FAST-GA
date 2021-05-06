@@ -1,0 +1,76 @@
+Sref = Sref_wing
+Cref = l0_wing
+Bref = span_wing
+X_cg = fa_length
+Y_cg = 0.000000
+Z_cg = 0.000000
+Mach = mach_
+AoA  = AOAValue
+Beta = 0.000000
+Vinf = V_inf
+Rho  = rho_
+ReCref = reynolds
+ClMax = -3.000000
+MaxTurningAngle = -3.000000
+Symmetry = No
+FarDist = -3.000000
+NumWakeNodes = 0
+WakeIters = 3
+NumberOfRotors = 6
+Prop_1_name
+Disc_1_ID
+Disc_1_x Disc_1_y Disc_1_z
+Disc_1_nx Disc_1_ny Disc_1_nz
+Disc_1_radius
+Disc_1_hub_radius
+Disc_1_rpm
+Disc_1_CT
+Disc_1_CP
+Prop_2_name
+Disc_2_ID
+Disc_2_x Disc_2_y Disc_2_z
+Disc_2_nx Disc_2_ny Disc_2_nz
+Disc_2_radius
+Disc_2_hub_radius
+Disc_2_rpm
+Disc_2_CT
+Disc_2_CP
+Prop_3_name
+Disc_3_ID
+Disc_3_x Disc_3_y Disc_3_z
+Disc_3_nx Disc_3_ny Disc_3_nz
+Disc_3_radius
+Disc_3_hub_radius
+Disc_3_rpm
+Disc_3_CT
+Disc_3_CP
+Prop_4_name
+Disc_4_ID
+Disc_4_x Disc_4_y Disc_4_z
+Disc_4_nx Disc_4_ny Disc_4_nz
+Disc_4_radius
+Disc_4_hub_radius
+Disc_4_rpm
+Disc_4_CT
+Disc_4_CP
+Prop_5_name
+Disc_5_ID
+Disc_5_x Disc_5_y Disc_5_z
+Disc_5_nx Disc_5_ny Disc_5_nz
+Disc_5_radius
+Disc_5_hub_radius
+Disc_5_rpm
+Disc_5_CT
+Disc_5_CP
+Prop_6_name
+Disc_6_ID
+Disc_6_x Disc_6_y Disc_6_z
+Disc_6_nx Disc_6_ny Disc_6_nz
+Disc_6_radius
+Disc_6_hub_radius
+Disc_6_rpm
+Disc_6_CT
+Disc_6_CP
+NumberOfControlGroups = 0 
+Preconditioner = Matrix 
+Karman-Tsien Correction = N
