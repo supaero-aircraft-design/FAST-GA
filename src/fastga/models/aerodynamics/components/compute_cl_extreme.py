@@ -19,8 +19,8 @@ import numpy as np
 from openmdao.core.group import Group
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from ..external.xfoil import XfoilPolar
-from ..constants import SPAN_MESH_POINT
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 
         
 class ComputeExtremeCL(Group):

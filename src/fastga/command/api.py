@@ -29,8 +29,6 @@ from openmdao.core.system import System
 import openmdao.api as om
 from copy import deepcopy
 
-# noinspection PyProtectedMember
-from fastoad.module_management.service_registry import _RegisterOpenMDAOService
 from fastoad.openmdao.variables import VariableList
 from fastoad.cmd.exceptions import FastFileExistsError
 from fastoad.openmdao.problem import FASTOADProblem
@@ -50,7 +48,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     """
     Generates a sample configuration file.
 
-    :param configuration_file_path: the path of file to be written
+    :param configuration_file_path: the path of the file to be written
     :param overwrite: if True, the file will be written, even if it already exists
     :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
     """
@@ -244,7 +242,6 @@ class VariableListLocal(VariableList):
 
 def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
     """ Reads all variables from a component/problem and return as a list """
-    register_wrappers()
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
         new_component.add_subsystem("system", component, promotes=['*'])
@@ -252,10 +249,3 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
     variables = VariableListLocal.from_system(component)
 
     return variables
-
-
-def register_wrappers():
-    """ Register all the wrappers from models """
-    path_name, folder_name = pth.split(pth.dirname(__file__))
-    path_name = pth.join(path_name, "models")
-    _RegisterOpenMDAOService.explore_folder(path_name)

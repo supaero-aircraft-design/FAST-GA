@@ -16,6 +16,7 @@ Test module for Overall Aircraft Design process
 
 import os
 import os.path as pth
+import shutil
 from shutil import rmtree
 
 import openmdao.api as om
@@ -23,6 +24,13 @@ import pytest
 from numpy.testing import assert_allclose
 
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+
+from fastga.command import api
+from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
+from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+from fastga.models.aerodynamics.aerodynamics import Aerodynamics
+import fastga.notebooks.tutorial.data as data
 # from fastoad import api
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -43,7 +51,7 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def test_oad_process(cleanup):
+def _test_oad_process(cleanup):
     """
     Test the overall aircraft design process without wing positioning.
     """
@@ -119,3 +127,66 @@ def _check_weight_performance_loop(problem):
         + problem["data:mission:sizing:fuel"],
         rtol=5e-2,
     )
+
+
+def test_notebooks(cleanup):
+    # Copy used file
+    os.mkdir(RESULTS_FOLDER_PATH)
+    shutil.copy(pth.join(data.__path__[0], 'reference_aircraft.xml'),
+                pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml'))
+    var_inputs = ["data:geometry:wing:area", "data:geometry:wing:aspect_ratio", "data:geometry:wing:taper_ratio"]
+
+    # Declare geometry function
+    compute_geometry = api.generate_block_analysis(
+        Geometry(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+        var_inputs,
+        str(pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml')),
+        True,
+    )
+
+    # Compute long-wing aircraft
+    inputs_dict = {"data:geometry:wing:area": (21.66, "m**2"), "data:geometry:wing:aspect_ratio": (9.332, None),
+                   "data:geometry:wing:taper_ratio": (0.77, None)}
+    outputs_dict = compute_geometry(inputs_dict)
+    assert_allclose(outputs_dict["data:geometry:wing:tip:y"][0], 7.108, atol=1e-3)
+
+    # Compute aerodynamics for both aircraft
+    compute_aero = api.generate_block_analysis(
+        Aerodynamics(
+            propulsion_id="fastga.wrapper.propulsion.basicIC_engine",
+            use_openvsp=True,
+            compute_mach_interpolation=True,
+            compute_slipstream_low_speed=False,
+            compute_slipstream_cruise=False,
+        ),
+        [],
+        str(pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml')),
+        True,
+    )
+
+    # compute_aero_LS = api.generate_block_analysis(
+    #     AerodynamicsLowSpeed(
+    #         propulsion_id="fastga.wrapper.propulsion.basicIC_engine",
+    #         use_openvsp=True,
+    #         compute_slipstream=False,
+    #     ),
+    #     [],
+    #     str(pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml')),
+    #     True,
+    # )
+    # compute_aero_HS = api.generate_block_analysis(
+    #     AerodynamicsHighSpeed(
+    #         propulsion_id="fastga.wrapper.propulsion.basicIC_engine",
+    #         use_openvsp=True,
+    #         compute_mach_interpolation=True,
+    #         compute_slipstream=False,
+    #     ),
+    #     [],
+    #     str(pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml')),
+    #     True,
+    # )
+    # compute_aero_LS({})
+    # compute_aero_HS({})
+    compute_aero({})
+
+

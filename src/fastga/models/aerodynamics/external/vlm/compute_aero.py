@@ -20,7 +20,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .vlm import VLMSimpleGeometry
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
-from ..xfoil import XfoilPolar
+from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"

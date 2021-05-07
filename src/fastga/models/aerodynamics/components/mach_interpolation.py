@@ -19,7 +19,7 @@ import math
 import numpy as np
 import openmdao.api as om
 
-from ..external.xfoil import XfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
 
 from fastoad.model_base import Atmosphere

@@ -24,19 +24,19 @@ from tempfile import TemporaryDirectory
 import warnings
 import pandas as pd
 from typing import Tuple
-
 import numpy as np
-from fastoad.models.aerodynamics.external.xfoil import xfoil699
-# noinspection PyProtectedMember
-from fastoad._utils.resource_management.copy import copy_resource
 from importlib.resources import path
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
+
+# noinspection PyProtectedMember
+from fastoad._utils.resource_management.copy import copy_resource
 
 from ...constants import POLAR_POINT_COUNT
 from . import resources as local_resources
 
 from fastga.models.geometry.profiles.get_profile import get_profile
+from fastga.models.aerodynamics.external.xfoil import xfoil699
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"

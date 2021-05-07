@@ -34,7 +34,7 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from ..components.cd0 import Cd0
-from ..external.xfoil import XfoilPolar
+from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..external.xfoil import resources
 from ..external.vlm import ComputeAEROvlm, ComputeVNvlmNoVH
 from ..external.openvsp import ComputeAEROopenvsp, ComputeVNopenvspNoVH

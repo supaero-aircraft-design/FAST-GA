@@ -2,7 +2,6 @@ title: Sample OAD Process applied to beechcraft
 
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders:
-    - ../../../src/fastga/
 
 
 # Input and output files
