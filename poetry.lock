@@ -828,7 +828,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "openmdao"
-version = "3.8.0"
+version = "3.4.1"
 description = "OpenMDAO framework infrastructure"
 category = "main"
 optional = false

@@ -44,6 +44,7 @@ OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
 OPTION_ALPHA_START = "alpha_start"
 OPTION_ALPHA_END = "alpha_end"
 OPTION_ITER_LIMIT = "iter_limit"
+OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
 DEFAULT_2D_CL_MAX = 1.9
 DEFAULT_2D_CL_MIN = -1.7
 ALPHA_STEP = 0.5
@@ -76,9 +77,9 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str)
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default="polar_result.txt", types=str)
         self.options.declare(OPTION_ALPHA_START, default=0.0, types=float)
-        self.options.declare(OPTION_ALPHA_END, default=20.0, types=float)
+        self.options.declare(OPTION_ALPHA_END, default=90.0, types=float)
         self.options.declare(OPTION_ITER_LIMIT, default=100, types=int)
-        self.options.declare('symmetrical', default=False, types=bool)
+        self.options.declare(OPTION_COMP_NEG_AIR_SYM, default=False, types=bool)
 
     def setup(self):
 
@@ -109,9 +110,9 @@ class XfoilPolar(ExternalCodeComp):
         no_file = True
         data_saved = None
         interpolated_result = None
-        if self.options['symmetrical']:
+        if self.options[OPTION_COMP_NEG_AIR_SYM]:
             result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
-                                   self.options["airfoil_file"].replace('.af', '_sym') + '.csv')
+                                   self.options["airfoil_file"].replace('.af', '_180') + '.csv')
         else:
             result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
                                    self.options["airfoil_file"].replace('.af', '') + '.csv')
@@ -206,49 +207,70 @@ class XfoilPolar(ExternalCodeComp):
             self.options["external_output_files"] = [tmp_result_file_path]
             super().compute(inputs, outputs)
 
-            if self.options['symmetrical']:
+            if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 result_array_p = self._read_polar(tmp_result_file_path)
                 os.remove(self.stdin)
                 os.remove(self.stdout)
                 os.remove(self.stderr)
                 os.remove(tmp_result_file_path)
+                alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
                 self._write_script_file(
-                    reynolds, mach, tmp_profile_file_path, tmp_result_file_path, -1 * self.options[OPTION_ALPHA_START],
+                    reynolds, mach, tmp_profile_file_path, tmp_result_file_path, alpha_start,
                                                                                  -1 * self.options[OPTION_ALPHA_END],
                     -ALPHA_STEP)
                 super().compute(inputs, outputs)
                 result_array_n = self._read_polar(tmp_result_file_path)
             else:
                 result_array_p = self._read_polar(tmp_result_file_path)
-                result_array_n = result_array_p
 
             # Post-processing --------------------------------------------------------------------------
-            cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
-            cl_min_2d, error = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
-            if POLAR_POINT_COUNT < len(result_array_p["alpha"]):
-                alpha = np.linspace(result_array_p["alpha"][0], result_array_p["alpha"][-1], POLAR_POINT_COUNT)
-                cl = np.interp(alpha, result_array_p["alpha"], result_array_p["CL"])
-                cd = np.interp(alpha, result_array_p["alpha"], result_array_p["CD"])
-                cdp = np.interp(alpha, result_array_p["alpha"], result_array_p["CDp"])
-                cm = np.interp(alpha, result_array_p["alpha"], result_array_p["CM"])
+            if self.options[OPTION_COMP_NEG_AIR_SYM]:
+                cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+                cl_min_2d, error = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
+                alpha = result_array_n["alpha"].tolist()
+                alpha.reverse()
+                alpha.extend(result_array_p["alpha"].tolist())
+                cl = result_array_n["CL"].tolist()
+                cl.reverse()
+                cl.extend(result_array_p["CL"].tolist())
+                cd = result_array_n["CD"].tolist()
+                cd.reverse()
+                cd.extend(result_array_p["CD"].tolist())
+                cdp = result_array_n["CDp"].tolist()
+                cdp.reverse()
+                cdp.extend(result_array_p["CDp"].tolist())
+                cm = result_array_n["CM"].tolist()
+                cm.reverse()
+                cm.extend(result_array_p["CM"].tolist())
+            else:
+                cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+                cl_min_2d, error = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
+                alpha = result_array_p["alpha"]
+                cl = result_array_p["CL"]
+                cd = result_array_p["CD"]
+                cdp = result_array_p["CDp"]
+                cm = result_array_p["CM"]
+
+            if POLAR_POINT_COUNT < len(alpha):
+                alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
+                cl = np.interp(alpha, alpha, cl)
+                cd = np.interp(alpha, alpha, cd)
+                cdp = np.interp(alpha, alpha, cdp)
+                cm = np.interp(alpha, alpha, cm)
+                alpha = alpha_interp
                 warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
             else:
-                additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(result_array_p["alpha"])))
-                alpha = result_array_p["alpha"].tolist()
+                additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
                 alpha.extend(additional_zeros)
-                alpha = np.asarray(alpha)
-                cl = result_array_p["CL"].tolist()
+                alpha = np.array(alpha)
                 cl.extend(additional_zeros)
-                cl = np.asarray(cl)
-                cd = result_array_p["CD"].tolist()
+                cl = np.array(cl)
                 cd.extend(additional_zeros)
-                cd = np.asarray(cd)
-                cdp = result_array_p["CDp"].tolist()
+                cd = np.array(cd)
                 cdp.extend(additional_zeros)
-                cdp = np.asarray(cdp)
-                cm = result_array_p["CM"].tolist()
+                cdp = np.array(cdp)
                 cm.extend(additional_zeros)
-                cm = np.asarray(cm)
+                cm = np.array(cm)
 
             # Save results to defined path -------------------------------------------------------------
             if not error:
@@ -373,7 +395,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within 90/110% linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within 85/115% linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -382,7 +404,7 @@ class XfoilPolar(ExternalCodeComp):
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
                 delta = np.abs((lift_coeff - lift_fct(alpha)) / (lift_coeff + 1e-12 * (lift_coeff == 0.0)))
-                return max(lift_coeff[delta <= 0.1]), False
+                return max(lift_coeff[delta <= 0.15]), False
 
         _LOGGER.warning("2D CL max not found, les than 50% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MAX))
@@ -393,7 +415,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL within 90/110% linear zone if enough alpha computed, or default value otherwise
+        :return: min CL within 85/115% linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -402,7 +424,7 @@ class XfoilPolar(ExternalCodeComp):
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
                 delta = np.abs(lift_coeff - lift_fct(alpha)) / np.abs(lift_coeff + 1e-12 * (lift_coeff == 0.0))
-                return min(lift_coeff[delta <= 0.1]), False
+                return min(lift_coeff[delta <= 0.15]), False
 
         _LOGGER.warning("2D CL min not found, les than 50% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MIN))
