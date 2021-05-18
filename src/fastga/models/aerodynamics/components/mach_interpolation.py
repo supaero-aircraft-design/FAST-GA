@@ -41,12 +41,12 @@ class ComputeMachInterpolation(om.Group):
         self.add_subsystem("wing_airfoil",
                            XfoilPolar(
                                airfoil_file=self.options["wing_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_airfoil",
                            XfoilPolar(
                                airfoil_file=self.options["htp_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("mach_interpolation", _ComputeMachInterpolation(), promotes=["*"])
 
@@ -118,17 +118,19 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
                                 altitude_in_feet=False).speed_of_sound
         mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
 
-        wing_cl = inputs["xfoil:wing:CL"]
-        wing_alpha = inputs["xfoil:wing:alpha"]
-        index_1 = np.where(wing_alpha == 1.0)
-        index_2 = np.where(wing_alpha == 11.0)
-        wing_airfoil_cl_alpha = (wing_cl[index_2] - wing_cl[index_1]) / (10. * math.pi / 180.)
+        wing_cl = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:CL"])
+        wing_alpha = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:alpha"])
+        wing_airfoil_cl_alpha = (
+            np.interp(11.0, wing_alpha, wing_cl)
+            - np.interp(1.0, wing_alpha, wing_cl)
+        ) / (10. * math.pi / 180.)
 
-        htp_cl = inputs["xfoil:horizontal_tail:CL"]
-        htp_alpha = inputs["xfoil:horizontal_tail:alpha"]
-        index_3 = np.where(htp_alpha == 1.0)
-        index_4 = np.where(htp_alpha == 11.0)
-        htp_airfoil_cl_alpha = (htp_cl[index_4] - htp_cl[index_3]) / (10. * math.pi / 180.)
+        htp_cl = self._reshape(inputs["xfoil:horizontal_tail:alpha"], inputs["xfoil:horizontal_tail:CL"])
+        htp_alpha = self._reshape(inputs["xfoil:horizontal_tail:alpha"], inputs["xfoil:horizontal_tail:alpha"])
+        htp_airfoil_cl_alpha = (
+           np.interp(11.0, htp_alpha, htp_cl)
+           - np.interp(1.0, htp_alpha, htp_cl)
+        ) / (10. * math.pi / 180.)
 
         mach_array = np.linspace(0., 1.55 * mach_cruise, MACH_NB_PTS + 1)
 
@@ -171,3 +173,12 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         outputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"] = aircraft_cl_alpha
         outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_array
+
+    @staticmethod
+    def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """ Delete ending 0.0 values """
+        for idx in range(len(x)):
+            if np.sum(x[idx:len(x)] == 0.0) == (len(x) - idx):
+                y = y[0:idx]
+                break
+        return y

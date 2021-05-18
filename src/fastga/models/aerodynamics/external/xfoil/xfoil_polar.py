@@ -245,18 +245,18 @@ class XfoilPolar(ExternalCodeComp):
             else:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
                 cl_min_2d, error = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
-                alpha = result_array_p["alpha"]
-                cl = result_array_p["CL"]
-                cd = result_array_p["CD"]
-                cdp = result_array_p["CDp"]
-                cm = result_array_p["CM"]
+                alpha = result_array_p["alpha"].tolist()
+                cl = result_array_p["CL"].tolist()
+                cd = result_array_p["CD"].tolist()
+                cdp = result_array_p["CDp"].tolist()
+                cm = result_array_p["CM"].tolist()
 
             if POLAR_POINT_COUNT < len(alpha):
                 alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
-                cl = np.interp(alpha, alpha, cl)
-                cd = np.interp(alpha, alpha, cd)
-                cdp = np.interp(alpha, alpha, cdp)
-                cm = np.interp(alpha, alpha, cm)
+                cl = np.interp(alpha_interp, alpha, cl)
+                cd = np.interp(alpha_interp, alpha, cd)
+                cdp = np.interp(alpha_interp, alpha, cdp)
+                cm = np.interp(alpha_interp, alpha, cm)
                 alpha = alpha_interp
                 warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
             else:
@@ -345,6 +345,8 @@ class XfoilPolar(ExternalCodeComp):
                 cm = np.asarray(cm)
 
         # Defining outputs -------------------------------------------------------------------------
+        if len(cl)>POLAR_POINT_COUNT:
+            print('here')
         outputs["xfoil:alpha"] = alpha
         outputs["xfoil:CL"] = cl
         outputs["xfoil:CD"] = cd

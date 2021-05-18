@@ -68,7 +68,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self.options.declare("sections_profile_position_list", types=list)
         self.options.declare("sections_profile_name_list", types=list)
         self.options.declare("average_rpm", default=2500.0, types=float)
-        self.options.declare("elements_number", default=50, types=int)
+        self.options.declare("elements_number", default=20, types=int)
 
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
@@ -124,7 +124,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         # construct table for cruise
         altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
-        outputs["data:aerodynamics:propeller:max_efficiency"] = max()
+        outputs["data:aerodynamics:propeller:max_efficiency"] = max(eta_vect)
 
 
     def extract_airfoils_polar_limits(self, inputs):
@@ -174,16 +174,17 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         length = radius_max - radius_min
         dr = length / elements_number
-        omega = omega * math.pi / 180.0
+        omega = omega * math.pi / 30.0
         atm = Atmosphere(h, altitude_in_feet=False)
 
         # Initialise vectors
-        vi_vector = np.zeros(elements_number)
-        vt_vector = np.zeros(elements_number)
-        radius_vector = np.zeros(elements_number)
-        dT = np.zeros(elements_number)
-        dQ = np.zeros(elements_number)
-        alpha = np.zeros(elements_number)
+        vi_vect = np.zeros(elements_number)
+        vt_vect = np.zeros(elements_number)
+        radius_vect = np.zeros(elements_number)
+        theta_vect = np.zeros(elements_number)
+        dT_vect = np.zeros(elements_number)
+        dQ_vect = np.zeros(elements_number)
+        alpha_vect = np.zeros(elements_number)
         speed_vect = np.array([v_inf, omega * radius_min])
 
         # Loop on element number to compute equations
@@ -206,6 +207,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
             # Search element angle to aircraft axial air (~v_inf) and sweep angle
             theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
             theta = np.interp(radius/radius_max, radius_ratio_vect, twist_vect) + (theta_75 - theta_75_ref)
+            theta_vect[i] = theta
             sweep = np.interp(radius/radius_max, radius_ratio_vect, sweep_vect)
 
             # Solve BEM vs. disk theory system of equations
@@ -216,17 +218,18 @@ class _ComputePropellePerformance(om.ExplicitComponent):
                      cl_element, cd_element, atm),
                     xtol=1e-3
             )
-            vi_vector[i] = speed_vect[0]
-            vt_vector[i] = speed_vect[1]
-            radius_vector[i] = radius
+            vi_vect[i] = speed_vect[0]
+            vt_vect[i] = speed_vect[1]
+            radius_vect[i] = radius
             results = self.bem_theory(speed_vect, radius, chord, blades_number, sweep, omega, v_inf, theta,
                                       alpha_element, cl_element, cd_element, atm)
-            dT[i] = results[0] * dr * atm.density
-            dQ[i] = results[1] * dr * atm.density
-            alpha[i] = results[2]
+            # self.disk_theory(speed_vect, radius, radius_max, blades_number, sweep, omega, v_inf)
+            dT_vect[i] = results[0] * dr * atm.density
+            dQ_vect[i] = results[1] * dr * atm.density
+            alpha_vect[i] = results[2]
 
-        torque = np.sum(dQ)
-        thrust = float(np.sum(dT))
+        torque = np.sum(dQ_vect)
+        thrust = float(np.sum(dT_vect))
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
 
@@ -277,7 +280,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
-        v_t = (omega * radius - v_t)  * math.cos(sweep * math.pi / 180.0)
+        v_t = (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0)
         w = math.sqrt(v_ax ** 2.0 + v_t ** 2.0)
         phi = math.atan(v_ax / v_t)
         alpha = theta - phi * 180.0 / math.pi
@@ -338,7 +341,6 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         # Extract axial/tangential speeds
         v_i = speed_vect[0]
         v_t = speed_vect[1]
-        v_t = (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0)
 
         # f is the tip loose factor
         f = 2 / math.pi \

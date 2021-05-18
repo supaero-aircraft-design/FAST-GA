@@ -54,22 +54,22 @@ class ComputeExtremeCL(Group):
         self.add_subsystem("wing_root_polar",
                            XfoilPolar(
                                airfoil_file=self.options["wing_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("wing_tip_polar",
                            XfoilPolar(
                                airfoil_file=self.options["wing_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_root_polar",
                            XfoilPolar(
                                airfoil_file=self.options["htp_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_tip_polar",
                            XfoilPolar(
                                airfoil_file=self.options["htp_airfoil_file"],
-                               symmetrical=True,
+                               activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
         self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])

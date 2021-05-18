@@ -287,7 +287,7 @@ def test_polar():
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
     cl_max_2d = problem["xfoil:CL_max_2D"]
-    assert cl_max_2d == pytest.approx(1.6691, abs=1e-4)
+    assert cl_max_2d == pytest.approx(1.6941, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     cdp_1 = np.interp(1.0, cl, cdp)
     assert cdp_1 == pytest.approx(0.00488, abs=1e-4)
@@ -666,21 +666,21 @@ def test_extreme_cl():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeExtremeCL(), ivc)
     cl_max_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_max_clean"]
-    assert cl_max_clean_wing == pytest.approx(1.4818, abs=1e-2)
+    assert cl_max_clean_wing == pytest.approx(1.8167, abs=1e-2)
     cl_min_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_min_clean"]
-    assert cl_min_clean_wing == pytest.approx(-1.1614, abs=1e-2)
+    assert cl_min_clean_wing == pytest.approx(-1.3722, abs=1e-2)
     cl_max_takeoff_wing = problem["data:aerodynamics:aircraft:takeoff:CL_max"]
-    assert cl_max_takeoff_wing == pytest.approx(1.580, abs=1e-2)
+    assert cl_max_takeoff_wing == pytest.approx(1.9151, abs=1e-2)
     cl_max_landing_wing = problem["data:aerodynamics:aircraft:landing:CL_max"]
-    assert cl_max_landing_wing == pytest.approx(1.949, abs=1e-2)
+    assert cl_max_landing_wing == pytest.approx(2.2844, abs=1e-2)
     cl_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
-    assert cl_max_clean_htp == pytest.approx(1.3634, abs=1e-2)
+    assert cl_max_clean_htp == pytest.approx(1.7802, abs=1e-2)
     cl_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"]
-    assert cl_min_clean_htp == pytest.approx(-1.3627, abs=1e-2)
+    assert cl_min_clean_htp == pytest.approx(-1.4460, abs=1e-2)
     alpha_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"]
-    assert alpha_max_clean_htp == pytest.approx(31.069, abs=1e-2)
+    assert alpha_max_clean_htp == pytest.approx(40.57, abs=1e-2)
     alpha_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"]
-    assert alpha_min_clean_htp == pytest.approx(-31.053, abs=1e-2)
+    assert alpha_min_clean_htp == pytest.approx(-32.95, abs=1e-2)
 
 
 def test_l_d_max():
@@ -814,10 +814,10 @@ def test_compute_mach_interpolation_roskam():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeMachInterpolation(), ivc)
     cl_alpha_vector = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
-    cl_alpha_result = np.array([5.498, 5.523, 5.6, 5.733, 5.929, 6.203])
+    cl_alpha_result = np.array([5.48, 5.51, 5.59, 5.72, 5.91, 6.19])
     assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
     mach_vector = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-    mach_result = np.array([0., 0.077, 0.154, 0.231, 0.309, 0.386])
+    mach_result = np.array([0., 0.08, 0.15, 0.23 , 0.31, 0.39])
     assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
 
 
