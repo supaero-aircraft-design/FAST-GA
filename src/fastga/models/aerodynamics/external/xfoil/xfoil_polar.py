@@ -15,6 +15,7 @@ This module launches XFOIL computations
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import sys
 import os
 import os.path as pth
 import shutil
@@ -28,6 +29,7 @@ import numpy as np
 from importlib.resources import path
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
+import math
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
@@ -101,6 +103,9 @@ class XfoilPolar(ExternalCodeComp):
 
     def compute(self, inputs, outputs):
 
+        # Define timeout for the function
+        self.options['timeout'] = 15.0
+
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
@@ -112,7 +117,8 @@ class XfoilPolar(ExternalCodeComp):
         interpolated_result = None
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
             result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
-                                   self.options["airfoil_file"].replace('.af', '_180') + '.csv')
+                                   self.options["airfoil_file"].replace('.af', '_' + str(
+                                       math.ceil(self.options[OPTION_ALPHA_END]))) + 'S.csv')
         else:
             result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
                                    self.options["airfoil_file"].replace('.af', '') + '.csv')
@@ -138,10 +144,11 @@ class XfoilPolar(ExternalCodeComp):
                     index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
                     lower_values = data_reduced.loc[labels, index_lower_reynolds]
                     upper_values = data_reduced.loc[labels, index_upper_reynolds]
+                    # Initialise values with lower reynolds
                     interpolated_result = lower_values
-                    # Calculate reynolds interval ratio
+                    # Calculate reynolds ratio split for linear interpolation
                     x_ratio = (min(upper_reynolds) - reynolds) / (min(upper_reynolds) - max(lower_reynolds))
-                    # Search for common alpha range
+                    # Search for common alpha range for linear interpolation
                     alpha_lower = eval(lower_values.loc['alpha', index_lower_reynolds].to_numpy()[0])
                     alpha_upper = eval(upper_values.loc['alpha', index_upper_reynolds].to_numpy()[0])
                     alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
@@ -205,10 +212,17 @@ class XfoilPolar(ExternalCodeComp):
             # Run XFOIL --------------------------------------------------------------------------------
             self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
             self.options["external_output_files"] = [tmp_result_file_path]
-            super().compute(inputs, outputs)
+            try:
+                super().compute(inputs, outputs)
+                result_array_p = self._read_polar(tmp_result_file_path)
+            except:  # catch the error and try to read result file for non-convergence on higher angles
+                e = sys.exc_info()[1]
+                try:
+                    result_array_p = self._read_polar(tmp_result_file_path)
+                except:
+                    raise TimeoutError("<p>Error: %s</p>" % e)
 
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
-                result_array_p = self._read_polar(tmp_result_file_path)
                 os.remove(self.stdin)
                 os.remove(self.stdout)
                 os.remove(self.stderr)
@@ -218,15 +232,20 @@ class XfoilPolar(ExternalCodeComp):
                     reynolds, mach, tmp_profile_file_path, tmp_result_file_path, alpha_start,
                                                                                  -1 * self.options[OPTION_ALPHA_END],
                     -ALPHA_STEP)
-                super().compute(inputs, outputs)
-                result_array_n = self._read_polar(tmp_result_file_path)
-            else:
-                result_array_p = self._read_polar(tmp_result_file_path)
+                try:
+                    super().compute(inputs, outputs)
+                    result_array_n = self._read_polar(tmp_result_file_path)
+                except:  # catch the error and try to read result file for non-convergence on higher angles
+                    e = sys.exc_info()[1]
+                    try:
+                        result_array_n = self._read_polar(tmp_result_file_path)
+                    except:
+                        raise TimeoutError("<p>Error: %s</p>" % e)
 
             # Post-processing --------------------------------------------------------------------------
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
-                cl_min_2d, error = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
+                cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
                 alpha = result_array_n["alpha"].tolist()
                 alpha.reverse()
                 alpha.extend(result_array_p["alpha"].tolist())
@@ -244,7 +263,7 @@ class XfoilPolar(ExternalCodeComp):
                 cm.extend(result_array_p["CM"].tolist())
             else:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
-                cl_min_2d, error = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
+                cl_min_2d, _ = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
                 alpha = result_array_p["alpha"].tolist()
                 cl = result_array_p["CL"].tolist()
                 cd = result_array_p["CD"].tolist()
@@ -301,8 +320,20 @@ class XfoilPolar(ExternalCodeComp):
                 if pth.exists(self.stderr):
                     stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
                     shutil.move(self.stderr, stderr_file_path)
-
-            tmp_directory.cleanup()
+            # Try to delete the temp directory, if process not finished correctely try to close files before removing
+            # directory for second attempt
+            try:
+                tmp_directory.cleanup()
+            except:
+                for file in os.listdir(tmp_directory.name):
+                    try:
+                        file.close()
+                    except:
+                        pass
+                try:
+                    tmp_directory.cleanup()
+                except:
+                    pass
 
         else:
             # Extract results
@@ -345,8 +376,6 @@ class XfoilPolar(ExternalCodeComp):
                 cm = np.asarray(cm)
 
         # Defining outputs -------------------------------------------------------------------------
-        if len(cl)>POLAR_POINT_COUNT:
-            print('here')
         outputs["xfoil:alpha"] = alpha
         outputs["xfoil:CL"] = cl
         outputs["xfoil:CD"] = cd
@@ -397,18 +426,18 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within 85/115% linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within +/- 0.2 arround linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
-            if np.abs(covered_range / alpha_range) >= 0.5:
+            if np.abs(covered_range / alpha_range) >= 0.4:
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
-                delta = np.abs((lift_coeff - lift_fct(alpha)) / (lift_coeff + 1e-12 * (lift_coeff == 0.0)))
-                return max(lift_coeff[delta <= 0.15]), False
+                delta = np.abs(lift_coeff - lift_fct(alpha))
+                return max(lift_coeff[delta <= 0.2]), False
 
-        _LOGGER.warning("2D CL max not found, les than 50% of angle range computed: using default value {}".format(
+        _LOGGER.warning("2D CL max not found, less than 40% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MAX))
         return DEFAULT_2D_CL_MAX, True
 
@@ -417,18 +446,18 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL within 85/115% linear zone if enough alpha computed, or default value otherwise
+        :return: min CL +/- 0.2 arround linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
-            if covered_range / alpha_range >= 0.5:
+            if covered_range / alpha_range >= 0.4:
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
-                delta = np.abs(lift_coeff - lift_fct(alpha)) / np.abs(lift_coeff + 1e-12 * (lift_coeff == 0.0))
-                return min(lift_coeff[delta <= 0.15]), False
+                delta = np.abs(lift_coeff - lift_fct(alpha))
+                return min(lift_coeff[delta <= 0.2]), False
 
-        _LOGGER.warning("2D CL min not found, les than 50% of angle range computed: using default value {}".format(
+        _LOGGER.warning("2D CL min not found, less than 40% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MIN))
         return DEFAULT_2D_CL_MIN, True
 

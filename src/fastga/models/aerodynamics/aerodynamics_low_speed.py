@@ -50,6 +50,7 @@ class AerodynamicsLowSpeed(Group):
             self.add_subsystem("aero_vlm",
                                ComputeAEROvlm(
                                    low_speed_aero=True,
+                                   compute_mach_interpolation=False,
                                    result_folder_path=self.options["result_folder_path"],
                                    wing_airfoil_file=self.options["wing_airfoil"],
                                    htp_airfoil_file=self.options["htp_airfoil"],

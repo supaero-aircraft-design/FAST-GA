@@ -89,16 +89,16 @@ class _ComputePropellePerformance(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         omega = self.options["average_rpm"]
-        v_min = inputs["data:TLAR:v_approach"]
-        v_max = inputs["data:TLAR:v_approach"]
-        self.extract_airfoils_polar_limits(inputs)
-        theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
+        v_min = inputs["data:TLAR:v_approach"] / 2.0
+        v_max = inputs["data:TLAR:v_cruise"] * 1.2
         # construct table for init of climb
         altitude = 0.0
         thrust_vect = []
         theta_vect = []
         eta_vect = []
         for v_inf in np.linspace(v_min, v_max, 10):
+            self.extract_airfoils_polar_limits(inputs, v_inf)
+            theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
             local_thrust_vect = []
             local_theta_vect = []
             local_eta_vect = []
@@ -127,11 +127,15 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         outputs["data:aerodynamics:propeller:max_efficiency"] = max(eta_vect)
 
 
-    def extract_airfoils_polar_limits(self, inputs):
+    def extract_airfoils_polar_limits(self, inputs, v_inf):
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         delta_pos = []
         delta_neg = []
+        omega = self.options["average_rpm"]
+        phi_vect = 180.0 / math.pi * np.arctan(
+            (v_inf + 60.0 / v_inf) / (omega * 2.0 * math.pi / 60.0 * radius_ratio_vect)
+        )
         for idx in range(len(self.options["sections_profile_name_list"])):
             profile_name = self.options["sections_profile_name_list"][idx]
             radius_ratio = self.options["sections_profile_position_list"][idx]
@@ -142,8 +146,10 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         delta_pos_max = min(delta_pos)
         delta_neg_max = min(delta_neg)
         theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
-        self.theta_min = theta_75_ref - delta_neg_max
-        self.theta_max = theta_75_ref + delta_pos_max
+        # FIXME: see if we can check sections polars limits
+        phi_75 = np.interp(0.75, radius_ratio_vect, phi_vect)
+        self.theta_min = phi_75 - 5.0
+        self.theta_max = phi_75 + 5.0
 
 
     def compute_pitch_performance(self, inputs, theta_75, v_inf, h, omega, elements_number):
@@ -214,7 +220,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
             speed_vect = fsolve(
                     self.delta,
                     speed_vect,
-                    (radius, radius_max, chord, blades_number, sweep, omega, v_inf, theta, alpha_element,
+                    (radius, radius_min, radius_max, chord, blades_number, sweep, omega, v_inf, theta, alpha_element,
                      cl_element, cd_element, atm),
                     xtol=1e-3
             )
@@ -316,6 +322,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
     def disk_theory(
         speed_vect: np.array,
         radius: float,
+        radius_min: float,
         radius_max: float,
         blades_number: float,
         sweep: float,
@@ -329,6 +336,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
+        :param radius_min: Hub radius [m]
         :param radius_max: Max radius [m]
         :param blades_number: number of blades [-]
         :param sweep: sweep angle [deg.]
@@ -342,8 +350,14 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         v_i = speed_vect[0]
         v_t = speed_vect[1]
 
-        # f is the tip loose factor
-        f = 2 / math.pi \
+        # Calculate speed composition and relative air angle (in deg.)
+        v_ax = v_inf + v_i
+        v_t = (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0)
+        w = math.sqrt(v_ax ** 2.0 + v_t ** 2.0)
+        phi = math.atan(v_ax / v_t)
+
+        # f_tip is the tip loose factor
+        f_tip = 2 / math.pi \
             * math.acos(
                 math.exp(
                         -blades_number / 2 * (
@@ -352,9 +366,19 @@ class _ComputePropellePerformance(om.ExplicitComponent):
                 )
         )
 
+        # f_hub is the hub loose factor
+        if phi > 0.0:
+            f_hub = min(1.0, 2 / math.pi \
+                * math.acos(
+                    math.exp(
+                            -blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi))))
+                        )
+        else:
+            f_hub = 1.0
+
         # Calculate force and momentum
-        dT = 4.0 * math.pi * radius * (v_inf + v_i) * v_i * f
-        dQ = 4.0 * math.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f
+        dT = 4.0 * math.pi * radius * (v_inf + v_i) * v_i * f_tip * f_hub
+        dQ = 4.0 * math.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
 
         # Store results
         f = np.empty(2)
@@ -367,6 +391,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self,
         speed_vect: np.array,
         radius: float,
+        radius_min: float,
         radius_max: float,
         chord: float,
         blades_number: float,
@@ -386,6 +411,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
+        :param radius_min: Hub radius [m]
         :param radius_max: Max radius [m]
         :param chord: chord at the center of element [m]
         :param blades_number: number of blades [-]
@@ -404,14 +430,14 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         f1 = self.bem_theory(speed_vect, radius, chord, blades_number, sweep, omega, v_inf, theta, alpha_element,
                              cl_element, cd_element, atm)
 
-        f2 = self.disk_theory(speed_vect, radius, radius_max, blades_number, sweep, omega, v_inf)
+        f2 = self.disk_theory(speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf)
 
         return f1[0:1] - f2
 
 
     @staticmethod
     def read_polar_result(airfoil_name):
-        result_file = pth.join(xfoil.__path__[0], "resources", airfoil_name + '_180.csv')
+        result_file = pth.join(xfoil.__path__[0], "resources", airfoil_name + '_30S.csv')
         mach = 0.0
         reynolds = 1e6
         data_saved = pd.read_csv(result_file)

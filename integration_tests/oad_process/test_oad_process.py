@@ -155,9 +155,10 @@ def test_notebooks(cleanup):
         Aerodynamics(
             propulsion_id="fastga.wrapper.propulsion.basicIC_engine",
             use_openvsp=True,
-            compute_mach_interpolation=True,
+            compute_mach_interpolation=False,
             compute_slipstream_low_speed=False,
             compute_slipstream_cruise=False,
+            result_folder_path='D:/tmp',
         ),
         [],
         str(pth.join(RESULTS_FOLDER_PATH, 'geometry_long_wing.xml')),
@@ -178,7 +179,7 @@ def test_notebooks(cleanup):
     #     AerodynamicsHighSpeed(
     #         propulsion_id="fastga.wrapper.propulsion.basicIC_engine",
     #         use_openvsp=True,
-    #         compute_mach_interpolation=True,
+    #         compute_mach_interpolation=False,
     #         compute_slipstream=False,
     #     ),
     #     [],

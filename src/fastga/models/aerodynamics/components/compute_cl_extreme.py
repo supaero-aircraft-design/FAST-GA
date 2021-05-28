@@ -53,21 +53,25 @@ class ComputeExtremeCL(Group):
                            ])
         self.add_subsystem("wing_root_polar",
                            XfoilPolar(
+                               alpha_end=30.0,
                                airfoil_file=self.options["wing_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("wing_tip_polar",
                            XfoilPolar(
+                               alpha_end=30.0,
                                airfoil_file=self.options["wing_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_root_polar",
                            XfoilPolar(
+                               alpha_end=30.0,
                                airfoil_file=self.options["htp_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_tip_polar",
                            XfoilPolar(
+                               alpha_end=30.0,
                                airfoil_file=self.options["htp_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])
