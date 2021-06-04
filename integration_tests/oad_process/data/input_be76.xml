@@ -112,7 +112,7 @@
 				<fuel_type>1.0<!--1=Avgas ICE engine / 2=Diesel ICE engine--></fuel_type>
 				<max_power units="W">130000.0<!--max power @ see level--></max_power>
 				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
-				<engine_rpm units="min**-1">2700.0</engine_rpm>
+				<max_rpm units="min**-1">2700.0</max_rpm>
 			</IC_engine>
 		</propulsion>
 		<mission>

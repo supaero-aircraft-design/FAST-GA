@@ -86,7 +86,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
         return DummyEngine()
 
 
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
+# RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_compute_static_margin():

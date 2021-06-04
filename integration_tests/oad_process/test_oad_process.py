@@ -41,7 +41,7 @@ for folder in PATH[1:len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = "sr22"  # "be76"
+AIRCRAFT_ID = "be76"  # "sr22"
 MDA_WING_POSITION = True
 
 
@@ -51,7 +51,7 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def _test_oad_process(cleanup):
+def test_oad_process(cleanup):
     """
     Test the overall aircraft design process without wing positioning.
     """
@@ -93,17 +93,17 @@ def _test_oad_process(cleanup):
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 250, atol=1)
             assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1648, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1644, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1043, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1039, atol=1)
         else:
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 218., atol=1)
+            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 214., atol=1)
             assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1721., atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1702., atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1113., atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1098., atol=1)
 
 
 def _check_weight_performance_loop(problem):
@@ -129,7 +129,7 @@ def _check_weight_performance_loop(problem):
     )
 
 
-def test_notebooks(cleanup):
+def _test_notebooks(cleanup):
     # Copy used file
     os.mkdir(RESULTS_FOLDER_PATH)
     shutil.copy(pth.join(data.__path__[0], 'reference_aircraft.xml'),

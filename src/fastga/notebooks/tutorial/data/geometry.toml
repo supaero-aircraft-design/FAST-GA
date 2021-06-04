@@ -1,4 +1,4 @@
-title = "GEOMETRY run"
+title: Sample OAD Process applied to beechcraft
 
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders = ["D:/fl.lutz/FAST/FAST-OAD/FAST-GA2-MODELS"]

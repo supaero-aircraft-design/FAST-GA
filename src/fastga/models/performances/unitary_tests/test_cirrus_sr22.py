@@ -43,13 +43,25 @@ ENGINE_WRAPPER = "test.wrapper.performances.cirrus.dummy_engine"
 
 class DummyEngine(AbstractFuelPropulsion):
 
-    def __init__(self):
+    def __init__(self,
+                 max_power: float,
+                 design_altitude: float,
+                 design_speed: float,
+                 fuel_type: float,
+                 strokes_nb: float,
+                 prop_layout: float,
+                 ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
         """
         super().__init__()
-        self.max_power = 231000.0
+        self.prop_layout = prop_layout
+        self.max_power = max_power
+        self.design_altitude = design_altitude
+        self.design_speed = design_speed
+        self.fuel_type = fuel_type
+        self.strokes_nb = strokes_nb
         self.max_thrust = 5417.0
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
@@ -92,7 +104,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
         return DummyEngine()
 
 
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
+# RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_v2():

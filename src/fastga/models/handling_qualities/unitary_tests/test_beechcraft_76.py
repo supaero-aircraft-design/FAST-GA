@@ -108,7 +108,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
         return DummyEngine(**engine_params)
 
 
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
+# RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_update_vt_area():

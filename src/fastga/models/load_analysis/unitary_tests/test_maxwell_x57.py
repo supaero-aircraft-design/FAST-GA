@@ -23,6 +23,7 @@ from typing import Union
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
+from fastoad.model_base.atmosphere import Atmosphere
 
 from ..aerostructural_loads_x57 import AerostructuralLoadX57
 from ..structural_loads_x57 import StructuralLoadsX57
@@ -92,7 +93,7 @@ class DummyEngineWrapper(IOMPropulsionWrapper):
         return DummyEngine()
 
 
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
+# RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_compute_shear_stress():
