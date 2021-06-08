@@ -22,6 +22,7 @@ import math
 import pandas as pd
 from scipy.optimize import fsolve
 import warnings
+import matplotlib.pyplot as plt
 
 from fastoad.model_base import Atmosphere
 import fastga.models.aerodynamics.external.xfoil as xfoil
@@ -80,7 +81,6 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:radius_ratio_vect", shape_by_conn=True, val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
-        self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
         self.add_output("data:aerodynamics:propeller:max_efficiency", units="m")
 
@@ -88,16 +88,19 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
+        # Define init values
         omega = self.options["average_rpm"]
-        v_min = inputs["data:TLAR:v_approach"] / 2.0
+        v_min = 5.0
         v_max = inputs["data:TLAR:v_cruise"] * 1.2
-        # construct table for init of climb
+        speed_interp = np.linspace(v_min, v_max, 10)
+
+        # Construct table for init of climb
         altitude = 0.0
         thrust_vect = []
         theta_vect = []
         eta_vect = []
-        for v_inf in np.linspace(v_min, v_max, 10):
-            self.extract_airfoils_polar_limits(inputs, v_inf)
+        for v_inf in speed_interp:
+            self.compute_extreme_pitch(inputs, v_inf)
             theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
             local_thrust_vect = []
             local_theta_vect = []
@@ -105,21 +108,89 @@ class _ComputePropellePerformance(om.ExplicitComponent):
             for theta_75 in theta_interp:
                 thrust, eta, _ = self.compute_pitch_performance(inputs, theta_75, v_inf, altitude, omega,
                                                                     self.options["elements_number"])
-                if not(eta < 0.0 or eta > 1.0):
-                    if len(local_thrust_vect) != 0:
-                        if thrust > max(local_thrust_vect):
-                            local_thrust_vect.append(thrust)
-                            local_theta_vect.append(theta_75)
-                            local_eta_vect.append(eta)
-                        else:
-                            break
-                    else:
-                        local_thrust_vect.append(thrust)
-                        local_theta_vect.append(theta_75)
-                        local_eta_vect.append(eta)
+                if len(local_thrust_vect) != 0:
+                    local_thrust_vect.append(thrust)
+                    local_theta_vect.append(theta_75)
+                    local_eta_vect.append(eta)
+                else:
+                    local_thrust_vect.append(thrust)
+                    local_theta_vect.append(theta_75)
+                    local_eta_vect.append(eta)
+
+            # Find first the "monotone" zone (10 points of increase)
+            thrust_difference = np.array(local_thrust_vect[1:]) - np.array(local_thrust_vect[0:-1])
+            for idx in range(5, len(thrust_difference)):
+                if np.sum(np.array(thrust_difference[idx-5:idx+5]) > 0.0) == len(thrust_difference[idx-5:idx+5]):
+                    idx_in_zone = idx + 1
+                    break
+            # Erase end of the curve if thrust decreases
+            if len(np.where(thrust_difference[idx_in_zone:] < 0.0)[0]) != 0:
+                idx_end = np.min(np.where(thrust_difference[idx_in_zone:] < 0.0)) + idx_in_zone
+                local_thrust_vect = local_thrust_vect[0:idx_end + 1]
+                local_theta_vect = local_theta_vect[0:idx_end + 1]
+                local_eta_vect = local_eta_vect[0:idx_end + 1]
+            # Erase start of the curve if thrust is negative or decreases
+            idx_start = 0
+            thrust_difference = np.array(local_thrust_vect[1:]) - np.array(local_thrust_vect[0:-1])
+            if len(np.where(np.array(local_thrust_vect) < 0.0)[0]) != 0.0:
+                idx_start = int(np.max(np.where(np.array(local_thrust_vect) < 0.0)))
+            if len(np.where(thrust_difference < 0.0)[0]) != 0.0:
+                idx_start = max(idx_start, int(np.max(np.where(thrust_difference < 0.0)) + 1))
+            local_thrust_vect = local_thrust_vect[idx_start:]
+            local_theta_vect = local_theta_vect[idx_start:]
+            local_eta_vect = local_eta_vect[idx_start:]
+            # Erase remaining points with negative or >1.0 efficiency
+            idx_drop = np.where((np.array(local_eta_vect) <= 0.0) + (np.array(local_eta_vect) > 1.0))[0].tolist()
+            for idx in sorted(idx_drop, reverse=True):
+                del local_thrust_vect[idx]
+                del local_theta_vect[idx]
+                del local_eta_vect[idx]
+
+            # Plot graphs
             thrust_vect.append(local_thrust_vect)
             theta_vect.append(local_theta_vect)
             eta_vect.append(local_eta_vect)
+            plt.figure(1)
+            plt.subplot(311)
+            plt.xlabel("0.75R pitch angle [°]")
+            plt.ylabel("Thrust [N]")
+            plt.plot(local_theta_vect, local_thrust_vect)
+            plt.subplot(312)
+            plt.xlabel("0.75R pitch angle [°]")
+            plt.ylabel("Efficiency [-]")
+            plt.plot(local_theta_vect, local_eta_vect)
+            plt.subplot(313)
+            plt.xlabel("0.75R pitch angle [°]")
+            plt.ylabel("Torque [-]")
+            plt.plot(local_theta_vect,
+                     v_inf * np.array(local_thrust_vect) / (np.array(local_eta_vect) * omega * math.pi / 30.0))
+
+        plt.show()
+
+        # Construct table
+        min_thrust = 0.0
+        max_thrust = 0.0
+        thrust_limit = []
+        for idx in range(len(thrust_vect)):
+            min_thrust = max(min_thrust, thrust_vect[idx][0])
+            max_thrust = max(max_thrust, thrust_vect[idx][-1])
+            thrust_limit.append(thrust_vect[idx][-1])
+        thrust_interp = np.linspace(min_thrust, max_thrust, 30)
+        thrust_limit = np.array(thrust_limit)
+        efficiency_interp = np.zeros((len(speed_interp), len(thrust_interp)))
+        for idx_speed in range(len(speed_interp)):
+            local_thrust_vect = thrust_vect[idx_speed]
+            local_eta_vect = eta_vect[idx_speed]
+            efficiency_interp[idx_speed, :] = np.interp(thrust_interp, local_thrust_vect, local_eta_vect)
+
+        X, Y = np.meshgrid(speed_interp, thrust_interp)
+        fig, ax = plt.subplots(1, 1)
+        cp = ax.contourf(X, Y, np.transpose(efficiency_interp))
+        fig.colorbar(cp)  # Add a colorbar to a plot
+        ax.set_title('Efficiency map @ 0m')
+        ax.set_xlabel('Air speed [m/s]')
+        ax.set_ylabel('Thrust [N]')
+        plt.show()
 
         # construct table for cruise
         altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -127,7 +198,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         outputs["data:aerodynamics:propeller:max_efficiency"] = max(eta_vect)
 
 
-    def extract_airfoils_polar_limits(self, inputs, v_inf):
+    def compute_extreme_pitch(self, inputs, v_inf):
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         delta_pos = []
@@ -136,20 +207,10 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         phi_vect = 180.0 / math.pi * np.arctan(
             (v_inf + 60.0 / v_inf) / (omega * 2.0 * math.pi / 60.0 * radius_ratio_vect)
         )
-        for idx in range(len(self.options["sections_profile_name_list"])):
-            profile_name = self.options["sections_profile_name_list"][idx]
-            radius_ratio = self.options["sections_profile_position_list"][idx]
-            alpha_element, _, _ = self.read_polar_result(profile_name)
-            theta = np.interp(radius_ratio, radius_ratio_vect, twist_vect)
-            delta_pos.append(max(alpha_element) - theta)
-            delta_neg.append(theta - min(alpha_element))
-        delta_pos_max = min(delta_pos)
-        delta_neg_max = min(delta_neg)
         theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
-        # FIXME: see if we can check sections polars limits
         phi_75 = np.interp(0.75, radius_ratio_vect, phi_vect)
-        self.theta_min = phi_75 - 5.0
-        self.theta_max = phi_75 + 5.0
+        self.theta_min = phi_75 - 15.0
+        self.theta_max = phi_75 + 25.0
 
 
     def compute_pitch_performance(self, inputs, theta_75, v_inf, h, omega, elements_number):
@@ -191,7 +252,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         dT_vect = np.zeros(elements_number)
         dQ_vect = np.zeros(elements_number)
         alpha_vect = np.zeros(elements_number)
-        speed_vect = np.array([v_inf, omega * radius_min])
+        speed_vect = np.array([0.1 * float(v_inf), 1.0])
 
         # Loop on element number to compute equations
         for i in range(elements_number):
@@ -230,8 +291,14 @@ class _ComputePropellePerformance(om.ExplicitComponent):
             results = self.bem_theory(speed_vect, radius, chord, blades_number, sweep, omega, v_inf, theta,
                                       alpha_element, cl_element, cd_element, atm)
             # self.disk_theory(speed_vect, radius, radius_max, blades_number, sweep, omega, v_inf)
-            dT_vect[i] = results[0] * dr * atm.density
-            dQ_vect[i] = results[1] * dr * atm.density
+            out_of_polars = results[3]
+            if out_of_polars:
+                dT_vect[i] = 0.0
+                dQ_vect[i] = 0.0
+                warnings.warn("Propeller element out of calculated polars: contribution canceled!")
+            else:
+                dT_vect[i] = results[0] * dr * atm.density
+                dQ_vect[i] = results[1] * dr * atm.density
             alpha_vect[i] = results[2]
 
         torque = np.sum(dQ_vect)
@@ -239,10 +306,10 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
 
-        if eta < 0 or eta > 1:
+        if eta < 0.0 or eta > 1.0:
             warnings.warn("Propeller not working in propulsive mode!")
 
-        return thrust, eta, power
+        return thrust, eta, torque
 
     @staticmethod
     def bem_theory(
@@ -296,6 +363,10 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         mach_local = atm.mach
 
         # Apply the compressibility corrections for cl and cd
+        if (alpha > max(alpha_element)) or (alpha < min(alpha_element)):
+            out_of_polars = True
+        else:
+            out_of_polars = False
         cl = np.interp(alpha, alpha_element, cl_element)
         cd = np.interp(alpha, alpha_element, cd_element)
         if mach_local <= 1:
@@ -311,10 +382,11 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         dQ = 0.5 * blades_number * chord * w**2.0 * (cl * math.sin(phi) + cd * math.cos(phi)) * radius
 
         # Store results
-        f = np.empty(3)
+        f = np.empty(4)
         f[0] = dT
         f[1] = dQ
         f[2] = alpha
+        f[3] = out_of_polars
 
         return f
 
@@ -352,9 +424,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
-        v_t = (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0)
-        w = math.sqrt(v_ax ** 2.0 + v_t ** 2.0)
-        phi = math.atan(v_ax / v_t)
+        phi = math.atan(v_ax / (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0))
 
         # f_tip is the tip loose factor
         f_tip = 2 / math.pi \
