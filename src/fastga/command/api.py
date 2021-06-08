@@ -41,7 +41,7 @@ from . import resources
 
 _LOGGER = logging.getLogger(__name__)
 
-SAMPLE_FILENAME = "fastga.yaml"
+SAMPLE_FILENAME = "fastga.yml"
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):

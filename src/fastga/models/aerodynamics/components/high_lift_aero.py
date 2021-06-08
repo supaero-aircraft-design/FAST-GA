@@ -155,13 +155,14 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         y1_wing = inputs['data:geometry:fuselage:maximum_width'] / 2.0
         y2_wing = inputs['data:geometry:wing:root:y']
         flap_span_ratio = inputs['data:geometry:flap:span_ratio']
+        taper_ratio_wing = inputs['data:geometry:wing:taper_ratio']
 
         # 2D flap lift coefficient
         delta_cl_airfoil = self._compute_delta_cl_airfoil_2D(inputs, flap_angle, mach)
         # Roskam 3D flap parameters
         eta_in = y1_wing / (span_wing / 2.0)
         eta_out = ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing)) / (span_wing / 2.0 - y2_wing)
-        kb = self._compute_kb_flaps(inputs, eta_in, eta_out)
+        kb = self._compute_kb_flaps(inputs, eta_in, eta_out, taper_ratio_wing)
         effect = 1.04  # fig 8.53 (cf/c=0.25, small effect of AR)
         delta_cl0_flaps = kb * delta_cl_airfoil * (cl_alpha_wing / (2 * math.pi)) * effect
         delta_clmax_flaps = self._compute_delta_clmax_flaps(inputs, flap_angle)
@@ -512,7 +513,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
         return cl_delta, k
 
     @staticmethod
-    def _compute_kb_flaps(inputs, eta_in: float, eta_out: float) -> float:
+    def _compute_kb_flaps(inputs, eta_in: float, eta_out: float, taper_ratio: float) -> float:
         """
         Use Roskam graph (Figure 8.52) to interpolate kb factor.
         This factor accounts for a finite flap contribution to the 3D lift increase, depending on its position and size
@@ -525,7 +526,7 @@ class ComputeDeltaHighLift(om.ExplicitComponent):
 
         eta_in = float(eta_in)
         eta_out = float(eta_out)
-        wing_taper_ratio = max(min(float(inputs['data:geometry:wing:taper_ratio']), 1.0), 0.0)
+        wing_taper_ratio = max(min(float(taper_ratio), 1.0), 0.0)
         file = pth.join(resources.__path__[0], KB_FLAPS)
         db = read_csv(file)
 

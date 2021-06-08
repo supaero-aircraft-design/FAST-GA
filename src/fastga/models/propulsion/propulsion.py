@@ -17,6 +17,7 @@ from typing import Union
 
 import numpy as np
 import openmdao.api as om
+import pandas as pd
 
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IPropulsion, IOMPropulsionWrapper
@@ -33,6 +34,14 @@ class IPropulsionCS23(IPropulsion):
         Computes total propulsion mass.
 
         :return: the total uninstalled mass in kg
+        """
+
+    @abstractmethod
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+        """
+        Computes max available power on one engine.
+
+        :return: the maximum available power in W
         """
 
     @abstractmethod

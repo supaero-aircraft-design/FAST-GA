@@ -40,13 +40,13 @@ class ComputeMachInterpolation(om.Group):
 
         self.add_subsystem("wing_airfoil",
                            XfoilPolar(
-                               alpha_end=30.0,
+                               alpha_end=20.0,
                                airfoil_file=self.options["wing_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])
         self.add_subsystem("htp_airfoil",
                            XfoilPolar(
-                               alpha_end=30.0,
+                               alpha_end=20.0,
                                airfoil_file=self.options["htp_airfoil_file"],
                                activate_negative_angle=True,
                            ), promotes=[])

@@ -21,27 +21,49 @@ import openmdao.api as om
 
 
 class ComputeClalphaVT(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """ Vertical tail lift coefficient estimation """
+    """ Vertical tail lift coefficient estimation
+
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
+    Characteristics. DARcorporation, 1985. Equation (8.22) applied with the geometric characteristics of the VTP and
+    an effective aspect ratio different from the geometric one
+    """
+
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+
+        if self.options["low_speed_aero"]:
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        else:
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+
+        self.add_input("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
 
-        self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
-
-        self.declare_partials("data:aerodynamics:vertical_tail:cruise:CL_alpha", "*", method="fd")
+        if self.options["low_speed_aero"]:
+            self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
+        else:
+            self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        if self.options["low_speed_aero"]:
+            mach = inputs["data:aerodynamics:low_speed:mach"]
+            beta = math.sqrt(1 - mach ** 2)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:Cl_alpha"] / (2. * np.pi)
+        else:
+            mach = inputs["data:aerodynamics:cruise:mach"]
+            beta = math.sqrt(1 - mach ** 2)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:Cl_alpha"] / (beta * 2. * np.pi)
+
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
-        cruise_mach = inputs["data:aerodynamics:cruise:mach"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         k_ar_effective = 2.9 if tail_type == 1 else 1.55
         lambda_vt = inputs["data:geometry:vertical_tail:aspect_ratio"] * k_ar_effective
 
-        beta = math.sqrt(1 - cruise_mach ** 2)
         cl_alpha_vt = (
             0.8
             * 2
@@ -53,10 +75,13 @@ class ComputeClalphaVT(om.ExplicitComponent):
                     4
                     + lambda_vt ** 2
                     * beta ** 2
-                    / 0.95 ** 2
+                    / k ** 2
                     * (1 + (math.tan(sweep_25_vt / 180.0 * math.pi)) ** 2 / beta ** 2)
                 )
             )
         )
 
-        outputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"] = cl_alpha_vt
+        if self.options["low_speed_aero"]:
+            outputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"] = cl_alpha_vt
+        else:
+            outputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"] = cl_alpha_vt

@@ -140,6 +140,7 @@
 					<length units="m">1.200296<!--length of mean aerodynamic chord of wing--></length>
 				</MAC>
 				<area units="m**2">13.46<!--wing reference area--></area>
+				<sweep_25 units="deg">4.0</sweep_25>
 				<aspect_ratio>10.12</aspect_ratio>
 				<root>
 					<virtual_chord units="m">1.4837931<!--virtual chord length at wing root--></virtual_chord>
@@ -154,12 +155,16 @@
 						</x>
 					</at25percent>
 				</MAC>
+				<rudder>
+					<max_deflection units="deg">20.0</max_deflection>
+				</rudder>
 			</vertical_tail>
 		</geometry>
 		<mission>
 			<sizing>
 				<landing>
 					<elevator_angle units="deg">-25.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
+					<target_sideslip units="deg">12.0<!--desired sideslip angle for a crosswind landing--></target_sideslip>
 				</landing>
 				<main_route>
 					<climb>

@@ -35,58 +35,9 @@ from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 
+from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
+
 XML_FILE = "cirrus_sr22.xml"
-ENGINE_WRAPPER = "test.wrapper.handling_qualities.cirrus.dummy_engine"
-
-
-class DummyEngine(AbstractFuelPropulsion):
-
-    def __init__(self):
-        """
-        Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
-
-        """
-        super().__init__()
-
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
-        if flight_points.engine_setting == EngineSetting.TAKEOFF:
-            flight_points.thrust = 5417.0
-        elif flight_points.engine_setting == EngineSetting.CLIMB:
-            flight_points.thrust = 2900.0
-        elif flight_points.engine_setting == EngineSetting.IDLE:
-            flight_points.thrust = 560.0
-        else:
-            flight_points.thrust = 0.0
-        flight_points.sfc = 0.0
-
-    def compute_weight(self) -> float:
-        return 0.0
-
-    def compute_dimensions(self) -> (float, float, float, float):
-        return [0.0, 0.0, 0.0, 0.0]
-
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
-        return 0.0
-
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return 0.0
-
-    # noinspection PyMethodMayBeStatic
-    def compute_sl_thrust(self) -> float:
-        return 5417.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        return DummyEngine()
-
-
-# RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_compute_static_margin():
@@ -141,10 +92,16 @@ def test_update_vt_area():
     """ Tests computation of the vertical tail area """
 
     # Research independent input value in .xml file
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    input_vars = reader.read().to_ivc()
+    input_vars = get_indep_var_comp(list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    input_vars.add_output("data:weight:aircraft:OWE", 1039.139, units="kg")
+    input_vars.add_output("data:weight:aircraft:payload", 355.0, units="kg")
     input_vars.add_output("data:aerodynamics:fuselage:cruise:CnBeta", -0.0599)
+    input_vars.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", 1.3536, units="rad**-1")
+    input_vars.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", 2.634, units="rad**-1")
+    input_vars.add_output("data:geometry:cabin:length", 2.86, units="m")
+    input_vars.add_output("data:geometry:fuselage:front_length", 1.559, units="m")
+    input_vars.add_output("data:geometry:fuselage:rear_length", 3.15, units="m")
+    input_vars.add_output("data:geometry:fuselage:maximum_height", 1.41, units="m")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(UpdateVTArea(propulsion_id=ENGINE_WRAPPER), input_vars)

@@ -131,6 +131,7 @@
 					<length units="m">1.549<!--length of mean aerodynamic chord of wing--></length>
 				</MAC>
 				<area units="m**2">19.15<!--wing reference area--></area>
+				<sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
 				<aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
 				<root>
 					<virtual_chord units="m">1.549<!--virtual chord length at wing root--></virtual_chord>
@@ -145,6 +146,9 @@
 						</x>
 					</at25percent>
 				</MAC>
+				<rudder>
+					<max_deflection units="deg">30.0</max_deflection>
+				</rudder>
 			</vertical_tail>
 		</geometry>
 		<mission>

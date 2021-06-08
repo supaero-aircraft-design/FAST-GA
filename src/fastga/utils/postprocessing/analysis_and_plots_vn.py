@@ -65,7 +65,7 @@ def evolution_diagram(
 
     # Save gust envelope
     x_gust = [0.0]
-    y_gust = [0.0]
+    y_gust = [1.0]
     if not(velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])

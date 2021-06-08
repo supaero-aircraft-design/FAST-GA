@@ -84,6 +84,10 @@
 				<max_thickness>
 					<x_ratio>0.3<!--relative position of the max thickness of vertical tail--></x_ratio>
 				</max_thickness>
+				<rudder>
+					<chord_ratio>0.4</chord_ratio>
+					<max_deflection units="deg">30.0</max_deflection>
+				</rudder>
 			</vertical_tail>
 			<wing>
 				<MAC>

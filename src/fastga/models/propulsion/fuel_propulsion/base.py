@@ -54,14 +54,17 @@ class FuelEngineSet(AbstractFuelPropulsion):
         self.engine = engine
         self.engine_count = engine_count
 
-
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
         if flight_points.thrust is not None:
             flight_points.thrust = flight_points.thrust / self.engine_count
 
         self.engine.compute_flight_points(flight_points)
         flight_points.thrust = flight_points.thrust * self.engine_count
-      
+
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+
+        return self.engine.compute_max_power(flight_points)
+
     def compute_weight(self):
 
         return self.engine.compute_weight()*self.engine_count
