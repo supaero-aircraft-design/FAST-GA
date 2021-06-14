@@ -16,6 +16,8 @@ Test module for aerodynamics groups
 
 import os.path as pth
 import os
+import shutil
+import glob
 import pandas as pd
 import openmdao.api as om
 from openmdao.core.component import Component
@@ -56,6 +58,7 @@ from fastga.models.propulsion.propulsion import IPropulsion
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
+TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "cirrus_sr22.xml"
@@ -92,6 +95,40 @@ def reshape_polar(cl, cdp):
             cdp = cdp[0:idx]
             break
     return cl, cdp
+
+
+def polar_result_transfer():
+    # Put saved polar results in a separate file to allow Xfoil to fully run during tests to get more extensive unitary
+    # tests
+
+    if not pth.exists(pth.join(resources.__path__[0], TMP_SAVE_FOLDER)):
+        os.mkdir(pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
+
+    files = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
+
+    for file in files:
+        if os.path.isfile(file):
+            shutil.copy(file, pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
+            os.remove(file)
+
+
+def polar_result_retrieve():
+    # Retrieve the polar results set aside during the test duration if there are some
+
+    if pth.exists(pth.join(resources.__path__[0], TMP_SAVE_FOLDER)):
+
+        filestest = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
+        for filetest in filestest:
+            if os.path.isfile(filetest):
+                os.remove(filetest)
+
+        files = glob.iglob(pth.join(pth.join(resources.__path__[0], TMP_SAVE_FOLDER), "*.csv"))
+
+        for file in files:
+            if os.path.isfile(file):
+                shutil.copy(file, resources.__path__[0])
+
+        shutil.rmtree(pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
 
 
 def clear_polar_results():
@@ -190,7 +227,7 @@ def test_polar():
     """ Tests polar execution (XFOIL) @ high and low speed """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
@@ -226,12 +263,14 @@ def test_polar():
     cdp_1 = np.interp(1.0, cl, cdp)
     assert cdp_1 == pytest.approx(0.00488, abs=1e-4)
 
+    polar_result_retrieve()
+
 
 def test_airfoil_slope():
     """ Tests polar execution (XFOIL) @ high and low speed """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(ComputeAirfoilLiftCurveSlope(wing_airfoil_file="roncz.af",
@@ -251,6 +290,8 @@ def test_airfoil_slope():
     cl_alpha_vtp = problem.get_val("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
     assert cl_alpha_vtp == pytest.approx(6.2837, abs=1e-4)
 
+    polar_result_retrieve()
+
 
 def test_vlm_comp_high_speed():
     """ Tests vlm f @ high speed """
@@ -259,7 +300,7 @@ def test_vlm_comp_high_speed():
     results_folder = _create_tmp_directory()
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -307,6 +348,8 @@ def test_vlm_comp_high_speed():
     # Remove existing result files
     results_folder.cleanup()
 
+    polar_result_retrieve()
+
 
 def test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
@@ -315,7 +358,7 @@ def test_vlm_comp_low_speed():
     results_folder = _create_tmp_directory()
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -388,6 +431,8 @@ def test_vlm_comp_low_speed():
 
     # Remove existing result files
     results_folder.cleanup()
+
+    polar_result_retrieve()
 
 
 def test_openvsp_comp_high_speed():
@@ -590,7 +635,7 @@ def test_extreme_cl():
     """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
     ivc = get_indep_var_comp(list_inputs(ComputeExtremeCL()), __file__, XML_FILE)
@@ -643,6 +688,8 @@ def test_extreme_cl():
     assert alpha_max_clean_htp == pytest.approx(32., abs=1)
     alpha_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"]
     assert alpha_min_clean_htp == pytest.approx(-32., abs=1)
+
+    polar_result_retrieve()
 
 
 def test_l_d_max():
@@ -823,7 +870,7 @@ def test_high_speed_connection():
     """ Tests high speed components connection """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
@@ -840,12 +887,14 @@ def test_high_speed_connection():
     # noinspection PyTypeChecker
     run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
 
+    polar_result_retrieve()
+
 
 def test_low_speed_connection():
     """ Tests low speed components connection """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
@@ -859,6 +908,8 @@ def test_low_speed_connection():
     # Run problem with OPENVSP
     # noinspection PyTypeChecker
     run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
+
+    polar_result_retrieve()
 
 
 def test_v_n_diagram_vlm():
