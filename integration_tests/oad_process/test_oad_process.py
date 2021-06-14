@@ -15,6 +15,7 @@ Test module for Overall Aircraft Design process
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import logging
 import os.path as pth
 import shutil
 from shutil import rmtree
@@ -41,7 +42,7 @@ for folder in PATH[1:len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = "sr22"  # "be76"
+AIRCRAFT_ID = "be76"  # "sr22"
 MDA_WING_POSITION = True
 
 
@@ -55,6 +56,8 @@ def test_oad_process(cleanup):
     """
     Test the overall aircraft design process without wing positioning.
     """
+
+    logging.basicConfig(level=logging.WARNING)
 
     # Define used files depending on options
     if MDA_WING_POSITION:
@@ -93,9 +96,9 @@ def test_oad_process(cleanup):
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 250, atol=1)
             assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1644, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1646, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1039, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1041, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 226., atol=1)

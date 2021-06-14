@@ -255,7 +255,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0])
+            cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (area_ratio / saved_area_ratio)
             y_vector_htp = np.array([float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(',')])
             cl_vector_htp = np.array([float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(',')])
             coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)

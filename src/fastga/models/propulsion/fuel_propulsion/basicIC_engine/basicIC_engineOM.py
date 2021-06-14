@@ -23,8 +23,8 @@ from scipy.constants import g
 from pyfmi import load_fmu
 
 from .exceptions import FastBasicICEngineInconsistentInputParametersError
-from models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
+from ..base import AbstractFuelPropulsion
+from ...dict import DynamicAttributeDict, AddKeyAttributes
 
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting

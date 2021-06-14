@@ -333,7 +333,7 @@ class UpdateVTArea(om.ExplicitComponent):
 
         # Sideforce derivative computation
         cy_beta = - k_f1 * cl_alpha_vt_ls * k_sigma * area_vtp / area_wing
-        cy_delta_r = - cy_delta_r_vtp * area_vtp / area_wing
+        cy_delta_r = - eta_v * cy_delta_r_vtp * area_vtp / area_wing
 
         # Side drag computation
         side_surface = area_vtp + h_f * (lar / 2. + lcyl + lav / 2.)

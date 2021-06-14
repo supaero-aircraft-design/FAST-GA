@@ -244,12 +244,12 @@ def test_airfoil_slope():
                                                       htp_airfoil_file="naca0012.af",
                                                       vtp_airfoil_file="naca0012.af"), ivc)
 
-    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:airfoil:Cl_alpha", units="rad**-1")
+    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
     assert cl_alpha_wing == pytest.approx(6.4810, abs=1e-4)
-    cl_alpha_htp = problem.get_val("data:aerodynamics:horizontal_tail:airfoil:Cl_alpha", units="rad**-1")
-    assert cl_alpha_htp == pytest.approx(6.4097, abs=1e-4)
-    cl_alpha_vtp = problem.get_val("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", units="rad**-1")
-    assert cl_alpha_vtp == pytest.approx(6.4097, abs=1e-4)
+    cl_alpha_htp = problem.get_val("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
+    assert cl_alpha_htp == pytest.approx(6.3090, abs=1e-4)
+    cl_alpha_vtp = problem.get_val("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
+    assert cl_alpha_vtp == pytest.approx(6.3090, abs=1e-4)
 
 
 def test_vlm_comp_high_speed():
@@ -544,13 +544,14 @@ def test_2d_hinge_moment():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha", 0.6826, units="rad**-1")
+    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(Compute2DHingeMomentsTail(), ivc)
     ch_alpha_2d = problem.get_val("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", units="rad**-1")
-    assert ch_alpha_2d == pytest.approx(-0.3339, abs=1e-4)
+    assert ch_alpha_2d == pytest.approx(-0.3557, abs=1e-4)
     ch_delta_2d = problem.get_val("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", units="rad**-1")
-    assert ch_delta_2d == pytest.approx(-0.6358, abs=1e-4)
+    assert ch_delta_2d == pytest.approx(-0.5752, abs=1e-4)
 
 
 def test_3d_hinge_moment():
@@ -576,27 +577,29 @@ def test_high_lift():
     ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:low_speed:mach", 0.1149)
     ivc.add_output("data:aerodynamics:wing:low_speed:CL_alpha", 4.569, units="rad**-1")
+    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
+    ivc.add_output("data:aerodynamics:wing:airfoil:CL_alpha", 6.4810, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeDeltaHighLift(), ivc)
     delta_cl0_landing = problem["data:aerodynamics:flaps:landing:CL"]
-    assert delta_cl0_landing == pytest.approx(0.7321, abs=1e-4)
+    assert delta_cl0_landing == pytest.approx(0.7145, abs=1e-4)
     delta_clmax_landing = problem["data:aerodynamics:flaps:landing:CL_max"]
     assert delta_clmax_landing == pytest.approx(0.5258, abs=1e-4)
     delta_cm_landing = problem["data:aerodynamics:flaps:landing:CM"]
-    assert delta_cm_landing == pytest.approx(-0.0988, abs=1e-4)
+    assert delta_cm_landing == pytest.approx(-0.0964, abs=1e-4)
     delta_cd_landing = problem["data:aerodynamics:flaps:landing:CD"]
     assert delta_cd_landing == pytest.approx(0.01383, abs=1e-4)
     delta_cl0_takeoff = problem["data:aerodynamics:flaps:takeoff:CL"]
-    assert delta_cl0_takeoff == pytest.approx(0.2805, abs=1e-4)
+    assert delta_cl0_takeoff == pytest.approx(0.2735, abs=1e-4)
     delta_clmax_takeoff = problem["data:aerodynamics:flaps:takeoff:CL_max"]
     assert delta_clmax_takeoff == pytest.approx(0.1076, abs=1e-4)
     delta_cm_takeoff = problem["data:aerodynamics:flaps:takeoff:CM"]
-    assert delta_cm_takeoff == pytest.approx(-0.0378, abs=1e-4)
+    assert delta_cm_takeoff == pytest.approx(-0.0369, abs=1e-4)
     delta_cd_takeoff = problem["data:aerodynamics:flaps:takeoff:CD"]
     assert delta_cd_takeoff == pytest.approx(0.00111811, abs=1e-4)
     cl_delta_elev = problem.get_val("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
-    assert cl_delta_elev == pytest.approx(0.6167, abs=1e-4)
+    assert cl_delta_elev == pytest.approx(0.5424, abs=1e-4)
 
 
 def test_extreme_cl():
@@ -812,7 +815,7 @@ def test_cl_alpha_vt():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT(low_speed_aero=True)), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:low_speed:mach", 0.119)
-    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", 6.4038, units="rad**-1")
+    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClalphaVT(low_speed_aero=True), ivc)
@@ -822,7 +825,7 @@ def test_cl_alpha_vt():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:cruise:mach", 0.248)
-    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", 6.4038, units="rad**-1")
+    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClalphaVT(), ivc)
@@ -840,7 +843,7 @@ def test_cy_delta_r():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyDeltaRudder(), ivc)
     cy_delta_r = problem.get_val("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
-    assert cy_delta_r == pytest.approx(1.0269, abs=1e-4)
+    assert cy_delta_r == pytest.approx(1.0262, abs=1e-4)
 
 
 def test_high_speed_connection():
@@ -853,7 +856,8 @@ def test_high_speed_connection():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", 6.4038, units="rad**-1")
+    input_vars.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
+    input_vars.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
 
     # Run problem with VLM
     # noinspection PyTypeChecker

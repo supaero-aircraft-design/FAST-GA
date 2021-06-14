@@ -17,7 +17,7 @@ Estimation of static margin
 
 import openmdao.api as om
 
-from models.aerodynamics.aero_center import ComputeAeroCenter
+from ..aerodynamics.aero_center import ComputeAeroCenter
 from .compute_static_margin import _ComputeStaticMargin
 from .tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
 from .tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit

@@ -135,9 +135,9 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         self.add_input("xfoil:vertical_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
         self.add_input("xfoil:vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
-        self.add_output("data:aerodynamics:horizontal_tail:airfoil:Cl_alpha", units="rad**-1")
-        self.add_output("data:aerodynamics:vertical_tail:airfoil:Cl_alpha", units="rad**-1")
-        self.add_output("data:aerodynamics:wing:airfoil:Cl_alpha", units="rad**-1")
+        self.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
+        self.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
+        self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_cl_orig = inputs["xfoil:wing:CL"]
@@ -179,9 +179,9 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
                                       )
         vtp_airfoil_cl_alpha = np.mean(vtp_airfoil_cl_alpha_array) * 180. / np.pi
 
-        outputs["data:aerodynamics:horizontal_tail:airfoil:Cl_alpha"] = htp_airfoil_cl_alpha
-        outputs["data:aerodynamics:vertical_tail:airfoil:Cl_alpha"] = vtp_airfoil_cl_alpha
-        outputs["data:aerodynamics:wing:airfoil:Cl_alpha"] = wing_airfoil_cl_alpha
+        outputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"] = htp_airfoil_cl_alpha
+        outputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] = vtp_airfoil_cl_alpha
+        outputs["data:aerodynamics:wing:airfoil:CL_alpha"] = wing_airfoil_cl_alpha
 
     @staticmethod
     def delete_additional_zeros(array_alpha, array_cl):

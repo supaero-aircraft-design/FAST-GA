@@ -108,6 +108,7 @@
 				</landing>
 				<takeoff>
 					<flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+					<elevator_angle units="deg" is_input="True">20.0<!--elevator angle during takeoff phase in sizing mission--></elevator_angle>
 				</takeoff>
 				<main_route>
 					<cruise>
