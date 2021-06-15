@@ -275,7 +275,7 @@ class UpdateVTArea(om.ExplicitComponent):
             )
         else:
             area_5 = 0.0
-        
+
         outputs["data:geometry:vertical_tail:area"] = max(area_1, area_2, area_3, area_4, area_5)
 
     @staticmethod

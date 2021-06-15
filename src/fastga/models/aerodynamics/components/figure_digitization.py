@@ -36,6 +36,8 @@ K3 = "k3.csv"
 KB_FLAPS = "kb_flaps.csv"
 A_DELTA_AIRFOIL = "a_delta_airfoil.csv"
 K_A_DELTA = "k_a_delta.csv"
+K_AR_FUSELAGE = "k_ar_fuselage.csv"
+K_VH = "k_vh.csv"
 K_CH_ALPHA = "k_ch_alpha.csv"
 CH_ALPHA_TH = "ch_alpha_th.csv"
 K_CH_DELTA = "k_ch_delta.csv"
@@ -668,6 +670,74 @@ class FigureDigitization(om.ExplicitComponent):
         k_a_delta = interpolate.interp1d(x, y)(np.clip(float(a_delta_airfoil), 0.1, 1.0))
 
         return k_a_delta
+
+    @staticmethod
+    def k_ar_fuselage(taper_ratio, span, avg_fuselage_depth) -> float:
+        """
+        Roskam data to account for the effect of the fuselage on the VTP effective aspect ratio (figure  10.14)
+
+        :param taper_ratio: lifting surface taper ratio
+        :param span: lifting surface span, in m
+        :param avg_fuselage_depth: average fuselage depth (diameter if fuselage considered circular), in m
+        :return k_ar_fuselage: correction factor to account for the end plate effect of the fuselage on effective VTP AR
+        """
+
+        file = pth.join(resources.__path__[0], K_AR_FUSELAGE)
+        db = read_csv(file)
+
+        x_06 = db['X_06']
+        y_06 = db['Y_06']
+        errors = np.logical_or(np.isnan(x_06), np.isnan(y_06))
+        x_06 = x_06[np.logical_not(errors)].tolist()
+        y_06 = y_06[np.logical_not(errors)].tolist()
+
+        x_10 = db['X_10']
+        y_10 = db['Y_10']
+        errors = np.logical_or(np.isnan(x_10), np.isnan(y_10))
+        x_10 = x_10[np.logical_not(errors)].tolist()
+        y_10 = y_10[np.logical_not(errors)].tolist()
+
+        x_value = span / avg_fuselage_depth
+
+        if x_value != np.clip(x_value, min(min(x_06), min(x_10)), max(max(x_06), max(x_10))):
+            _LOGGER.warning("Ratio of span on fuselage depth outside of the range in Roskam's book, value clipped")
+
+        y_value_06 = interpolate.interp1d(x_06, y_06)(np.clip(x_value, min(x_06), max(x_06)))
+        y_value_10 = interpolate.interp1d(x_10, y_10)(np.clip(x_value, min(x_10), max(x_10)))
+
+        if taper_ratio != np.clip(taper_ratio, 0.6, 1.0):
+            _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
+
+        k_ar_fuselage = interpolate.interp1d([0.6, 1.0], [float(y_value_06), float(y_value_10)])(
+            np.clip(taper_ratio, 0.6, 1.0)
+        )
+
+        return k_ar_fuselage
+
+    @staticmethod
+    def k_vh(area_ratio) -> float:
+        """
+        Roskam data to estimate the impact of relative area ratio on the effective aspect ratio (figure 10.16)
+
+        :param area_ratio: ratio of the horizontal tail area over the vertical tail area
+        :return k_vh: impact of area ratio on effective aspect ratio
+        """
+
+        file = pth.join(resources.__path__[0], K_VH)
+        db = read_csv(file)
+
+        x = db['X']
+        y = db['Y']
+        errors = np.logical_or(np.isnan(x), np.isnan(y))
+        x = x[np.logical_not(errors)].tolist()
+        y = y[np.logical_not(errors)].tolist()
+
+        if float(area_ratio) != np.clip(float(area_ratio), min(x), max(x)):
+            _LOGGER.warning("Area ratio value outside of the range in Roskam's book, value clipped")
+
+        k_vh = interpolate.interp1d(x, y)(np.clip(float(area_ratio), min(x), max(x)))
+
+        return k_vh
 
     @staticmethod
     def k_ch_alpha(thickness_ratio, airfoil_lift_coefficient, chord_ratio):

@@ -1,0 +1,10 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+data:cruise:mach || mach number representative of high speed aerodynamics
+data:cruise:unit_reynolds || unitary reynolds number representative of high speed aerodynamics
+data:cruise:neutral_point:free_elevator_factor || free elevator factor for computation of stick free static margin in high speed
+data:cruise:neutral_point:stick_fixed:x || distance between the leading edge of the wing at the MAC and the stick fixed aerodynamic center
+data:cruise:neutral_point:stick_free:x || distance between the leading edge of the wing at the MAC and the stick free aerodynamic center
+data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command

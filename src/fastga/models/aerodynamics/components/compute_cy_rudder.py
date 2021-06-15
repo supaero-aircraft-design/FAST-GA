@@ -27,7 +27,7 @@ from .figure_digitization import FigureDigitization
 
 class ComputeCyDeltaRudder(FigureDigitization):
     """
-    Yawing moment due to rudder estimation
+    Yawing moment due to rudder estimation, rudder considered as a plian flap
 
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power *
     Characteristics. DARcorporation, 1985.
@@ -61,10 +61,10 @@ class ComputeCyDeltaRudder(FigureDigitization):
 
         # Interpolation of the first graph of figure 8.53 of Roskam
         rudder_effectiveness_parameter = self.a_delta_airfoil(rudder_chord_ratio)
-
         k_prime = self.k_a_delta(float(rudder_effectiveness_parameter), aspect_ratio_vt)
 
-        rudder_effectiveness_2d = self.k_prime_single_slotted(abs(rudder_max_deflection), rudder_chord_ratio)
+        # TODO: Check coherence with Roskam formula
+        rudder_effectiveness_2d = self.k_prime_plain_flap(abs(rudder_max_deflection), rudder_chord_ratio)
 
         cy_delta_r = cl_alpha_vt * kb * k_prime * rudder_effectiveness_2d
 
