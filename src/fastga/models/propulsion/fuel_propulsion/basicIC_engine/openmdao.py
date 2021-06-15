@@ -22,6 +22,7 @@ from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from .basicIC_engine import BasicICEngine
 
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
+from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
 
 
 @RegisterPropulsion("fastga.wrapper.propulsion.basicIC_engine")
@@ -66,6 +67,20 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:layout", np.nan)
+        component.add_input("data:aerodynamics:propeller:sea_level:speed", np.full(SPEED_PTS_NB, np.nan), units="m/s")
+        component.add_input("data:aerodynamics:propeller:sea_level:thrust", np.full(THRUST_PTS_NB, np.nan), units="N")
+        component.add_input("data:aerodynamics:propeller:sea_level:thrust_limit", np.full(SPEED_PTS_NB, np.nan),
+                            units="N")
+        component.add_input("data:aerodynamics:propeller:sea_level:efficiency",
+                            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan))
+        component.add_input("data:aerodynamics:propeller:cruise_level:speed", np.full(SPEED_PTS_NB, np.nan),
+                            units="m/s")
+        component.add_input("data:aerodynamics:propeller:cruise_level:thrust", np.full(THRUST_PTS_NB, np.nan),
+                            units="N")
+        component.add_input("data:aerodynamics:propeller:cruise_level:thrust_limit", np.full(SPEED_PTS_NB, np.nan),
+                            units="N")
+        component.add_input("data:aerodynamics:propeller:cruise_level:efficiency",
+                            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan))
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -79,7 +94,15 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
+            "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
+            "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
+            "efficiency_SL": inputs["data:aerodynamics:propeller:sea_level:efficiency"],
+            "speed_CL": inputs["data:aerodynamics:propeller:cruise_level:speed"],
+            "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
+            "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
+            "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
         }
 
         return BasicICEngine(**engine_params)

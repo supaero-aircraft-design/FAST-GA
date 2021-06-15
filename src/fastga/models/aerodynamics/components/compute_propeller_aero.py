@@ -28,11 +28,13 @@ from fastoad.model_base import Atmosphere
 import fastga.models.aerodynamics.external.xfoil as xfoil
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
 
 THRUST_PTS_NB = 30
 SPEED_PTS_NB = 10
 
-
+@RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
 class ComputePropellePerformance(om.Group):
     def initialize(self):
         self.options.declare("sections_profile_position_list",

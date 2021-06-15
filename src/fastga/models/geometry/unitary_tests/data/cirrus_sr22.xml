@@ -54,11 +54,14 @@
 				<taper_ratio>0.613<!--taper ratio of horizontal tail--></taper_ratio>
 				<thickness_ratio>0.12<!--thickness ratio of horizontal tail--></thickness_ratio>
 			</horizontal_tail>
+			<propeller>
+				<diameter units="m">2.05<!--propeller diameter--></diameter>
+				<depth units="m">0.4<!--propeller depth--></depth>
+			</propeller>
 			<propulsion>
 				<layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
 				<count>1.0<!--number of engines--></count>
 				<y_ratio>0.0<!--engine position with respect to total span--></y_ratio>
-				<propeller_dia units="m">2.05<!--propeller diameter--></propeller_dia>
 			</propulsion>
 			<vertical_tail>
 				<area units="m**2">1.51<!--vertical tail area--></area>

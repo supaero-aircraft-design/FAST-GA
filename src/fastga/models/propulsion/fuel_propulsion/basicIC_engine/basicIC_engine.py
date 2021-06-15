@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 from typing import Union, Sequence, Tuple, Optional
 from scipy.constants import g
+from scipy.interpolate import interp2d
 import warnings
 
 from fastoad.model_base import FlightPoint, Atmosphere
@@ -50,13 +51,6 @@ NACELLE_LABELS = {
     "height": dict(doc="Height in meters."),
     "width": dict(doc="Width in meters."),
 }
-# Set of dictionary keys that are mapped to instance attributes.
-PROPELLER_LABELS = {
-    "area": dict(doc="Area in meters²."),
-    "depth": dict(doc="Depth in meters."),
-    "diameter": dict(doc="Diameter in meters."),
-    "thrust_SL": dict(doc="Fixed point thrust at sea level in kilograms."),
-}
 
 
 class BasicICEngine(AbstractFuelPropulsion):
@@ -69,6 +63,14 @@ class BasicICEngine(AbstractFuelPropulsion):
             fuel_type: float,
             strokes_nb: float,
             prop_layout: float,
+            speed_SL,
+            thrust_SL,
+            thrust_limit_SL,
+            efficiency_SL,
+            speed_CL,
+            thrust_CL,
+            thrust_limit_CL,
+            efficiency_CL,
     ):
         """
         Parametric Internal Combustion engine.
@@ -106,6 +108,14 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01
+        self.speed_SL = speed_SL
+        self.thrust_SL = thrust_SL
+        self.thrust_limit_SL = thrust_limit_SL
+        self.efficiency_SL = efficiency_SL
+        self.speed_CL = speed_CL
+        self.thrust_CL = thrust_CL
+        self.thrust_limit_CL = thrust_limit_CL
+        self.efficiency_CL = efficiency_CL
 
         # Declare sub-components attribute
         self.engine = Engine(power_SL=max_power)
@@ -125,19 +135,54 @@ class BasicICEngine(AbstractFuelPropulsion):
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: FlightPoint):
         # pylint: disable=too-many-arguments  # they define the trajectory
-        sfc, thrust_rate, thrust = self._compute_flight_points(
-            flight_points.mach,
-            flight_points.altitude,
-            flight_points.engine_setting,
-            flight_points.thrust_is_regulated,
-            flight_points.thrust_rate,
-            flight_points.thrust,
-        )
-        flight_points.sfc = sfc
-        flight_points.thrust_rate = thrust_rate
-        flight_points.thrust = thrust
+        self.specific_shape = np.shape(flight_points.mach)
+        if isinstance(flight_points.mach, float):
+            sfc, thrust_rate, thrust = self._compute_flight_points(
+                flight_points.mach,
+                flight_points.altitude,
+                flight_points.engine_setting,
+                flight_points.thrust_is_regulated,
+                flight_points.thrust_rate,
+                flight_points.thrust,
+            )
+            flight_points.sfc = sfc
+            flight_points.thrust_rate = thrust_rate
+            flight_points.thrust = thrust
+        else:
+            mach = np.asarray(flight_points.mach)
+            altitude = np.asarray(flight_points.altitude).flatten()
+            engine_setting = np.asarray(flight_points.engine_setting).flatten()
+            if flight_points.thrust_is_regulated is None:
+                thrust_is_regulated = None
+            else:
+                thrust_is_regulated = np.asarray(flight_points.thrust_is_regulated).flatten()
+            if flight_points.thrust_rate is None:
+                thrust_rate = None
+            else:
+                thrust_rate = np.asarray(flight_points.thrust_rate).flatten()
+            if flight_points.thrust is None:
+                thrust = None
+            else:
+                thrust = np.asarray(flight_points.thrust).flatten()
+            self.specific_shape = np.shape(mach)
+            sfc, thrust_rate, thrust = self._compute_flight_points(
+                mach.flatten(),
+                altitude,
+                engine_setting,
+                thrust_is_regulated,
+                thrust_rate,
+                thrust,
+            )
+            if len(self.specific_shape) != 1:  # reshape data that is not array form
+                flight_points.sfc = sfc.reshape(self.specific_shape)
+                flight_points.thrust_rate = thrust_rate.reshape(self.specific_shape)
+                flight_points.thrust = thrust.reshape(self.specific_shape)
+            else:
+                flight_points.sfc = sfc
+                flight_points.thrust_rate = thrust_rate
+                flight_points.thrust = thrust
 
     def _compute_flight_points(
             self,
@@ -172,8 +217,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         """
 
         # Treat inputs (with check on thrust rate <=1.0)
-        mach = np.asarray(mach)
-        altitude = np.asarray(altitude)
         if thrust_is_regulated is not None:
             thrust_is_regulated = np.asarray(np.round(thrust_is_regulated, 0), dtype=bool)
         thrust_is_regulated, thrust_rate, thrust = self._check_thrust_inputs(
@@ -183,9 +226,11 @@ class BasicICEngine(AbstractFuelPropulsion):
         thrust_rate = np.asarray(thrust_rate)
         thrust = np.asarray(thrust)
 
-        # Get maximum thrust @ given altitude
-        atmosphere = Atmosphere(altitude, altitude_in_feet=False)
-        max_thrust = self.max_thrust(atmosphere, mach)
+        # Get maximum thrust @ given altitude & mach
+        atmosphere = Atmosphere(np.asarray(altitude), altitude_in_feet=False)
+        mach = np.asarray(mach) + (np.asarray(mach) == 0) * 1e-12
+        atmosphere.mach = mach
+        max_thrust = self.max_thrust(atmosphere)
 
         # We compute thrust values from thrust rates when needed
         idx = np.logical_not(thrust_is_regulated)
@@ -215,7 +260,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Now SFC can be computed
         sfc_pmax = self.sfc_at_max_power(atmosphere)
-        sfc_ratio, mech_power = self.sfc_ratio(altitude, out_thrust_rate, mach)
+        sfc_ratio, mech_power = self.sfc_ratio(out_thrust_rate, atmosphere)
         sfc = (sfc_pmax * sfc_ratio * mech_power) / np.maximum(out_thrust, 1e-6)  # avoid 0 division
 
         return sfc, out_thrust_rate, out_thrust
@@ -293,6 +338,40 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return thrust_is_regulated, thrust_rate, thrust
 
+    def propeller_efficiency(
+            self,
+            thrust: Union[float, Sequence[float]],
+            atmosphere: Atmosphere) -> Union[float, Sequence]:
+        """
+        Compute the propeller efficiency.
+        :param thrust: Thrust in N
+        :param atmosphere: Atmosphere instance at intended altitude
+        :return: efficiency
+        """
+
+        propeller_efficiency_SL = interp2d(self.thrust_SL, self.speed_SL, self.efficiency_SL, kind='cubic')
+        propeller_efficiency_CL = interp2d(self.thrust_CL, self.speed_CL, self.efficiency_CL, kind='cubic')
+        thrust_interp_SL = np.minimum(np.maximum(np.min(self.thrust_SL), thrust),
+                                      np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL))
+        thrust_interp_CL = np.minimum(np.maximum(np.min(self.thrust_CL), thrust),
+                                      np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL))
+        if np.size(thrust) == 1:  # calculate for float
+            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, atmosphere.true_airspeed))
+            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, atmosphere.true_airspeed))
+            altitude = atmosphere.get_altitude(altitude_in_feet=False)
+            propeller_efficiency = np.interp(altitude, [0, self.design_altitude], [lower_bound, upper_bound])
+        else:  # calculate for array
+            propeller_efficiency = np.zeros(np.size(thrust))
+            for idx in range(np.size(thrust)):
+                lower_bound = propeller_efficiency_SL(thrust_interp_SL[idx], atmosphere.true_airspeed[idx])
+                upper_bound = propeller_efficiency_CL(thrust_interp_CL[idx], atmosphere.true_airspeed[idx])
+                altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
+                propeller_efficiency[idx] = lower_bound + (upper_bound - lower_bound) \
+                                       * np.minimum(altitude, self.design_altitude) / self.design_altitude
+
+        return propeller_efficiency
+
+
     def sfc_at_max_power(self, atmosphere: Atmosphere) -> Union[float, Sequence]:
         """
         Computation of Specific Fuel Consumption at maximum power.
@@ -300,8 +379,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         :return: SFC_P (in kg/s/W)
         """
 
-        altitude = atmosphere.get_altitude(altitude_in_feet=True)
-        sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
+        sigma = atmosphere.density / Atmosphere(0.0).density
         max_power = (self.max_power / 1e3) * (sigma - (1 - sigma) / 7.55)  # max power in kW
 
         if self.fuel_type == 1.:
@@ -327,33 +405,26 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     def sfc_ratio(
             self,
-            altitude: Union[float, Sequence[float]],
             thrust_rate: Union[float, Sequence[float]],
-            mach: Union[float, Sequence[float]] = 0.8,
+            atmosphere: Atmosphere,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Computation of ratio :math:`\\frac{SFC(P)}{SFC(Pmax)}`, given altitude
         and thrust_rate :math:`\\frac{F}{Fmax}`.
-        Warning: this model is very limited
-        :param altitude:
+
         :param thrust_rate:
-        :param mach: Mach number(s)
+        :param atmosphere: Atmosphere instance at intended altitude
         :return: SFC ratio and Power (in W)
         """
 
-        altitude = np.asarray(altitude)
-        thrust_rate = np.asarray(thrust_rate)
-        mach = np.asarray(mach)
-        mach = mach + (mach == 0) * 1e-12
-        max_thrust = self.max_thrust(Atmosphere(altitude, altitude_in_feet=False), mach)
-        sigma = Atmosphere(altitude, altitude_in_feet=False).density / Atmosphere(0.0).density
-        max_power = np.minimum(self.max_power * (sigma - (1 - sigma) / 7.55),
-                               max_thrust * mach * Atmosphere(altitude).speed_of_sound / PROPELLER_EFFICIENCY)
-        prop_power = (max_thrust * thrust_rate * mach * Atmosphere(altitude).speed_of_sound)
-        mech_power = prop_power / PROPELLER_EFFICIENCY
-        # FIXME: low speed efficiency should drop down leading to high mechanical power!
+        max_thrust = self.max_thrust(atmosphere)
+        thrust = max_thrust * thrust_rate
+        sigma = atmosphere.density / Atmosphere(0.0).density
+        # Compute power rate @ICE level (mechanical)
+        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
+        real_power = thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
 
-        power_rate = mech_power / max_power
+        power_rate = real_power / max_power
 
         sfc_ratio = (-0.9976 * power_rate ** 2 + 1.9964 * power_rate)
 
@@ -362,26 +433,68 @@ class BasicICEngine(AbstractFuelPropulsion):
     def max_thrust(
             self,
             atmosphere: Atmosphere,
-            mach: Union[float, Sequence[float]],
     ) -> np.ndarray:
         """
-        Computation of maximum thrust.
-        Uses model described in ...
+        Computation of maximum thrust either due to propeller thrust limit or ICE max power.
+
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
-        :param mach: Mach number(s) (should be between 0.05 and 1.0)
         :return: maximum thrust (in N)
         """
 
-        # Calculate maximum mechanical power @ given altitude
-        altitude = atmosphere.get_altitude(altitude_in_feet=True)
-        mach = np.asarray(mach)
-        sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
-        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
-        _, _, _, _, _, _ = self.compute_dimensions()
-        thrust_1 = (self.propeller["thrust_SL"] * g) * sigma ** (1 / 3)  # considered fixed point @altitude
-        thrust_2 = max_power * PROPELLER_EFFICIENCY / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20)
+        # Calculate maximum propeller thrust @ given altitude and speed
+        lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
+        upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
+        altitude = atmosphere.get_altitude(altitude_in_feet=False)
+        thrust_max_propeller = lower_bound + (upper_bound - lower_bound) \
+                               * np.minimum(altitude, self.design_altitude) \
+                               / self.design_altitude
 
-        return np.minimum(thrust_1, thrust_2)
+        # Found thrust relative to ICE maximum power @ given altitude and speed:
+        # calculates first thrust interpolation vector (between min and max of propeller table) and associated
+        # efficiency, then calculates power and found thrust (interpolation limits to max propeller thrust)
+        sigma = atmosphere.density / Atmosphere(0.0).density
+        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
+        thrust_interp = np.linspace(np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
+                                    thrust_max_propeller, 10).transpose()
+        if np.size(altitude) == 1:  # Calculate for float
+            local_atmosphere = Atmosphere(altitude * np.ones(np.size(thrust_interp)), altitude_in_feet=False)
+            local_atmosphere.mach = atmosphere.mach * np.ones(np.size(thrust_interp))
+            propeller_efficiency = self.propeller_efficiency(thrust_interp[0], local_atmosphere)
+            mechanical_power = thrust_interp[0] * atmosphere.true_airspeed / propeller_efficiency
+            if np.min(mechanical_power) > max_power:
+                efficiency_relative_error = 1
+                propeller_efficiency = propeller_efficiency[0]
+                while efficiency_relative_error > 1e-2:
+                    thrust_max_global[idx] = max_power * propeller_efficiency / atmosphere.true_airspeed
+                    propeller_efficiency_new = self.propeller_efficiency(thrust_max_global[idx], atmosphere)
+                    efficiency_relative_error = np.abs((propeller_efficiency_new - propeller_efficiency)
+                                                       / efficiency_relative_error)
+                    propeller_efficiency = propeller_efficiency_new
+            else:
+                thrust_max_global = np.interp(max_power, mechanical_power, thrust_interp[0])
+        else:  # Calculate for array
+            thrust_max_global = np.zeros(np.size(altitude))
+            for idx in range(np.size(altitude)):
+                local_atmosphere = Atmosphere(altitude[idx] * np.ones(np.size(thrust_interp[idx])),
+                                              altitude_in_feet=False)
+                local_atmosphere.mach = atmosphere.mach[idx] * np.ones(np.size(thrust_interp[idx]))
+                propeller_efficiency = self.propeller_efficiency(thrust_interp[idx], local_atmosphere)
+                mechanical_power = thrust_interp[idx] * atmosphere.true_airspeed[idx] / propeller_efficiency
+                if np.min(mechanical_power) > max_power[idx]:  # take the lower bound efficiency for calculation
+                    efficiency_relative_error = 1
+                    local_atmosphere = Atmosphere(altitude[idx], altitude_in_feet=False)
+                    local_atmosphere.mach = atmosphere.mach[idx]
+                    propeller_efficiency = propeller_efficiency[0]
+                    while efficiency_relative_error > 1e-2:
+                        thrust_max_global[idx] = max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
+                        propeller_efficiency_new = self.propeller_efficiency(thrust_max_global[idx], local_atmosphere)
+                        efficiency_relative_error = np.abs((propeller_efficiency_new - propeller_efficiency)
+                                                           /efficiency_relative_error)
+                        propeller_efficiency = propeller_efficiency_new
+                else:
+                    thrust_max_global[idx] = np.interp(max_power[idx], mechanical_power, thrust_interp[idx])
+
+        return thrust_max_global
 
     def compute_weight(self) -> float:
         """
@@ -397,9 +510,9 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return uninstalled_weight
 
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
+    def compute_dimensions(self) -> (float, float, float, float):
         """
-        Computes propulsion dimensions (engine/nacelle/propeller) from maximum power.
+        Computes propulsion dimensions (engine/nacelle) from maximum power.
         Model from :...
 
         """
@@ -423,25 +536,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         )
         self.nacelle.wet_area = 2 * (self.nacelle.height + self.nacelle.width) * self.nacelle.length
 
-        # Compute propeller dimensions (2-blades)
-        w_propeller = 2500  # regulated propeller speed in RPM
-        v_sound = Atmosphere(self.design_altitude, altitude_in_feet=False).speed_of_sound
-        d_max = (((v_sound * 0.85) ** 2 - self.design_speed ** 2) / ((w_propeller * math.pi / 30) / 2) ** 2) ** 0.5
-        d_opt = 1.04 ** 2 * ((self.max_power / 735.5) * 1e8 / (w_propeller ** 2 * self.design_speed * 3.6)) ** (1 / 4)
-        d = min(d_max, d_opt)
-        t_0 = 7.4 * ((self.max_power / 735.5) * d) ** (2 / 3)
-        area = 13307 * t_0 / (d ** 2 * w_propeller ** 2)
-        chord = area / d
-        # For clarity purposes, it has been assimilated as the spinner length
-        propeller_depth = max(chord * 1.1, 0.2 * d)
-        self.propeller = Propeller(
-            area=area,
-            depth=propeller_depth,
-            diameter=d,
-            thrust_SL=t_0,
-        )
-        return self.nacelle["height"], self.nacelle["width"], self.nacelle["length"], self.nacelle[
-            "wet_area"], self.propeller["diameter"], self.propeller["depth"]
+        return self.nacelle["height"], self.nacelle["width"], self.nacelle["length"], self.nacelle["wet_area"]
 
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         """
@@ -507,15 +602,6 @@ class Engine(DynamicAttributeDict):
 class Nacelle(DynamicAttributeDict):
     """
     Class for storing data for nacelle.
-
-    Similar to :class:`Engine`.
-    """
-
-
-@AddKeyAttributes(PROPELLER_LABELS)
-class Propeller(DynamicAttributeDict):
-    """
-    Class for storing data for propeller.
 
     Similar to :class:`Engine`.
     """
