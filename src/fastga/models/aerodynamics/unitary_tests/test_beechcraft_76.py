@@ -286,9 +286,9 @@ def test_airfoil_slope():
     cl_alpha_wing = problem.get_val("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
     assert cl_alpha_wing == pytest.approx(6.4810, abs=1e-4)
     cl_alpha_htp = problem.get_val("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
-    assert cl_alpha_htp == pytest.approx(6.3090, abs=1e-4)
+    assert cl_alpha_htp == pytest.approx(6.3081, abs=1e-4)
     cl_alpha_vtp = problem.get_val("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
-    assert cl_alpha_vtp == pytest.approx(6.3090, abs=1e-4)
+    assert cl_alpha_vtp == pytest.approx(6.3081, abs=1e-4)
 
     polar_result_retrieve()
 

@@ -30,6 +30,11 @@ ENGINE_WRAPPER_BE76 = "test.wrapper.mass_breakdown.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.mass_breakdown.cirrus.dummy_engine"
 
 
+########################################################################################################################
+########################### Beechcraft BE76 dummy engine ###############################################################
+########################################################################################################################
+
+
 class DummyEngineBE76(AbstractFuelPropulsion):
 
     def __init__(self,

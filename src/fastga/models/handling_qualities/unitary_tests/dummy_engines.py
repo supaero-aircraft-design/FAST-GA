@@ -30,6 +30,10 @@ from fastoad.constants import EngineSetting
 ENGINE_WRAPPER_BE76 = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
 
+########################################################################################################################
+########################### Beechcraft BE76 dummy engine ###############################################################
+########################################################################################################################
+
 
 class DummyEngineBE76(AbstractFuelPropulsion):
 

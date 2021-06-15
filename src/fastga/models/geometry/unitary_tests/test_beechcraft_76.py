@@ -467,7 +467,7 @@ def test_geometry_nacelle():
     nacelle_wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units="m**2")
     assert nacelle_wet_area == pytest.approx(3.841, abs=1e-3)
     lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
-    assert lg_height == pytest.approx(0.7380, abs=1e-3)
+    assert lg_height == pytest.approx(0.791, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
     assert y_nacelle == pytest.approx(2.102, abs=1e-3)
 

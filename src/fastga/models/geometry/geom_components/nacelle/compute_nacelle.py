@@ -76,7 +76,7 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
             y_nacelle = y_ratio * span / 2
             warnings.warn('Propulsion layout {} not implemented in model, replaced by layout 1!'.format(prop_layout))
         
-        lg_height = 0.41 * input["data:geometry:propeller:diameter"]
+        lg_height = 0.41 * inputs["data:geometry:propeller:diameter"]
         
         outputs["data:geometry:propulsion:nacelle:length"] = nac_length
         outputs["data:geometry:propulsion:nacelle:height"] = nac_height

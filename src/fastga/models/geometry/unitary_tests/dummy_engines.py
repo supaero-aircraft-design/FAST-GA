@@ -29,6 +29,10 @@ from fastga.models.propulsion.propulsion import IPropulsion
 ENGINE_WRAPPER_BE76 = "test.wrapper.geometry.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.geometry.cirrus.dummy_engine"
 
+########################################################################################################################
+########################### Beechcraft BE76 dummy engine ###############################################################
+########################################################################################################################
+
 
 class DummyEngineBE76(AbstractFuelPropulsion):
 
@@ -59,8 +63,8 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_weight(self) -> float:
         return 0.0
 
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.62306289, 0.92912887, 1.23718229, 3.84068832, 1.8, 0.3]
+    def compute_dimensions(self) -> (float, float, float, float):
+        return [0.62306289, 0.92912887, 1.23718229, 3.84068832]
 
     def compute_drag(self, mach, unit_reynolds, l0_wing):
         return 0.0
@@ -130,8 +134,8 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_weight(self) -> float:
         return 0.0
 
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.75466, 1.1253, 1.1488, 4.319, 2.05, 0.149]
+    def compute_dimensions(self) -> (float, float, float, float):
+        return [0.75466, 1.1253, 1.1488, 4.319]
 
     def compute_drag(self, mach, unit_reynolds, l0_wing):
         return 0.0

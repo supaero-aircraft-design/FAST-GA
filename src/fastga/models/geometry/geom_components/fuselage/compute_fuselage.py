@@ -91,6 +91,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
         self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
+        self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
@@ -127,6 +128,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
         prop_layout = inputs["data:geometry:propulsion:layout"]
+        spinner_length = inputs["data:geometry:propeller:depth"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         vt_lp = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -158,7 +160,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         cabin_length = l_instr + lpax + l_lug
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
-            _, _, propulsion_length, _, _, spinner_length = propulsion_model.compute_dimensions()
+            _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
             lav = propulsion_length + spinner_length
         else:
             lav = 1.40 * h_f
@@ -265,7 +267,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         cabin_length = l_instr + lpax + l_lug
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
-            _, _, propulsion_length, _, _, _ = propulsion_model.compute_dimensions()
+            _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
             lav = propulsion_length
         else:
             lav = 1.7 * h_f
