@@ -371,6 +371,14 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return propeller_efficiency
 
+    def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
+
+        atmosphere = Atmosphere(np.asarray(FlightPoint.altitude), altitude_in_feet=False)
+        sigma = atmosphere.density / Atmosphere(0.0).density
+        max_power = (self.max_power / 1e3) * (sigma - (1 - sigma) / 7.55)  # max power in kW
+
+        return max_power
+
 
     def sfc_at_max_power(self, atmosphere: Atmosphere) -> Union[float, Sequence]:
         """

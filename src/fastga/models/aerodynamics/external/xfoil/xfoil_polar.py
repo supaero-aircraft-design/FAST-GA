@@ -300,10 +300,13 @@ class XfoilPolar(ExternalCodeComp):
                 labels = ["mach", "reynolds", "cl_max_2d", "cl_min_2d", "alpha", "cl", "cd", "cdp", "cm"]
                 if no_file or (data_saved is None):
                     data = pd.DataFrame(results, index=labels)
-                    data.to_csv(result_file)
                 else:
                     data = pd.DataFrame(np.c_[data_saved, results], index=labels)
+                try:
                     data.to_csv(result_file)
+                except:
+                    warnings.warn('Unable to save XFoil results to *.csv file: writting permission denied for {} '
+                                  'folder!'.format(local_resources.__path__[0]))
 
             # Getting output files if needed ---------------------------------------------------------
             if self.options[OPTION_RESULT_FOLDER_PATH] != "":
