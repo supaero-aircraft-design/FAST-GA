@@ -426,7 +426,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within +/- 0.2 arround linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -435,7 +435,7 @@ class XfoilPolar(ExternalCodeComp):
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return max(lift_coeff[delta <= 0.2]), False
+                return max(lift_coeff[delta <= 0.3]), False
 
         _LOGGER.warning("2D CL max not found, less than 40% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MAX))
@@ -446,7 +446,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL +/- 0.2 arround linear zone if enough alpha computed, or default value otherwise
+        :return: min CL +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -455,7 +455,7 @@ class XfoilPolar(ExternalCodeComp):
                 lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
                                      + lift_coeff[0]
                 delta = np.abs(lift_coeff - lift_fct(alpha))
-                return min(lift_coeff[delta <= 0.2]), False
+                return min(lift_coeff[delta <= 0.3]), False
 
         _LOGGER.warning("2D CL min not found, less than 40% of angle range computed: using default value {}".format(
             DEFAULT_2D_CL_MIN))

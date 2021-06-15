@@ -12,7 +12,7 @@ output_file: ./problem_outputs.xml
 driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 model:
-    nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-5, debug_print=True, reraise_child_analysiserror=True)
+    nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-4, debug_print=True, reraise_child_analysiserror=True)
     linear_solver: om.DirectSolver()
     geometry:
         id: fastga.geometry.legacy
@@ -36,7 +36,7 @@ model:
     mtow:
         id: fastga.loop.mtow
     performance:
-        id: fastga.performances.sizing
+        id: fastga.performances.mission
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine
     hq:
         tail_sizing:
@@ -51,9 +51,9 @@ model:
 
 optimization: # This section is needed only if optimization process is run
   design_variables:
-    - name: data:geometry:fuselage:rear_length
-      lower: 2.0
-      upper: 5.0
+    - name: data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25
+      lower: 3.0
+      upper: 8.0
   objective:
     - name: data:mission:sizing:fuel
       scaler: 1.e-4

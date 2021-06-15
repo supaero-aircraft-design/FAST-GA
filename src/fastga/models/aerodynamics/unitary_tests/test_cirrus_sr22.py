@@ -16,6 +16,8 @@ Test module for aerodynamics groups
 
 import os.path as pth
 import os
+import shutil
+import glob
 import pandas as pd
 import openmdao.api as om
 from openmdao.core.component import Component
@@ -40,7 +42,8 @@ from ..external.vlm import ComputeAEROvlm, ComputeVNvlmNoVH
 from ..external.openvsp import ComputeAEROopenvsp, ComputeVNopenvspNoVH
 from ..external.openvsp.compute_aero_slipstream import ComputeSlipstreamOpenvsp
 from ..components import ComputeExtremeCL, ComputeUnitReynolds, ComputeCnBetaFuselage, ComputeLDMax, \
-    ComputeDeltaHighLift, Compute2DHingeMomentsTail, Compute3DHingeMomentsTail, ComputeMachInterpolation
+    ComputeDeltaHighLift, Compute2DHingeMomentsTail, Compute3DHingeMomentsTail, ComputeMachInterpolation, \
+    ComputeCyDeltaRudder, ComputeClalphaVT, ComputeAirfoilLiftCurveSlope
 from ..aerodynamics_high_speed import AerodynamicsHighSpeed
 from ..aerodynamics_low_speed import AerodynamicsLowSpeed
 from ..external.vlm.compute_aero import DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
@@ -52,79 +55,13 @@ from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 
+from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
+
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
+TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "cirrus_sr22.xml"
-ENGINE_WRAPPER = "test.wrapper.aerodynamics.cirrus.dummy_engine"
-
-
-class DummyEngine(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
-        """
-        Dummy engine model returning nacelle aerodynamic drag force.
-
-        """
-        super().__init__()
-        self.prop_layout = prop_layout
-        self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
-        self.fuel_type = fuel_type
-        self.strokes_nb = strokes_nb
-
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
-        flight_points.thrust = 1800.0
-        flight_points.sfc = 0.0
-
-    def compute_weight(self) -> float:
-        return 0.0
-
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
-        if mach < 0.15:
-            return 0.01934377
-        else:
-            return 0.01771782
-
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return 0.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
-        }
-
-        return DummyEngine(**engine_params)
-
-
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def _create_tmp_directory() -> TemporaryDirectory:
@@ -158,6 +95,40 @@ def reshape_polar(cl, cdp):
             cdp = cdp[0:idx]
             break
     return cl, cdp
+
+
+def polar_result_transfer():
+    # Put saved polar results in a separate file to allow Xfoil to fully run during tests to get more extensive unitary
+    # tests
+
+    if not pth.exists(pth.join(resources.__path__[0], TMP_SAVE_FOLDER)):
+        os.mkdir(pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
+
+    files = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
+
+    for file in files:
+        if os.path.isfile(file):
+            shutil.copy(file, pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
+            os.remove(file)
+
+
+def polar_result_retrieve():
+    # Retrieve the polar results set aside during the test duration if there are some
+
+    if pth.exists(pth.join(resources.__path__[0], TMP_SAVE_FOLDER)):
+
+        filestest = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
+        for filetest in filestest:
+            if os.path.isfile(filetest):
+                os.remove(filetest)
+
+        files = glob.iglob(pth.join(pth.join(resources.__path__[0], TMP_SAVE_FOLDER), "*.csv"))
+
+        for file in files:
+            if os.path.isfile(file):
+                shutil.copy(file, resources.__path__[0])
+
+        shutil.rmtree(pth.join(resources.__path__[0], TMP_SAVE_FOLDER))
 
 
 def clear_polar_results():
@@ -256,7 +227,7 @@ def test_polar():
     """ Tests polar execution (XFOIL) @ high and low speed """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
@@ -287,10 +258,39 @@ def test_polar():
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
     cl_max_2d = problem["xfoil:CL_max_2D"]
-    assert cl_max_2d == pytest.approx(1.6833, abs=1e-4)
+    assert cl_max_2d == pytest.approx(1.6965, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     cdp_1 = np.interp(1.0, cl, cdp)
     assert cdp_1 == pytest.approx(0.00488, abs=1e-4)
+
+    polar_result_retrieve()
+
+
+def test_airfoil_slope():
+    """ Tests polar execution (XFOIL) @ high and low speed """
+
+    # Clear saved polar results (for wing and htp airfoils)
+    polar_result_transfer()
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(ComputeAirfoilLiftCurveSlope(wing_airfoil_file="roncz.af",
+                                                                      htp_airfoil_file="naca0012.af",
+                                                                      vtp_airfoil_file="naca0012.af")),
+                             __file__, XML_FILE)
+    ivc.add_output('data:aerodynamics:low_speed:unit_reynolds', val=3000000)
+    ivc.add_output("data:aerodynamics:low_speed:mach", val=0.125)
+    problem = run_system(ComputeAirfoilLiftCurveSlope(wing_airfoil_file="roncz.af",
+                                                      htp_airfoil_file="naca0012.af",
+                                                      vtp_airfoil_file="naca0012.af"), ivc)
+
+    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
+    assert cl_alpha_wing == pytest.approx(6.5775, abs=1e-4)
+    cl_alpha_htp = problem.get_val("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
+    assert cl_alpha_htp == pytest.approx(6.2837, abs=1e-4)
+    cl_alpha_vtp = problem.get_val("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
+    assert cl_alpha_vtp == pytest.approx(6.2837, abs=1e-4)
+
+    polar_result_retrieve()
 
 
 def test_vlm_comp_high_speed():
@@ -300,7 +300,7 @@ def test_vlm_comp_high_speed():
     results_folder = _create_tmp_directory()
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -348,6 +348,8 @@ def test_vlm_comp_high_speed():
     # Remove existing result files
     results_folder.cleanup()
 
+    polar_result_retrieve()
+
 
 def test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
@@ -356,7 +358,7 @@ def test_vlm_comp_low_speed():
     results_folder = _create_tmp_directory()
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -429,6 +431,8 @@ def test_vlm_comp_low_speed():
 
     # Remove existing result files
     results_folder.cleanup()
+
+    polar_result_retrieve()
 
 
 def test_openvsp_comp_high_speed():
@@ -569,13 +573,14 @@ def test_2d_hinge_moment():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha", 0.6826, units="rad**-1")
+    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.2837, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(Compute2DHingeMomentsTail(), ivc)
     ch_alpha_2d = problem.get_val("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", units="rad**-1")
-    assert ch_alpha_2d == pytest.approx(-0.3334, abs=1e-4)
+    assert ch_alpha_2d == pytest.approx(-0.3549, abs=1e-4)
     ch_delta_2d = problem.get_val("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", units="rad**-1")
-    assert ch_delta_2d == pytest.approx(-0.6347, abs=1e-4)
+    assert ch_delta_2d == pytest.approx(-0.5751, abs=1e-4)
 
 
 def test_3d_hinge_moment():
@@ -601,34 +606,36 @@ def test_high_lift():
     ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:low_speed:mach", 0.1149)
     ivc.add_output("data:aerodynamics:wing:low_speed:CL_alpha", 4.981, units="rad**-1")
+    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.2837, units="rad**-1")
+    ivc.add_output("data:aerodynamics:wing:airfoil:CL_alpha", 6.5775, units="rad**-1")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeDeltaHighLift(), ivc)
     delta_cl0_landing = problem["data:aerodynamics:flaps:landing:CL"]
-    assert delta_cl0_landing == pytest.approx(0.7224, abs=1e-4)
+    assert delta_cl0_landing == pytest.approx(0.6842, abs=1e-4)
     delta_clmax_landing = problem["data:aerodynamics:flaps:landing:CL_max"]
     assert delta_clmax_landing == pytest.approx(0.4650, abs=1e-4)
     delta_cm_landing = problem["data:aerodynamics:flaps:landing:CM"]
-    assert delta_cm_landing == pytest.approx(-0.1228, abs=1e-4)
+    assert delta_cm_landing == pytest.approx(-0.1163, abs=1e-4)
     delta_cd_landing = problem["data:aerodynamics:flaps:landing:CD"]
     assert delta_cd_landing == pytest.approx(0.01511, abs=1e-4)
     delta_cl0_takeoff = problem["data:aerodynamics:flaps:takeoff:CL"]
-    assert delta_cl0_takeoff == pytest.approx(0.2694, abs=1e-4)
+    assert delta_cl0_takeoff == pytest.approx(0.2552, abs=1e-4)
     delta_clmax_takeoff = problem["data:aerodynamics:flaps:takeoff:CL_max"]
     assert delta_clmax_takeoff == pytest.approx(0.09522, abs=1e-4)
     delta_cm_takeoff = problem["data:aerodynamics:flaps:takeoff:CM"]
-    assert delta_cm_takeoff == pytest.approx(-0.0458, abs=1e-4)
+    assert delta_cm_takeoff == pytest.approx(-0.0434, abs=1e-4)
     delta_cd_takeoff = problem["data:aerodynamics:flaps:takeoff:CD"]
     assert delta_cd_takeoff == pytest.approx(0.001221, abs=1e-4)
     cl_delta_elev = problem.get_val("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
-    assert cl_delta_elev == pytest.approx(0.5456, abs=1e-4)
+    assert cl_delta_elev == pytest.approx(0.4771, abs=1e-4)
 
 
 def test_extreme_cl():
     """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
     ivc = get_indep_var_comp(list_inputs(ComputeExtremeCL()), __file__, XML_FILE)
@@ -666,21 +673,23 @@ def test_extreme_cl():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeExtremeCL(), ivc)
     cl_max_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_max_clean"]
-    assert cl_max_clean_wing == pytest.approx(1.49, abs=1e-2)
+    assert cl_max_clean_wing == pytest.approx(1.50, abs=1e-2)
     cl_min_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_min_clean"]
     assert cl_min_clean_wing == pytest.approx(-1.26, abs=1e-2)
     cl_max_takeoff_wing = problem["data:aerodynamics:aircraft:takeoff:CL_max"]
-    assert cl_max_takeoff_wing == pytest.approx(1.59, abs=1e-2)
+    assert cl_max_takeoff_wing == pytest.approx(1.60, abs=1e-2)
     cl_max_landing_wing = problem["data:aerodynamics:aircraft:landing:CL_max"]
-    assert cl_max_landing_wing == pytest.approx(1.96, abs=1e-2)
+    assert cl_max_landing_wing == pytest.approx(1.97, abs=1e-2)
     cl_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
-    assert cl_max_clean_htp == pytest.approx(1.38, abs=1e-2)
+    assert cl_max_clean_htp == pytest.approx(1.41, abs=1e-2)
     cl_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"]
-    assert cl_min_clean_htp == pytest.approx(-1.40, abs=1e-2)
+    assert cl_min_clean_htp == pytest.approx(-1.41, abs=1e-2)
     alpha_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"]
     assert alpha_max_clean_htp == pytest.approx(32., abs=1)
     alpha_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"]
     assert alpha_min_clean_htp == pytest.approx(-32., abs=1)
+
+    polar_result_retrieve()
 
 
 def test_l_d_max():
@@ -820,17 +829,55 @@ def test_compute_mach_interpolation_roskam():
     mach_result = np.array([0., 0.08, 0.15, 0.23 , 0.31, 0.39])
     assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
 
+def test_cl_alpha_vt():
+    """ Tests Cl alpha vt """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT(low_speed_aero=True)), __file__, XML_FILE)
+    ivc.add_output("data:aerodynamics:low_speed:mach", 0.119)
+    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClalphaVT(low_speed_aero=True), ivc)
+    cl_alpha_vt_fus_ls = problem.get_val("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
+    assert cl_alpha_vt_fus_ls == pytest.approx(1.9816, abs=1e-4)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT()), __file__, XML_FILE)
+    ivc.add_output("data:aerodynamics:cruise:mach", 0.248)
+    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClalphaVT(), ivc)
+    cl_alpha_vt_fus_cruise = problem.get_val("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
+    assert cl_alpha_vt_fus_cruise == pytest.approx(2.0099, abs=1e-4)
+
+
+def test_cy_delta_r():
+    """ Tests cy delta of the rudder """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
+    ivc.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=1.94358, units="rad**-1")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyDeltaRudder(), ivc)
+    cy_delta_r = problem.get_val("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
+    assert cy_delta_r == pytest.approx(1.0279, abs=1e-4)
+
 
 def test_high_speed_connection():
     """ Tests high speed components connection """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
+    input_vars.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
+    input_vars.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.2837, units="rad**-1")
 
     # Run problem with VLM
     # noinspection PyTypeChecker
@@ -840,12 +887,14 @@ def test_high_speed_connection():
     # noinspection PyTypeChecker
     run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
 
+    polar_result_retrieve()
+
 
 def test_low_speed_connection():
     """ Tests low speed components connection """
 
     # Clear saved polar results (for wing and htp airfoils)
-    clear_polar_results()
+    polar_result_transfer()
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
@@ -859,6 +908,8 @@ def test_low_speed_connection():
     # Run problem with OPENVSP
     # noinspection PyTypeChecker
     run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
+
+    polar_result_retrieve()
 
 
 def test_v_n_diagram_vlm():

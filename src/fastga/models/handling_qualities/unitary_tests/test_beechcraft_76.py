@@ -35,80 +35,9 @@ from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 
+from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
+
 XML_FILE = "beechcraft_76.xml"
-ENGINE_WRAPPER = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
-
-
-class DummyEngine(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
-        """
-        Dummy engine model returning nacelle dimensions height-width-length-wet_area.
-
-        """
-        super().__init__()
-        self.prop_layout = prop_layout
-        self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
-        self.fuel_type = fuel_type
-        self.strokes_nb = strokes_nb
-
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
-        if flight_points.engine_setting == EngineSetting.TAKEOFF:
-            flight_points.thrust = 5800.0 / 2.0
-        elif flight_points.engine_setting == EngineSetting.CLIMB:
-            flight_points.thrust = 3110.0 / 2.0
-        elif flight_points.engine_setting == EngineSetting.IDLE:
-            flight_points.thrust = 605.0 / 2.0
-        else:
-            flight_points.thrust = 0.0
-        flight_points.sfc = 0.0
-
-    def compute_weight(self) -> float:
-        return 0.0
-
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
-        return 0.0
-
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return 0.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
-        }
-
-        return DummyEngine(**engine_params)
-
-
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_update_vt_area():
@@ -117,7 +46,15 @@ def test_update_vt_area():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
     ivc.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
+    ivc.add_output("data:weight:aircraft:OWE", 1125.139, units="kg")
+    ivc.add_output("data:weight:aircraft:payload", 390.0, units="kg")
     ivc.add_output("data:aerodynamics:fuselage:cruise:CnBeta", -0.0599)
+    ivc.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", 1.6412, units="rad**-1")
+    ivc.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", 2.9967, units="rad**-1")
+    ivc.add_output("data:geometry:cabin:length", 3.096, units="m")
+    ivc.add_output("data:geometry:fuselage:front_length", 1.87, units="m")
+    ivc.add_output("data:geometry:fuselage:rear_length", 3.55, units="m")
+    ivc.add_output("data:geometry:fuselage:maximum_height", 1.3378, units="m")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(UpdateVTArea(propulsion_id=ENGINE_WRAPPER), ivc)

@@ -19,7 +19,10 @@ from openmdao.core.group import Group
 
 from .components.cd0 import Cd0
 from .components.compute_cl_extreme import ComputeExtremeCL
+from .components.clalpha_vt import ComputeClalphaVT
 from .components.high_lift_aero import ComputeDeltaHighLift
+from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
+from .components.compute_cy_rudder import ComputeCyDeltaRudder
 
 from .external.vlm import ComputeAEROvlm
 from .external.openvsp import ComputeAEROopenvsp
@@ -43,6 +46,7 @@ class AerodynamicsLowSpeed(Group):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare('wing_airfoil', default="naca23012.af", types=str, allow_none=True)
         self.options.declare('htp_airfoil', default="naca0012.af", types=str, allow_none=True)
+        self.options.declare('vtp_airfoil', default="naca0012.af", types=str, allow_none=True)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -64,6 +68,11 @@ class AerodynamicsLowSpeed(Group):
                                    wing_airfoil_file=self.options["wing_airfoil"],
                                    htp_airfoil_file=self.options["htp_airfoil"],
                                ), promotes=["*"])
+        self.add_subsystem("airfoil_lift_slope", ComputeAirfoilLiftCurveSlope(
+            wing_airfoil_file=self.options["wing_airfoil"],
+            htp_airfoil_file=self.options["htp_airfoil"],
+            vtp_airfoil_file=self.options["htp_airfoil"],
+        ), promotes=["*"])
         self.add_subsystem("Cd0_all",
                            Cd0(
                                low_speed_aero=True,
@@ -72,7 +81,12 @@ class AerodynamicsLowSpeed(Group):
                                propulsion_id=self.options["propulsion_id"],
                            ), promotes=["*"])
         self.add_subsystem("high_lift", ComputeDeltaHighLift(), promotes=["*"])
-        self.add_subsystem("Cl_extreme", ComputeExtremeCL(), promotes=["*"])
+        self.add_subsystem("Cl_extreme", ComputeExtremeCL(
+            wing_airfoil_file=self.options["wing_airfoil"],
+            htp_airfoil_file=self.options["htp_airfoil"],
+        ), promotes=["*"])
+        self.add_subsystem("clAlpha_vt", ComputeClalphaVT(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem("Cy_Delta_rudder", ComputeCyDeltaRudder(), promotes=["*"])
         if self.options["compute_slipstream"]:
             self.add_subsystem("aero_slipstream_openvsp",
                                _ComputeSlipstreamOpenvsp(propulsion_id=self.options["propulsion_id"],

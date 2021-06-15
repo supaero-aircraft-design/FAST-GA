@@ -79,6 +79,7 @@
 			</propulsion>
 			<vertical_tail>
 				<aspect_ratio>1.2<!--aspect ratio of vertical tail--></aspect_ratio>
+				<taper_ratio>0.62<!--taper ratio of vertical tail--></taper_ratio>
 				<root>
 					<chord units="m">1.785<!--chord length at root of vertical tail--></chord>
 				</root>
@@ -88,6 +89,13 @@
 					<chord units="m">1.106<!--chord length at tip of vertical tail--></chord>
 				</tip>
 				<wet_area units="m**2">5.266<!--wet area of vertical tail--></wet_area>
+				<rudder>
+					<chord_ratio>0.3</chord_ratio>
+					<max_deflection units="deg">30.0</max_deflection>
+				</rudder>
+				<MAC>
+					<length units="m">1.159</length>
+				</MAC>
 			</vertical_tail>
 			<wing>
 				<MAC>

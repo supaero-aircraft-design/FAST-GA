@@ -18,3 +18,6 @@ from .compute_L_D_max import ComputeLDMax
 from .high_lift_aero import ComputeDeltaHighLift
 from .hinge_moments_elevator import Compute2DHingeMomentsTail, Compute3DHingeMomentsTail
 from .mach_interpolation import ComputeMachInterpolation
+from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
+from .compute_cy_rudder import ComputeCyDeltaRudder
+from .clalpha_vt import ComputeClalphaVT

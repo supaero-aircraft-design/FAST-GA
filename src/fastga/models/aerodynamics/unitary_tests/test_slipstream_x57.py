@@ -40,81 +40,14 @@ from tests.xfoil_exe.get_xfoil import get_xfoil_path
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 
+from .dummy_engines import ENGINE_WRAPPER_X57 as ENGINE_WRAPPER
+
 from ..external.vlm.compute_aero import DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "maxwell_x57.xml"
-ENGINE_WRAPPER = "test.wrapper.aerodynamics.nasa.dummy_engine"
-
-
-class DummyEngine(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
-        """
-        Dummy engine model returning nacelle aerodynamic drag force.
-
-        """
-        super().__init__()
-        self.prop_layout = prop_layout
-        self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
-        self.fuel_type = fuel_type
-        self.strokes_nb = strokes_nb
-
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
-        flight_points.thrust = 1800.0
-        flight_points.sfc = 0.0
-
-    def compute_weight(self) -> float:
-        return 0.0
-
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
-        if mach < 0.15:
-            return 0.01934377
-        else:
-            return 0.01771782
-
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return 0.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
-        }
-
-        return DummyEngine(**engine_params)
-
-
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def _create_tmp_directory() -> TemporaryDirectory:

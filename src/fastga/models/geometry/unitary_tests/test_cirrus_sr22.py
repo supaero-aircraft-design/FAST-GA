@@ -63,73 +63,9 @@ from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 
+from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
+
 XML_FILE = "cirrus_sr22.xml"
-ENGINE_WRAPPER = "test.wrapper.geometry.cirrus.dummy_engine"
-
-
-class DummyEngine(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
-        """
-        Dummy engine model returning nacelle dimensions height-width-length-wet_area.
-
-        """
-        super().__init__()
-        self.prop_layout = prop_layout
-        self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
-        self.fuel_type = fuel_type
-        self.strokes_nb = strokes_nb
-
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
-        flight_points.thrust = 0.0
-        flight_points['sfc'] = 0.0
-
-    def compute_weight(self) -> float:
-        return 0.0
-
-    def compute_dimensions(self) -> (float, float, float, float, float, float):
-        return [0.75466, 1.1253, 1.1488, 4.319, 2.05, 0.149]
-
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
-        return 0.0
-
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
-        return 0.0
-
-
-class DummyEngineWrapper(IOMPropulsionWrapper):
-    def setup(self, component: Component):
-        component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
-        component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
-
-    @staticmethod
-    def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
-        }
-
-        return DummyEngine(**engine_params)
-
-
-RegisterPropulsion(ENGINE_WRAPPER)(DummyEngineWrapper)
 
 
 def test_compute_vt_chords():
@@ -166,7 +102,7 @@ def test_compute_vt_mac():
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.799, abs=1e-3)
     vt_lp = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
-    assert vt_lp == pytest.approx(3.604, abs=1e-3)
+    assert vt_lp == pytest.approx(3.726, abs=1e-3)
 
 
 def test_compute_vt_sweep():

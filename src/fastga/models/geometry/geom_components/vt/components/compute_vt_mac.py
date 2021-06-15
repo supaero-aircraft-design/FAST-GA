@@ -89,7 +89,7 @@ class ComputeVTmacFD(ExplicitComponent):
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
         if has_t_tail:
-            vt_lp = lp_ht - b_v * math.tan(sweep_25_vt / 180.0 * math.pi)
+            vt_lp = lp_ht - 0.6 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi)
 
         else:
             vt_lp = lp_ht

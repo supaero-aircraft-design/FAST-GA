@@ -16,14 +16,15 @@ Computes the aerostructural loads on the wing of the aircraft
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+
 import numpy as np
+
+from ..aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ..aerodynamics.external.openvsp.compute_vn import ComputeVNopenvsp
+from fastga.utils.physics.atmosphere import Atmosphere
 from scipy.integrate import trapz
 from scipy.interpolate import interp1d
-
-from fastoad.model_base.atmosphere import Atmosphere
-
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS
-from fastga.models.aerodynamics.external.openvsp.compute_vn import ComputeVNopenvsp
+from ..aerodynamics.lift_equilibrium import AircraftEquilibrium
 
 NB_POINTS_POINT_MASS = 5
 # MUST BE AN EVEN NUMBER
@@ -163,8 +164,6 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
 
         y_vector, _ = self.compute_relief_force_x57(inputs, y_vector_orig, chord_vector,
                                                     wing_mass, 0.0)
-        additional_zeros = np.zeros(SPAN_MESH_POINT_LOADS - len(y_vector))
-        y_vector = np.concatenate([y_vector, additional_zeros])
         cl_s = self.compute_Cl_S(y_vector_orig, y_vector, cl_vector, chord_vector)
         cl_s_slip = self.compute_Cl_S(y_vector_slip_orig, y_vector, cl_vector_slip, chord_vector)
 
@@ -187,8 +186,7 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
             y_vector, weight_array_orig = self.compute_relief_force_x57(inputs, y_vector_orig, chord_vector,
                                                                         wing_mass, fuel_mass)
 
-            atm.true_airspeed = cruise_v_tas
-            cruise_v_keas = atm.equivalent_airspeed
+            cruise_v_keas = atm.get_equivalent_airspeed(cruise_v_tas)
 
             velocity_array, load_factor_array, _ = self.flight_domain(inputs, outputs, mass, cruise_alt, cruise_v_keas)
 
@@ -196,8 +194,7 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
 
             load_factor_list = np.array([max(load_factor_array), min(load_factor_array)])
 
-            atm.equivalent_airspeed = v_c
-            v_c_tas = atm.true_airspeed
+            v_c_tas = atm.get_true_airspeed(v_c)
             dynamic_pressure = 1. / 2. * atm.density * v_c_tas ** 2.0
 
             for load_factor in load_factor_list:
@@ -217,31 +214,34 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
                 if abs(root_shear_force) > shear_max:
                     shear_max_conditions = [mass, load_factor]
                     lift_shear_diagram = AerostructuralLoadX57.compute_shear_diagram(y_vector, lift_section)
-                    lift_shear_diagram = np.concatenate([lift_shear_diagram, additional_zeros])
                     weight_shear_diagram = AerostructuralLoadX57.compute_shear_diagram(y_vector, weight_array)
-                    weight_shear_diagram = np.concatenate([weight_shear_diagram, additional_zeros])
                     shear_max = abs(root_shear_force)
-
-                    outputs["data:loads:max_shear:lift_shear"] = lift_shear_diagram
-                    outputs["data:loads:max_shear:weight_shear"] = weight_shear_diagram
 
                 if abs(root_bending_moment) > rbm_max:
                     rbm_max_conditions = [mass, load_factor]
                     lift_bending_diagram = AerostructuralLoadX57.compute_bending_moment_diagram(y_vector, lift_section)
-                    lift_bending_diagram = np.concatenate([lift_bending_diagram, additional_zeros])
                     weight_bending_diagram = AerostructuralLoadX57.compute_bending_moment_diagram(
                         y_vector, weight_array)
-                    weight_bending_diagram = np.concatenate([weight_bending_diagram, additional_zeros])
                     rbm_max = abs(root_bending_moment)
 
-                    outputs["data:loads:max_rbm:lift_rbm"] = lift_bending_diagram
-                    outputs["data:loads:max_rbm:weight_rbm"] = weight_bending_diagram
+        additional_zeros = np.zeros(SPAN_MESH_POINT_LOADS - len(y_vector))
+        lift_shear_diagram = np.concatenate([lift_shear_diagram, additional_zeros])
+        weight_shear_diagram = np.concatenate([weight_shear_diagram, additional_zeros])
+        y_vector = np.concatenate([y_vector, additional_zeros])
 
+        lift_bending_diagram = np.concatenate([lift_bending_diagram, additional_zeros])
+        weight_bending_diagram = np.concatenate([weight_bending_diagram, additional_zeros])
 
         outputs["data:loads:max_shear:mass"] = shear_max_conditions[0]
         outputs["data:loads:max_shear:load_factor"] = shear_max_conditions[1]
+        outputs["data:loads:max_shear:lift_shear"] = lift_shear_diagram
+        outputs["data:loads:max_shear:weight_shear"] = weight_shear_diagram
+
         outputs["data:loads:max_rbm:mass"] = rbm_max_conditions[0]
         outputs["data:loads:max_rbm:load_factor"] = rbm_max_conditions[1]
+        outputs["data:loads:max_rbm:lift_rbm"] = lift_bending_diagram
+        outputs["data:loads:max_rbm:weight_rbm"] = weight_bending_diagram
+
         outputs["data:loads:y_vector"] = y_vector
 
     @staticmethod
@@ -260,6 +260,7 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
         bending_moment_diagram = np.zeros(len(y_vector))
         for i in range(len(y_vector)):
             lever_arm = y_vector - y_vector[i]
+            test = lever_arm[i:]
             bending_moment_diagram[i] = trapz(force_array[i:] * lever_arm[i:], y_vector[i:])
 
         return bending_moment_diagram
@@ -291,6 +292,7 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
         lg_height = inputs["data:geometry:landing_gear:height"]
         lg_type = inputs["data:geometry:landing_gear:type"]
         engine_config = inputs["data:geometry:propulsion:layout"]
+        engine_count = inputs["data:geometry:propulsion:count"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
         y_ratio_vec = [0.1863354, 0.30310559, 0.42236025, 0.54161491, 0.66086957, 0.79710145, 0.99171843]
@@ -314,6 +316,9 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
                 y_eng = y_ratio * semi_span
                 y_vector, chord_vector, point_mass_array = AerostructuralLoadX57.add_point_mass(
                     y_vector, chord_vector, point_mass_array, y_eng, eng_mass, inputs)
+                test = 1.0
+
+        y_eng_array = y_ratio_vec * semi_span
 
         # Computing and adding the lg weight
         # Overturn angle set as a fixed value, it is recommended to take over 25° and check that we can fit both LG in
@@ -331,22 +336,29 @@ class AerostructuralLoadX57(ComputeVNopenvsp):
             Y = y_vector / semi_span
             struct_weight_distribution = 4. / np.pi * np.sqrt(1. - Y ** 2.0)
         else:
+            Y = y_vector / semi_span
             struct_weight_distribution = chord_vector / max(chord_vector)
 
         reajust_struct = trapz(struct_weight_distribution, y_vector)
+
+        in_eng_nacelle = np.full(len(y_vector), False)
+        for y_eng in y_eng_array:
+            for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.):
+                in_eng_nacelle[i] = True
+        where_engine = np.where(in_eng_nacelle)
 
         if distribution_type == 1.0:
             Y = y_vector / semi_span
             fuel_weight_distribution = 4. / np.pi * np.sqrt(1. - Y ** 2.0)
         else:
+            Y = y_vector / semi_span
             fuel_weight_distribution = chord_vector / max(chord_vector)
             if lg_type == 1.0:
                 for i in np.where(y_vector < y_lg):
                     # For now 80% size reduction in the fuel tank capacity due to the landing gear
                     fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.2
             if engine_config == 1.0:
-                # FIXME: y_eng value taken out of loop
-                for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.):
+                for i in where_engine:
                     # For now 50% size reduction in the fuel tank capacity due to the engine
                     fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.5
 
