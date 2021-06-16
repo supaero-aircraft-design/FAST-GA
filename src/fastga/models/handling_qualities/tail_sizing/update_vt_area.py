@@ -162,7 +162,7 @@ class UpdateVTArea(om.ExplicitComponent):
 
         # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##############################################################
 
-        failure_altitude_cl = 5000.0  # CS23 for Twin engine - at 5000ft
+        failure_altitude_cl = 1524.0  # CS23 for Twin engine - at 5000ft
         atm_cl = Atmosphere(failure_altitude_cl)
         speed_of_sound_cl = atm_cl.speed_of_sound
         pressure_cl = atm_cl.pressure
@@ -183,7 +183,7 @@ class UpdateVTArea(om.ExplicitComponent):
             # count so we must divide it here to get the thrust of 1 engine only
             thrust_cl = float(flight_point_cl.thrust) / 2.
             # Calculation of engine thrust and nacelle drag (failed one)
-            max_power_oe_cl_hp = propulsion_model.compute_max_power(flight_point_cl) / 1000 * 1.34102
+            max_power_oe_cl_hp = propulsion_model.compute_max_power(flight_point_cl) * 1.34102
             speed_cl_fps = speed_cl * 3.28084
             windmilling_prop_drag_cl = 33 * max_power_oe_cl_hp / speed_cl_fps
             # Roskam equation 4.68 in aerodynamics
@@ -218,7 +218,7 @@ class UpdateVTArea(om.ExplicitComponent):
             propulsion_model.compute_flight_points(flight_point_to)
             thrust_to = float(flight_point_to.thrust) / 2.
             # Calculation of engine thrust and nacelle drag (failed one)
-            max_power_oe_to_hp = propulsion_model.compute_max_power(flight_point_to) / 1000 * 1.34102
+            max_power_oe_to_hp = propulsion_model.compute_max_power(flight_point_to) * 1.34102
             mc_speed_to_fps = vmc_to * 3.28084
             windmilling_prop_drag_to = 33 * max_power_oe_to_hp / mc_speed_to_fps
             # Roskam equation 4.68 in aerodynamics
@@ -257,7 +257,7 @@ class UpdateVTArea(om.ExplicitComponent):
             propulsion_model.compute_flight_points(flight_point_ldg)
             thrust_ldg = float(flight_point_ldg.thrust) / 2.
             # Calculation of engine thrust and nacelle drag (failed one)
-            max_power_oe_ldg_hp = propulsion_model.compute_max_power(flight_point_ldg) / 1000 * 1.34102
+            max_power_oe_ldg_hp = propulsion_model.compute_max_power(flight_point_ldg) * 1.34102
             mc_speed_ldg_fps = vmc_ldg * 3.28084
             windmilling_prop_drag_ldg = 33 * max_power_oe_ldg_hp / mc_speed_ldg_fps
             # Roskam equation 4.68 in aerodynamics

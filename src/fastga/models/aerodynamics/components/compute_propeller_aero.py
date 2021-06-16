@@ -79,12 +79,17 @@ class _ComputePropellePerformance(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
-        self.add_input("data:geometry:propeller:hub:diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:blades_number", val=np.nan)
-        self.add_input("data:geometry:propeller:sweep_vect", shape_by_conn=True, val=np.nan, units="deg")
-        self.add_input("data:geometry:propeller:chord_vect", shape_by_conn=True, val=np.nan, units="m")
-        self.add_input("data:geometry:propeller:twist_vect", shape_by_conn=True, val=np.nan, units="deg")
-        self.add_input("data:geometry:propeller:radius_ratio_vect", shape_by_conn=True, val=np.nan)
+        nans_array = np.full(7, np.nan)
+        self.add_input("data:geometry:propeller:sweep_vect", val=nans_array, units="deg")
+        self.add_input("data:geometry:propeller:chord_vect", val=nans_array, units="m")
+        self.add_input("data:geometry:propeller:twist_vect", val=nans_array, units="deg")
+        self.add_input("data:geometry:propeller:radius_ratio_vect", val=nans_array)
+        # self.add_input("data:geometry:propeller:sweep_vect", shape_by_conn=True, val=np.nan, units="deg")
+        # self.add_input("data:geometry:propeller:chord_vect", shape_by_conn=True, val=np.nan, units="m")
+        # self.add_input("data:geometry:propeller:twist_vect", shape_by_conn=True, val=np.nan, units="deg")
+        # self.add_input("data:geometry:propeller:radius_ratio_vect", shape_by_conn=True, val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -275,7 +280,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         blades_number = inputs["data:geometry:propeller:blades_number"]
         sections_profile_position_list = self.options["sections_profile_position_list"]
         sections_profile_name_list = self.options["sections_profile_name_list"]
-        radius_min = inputs["data:geometry:propeller:hub:diameter"] / 2.0
+        radius_min = inputs["data:geometry:propeller:hub_diameter"] / 2.0
         radius_max = inputs["data:geometry:propeller:diameter"] / 2.0
         sweep_vect = inputs["data:geometry:propeller:sweep_vect"]
         chord_vect = inputs["data:geometry:propeller:chord_vect"]

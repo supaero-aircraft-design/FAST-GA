@@ -43,7 +43,7 @@ for folder in PATH[1:len(PATH) - 3]:
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
 AIRCRAFT_ID = "be76"  # "sr22"
-MDA_WING_POSITION = True
+MDA_WING_POSITION = False
 
 
 @pytest.fixture(scope="module")

@@ -372,8 +372,13 @@ class BasicICEngine(AbstractFuelPropulsion):
         return propeller_efficiency
 
     def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
+        """
+        Compute the ICE maximum power @ given flight-point.
+        :param flight_points: current flight point(s)
+        :return: maximum power in kW
+        """
 
-        atmosphere = Atmosphere(np.asarray(FlightPoint.altitude), altitude_in_feet=False)
+        atmosphere = Atmosphere(np.asarray(flight_points.altitude), altitude_in_feet=False)
         sigma = atmosphere.density / Atmosphere(0.0).density
         max_power = (self.max_power / 1e3) * (sigma - (1 - sigma) / 7.55)  # max power in kW
 
@@ -473,8 +478,8 @@ class BasicICEngine(AbstractFuelPropulsion):
                 efficiency_relative_error = 1
                 propeller_efficiency = propeller_efficiency[0]
                 while efficiency_relative_error > 1e-2:
-                    thrust_max_global[idx] = max_power * propeller_efficiency / atmosphere.true_airspeed
-                    propeller_efficiency_new = self.propeller_efficiency(thrust_max_global[idx], atmosphere)
+                    thrust_max_global = max_power * propeller_efficiency / atmosphere.true_airspeed
+                    propeller_efficiency_new = self.propeller_efficiency(thrust_max_global, atmosphere)
                     efficiency_relative_error = np.abs((propeller_efficiency_new - propeller_efficiency)
                                                        / efficiency_relative_error)
                     propeller_efficiency = propeller_efficiency_new
@@ -553,7 +558,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         """
 
         # Compute dimensions
-        _, _, _, _, _, _ = self.compute_dimensions()
+        _, _, _, _ = self.compute_dimensions()
         # Local Reynolds:
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)

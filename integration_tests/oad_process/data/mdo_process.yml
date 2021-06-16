@@ -51,9 +51,9 @@ model:
 
 optimization: # This section is needed only if optimization process is run
   design_variables:
-    - name: data:geometry:fuselage:rear_length
-      lower: 2.0
-      upper: 5.0
+    - name: data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25
+      lower: 3.0
+      upper: 8.0
   objective:
     - name: data:mission:sizing:fuel
       scaler: 1.e-4

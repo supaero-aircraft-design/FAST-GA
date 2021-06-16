@@ -19,6 +19,7 @@ import os.path as pth
 import os
 import types
 import copy
+import shutil
 from importlib.resources import path
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -54,50 +55,16 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     """
     if not overwrite and pth.exists(configuration_file_path):
         raise FastFileExistsError(
-            "Configuration file %s not written because it already exists. "
+            "Configuration file is not written because it already exists. "
             "Use overwrite=True to bypass." % configuration_file_path,
             configuration_file_path,
         )
 
     if not pth.exists(pth.split(configuration_file_path)[0]):
         os.mkdir(pth.split(configuration_file_path)[0])
-    parser = InputFileGenerator()
-    root_folder = resources.__path__[0]
-    for i in range(2):
-        root_folder = pth.split(root_folder)[0]
-    package_path = "module_folders: " + root_folder.replace('\\', '/')
-    with path(resources, SAMPLE_FILENAME) as input_template_path:
-        parser.set_template_file(str(input_template_path))
-        # noinspection PyTypeChecker
-        parser.set_generated_file(configuration_file_path)
-        parser.reset_anchor()
-        parser.mark_anchor("module_folders:")
-        parser.transfer_var(package_path, 0, 1)
-        parser.generate()
+    shutil.copy(path(resources, SAMPLE_FILENAME), configuration_file_path)
 
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
-
-
-def overwrite_models_path(configuration_file_path: str, module: types.ModuleType):
-    """
-    Complete a .yaml file with provided path.
-
-    :param configuration_file_path: the path of file to be written
-    :param module: the module containing models and associated register.py file
-    """
-    configuration_file = open(configuration_file_path)
-    content = configuration_file.readlines()
-    configuration_file.close()
-    new_content = copy.deepcopy(content)
-    models_path = pth.split(pth.abspath(module.__file__))[0]
-    for idx in range(len(content)):
-        if "module_folders = [" in content[idx]:
-            new_content[idx] = "module_folders: " + models_path.replace('\\', '/')
-            break
-    configuration_file = open(configuration_file_path, "w")
-    for line in new_content:
-        configuration_file.write(line)
-    configuration_file.close()
 
 
 def write_needed_inputs(
