@@ -2,9 +2,28 @@
 # Each line should be like:
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
-data:cruise:mach || mach number representative of high speed aerodynamics
-data:cruise:unit_reynolds || unitary reynolds number representative of high speed aerodynamics
-data:cruise:neutral_point:free_elevator_factor || free elevator factor for computation of stick free static margin in high speed
-data:cruise:neutral_point:stick_fixed:x || distance between the leading edge of the wing at the MAC and the stick fixed aerodynamic center
-data:cruise:neutral_point:stick_free:x || distance between the leading edge of the wing at the MAC and the stick free aerodynamic center
+data:aerodynamics:cruise:mach || mach number representative of high speed aerodynamics
+data:aerodynamics:cruise:unit_reynolds || unitary reynolds number representative of high speed aerodynamics
+data:aerodynamics:cruise:neutral_point:free_elevator_factor || free elevator factor for computation of stick free static margin in high speed
+data:aerodynamics:cruise:neutral_point:stick_fixed:x || distance between the leading edge of the wing at the MAC and the stick fixed aerodynamic center
+data:aerodynamics:cruise:neutral_point:stick_free:x || distance between the leading edge of the wing at the MAC and the stick free aerodynamic center
+data:aerodynamics:horizontal_tail:efficiency || ratio between the dynamic pressure at the tail and the free stream dynamic pressure
+data:aerodynamics:horizontal_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
+data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:CL0 || lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated || derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha || derivative of 3D hinge moment coefficient with respect to the local angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D || derivative of 2D hinge moment coefficient with respect to the local angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta || derivative of 3D hinge moment coefficient with respect to elevator deflection in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D || derivative of 2D hinge moment coefficient with respect to elevator deflection in cruise conditions
+data:aerodynamics:horizontal_tail:low_speed:CD0 || profile drag coefficient for horizontal tail in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CL0 || lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CL_alpha || derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated || derivative of lift coefficient of horizontal tail with respect to local angle of attack in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CL_max_clean || maximum horizontal tail lift coefficient in low speed altitude
+data:aerodynamics:horizontal_tail:low_speed:CL_min_clean || minimum horizontal tail lift coefficient in low speed altitude
+data:aerodynamics:horizontal_tail:low_speed:CL_ref || reference horizontal tail lift coefficient corresponding to the lift repartition in CL_vector
+data:aerodynamics:horizontal_tail:low_speed:CL_vector || horizontal tail lift coefficient repartition along the span corresponding to the lift coefficient in CL_ref
 data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command

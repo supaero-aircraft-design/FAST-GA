@@ -19,6 +19,7 @@ import os.path as pth
 import numpy as np
 import openmdao.api as om
 import math
+import logging
 import pandas as pd
 from scipy.optimize import fsolve
 import warnings
@@ -30,6 +31,8 @@ from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+
+_LOGGER = logging.getLogger(__name__)
 
 THRUST_PTS_NB = 30
 SPEED_PTS_NB = 10
@@ -105,7 +108,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
+        _LOGGER.warning("Entering propeller computation")
         # Define init values
         omega = self.options["average_rpm"]
         v_min = 5.0
@@ -140,6 +143,7 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
         # Save results
+        _LOGGER.warning("Done with propeller computation")
         outputs["data:aerodynamics:propeller:cruise_level:efficiency"] = efficiency_interp
         outputs["data:aerodynamics:propeller:cruise_level:thrust"] = thrust_interp
         outputs["data:aerodynamics:propeller:cruise_level:thrust_limit"] = thrust_limit

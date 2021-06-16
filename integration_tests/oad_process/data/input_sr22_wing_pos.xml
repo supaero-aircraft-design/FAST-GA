@@ -66,6 +66,16 @@
 			<landing_gear>
 				<type>0.0<!--0=non-retractable landing gears / 1=retractable landing gear--></type>
 			</landing_gear>
+			<propeller>
+				<blades_number>3.0</blades_number>
+				<depth units="m">0.3</depth>
+				<hub_diameter units="m">0.4</hub_diameter>
+				<diameter units="m">1.98</diameter>
+				<radius_ratio_vect>[0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]<!--propeller radius ratio points--></radius_ratio_vect>
+				<twist_vect units="deg">[59.9549991 , 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]<!--propeller twist angle defined at radius ratio points--></twist_vect>
+				<sweep_vect units="deg">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
+				<chord_vect units="m">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--propeller chord defined at radius ratio points--></chord_vect>
+			</propeller>
 			<propulsion>
 				<layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
 				<count>1.0<!--number of engines--></count>
