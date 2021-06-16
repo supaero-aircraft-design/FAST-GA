@@ -12,42 +12,45 @@ output_file: ./problem_outputs.xml
 driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 model:
-    nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-4, debug_print=True, reraise_child_analysiserror=True)
-    linear_solver: om.DirectSolver()
-    geometry:
-        id: fastga.geometry.legacy
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    aerodynamics_highspeed:
-        id: fastga.aerodynamics.highspeed.legacy
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        result_folder_path : ./workdir
-        use_openvsp : false
-        compute_mach_interpolation : false
-        compute_slipstream : false
-    aerodynamics_lowspeed:
-        id: fastga.aerodynamics.lowspeed.legacy
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        result_folder_path : ./workdir
-        use_openvsp : false
-        compute_slipstream : false
-    weight:
-        id: fastga.weight.legacy
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    mtow:
-        id: fastga.loop.mtow
-    performance:
-        id: fastga.performances.mission
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    hq:
-        tail_sizing:
-            id: fastga.handling_qualities.tail_sizing
+    propeller:
+        id: fastga.aerodynamics.propeller
+    aircraft_sizing:
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-4, debug_print=True, reraise_child_analysiserror=True)
+        linear_solver: om.DirectSolver()
+        geometry:
+            id: fastga.geometry.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        static_margin:
-            id: fastga.handling_qualities.static_margin
-    wing_position:
-        id: fastga.loop.wing_position
-    wing_area:
-        id: fastga.loop.wing_area
+        aerodynamics_highspeed:
+            id: fastga.aerodynamics.highspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            result_folder_path : ./workdir
+            use_openvsp : false
+            compute_mach_interpolation : false
+            compute_slipstream : false
+        aerodynamics_lowspeed:
+            id: fastga.aerodynamics.lowspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            result_folder_path : ./workdir
+            use_openvsp : false
+            compute_slipstream : false
+        weight:
+            id: fastga.weight.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        mtow:
+            id: fastga.loop.mtow
+        performance:
+            id: fastga.performances.mission
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        hq:
+            tail_sizing:
+                id: fastga.handling_qualities.tail_sizing
+                propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            static_margin:
+                id: fastga.handling_qualities.static_margin
+        wing_position:
+            id: fastga.loop.wing_position
+        wing_area:
+            id: fastga.loop.wing_area
 
 optimization: # This section is needed only if optimization process is run
   design_variables:

@@ -62,7 +62,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     if not pth.exists(pth.split(configuration_file_path)[0]):
         os.mkdir(pth.split(configuration_file_path)[0])
-    shutil.copy(path(resources, SAMPLE_FILENAME), configuration_file_path)
+    shutil.copy(pth.join(resources.__path__[0], SAMPLE_FILENAME), configuration_file_path)
 
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
 
