@@ -188,7 +188,7 @@ def test_OMBasicICEngineComponent():
     machs = [0, 0.3, 0.3, 0.5, 0.5]
     altitudes = [0, 0, 0, 4000, 8000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3193.97963124,  480.58508079,  480.58508079,  169.24247257, 258.404271]
+    thrusts = [3193.97963124,  480.58508079,  480.58508079,  145.47341988, 241.10415143]
     phases = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -196,7 +196,7 @@ def test_OMBasicICEngineComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [2.39222650e-26, 1.06438787e-05, 1.06438787e-05, 2.70547387e-05, 2.23273004e-05]
+    expected_sfc = [1.71027519e-16, 1.10868197e-05, 1.10868197e-05, 2.90330512e-05, 2.17207210e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:IC_engine:max_power", 130000, units="W")
