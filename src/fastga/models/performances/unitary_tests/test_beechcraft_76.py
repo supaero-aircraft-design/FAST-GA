@@ -174,13 +174,13 @@ def test_compute_climb():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
-    assert v_cas == pytest.approx(71.5, abs=1)
+    assert v_cas == pytest.approx(79.6, abs=1e-1)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:climb:fuel", units="kg")
-    assert fuel_mass == pytest.approx(4.707, abs=1e-2)
+    assert fuel_mass == pytest.approx(4.59, abs=1e-2)
     distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="m") / 1000.0  # conversion to km
-    assert distance == pytest.approx(14.697, abs=1e-2)
+    assert distance == pytest.approx(25.80, abs=1e-2)
     duration = problem.get_val("data:mission:sizing:main_route:climb:duration", units="min")
-    assert duration == pytest.approx(5.711, abs=1e-2)
+    assert duration == pytest.approx(9.94, abs=1e-2)
 
 
 def test_compute_cruise():
@@ -196,14 +196,17 @@ def test_compute_cruise():
     ivc.add_output("data:mission:sizing:initial_climb:fuel", 0.07, units="kg")
     ivc.add_output("data:mission:sizing:main_route:climb:fuel", 5.56, units="kg")
     ivc.add_output("data:mission:sizing:main_route:climb:distance", 13.2, units="km")
+    ivc.add_output("data:mission:sizing:main_route:climb:duration", 9.94, units="min")
     ivc.add_output("data:mission:sizing:main_route:descent:distance", 0.0, units="km")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:cruise:fuel", units="kg")
-    assert fuel_mass == pytest.approx(138.066, abs=1e-1)
+    assert fuel_mass == pytest.approx(157.0, abs=1e-1)
+    distance = problem.get_val("data:mission:sizing:main_route:cruise:distance", units="m") / 1000.0  # conversion to km
+    assert distance == pytest.approx(1431.36, abs=1e-2)
     duration = problem.get_val("data:mission:sizing:main_route:cruise:duration", units="h")
-    assert duration == pytest.approx(4.71, abs=1e-2)
+    assert duration == pytest.approx(4.70, abs=1e-2)
 
 
 def test_compute_descent():
@@ -219,15 +222,19 @@ def test_compute_descent():
     ivc.add_output("data:mission:sizing:initial_climb:fuel", 0.07, units="kg")
     ivc.add_output("data:mission:sizing:main_route:climb:fuel", 5.56, units="kg")
     ivc.add_output("data:mission:sizing:main_route:cruise:fuel", 188.05, units="kg")
+    ivc.add_output("data:mission:sizing:main_route:climb:distance", 25.80, units="km")
+    ivc.add_output("data:mission:sizing:main_route:climb:duration", 9.94, units="min")
+    ivc.add_output("data:mission:sizing:main_route:cruise:distance", 1431.36, units="km")
+    ivc.add_output("data:mission:sizing:main_route:cruise:duration", 4.70, units="h")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:descent:fuel", units="kg")
-    assert fuel_mass == pytest.approx(0.1451, abs=1e-2)
+    assert fuel_mass == pytest.approx(1.23, abs=1e-2)
     distance = problem.get_val("data:mission:sizing:main_route:descent:distance", units="m") / 1000  # conversion to km
-    assert distance == pytest.approx(48.73, abs=1e-2)
+    assert distance == pytest.approx(79.53, abs=1e-2)
     duration = problem.get_val("data:mission:sizing:main_route:descent:duration", units="min")
-    assert duration == pytest.approx(15.99, abs=1e-2)
+    assert duration == pytest.approx(25.13, abs=1e-2)
 
 
 def test_loop_cruise_distance():
@@ -242,7 +249,7 @@ def test_loop_cruise_distance():
     # noinspection PyTypeChecker
     problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
-    assert m_total == pytest.approx(161.129, abs=1)
+    assert m_total == pytest.approx(178., abs=1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")
     cruise_distance = problem.get_val("data:mission:sizing:main_route:cruise:distance", units="NM")
     descent_distance = problem.get_val("data:mission:sizing:main_route:descent:distance", units="NM")

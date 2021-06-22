@@ -26,6 +26,7 @@
 			<aircraft>
 				<cruise>
 					<CD0>0.02704605338362316<!--profile drag coefficient for whole aircraft w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+					<L_D_max>15.44</L_D_max>
 					<optimal_CL>0.8435764973199226<!--lift coefficient at maximum lift/drag ratio in cruise conditions--></optimal_CL>
 				</cruise>
 				<low_speed>
@@ -40,7 +41,7 @@
 			</aircraft>
 			<elevator>
 				<low_speed>
-					<CL_alpha units="rad**-1">0.5521090528172526<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
+					<CL_delta units="rad**-1">0.4699<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_delta>
 				</low_speed>
 			</elevator>
 			<flaps>
@@ -60,23 +61,16 @@
 				<area units="m**2">2.75<!--horizontal_tail area--></area>
 				<efficiency>0.9</efficiency>
 				<cruise>
-					<CL_alpha units="rad**-1">0.51193<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
-					<CL_alpha_isolated units="1/rad" is_input="False">4.6618138043024295</CL_alpha_isolated>
-					<induced_drag_coefficient>0.7159413983093388</induced_drag_coefficient>
-					<hinge_moment_3D>
-            			<AOA units="1/rad" is_input="False">-0.2782336149456651</AOA>
-            			<elevator units="1/rad" is_input="False">-0.7579081975499105</elevator>
-         			</hinge_moment_3D>
+					<CL_alpha units="rad**-1">0.532<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+					<CL_alpha_isolated units="rad**-1">0.927<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha_isolated>
+					<CL0>-0.0067<!--value of lift coefficient at angle of attack 0 in clean configuration at cruise--></CL0>
+					<induced_drag_coefficient>0.1787</induced_drag_coefficient>
 				</cruise>
 				<low_speed>
-					<CL_alpha units="rad**-1">0.507755<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
-					<CL_alpha_isolated units="1/rad" is_input="False">4.5774744168591734</CL_alpha_isolated>
-					<CL0>0.0<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
-					<induced_drag_coefficient is_input="False">0.710962791572814</induced_drag_coefficient>
-					<clean>
-            			<alpha_aircraft_max units="deg" is_input="False">31.34766054480521</alpha_aircraft_max>
-            			<alpha_aircraft_min units="deg" is_input="False">-31.33300950550195</alpha_aircraft_min>
-          			</clean>
+					<CL_alpha units="rad**-1">0.5280<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
+					<CL_alpha_isolated units="rad**-1">0.9106<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha_isolated>
+					<CL_max_clean>0.2767</CL_max_clean>
+					<CL0>-0.0065<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
 				</low_speed>
 			</horizontal_tail>
 			<vertical_tail>
@@ -97,7 +91,6 @@
 					<induced_drag_coefficient is_input="False">0.03815893676770552</induced_drag_coefficient>
 					<CL_alpha units="rad**-1">4.9786<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
 					<CL_max_clean>1.51082<!--maximum lift coefficient with clean wing--></CL_max_clean>
-					<CM_alpha units="rad**-1">0.0<!--derivative of moment coefficient with respect to angle of attack in low speed conditions--></CM_alpha>
 					<CL0_clean>0.12430<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0_clean>
 					<CM0_clean>-0.02654<!--value of induced moment at angle of attack 0 in clean configuration at low speed--></CM0_clean>
 				</low_speed>
@@ -181,28 +174,15 @@
 		</geometry>
 		<mission>
 			<sizing>
-				<taxi_in>
-          			<duration units="s">300.0<!--duration of taxi-in phase in sizing mission--></duration>
-          			<speed units="m/s">15.433333333333334<!--speed during taxi-in phase in sizing mission--></speed>
-          			<thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
-        		</taxi_in>
-				<taxi_out>
-					<duration units="s">300.0<!--duration of taxi-out phase in sizing mission--></duration>
-          			<speed units="m/s">15.433333333333334<!--speed during taxi-out phase in sizing mission--></speed>
-          			<thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
-				</taxi_out>
-				<landing>
-					<elevator_angle units="deg">-25.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
-				</landing>
 				<main_route>
 					<climb>
-					  <thrust_rate>1.0</thrust_rate>
+						<climb_rate units="ft/min">800.0</climb_rate>
 					</climb>
 					<cruise>
 						<altitude units="ft">8000<!--altitude during cruise phase in sizing mission--></altitude>
 					</cruise>
 					<descent>
-						<descent_rate>0.03</descent_rate>
+						<descent_rate units="ft/min">-300.0</descent_rate>
 					</descent>
 					<reserve>
 						<duration units="s" is_input="True">2700.0</duration>
@@ -213,6 +193,16 @@
 					<friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
 					<thrust_rate>1.0<!--thrust rate (between 0.0 and 1.0) during takeoff phase in sizing mission--></thrust_rate>
 				</takeoff>
+				<taxi_in>
+          			<duration units="s">300.0<!--duration of taxi-in phase in sizing mission--></duration>
+          			<speed units="m/s">15.433333333333334<!--speed during taxi-in phase in sizing mission--></speed>
+          			<thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
+        		</taxi_in>
+				<taxi_out>
+					<duration units="s">300.0<!--duration of taxi-out phase in sizing mission--></duration>
+          			<speed units="m/s">15.433333333333334<!--speed during taxi-out phase in sizing mission--></speed>
+          			<thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
+				</taxi_out>
 			</sizing>
 		</mission>
 		<propulsion>
