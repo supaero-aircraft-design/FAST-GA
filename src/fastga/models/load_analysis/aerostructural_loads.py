@@ -83,7 +83,6 @@ class AerostructuralLoad(ComputeVNopenvsp):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:wing:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:fwd:x", val=np.nan, units="m")
 
@@ -99,11 +98,13 @@ class AerostructuralLoad(ComputeVNopenvsp):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=1.0)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -380,20 +381,21 @@ class AerostructuralLoad(ComputeVNopenvsp):
             tot_engine_mass = 0.0
             tot_lg_mass = 0.0
 
-        z_cg = inputs["data:weight:aircraft_empty:CG:z"]
-
-        lg_height = inputs["data:geometry:landing_gear:height"]
         lg_type = inputs["data:geometry:landing_gear:type"]
         engine_config = inputs["data:geometry:propulsion:layout"]
         engine_count = inputs["data:geometry:propulsion:count"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
+        y_lg = inputs["data:geometry:landing_gear:y"]
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
             y_ratio = inputs["data:geometry:propulsion:y_ratio"]
 
         g = 9.81
+
+        y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
+        y_end_tank = semi_span * y_ratio_tank_end
 
         # STEP 2/XX - REARRANGE THE DATA TO FIT ON ONE WING AS WE ASSUME SYMMETRICAL LOADING ###########################
         ################################################################################################################
@@ -416,13 +418,7 @@ class AerostructuralLoad(ComputeVNopenvsp):
             y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
                 y_vector, chord_vector, point_mass_array, y_eng, single_engine_mass, inputs)
 
-        # Computing and adding the lg weight
-        # Overturn angle set as a fixed value, it is recommended to take over 25° and check that we can fit both LG in
-        # the fuselage
-        phi_ot = 35. * np.pi / 180.
-        y_lg_1 = math.tan(phi_ot) * z_cg
-        y_lg = max(y_lg_1, lg_height)
-
+        # Adding the LG weight
         y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
             y_vector, chord_vector, point_mass_array, y_lg, single_lg_mass, inputs)
 
@@ -455,6 +451,8 @@ class AerostructuralLoad(ComputeVNopenvsp):
                 for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.):
                     # For now 50% size reduction in the fuel tank capacity due to the engine
                     fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.5
+            for i in np.where(y_vector > y_end_tank):
+                fuel_weight_distribution[i] = 0
 
         readjust_fuel = trapz(fuel_weight_distribution, y_vector)
 

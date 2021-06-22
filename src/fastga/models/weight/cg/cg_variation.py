@@ -24,7 +24,9 @@ class InFlightCGVariation(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
-        self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:front_fret:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:rear_fret:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:front_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
@@ -47,7 +49,9 @@ class InFlightCGVariation(om.ExplicitComponent):
 
         npax = inputs["data:TLAR:NPAX_design"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
-        luggage_weight = inputs["data:TLAR:luggage_mass_design"]
+        luggage_mass_front = inputs["data:weight:payload:front_fret:mass"]
+        luggage_mass_rear = inputs["data:weight:payload:rear_fret:mass"]
+        cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
         cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
         l_pilot_seat = inputs["data:geometry:cabin:seats:pilot:length"]
         l_pass_seat = inputs["data:geometry:cabin:seats:passenger:length"]
@@ -67,7 +71,7 @@ class InFlightCGVariation(om.ExplicitComponent):
             x_cg_passenger = x_cg_passenger + length * nb_pers / (npax + 2.)
 
 
-        x_cg_payload = (x_cg_passenger * (2.0 + npax) * design_mass_p_pax + cg_rear_fret * luggage_weight) / payload
+        x_cg_payload = (x_cg_passenger * (2.0 + npax) * design_mass_p_pax + cg_rear_fret * luggage_mass_rear + cg_front_fret * luggage_mass_front) / payload
 
         equivalent_moment = m_empty * x_cg_plane_aft + payload * x_cg_payload
         mass = m_empty + payload

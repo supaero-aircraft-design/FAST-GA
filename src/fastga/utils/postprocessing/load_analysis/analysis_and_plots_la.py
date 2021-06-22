@@ -17,6 +17,7 @@ Defines the analysis and plotting functions for postprocessing of load analysis
 import numpy as np
 import plotly
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from scipy.integrate import trapz
 from fastga.models.load_analysis.aerostructural_loads import AerostructuralLoad
@@ -229,5 +230,59 @@ def rbm_diagram(
         xaxis_title="spanwise position [m]",
         yaxis_title="Root bending moment [Nm]",
     )
+
+    return fig
+
+def fuselage_bending_diagram(
+        aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    x_vector = list(variables["data:loads:fuselage:x_vector"].value)
+    horizontal_bending_vector = list(variables["data:loads:fuselage:horizontal_bending_vector"].value)
+    vertical_bending_vector = list(variables["data:loads:fuselage:vertical_bending_vector"].value)
+    shell_bending_inertia = variables["data:loads:fuselage:inertia"].value[0]
+    horizontal_bending_inertia = list(variables["data:loads:fuselage:horizontal_bending_inertia"].value)
+    vertical_bending_inertia = list(variables["data:loads:fuselage:vertical_bending_inertia"].value)
+
+    if fig is None:
+        fig = make_subplots(
+            rows=2,
+            cols=1,
+        )
+
+    scatter = go.Scatter(x=x_vector, y=horizontal_bending_vector, mode="lines", name=name + ' fuselage horizontal bending moment')
+    fig.add_trace(scatter, 1, 1)
+
+    scatter = go.Scatter(x=x_vector, y=vertical_bending_vector, mode="lines", name=name + ' fuselage vertical bending moment')
+    fig.add_trace(scatter, 1, 1)
+
+    scatter = go.Scatter(x=[x_vector[0], x_vector[-1]], y=[shell_bending_inertia, shell_bending_inertia], mode="lines", name=name + ' shell bending inertia')
+    fig.add_trace(scatter, 2, 1)
+
+    scatter = go.Scatter(x=x_vector, y=horizontal_bending_inertia, mode="lines", name=name + ' sollicitated horizontal bending inertia')
+    fig.add_trace(scatter, 2, 1)
+
+    scatter = go.Scatter(x=x_vector, y=vertical_bending_inertia, mode="lines", name=name + ' sollicitated vertical bending inertia')
+    fig.add_trace(scatter, 2, 1)
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_xaxes(title_text="X along the fuselage [m]", row=1, col=1)
+    fig.update_xaxes(title_text="X along the fuselage [m]", row=2, col=1)
+    fig.update_yaxes(title_text="Bending Moments [Nm]", row=1, col=1)
+    fig.update_yaxes(title_text="Inertias [m**4]", row=2, col=1)
+
+    # fig.update_layout(
+    #     legend=dict(
+    #         yanchor="top",
+    #         y=0.99,
+    #         xanchor="right",
+    #         x=0.99
+    #     )
+    # )
 
     return fig

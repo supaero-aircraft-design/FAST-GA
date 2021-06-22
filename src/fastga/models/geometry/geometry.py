@@ -21,10 +21,11 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
 from .geom_components import ComputeTotalArea, ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizingFL, \
-    ComputeHorizontalTailGeometryFL, ComputeNacelleGeometry, ComputeVerticalTailGeometryFL, ComputeWingGeometry
+    ComputeHorizontalTailGeometryFL, ComputeNacelleGeometry, ComputeVerticalTailGeometryFL, ComputeWingGeometry, \
+    ComputeLGGeometry, ComputeMFW
 from .geom_components import ComputeTotalArea, ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizingFD, \
-    ComputeHorizontalTailGeometryFD, ComputeNacelleGeometry, ComputeVerticalTailGeometryFD, ComputeWingGeometry
-
+    ComputeHorizontalTailGeometryFD, ComputeNacelleGeometry, ComputeVerticalTailGeometryFD, ComputeWingGeometry, \
+    ComputeLGGeometry, ComputeMFW
 from fastga.models.options import CABIN_SIZING_OPTION
 
 
@@ -61,7 +62,9 @@ class GeometryFixedFuselage(om.Group):
             "compute_engine_nacelle", ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"]
         )
+        self.add_subsystem("compute_landing_gears", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem("compute_mfw", ComputeMFW(), promotes=["*"])
 
 
 @RegisterOpenMDAOSystem("fastga.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -96,4 +99,6 @@ class GeometryFixedTailDistance(om.Group):
             "compute_engine_nacelle", ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"]
         )
+        self.add_subsystem("compute_landing_gears", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem("compute_mfw", ComputeMFW(), promotes=["*"])

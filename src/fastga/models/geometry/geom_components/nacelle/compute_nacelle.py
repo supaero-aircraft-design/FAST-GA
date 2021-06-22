@@ -51,7 +51,6 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
         self.add_output("data:geometry:propulsion:nacelle:wet_area", units="m**2")
         self.add_output("data:geometry:propulsion:propeller:depth", units="m")
         self.add_output("data:geometry:propulsion:propeller:diameter", units="m")
-        self.add_output("data:geometry:landing_gear:height", units="m")
         self.add_output("data:geometry:propulsion:nacelle:y", units="m")
         
         self.declare_partials("*", "*", method="fd")
@@ -75,12 +74,9 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
         else:
             y_nacelle = y_ratio * span / 2
             warnings.warn('Propulsion layout {} not implemented in model, replaced by layout 1!'.format(prop_layout))
-        
-        lg_height = 0.41 * inputs["data:geometry:propeller:diameter"]
-        
+
         outputs["data:geometry:propulsion:nacelle:length"] = nac_length
         outputs["data:geometry:propulsion:nacelle:height"] = nac_height
         outputs["data:geometry:propulsion:nacelle:width"] = nac_width
         outputs["data:geometry:propulsion:nacelle:wet_area"] = nac_wet_area
-        outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle

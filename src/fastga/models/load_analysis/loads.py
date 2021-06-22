@@ -16,6 +16,8 @@ import openmdao.api as om
 from .aerostructural_loads import AerostructuralLoad
 from .structural_loads import StructuralLoads
 from .aerodynamic_loads import AerodynamicLoads
+from .fuselage.loads_fuselage import LoadsFuselage
+from .compute_wing_loading import ComputeWingLoading
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -34,3 +36,5 @@ class Loads(om.Group):
                                                                       ), promotes=["*"])
         self.add_subsystem("structural_loads", StructuralLoads(compute_cl_alpha=True), promotes=["*"])
         self.add_subsystem("aerodynamic_loads", AerodynamicLoads(compute_cl_alpha=True), promotes=["*"])
+        self.add_subsystem("fuselage_loads", LoadsFuselage(), promotes=["*"])
+        self.add_subsystem("wing_loading", ComputeWingLoading(), promotes=["*"])

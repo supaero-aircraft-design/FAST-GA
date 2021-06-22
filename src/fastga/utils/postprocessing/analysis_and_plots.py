@@ -18,6 +18,9 @@ import numpy as np
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+# from fastga.models.performances import Sizing
+from fastga.command import api as api_cs23
+from scipy.constants import g
 
 from fastoad.io import VariableIO
 
@@ -25,7 +28,7 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def aircraft_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, plot_nacelle:bool = True, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -168,9 +171,6 @@ def aircraft_geometry_plot(
 
     if fig is None:
         fig = go.Figure()
-        plot_nacelle = False
-    else:
-        plot_nacelle = True
 
     scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name)
 
@@ -798,6 +798,240 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     ), 1, 2)
 
     fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
+
+    return fig
+
+
+def payload_range(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the plane.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
+    :return: wing plot figure
+    """
+    variables_design = VariableIO(aircraft_file_path, file_formatter).read()
+
+    payload_mission = variables_design["data:weight:aircraft:payload"].value[0]
+    range_mission = variables_design["data:TLAR:range"].value[0]
+    fuel_mission = variables_design["data:mission:sizing:fuel"].value[0]
+    mfw_aircraft = variables_design["data:weight:aircraft:MFW"].value[0]
+    mfw_unit = variables_design["data:weight:aircraft:MFW"].units
+    mtow_aircraft = variables_design["data:weight:aircraft:MTOW"].value[0]
+    mtow_unit = variables_design["data:weight:aircraft:MTOW"].units
+
+    if mfw_unit == 'lbm':
+        mfw_aircraft *= 0.45359
+    if mtow_unit == 'lbm':
+        mtow_aircraft *= 0.45359
+
+    range_plot = []
+    payload_plot = []
+
+    payload_min = 2 * variables_design["settings:weight:aircraft:payload:design_mass_per_passenger"].value[0]
+
+    # Point A : 0 fuel, payload mission and mass < MTOW
+    point_a_range = 0
+    point_a_payload = payload_mission
+    range_plot.append(point_a_range)
+    payload_plot.append(point_a_payload)
+
+    # Point B : payload = payload_mission, mass = MTOW -> fuel = fuel_mission -> range = range_mission
+    point_b_range = range_mission
+    point_b_payload = payload_mission
+    range_plot.append(point_b_range)
+    payload_plot.append(point_b_payload)
+
+    if (payload_mission - payload_min) >= (mfw_aircraft - fuel_mission):
+
+        # Point C : mass = MTOW, fuel = MFW, payload = payload_mission - MFW
+        # We need to find the range for fuel = MFW so starting from point B, for a delta_fuel = MFW - fuel_mission.
+        point_c_payload = payload_mission - (mfw_aircraft - fuel_mission)
+
+        var_inputs = ["data:TLAR:range"]
+        compute_fuel = api_cs23.generate_block_analysis(
+            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine",),
+            var_inputs,
+            aircraft_file_path,
+            True,
+        )
+
+        # Interpolation to get point C
+        point_c_range = 0
+        range_interpolation = 0
+        interpolation_index = 1
+
+        while point_c_range == range_interpolation or point_c_range == 0:
+
+            interpolation_index += 1
+            range_interpolation = interpolation_index * range_mission
+            inputs_dict = {"data:TLAR:range": (range_interpolation, "m")}
+            output = compute_fuel(inputs_dict)
+
+            variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
+            fuel_output_inter = variables_inter["data:mission:sizing:fuel"].value[0]
+            delta_fuel_inter = fuel_output_inter - fuel_mission
+            payload_mtow_constant_inter = payload_mission - delta_fuel_inter
+
+            point_c_range = np.interp([point_c_payload],
+                                      [payload_mtow_constant_inter, point_b_payload],
+                                      [range_interpolation, point_b_range])[0]
+
+        range_plot.append(point_c_range)
+        payload_plot.append(point_c_payload)
+
+        # Point D : minimum payload (2 pilots), MTOW decreased and fuel = MFW
+        point_d_payload = payload_min
+        point_d_mass_takeoff_aircraft = mtow_aircraft - (payload_mission - point_d_payload)
+
+        var_inputs = ["data:TLAR:range", "data:weight:aircraft:MTOW", "data:weight:aircraft:payload"]
+        compute_fuel_d = api_cs23.generate_block_analysis(
+            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine",),
+            var_inputs,
+            aircraft_file_path,
+            True,
+        )
+
+        range_interpolation_1 = range_mission
+        inputs_dict = {"data:TLAR:range": (range_interpolation_1, "m"),
+                       "data:weight:aircraft:MTOW": (point_d_mass_takeoff_aircraft, "kg"),
+                       "data:weight:aircraft:payload": (point_d_payload, "kg")}
+        output = compute_fuel_d(inputs_dict)
+        variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
+        fuel_output_inter_1 = variables_inter["data:mission:sizing:fuel"].value[0]
+
+        # While loop to make sure the interpolation returns a proper value,
+        # without taking a range too big that could cause errors
+        point_d_range = 0
+        range_interpolation_2 = 0
+        interpolation_index = 1
+
+        while point_d_range == range_interpolation_2 or point_d_range == 0:
+            interpolation_index += 1
+            range_interpolation_2 = interpolation_index * range_mission
+            inputs_dict = {"data:TLAR:range": (range_interpolation_2, "m"),
+                           "data:weight:aircraft:MTOW": (point_d_mass_takeoff_aircraft, "kg"),
+                           "data:weight:aircraft:payload": (point_d_payload, "kg")}
+            output = compute_fuel_d(inputs_dict)
+            variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
+            fuel_output_inter_2 = variables_inter["data:mission:sizing:fuel"].value[0]
+
+            point_d_range = np.interp([mfw_aircraft],
+                                      [fuel_output_inter_1, fuel_output_inter_2],
+                                      [range_interpolation_1, range_interpolation_2])[0]
+
+        range_plot.append(point_d_range)
+        payload_plot.append(point_d_payload)
+
+    else:
+        # Point C : mass = MTOW, fuel = fuel_mission + (payload_mission - payload_min), payload = payload_min
+        # We need to find the range for payload = payload_min for a delta_fuel = payload_mission - payload_min.
+        point_c_payload = payload_min
+
+        var_inputs = ["data:TLAR:range"]
+        compute_fuel = api_cs23.generate_block_analysis(
+            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+            var_inputs,
+            aircraft_file_path,
+            True,
+        )
+
+        # Interpolation to get point C
+        range_interpolation = 4 * range_mission
+        inputs_dict = {"data:TLAR:range": (range_interpolation, "m")}
+        output = compute_fuel(inputs_dict)
+
+        variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
+        fuel_output_inter = variables_inter["data:mission:sizing:fuel"].value[0]
+        delta_fuel_inter = fuel_output_inter - fuel_mission
+        payload_mtow_constant_inter = payload_mission - delta_fuel_inter
+
+        point_c_range = np.interp([point_c_payload],
+                                  [payload_mtow_constant_inter, point_b_payload],
+                                  [range_interpolation, point_b_range])[0]
+
+        range_plot.append(point_c_range)
+        payload_plot.append(point_c_payload)
+
+        # No point D since the only way to gain range would be to add fuel to reach MFW, but doing so would make the
+        # plane mass go beyond its MTOW.
+
+    # Plotting of the diagram
+    # Conversion of the range in nautical miles
+    range_plot = [i / 1852 for i in range_plot]
+
+    if fig is None:
+        fig = go.Figure()
+    scatter = go.Scatter(x=range_plot, y=payload_plot, name=name)
+    fig.add_trace(scatter)
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(
+        title_text="Payload Range",
+        title_x=0.5,
+        xaxis_title="Range [NM]",
+        yaxis_title="Payload [kg]",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="right",
+            x=0.99
+        )
+    )
+
+    return fig
+
+
+def payload_range_bis(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the top view of the plane.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
+    :return: wing plot figure
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    payload_mission = variables["data:weight:aircraft:payload"].value[0]
+    payload_max = variables["data:weight:aircraft:max_payload"].value[0]
+    lift_to_drag_ratio_max_cruise = variables["data:aerodynamics:aircraft:cruise:L_D_max"].value[0]
+    v_cruise = variables["data:TLAR:v_cruise"].value[0]
+    mtow = variables["data:weight:aircraft:mtow"].value[0]
+    mzfw = variables["data:weight:aircraft:mzfw"].value[0]
+
+    range_plot = []
+    payload_plot = []
+
+    # Point A : 0 fuel, payload max -> mass = MZFW < MTOW
+    range_plot.append(0)
+    payload_plot.append(payload_max)
+
+    # Point B : payload max, mass = MTOW -> fuel added up to MTOW
+    range = v_cruise * lift_to_drag_ratio_max_cruise / (g * sfc) * np.log(mtow / mzfw)
+    kra = 1 - 0.895 * np.exp(- range / 814)
+    range_refined = kra * range
+
+    range_plot.append(range)
+    payload_plot.append(payload_max)
+
+    # Point D : mass = MTOW, fuel = MFW
+
+    fig = go.FigureWidget(fig)
 
     return fig
 
