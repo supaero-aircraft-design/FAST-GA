@@ -24,7 +24,9 @@ class InFlightCGVariation(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
-        self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:front_fret:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:rear_fret:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:front_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
@@ -40,17 +42,16 @@ class InFlightCGVariation(om.ExplicitComponent):
             desc="Design value of mass per passenger",
         )
 
-        self.add_output(
-            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment",
-            units="kg*m",
-        )
+        self.add_output("data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment", units="kg*m")
         self.add_output("data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         npax = inputs["data:TLAR:NPAX_design"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
-        luggage_weight = inputs["data:TLAR:luggage_mass_design"]
+        luggage_mass_front = inputs["data:weight:payload:front_fret:mass"]
+        luggage_mass_rear = inputs["data:weight:payload:rear_fret:mass"]
+        cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
         cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
         l_pilot_seat = inputs["data:geometry:cabin:seats:pilot:length"]
         l_pass_seat = inputs["data:geometry:cabin:seats:passenger:length"]
@@ -63,20 +64,17 @@ class InFlightCGVariation(om.ExplicitComponent):
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
         nrows = math.ceil(npax / count_by_row)
-        x_cg_passenger = lav + l_instr + l_pilot_seat * 2.0 / (npax + 2.0)
+        x_cg_passenger = lav + l_instr + l_pilot_seat * 2. / (npax + 2.)
         for idx in range(nrows):
             length = l_pilot_seat + (idx + 0.5) * l_pass_seat
             nb_pers = min(count_by_row, npax - idx * count_by_row)
-            x_cg_passenger = x_cg_passenger + length * nb_pers / (npax + 2.0)
+            x_cg_passenger = x_cg_passenger + length * nb_pers / (npax + 2.)
 
-        x_cg_payload = (
-            x_cg_passenger * (2.0 + npax) * design_mass_p_pax + cg_rear_fret * luggage_weight
-        ) / payload
+
+        x_cg_payload = (x_cg_passenger * (2.0 + npax) * design_mass_p_pax + cg_rear_fret * luggage_mass_rear + cg_front_fret * luggage_mass_front) / payload
 
         equivalent_moment = m_empty * x_cg_plane_aft + payload * x_cg_payload
         mass = m_empty + payload
 
-        outputs[
-            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
-        ] = equivalent_moment
+        outputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"] = equivalent_moment
         outputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"] = mass

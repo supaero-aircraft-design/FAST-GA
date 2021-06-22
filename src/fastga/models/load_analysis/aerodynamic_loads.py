@@ -93,15 +93,16 @@ class AerodynamicLoads(AerostructuralLoad):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=1.0)
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 

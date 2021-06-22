@@ -24,7 +24,9 @@ class ComputePayload(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
-        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_front", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_rear", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:front_compartment_first", val=np.nan)
         self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
         self.add_input(
             "settings:weight:aircraft:payload:design_mass_per_passenger",
@@ -41,6 +43,8 @@ class ComputePayload(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
+        self.add_output("data:weight:payload:front_fret:mass", units="kg")
+        self.add_output("data:weight:payload:rear_fret:mass", units="kg")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -52,7 +56,27 @@ class ComputePayload(om.ExplicitComponent):
         mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
         max_mass_per_pax = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
         luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]
-        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
+        luggage_mass_max_front = inputs["data:geometry:cabin:luggage:mass_max_front"]
+        luggage_mass_max_rear = inputs["data:geometry:cabin:luggage:mass_max_rear"]
+        front_compartment_first = inputs["data:geometry:cabin:luggage:front_compartment_first"]
 
+        luggage_mass_front = 0.0
+        luggage_mass_rear = 0.0
+
+        if front_compartment_first:
+            if luggage_mass_design <= luggage_mass_max_front:
+                luggage_mass_front = luggage_mass_design
+            else:
+                luggage_mass_front = luggage_mass_max_front
+                luggage_mass_rear = luggage_mass_design - luggage_mass_max_front
+        else:
+            if luggage_mass_design <= luggage_mass_max_rear:
+                luggage_mass_rear = luggage_mass_design
+            else:
+                luggage_mass_rear = luggage_mass_max_rear
+                luggage_mass_front = luggage_mass_design - luggage_mass_max_rear
+
+        outputs["data:weight:payload:front_fret:mass"] = luggage_mass_front
+        outputs["data:weight:payload:rear_fret:mass"] = luggage_mass_rear
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
-        outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max
+        outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max_front + luggage_mass_max_rear
