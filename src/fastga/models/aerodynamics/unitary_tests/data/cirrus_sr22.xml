@@ -78,6 +78,8 @@
         		</propeller>
 			</propulsion>
 			<vertical_tail>
+				<area units="m**2">1.59</area>
+				<span units="m">1.65</span>
 				<aspect_ratio>1.2<!--aspect ratio of vertical tail--></aspect_ratio>
 				<taper_ratio>0.502<!--taper ratio of vertical tail--></taper_ratio>
 				<root>

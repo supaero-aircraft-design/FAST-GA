@@ -640,6 +640,8 @@ def test_high_lift():
     assert delta_cd_takeoff == pytest.approx(0.001221, abs=1e-4)
     cl_delta_elev = problem.get_val("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
     assert cl_delta_elev == pytest.approx(0.4771, abs=1e-4)
+    cd_delta_elev = problem.get_val("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-1")
+    assert cd_delta_elev == pytest.approx(0.02766, abs=1e-4)
 
 
 def test_extreme_cl():
@@ -697,9 +699,9 @@ def test_extreme_cl():
     cl_max_landing_wing = problem["data:aerodynamics:aircraft:landing:CL_max"]
     assert cl_max_landing_wing == pytest.approx(1.97, abs=1e-2)
     cl_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
-    assert cl_max_clean_htp == pytest.approx(1.41, abs=1e-2)
+    assert cl_max_clean_htp == pytest.approx(0.288, abs=1e-2)
     cl_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"]
-    assert cl_min_clean_htp == pytest.approx(-1.41, abs=1e-2)
+    assert cl_min_clean_htp == pytest.approx(-0.288, abs=1e-2)
     alpha_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"]
     assert alpha_max_clean_htp == pytest.approx(32., abs=1)
     alpha_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"]
@@ -853,8 +855,10 @@ def test_cl_alpha_vt():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClalphaVT(low_speed_aero=True), ivc)
-    cl_alpha_vt_fus_ls = problem.get_val("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
-    assert cl_alpha_vt_fus_ls == pytest.approx(1.9816, abs=1e-4)
+    cl_alpha_vt_ls = problem.get_val("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
+    assert cl_alpha_vt_ls == pytest.approx(2.1755, abs=1e-4)
+    k_ar_effective = problem.get_val("data:aerodynamics:vertical_tail:k_ar_effective")
+    assert k_ar_effective == pytest.approx(1.3076, abs=1e-4)
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT()), __file__, XML_FILE)
@@ -863,8 +867,8 @@ def test_cl_alpha_vt():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClalphaVT(), ivc)
-    cl_alpha_vt_fus_cruise = problem.get_val("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
-    assert cl_alpha_vt_fus_cruise == pytest.approx(2.0099, abs=1e-4)
+    cl_alpha_vt_cruise = problem.get_val("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
+    assert cl_alpha_vt_cruise == pytest.approx(2.2001, abs=1e-4)
 
 
 def test_cy_delta_r():
@@ -873,11 +877,13 @@ def test_cy_delta_r():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
     ivc.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=1.94358, units="rad**-1")
+    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=6.4038, units="rad**-1")
+    ivc.add_output("data:aerodynamics:vertical_tail:k_ar_effective", val=1.3076)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyDeltaRudder(), ivc)
     cy_delta_r = problem.get_val("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
-    assert cy_delta_r == pytest.approx(1.2526, abs=1e-4)
+    assert cy_delta_r == pytest.approx(1.2636, abs=1e-4)
 
 
 def test_high_speed_connection():

@@ -89,10 +89,6 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:chord_vect", val=nans_array, units="m")
         self.add_input("data:geometry:propeller:twist_vect", val=nans_array, units="deg")
         self.add_input("data:geometry:propeller:radius_ratio_vect", val=nans_array)
-        # self.add_input("data:geometry:propeller:sweep_vect", shape_by_conn=True, val=np.nan, units="deg")
-        # self.add_input("data:geometry:propeller:chord_vect", shape_by_conn=True, val=np.nan, units="m")
-        # self.add_input("data:geometry:propeller:twist_vect", shape_by_conn=True, val=np.nan, units="deg")
-        # self.add_input("data:geometry:propeller:radius_ratio_vect", shape_by_conn=True, val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -108,7 +104,9 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        _LOGGER.warning("Entering propeller computation")
+
+        _LOGGER.debug("Entering propeller computation")
+
         # Define init values
         omega = self.options["average_rpm"]
         v_min = 5.0
@@ -142,8 +140,10 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         thrust_vect, theta_vect, eta_vect = self.construct_table(inputs, speed_interp, altitude, omega)
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
+
+        _LOGGER.debug("Done with propeller computation")
+
         # Save results
-        _LOGGER.warning("Done with propeller computation")
         outputs["data:aerodynamics:propeller:cruise_level:efficiency"] = efficiency_interp
         outputs["data:aerodynamics:propeller:cruise_level:thrust"] = thrust_interp
         outputs["data:aerodynamics:propeller:cruise_level:thrust_limit"] = thrust_limit
@@ -422,7 +422,9 @@ class _ComputePropellePerformance(om.ExplicitComponent):
         cd = np.interp(alpha, alpha_element, cd_element)
         if mach_local < 1:
             beta = math.sqrt(1 - mach_local ** 2.0)
-            cl = cl / (beta + (1 - beta) * cl / 2)
+            # cl = cl / (beta + (1 - beta) * cl / 2)
+            # Prandtl-Glauert correction as Karman-Tsien and Laitone only apply to the pressure coefficient distribution
+            cl = cl / beta
         else:
             beta = math.sqrt(mach_local ** 2.0 - 1)
             cl = cl / beta

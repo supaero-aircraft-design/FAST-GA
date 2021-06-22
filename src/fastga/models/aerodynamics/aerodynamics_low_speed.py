@@ -68,11 +68,6 @@ class AerodynamicsLowSpeed(Group):
                                    wing_airfoil_file=self.options["wing_airfoil"],
                                    htp_airfoil_file=self.options["htp_airfoil"],
                                ), promotes=["*"])
-        self.add_subsystem("airfoil_lift_slope", ComputeAirfoilLiftCurveSlope(
-            wing_airfoil_file=self.options["wing_airfoil"],
-            htp_airfoil_file=self.options["htp_airfoil"],
-            vtp_airfoil_file=self.options["htp_airfoil"],
-        ), promotes=["*"])
         self.add_subsystem("Cd0_all",
                            Cd0(
                                low_speed_aero=True,
@@ -80,6 +75,11 @@ class AerodynamicsLowSpeed(Group):
                                htp_airfoil_file=self.options["htp_airfoil"],
                                propulsion_id=self.options["propulsion_id"],
                            ), promotes=["*"])
+        self.add_subsystem("airfoil_lift_slope", ComputeAirfoilLiftCurveSlope(
+            wing_airfoil_file=self.options["wing_airfoil"],
+            htp_airfoil_file=self.options["htp_airfoil"],
+            vtp_airfoil_file=self.options["htp_airfoil"],
+        ), promotes=["*"])
         self.add_subsystem("high_lift", ComputeDeltaHighLift(), promotes=["*"])
         self.add_subsystem("Cl_extreme", ComputeExtremeCL(
             wing_airfoil_file=self.options["wing_airfoil"],

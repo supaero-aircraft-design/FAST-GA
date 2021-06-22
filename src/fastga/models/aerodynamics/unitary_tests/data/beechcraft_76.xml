@@ -30,7 +30,7 @@
 				<length units="m">8.888<!--total fuselage length--></length>
 				<maximum_height units="m">1.338<!--maximum fuselage height--></maximum_height>
 				<maximum_width units="m">1.198<!--maximum fuselage width--></maximum_width>
-				<rear_length units="m">0.0<!--length of rear non-cylindrical part of the fuselage--></rear_length>
+				<rear_length units="m">3.84<!--length of rear non-cylindrical part of the fuselage--></rear_length>
 				<wet_area units="m**2">33.354<!--wet area of fuselage--></wet_area>
 			</fuselage>
 			<has_T_tail>1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
@@ -78,6 +78,8 @@
         		</propeller>
 			</propulsion>
 			<vertical_tail>
+				<area units="m**2">1.79</area>
+				<span units="m">1.734</span>
 				<aspect_ratio>1.2<!--aspect ratio of vertical tail--></aspect_ratio>
 				<taper_ratio>0.62<!--taper ratio of vertical tail--></taper_ratio>
 				<root>

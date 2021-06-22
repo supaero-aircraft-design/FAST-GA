@@ -95,7 +95,7 @@
 				<taper_ratio>0.502<!--taper ratio of vertical tail--></taper_ratio>
 				<thickness_ratio>0.12<!--thickness ratio of vertical tail--></thickness_ratio>
 				<rudder>
-					<chord_ratio>0.25</chord_ratio>
+					<chord_ratio>0.33</chord_ratio>
 					<max_deflection units="deg">20.0</max_deflection>
 				</rudder>
 			</vertical_tail>

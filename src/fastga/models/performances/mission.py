@@ -231,6 +231,8 @@ class _compute_climb(AircraftEquilibrium):
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", np.nan, units="rad**-1")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
@@ -383,6 +385,8 @@ class _compute_cruise(AircraftEquilibrium):
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", np.nan, units = "rad**-1")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
@@ -432,6 +436,8 @@ class _compute_cruise(AircraftEquilibrium):
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
         coef_k_htp = inputs["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"]
+        cl_delta_e = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
+        cd_delta_e = inputs["data:aerodynamics:elevator:low_speed:CD_delta"]
         wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -522,6 +528,8 @@ class _compute_descent(AircraftEquilibrium):
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", np.nan, units="rad**-1")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")

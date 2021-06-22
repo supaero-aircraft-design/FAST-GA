@@ -58,7 +58,7 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
         cyl_length = fus_length - lav - lar
         wet_area_nose = 2.45 * fus_dia * lav
-        wet_area_cyl = 3.1416 * fus_dia * cyl_length
+        wet_area_cyl = math.pi * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
         
@@ -175,7 +175,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
         cyl_length = fus_length - lav - lar
         wet_area_nose = 2.45 * fus_dia * lav
-        wet_area_cyl = 3.1416 * fus_dia * cyl_length
+        wet_area_cyl = math.pi * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
         

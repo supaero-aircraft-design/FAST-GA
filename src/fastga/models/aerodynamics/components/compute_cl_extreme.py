@@ -234,11 +234,12 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         y_tip = float(inputs["data:geometry:horizontal_tail:span"]) / 2.0
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]
+        area_ratio = float(htp_area / wing_area)
 
-        cl_max_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"])
-        cl_max_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"])
-        cl_min_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"])
-        cl_min_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"])
+        cl_max_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"]) * area_ratio
+        cl_max_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"]) * area_ratio
+        cl_min_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"]) * area_ratio
+        cl_min_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"]) * area_ratio
         cl_alpha_htp = float(inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"])
         cl_ref = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"]
@@ -260,8 +261,8 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         outputs["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"] = cl_max_clean
         outputs["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"] = cl_min_clean
 
-        clean_alpha_max_htp = cl_max_clean / (cl_alpha_htp * wing_area / htp_area) * 180. / np.pi
-        clean_alpha_min_htp = cl_min_clean / (cl_alpha_htp * wing_area / htp_area) * 180. / np.pi
+        clean_alpha_max_htp = cl_max_clean / cl_alpha_htp * 180. / np.pi
+        clean_alpha_min_htp = cl_min_clean / cl_alpha_htp * 180. / np.pi
 
         outputs["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"] = clean_alpha_max_htp
         outputs["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"] = clean_alpha_min_htp

@@ -25,6 +25,7 @@ from scipy import interpolate
 
 from . import resources
 
+DELTA_CD_PLAIN_FLAP = "delta_drag_plain_flap.csv"
 K_PLAIN_FLAP = "k_plain_flap.csv"
 CL_DELTA_TH_PLAIN_FLAP = "cl_delta_th_plain_flap.csv"
 K_CL_DELTA_PLAIN_FLAP = "k_cl_delta_plain_flap.csv"
@@ -54,6 +55,47 @@ class FigureDigitization(om.ExplicitComponent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.phase = None
+
+    @staticmethod
+    def delta_cd_plain_flap(chord_ratio, control_deflection) -> float:
+        """
+        Roskam data to account for the profile drag increment due to the deployment of plain flap (figure 4.44)
+
+        :param chord_ratio: control surface over lifting surface ratio
+        :param control_deflection: control surface deflection, in deg
+        :return delta_cd_flap: profile drag increment due to the deployment of flaps
+        """
+
+        file = pth.join(resources.__path__[0], DELTA_CD_PLAIN_FLAP)
+        db = read_csv(file)
+
+        x_15 = db['DELTA_F_15_X']
+        y_15 = db['DELTA_F_15_Y']
+        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
+        x_15 = x_15[np.logical_not(errors)].tolist()
+        y_15 = y_15[np.logical_not(errors)].tolist()
+
+        x_60 = db['DELTA_F_60_X']
+        y_60 = db['DELTA_F_60_Y']
+        errors = np.logical_or(np.isnan(x_60), np.isnan(y_60))
+        x_60 = x_60[np.logical_not(errors)].tolist()
+        y_60 = y_60[np.logical_not(errors)].tolist()
+
+        if chord_ratio != np.clip(chord_ratio, min(min(x_15), min(x_60)), max(max(x_15), max(x_60))):
+            _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
+
+        x_value_00 = 0.0
+        x_value_15 = interpolate.interp1d(x_15, y_15)(np.clip(float(chord_ratio), min(x_15), max(x_15)))
+        x_value_60 = interpolate.interp1d(x_60, y_60)(np.clip(float(chord_ratio), min(x_60), max(x_60)))
+
+        if control_deflection != np.clip(control_deflection, 0., 60.0):
+            _LOGGER.warning("Control surface deflection outside of the range in Roskam's book, value clipped")
+
+        delta_cd_flap = interpolate.interp1d([0.0, 15.0, 60.0], [x_value_00, x_value_15, x_value_60], kind='quadratic')(
+            np.clip(control_deflection, 0., 60.0)
+        )
+
+        return delta_cd_flap
 
     @staticmethod
     def k_prime_plain_flap(flap_angle, chord_ratio):

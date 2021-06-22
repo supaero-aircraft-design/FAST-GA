@@ -257,7 +257,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (area_ratio / saved_area_ratio)
             y_vector_htp = np.array([float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(',')])
-            cl_vector_htp = np.array([float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(',')])
+            cl_vector_htp = np.array([float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(',')]) * (
+                    area_ratio / saved_area_ratio)
             coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
 
         return cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, chord_vector_wing, \
@@ -1088,8 +1089,10 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         power = thrust * v_inf / PROPELLER_EFFICIENCY
         engine_rps = engine_rpm / 60.
         # For now thrust is distributed equally on each engine
-        thrust_coefficient = round(float(thrust / engine_count / (rho * engine_rps**2.0 * propeller_diameter**4.0)), 5)
-        power_coefficient = round(float(power / engine_count / (rho * engine_rps**3.0 * propeller_diameter**5.0)), 5)
+        thrust_coefficient = round(float(thrust / engine_count / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)),
+                                   5)
+        power_coefficient = round(float(power / engine_count / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)),
+                                  5)
 
         prop_radius = round(propeller_diameter / 2.0, 3)
         prop_hub_radius = round(0.2 * prop_radius, 3)
@@ -1115,7 +1118,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                 motor_pos_z[0] = z_wing
                 motor_rpm_signed[0] = engine_rpm
                 eng_start += 1
-                eng_per_wing = int((engine_count-1)/2)
+                eng_per_wing = int((engine_count - 1) / 2)
             else:
                 eng_per_wing = int(engine_count / 2)
 
@@ -1245,7 +1248,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 
         parser = InputFileGenerator()
         # template_file = pth.split(input_file_list[1])[1]
-        template_file = "wing_"+str(eng_per_wing)+"_rotor_openvsp_DegenGeom.vspaero"
+        template_file = "wing_" + str(eng_per_wing) + "_rotor_openvsp_DegenGeom.vspaero"
         with path(local_resources, template_file) as input_template_path:
             parser.set_template_file(str(input_template_path))
             parser.set_generated_file(input_file_list[1])
@@ -1268,15 +1271,15 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             parser.transfer_var(float(rho), 0, 3)
             parser.mark_anchor("ReCref")
             parser.transfer_var(float(reynolds), 0, 3)
-            for i in range(1, eng_per_wing+1):
-                parser.mark_anchor("Prop_"+str(i)+"_name")
-                parser.transfer_var("Prop_element_"+str(i), 0, 1)
+            for i in range(1, eng_per_wing + 1):
+                parser.mark_anchor("Prop_" + str(i) + "_name")
+                parser.transfer_var("Prop_element_" + str(i), 0, 1)
                 parser.mark_anchor("Disc_" + str(i) + "_ID")
                 parser.transfer_var(i, 0, 1)
                 parser.mark_anchor("Disc_" + str(i) + "_x")
-                parser.transfer_var(motor_pos_x[i-1], 0, 1)
-                parser.transfer_var(motor_pos_y[i-1], 0, 2)
-                parser.transfer_var(motor_pos_z[i-1], 0, 3)
+                parser.transfer_var(motor_pos_x[i - 1], 0, 1)
+                parser.transfer_var(motor_pos_y[i - 1], 0, 2)
+                parser.transfer_var(motor_pos_z[i - 1], 0, 3)
                 parser.mark_anchor("Disc_" + str(i) + "_nx")
                 parser.transfer_var(1.0, 0, 1)
                 parser.transfer_var(0.0, 0, 2)
@@ -1286,7 +1289,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                 parser.mark_anchor("Disc_" + str(i) + "_hub_radius")
                 parser.transfer_var(prop_hub_radius, 0, 1)
                 parser.mark_anchor("Disc_" + str(i) + "_rpm")
-                parser.transfer_var(motor_rpm_signed[i-1], 0, 1)
+                parser.transfer_var(motor_rpm_signed[i - 1], 0, 1)
                 parser.mark_anchor("Disc_" + str(i) + "_CT")
                 parser.transfer_var(thrust_coefficient, 0, 1)
                 parser.mark_anchor("Disc_" + str(i) + "_CP")
@@ -1343,4 +1346,3 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                       'coef_e': wing_e,
                       'ct': thrust_coefficient}
         return wing_rotor
-

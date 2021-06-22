@@ -41,6 +41,12 @@
 					<CL_alpha>0.6760</CL_alpha>
 				</low_speed>
 			</horizontal_tail>
+			<elevator>
+        		<low_speed>
+          			<CD_delta units="1/rad" is_input="False">0.0312</CD_delta>
+          			<CL_delta units="1/rad" is_input="False">0.5424<!--derivative of horizontal tail lift coefficient with respect to elevator command--></CL_delta>
+        		</low_speed>
+      		</elevator>
 			<flaps>
 				<landing>
 					<CD>0.0196</CD>

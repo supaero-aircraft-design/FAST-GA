@@ -106,7 +106,19 @@ def test_update_vt_area():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(UpdateVTArea(propulsion_id=ENGINE_WRAPPER), input_vars)
     vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
-    assert vt_area == pytest.approx(1.751, abs=1e-2)  # old-version obtained value 2.4m²
+    assert vt_area == pytest.approx(1.479, abs=1e-2)  # old-version obtained value 2.4m²
+
+    vt_area_constraints_cruise = problem.get_val("data:constraints:vertical_tail:target_cruise_stability", units="m**2")
+    assert vt_area_constraints_cruise == pytest.approx(0., abs=1e-2)
+    vt_area_constraints_crosswind = problem.get_val("data:constraints:vertical_tail:crosswind_landing", units="m**2")
+    assert vt_area_constraints_crosswind == pytest.approx(0.246, abs=1e-2)
+    vt_area_constraints_eo_climb = problem.get_val("data:constraints:vertical_tail:engine_out_climb", units="m**2")
+    assert vt_area_constraints_eo_climb == pytest.approx(1.479, abs=1e-2)
+    vt_area_constraints_eo_takeoff = problem.get_val("data:constraints:vertical_tail:engine_out_takeoff", units="m**2")
+    assert vt_area_constraints_eo_takeoff == pytest.approx(1.479, abs=1e-2)
+    vt_area_constraints_eo_landing = problem.get_val("data:constraints:vertical_tail:engine_out_landing", units="m**2")
+    assert vt_area_constraints_eo_landing == pytest.approx(1.479, abs=1e-2)  # Should be equal to vtp_area but since
+    # the dummy engine is not recognized as an ICE engine the last constraints applies even though it shouldn't
 
 
 def test_update_ht_area():

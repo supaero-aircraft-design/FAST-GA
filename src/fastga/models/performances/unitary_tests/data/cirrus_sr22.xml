@@ -39,10 +39,11 @@
 				</takeoff>
 			</aircraft>
 			<elevator>
-				<low_speed>
-					<CL_alpha units="rad**-1">0.5521090528172526<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
-				</low_speed>
-			</elevator>
+        		<low_speed>
+          			<CD_delta units="1/rad" is_input="False">0.027313269879917557</CD_delta>
+          			<CL_delta units="1/rad" is_input="False">0.4694724737942215<!--derivative of horizontal tail lift coefficient with respect to elevator command--></CL_delta>
+        		</low_speed>
+      		</elevator>
 			<flaps>
 				<landing>
 					<CL>0.7235196782<!--increment of CL due to flaps for landing phase--></CL>

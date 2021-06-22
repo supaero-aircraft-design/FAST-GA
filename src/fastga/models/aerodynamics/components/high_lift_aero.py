@@ -36,6 +36,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -53,6 +54,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_input("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:airfoil:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:mission:sizing:landing:flap_angle", val=30.0, units="deg")
+        self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
         self.add_input("data:mission:sizing:takeoff:flap_angle", val=10.0, units="deg")
 
         self.add_output("data:aerodynamics:flaps:landing:CL")
@@ -64,12 +66,15 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_output("data:aerodynamics:flaps:takeoff:CM")
         self.add_output("data:aerodynamics:flaps:takeoff:CD")
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
+        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-1")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         mach_ls = inputs["data:aerodynamics:low_speed:mach"]
+        wing_area = inputs["data:geometry:wing:area"]
+        htp_area = inputs["data:geometry:horizontal_tail:area"]
 
         # Computes flaps contribution during low speed operations (take-off/landing)
         for self.phase in ['landing', 'takeoff']:
@@ -87,8 +92,11 @@ class ComputeDeltaHighLift(FigureDigitization):
                     mach_ls,
                 )
                 outputs["data:aerodynamics:flaps:landing:CD"] = self._get_flaps_delta_cd(
-                    inputs,
+                    inputs["data:geometry:flap_type"],
+                    inputs["data:geometry:flap:chord_ratio"],
+                    inputs["data:geometry:wing:thickness_ratio"],
                     flap_angle,
+                    self._compute_flap_area_ratio(inputs)
                 )
             else:
                 flap_angle = float(inputs["data:mission:sizing:takeoff:flap_angle"])
@@ -104,8 +112,11 @@ class ComputeDeltaHighLift(FigureDigitization):
                     mach_ls,
                 )
                 outputs["data:aerodynamics:flaps:takeoff:CD"] = self._get_flaps_delta_cd(
-                    inputs,
+                    inputs["data:geometry:flap_type"],
+                    inputs["data:geometry:flap:chord_ratio"],
+                    inputs["data:geometry:wing:thickness_ratio"],
                     flap_angle,
+                    self._compute_flap_area_ratio(inputs)
                 )
 
         # Computes elevator contribution during low speed operations (for different deflection angle)
@@ -114,6 +125,12 @@ class ComputeDeltaHighLift(FigureDigitization):
             25.0,
         )  # get derivative for 25° angle assuming it is linear when <= to 25 degree,
         # derivative wrt to the wing
+        outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = self.delta_cd_plain_flap(
+            inputs["data:geometry:horizontal_tail:elevator_chord_ratio"],
+            abs(inputs["data:mission:sizing:landing:elevator_angle"])
+        ) / (
+                abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.
+        ) * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"]) * htp_area / wing_area
 
     def _get_elevator_delta_cl(self, inputs, elevator_angle: Union[float, np.array]) -> Union[float, np.array]:
         """
@@ -189,41 +206,109 @@ class ComputeDeltaHighLift(FigureDigitization):
 
         return delta_cm_flap
 
-    def _get_flaps_delta_cd(self, inputs, flap_angle: float) -> float:
+    @staticmethod
+    def _get_flaps_delta_cd(flap_type, chord_ratio, thickness_ratio, flap_angle: float, area_ratio) -> float:
         """
         Method from Young (in Gudmunsson book; page 725)
         
         :param flap_angle: flap angle (in Degree)
+        :param flap_type: flap type
+        :param area_ratio: ratio of control surface area over lifting surface area
+        :param chord_ratio: ratio of control surface chord over lifting surface chord
+        :param thickness_ratio: thickness ratio of the lifting surface
         :return: increment of drag coefficient
         """
 
-        flap_type = inputs['data:geometry:flap_type']
-        flap_chord_ratio = inputs['data:geometry:flap:chord_ratio']
-        flap_area_ratio = self._compute_flap_area_ratio(inputs)
-
-        if flap_type == 1.0:  # slotted flap
-            k1 = 179.32 * flap_chord_ratio ** 4 - \
-                 111.6 * flap_chord_ratio ** 3 + \
-                 28.929 * flap_chord_ratio ** 2 + \
-                 2.3705 * flap_chord_ratio - 0.0089
-            k2 = -3.9877E-12 * flap_angle ** 6 + \
-                 1.1685e-9 * flap_angle ** 5 - \
-                 1.2846e-7 * flap_angle ** 4 + \
-                 6.1742e-6 * flap_angle ** 3 - \
-                 9.89444e-5 * flap_angle ** 2 + \
-                 6.8324e-4 * flap_angle - \
-                 3.892e-4
-
-        else:  # plain flap
-            k1 = - 21.09 * flap_chord_ratio ** 3 + \
-                 14.091 * flap_chord_ratio ** 2 + \
-                 3.165 * flap_chord_ratio - \
-                 0.00103
+        if flap_type == 0.0:  # Plain flap
+            k1_0_12 = - 21.09 * chord_ratio ** 3 + \
+                      14.091 * chord_ratio ** 2 + \
+                      3.165 * chord_ratio - \
+                      0.00103
+            k1_0_21 = - 19.988 * chord_ratio ** 3 + \
+                      12.68 * chord_ratio ** 2 + \
+                      3.363 * chord_ratio - \
+                      0.0050
+            k1_0_30 = - 0.000 * chord_ratio ** 3 + \
+                      4.694 * chord_ratio ** 2 + \
+                      4.372 * chord_ratio - \
+                      0.0031
+            k1 = interpolate.interp1d([0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)])(
+                np.clip(thickness_ratio, 0.12, 0.30)
+            )
             k2 = -3.795E-7 * flap_angle ** 3 + \
                  5.387E-5 * flap_angle ** 2 + \
                  6.843E-4 * flap_angle - \
                  1.4729E-3
-        delta_cd_flaps = k1 * k2 * flap_area_ratio
+
+        elif flap_type == 1.0:  # slotted flap
+            k1_0_12 = 179.32 * chord_ratio ** 4 - \
+                      111.6 * chord_ratio ** 3 + \
+                      28.929 * chord_ratio ** 2 + \
+                      2.3705 * chord_ratio - 0.0089
+            k1_0_21 = 0.000 * chord_ratio ** 4 - \
+                      0.000 * chord_ratio ** 3 + \
+                      8.2658 * chord_ratio ** 2 + \
+                      3.4564 * chord_ratio - 0.0054
+            k1 = interpolate.interp1d([0.12, 0.21], [float(k1_0_12), float(k1_0_21)])(
+                np.clip(thickness_ratio, 0.12, 0.21)
+            )
+            k2_0_12 = -3.9877E-12 * flap_angle ** 6 + \
+                      1.1685e-9 * flap_angle ** 5 - \
+                      1.2846e-7 * flap_angle ** 4 + \
+                      6.1742e-6 * flap_angle ** 3 - \
+                      9.89444e-5 * flap_angle ** 2 + \
+                      6.8324e-4 * flap_angle - \
+                      3.892e-4
+            k2_0_21 = -0.0 * flap_angle ** 6 - \
+                      4.6025e-11 * flap_angle ** 5 + \
+                      1.0025e-8 * flap_angle ** 4 - \
+                      9.8465e-7 * flap_angle ** 3 + \
+                      5.6732e-5 * flap_angle ** 2 - \
+                      2.64884e-4 * flap_angle - \
+                      3.3591e-4
+            k2_0_30 = 0.0 * flap_angle ** 6 + \
+                      0.0 * flap_angle ** 5 - \
+                      0.0 * flap_angle ** 4 - \
+                      3.6841e-7 * flap_angle ** 3 + \
+                      5.3342e-5 * flap_angle ** 2 - \
+                      41677e-3 * flap_angle + \
+                      6.749e-4
+            k2 = interpolate.interp1d([0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)])(
+                np.clip(thickness_ratio, 0.12, 0.30)
+            )
+
+        else:  # Split flap
+            k1_0_12 = - 21.09 * chord_ratio ** 3 + \
+                      14.091 * chord_ratio ** 2 + \
+                      3.165 * chord_ratio - \
+                      0.00103
+            k1_0_21 = - 19.988 * chord_ratio ** 3 + \
+                      12.68 * chord_ratio ** 2 + \
+                      3.363 * chord_ratio - \
+                      0.0050
+            k1_0_30 = - 0.000 * chord_ratio ** 3 + \
+                      4.694 * chord_ratio ** 2 + \
+                      4.372 * chord_ratio - \
+                      0.0031
+            k1 = interpolate.interp1d([0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)])(
+                np.clip(thickness_ratio, 0.12, 0.30)
+            )
+            k2_0_12 = - 4.161e-7 * flap_angle ** 3 + \
+                      5.5496e-5 * flap_angle ** 2 + \
+                      1.0110e-3 * flap_angle - \
+                      2.219e-5
+            k2_0_21 = - 5.1007e-7 * flap_angle ** 3 + \
+                      7.4060e-5 * flap_angle ** 2 - \
+                      4.8877e-5 * flap_angle + \
+                      8.1775e-4
+            k2_0_30 = - 3.2740e-7 * flap_angle ** 3 + \
+                      5.598e-5 * flap_angle ** 2 - \
+                      1.2443e-4 * flap_angle + \
+                      5.1647e-4
+            k2 = interpolate.interp1d([0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)])(
+                np.clip(thickness_ratio, 0.12, 0.30)
+            )
+        delta_cd_flaps = k1 * k2 * area_ratio
 
         return delta_cd_flaps
 

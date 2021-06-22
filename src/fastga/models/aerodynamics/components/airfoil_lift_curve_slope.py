@@ -15,6 +15,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
+import logging
 
 import numpy as np
 import openmdao.api as om
@@ -26,6 +27,8 @@ from fastoad.model_base.atmosphere import Atmosphere
 
 ALPHA_START_LINEAR = -5.
 ALPHA_END_LINEAR = 10.
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ComputeAirfoilLiftCurveSlope(om.Group):
@@ -140,6 +143,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
         wing_cl_orig = inputs["xfoil:wing:CL"]
         wing_alpha_orig = inputs["xfoil:wing:alpha"]
         wing_alpha, wing_cl = self.delete_additional_zeros(np.array(wing_alpha_orig), np.array(wing_cl_orig))
