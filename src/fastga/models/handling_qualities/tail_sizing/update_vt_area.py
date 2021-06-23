@@ -59,7 +59,9 @@ class UpdateVTArea(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
         self.add_input("data:geometry:propulsion:nacelle:y", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
@@ -70,8 +72,12 @@ class UpdateVTArea(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:fuselage:cruise:CnBeta", val=np.nan)
-        self.add_input("data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input(
+            "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 
         self.add_input("data:mission:sizing:landing:target_sideslip", val=11.5, units="deg")
@@ -80,21 +86,19 @@ class UpdateVTArea(om.ExplicitComponent):
             "settings:handling_qualities:rudder:safety_margin",
             val=0.20,
             desc="Ratio of the total rudder deflection not used in the computation of the VT area to leave a safety "
-                 "margin",
+            "margin",
         )
 
         self.add_output("data:geometry:vertical_tail:area", val=2.5, units="m**2")
 
         self.declare_partials(
-            "*",
-            "*",
-            method="fd",
+            "*", "*", method="fd",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Sizing constraints for the vertical tail.
-        # Limiting cases: rotating torque objective (cn_beta_goal) during cruise, and  
-        # compensation of engine failure induced torque at approach speed/altitude. 
+        # Limiting cases: rotating torque objective (cn_beta_goal) during cruise, and
+        # compensation of engine failure induced torque at approach speed/altitude.
         # Returns maximum area.
 
         propulsion_model = FuelEngineSet(
@@ -111,9 +115,11 @@ class UpdateVTArea(om.ExplicitComponent):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
 
         wing_vtp_distance = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
-        rudder_max_deflection = inputs["data:geometry:vertical_tail:rudder:max_deflection"] * np.pi / 180.
+        rudder_max_deflection = (
+            inputs["data:geometry:vertical_tail:rudder:max_deflection"] * np.pi / 180.0
+        )
 
-        rudder_usage = 1. - inputs["settings:handling_qualities:rudder:safety_margin"]
+        rudder_usage = 1.0 - inputs["settings:handling_qualities:rudder:safety_margin"]
 
         cg_mac_position = inputs["data:weight:aircraft:CG:aft:MAC_position"]
 
@@ -152,12 +158,17 @@ class UpdateVTArea(om.ExplicitComponent):
         # in : Al-Shamma, Omran, Rashid Ali, and Haitham S. Hasan. "An Educational Rudder Sizing Algorithm for
         # Utilization in Aircraft Design Software." International Journal of Applied Engineering Research 13.10 (2018):
         # 7889-7894.
-        beta_crosswind = float(inputs["data:mission:sizing:landing:target_sideslip"]) * np.pi / 180.
-        rudder_deflection = - float(rudder_usage * rudder_max_deflection)
+        beta_crosswind = (
+            float(inputs["data:mission:sizing:landing:target_sideslip"]) * np.pi / 180.0
+        )
+        rudder_deflection = -float(rudder_usage * rudder_max_deflection)
 
-        results = fsolve(self.lateral_equilibrium, np.array([float(area_1), 2. / 3. * beta_crosswind]), args=(
-            inputs, beta_crosswind, rudder_deflection, efficiency_vt
-        ), xtol=1e-4)
+        results = fsolve(
+            self.lateral_equilibrium,
+            np.array([float(area_1), 2.0 / 3.0 * beta_crosswind]),
+            args=(inputs, beta_crosswind, rudder_deflection, efficiency_vt),
+            xtol=1e-4,
+        )
         area_2 = results[0]
 
         # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##############################################################
@@ -170,18 +181,24 @@ class UpdateVTArea(om.ExplicitComponent):
         if engine_number == 2.0:
             # STEP 1.0 for
             # Computation of the stall speed to get the minimum climb speed
-            stall_speed_cl = np.sqrt((2. * mtow * 9.81) / (atm_cl.density * wing_area * cl_max_clean))
-            speed_cl = 1.2 * stall_speed_cl  # Flights mechanics from GA - Serge Bonnet CS23, and CS 23.65
+            stall_speed_cl = np.sqrt(
+                (2.0 * mtow * 9.81) / (atm_cl.density * wing_area * cl_max_clean)
+            )
+            speed_cl = (
+                1.2 * stall_speed_cl
+            )  # Flights mechanics from GA - Serge Bonnet CS23, and CS 23.65
             mach_cl = speed_cl / speed_of_sound_cl
             # Calculation of engine power for given conditions
             flight_point_cl = FlightPoint(
-                mach=mach_cl, altitude=failure_altitude_cl, engine_setting=EngineSetting.CLIMB,
-                thrust_rate=1.0
+                mach=mach_cl,
+                altitude=failure_altitude_cl,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_rate=1.0,
             )  # forced to maximum thrust
             propulsion_model.compute_flight_points(flight_point_cl)
             # If you look at FuelEngineSet method to compute flight point you will see that it is multiplied buy engine
             # count so we must divide it here to get the thrust of 1 engine only
-            thrust_cl = float(flight_point_cl.thrust) / 2.
+            thrust_cl = float(flight_point_cl.thrust) / 2.0
             # Calculation of engine thrust and nacelle drag (failed one)
             max_power_oe_cl_hp = propulsion_model.compute_max_power(flight_point_cl) * 1.34102
             speed_cl_fps = speed_cl * 3.28084
@@ -190,10 +207,13 @@ class UpdateVTArea(om.ExplicitComponent):
             # Torque compensation
             rudder_side_force_coefficient = cy_delta_r * rudder_usage * rudder_max_deflection
             # TODO : Change aspect ratio of vertical tail
-            area_3 = (
-                y_nacelle * (thrust_cl + windmilling_prop_drag_cl)
-            ) / (
-                0.7 * pressure_cl * mach_cl ** 2 * efficiency_vt * rudder_side_force_coefficient * distance_to_cg
+            area_3 = (y_nacelle * (thrust_cl + windmilling_prop_drag_cl)) / (
+                0.7
+                * pressure_cl
+                * mach_cl ** 2
+                * efficiency_vt
+                * rudder_side_force_coefficient
+                * distance_to_cg
             )
         else:
             area_3 = 0.0
@@ -207,16 +227,20 @@ class UpdateVTArea(om.ExplicitComponent):
         if engine_number == 2.0:
             # STEP 1.0 for
             # Computation of the stall speed to get the minimum climb speed
-            stall_speed_to = np.sqrt((2. * mtow * 9.81) / (atm_to.density * wing_area * cl_max_takeoff))
+            stall_speed_to = np.sqrt(
+                (2.0 * mtow * 9.81) / (atm_to.density * wing_area * cl_max_takeoff)
+            )
             vmc_to = 1.2 * stall_speed_to  # CS 23.149 (a)
             mc_mach_to = vmc_to / speed_of_sound_to
             # Calculation of engine power for given conditions
             flight_point_to = FlightPoint(
-                mach=mc_mach_to, altitude=failure_altitude_to, engine_setting=EngineSetting.CLIMB,
-                thrust_rate=1.0
+                mach=mc_mach_to,
+                altitude=failure_altitude_to,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_rate=1.0,
             )  # forced to maximum thrust
             propulsion_model.compute_flight_points(flight_point_to)
-            thrust_to = float(flight_point_to.thrust) / 2.
+            thrust_to = float(flight_point_to.thrust) / 2.0
             # Calculation of engine thrust and nacelle drag (failed one)
             max_power_oe_to_hp = propulsion_model.compute_max_power(flight_point_to) * 1.34102
             mc_speed_to_fps = vmc_to * 3.28084
@@ -228,11 +252,17 @@ class UpdateVTArea(om.ExplicitComponent):
             # We assume that the lift contribution added by the bank is located at the wing aerodynamics center
             bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
             # Vertical component of lift equals the weight, horizontal component used in bank
-            bank_contribution_to = mtow * np.tan(5. * np.pi / 180.)
+            bank_contribution_to = mtow * np.tan(5.0 * np.pi / 180.0)
             area_4 = (
-                y_nacelle * (thrust_to + windmilling_prop_drag_to) - bank_lever_arm * bank_contribution_to
+                y_nacelle * (thrust_to + windmilling_prop_drag_to)
+                - bank_lever_arm * bank_contribution_to
             ) / (
-                0.7 * pressure_to * mc_mach_to ** 2 * efficiency_vt * rudder_side_force_coefficient * distance_to_cg
+                0.7
+                * pressure_to
+                * mc_mach_to ** 2
+                * efficiency_vt
+                * rudder_side_force_coefficient
+                * distance_to_cg
             )
         else:
             area_4 = 0.0
@@ -246,16 +276,20 @@ class UpdateVTArea(om.ExplicitComponent):
         if engine_number == 2.0:
             # STEP 1.0 for
             # Computation of the stall speed to get the minimum climb speed
-            stall_speed_ldg = np.sqrt((2. * mtow * 9.81) / (atm_ldg.density * wing_area * cl_max_landing))
+            stall_speed_ldg = np.sqrt(
+                (2.0 * mtow * 9.81) / (atm_ldg.density * wing_area * cl_max_landing)
+            )
             vmc_ldg = 1.2 * stall_speed_ldg  # CS 23.149 (a)
             mc_mach_ldg = vmc_ldg / speed_of_sound_ldg
             # Calculation of engine power for given conditions
             flight_point_ldg = FlightPoint(
-                mach=mc_mach_ldg, altitude=failure_altitude_ldg, engine_setting=EngineSetting.CLIMB,
-                thrust_rate=1.0
+                mach=mc_mach_ldg,
+                altitude=failure_altitude_ldg,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_rate=1.0,
             )  # forced to maximum thrust
             propulsion_model.compute_flight_points(flight_point_ldg)
-            thrust_ldg = float(flight_point_ldg.thrust) / 2.
+            thrust_ldg = float(flight_point_ldg.thrust) / 2.0
             # Calculation of engine thrust and nacelle drag (failed one)
             max_power_oe_ldg_hp = propulsion_model.compute_max_power(flight_point_ldg) * 1.34102
             mc_speed_ldg_fps = vmc_ldg * 3.28084
@@ -267,11 +301,17 @@ class UpdateVTArea(om.ExplicitComponent):
             # need to put the contribution @ 0. Based on a pilot REX, there is usually no bank at landing ot avoid a
             # propeller strike on the runway
             bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
-            bank_contribution_ldg = (owe + payload) * np.tan(5. * np.pi / 180.)
+            bank_contribution_ldg = (owe + payload) * np.tan(5.0 * np.pi / 180.0)
             area_5 = (
-                y_nacelle * (thrust_ldg + windmilling_prop_drag_ldg) - bank_lever_arm * bank_contribution_ldg
+                y_nacelle * (thrust_ldg + windmilling_prop_drag_ldg)
+                - bank_lever_arm * bank_contribution_ldg
             ) / (
-                0.7 * pressure_ldg * mc_mach_ldg ** 2 * efficiency_vt * rudder_side_force_coefficient * distance_to_cg
+                0.7
+                * pressure_ldg
+                * mc_mach_ldg ** 2
+                * efficiency_vt
+                * rudder_side_force_coefficient
+                * distance_to_cg
             )
         else:
             area_5 = 0.0
@@ -300,7 +340,9 @@ class UpdateVTArea(om.ExplicitComponent):
         l0_wing = float(inputs["data:geometry:wing:MAC:length"])
         fa_length = float(inputs["data:geometry:wing:MAC:at25percent:x"])
 
-        wing_vtp_distance = float(inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"])
+        wing_vtp_distance = float(
+            inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        )
 
         b_f = float(inputs["data:geometry:fuselage:maximum_width"])
         h_f = float(inputs["data:geometry:fuselage:maximum_height"])
@@ -326,28 +368,34 @@ class UpdateVTArea(om.ExplicitComponent):
 
         # Computing the different speeds, w = wind, f = runway, t = total
         v_w = v_f * np.tan(beta)
-        v_t = np.sqrt(v_f ** 2. + v_w ** 2.)
+        v_t = np.sqrt(v_f ** 2.0 + v_w ** 2.0)
 
         # Sidewash influence on the vtp
-        k_sigma = 0.724 + 0.2 + 0.009 * ar_wing + 3.06 / (1. + np.cos(sweep_wing)) * area_vtp / area_wing
+        k_sigma = (
+            0.724 + 0.2 + 0.009 * ar_wing + 3.06 / (1.0 + np.cos(sweep_wing)) * area_vtp / area_wing
+        )
 
         # Sideforce derivative computation
-        cy_beta = - k_f1 * cl_alpha_vt_ls * k_sigma * area_vtp / area_wing
-        cy_delta_r = - eta_v * cy_delta_r_vtp * area_vtp / area_wing
+        cy_beta = -k_f1 * cl_alpha_vt_ls * k_sigma * area_vtp / area_wing
+        cy_delta_r = -eta_v * cy_delta_r_vtp * area_vtp / area_wing
 
         # Side drag computation
-        side_surface = area_vtp + h_f * (lar / 2. + lcyl + lav / 2.)
-        side_drag = 0.5 * atm.density * v_w ** 2. * side_surface * side_drag_coefficient
+        side_surface = area_vtp + h_f * (lar / 2.0 + lcyl + lav / 2.0)
+        side_drag = 0.5 * atm.density * v_w ** 2.0 * side_surface * side_drag_coefficient
 
         # Yawing moment derivative
         distance_to_cg = wing_vtp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
-        cn_beta = - k_f2 / k_f1 * cy_beta * distance_to_cg / span_wing
-        cn_delta_r = - cy_delta_r * distance_to_cg / span_wing
+        cn_beta = -k_f2 / k_f1 * cy_beta * distance_to_cg / span_wing
+        cn_delta_r = -cy_delta_r * distance_to_cg / span_wing
 
         # Side drag lever arm computation
         l_f = lav + lcyl + lar
         d_f = np.sqrt(h_f * b_f)
-        x_f = (2. / 3. * lav * lav + (lav + 1. / 2. * lcyl) * lcyl + (lav + lcyl + 1. / 3. * lar) * lar) / l_f
+        x_f = (
+            2.0 / 3.0 * lav * lav
+            + (lav + 1.0 / 2.0 * lcyl) * lcyl
+            + (lav + lcyl + 1.0 / 3.0 * lar) * lar
+        ) / l_f
         fa_vtp = fa_length + wing_vtp_distance
         x_ac_b = (l_f * d_f * x_f + area_vtp * fa_vtp) / (l_f * d_f + area_vtp)
 
@@ -358,10 +406,10 @@ class UpdateVTArea(om.ExplicitComponent):
         dynamic_pressure = 0.5 * atm.density * v_t ** 2.0
 
         delta_yaw = dynamic_pressure * area_wing * span_wing * (
-                cn_beta * (beta - sigma) + cn_delta_r * rudder_angle
+            cn_beta * (beta - sigma) + cn_delta_r * rudder_angle
         ) + side_drag * dc * np.cos(sigma)
         delta_side_force = side_drag - dynamic_pressure * area_wing * (
-                cy_beta * (beta - sigma) + cy_delta_r * rudder_angle
+            cy_beta * (beta - sigma) + cy_delta_r * rudder_angle
         )
 
         result_array = np.array([delta_yaw, delta_side_force])

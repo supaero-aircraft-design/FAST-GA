@@ -22,6 +22,7 @@ from typing import Union, List, Optional, Tuple
 
 from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
@@ -30,7 +31,6 @@ _ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
 class ComputeTORotationLimitGroup(om.Group):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
@@ -42,19 +42,15 @@ class ComputeTORotationLimitGroup(om.Group):
         self.add_subsystem(
             "aero_coeff_to",
             _ComputeAeroCoeffTO(),
-            promotes=self.get_io_names(_ComputeAeroCoeffTO(), iotypes='inputs')
+            promotes=self.get_io_names(_ComputeAeroCoeffTO(), iotypes="inputs"),
         )
         self.add_subsystem(
             "to_rotation_limit",
             ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "takeoff:cl_htp",
-                    "takeoff:cm_wing",
-                    "low_speed:cl_alpha_htp",
-                ]
-            )
+                excludes=["takeoff:cl_htp", "takeoff:cm_wing", "low_speed:cl_alpha_htp",],
+            ),
         )
         self.connect("aero_coeff_to.cl_htp", "to_rotation_limit.takeoff:cl_htp")
         self.connect("aero_coeff_to.cm_wing", "to_rotation_limit.takeoff:cm_wing")
@@ -62,9 +58,10 @@ class ComputeTORotationLimitGroup(om.Group):
 
     @staticmethod
     def get_io_names(
-            component: om.ExplicitComponent,
-            excludes: Optional[Union[str, List[str]]] = None,
-            iotypes: Optional[Union[str, Tuple[str]]] = ('inputs', 'outputs')) -> List[str]:
+        component: om.ExplicitComponent,
+        excludes: Optional[Union[str, List[str]]] = None,
+        iotypes: Optional[Union[str, Tuple[str]]] = ("inputs", "outputs"),
+    ) -> List[str]:
         prob = om.Problem(model=component)
         prob.setup()
         data = []
@@ -72,7 +69,7 @@ class ComputeTORotationLimitGroup(om.Group):
             data.extend(prob.model.list_inputs(out_stream=None))
             data.extend(prob.model.list_outputs(out_stream=None))
         else:
-            if iotypes == 'inputs':
+            if iotypes == "inputs":
                 data.extend(prob.model.list_inputs(out_stream=None))
             else:
                 data.extend(prob.model.list_outputs(out_stream=None))
@@ -108,7 +105,9 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:nacelle:height", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
@@ -120,7 +119,11 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated",
+            val=np.nan,
+            units="rad**-1",
+        )
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
 
         self.add_input("takeoff:cl_htp", val=np.nan)
@@ -138,7 +141,9 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         cl_flaps_takeoff = inputs["data:aerodynamics:flaps:takeoff:CL"]
         cm_takeoff = inputs["takeoff:cm_wing"]
-        cl_alpha_htp_isolated = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"]
+        cl_alpha_htp_isolated = inputs[
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"
+        ]
         cl_htp = inputs["takeoff:cl_htp"]
         tail_efficiency_factor = inputs["data:aerodynamics:horizontal_tail:efficiency"]
 
@@ -176,8 +181,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         mach_r = vr / sos
 
         flight_point = FlightPoint(
-            mach=mach_r, altitude=0.0, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=1.0
+            mach=mach_r, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)
@@ -187,7 +191,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         # Compute aerodynamic coefficients for takeoff @ 0° aircraft angle
         cl0_takeoff = cl0_clean + cl_flaps_takeoff
 
-        eta_q = 1. + cl_alpha_htp_isolated / cl_htp * _ANG_VEL * (x_ht - x_lg) / vr
+        eta_q = 1.0 + cl_alpha_htp_isolated / cl_htp * _ANG_VEL * (x_ht - x_lg) / vr
         eta_h = (x_ht - x_lg) / lp_ht * tail_efficiency_factor
 
         k_cl = cl_max_takeoff / (eta_q * eta_h * cl_htp)
@@ -198,10 +202,16 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         engine_contribution = zt * thrust / weight
 
         x_cg = (
-                       1. / k_cl * (
-                       tail_volume_coefficient - cl0_takeoff / cl_htp * (x_lg / wing_mac - 0.25)
-               ) - cm_takeoff / cl_max_takeoff
-               ) * (vr / vs1) ** 2.0 + x_lg - engine_contribution
+            (
+                1.0
+                / k_cl
+                * (tail_volume_coefficient - cl0_takeoff / cl_htp * (x_lg / wing_mac - 0.25))
+                - cm_takeoff / cl_max_takeoff
+            )
+            * (vr / vs1) ** 2.0
+            + x_lg
+            - engine_contribution
+        )
 
         outputs["data:handling_qualities:to_rotation_limit:x"] = x_cg
 
@@ -224,8 +234,12 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
         self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
+        )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="rad")
 
@@ -240,7 +254,9 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         cl0_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL0"]
-        cl_alpha_isolated_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"]
+        cl_alpha_isolated_htp = inputs[
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"
+        ]
         cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
         cm0_wing = inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
         cl_delta_elev = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
@@ -253,10 +269,7 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         # Define angle of attack (aoa)
         alpha = 0.0
         # Interpolate cl/cm and define with ht reference surface
-        cl_htp = (
-                (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp + cl_elev)
-                * wing_area / ht_area
-        )
+        cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
 
         cm_wing = cm0_wing
 

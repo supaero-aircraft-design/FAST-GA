@@ -60,13 +60,19 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             mlw = mtow
 
         mlg_weight = (0.0117 - dfte * 0.0012) * mlw ** 0.95 * lg_height ** 0.43
-        nlg_weight = (0.048 - dfte * 0.008) * mlw ** 0.67 * lg_height ** 0.43 * (1. + 0.8 * carbas)
+        nlg_weight = (0.048 - dfte * 0.008) * mlw ** 0.67 * lg_height ** 0.43 * (1.0 + 0.8 * carbas)
 
         if not is_retractable:
-            weight_reduction = 1.4 * mtow / 100.
-            weight_reduction_factor = (mlg_weight + nlg_weight - weight_reduction) / (mlg_weight + nlg_weight)
+            weight_reduction = 1.4 * mtow / 100.0
+            weight_reduction_factor = (mlg_weight + nlg_weight - weight_reduction) / (
+                mlg_weight + nlg_weight
+            )
         else:
             weight_reduction_factor = 1.0
 
-        outputs["data:weight:airframe:landing_gear:main:mass"] = mlg_weight * weight_reduction_factor
-        outputs["data:weight:airframe:landing_gear:front:mass"] = nlg_weight * weight_reduction_factor
+        outputs["data:weight:airframe:landing_gear:main:mass"] = (
+            mlg_weight * weight_reduction_factor
+        )
+        outputs["data:weight:airframe:landing_gear:front:mass"] = (
+            nlg_weight * weight_reduction_factor
+        )

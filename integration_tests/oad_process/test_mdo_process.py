@@ -26,11 +26,11 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 PATH = pth.dirname(__file__).split(os.path.sep)
 NOTEBOOKS_PATH = PATH[0] + os.path.sep
-for folder in PATH[1:len(PATH) - 3]:
+for folder in PATH[1 : len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = "be76"
+AIRCRAFT_ID = ["be76", "sr22"]
 
 
 @pytest.fixture(scope="module")
@@ -41,17 +41,15 @@ def cleanup():
 
 def test_oad_process(cleanup):
     """
-    Test the overall aircraft design process without wing positioning.
+    Test only that all data is available for an MDO and process can be run.
     """
+    for aircraft_id in AIRCRAFT_ID:
+        xml_file_name = "input_" + aircraft_id + "_wing_pos.xml"
+        process_file_name = "mdo_process.yml"
 
-    xml_file_name = 'input_' + AIRCRAFT_ID + '_wing_pos.xml'
-    process_file_name = 'mdo_process.yml'
+        INPUT_FILE_PATH = pth.join(DATA_FOLDER_PATH, xml_file_name)
+        PROCESS_FILE_PATH = pth.join(DATA_FOLDER_PATH, process_file_name)
 
-    INPUT_FILE_PATH = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    PROCESS_FILE_PATH = pth.join(DATA_FOLDER_PATH, process_file_name)
+        api_cs25.generate_inputs(PROCESS_FILE_PATH, INPUT_FILE_PATH, overwrite=True)
 
-    api_cs25.generate_inputs(PROCESS_FILE_PATH, INPUT_FILE_PATH, overwrite=True)
-
-    api_cs25.optimization_viewer(PROCESS_FILE_PATH)
-
-
+        api_cs25.optimization_viewer(PROCESS_FILE_PATH)

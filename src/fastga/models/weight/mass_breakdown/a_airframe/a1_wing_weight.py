@@ -31,7 +31,7 @@ class ComputeWingWeight(om.ExplicitComponent):
     """
 
     def setup(self):
-        
+
         self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
@@ -40,13 +40,13 @@ class ComputeWingWeight(om.ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
-        
+
         self.add_output("data:weight:airframe:wing:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
         wing_area = inputs["data:geometry:wing:area"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -56,11 +56,16 @@ class ComputeWingWeight(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         v_max_sl = inputs["data:TLAR:v_max_sl"]
 
-        a1 = 96.948*(
-                (mtow*sizing_factor_ultimate/10.0**5.0)**0.65
-                * (aspect_ratio/(math.cos(sweep_25)**2.0))**0.57
-                * (wing_area/100.0)**0.61 * ((1.0+taper_ratio) / (2.0*thickness_ratio))**0.36
-                * (1.+v_max_sl/500.0)**0.5
-        )**0.993  # mass formula in lb
-            
+        a1 = (
+            96.948
+            * (
+                (mtow * sizing_factor_ultimate / 10.0 ** 5.0) ** 0.65
+                * (aspect_ratio / (math.cos(sweep_25) ** 2.0)) ** 0.57
+                * (wing_area / 100.0) ** 0.61
+                * ((1.0 + taper_ratio) / (2.0 * thickness_ratio)) ** 0.36
+                * (1.0 + v_max_sl / 500.0) ** 0.5
+            )
+            ** 0.993
+        )  # mass formula in lb
+
         outputs["data:weight:airframe:wing:mass"] = a1

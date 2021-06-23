@@ -34,7 +34,11 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def run_system(
-    component: System, input_vars: om.IndepVarComp, setup_mode="auto", add_solvers=False, check=False
+    component: System,
+    input_vars: om.IndepVarComp,
+    setup_mode="auto",
+    add_solvers=False,
+    check=False,
 ):
     """ Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
@@ -47,7 +51,7 @@ def run_system(
         model.linear_solver = om.DirectSolver()
 
     if check:
-        print('\n')
+        print("\n")
 
     problem.setup(mode=setup_mode, check=check)
     variables = VariableList.from_unconnected_inputs(problem)
@@ -79,7 +83,6 @@ def get_indep_var_comp(var_names: List[str], test_file: str, xml_file_name: str)
 
 
 class VariableListLocal(VariableList):
-
     @classmethod
     def from_system(cls, system: System) -> "VariableList":
         """
@@ -111,7 +114,7 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
     # register_wrappers()
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
-        new_component.add_subsystem("system", component, promotes=['*'])
+        new_component.add_subsystem("system", component, promotes=["*"])
         component = new_component
     variables = VariableListLocal.from_system(component)
     input_names = [var.name for var in variables if var.is_input]
@@ -127,7 +130,7 @@ class Timer(object):
         self.tstart = time.time()
 
     def __exit__(self, type, value, traceback):
-        print('\n')
+        print("\n")
         if self.name:
-            print('[%s]' % self.name,)
-        print('Elapsed: %s' % (time.time() - self.tstart))
+            print("[%s]" % self.name,)
+        print("Elapsed: %s" % (time.time() - self.tstart))

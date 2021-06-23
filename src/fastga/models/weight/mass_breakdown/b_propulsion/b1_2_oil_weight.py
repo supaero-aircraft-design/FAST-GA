@@ -58,8 +58,7 @@ class ComputeOilWeight(ExplicitComponent):
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), n_eng)
 
         flight_point = FlightPoint(
-            mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=1.0
+            mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
 

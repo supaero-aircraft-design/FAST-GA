@@ -54,10 +54,7 @@ class IPropulsionCS23(IPropulsion):
 
     @abstractmethod
     def compute_drag(
-            self,
-            mach: Union[float, np.array],
-            unit_reynolds: Union[float, np.array],
-            wing_mac: float,
+        self, mach: Union[float, np.array], unit_reynolds: Union[float, np.array], wing_mac: float,
     ) -> Union[float, np.array]:
         """
         Computes nacelle drag force for out of fuselage engine.

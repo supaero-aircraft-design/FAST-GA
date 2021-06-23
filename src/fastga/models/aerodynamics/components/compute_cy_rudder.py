@@ -34,7 +34,9 @@ class ComputeCyDeltaRudder(FigureDigitization):
     """
 
     def setup(self):
-        self.add_input("data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan)
@@ -64,7 +66,9 @@ class ComputeCyDeltaRudder(FigureDigitization):
         k_prime = self.k_a_delta(float(rudder_effectiveness_parameter), aspect_ratio_vt)
 
         # TODO: Check coherence with Roskam formula
-        rudder_effectiveness_2d = self.k_prime_plain_flap(abs(rudder_max_deflection), rudder_chord_ratio)
+        rudder_effectiveness_2d = self.k_prime_plain_flap(
+            abs(rudder_max_deflection), rudder_chord_ratio
+        )
 
         cy_delta_r = cl_alpha_vt * kb * k_prime * rudder_effectiveness_2d
 

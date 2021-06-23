@@ -20,7 +20,10 @@ import plotly.graph_objects as go
 
 from scipy.integrate import trapz
 from fastga.models.load_analysis.aerostructural_loads import AerostructuralLoad
-from fastga.models.load_analysis.aerostructural_loads import POINT_MASS_SPAN_RATIO, NB_POINTS_POINT_MASS
+from fastga.models.load_analysis.aerostructural_loads import (
+    POINT_MASS_SPAN_RATIO,
+    NB_POINTS_POINT_MASS,
+)
 
 from fastoad.io import VariableIO
 
@@ -47,45 +50,53 @@ def force_repartition_diagram(
     y_vector = list(variables["data:loads:y_vector"].value)
     wing_weight = list(variables["data:loads:structure:ultimate:force_distribution:wing"].value)
     fuel_weight = list(variables["data:loads:structure:ultimate:force_distribution:fuel"].value)
-    point_weight = list(variables["data:loads:structure:ultimate:force_distribution:point_mass"].value)
+    point_weight = list(
+        variables["data:loads:structure:ultimate:force_distribution:point_mass"].value
+    )
     lift = list(variables["data:loads:aerodynamic:ultimate:force_distribution"].value)
     span = variables["data:geometry:wing:span"].value
-    semi_span = span[0]/2.0
-    
+    semi_span = span[0] / 2.0
+
     interval_len = POINT_MASS_SPAN_RATIO * semi_span / NB_POINTS_POINT_MASS
     readjust_point = 1.5 * interval_len
-    
+
     y_vector_tmp = np.array(y_vector)
     wing_weight_tmp = np.array(wing_weight)
     fuel_weight_tmp = np.array(fuel_weight)
     point_weight_tmp = np.array(point_weight)
     lift_tmp = np.array(lift)
-    
+
     y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
-    index = len(y_vector)+1
-    wing_weight = wing_weight_tmp[:int(index)]
-    fuel_weight = fuel_weight_tmp[:int(index)]
+    index = len(y_vector) + 1
+    wing_weight = wing_weight_tmp[: int(index)]
+    fuel_weight = fuel_weight_tmp[: int(index)]
     # We have to readjust the point mass since because of the way we represented it (finite over a small interval) the value
     # of the array is artificially high
-    point_weight = readjust_point * point_weight_tmp[:int(index)]
-    lift = lift_tmp[0:int(index)]
+    point_weight = readjust_point * point_weight_tmp[: int(index)]
+    lift = lift_tmp[0 : int(index)]
 
     if fig is None:
         fig = go.Figure()
 
-    wing_weight_scatter = go.Scatter(x=y_vector, y=wing_weight, mode="lines", name=name + ' - wing weight')
+    wing_weight_scatter = go.Scatter(
+        x=y_vector, y=wing_weight, mode="lines", name=name + " - wing weight"
+    )
 
     fig.add_trace(wing_weight_scatter)
-    
-    fuel_weight_scatter = go.Scatter(x=y_vector, y=fuel_weight, mode="lines", name=name + ' - fuel weight')
+
+    fuel_weight_scatter = go.Scatter(
+        x=y_vector, y=fuel_weight, mode="lines", name=name + " - fuel weight"
+    )
 
     fig.add_trace(fuel_weight_scatter)
-    
-    point_weight_scatter = go.Scatter(x=y_vector, y=point_weight, mode="lines", name=name + ' - point masses weight')
+
+    point_weight_scatter = go.Scatter(
+        x=y_vector, y=point_weight, mode="lines", name=name + " - point masses weight"
+    )
 
     fig.add_trace(point_weight_scatter)
-    
-    lift_scatter = go.Scatter(x=y_vector, y=lift, mode="lines", name=name + ' - lift')
+
+    lift_scatter = go.Scatter(x=y_vector, y=lift, mode="lines", name=name + " - lift")
 
     fig.add_trace(lift_scatter)
 
@@ -99,7 +110,8 @@ def force_repartition_diagram(
     )
 
     return fig
-    
+
+
 def shear_diagram(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
@@ -122,36 +134,42 @@ def shear_diagram(
     fuel_shear = list(variables["data:loads:structure:ultimate:shear:fuel"].value)
     point_shear = list(variables["data:loads:structure:ultimate:shear:point_mass"].value)
     lift_shear = list(variables["data:loads:max_shear:lift_shear"].value)
-    
+
     y_vector_tmp = np.array(y_vector)
     wing_shear_tmp = np.array(wing_shear)
     fuel_shear_tmp = np.array(fuel_shear)
     point_shear_tmp = np.array(point_shear)
     lift_shear_tmp = np.array(lift_shear)
-    
+
     y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
-    index = len(y_vector)+1
-    wing_shear = wing_shear_tmp[:int(index)]
-    fuel_shear = fuel_shear_tmp[:int(index)]
-    point_shear = point_shear_tmp[:int(index)]
-    lift_shear = lift_shear_tmp[:int(index)]
+    index = len(y_vector) + 1
+    wing_shear = wing_shear_tmp[: int(index)]
+    fuel_shear = fuel_shear_tmp[: int(index)]
+    point_shear = point_shear_tmp[: int(index)]
+    lift_shear = lift_shear_tmp[: int(index)]
 
     if fig is None:
         fig = go.Figure()
 
-    wing_shear_scatter = go.Scatter(x=y_vector, y=wing_shear, mode="lines", name=name + ' - wing weight shear')
+    wing_shear_scatter = go.Scatter(
+        x=y_vector, y=wing_shear, mode="lines", name=name + " - wing weight shear"
+    )
 
     fig.add_trace(wing_shear_scatter)
-    
-    fuel_shear_scatter = go.Scatter(x=y_vector, y=fuel_shear, mode="lines", name=name + ' - fuel weight shear')
+
+    fuel_shear_scatter = go.Scatter(
+        x=y_vector, y=fuel_shear, mode="lines", name=name + " - fuel weight shear"
+    )
 
     fig.add_trace(fuel_shear_scatter)
-    
-    point_shear_scatter = go.Scatter(x=y_vector, y=point_shear, mode="lines", name=name + ' - point masses shear')
+
+    point_shear_scatter = go.Scatter(
+        x=y_vector, y=point_shear, mode="lines", name=name + " - point masses shear"
+    )
 
     fig.add_trace(point_shear_scatter)
-    
-    lift_scatter = go.Scatter(x=y_vector, y=lift_shear, mode="lines", name=name + ' - lift shear')
+
+    lift_scatter = go.Scatter(x=y_vector, y=lift_shear, mode="lines", name=name + " - lift shear")
 
     fig.add_trace(lift_scatter)
 
@@ -165,6 +183,7 @@ def shear_diagram(
     )
 
     return fig
+
 
 def rbm_diagram(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
@@ -188,36 +207,44 @@ def rbm_diagram(
     fuel_rbm = list(variables["data:loads:structure:ultimate:root_bending:fuel"].value)
     point_rbm = list(variables["data:loads:structure:ultimate:root_bending:point_mass"].value)
     lift_rbm = list(variables["data:loads:max_rbm:lift_rbm"].value)
-    
+
     y_vector_tmp = np.array(y_vector)
     wing_rbm_tmp = np.array(wing_rbm)
     fuel_rbm_tmp = np.array(fuel_rbm)
     point_rbm_tmp = np.array(point_rbm)
     lift_rbm_tmp = np.array(lift_rbm)
-    
+
     y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
-    index = len(y_vector)+1
-    wing_rbm = wing_rbm_tmp[:int(index)]
-    fuel_rbm = fuel_rbm_tmp[:int(index)]
-    point_rbm = point_rbm_tmp[:int(index)]
-    lift_rbm = lift_rbm_tmp[:int(index)]
+    index = len(y_vector) + 1
+    wing_rbm = wing_rbm_tmp[: int(index)]
+    fuel_rbm = fuel_rbm_tmp[: int(index)]
+    point_rbm = point_rbm_tmp[: int(index)]
+    lift_rbm = lift_rbm_tmp[: int(index)]
 
     if fig is None:
         fig = go.Figure()
 
-    wing_rbm_scatter = go.Scatter(x=y_vector, y=wing_rbm, mode="lines", name=name + ' - wing weight root bending moment')
+    wing_rbm_scatter = go.Scatter(
+        x=y_vector, y=wing_rbm, mode="lines", name=name + " - wing weight root bending moment"
+    )
 
     fig.add_trace(wing_rbm_scatter)
-    
-    fuel_rbm_scatter = go.Scatter(x=y_vector, y=fuel_rbm, mode="lines", name=name + ' - fuel weight root bending moment')
+
+    fuel_rbm_scatter = go.Scatter(
+        x=y_vector, y=fuel_rbm, mode="lines", name=name + " - fuel weight root bending moment"
+    )
 
     fig.add_trace(fuel_rbm_scatter)
-    
-    point_rbm_scatter = go.Scatter(x=y_vector, y=point_rbm, mode="lines", name=name + ' - point masses root bending moment')
+
+    point_rbm_scatter = go.Scatter(
+        x=y_vector, y=point_rbm, mode="lines", name=name + " - point masses root bending moment"
+    )
 
     fig.add_trace(point_rbm_scatter)
-    
-    lift_scatter = go.Scatter(x=y_vector, y=lift_rbm, mode="lines", name=name + ' - lift root bending moment')
+
+    lift_scatter = go.Scatter(
+        x=y_vector, y=lift_rbm, mode="lines", name=name + " - lift root bending moment"
+    )
 
     fig.add_trace(lift_scatter)
 

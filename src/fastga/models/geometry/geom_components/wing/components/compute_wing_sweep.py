@@ -70,19 +70,17 @@ class ComputeWingSweep(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-    
+
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        
-        outputs["data:geometry:wing:sweep_0"] = (
-            math.atan(x4_wing / (y4_wing - y2_wing))
+
+        outputs["data:geometry:wing:sweep_0"] = math.atan(x4_wing / (y4_wing - y2_wing))
+        outputs["data:geometry:wing:sweep_100_inner"] = math.atan(
+            (x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing)
         )
-        outputs["data:geometry:wing:sweep_100_inner"] = (
-            math.atan((x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing))
-        )
-        outputs["data:geometry:wing:sweep_100_outer"] = (
-            math.atan((x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing))
+        outputs["data:geometry:wing:sweep_100_outer"] = math.atan(
+            (x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing)
         )

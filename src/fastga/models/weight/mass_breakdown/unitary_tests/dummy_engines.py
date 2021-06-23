@@ -36,15 +36,15 @@ ENGINE_WRAPPER_SR22 = "test.wrapper.mass_breakdown.cirrus.dummy_engine"
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
@@ -95,7 +95,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineBE76(**engine_params)
@@ -107,15 +107,15 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
@@ -133,7 +133,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         flight_points.sfc = 0.0
 
     def compute_weight(self) -> float:
-        return 520.
+        return 520.0
 
     def compute_dimensions(self) -> (float, float, float, float, float, float):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -166,7 +166,7 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineSR22(**engine_params)

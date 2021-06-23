@@ -35,15 +35,15 @@ ENGINE_WRAPPER_SR22 = "test.wrapper.geometry.cirrus.dummy_engine"
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -58,7 +58,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
         flight_points.thrust = 0.0
-        flight_points['sfc'] = 0.0
+        flight_points["sfc"] = 0.0
 
     def compute_weight(self) -> float:
         return 0.0
@@ -94,7 +94,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineBE76(**engine_params)
@@ -106,15 +106,15 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -129,7 +129,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
         flight_points.thrust = 0.0
-        flight_points['sfc'] = 0.0
+        flight_points["sfc"] = 0.0
 
     def compute_weight(self) -> float:
         return 0.0
@@ -165,7 +165,7 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineSR22(**engine_params)

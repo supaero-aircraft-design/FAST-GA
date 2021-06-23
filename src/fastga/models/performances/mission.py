@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import warnings
+import os
 import math
 import openmdao.api as om
 import copy
@@ -24,6 +24,7 @@ import time
 
 from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
@@ -34,13 +35,12 @@ from .takeoff import SAFETY_HEIGHT, TakeOffPhase
 from .dynamic_equilibrium import DynamicEquilibrium
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastga.models.aerodynamics.lift_equilibrium import AircraftEquilibrium
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 POINTS_NB_CLIMB = 100
-POINTS_NB_CRUISE = 500
+POINTS_NB_CRUISE = 100
 POINTS_NB_DESCENT = 100
-MAX_CALCULATION_TIME = 5  # time in seconds
+MAX_CALCULATION_TIME = 10  # time in seconds
 
 
 @RegisterOpenMDAOSystem("fastga.performances.mission", domain=ModelDomain.PERFORMANCE)
@@ -57,19 +57,29 @@ class Mission(om.Group):
 
     def setup(self):
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
-        self.add_subsystem("taxi_out", _compute_taxi(
-            propulsion_id=self.options["propulsion_id"],
-            taxi_out=True,
-        ), promotes=["*"])
-        self.add_subsystem("takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("climb", _compute_climb(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("cruise", _compute_cruise(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "taxi_out",
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=True,),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "climb", _compute_climb(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cruise", _compute_cruise(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
         self.add_subsystem("reserve", _compute_reserve(), promotes=["*"])
-        self.add_subsystem("descent", _compute_descent(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("taxi_in", _compute_taxi(
-            propulsion_id=self.options["propulsion_id"],
-            taxi_out=False,
-        ), promotes=["*"])
+        self.add_subsystem(
+            "descent", _compute_descent(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "taxi_in",
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
+            promotes=["*"],
+        )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
 
         # Solvers setup
@@ -89,7 +99,6 @@ class Mission(om.Group):
 
 
 class _compute_reserve(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
@@ -103,15 +112,16 @@ class _compute_reserve(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         m_reserve = (
-                inputs["data:mission:sizing:main_route:cruise:fuel"]
-                * inputs["data:mission:sizing:main_route:reserve:duration"]
-                / max(1e-6, inputs["data:mission:sizing:main_route:cruise:duration"])  # avoid 0 division
+            inputs["data:mission:sizing:main_route:cruise:fuel"]
+            * inputs["data:mission:sizing:main_route:reserve:duration"]
+            / max(
+                1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]
+            )  # avoid 0 division
         )
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
 
 
 class UpdateFW(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
@@ -180,15 +190,19 @@ class _Atmosphere(Atmosphere):
             if self._calibrated_airspeed is not None:
                 sea_level = Atmosphere(0)
                 current_level = Atmosphere(self._altitude, altitude_in_feet=False)
-                impact_pressure = (
-                        sea_level.pressure
-                        * (((np.asarray(
-                    self._calibrated_airspeed) / sea_level.speed_of_sound) ** 2.0 / 5.0 + 1.0) ** 3.5 - 1.0)
+                impact_pressure = sea_level.pressure * (
+                    (
+                        (np.asarray(self._calibrated_airspeed) / sea_level.speed_of_sound) ** 2.0
+                        / 5.0
+                        + 1.0
+                    )
+                    ** 3.5
+                    - 1.0
                 )
                 total_pressure = current_level.pressure + impact_pressure
                 sigma_0 = total_pressure / current_level.pressure
                 gamma = 1.4
-                mach = (2. / (gamma - 1.0) * (sigma_0 ** ((gamma - 1.0) / gamma) - 1.0)) ** 0.5
+                mach = (2.0 / (gamma - 1.0) * (sigma_0 ** ((gamma - 1.0) / gamma) - 1.0)) ** 0.5
                 self._true_airspeed = mach * current_level.speed_of_sound
         return self._return_value(self._true_airspeed)
 
@@ -205,8 +219,9 @@ class _Atmosphere(Atmosphere):
                 total_pressure = sigma_0 * current_level.pressure
                 impact_pressure = total_pressure - current_level.pressure
                 self._calibrated_airspeed = (
-                        sea_level.speed_of_sound
-                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0)) ** 0.5
+                    sea_level.speed_of_sound
+                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                    ** 0.5
                 )
             if self._mach is not None:
                 sea_level = Atmosphere(0)
@@ -216,8 +231,9 @@ class _Atmosphere(Atmosphere):
                 total_pressure = sigma_0 * current_level.pressure
                 impact_pressure = total_pressure - current_level.pressure
                 self._calibrated_airspeed = (
-                        sea_level.speed_of_sound
-                        * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0)) ** 0.5
+                    sea_level.speed_of_sound
+                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
+                    ** 0.5
                 )
         return self._return_value(self._calibrated_airspeed)
 
@@ -262,14 +278,14 @@ class _compute_taxi(om.ExplicitComponent):
             self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
             self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
-            self.add_output("data:mission:sizing:taxi_out:fuel", units='kg')
+            self.add_output("data:mission:sizing:taxi_out:fuel", units="kg")
         else:
             self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
             self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
-            self.add_output("data:mission:sizing:taxi_in:fuel", units='kg')
+            self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
-        self.declare_partials("*", "*", method="fd") 
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -279,7 +295,7 @@ class _compute_taxi(om.ExplicitComponent):
         if self.options["taxi_out"]:
             thrust_rate = inputs["data:mission:sizing:taxi_out:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_out:duration"]
-            mach = inputs["data:mission:sizing:taxi_out:speed"]/Atmosphere(0.0).speed_of_sound
+            mach = inputs["data:mission:sizing:taxi_out:speed"] / Atmosphere(0.0).speed_of_sound
         else:
             thrust_rate = inputs["data:mission:sizing:taxi_in:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_in:duration"]
@@ -287,8 +303,7 @@ class _compute_taxi(om.ExplicitComponent):
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
         flight_point = FlightPoint(
-            mach=mach, altitude=0.0, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=thrust_rate
+            mach=mach, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=thrust_rate
         )
         propulsion_model.compute_flight_points(flight_point)
         fuel_mass = propulsion_model.get_consumed_mass(flight_point, duration)
@@ -343,7 +358,7 @@ class _compute_climb(DynamicEquilibrium):
         self.add_output("data:mission:sizing:main_route:climb:v_cas", units="m/s")
 
         self.declare_partials("*", "*", method="fd")
-        
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = FuelEngineSet(
@@ -352,7 +367,6 @@ class _compute_climb(DynamicEquilibrium):
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        coef_k_htp = inputs["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"]
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -393,24 +407,37 @@ class _compute_climb(DynamicEquilibrium):
             mach = v_tas / atm.speed_of_sound
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
-            dv_tas_dh = (atm_1.true_airspeed - v_tas)
+            dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)
             q = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
-            previous_step = self.dynamic_equilibrium(inputs, gamma, q, dvx_dt, 0.0, mass_t, "none",
-                                                     previous_step[0:2])
+            previous_step = self.dynamic_equilibrium(
+                inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+            )
             thrust = float(previous_step[1])
 
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(time_t, altitude_t, distance_t, mass_t, v_tas, atm.density, gamma * 180.0 / math.pi,
-                                previous_step, "sizing:main_route:climb")
+                self.save_point(
+                    time_t,
+                    altitude_t,
+                    distance_t,
+                    mass_t,
+                    v_tas,
+                    atm.density,
+                    gamma * 180.0 / math.pi,
+                    previous_step,
+                    "sizing:main_route:climb",
+                )
 
             # Compute consumption
             flight_point = FlightPoint(
-                mach=mach, altitude=altitude_t, engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True, thrust=thrust,
+                mach=mach,
+                altitude=altitude_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                thrust=thrust,
             )
             propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -429,13 +456,25 @@ class _compute_climb(DynamicEquilibrium):
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for climb phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for climb phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(time_t, altitude_t, distance_t, mass_t, v_tas, atm.density, gamma * 180.0 / np.pi,
-                            previous_step, "sizing:main_route:climb")
+            self.save_point(
+                time_t,
+                altitude_t,
+                distance_t,
+                mass_t,
+                v_tas,
+                atm.density,
+                gamma * 180.0 / np.pi,
+                previous_step,
+                "sizing:main_route:climb",
+            )
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
@@ -494,7 +533,7 @@ class _compute_cruise(DynamicEquilibrium):
                 inputs["data:TLAR:range"]
                 - inputs["data:mission:sizing:main_route:climb:distance"]
                 - inputs["data:mission:sizing:main_route:descent:distance"]
-            )
+            ),
         )
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -522,20 +561,32 @@ class _compute_cruise(DynamicEquilibrium):
             q = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
-            previous_step = self.dynamic_equilibrium(inputs, 0.0, q, 0.0, 0.0, mass_t, "none",
-                                                     previous_step[0:2])
+            previous_step = self.dynamic_equilibrium(
+                inputs, 0.0, q, 0.0, 0.0, mass_t, "none", previous_step[0:2]
+            )
             thrust = float(previous_step[1])
 
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(time_t + inputs["data:mission:sizing:main_route:climb:duration"], cruise_altitude,
-                                distance_t + inputs["data:mission:sizing:main_route:climb:distance"], mass_t,
-                                v_tas, atm.density, 0.0, previous_step, "sizing:main_route:cruise")
+                self.save_point(
+                    time_t + inputs["data:mission:sizing:main_route:climb:duration"],
+                    cruise_altitude,
+                    distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
+                    mass_t,
+                    v_tas,
+                    atm.density,
+                    0.0,
+                    previous_step,
+                    "sizing:main_route:cruise",
+                )
 
             # Compute consumption
             flight_point = FlightPoint(
-                mach=mach, altitude=cruise_altitude, engine_setting=EngineSetting.CRUISE,
-                thrust_is_regulated=True, thrust=thrust,
+                mach=mach,
+                altitude=cruise_altitude,
+                engine_setting=EngineSetting.CRUISE,
+                thrust_is_regulated=True,
+                thrust=thrust,
             )
             propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -545,19 +596,32 @@ class _compute_cruise(DynamicEquilibrium):
 
             # Estimate mass evolution and update time
             mass_fuel_t += consumed_mass_1s * min(time_step, (cruise_distance - distance_t) / v_tas)
-            mass_t = mass_t - consumed_mass_1s * min(time_step, (cruise_distance - distance_t) / v_tas)
+            mass_t = mass_t - consumed_mass_1s * min(
+                time_step, (cruise_distance - distance_t) / v_tas
+            )
             time_t += min(time_step, (cruise_distance - distance_t) / v_tas)
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for cruise phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for cruise phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(time_t + inputs["data:mission:sizing:main_route:climb:duration"], cruise_altitude,
-                            distance_t + inputs["data:mission:sizing:main_route:climb:distance"], mass_t,
-                            v_tas, atm.density, 0.0, previous_step, "sizing:main_route:cruise")
+            self.save_point(
+                time_t + inputs["data:mission:sizing:main_route:climb:duration"],
+                cruise_altitude,
+                distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
+                mass_t,
+                v_tas,
+                atm.density,
+                0.0,
+                previous_step,
+                "sizing:main_route:cruise",
+            )
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:distance"] = distance_t
@@ -656,34 +720,48 @@ class _compute_descent(DynamicEquilibrium):
             mach = v_tas / atm.speed_of_sound
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
-            dv_tas_dh = (atm_1.true_airspeed - v_tas)
+            dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)
             q = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium, decrease gamma if obtained thrust is negative
-            previous_step = self.dynamic_equilibrium(inputs, gamma, q, dvx_dt, 0.0, mass_t, "none",
-                                                     previous_step[0:2])
+            previous_step = self.dynamic_equilibrium(
+                inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+            )
             thrust = previous_step[1]
             while thrust < 0.0:
                 gamma = 0.9 * gamma
-                previous_step = self.dynamic_equilibrium(inputs, gamma, q, dvx_dt, 0.0, mass_t, "none",
-                                                         previous_step[0:2])
+                previous_step = self.dynamic_equilibrium(
+                    inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                )
                 thrust = previous_step[1]
 
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(time_t + inputs["data:mission:sizing:main_route:climb:duration"] +
-                                inputs["data:mission:sizing:main_route:cruise:duration"], altitude_t,
-                                distance_t + inputs["data:mission:sizing:main_route:climb:distance"] +
-                                inputs["data:mission:sizing:main_route:cruise:distance"], mass_t,
-                                v_tas, atm.density, gamma * 180.0 / np.pi, previous_step,
-                                "sizing:main_route:descent")
+                self.save_point(
+                    time_t
+                    + inputs["data:mission:sizing:main_route:climb:duration"]
+                    + inputs["data:mission:sizing:main_route:cruise:duration"],
+                    altitude_t,
+                    distance_t
+                    + inputs["data:mission:sizing:main_route:climb:distance"]
+                    + inputs["data:mission:sizing:main_route:cruise:distance"],
+                    mass_t,
+                    v_tas,
+                    atm.density,
+                    gamma * 180.0 / np.pi,
+                    previous_step,
+                    "sizing:main_route:descent",
+                )
 
             # Compute consumption
             # FIXME: DESCENT setting on engine does not exist, replaced by CLIMB for test
             flight_point = FlightPoint(
-                mach=mach, altitude=altitude_t, engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True, thrust=thrust,
+                mach=mach,
+                altitude=altitude_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                thrust=thrust,
             )
             propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -702,16 +780,29 @@ class _compute_descent(DynamicEquilibrium):
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for descent phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for descent phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(time_t + inputs["data:mission:sizing:main_route:climb:duration"] +
-                            inputs["data:mission:sizing:main_route:cruise:duration"], altitude_t,
-                            distance_t + inputs["data:mission:sizing:main_route:climb:distance"] +
-                            inputs["data:mission:sizing:main_route:cruise:distance"], mass_t,
-                            v_tas, atm.density, gamma * 180.0 / np.pi, previous_step, "sizing:main_route:descent")
+            self.save_point(
+                time_t
+                + inputs["data:mission:sizing:main_route:climb:duration"]
+                + inputs["data:mission:sizing:main_route:cruise:duration"],
+                altitude_t,
+                distance_t
+                + inputs["data:mission:sizing:main_route:climb:distance"]
+                + inputs["data:mission:sizing:main_route:cruise:distance"],
+                mass_t,
+                v_tas,
+                atm.density,
+                gamma * 180.0 / np.pi,
+                previous_step,
+                "sizing:main_route:descent",
+            )
 
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:distance"] = distance_t
