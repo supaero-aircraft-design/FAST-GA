@@ -42,9 +42,9 @@ for folder in PATH[1:len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = "be76"  # "sr22"
+AIRCRAFT_ID = "sr22"  # "be76"
 MDA_WING_POSITION = True
-PROPELLER_COMPUTATION = True
+PROPELLER_COMPUTATION = False
 
 
 @pytest.fixture(scope="module")
@@ -102,9 +102,9 @@ def test_oad_process(cleanup):
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 267, atol=1)
             assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1662, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1664, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1040, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1042, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 243., atol=1)
