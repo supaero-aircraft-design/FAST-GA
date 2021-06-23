@@ -1982,7 +1982,7 @@ def test_propeller():
     reader.path_separator = ":"
     ivc = reader.read().to_ivc()
     ivc.add_output("data:geometry:propeller:diameter", 2.0 * 0.965, units="m")
-    ivc.add_output("data:geometry:propeller:hub:diameter", 2.0 * 0.965 * 0.18, units="m")
+    ivc.add_output("data:geometry:propeller:hub_diameter", 2.0 * 0.965 * 0.18, units="m")
     ivc.add_output("data:geometry:propeller:blades_number", 2)
     twist_law = lambda x: 25.0 / (x + 0.75) ** 1.5 + 46.3917 - 15.0
     radius_ratio = [0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]
@@ -2003,7 +2003,7 @@ def test_propeller():
     ivc.add_output("data:geometry:propeller:sweep_vect", sweep_vect, units="deg")
 
     # Run problem
-    problem = run_system(ComputePropellerPerformance(), ivc)
+    problem = run_system(ComputePropellerPerformance(vectors_length = len(radius_ratio_vect)), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
