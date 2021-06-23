@@ -42,25 +42,25 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
 
         self.declare_partials(
-                "data:weight:propulsion:engine:CG:x",
-                [
-                        "data:geometry:wing:MAC:leading_edge:x:local",
-                        "data:geometry:wing:MAC:length",
-                        "data:geometry:wing:root:y",
-                        "data:geometry:wing:root:chord",
-                        "data:geometry:wing:tip:leading_edge:x:local",
-                        "data:geometry:wing:tip:y",
-                        "data:geometry:wing:tip:chord",
-                        "data:geometry:wing:MAC:at25percent:x",
-                        "data:geometry:propulsion:nacelle:length",
-                        "data:geometry:propulsion:nacelle:y",
-                        "data:geometry:propulsion:propeller:depth",
-                ],
-                method="fd",
+            "data:weight:propulsion:engine:CG:x",
+            [
+                "data:geometry:wing:MAC:leading_edge:x:local",
+                "data:geometry:wing:MAC:length",
+                "data:geometry:wing:root:y",
+                "data:geometry:wing:root:chord",
+                "data:geometry:wing:tip:leading_edge:x:local",
+                "data:geometry:wing:tip:y",
+                "data:geometry:wing:tip:chord",
+                "data:geometry:wing:MAC:at25percent:x",
+                "data:geometry:propulsion:nacelle:length",
+                "data:geometry:propulsion:nacelle:y",
+                "data:geometry:propulsion:propeller:depth",
+            ],
+            method="fd",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         prop_layout = inputs["data:geometry:propulsion:layout"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -79,27 +79,33 @@ class ComputeEngineCG(ExplicitComponent):
 
         if prop_layout == 1.0:
             if y_nacell > y2_wing:  # Nacelle in the tapered part of the wing
-                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (y4_wing - y2_wing)
+                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (
+                    y4_wing - y2_wing
+                )
                 delta_x_nacell = 0.05 * l_wing_nac
                 x_nacell_cg = (
-                        x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
-                        - delta_x_nacell - (1. - x_cg_in_nacelle)
+                    x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
+                    - delta_x_nacell
+                    - (1.0 - x_cg_in_nacelle)
                 )
                 x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
             else:  # Nacelle in the straight part of the wing
                 l_wing_nac = l2_wing
                 delta_x_nacell = 0.05 * l_wing_nac
-                x_nacell_cg = -delta_x_nacell - (1. - x_cg_in_nacelle)
+                x_nacell_cg = -delta_x_nacell - (1.0 - x_cg_in_nacelle)
                 x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
         elif prop_layout == 3.0:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
         else:  # FIXME: no equation for configuration 2.0
             if y_nacell > y2_wing:  # Nacelle in the tapered part of the wing
-                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (y4_wing - y2_wing)
+                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (
+                    y4_wing - y2_wing
+                )
                 delta_x_nacell = 0.05 * l_wing_nac
                 x_nacell_cg = (
-                        x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
-                        - delta_x_nacell - 0.2 * nacelle_length
+                    x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
+                    - delta_x_nacell
+                    - 0.2 * nacelle_length
                 )
                 x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
             else:  # Nacelle in the straight part of the wing
@@ -107,6 +113,10 @@ class ComputeEngineCG(ExplicitComponent):
                 delta_x_nacell = 0.05 * l_wing_nac
                 x_nacell_cg = -delta_x_nacell - 0.2 * nacelle_length
                 x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
-            warnings.warn('Propulsion layout {} not implemented in model, replaced by layout 1!'.format(prop_layout))
-            
+            warnings.warn(
+                "Propulsion layout {} not implemented in model, replaced by layout 1!".format(
+                    prop_layout
+                )
+            )
+
         outputs["data:weight:propulsion:engine:CG:x"] = x_cg_b1

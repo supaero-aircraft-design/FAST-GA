@@ -116,7 +116,9 @@ def aircraft_geometry_plot(
     wing_mac_length = variables["data:geometry:wing:MAC:length"].value[0]
     local_wing_mac_le_x = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
     local_ht_25mac_x = variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"].value[0]
-    ht_distance_from_wing = variables["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"].value[0]
+    ht_distance_from_wing = variables[
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
+    ].value[0]
 
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
@@ -134,24 +136,30 @@ def aircraft_geometry_plot(
     if prop_layout == 1.0:
         x_nacelle = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
         x_nacelle += wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
-        y_nacelle = np.array([- nac_width / 2,
-                              - nac_width / 2,
-                              nac_width / 2,
-                              nac_width / 2,
-                              prop_diam / 2,
-                              - prop_diam / 2
-                              ])
+        y_nacelle = np.array(
+            [
+                -nac_width / 2,
+                -nac_width / 2,
+                nac_width / 2,
+                nac_width / 2,
+                prop_diam / 2,
+                -prop_diam / 2,
+            ]
+        )
         y_nacelle_left = y_nacelle + pos_y_nacelle
         y_nacelle_right = -y_nacelle - pos_y_nacelle
     elif prop_layout == 3.0:
         x_nacelle = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
-        y_nacelle = np.array([max(- nac_width / 2, - fuselage_max_width / 4.0),
-                              - nac_width / 2,
-                              nac_width / 2,
-                              min(nac_width / 2, fuselage_max_width / 4.0),
-                              prop_diam / 2,
-                              - prop_diam / 2
-                              ])
+        y_nacelle = np.array(
+            [
+                max(-nac_width / 2, -fuselage_max_width / 4.0),
+                -nac_width / 2,
+                nac_width / 2,
+                min(nac_width / 2, fuselage_max_width / 4.0),
+                prop_diam / 2,
+                -prop_diam / 2,
+            ]
+        )
     else:
         x_nacelle = np.array([])
         y_nacelle = np.array([])
@@ -178,14 +186,26 @@ def aircraft_geometry_plot(
 
     if plot_nacelle:
         if prop_layout == 1.0:
-            scatter = go.Scatter(x=y_nacelle_right, y=x_nacelle, mode="lines+markers", line=dict(color="LimeGreen"),
-                                 name=name + " nacelle + propeller")
+            scatter = go.Scatter(
+                x=y_nacelle_right,
+                y=x_nacelle,
+                mode="lines+markers",
+                line=dict(color="LimeGreen"),
+                name=name + " nacelle + propeller",
+            )
             fig.add_trace(scatter)
-            scatter = go.Scatter(x=y_nacelle_left, y=x_nacelle, mode="lines+markers", line=dict(color="LimeGreen"),
-                                 showlegend=False)
+            scatter = go.Scatter(
+                x=y_nacelle_left,
+                y=x_nacelle,
+                mode="lines+markers",
+                line=dict(color="LimeGreen"),
+                showlegend=False,
+            )
             fig.add_trace(scatter)
         else:
-            scatter = go.Scatter(x=y_nacelle, y=x_nacelle, mode="lines+markers", name=name + " nacelle + propeller")
+            scatter = go.Scatter(
+                x=y_nacelle, y=x_nacelle, mode="lines+markers", name=name + " nacelle + propeller"
+            )
             fig.add_trace(scatter)
 
     fig.layout = go.Layout(yaxis=dict(scaleanchor="x", scaleratio=1))
@@ -193,13 +213,11 @@ def aircraft_geometry_plot(
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Aircraft Geometry", title_x=0.5, xaxis_title="y", yaxis_title="x",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="right",
-            x=0.99
-        )
+        title_text="Aircraft Geometry",
+        title_x=0.5,
+        xaxis_title="y",
+        yaxis_title="x",
+        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
     )
 
     return fig
@@ -231,24 +249,44 @@ def evolution_diagram(
     x_maneuver_pts = [velocity_array[0], velocity_array[2]]
     y_maneuver_pts = [load_factor_array[0], load_factor_array[2]]
     for idx in range(len(x_maneuver_line)):
-        y_maneuver_line.append(load_factor_array[0] * (x_maneuver_line[idx] / velocity_array[0])**2.0)
-    x_maneuver_line.extend([velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3]])
-    y_maneuver_line.extend([load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3]])
+        y_maneuver_line.append(
+            load_factor_array[0] * (x_maneuver_line[idx] / velocity_array[0]) ** 2.0
+        )
+    x_maneuver_line.extend(
+        [velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3]]
+    )
+    y_maneuver_line.extend(
+        [load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3]]
+    )
     x_local = list(np.linspace(velocity_array[3], velocity_array[1], 10))
     x_maneuver_line.extend(x_local)
-    x_maneuver_pts.extend([velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3],
-                           velocity_array[1]])
-    y_maneuver_pts.extend([load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3],
-                           load_factor_array[1]])
+    x_maneuver_pts.extend(
+        [
+            velocity_array[9],
+            velocity_array[10],
+            velocity_array[6],
+            velocity_array[3],
+            velocity_array[1],
+        ]
+    )
+    y_maneuver_pts.extend(
+        [
+            load_factor_array[9],
+            load_factor_array[10],
+            load_factor_array[6],
+            load_factor_array[3],
+            load_factor_array[1],
+        ]
+    )
     for idx in range(len(x_local)):
-        y_maneuver_line.append(load_factor_array[1] * (x_local[idx] / x_local[-1])**2.0)
+        y_maneuver_line.append(load_factor_array[1] * (x_local[idx] / x_local[-1]) ** 2.0)
     x_maneuver_line.extend([x_local[-1], velocity_array[0], velocity_array[0]])
     y_maneuver_line.extend([0.0, 0.0, load_factor_array[0]])
 
     # Save gust envelope
     x_gust = [0.0]
     y_gust = [0.0]
-    if not(velocity_array[4] == 0.0):
+    if not (velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
     x_gust.append(velocity_array[7])
@@ -268,15 +306,19 @@ def evolution_diagram(
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + ' - maneuver')
+    scatter = go.Scatter(
+        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + " - maneuver"
+    )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + ' - maneuver [points]')
+    scatter = go.Scatter(
+        x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + " - maneuver [points]"
+    )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + ' - gust')
+    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + " - gust")
 
     fig.add_trace(scatter)
 
@@ -287,7 +329,12 @@ def evolution_diagram(
         title_x=0.5,
         xaxis=dict(range=[0.0, max(max(x_maneuver_line), max(x_gust)) * 1.1]),
         xaxis_title="speed [m/s]",
-        yaxis=dict(range=[min(min(y_maneuver_line), min(y_gust)) * 1.1, max(max(y_maneuver_line), max(y_gust)) * 1.1]),
+        yaxis=dict(
+            range=[
+                min(min(y_maneuver_line), min(y_gust)) * 1.1,
+                max(max(y_maneuver_line), max(y_gust)) * 1.1,
+            ]
+        ),
         yaxis_title="load [g]",
     )
 
@@ -295,8 +342,12 @@ def evolution_diagram(
 
 
 def cl_wing_diagram(
-    aircraft_ref_file_path: str,  aircraft_mod_file_path: str, prop_on: bool = True, name_ref=None,
-    name_mod=None, file_formatter=None
+    aircraft_ref_file_path: str,
+    aircraft_mod_file_path: str,
+    prop_on: bool = True,
+    name_ref=None,
+    name_mod=None,
+    file_formatter=None,
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL before the added part of
@@ -308,27 +359,43 @@ def cl_wing_diagram(
     variables_mod = VariableIO(aircraft_mod_file_path, file_formatter).read()
 
     if prop_on:
-        cl_array_ref = list(variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value)
-        span_array_ref = list(variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value)
-        cl_array_mod = list(variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value)
-        span_array_mod = list(variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value)
+        cl_array_ref = list(
+            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value
+        )
+        span_array_ref = list(
+            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value
+        )
+        cl_array_mod = list(
+            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value
+        )
+        span_array_mod = list(
+            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value
+        )
     else:
-        cl_array_ref = list(variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value)
-        span_array_ref = list(variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value)
-        cl_array_mod = list(variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value)
-        span_array_mod = list(variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value)
+        cl_array_ref = list(
+            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value
+        )
+        span_array_ref = list(
+            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value
+        )
+        cl_array_mod = list(
+            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value
+        )
+        span_array_mod = list(
+            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value
+        )
 
     cl_array_ref = [i for i in cl_array_ref if i != 0]
     cl_array_ref.append(0)
     span_array_ref = [i for i in span_array_ref if i != 0]
-    semi_span_ref = variables_ref["data:geometry:wing:span"].value[0]/2
+    semi_span_ref = variables_ref["data:geometry:wing:span"].value[0] / 2
 
     span_array_ref.append(semi_span_ref)
 
     cl_array_mod = [i for i in cl_array_mod if i != 0]
     cl_array_mod.append(0)
     span_array_mod = [i for i in span_array_mod if i != 0]
-    semi_span_mod = variables_mod["data:geometry:wing:span"].value[0]/2
+    semi_span_mod = variables_mod["data:geometry:wing:span"].value[0] / 2
 
     span_array_mod.append(semi_span_mod)
 
@@ -356,7 +423,7 @@ def cl_wing_diagram(
     fig.add_trace(scatter)
     scatter = go.Scatter(x=span_array_long, y=cl_array_long, name=name_long)
     fig.add_trace(scatter)
-    scatter = go.Scatter(x=span_array_short, y=y, mode="markers", name='interpol')
+    scatter = go.Scatter(x=span_array_short, y=y, mode="markers", name="interpol")
     fig.add_trace(scatter)
     fig = go.FigureWidget(fig)
 
@@ -372,12 +439,7 @@ def cl_wing_diagram(
         xaxis_title="Semi-Span [m]",
         yaxis=dict(range=[0, max(cl_array_long) * 1.1]),
         yaxis_title="CL [-]",
-        legend=dict(
-            yanchor="top",
-            y=0.99,
-            xanchor="right",
-            x=0.99
-        )
+        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
     )
 
     fig1 = go.Figure()
@@ -386,15 +448,16 @@ def cl_wing_diagram(
     else:
         y_scatter = cl_array_mod - y
 
-    scatter = go.Scatter(x=span_array_short, y=y_scatter, name='Delta_CL')
+    scatter = go.Scatter(x=span_array_short, y=y_scatter, name="Delta_CL")
     fig1.add_trace(scatter)
     fig1 = go.FigureWidget(fig1)
     fig1.update_layout(
-        title_text="Delta_CL wing Modified Configuration minus Reference Configuration with " + name_diag,
+        title_text="Delta_CL wing Modified Configuration minus Reference Configuration with "
+        + name_diag,
         title_x=0.5,
         xaxis=dict(range=[0.0, max(span_array_short) * 1.1]),
         xaxis_title="Semi-Span of shortest configuration : " + name_short + " [m]",
-        yaxis=dict(range=[min(y_scatter)*1.1, max(y_scatter) * 1.2]),
+        yaxis=dict(range=[min(y_scatter) * 1.1, max(y_scatter) * 1.2]),
         yaxis_title="Delta_CL [-]",
     )
 
@@ -426,11 +489,26 @@ def cg_lateral_diagram(
     fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
 
     x_fuselage = np.array(
-        [0.0, 0.0, fuselage_front_length, fuselage_length - fuselage_rear_length, fuselage_length, fuselage_length])
+        [
+            0.0,
+            0.0,
+            fuselage_front_length,
+            fuselage_length - fuselage_rear_length,
+            fuselage_length,
+            fuselage_length,
+        ]
+    )
 
     z_fuselage = np.array(
-        [0.0, fuselage_max_height / 5.0, fuselage_max_height / 2.0, fuselage_max_height / 2.5,
-         fuselage_max_height / 5.0, 0.0])
+        [
+            0.0,
+            fuselage_max_height / 5.0,
+            fuselage_max_height / 2.0,
+            fuselage_max_height / 2.5,
+            fuselage_max_height / 5.0,
+            0.0,
+        ]
+    )
 
     z_fuselage = np.concatenate((-z_fuselage, z_fuselage))
     x_fuselage = np.concatenate((x_fuselage, x_fuselage))
@@ -443,13 +521,17 @@ def cg_lateral_diagram(
 
     vt_tip_leading_edge_x = vt_span * np.tan(vt_sweep_0 * np.pi / 180.0)
 
-    x_vt = np.array([0, vt_tip_leading_edge_x, vt_tip_leading_edge_x + vt_tip_chord, vt_root_chord, 0])
+    x_vt = np.array(
+        [0, vt_tip_leading_edge_x, vt_tip_leading_edge_x + vt_tip_chord, vt_root_chord, 0]
+    )
 
     z_vt = np.array([0, vt_span, vt_span, 0, 0])
 
     wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
     local_vt_25mac_x = variables["data:geometry:vertical_tail:MAC:at25percent:x:local"].value[0]
-    vt_distance_from_wing = variables["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"].value[0]
+    vt_distance_from_wing = variables[
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"
+    ].value[0]
     x_vt = x_vt + wing_25mac_x + vt_distance_from_wing - local_vt_25mac_x
     z_vt = z_vt + fuselage_max_height / 4.0
 
@@ -463,7 +545,7 @@ def cg_lateral_diagram(
 
     x_cg = np.array([cg_fwd_x, cg_empty_x, cg_aft_x])
     z_cg = np.array([cg_empty_z, cg_empty_z, cg_empty_z])
-    z_cg = z_cg-lg_height-fuselage_max_height/2.0
+    z_cg = z_cg - lg_height - fuselage_max_height / 2.0
 
     # Stability
 
@@ -478,37 +560,77 @@ def cg_lateral_diagram(
     ac_free_x = mac_position + (ac_ratio_free - 0.25) * l0
 
     if fig is None:
-        fig = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3],
-                            subplot_titles=("Aircraft Lateral View : Barycenter Position", "Zoom"))
-        scatter = go.Scatter(x=x_fuselage, y=z_fuselage, mode="lines+markers", name=name + " geometry",
-                             line=dict(color="Brown"))
+        fig = make_subplots(
+            rows=1,
+            cols=2,
+            column_widths=[0.7, 0.3],
+            subplot_titles=("Aircraft Lateral View : Barycenter Position", "Zoom"),
+        )
+        scatter = go.Scatter(
+            x=x_fuselage,
+            y=z_fuselage,
+            mode="lines+markers",
+            name=name + " geometry",
+            line=dict(color="Brown"),
+        )
         fig.add_trace(scatter, 1, 1)
-        scatter = go.Scatter(x=x_vt, y=z_vt, mode="lines+markers", name=name,
-                             line=dict(color="Brown"), showlegend=False)
+        scatter = go.Scatter(
+            x=x_vt,
+            y=z_vt,
+            mode="lines+markers",
+            name=name,
+            line=dict(color="Brown"),
+            showlegend=False,
+        )
         fig.add_trace(scatter, 1, 1)
 
-    scatter = go.Scatter(x=x_cg, y=z_cg, mode="lines+markers", name=name + " CG positions",
-                         line=dict(color=color, width=2), marker_line=dict(width=1),
-                         )
+    scatter = go.Scatter(
+        x=x_cg,
+        y=z_cg,
+        mode="lines+markers",
+        name=name + " CG positions",
+        line=dict(color=color, width=2),
+        marker_line=dict(width=1),
+    )
     fig.add_trace(scatter, 1, 1)
-    scatter = go.Scatter(x=x_cg, y=z_cg, text=["fwd CG", "empty CG", "aft CG"], mode="lines+markers+text",
-                         textposition=["bottom center", "top center", "top center"], name=name + " CG positions",
-                         line={'dash': 'dash'}, marker_line=dict(width=1), line_color=color, showlegend=False
-                         )
+    scatter = go.Scatter(
+        x=x_cg,
+        y=z_cg,
+        text=["fwd CG", "empty CG", "aft CG"],
+        mode="lines+markers+text",
+        textposition=["bottom center", "top center", "top center"],
+        name=name + " CG positions",
+        line={"dash": "dash"},
+        marker_line=dict(width=1),
+        line_color=color,
+        showlegend=False,
+    )
     fig.add_trace(scatter, 1, 2)
 
-    scatter = go.Scatter(x=[ac_fixed_x], y=[z_cg[0]], text="Static Margin" + "<br>" + "Stick Fixed =" + "<br>" +
-                         str(round(stick_fixed_sm, 3)), textposition="bottom center", mode="markers+text",
-                         name=name + " Neutral Point Stick Fixed", line=dict(color="DarkRed"), showlegend=False,
-                         marker_line=dict(width=1)
-                         )
+    scatter = go.Scatter(
+        x=[ac_fixed_x],
+        y=[z_cg[0]],
+        text="Static Margin" + "<br>" + "Stick Fixed =" + "<br>" + str(round(stick_fixed_sm, 3)),
+        textposition="bottom center",
+        mode="markers+text",
+        name=name + " Neutral Point Stick Fixed",
+        line=dict(color="DarkRed"),
+        showlegend=False,
+        marker_line=dict(width=1),
+    )
     fig.add_trace(scatter, 1, 2)
 
-    scatter = go.Scatter(x=[ac_free_x], y=[z_cg[0]], text="Static Margin" + "<br>" + "Stick Free =" + "<br>" +
-                         str(round(stick_free_sm, 3)), textposition="bottom center", mode="markers+text",
-                         name=name + " Neutral Point Stick Free", line=dict(color="DodgerBlue"), showlegend=False,
-                         marker_line=dict(width=1)
-                         )
+    scatter = go.Scatter(
+        x=[ac_free_x],
+        y=[z_cg[0]],
+        text="Static Margin" + "<br>" + "Stick Free =" + "<br>" + str(round(stick_free_sm, 3)),
+        textposition="bottom center",
+        mode="markers+text",
+        name=name + " Neutral Point Stick Free",
+        line=dict(color="DodgerBlue"),
+        showlegend=False,
+        marker_line=dict(width=1),
+    )
     fig.add_trace(scatter, 1, 2)
 
     fig.update_xaxes(title_text="X", row=1, col=1)
@@ -516,12 +638,7 @@ def cg_lateral_diagram(
     fig.update_yaxes(title_text="Z", row=1, col=1)
     fig.update_yaxes(title_text="Z", row=1, col=2)
 
-    fig.update_layout(legend=dict(
-        yanchor="top",
-        y=0.99,
-        xanchor="left",
-        x=0.01
-    ))
+    fig.update_layout(legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01))
 
     return fig
 
@@ -656,20 +773,16 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         + " [kg] ("
         + str(round(fuel_mission / mtow * 100, 1))
         + "%)",
-        "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)"
-        ]
+        "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
+    ]
     parent = [
         "",
         "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
         "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
         "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-        ]
+    ]
     value = [mtow, payload, fuel_mission, owe]
-    fig.add_trace(go.Sunburst(
-        labels=labels,
-        parents=parent,
-        values=value,
-    ), 1, 1)
+    fig.add_trace(go.Sunburst(labels=labels, parents=parent, values=value,), 1, 1)
 
     airframe_str = (
         "airframe"
@@ -704,98 +817,97 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         + "%)"
     )
 
-    labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]",
-              airframe_str,
-              propulsion_str,
-              systems_str,
-              furniture_str,
-              "wing",
-              "fuselage",
-              "horizontal_tail",
-              "vertical_tail",
-              "flight_controls",
-              "landing_gear_main",
-              "landing_gear_front",
-              "engine",
-              "fuel_lines",
-              "unusable_fuel",
-              "fuel_tank",
-              "electric_systems",
-              "hydraulic_systems",
-              "insulation",
-              "air_conditioning",
-              "de_icing",
-              "internal_lighting",
-              "seat_installation",
-              "oxygen",
-              "security_kits",
-              "navigation",
-              "passenger_seats"
-              ]
+    labels = [
+        "OWE" + "<br>" + str(int(owe)) + " [kg]",
+        airframe_str,
+        propulsion_str,
+        systems_str,
+        furniture_str,
+        "wing",
+        "fuselage",
+        "horizontal_tail",
+        "vertical_tail",
+        "flight_controls",
+        "landing_gear_main",
+        "landing_gear_front",
+        "engine",
+        "fuel_lines",
+        "unusable_fuel",
+        "fuel_tank",
+        "electric_systems",
+        "hydraulic_systems",
+        "insulation",
+        "air_conditioning",
+        "de_icing",
+        "internal_lighting",
+        "seat_installation",
+        "oxygen",
+        "security_kits",
+        "navigation",
+        "passenger_seats",
+    ]
 
-    parent = ["",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              propulsion_str,
-              propulsion_str,
-              propulsion_str,
-              propulsion_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              furniture_str
-              ]
+    parent = [
+        "",
+        "OWE" + "<br>" + str(int(owe)) + " [kg]",
+        "OWE" + "<br>" + str(int(owe)) + " [kg]",
+        "OWE" + "<br>" + str(int(owe)) + " [kg]",
+        "OWE" + "<br>" + str(int(owe)) + " [kg]",
+        airframe_str,
+        airframe_str,
+        airframe_str,
+        airframe_str,
+        airframe_str,
+        airframe_str,
+        airframe_str,
+        propulsion_str,
+        propulsion_str,
+        propulsion_str,
+        propulsion_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        systems_str,
+        furniture_str,
+    ]
 
-    value = [owe,
-             airframe,
-             propulsion,
-             systems,
-             furniture,
-             wing,
-             fuselage,
-             h_tail,
-             v_tail,
-             control_surface,
-             landing_gear_1,
-             landing_gear_2,
-             b1,
-             b2,
-             b3,
-             b4,
-             c12,
-             c13,
-             c21,
-             c22,
-             c23,
-             c24,
-             c25,
-             c26,
-             c27,
-             c3,
-             d2
-             ]
+    value = [
+        owe,
+        airframe,
+        propulsion,
+        systems,
+        furniture,
+        wing,
+        fuselage,
+        h_tail,
+        v_tail,
+        control_surface,
+        landing_gear_1,
+        landing_gear_2,
+        b1,
+        b2,
+        b3,
+        b4,
+        c12,
+        c13,
+        c21,
+        c22,
+        c23,
+        c24,
+        c25,
+        c26,
+        c27,
+        c3,
+        d2,
+    ]
 
-    fig.add_trace(go.Sunburst(
-        labels=labels,
-        parents=parent,
-        values=value,
-    ), 1, 2)
+    fig.add_trace(go.Sunburst(labels=labels, parents=parent, values=value,), 1, 2)
 
     fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
 
@@ -811,7 +923,9 @@ def drag_breakdown_diagram(
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     parasite_drag_cruise = variables["data:aerodynamics:aircraft:cruise:CD0"].value[0]
-    induced_drag_cruise = variables["data:aerodynamics:wing:cruise:induced_drag_coefficient"].value[0]
+    induced_drag_cruise = variables["data:aerodynamics:wing:cruise:induced_drag_coefficient"].value[
+        0
+    ]
     fuselage_drag_cruise = variables["data:aerodynamics:fuselage:cruise:CD0"].value[0]
     wing_parasite_drag_cruise = variables["data:aerodynamics:wing:cruise:CD0"].value[0]
     htp_drag_cruise = variables["data:aerodynamics:horizontal_tail:cruise:CD0"].value[0]
@@ -821,7 +935,9 @@ def drag_breakdown_diagram(
     other_drag_cruise = variables["data:aerodynamics:other:cruise:CD0"].value[0]
 
     parasite_drag_low_speed = variables["data:aerodynamics:aircraft:low_speed:CD0"].value[0]
-    induced_drag_low_speed = variables["data:aerodynamics:wing:low_speed:induced_drag_coefficient"].value[0]
+    induced_drag_low_speed = variables[
+        "data:aerodynamics:wing:low_speed:induced_drag_coefficient"
+    ].value[0]
     fuselage_drag_low_speed = variables["data:aerodynamics:fuselage:low_speed:CD0"].value[0]
     wing_parasite_drag_low_speed = variables["data:aerodynamics:wing:low_speed:CD0"].value[0]
     htp_drag_low_speed = variables["data:aerodynamics:horizontal_tail:low_speed:CD0"].value[0]
@@ -837,13 +953,17 @@ def drag_breakdown_diagram(
         fig = make_subplots(
             rows=1,
             cols=2,
-            subplot_titles=("Drag coefficient breakdown in cruise conditions",
-                            "Drag coefficient breakdown in low_speed conditions"),
+            subplot_titles=(
+                "Drag coefficient breakdown in cruise conditions",
+                "Drag coefficient breakdown in low_speed conditions",
+            ),
             specs=[[{"type": "domain"}, {"type": "domain"}]],
         )
 
-    fig.add_trace(go.Sunburst(
-        labels=["Parasite Drag",
+    fig.add_trace(
+        go.Sunburst(
+            labels=[
+                "Parasite Drag",
                 "Induced Drag",
                 "Fuselage",
                 "Wing",
@@ -852,18 +972,20 @@ def drag_breakdown_diagram(
                 "Landing Gears",
                 "Nacelle",
                 "Other",
-                ],
-        parents=["",
-                 "",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 ],
-        values=[parasite_drag_cruise,
+            ],
+            parents=[
+                "",
+                "",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+            ],
+            values=[
+                parasite_drag_cruise,
                 induced_drag_cruise,
                 crud_factor * fuselage_drag_cruise,
                 crud_factor * wing_parasite_drag_cruise,
@@ -872,14 +994,17 @@ def drag_breakdown_diagram(
                 crud_factor * lg_drag_cruise,
                 crud_factor * nacelle_drag_cruise,
                 crud_factor * other_drag_cruise,
-                ],
-        branchvalues="total",),
+            ],
+            branchvalues="total",
+        ),
         1,
         1,
     )
 
-    fig.add_trace(go.Sunburst(
-        labels=["Parasite Drag",
+    fig.add_trace(
+        go.Sunburst(
+            labels=[
+                "Parasite Drag",
                 "Induced Drag",
                 "Fuselage",
                 "Wing",
@@ -888,18 +1013,20 @@ def drag_breakdown_diagram(
                 "Landing Gears",
                 "Nacelle",
                 "Other",
-                ],
-        parents=["",
-                 "",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 "Parasite Drag",
-                 ],
-        values=[parasite_drag_low_speed,
+            ],
+            parents=[
+                "",
+                "",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+                "Parasite Drag",
+            ],
+            values=[
+                parasite_drag_low_speed,
                 induced_drag_low_speed,
                 crud_factor * fuselage_drag_low_speed,
                 crud_factor * wing_parasite_drag_low_speed,
@@ -908,15 +1035,14 @@ def drag_breakdown_diagram(
                 crud_factor * lg_drag_low_speed,
                 crud_factor * nacelle_drag_low_speed,
                 crud_factor * other_drag_low_speed,
-                ],
-        branchvalues="total",),
+            ],
+            branchvalues="total",
+        ),
         1,
         2,
     )
 
-    fig.update_layout(
-        margin=dict(t=0, l=0, r=0, b=0),
-    )
+    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0),)
 
     fig = go.FigureWidget(fig)
 

@@ -23,7 +23,7 @@ class Cd0Total(ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        
+
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
@@ -68,7 +68,7 @@ class Cd0Total(ExplicitComponent):
         crud_factor = 1.25
 
         cd0 = crud_factor * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other)
-        
+
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:CD0"] = cd0
         else:

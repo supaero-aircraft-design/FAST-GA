@@ -84,7 +84,9 @@ def test_compute_balked_landing():
     problem = run_system(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), input_vars)
     x_cg_balked_landing_limit = problem["data:handling_qualities:balked_landing_limit:x"]
     assert x_cg_balked_landing_limit == pytest.approx(2.0738, rel=1e-2)
-    x_cg_ratio_balked_landing_limit = problem["data:handling_qualities:balked_landing_limit:MAC_position"]
+    x_cg_ratio_balked_landing_limit = problem[
+        "data:handling_qualities:balked_landing_limit:MAC_position"
+    ]
     assert x_cg_ratio_balked_landing_limit == pytest.approx(-0.23, rel=1e-2)
 
 
@@ -92,12 +94,16 @@ def test_update_vt_area():
     """ Tests computation of the vertical tail area """
 
     # Research independent input value in .xml file
-    input_vars = get_indep_var_comp(list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    input_vars = get_indep_var_comp(
+        list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
     input_vars.add_output("data:weight:aircraft:OWE", 1039.139, units="kg")
     input_vars.add_output("data:weight:aircraft:payload", 355.0, units="kg")
     input_vars.add_output("data:aerodynamics:fuselage:cruise:CnBeta", -0.0599)
     input_vars.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", 1.3536, units="rad**-1")
-    input_vars.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", 2.634, units="rad**-1")
+    input_vars.add_output(
+        "data:aerodynamics:vertical_tail:low_speed:CL_alpha", 2.634, units="rad**-1"
+    )
     input_vars.add_output("data:geometry:cabin:length", 2.86, units="m")
     input_vars.add_output("data:geometry:fuselage:front_length", 1.559, units="m")
     input_vars.add_output("data:geometry:fuselage:rear_length", 3.15, units="m")
@@ -108,16 +114,28 @@ def test_update_vt_area():
     vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
     assert vt_area == pytest.approx(1.479, abs=1e-2)  # old-version obtained value 2.4m²
 
-    vt_area_constraints_cruise = problem.get_val("data:constraints:vertical_tail:target_cruise_stability", units="m**2")
-    assert vt_area_constraints_cruise == pytest.approx(0., abs=1e-2)
-    vt_area_constraints_crosswind = problem.get_val("data:constraints:vertical_tail:crosswind_landing", units="m**2")
+    vt_area_constraints_cruise = problem.get_val(
+        "data:constraints:vertical_tail:target_cruise_stability", units="m**2"
+    )
+    assert vt_area_constraints_cruise == pytest.approx(0.0, abs=1e-2)
+    vt_area_constraints_crosswind = problem.get_val(
+        "data:constraints:vertical_tail:crosswind_landing", units="m**2"
+    )
     assert vt_area_constraints_crosswind == pytest.approx(0.246, abs=1e-2)
-    vt_area_constraints_eo_climb = problem.get_val("data:constraints:vertical_tail:engine_out_climb", units="m**2")
+    vt_area_constraints_eo_climb = problem.get_val(
+        "data:constraints:vertical_tail:engine_out_climb", units="m**2"
+    )
     assert vt_area_constraints_eo_climb == pytest.approx(1.479, abs=1e-2)
-    vt_area_constraints_eo_takeoff = problem.get_val("data:constraints:vertical_tail:engine_out_takeoff", units="m**2")
+    vt_area_constraints_eo_takeoff = problem.get_val(
+        "data:constraints:vertical_tail:engine_out_takeoff", units="m**2"
+    )
     assert vt_area_constraints_eo_takeoff == pytest.approx(1.479, abs=1e-2)
-    vt_area_constraints_eo_landing = problem.get_val("data:constraints:vertical_tail:engine_out_landing", units="m**2")
-    assert vt_area_constraints_eo_landing == pytest.approx(1.479, abs=1e-2)  # Should be equal to vtp_area but since
+    vt_area_constraints_eo_landing = problem.get_val(
+        "data:constraints:vertical_tail:engine_out_landing", units="m**2"
+    )
+    assert vt_area_constraints_eo_landing == pytest.approx(
+        1.479, abs=1e-2
+    )  # Should be equal to vtp_area but since
     # the dummy engine is not recognized as an ICE engine the last constraints applies even though it shouldn't
 
 
@@ -126,7 +144,9 @@ def test_update_ht_area():
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(list_inputs(UpdateHTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(UpdateHTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker

@@ -27,7 +27,9 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
 
-@RegisterOpenMDAOSystem("fastga.handling_qualities.all_handling_qualities", domain=ModelDomain.HANDLING_QUALITIES)
+@RegisterOpenMDAOSystem(
+    "fastga.handling_qualities.all_handling_qualities", domain=ModelDomain.HANDLING_QUALITIES
+)
 class ComputeHandlingQualities(om.Group):
     """
     Calculate static margins and maneuver limits
@@ -39,7 +41,13 @@ class ComputeHandlingQualities(om.Group):
     def setup(self):
         self.add_subsystem("aero_center", ComputeAeroCenter(), promotes=["*"])
         self.add_subsystem("static_margin", _ComputeStaticMargin(), promotes=["*"])
-        self.add_subsystem("to_rotation_limit",
-                           ComputeTORotationLimitGroup(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("balked_landing_limit",
-                           ComputeBalkedLandingLimit(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "to_rotation_limit",
+            ComputeTORotationLimitGroup(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "balked_landing_limit",
+            ComputeBalkedLandingLimit(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )

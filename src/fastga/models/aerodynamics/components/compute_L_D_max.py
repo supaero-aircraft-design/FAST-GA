@@ -24,9 +24,9 @@ class ComputeLDMax(ExplicitComponent):
     Computes optimal CL/CD aerodynamic performance of the aircraft in cruise conditions.
 
     """
-    
+
     def setup(self):
-        
+
         self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
@@ -36,7 +36,7 @@ class ComputeLDMax(ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_CL")
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg")
-        
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -46,11 +46,11 @@ class ComputeLDMax(ExplicitComponent):
         cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        
-        cl_opt = math.sqrt(cd0/coef_k)
-        alpha_opt = (cl_opt-cl0_clean)/cl_alpha*180/math.pi
-        cd_opt = cd0 + coef_k * cl_opt**2
-        
+
+        cl_opt = math.sqrt(cd0 / coef_k)
+        alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / math.pi
+        cd_opt = cd0 + coef_k * cl_opt ** 2
+
         outputs["data:aerodynamics:aircraft:cruise:L_D_max"] = cl_opt / cd_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_CL"] = cl_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_CD"] = cd_opt

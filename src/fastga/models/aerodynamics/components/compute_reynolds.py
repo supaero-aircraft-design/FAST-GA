@@ -43,10 +43,13 @@ class ComputeUnitReynolds(ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
-            mach = inputs["data:TLAR:v_approach"]/Atmosphere(altitude).speed_of_sound
+            mach = inputs["data:TLAR:v_approach"] / Atmosphere(altitude).speed_of_sound
         else:
             altitude = float(inputs["data:mission:sizing:main_route:cruise:altitude"])
-            mach = inputs["data:TLAR:v_cruise"]/Atmosphere(altitude, altitude_in_feet=False).speed_of_sound
+            mach = (
+                inputs["data:TLAR:v_cruise"]
+                / Atmosphere(altitude, altitude_in_feet=False).speed_of_sound
+            )
 
         atm = Atmosphere(altitude, altitude_in_feet=False)
         atm.mach = mach

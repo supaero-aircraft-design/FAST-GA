@@ -27,22 +27,22 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
     """
 
     def setup(self):
-        
+
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
-        
+
         self.add_output("data:weight:systems:navigation:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_eng = inputs["data:geometry:propulsion:count"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
 
-        n_occ = n_pax + 2.
+        n_occ = n_pax + 2.0
         # The formula differs depending on the number of propeller on the engine
 
         if n_eng == 1.0:

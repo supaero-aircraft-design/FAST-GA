@@ -64,12 +64,12 @@ class ComputeGroundCGCase(ExplicitComponent):
         l_instr = 0.7
         cg_pilot = lav + l_instr + l_pilot_seat / 2.0
 
-        m_pilot = 77.
+        m_pilot = 77.0
 
         cg_list = []
 
         m_pax_array = np.zeros(1)
-        m_pilot_array = np.array([0., 2. * m_pilot])  # Without the pilots and with the 2 pilots
+        m_pilot_array = np.array([0.0, 2.0 * m_pilot])  # Without the pilots and with the 2 pilots
         m_fuel_array = np.array([m_unusable_fuel])
         m_lug_array = np.array([0.0, luggage_mass_max])
 
@@ -82,12 +82,12 @@ class ComputeGroundCGCase(ExplicitComponent):
                     for m_pax in m_pax_array:
                         mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
                         cg = (
-                                     m_empty * x_cg_plane_aft +
-                                     m_pax * cg_pax +
-                                     m_pilot * cg_pilot +
-                                     m_fuel * cg_tank +
-                                     m_lug * cg_rear_fret
-                             ) / mass
+                            m_empty * x_cg_plane_aft
+                            + m_pax * cg_pax
+                            + m_pilot * cg_pilot
+                            + m_fuel * cg_tank
+                            + m_lug * cg_rear_fret
+                        ) / mass
                         cg_list.append(cg)
 
         cg_fwd = min(cg_list)
@@ -157,10 +157,10 @@ class ComputeFlightCGCase(ExplicitComponent):
         l_instr = 0.7
         cg_pilot = lav + l_instr + l_pilot_seat / 2.0
 
-        n_pax_array = np.linspace(0., n_pax_max, int(n_pax_max) + 1)
+        n_pax_array = np.linspace(0.0, n_pax_max, int(n_pax_max) + 1)
 
-        m_pilot_single = 77.
-        m_pilot_array = np.array([2. * m_pilot_single])  # Without the pilots and with the 2 pilots
+        m_pilot_single = 77.0
+        m_pilot_array = np.array([2.0 * m_pilot_single])  # Without the pilots and with the 2 pilots
 
         m_fuel_min = m_unusable_fuel + self.min_in_flight_fuel(inputs)
 
@@ -192,23 +192,27 @@ class ComputeFlightCGCase(ExplicitComponent):
                             nb_pers = min(count_by_row, n_pax_max - idx * count_by_row)
                             x_cg_pax_aft += row_cg * nb_pers / n_pax_max
 
-                        cg_pax_array = np.array([lav + l_instr + l_pilot_seat + x_cg_pax_fwd,
-                                                 lav + l_instr + l_pilot_seat + x_cg_pax_aft])
+                        cg_pax_array = np.array(
+                            [
+                                lav + l_instr + l_pilot_seat + x_cg_pax_fwd,
+                                lav + l_instr + l_pilot_seat + x_cg_pax_aft,
+                            ]
+                        )
 
                         for cg_pax in cg_pax_array:
 
-                            m_pax_array = np.array([n_pax * 80., n_pax * 90.])
+                            m_pax_array = np.array([n_pax * 80.0, n_pax * 90.0])
 
                             for m_pax in m_pax_array:
 
                                 mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
                                 cg = (
-                                         m_empty * x_cg_plane_aft +
-                                         m_pax * cg_pax +
-                                         m_pilot * cg_pilot +
-                                         m_fuel * cg_tank +
-                                         m_lug * cg_rear_fret
-                                 ) / mass
+                                    m_empty * x_cg_plane_aft
+                                    + m_pax * cg_pax
+                                    + m_pilot * cg_pilot
+                                    + m_fuel * cg_tank
+                                    + m_lug * cg_rear_fret
+                                ) / mass
                                 cg_list.append(cg)
 
         cg_aft = max(cg_list)
@@ -233,11 +237,14 @@ class ComputeFlightCGCase(ExplicitComponent):
 
         atm = Atmosphere(0.0, altitude_in_feet=False)
         flight_point = FlightPoint(
-            mach=vh / atm.speed_of_sound, altitude=0.0, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=1.0)
+            mach=vh / atm.speed_of_sound,
+            altitude=0.0,
+            engine_setting=EngineSetting.TAKEOFF,
+            thrust_rate=1.0,
+        )
 
         propulsion_model.compute_flight_points(flight_point)
-        m_fuel = propulsion_model.get_consumed_mass(flight_point, 30. * 60.)
+        m_fuel = propulsion_model.get_consumed_mass(flight_point, 30.0 * 60.0)
         # Fuel necessary for a half-hour at max continuous power
 
         return m_fuel
@@ -245,11 +252,7 @@ class ComputeFlightCGCase(ExplicitComponent):
     def max_speed(self, inputs, altitude, mass):
 
         # noinspection PyTypeChecker
-        roots = optimize.fsolve(
-            self.delta_axial_load,
-            300.0,
-            args=(inputs, altitude, mass)
-        )[0]
+        roots = optimize.fsolve(self.delta_axial_load, 300.0, args=(inputs, altitude, mass))[0]
 
         return np.max(roots[roots > 0.0])
 
@@ -265,8 +268,10 @@ class ComputeFlightCGCase(ExplicitComponent):
         # Get the available thrust from propulsion system
         atm = Atmosphere(altitude, altitude_in_feet=False)
         flight_point = FlightPoint(
-            mach=air_speed / atm.speed_of_sound, altitude=altitude, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=1.0
+            mach=air_speed / atm.speed_of_sound,
+            altitude=altitude,
+            engine_setting=EngineSetting.TAKEOFF,
+            thrust_rate=1.0,
         )
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)

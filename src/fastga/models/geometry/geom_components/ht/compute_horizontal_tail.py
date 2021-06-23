@@ -16,8 +16,15 @@
 
 import openmdao.api as om
 
-from .components import ComputeHTChord, ComputeHTDistance, ComputeHTmacFD, ComputeHTmacFL, ComputeHTSweep, \
-    ComputeHTWetArea, ComputeHTEfficiency
+from .components import (
+    ComputeHTChord,
+    ComputeHTDistance,
+    ComputeHTmacFD,
+    ComputeHTmacFL,
+    ComputeHTSweep,
+    ComputeHTWetArea,
+    ComputeHTEfficiency,
+)
 
 
 class ComputeHorizontalTailGeometryFD(om.Group):

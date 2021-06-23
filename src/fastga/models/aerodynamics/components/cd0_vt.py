@@ -22,7 +22,6 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class Cd0VerticalTail(ExplicitComponent):
-
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
@@ -64,18 +63,18 @@ class Cd0VerticalTail(ExplicitComponent):
 
         # Root: 50% NLF
         x_trans = 0.5
-        x0_turb = 36.9 * x_trans**0.625 * (1/(unit_reynolds*root_chord))**0.375
-        cf_root = 0.074 / (unit_reynolds*root_chord)**0.2 * (1 - (x_trans - x0_turb))**0.8
+        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
+        cf_root = 0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
         # Tip: 50% NLF
         x_trans = 0.5
-        x0_turb = 36.9 * x_trans**0.625 * (1/(unit_reynolds*tip_chord))**0.375
-        cf_tip = 0.074 / (unit_reynolds*tip_chord)**0.2 * (1 - (x_trans - x0_turb))**0.8
+        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375
+        cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
         # Global
         cf_vt = (cf_root + cf_tip) * 0.5
-        ff = 1 + 0.6/x_tmax * thickness + 100 * thickness**4
-        ff = ff*1.05  # Due to hinged elevator (Raymer)
+        ff = 1 + 0.6 / x_tmax * thickness + 100 * thickness ** 4
+        ff = ff * 1.05  # Due to hinged elevator (Raymer)
         if mach > 0.2:
-            ff = ff * 1.34 * mach**0.18 * (math.cos(sweep_25_vt*math.pi/180))**0.28
+            ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25_vt * math.pi / 180)) ** 0.28
         interf = 1.05
         cd0 = ff * interf * cf_vt * wet_area_vt / wing_area
 

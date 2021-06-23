@@ -40,7 +40,9 @@ class ComputeClalphaVT(FigureDigitization):
         else:
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
 
-        self.add_input("data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:geometry:has_T_tail", val=np.nan)
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
@@ -64,11 +66,11 @@ class ComputeClalphaVT(FigureDigitization):
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
             beta = math.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2. * np.pi)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
             beta = math.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2. * np.pi)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
@@ -82,23 +84,23 @@ class ComputeClalphaVT(FigureDigitization):
         w_max = inputs["data:geometry:fuselage:maximum_width"]
         h_max = inputs["data:geometry:fuselage:maximum_height"]
 
-        avg_fus_depth = np.sqrt(w_max * h_max) * root_chord_vt / (2. * l_ar)
+        avg_fus_depth = np.sqrt(w_max * h_max) * root_chord_vt / (2.0 * l_ar)
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective aspect ratio
         k_ar_fuselage = self.k_ar_fuselage(taper_ratio_vt, span_vt, avg_fus_depth)
 
-        k_ar_fuselage_ht = 1.7 if tail_type == 1. else 1.2
+        k_ar_fuselage_ht = 1.7 if tail_type == 1.0 else 1.2
 
-        k_vh = self.k_vh(float(area_ht/area_vt))
+        k_vh = self.k_vh(float(area_ht / area_vt))
 
-        k_ar_effective = k_ar_fuselage * (1. + k_vh * (k_ar_fuselage_ht - 1.))
+        k_ar_effective = k_ar_fuselage * (1.0 + k_vh * (k_ar_fuselage_ht - 1.0))
 
         lambda_vt = inputs["data:geometry:vertical_tail:aspect_ratio"] * k_ar_effective
 
-        if span_vt / avg_fus_depth < 2.:
+        if span_vt / avg_fus_depth < 2.0:
             kv = 0.75
         elif span_vt / avg_fus_depth < 3.5:
-            kv = interp.interp1d([2., 3.5], [0.75, 1.0])(float(span_vt / avg_fus_depth))
+            kv = interp.interp1d([2.0, 3.5], [0.75, 1.0])(float(span_vt / avg_fus_depth))
         else:
             kv = 1.0
 

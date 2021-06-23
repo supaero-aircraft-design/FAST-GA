@@ -33,11 +33,11 @@ class ComputeTankCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        
-        cg_tank = (0.35+0.65)/2 * l0_wing 
-        cg_b3 = fa_length - 0.25*l0_wing + cg_tank
+
+        cg_tank = (0.35 + 0.65) / 2 * l0_wing
+        cg_b3 = fa_length - 0.25 * l0_wing + cg_tank
 
         outputs["data:weight:propulsion:tank:CG:x"] = cg_b3

@@ -24,9 +24,7 @@ from .profile import Profile
 from fastga.models.aerodynamics import resources
 
 
-def get_profile(
-    file_name: str = None, thickness_ratio=None, chord_length=None,
-) -> Profile:
+def get_profile(file_name: str = None, thickness_ratio=None, chord_length=None,) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 
@@ -41,9 +39,12 @@ def get_profile(
     profile.set_points(x_z["x"], x_z["z"])
 
     if thickness_ratio:
-        if abs(profile.thickness_ratio - thickness_ratio)/thickness_ratio > 0.01:
-            warnings.warn('The airfoil thickness ratio from file ' + pth.join(resources.__path__[0], file_name)
-                          + ' differs from user defined input data:geometry:wing:thickness_ratio!')
+        if abs(profile.thickness_ratio - thickness_ratio) / thickness_ratio > 0.01:
+            warnings.warn(
+                "The airfoil thickness ratio from file "
+                + pth.join(resources.__path__[0], file_name)
+                + " differs from user defined input data:geometry:wing:thickness_ratio!"
+            )
         profile.thickness_ratio = thickness_ratio
 
     if chord_length:
@@ -53,7 +54,7 @@ def get_profile(
 
 
 def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(pth.join(resources.__path__[0], file_name), 'r') as lf:
+    with open(pth.join(resources.__path__[0], file_name), "r") as lf:
         data = lf.readlines()
         # Extract data
         x_data = []
@@ -71,4 +72,4 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                 except:
                     pass
 
-    return pd.DataFrame(data={'x': x_data, 'z': z_data})
+    return pd.DataFrame(data={"x": x_data, "z": z_data})

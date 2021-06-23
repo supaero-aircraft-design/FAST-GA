@@ -31,11 +31,10 @@ class ComputeLandingGearCG(ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
-
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         lav = inputs["data:geometry:fuselage:front_length"]
-        
+
         # NLG gravity center
         x_cg_a52 = lav * 0.75
 
