@@ -88,8 +88,9 @@ def list_ivc_outputs_name(
         system: Union[ExplicitComponent, ImplicitComponent, Group],
 ):
     # List all "root" components in the systems, meaning the components that don't have any subcomponents
-    problem = om.Problem()
-    problem.model = deepcopy(system)
+    group = AutoUnitsDefaultGroup()
+    group.add_subsystem("system", system, promotes=["*"])
+    problem = FASTOADProblem(group)
     problem.setup()
     model = problem.model
     dict_sub_system = {}
@@ -99,8 +100,8 @@ def list_ivc_outputs_name(
     # Find the outputs of all of those systems that are IndepVarComp
     for sub_system_keys in dict_sub_system.keys():
         if dict_sub_system[sub_system_keys] == "IndepVarComp":
-            actual_attribute_name = sub_system_keys.replace("model.", "")
-            component = getattr(model, actual_attribute_name)
+            actual_attribute_name = sub_system_keys.replace("model.system.", "")
+            component = getattr(model.system, actual_attribute_name)
             component_output = component.list_outputs()
             for outputs in component_output:
                 ivc_outputs_names.append(outputs[0])

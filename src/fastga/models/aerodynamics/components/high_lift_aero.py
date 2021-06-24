@@ -36,7 +36,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -124,7 +124,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                 abs(inputs["data:mission:sizing:landing:elevator_angle"]),
             )
             / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0)
-            * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"] * math.pi / 180.0)
+            * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
             * htp_area
             / wing_area
         )

@@ -15,7 +15,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
+from .external.openvsp.compute_vn import DOMAIN_PTS_NB
+
 from openmdao.core.group import Group
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .external.vlm.compute_vn import ComputeVNvlmNoVH
 from .external.openvsp.compute_vn import ComputeVNopenvspNoVH
@@ -52,3 +56,23 @@ class LoadFactor(Group):
                                ),
                                promotes=["*"],
                                )
+        self.add_subsystem("sizing_load_factor",
+                           _LoadFactorIdentification(),
+                           promotes=["*"])
+
+
+class _LoadFactorIdentification(ExplicitComponent):
+
+    def setup(self):
+        nan_array = np.full(DOMAIN_PTS_NB, np.nan)
+        self.add_input("data:flight_domain:load_factor", val=nan_array, shape=DOMAIN_PTS_NB)
+
+        self.add_output("data:mission:sizing:cs23:sizing_factor_ultimate")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        load_factor_array = inputs["data:flight_domain:load_factor"]
+        outputs["data:mission:sizing:cs23:sizing_factor_ultimate"] = 1.5 * max(
+            abs(max(load_factor_array)), abs(min(load_factor_array))
+        )

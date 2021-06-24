@@ -28,12 +28,8 @@ from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 
 from fastga.command import api
 from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
-from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.aerodynamics import Aerodynamics
 import fastga.notebooks.tutorial.data as data
-
-# from fastoad import api
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
@@ -43,7 +39,7 @@ for folder in PATH[1 : len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = "be76"  # "sr22"
+AIRCRAFT_ID = "sr22"  # "be76"
 MDA_WING_POSITION = True
 PROPELLER_COMPUTATION = False
 
@@ -105,9 +101,9 @@ def test_oad_process(cleanup):
                 problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1657, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1666, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1036, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1044, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 243.0, atol=1)
