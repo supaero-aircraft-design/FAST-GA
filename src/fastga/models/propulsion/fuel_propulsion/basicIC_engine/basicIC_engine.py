@@ -159,19 +159,19 @@ class BasicICEngine(AbstractFuelPropulsion):
         values = data.to_numpy()[:, 1:].tolist()
         labels = data.to_numpy()[:, 0].tolist()
         data = pd.DataFrame(values, index=labels)
-        rpm = data.loc["rpm", 0][1:-2].replace("\n", "")
+        rpm = data.loc["rpm", 0][1:-2].replace("\n", "").replace("\r", "")
         for idx in range(10):
             rpm = rpm.replace("  ", " ")
         rpm_vect = np.array([float(i) for i in rpm.split(" ") if i != ""])
-        pme = data.loc["pme", 0][1:-2].replace("\n", "")
+        pme = data.loc["pme", 0][1:-2].replace("\n", "").replace("\r", "")
         for idx in range(10):
             pme = pme.replace("  ", " ")
         pme_vect = np.array([float(i) for i in pme.split(" ") if i != ""])
-        pme_limit = data.loc["pme_limit", 0][1:-2].replace("\n", "")
+        pme_limit = data.loc["pme_limit", 0][1:-2].replace("\n", "").replace("\r", "")
         for idx in range(10):
             pme_limit = pme_limit.replace("  ", " ")
         pme_limit_vect = np.array([float(i) for i in pme_limit.split(" ") if i != ""])
-        sfc = data.loc["sfc", 0][1:-2].replace("\n", "")
+        sfc = data.loc["sfc", 0][1:-2].replace("\n", "").replace("\r", "")
         sfc_lines = sfc[1:-2].split("] [")
         sfc_matrix = np.zeros(
             (len(np.array([i for i in sfc_lines[0].split(" ") if i != ""])), len(sfc_lines))

@@ -309,7 +309,7 @@ def test_airfoil_slope():
         __file__,
         XML_FILE,
     )
-    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", val=2782216)
+    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", val=2782216, units="m**-1")
     ivc.add_output("data:aerodynamics:low_speed:mach", val=0.1194)
 
     # Run problem

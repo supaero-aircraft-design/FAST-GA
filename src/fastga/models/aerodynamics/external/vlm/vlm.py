@@ -494,7 +494,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alphaind = np.dot(AIC_wake, gamma) / v_inf
         cdind_panel = cp * alphaind
         cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
-        htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * cdi_htp)
+        htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avod 0.0 division
         cmpanel = np.multiply(cp, (xc[: self.nx * self.ny] - meanchord / 4))
         cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 

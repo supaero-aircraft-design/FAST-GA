@@ -409,7 +409,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             if out_of_polars:
                 dT_vect[i] = 0.0
                 dQ_vect[i] = 0.0
-                warnings.warn("Propeller element out of calculated polars: contribution canceled!")
+                # warnings.warn("Propeller element out of calculated polars: contribution canceled!")
             else:
                 dT_vect[i] = results[0] * dr * atm.density
                 dQ_vect[i] = results[1] * dr * atm.density
@@ -420,8 +420,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
 
-        if eta < 0.0 or eta > 1.0:
-            warnings.warn("Propeller not working in propulsive mode!")
+        # if eta < 0.0 or eta > 1.0:
+        #     warnings.warn("Propeller not working in propulsive mode!")
 
         return thrust, eta, torque
 
