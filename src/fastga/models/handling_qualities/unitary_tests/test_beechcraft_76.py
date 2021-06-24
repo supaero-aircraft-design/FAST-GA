@@ -102,7 +102,6 @@ def test_compute_to_rotation_limit():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:geometry:horizontal_tail:area", 3.78)
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
@@ -119,7 +118,6 @@ def test_balked_landing_limit():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:geometry:horizontal_tail:area", 3.78)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), input_vars)

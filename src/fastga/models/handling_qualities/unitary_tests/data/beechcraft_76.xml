@@ -52,7 +52,6 @@
 			</flaps>
 			<horizontal_tail>
 				<efficiency>1.0<!--horizontal_tail efficiency--></efficiency>
-				<area units="m**2">4.422<!--horizontal_tail area--></area>
 				<cruise>
 					<CL_alpha units="rad**-1">1.2589<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
 					<hinge_moment>
@@ -65,8 +64,8 @@
 					<CL_alpha_isolated units="rad**-1">1.0198<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha_isolated>
 					<CL0>-0.00754<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
 					<clean>
-						<alpha_aircraft_min>25.34</alpha_aircraft_min>
-						<alpha_aircraft_max>25.353</alpha_aircraft_max>
+						<alpha_aircraft_min units="deg">25.34</alpha_aircraft_min>
+						<alpha_aircraft_max units="deg">25.353</alpha_aircraft_max>
 					</clean>
 					<induced_drag_coefficient>0.2800</induced_drag_coefficient>
 				</low_speed>
@@ -107,6 +106,7 @@
 					</at25percent>
 				</MAC>
 				<elevator_chord_ratio>0.3</elevator_chord_ratio>
+				<area units="m**2">3.78<!--horizontal_tail area--></area>
 			</horizontal_tail>
 			<propulsion>
 				<layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>

@@ -309,7 +309,7 @@ def test_airfoil_slope():
         __file__,
         XML_FILE,
     )
-    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", val=3000000)
+    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", val=3000000, units="m**-1")
     ivc.add_output("data:aerodynamics:low_speed:mach", val=0.125)
 
     # Run problem
@@ -1819,6 +1819,7 @@ def test_v_n_diagram_vlm():
     input_vars.add_output(
         "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
         [5.235, 5.235, 5.297, 5.381, 5.484, 5.606],
+        units="rad**-1"
     )
     input_vars.add_output(
         "data:aerodynamics:aircraft:mach_interpolation:mach_vector",

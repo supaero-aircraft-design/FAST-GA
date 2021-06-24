@@ -216,13 +216,13 @@ def test_compute_cruise():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:cruise:fuel", units="kg")
-    assert fuel_mass == pytest.approx(157.0, abs=1e-1)
+    assert fuel_mass == pytest.approx(155.8, abs=1e-1)
     distance = (
         problem.get_val("data:mission:sizing:main_route:cruise:distance", units="m") / 1000.0
     )  # conversion to km
     assert distance == pytest.approx(1431.36, abs=1e-2)
     duration = problem.get_val("data:mission:sizing:main_route:cruise:duration", units="h")
-    assert duration == pytest.approx(4.70, abs=1e-2)
+    assert duration == pytest.approx(4.67, abs=1e-2)
 
 
 def test_compute_descent():
