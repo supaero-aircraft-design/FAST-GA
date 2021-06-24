@@ -814,7 +814,9 @@ def test_OMBasicICEngineComponent():
     ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL)
     ivc.add_output("data:aerodynamics:propeller:cruise_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust", THRUST_CL, units="N")
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N")
+    ivc.add_output(
+        "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
+    )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
 
     ivc.add_output("data:propulsion:mach", [machs, machs])
