@@ -39,7 +39,7 @@ SPEED_PTS_NB = 10
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
-class ComputePropellePerformance(om.Group):
+class ComputePropellerPerformance(om.Group):
     def initialize(self):
         self.options.declare(
             "sections_profile_position_list",
@@ -69,7 +69,7 @@ class ComputePropellePerformance(om.Group):
             self.connect("data:aerodynamics:propeller:reynolds", profile + "_polar.xfoil:reynolds")
         self.add_subsystem(
             "propeller_aero",
-            _ComputePropellePerformance(
+            _ComputePropellerPerformance(
                 sections_profile_position_list=self.options["sections_profile_position_list"],
                 sections_profile_name_list=self.options["sections_profile_name_list"],
             ),
@@ -77,7 +77,7 @@ class ComputePropellePerformance(om.Group):
         )
 
 
-class _ComputePropellePerformance(om.ExplicitComponent):
+class _ComputePropellerPerformance(om.ExplicitComponent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.theta_min = 0.0

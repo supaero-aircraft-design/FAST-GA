@@ -31,6 +31,11 @@ model:
         use_openvsp: true
         compute_mach_interpolation: false
         compute_slipstream: false
+    load_factor:
+        id: fastga.aerodynamics.load_factor
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        use_openvsp: true
+        compute_cl_alpha: true
     weight:
         id: fastga.weight.legacy
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine

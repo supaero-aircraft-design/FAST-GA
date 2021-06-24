@@ -17,10 +17,13 @@
 
 from .aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics_low_speed import AerodynamicsLowSpeed
-from .external.openvsp.compute_aero_slipstream import ComputeSlipstreamOpenvsp
 from openmdao.api import Group
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
 
+
+@RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
 class Aerodynamics(Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

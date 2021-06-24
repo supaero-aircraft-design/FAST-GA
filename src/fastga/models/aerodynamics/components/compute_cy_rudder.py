@@ -15,12 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
-from scipy import interpolate
-from openmdao.core.explicitcomponent import ExplicitComponent
-from .high_lift_aero import ComputeDeltaHighLift
 
 from .figure_digitization import FigureDigitization
 

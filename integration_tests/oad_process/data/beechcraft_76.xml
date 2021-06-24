@@ -1,0 +1,27 @@
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <v_cruise units="m/s" is_input="True">nan</v_cruise>
+    </TLAR>
+    <geometry>
+      <propeller>
+        <blades_number is_input="True">nan</blades_number>
+        <chord_vect units="m" is_input="True">[NaN, NaN, NaN, NaN, NaN, NaN, NaN]</chord_vect>
+        <diameter units="m" is_input="True">nan</diameter>
+        <hub_diameter units="m" is_input="True">nan</hub_diameter>
+        <radius_ratio_vect is_input="True">[NaN, NaN, NaN, NaN, NaN, NaN, NaN]</radius_ratio_vect>
+        <sweep_vect units="deg" is_input="True">[NaN, NaN, NaN, NaN, NaN, NaN, NaN]</sweep_vect>
+        <twist_vect units="deg" is_input="True">[NaN, NaN, NaN, NaN, NaN, NaN, NaN]</twist_vect>
+      </propeller>
+    </geometry>
+    <mission>
+      <sizing>
+        <main_route>
+          <cruise>
+            <altitude units="m" is_input="True">nan<!--altitude during cruise phase in sizing mission--></altitude>
+          </cruise>
+        </main_route>
+      </sizing>
+    </mission>
+  </data>
+</FASTOAD_model>

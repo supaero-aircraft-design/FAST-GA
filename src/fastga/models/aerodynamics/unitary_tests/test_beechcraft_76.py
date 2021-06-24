@@ -58,7 +58,7 @@ from ..aerodynamics_high_speed import AerodynamicsHighSpeed
 from ..aerodynamics_low_speed import AerodynamicsLowSpeed
 from ..external.vlm.compute_aero import DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ..constants import SPAN_MESH_POINT, POLAR_POINT_COUNT
-from ..components.compute_propeller_aero import ComputePropellePerformance
+from ..components.compute_propeller_aero import ComputePropellerPerformance
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -1992,7 +1992,7 @@ def test_propeller():
     ivc.add_output("data:geometry:propeller:sweep_vect", sweep, units="deg")
 
     # Run problem
-    problem = run_system(ComputePropellePerformance(), ivc)
+    problem = run_system(ComputePropellerPerformance(), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)

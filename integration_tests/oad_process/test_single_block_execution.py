@@ -17,12 +17,14 @@ Test module for Overall Aircraft Design process
 import os
 import os.path as pth
 from shutil import rmtree
+from fastga.command import api
 
 import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
 from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastga.models.aerodynamics.components.compute_propeller_aero import ComputePropellerPerformance
 
 # from fastoad import api
 
@@ -40,33 +42,27 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def test_geometry(cleanup):
+def test_propeller(cleanup):
     """
     Test the execution of the geometry block
     """
 
     # Define used files
-    xml_file_name = "input_sr22.xml"
-    process_file_name = "geometry.yml"
-
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    xml_file_name = "input_be76.xml"
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    configurator.write_needed_inputs(ref_inputs)
 
-    # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
-    problem.setup()
-    problem.run_model()
-    problem.write_outputs()
-
-    if not pth.exists(RESULTS_FOLDER_PATH):
-        os.mkdir(RESULTS_FOLDER_PATH)
-    om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+    compute_propeller = api.generate_block_analysis(
+        ComputePropellerPerformance(),
+        [],
+        ref_inputs,
+        True,
     )
-    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
-    # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:geometry:wing:MAC:length", units="m"), 1.200, atol=1e-3)
+    test = 1.0
+
+    outputs_dict = compute_propeller({})
+
+    print(outputs_dict)
+    # Create problems with inputs
