@@ -1905,6 +1905,7 @@ def test_v_n_diagram_openvsp():
     input_vars.add_output(
         "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
         [5.20, 5.20, 5.24, 5.30, 5.37, 5.45],
+        units="rad**-1",
     )
     input_vars.add_output(
         "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
