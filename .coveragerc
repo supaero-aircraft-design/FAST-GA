@@ -1,7 +1,7 @@
 # .coveragerc to control coverage.py
 [run]
 branch = True
-source = fastoad
+source = fastga
 omit =
     */test/*
     */tests/*
