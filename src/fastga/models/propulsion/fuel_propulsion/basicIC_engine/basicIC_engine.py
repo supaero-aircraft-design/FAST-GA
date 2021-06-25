@@ -135,8 +135,8 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
         self.mixture_values = {
-            EngineSetting.TAKEOFF: 1.5,
-            EngineSetting.CLIMB: 1.5,
+            EngineSetting.TAKEOFF: 1.15,
+            EngineSetting.CLIMB: 1.15,
             EngineSetting.CRUISE: 1.0,
             EngineSetting.IDLE: 1.0,
         }

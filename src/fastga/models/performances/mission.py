@@ -54,6 +54,7 @@ class Mission(om.Group):
 
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("out_file", default="", types=str)
 
     def setup(self):
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
@@ -65,16 +66,22 @@ class Mission(om.Group):
         self.add_subsystem(
             "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
-        self.add_subsystem(
-            "climb", _compute_climb(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
-        )
-        self.add_subsystem(
-            "cruise", _compute_cruise(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
-        )
+        self.add_subsystem("climb",
+                           _compute_climb(
+                               propulsion_id=self.options["propulsion_id"],
+                               out_file=self.options["out_file"],
+                           ), promotes=["*"])
+        self.add_subsystem("cruise",
+                           _compute_cruise(
+                               propulsion_id=self.options["propulsion_id"],
+                               out_file=self.options["out_file"],
+                           ), promotes=["*"])
         self.add_subsystem("reserve", _compute_reserve(), promotes=["*"])
-        self.add_subsystem(
-            "descent", _compute_descent(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
-        )
+        self.add_subsystem("descent",
+                           _compute_descent(
+                               propulsion_id=self.options["propulsion_id"],
+                               out_file=self.options["out_file"],
+                           ), promotes=["*"])
         self.add_subsystem(
             "taxi_in",
             _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
@@ -425,6 +432,7 @@ class _compute_climb(DynamicEquilibrium):
                     distance_t,
                     mass_t,
                     v_tas,
+                    v_cas,
                     atm.density,
                     gamma * 180.0 / math.pi,
                     previous_step,
@@ -470,6 +478,7 @@ class _compute_climb(DynamicEquilibrium):
                 distance_t,
                 mass_t,
                 v_tas,
+                v_cas,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
@@ -552,7 +561,8 @@ class _compute_cruise(DynamicEquilibrium):
         mass_fuel_t = 0.0
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl)
         atm = _Atmosphere(cruise_altitude, altitude_in_feet=False)
-        mach = v_tas / atm.speed_of_sound
+        atm.true_airspeed = v_tas
+        mach = atm.mach
         previous_step = ()
 
         while distance_t < cruise_distance:
@@ -574,6 +584,7 @@ class _compute_cruise(DynamicEquilibrium):
                     distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
                     mass_t,
                     v_tas,
+                    atm.calibrated_airspeed,
                     atm.density,
                     0.0,
                     previous_step,
@@ -617,6 +628,7 @@ class _compute_cruise(DynamicEquilibrium):
                 distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
                 mass_t,
                 v_tas,
+                atm.calibrated_airspeed,
                 atm.density,
                 0.0,
                 previous_step,
@@ -748,6 +760,7 @@ class _compute_descent(DynamicEquilibrium):
                     + inputs["data:mission:sizing:main_route:cruise:distance"],
                     mass_t,
                     v_tas,
+                    v_cas,
                     atm.density,
                     gamma * 180.0 / np.pi,
                     previous_step,
@@ -798,6 +811,7 @@ class _compute_descent(DynamicEquilibrium):
                 + inputs["data:mission:sizing:main_route:cruise:distance"],
                 mass_t,
                 v_tas,
+                v_cas,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,

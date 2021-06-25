@@ -15,6 +15,7 @@ Test takeoff module
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
+import os
 import pandas as pd
 import numpy as np
 from openmdao.core.component import Component
@@ -40,6 +41,7 @@ from fastga.models.propulsion.propulsion import IPropulsion
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 XML_FILE = "beechcraft_76.xml"
+CSV_FILE = "flight_points.csv"
 
 
 def test_v2():
@@ -258,6 +260,10 @@ def test_compute_descent():
 def test_loop_cruise_distance():
     """ Tests a distance computation loop matching the descent value/TLAR total range. """
 
+    # Remove .csv file
+    if pth.exists(pth.join(pth.split(__file__)[0], CSV_FILE)):
+        os.remove(pth.join(pth.split(__file__)[0], CSV_FILE))
+
     # Get the parameters from .xml
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
@@ -265,7 +271,8 @@ def test_loop_cruise_distance():
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
-    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER,
+                                 out_file=pth.join(pth.split(__file__)[0], CSV_FILE)), ivc)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
     assert m_total == pytest.approx(178.0, abs=1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")
@@ -276,3 +283,8 @@ def test_loop_cruise_distance():
     total_distance = problem.get_val("data:TLAR:range", units="NM")
     error_distance = total_distance - (climb_distance + cruise_distance + descent_distance)
     assert error_distance == pytest.approx(0.0, abs=1e-1)
+    assert pth.exists(pth.join(pth.split(__file__)[0], CSV_FILE))
+
+    # Remove .csv file
+    if pth.exists(pth.join(pth.split(__file__)[0], CSV_FILE)):
+        os.remove(pth.join(pth.split(__file__)[0], CSV_FILE))

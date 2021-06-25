@@ -22,7 +22,7 @@ from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
 
-from fastoad.model_base import Atmosphere
+from fastoad.model_base.atmosphere import Atmosphere
 
 CSV_DATA_LABELS = [
     "time",
@@ -318,7 +318,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             return float(mass * g * load_factor / (q * wing_area)), 0.0, True
 
     def save_point(
-        self, time, altitude, distance, mass, v_tas, rho, gamma, equilibrium_result, name: str
+        self, time, altitude, distance, mass, v_tas, v_cas, rho, gamma, equilibrium_result, name: str
     ):
         """
         Method to save mission point to .csv file for further post-processing
@@ -328,6 +328,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param distance: flight distance in meters
         :param mass: aircraft current mass
         :param v_tas: true air speed in m/s
+        :param v_cas: calibrated air speed in m/s
         :param rho: air density in kg/m3
         :param gamma: slope angle in degree
         :param equilibrium_result: result vector of dynamic equilibrium
@@ -338,7 +339,6 @@ class DynamicEquilibrium(om.ExplicitComponent):
         cl_wing = float(equilibrium_result[2])
         cl_htp = float(equilibrium_result[3])
         atm = Atmosphere(altitude, altitude_in_feet=False)
-        v_cas = atm.get_cas_from_tas(v_tas)
         mach = v_tas / atm.speed_of_sound
         if not os.path.exists(self.options["out_file"]):
             df = pd.DataFrame(columns=CSV_DATA_LABELS)
