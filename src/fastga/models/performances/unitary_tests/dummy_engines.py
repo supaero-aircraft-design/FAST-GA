@@ -36,15 +36,15 @@ ENGINE_WRAPPER_SR22 = "test.wrapper.performances.cirrus.dummy_engine"
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -60,14 +60,16 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
 
-        altitude = float(Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True))
+        altitude = float(
+            Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
+        )
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
         max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
         max_thrust = min(
-            self.max_thrust * sigma ** (1. / 3.),
-            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20)
+            self.max_thrust * sigma ** (1.0 / 3.0),
+            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20),
         )
         if flight_points.thrust_rate is None:
             flight_points.thrust = min(max_thrust, float(thrust))
@@ -109,7 +111,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineBE76(**engine_params)
@@ -121,7 +123,6 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-
     def __init__(self):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
@@ -133,14 +134,16 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
 
-        altitude = float(Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True))
+        altitude = float(
+            Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
+        )
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
         max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
         max_thrust = min(
-            self.max_thrust * sigma ** (1. / 3.),
-            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20)
+            self.max_thrust * sigma ** (1.0 / 3.0),
+            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20),
         )
         if flight_points.thrust_rate is None:
             flight_points.thrust = min(max_thrust, float(thrust))

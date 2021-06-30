@@ -35,13 +35,13 @@ class ComputeMaxMinCGratio(ExplicitComponent):
             "settings:weight:aircraft:CG:aft:MAC_position:margin",
             val=0.05,
             desc="Added margin for getting most aft CG position, "
-                 "as ratio of mean aerodynamic chord",
+            "as ratio of mean aerodynamic chord",
         )
         self.add_input(
             "settings:weight:aircraft:CG:fwd:MAC_position:margin",
             val=0.03,
             desc="Added margin for getting most fwd CG position, "
-                 "as ratio of mean aerodynamic chord",
+            "as ratio of mean aerodynamic chord",
         )
 
         self.add_output("data:weight:aircraft:CG:aft:MAC_position")
@@ -63,7 +63,10 @@ class ComputeMaxMinCGratio(ExplicitComponent):
         margin_fwd = inputs["settings:weight:aircraft:CG:fwd:MAC_position:margin"]
 
         cg_max_aft_mac = max(ground_conditions_aft, flight_conditions_aft) + margin_aft
-        cg_min_fwd_mac = min(ground_conditions_fwd, flight_conditions_fwd, cg_max_aft_mac - cg_range) - margin_fwd
+        cg_min_fwd_mac = (
+            min(ground_conditions_fwd, flight_conditions_fwd, cg_max_aft_mac - cg_range)
+            - margin_fwd
+        )
 
         outputs["data:weight:aircraft:CG:aft:MAC_position"] = cg_max_aft_mac
         outputs["data:weight:aircraft:CG:fwd:MAC_position"] = cg_min_fwd_mac

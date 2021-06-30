@@ -38,7 +38,9 @@ class ComputeClalphaVT(om.ExplicitComponent):
         else:
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
 
-        self.add_input("data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:geometry:has_T_tail", val=np.nan)
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
@@ -53,11 +55,11 @@ class ComputeClalphaVT(om.ExplicitComponent):
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
             beta = math.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2. * np.pi)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
             beta = math.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2. * np.pi)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]

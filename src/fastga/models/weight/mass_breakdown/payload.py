@@ -46,7 +46,9 @@ class ComputePayload(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax_design = inputs["data:TLAR:NPAX_design"] + 2.0  # addition of 2 pilots
-        npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0  # addition of 2 pilots
+        npax_max = (
+            inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
+        )  # addition of 2 pilots
         mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
         max_mass_per_pax = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
         luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]

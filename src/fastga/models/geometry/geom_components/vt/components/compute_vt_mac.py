@@ -33,7 +33,9 @@ class ComputeVTmacFD(ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:has_T_tail", val=np.nan)
 
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
@@ -43,10 +45,7 @@ class ComputeVTmacFD(ExplicitComponent):
 
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:length",
-            [
-                "data:geometry:vertical_tail:root:chord",
-                "data:geometry:vertical_tail:tip:chord"
-            ],
+            ["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:tip:chord"],
             method="fd",
         )
         self.declare_partials(
@@ -63,9 +62,7 @@ class ComputeVTmacFD(ExplicitComponent):
         )
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            [
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            ],
+            ["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",],
             method="fd",
         )
 
@@ -130,14 +127,13 @@ class ComputeVTmacFL(ExplicitComponent):
         fus_length = inputs["data:geometry:fuselage:length"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
 
-
         tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180.0 * math.pi) - tip_chord * 0.25
 
         mac_vt = (
-                (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
-                / (tip_chord + root_chord)
-                * 2.0
-                / 3.0
+            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            / (tip_chord + root_chord)
+            * 2.0
+            / 3.0
         )
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))

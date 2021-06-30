@@ -44,7 +44,9 @@ def test_update_vt_area():
     """ Tests computation of the vertical tail area """
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(UpdateVTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
     ivc.add_output("data:weight:aircraft:CG:aft:MAC_position", 0.364924)
     ivc.add_output("data:weight:aircraft:OWE", 1125.139, units="kg")
     ivc.add_output("data:weight:aircraft:payload", 390.0, units="kg")
@@ -67,7 +69,9 @@ def test_update_ht_area():
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(list_inputs(UpdateHTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(UpdateHTArea(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
@@ -98,7 +102,6 @@ def test_compute_to_rotation_limit():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:geometry:horizontal_tail:area", 3.78)
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
@@ -115,11 +118,12 @@ def test_balked_landing_limit():
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:geometry:horizontal_tail:area", 3.78)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), input_vars)
     balked_landing_limit = problem["data:handling_qualities:balked_landing_limit:x"]
     assert balked_landing_limit == pytest.approx(3.43, rel=1e-2)
-    balked_landing_limit_ratio = problem["data:handling_qualities:balked_landing_limit:MAC_position"]
+    balked_landing_limit_ratio = problem[
+        "data:handling_qualities:balked_landing_limit:MAC_position"
+    ]
     assert balked_landing_limit_ratio == pytest.approx(0.24, rel=1e-2)

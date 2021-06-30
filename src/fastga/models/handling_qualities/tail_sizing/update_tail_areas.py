@@ -23,7 +23,9 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
 
-@RegisterOpenMDAOSystem("fastga.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES)
+@RegisterOpenMDAOSystem(
+    "fastga.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES
+)
 class UpdateTailAreas(om.Group):
     """
     Computes areas of vertical and horizontal tail.
@@ -38,6 +40,13 @@ class UpdateTailAreas(om.Group):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-        self.add_subsystem("horizontal_tail", UpdateHTArea(propulsion_id=self.options["propulsion_id"]),
-                           promotes=["*"])
-        self.add_subsystem("vertical_tail", UpdateVTArea(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "horizontal_tail",
+            UpdateHTArea(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "vertical_tail",
+            UpdateVTArea(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )

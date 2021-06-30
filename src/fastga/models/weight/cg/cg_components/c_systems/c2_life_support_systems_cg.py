@@ -28,7 +28,7 @@ class ComputeLifeSupportCG(ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:life_support:air_conditioning:CG:x", units="m")
-        
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

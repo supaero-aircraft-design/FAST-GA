@@ -70,14 +70,10 @@ class ComputeWingX(ExplicitComponent):
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
         x3_wing = (
-                1.0 / 4.0 * l1_wing
-                + (y3_wing - y2_wing) * math.tan(sweep_25)
-                - 1.0 / 4.0 * l3_wing
+            1.0 / 4.0 * l1_wing + (y3_wing - y2_wing) * math.tan(sweep_25) - 1.0 / 4.0 * l3_wing
         )
         x4_wing = (
-                1.0 / 4.0 * l1_wing
-                + (y4_wing - y2_wing) * math.tan(sweep_25)
-                - 1.0 / 4.0 * l4_wing
+            1.0 / 4.0 * l1_wing + (y4_wing - y2_wing) * math.tan(sweep_25) - 1.0 / 4.0 * l4_wing
         )
 
         outputs["data:geometry:wing:kink:leading_edge:x:local"] = x3_wing

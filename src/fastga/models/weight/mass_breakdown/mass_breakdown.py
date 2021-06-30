@@ -33,9 +33,7 @@ from .c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
 )
-from .d_furniture import (
-    ComputePassengerSeatsWeight,
-)
+from .d_furniture import ComputePassengerSeatsWeight
 from .payload import ComputePayload
 from .update_mlw_and_mzfw import UpdateMLWandMZFW
 
@@ -64,8 +62,11 @@ class MassBreakdown(om.Group):
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
             self.add_subsystem("payload", ComputePayload(), promotes=["*"])
-        self.add_subsystem("owe", ComputeOperatingWeightEmpty(propulsion_id=self.options["propulsion_id"]),
-                           promotes=["*"])
+        self.add_subsystem(
+            "owe",
+            ComputeOperatingWeightEmpty(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
 
         # Solvers setup
@@ -100,14 +101,24 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem("empennage_weight", ComputeTailWeight(), promotes=["*"])
         self.add_subsystem("flight_controls_weight", ComputeFlightControlsWeight(), promotes=["*"])
         self.add_subsystem("landing_gear_weight", ComputeLandingGearWeight(), promotes=["*"])
-        self.add_subsystem("engine_weight", ComputeEngineWeight(propulsion_id=self.options["propulsion_id"]),
-                           promotes=["*"])
-        self.add_subsystem("unusable_fuel", ComputeUnusableFuelWeight(propulsion_id=self.options["propulsion_id"]),
-                           promotes=["*"])
+        self.add_subsystem(
+            "engine_weight",
+            ComputeEngineWeight(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "unusable_fuel",
+            ComputeUnusableFuelWeight(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
         self.add_subsystem("fuel_lines_weight", ComputeFuelLinesWeight(), promotes=["*"])
-        self.add_subsystem("navigation_systems_weight", ComputeNavigationSystemsWeight(), promotes=["*"])
+        self.add_subsystem(
+            "navigation_systems_weight", ComputeNavigationSystemsWeight(), promotes=["*"]
+        )
         self.add_subsystem("power_systems_weight", ComputePowerSystemsWeight(), promotes=["*"])
-        self.add_subsystem("life_support_systems_weight", ComputeLifeSupportSystemsWeight(), promotes=["*"])
+        self.add_subsystem(
+            "life_support_systems_weight", ComputeLifeSupportSystemsWeight(), promotes=["*"]
+        )
         self.add_subsystem("passenger_seats_weight", ComputePassengerSeatsWeight(), promotes=["*"])
 
         # Make additions
@@ -129,7 +140,7 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "airframe_weight_sum", airframe_sum, promotes=["*"],
         )
-    
+
         propulsion_sum = om.AddSubtractComp()
         propulsion_sum.add_equation(
             "data:weight:propulsion:mass",
@@ -144,7 +155,7 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "propulsion_weight_sum", propulsion_sum, promotes=["*"],
         )
-        
+
         systems_sum = om.AddSubtractComp()
         systems_sum.add_equation(
             "data:weight:systems:mass",
@@ -166,7 +177,7 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "systems_weight_sum", systems_sum, promotes=["*"],
         )
-        
+
         furniture_sum = om.AddSubtractComp()
         furniture_sum.add_equation(
             "data:weight:furniture:mass",
@@ -181,7 +192,7 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "furniture_weight_sum", furniture_sum, promotes=["*"],
         )
-        
+
         owe_sum = om.AddSubtractComp()
         owe_sum.add_equation(
             "data:weight:aircraft:OWE",
@@ -196,4 +207,4 @@ class ComputeOperatingWeightEmpty(om.Group):
         )
         self.add_subsystem(
             "OWE_sum", owe_sum, promotes=["*"],
-        )  
+        )

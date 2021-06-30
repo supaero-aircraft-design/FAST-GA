@@ -14,5 +14,8 @@ Estimation of fuselage geometry
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_fuselage import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizingFD, \
-    ComputeFuselageGeometryCabinSizingFL
+from .compute_fuselage import (
+    ComputeFuselageGeometryBasic,
+    ComputeFuselageGeometryCabinSizingFD,
+    ComputeFuselageGeometryCabinSizingFL,
+)

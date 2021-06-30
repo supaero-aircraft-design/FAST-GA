@@ -52,7 +52,7 @@ class _UpdateWingArea(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
 
         self.add_output("data:geometry:wing:area", val=10.0, units="m**2")
-        
+
         self.declare_partials(
             "data:geometry:wing:area",
             [
@@ -83,13 +83,12 @@ class _UpdateWingArea(om.ExplicitComponent):
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
-        ave_thickness = 0.7 * (
-                root_chord * root_thickness_ratio
-                + tip_chord * tip_thickness_ratio
-        ) / 2.0
+        ave_thickness = (
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
+        )
         wing_area_mission = (mfw_mission / m_vol_fuel) / (0.3 * ave_thickness)
 
-        stall_speed = inputs["data:TLAR:v_approach"]/1.3
+        stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
@@ -98,7 +97,6 @@ class _UpdateWingArea(om.ExplicitComponent):
 
 
 class _ComputeWingAreaConstraints(om.ExplicitComponent):
-    
     def setup(self):
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
@@ -128,10 +126,10 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         mfw = inputs["data:weight:aircraft:MFW"]
         mission_fuel = inputs["data:mission:sizing:fuel"]
-        v_stall = inputs["data:TLAR:v_approach"]/1.3
+        v_stall = inputs["data:TLAR:v_approach"] / 1.3
         cl_max = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         mlw = inputs["data:weight:aircraft:MLW"]
         wing_area = inputs["data:geometry:wing:area"]

@@ -52,7 +52,6 @@
 				</takeoff>
 			</flaps>
 			<horizontal_tail>
-				<area units="m**2">2.75<!--horizontal_tail area--></area>
 				<efficiency>0.9</efficiency>
 				<cruise>
 					<CL_alpha units="rad**-1">0.51193<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
@@ -115,7 +114,7 @@
 					</at25percent>
 				</MAC>
 				<elevator_chord_ratio is_input="True">0.3</elevator_chord_ratio>
-				<area>2.75</area>
+				<area units="m**2">2.75<!--horizontal_tail area--></area>
 			</horizontal_tail>
 			<propulsion>
 				<layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>

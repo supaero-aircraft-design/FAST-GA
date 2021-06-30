@@ -43,6 +43,6 @@ class UpdateMLG(ExplicitComponent):
 
         # Aft most CG position
         x_cg = fa_length - 0.25 * l0_wing + cg_ratio * l0_wing
-        cg_a51 = (x_cg - front_lg_weight_ratio * cg_a52) / (1-front_lg_weight_ratio)
+        cg_a51 = (x_cg - front_lg_weight_ratio * cg_a52) / (1 - front_lg_weight_ratio)
 
         outputs["data:weight:airframe:landing_gear:main:CG:x"] = cg_a51

@@ -26,6 +26,7 @@ from .components import ComputeMachInterpolation
 
 from .external.vlm import ComputeAEROvlm
 from .external.openvsp import ComputeAEROopenvsp
+
 # noinspection PyProtectedMember
 from .external.openvsp.compute_aero_slipstream import _ComputeSlipstreamOpenvsp
 
@@ -45,76 +46,101 @@ class AerodynamicsHighSpeed(Group):
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
-        self.options.declare('wing_airfoil', default="naca23012.af", types=str, allow_none=True)
-        self.options.declare('htp_airfoil', default="naca0012.af", types=str, allow_none=True)
-        self.options.declare('vtp_airfoil', default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
+        self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
 
     # noinspection PyTypeChecker
     def setup(self):
         if not (self.options["use_openvsp"]):
             if self.options["compute_mach_interpolation"]:
-                self.add_subsystem("aero_vlm",
-                                   ComputeAEROvlm(
-                                       low_speed_aero=False,
-                                       result_folder_path=self.options["result_folder_path"],
-                                       compute_mach_interpolation=True,
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
+                self.add_subsystem(
+                    "aero_vlm",
+                    ComputeAEROvlm(
+                        low_speed_aero=False,
+                        result_folder_path=self.options["result_folder_path"],
+                        compute_mach_interpolation=True,
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
             else:
-                self.add_subsystem("aero_vlm",
-                                   ComputeAEROvlm(
-                                       low_speed_aero=False,
-                                       result_folder_path=self.options["result_folder_path"],
-                                       compute_mach_interpolation=False,
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
-                self.add_subsystem("mach_interpolation_roskam",
-                                   ComputeMachInterpolation(
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
+                self.add_subsystem(
+                    "aero_vlm",
+                    ComputeAEROvlm(
+                        low_speed_aero=False,
+                        result_folder_path=self.options["result_folder_path"],
+                        compute_mach_interpolation=False,
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
+                self.add_subsystem(
+                    "mach_interpolation_roskam",
+                    ComputeMachInterpolation(
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
         else:
             if self.options["compute_mach_interpolation"]:
-                self.add_subsystem("aero_openvsp",
-                                   ComputeAEROopenvsp(
-                                       low_speed_aero=False,
-                                       compute_mach_interpolation=True,
-                                       result_folder_path=self.options["result_folder_path"],
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
+                self.add_subsystem(
+                    "aero_openvsp",
+                    ComputeAEROopenvsp(
+                        low_speed_aero=False,
+                        compute_mach_interpolation=True,
+                        result_folder_path=self.options["result_folder_path"],
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
             else:
-                self.add_subsystem("aero_openvsp",
-                                   ComputeAEROopenvsp(
-                                       low_speed_aero=False,
-                                       compute_mach_interpolation=False,
-                                       result_folder_path=self.options["result_folder_path"],
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
-                self.add_subsystem("mach_interpolation_roskam",
-                                   ComputeMachInterpolation(
-                                       wing_airfoil_file=self.options["wing_airfoil"],
-                                       htp_airfoil_file=self.options["htp_airfoil"],
-                                   ), promotes=["*"])
-        self.add_subsystem("Cd0_all",
-                           Cd0(
-                               low_speed_aero=False,
-                               wing_airfoil_file=self.options["wing_airfoil"],
-                               htp_airfoil_file=self.options["htp_airfoil"],
-                               propulsion_id=self.options["propulsion_id"],
-                           ), promotes=["*"])
+                self.add_subsystem(
+                    "aero_openvsp",
+                    ComputeAEROopenvsp(
+                        low_speed_aero=False,
+                        compute_mach_interpolation=False,
+                        result_folder_path=self.options["result_folder_path"],
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
+                self.add_subsystem(
+                    "mach_interpolation_roskam",
+                    ComputeMachInterpolation(
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
+                    ),
+                    promotes=["*"],
+                )
+        self.add_subsystem(
+            "Cd0_all",
+            Cd0(
+                low_speed_aero=False,
+                wing_airfoil_file=self.options["wing_airfoil"],
+                htp_airfoil_file=self.options["htp_airfoil"],
+                propulsion_id=self.options["propulsion_id"],
+            ),
+            promotes=["*"],
+        )
         self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
         self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
         self.add_subsystem("clAlpha_vt", ComputeClalphaVT(), promotes=["*"])
         self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
         self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])
         if self.options["compute_slipstream"]:
-            self.add_subsystem("aero_slipstream_openvsp",
-                               _ComputeSlipstreamOpenvsp(propulsion_id=self.options["propulsion_id"],
-                                                         result_folder_path=self.options["result_folder_path"],
-                                                         wing_airfoil_file=self.options["wing_airfoil"],
-                                                         low_speed_aero=False,
-                                                         ), promotes=["*"])
+            self.add_subsystem(
+                "aero_slipstream_openvsp",
+                _ComputeSlipstreamOpenvsp(
+                    propulsion_id=self.options["propulsion_id"],
+                    result_folder_path=self.options["result_folder_path"],
+                    wing_airfoil_file=self.options["wing_airfoil"],
+                    low_speed_aero=False,
+                ),
+                promotes=["*"],
+            )

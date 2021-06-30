@@ -52,14 +52,14 @@ class ComputeWingCG(ExplicitComponent):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         span = inputs["data:geometry:wing:span"]
-        flap_chord_ratio = inputs['data:geometry:flap:chord_ratio']
+        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         l2_wing = inputs["data:geometry:wing:root:virtual_chord"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
 
         if sweep_25 < 5.0:
-            y_cg = 0.40 * span / 2.
+            y_cg = 0.40 * span / 2.0
 
             if y_cg < y2_wing:
                 chord_reduction = 0.0
@@ -71,7 +71,7 @@ class ComputeWingCG(ExplicitComponent):
             x_cg_wing_rel = 0.42 * chord_at_cg_pos + y_cg * math.tan(sweep_25 * math.pi / 180.0)
 
         else:
-            y_cg = 0.35 * span / 2.
+            y_cg = 0.35 * span / 2.0
 
             if y_cg < y2_wing:
                 chord_reduction = 0.0
@@ -84,9 +84,11 @@ class ComputeWingCG(ExplicitComponent):
             # we will do the same assumption here
             distance_between_spars = 0.30 * chord_at_cg_pos
 
-            x_cg_wing_rel = y_cg * math.tan(sweep_25 * math.pi / 180.0) + \
-                flap_chord_ratio * chord_at_cg_pos + \
-                0.70 * distance_between_spars
+            x_cg_wing_rel = (
+                y_cg * math.tan(sweep_25 * math.pi / 180.0)
+                + flap_chord_ratio * chord_at_cg_pos
+                + 0.70 * distance_between_spars
+            )
 
         x_cg_a1 = fa_length - 0.25 * l0_wing - x0_wing + x_cg_wing_rel
 

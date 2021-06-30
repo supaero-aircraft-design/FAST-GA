@@ -45,11 +45,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
-        a4 = 0.053 * (
-                fus_length ** 1.536 *
-                span ** 0.371 *
-                (n_ult * mtow * 1e-4) ** 0.80
-        )
+        a4 = 0.053 * (fus_length ** 1.536 * span ** 0.371 * (n_ult * mtow * 1e-4) ** 0.80)
         # mass formula in lb
 
         outputs["data:weight:airframe:flight_controls:mass"] = a4

@@ -24,7 +24,7 @@ class ComputeWingMAC(ExplicitComponent):
     """ Wing mean aerodynamic chord estimation """
 
     def setup(self):
-    
+
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -72,7 +72,7 @@ class ComputeWingMAC(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-    
+
         wing_area = inputs["data:geometry:wing:area"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
@@ -85,10 +85,7 @@ class ComputeWingMAC(ExplicitComponent):
             + (y4_wing - y2_wing) * (l2_wing ** 2 + l4_wing ** 2 + l2_wing * l4_wing)
         ) * (2 / (3 * wing_area))
 
-        x0_wing = (
-            x4_wing
-            * ((y4_wing - y2_wing) * (2 * l4_wing + l2_wing))
-        ) / (3 * wing_area)
+        x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2 * l4_wing + l2_wing))) / (3 * wing_area)
 
         y0_wing = (
             3 * y2_wing ** 2 * l2_wing

@@ -32,7 +32,7 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
     """
 
     def setup(self):
-        
+
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -42,16 +42,16 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.add_output("data:geometry:cabin:length", units="m")
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
-        self.declare_partials("*", "*", method="fd") 
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
-        
+
         # Cabin total length
         cabin_length = fus_length - (lav + lar)
         # Calculate wet area
@@ -60,8 +60,8 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         wet_area_nose = 2.45 * fus_dia * lav
         wet_area_cyl = 3.1416 * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
-        wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
-        
+        wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
+
         outputs["data:geometry:cabin:length"] = cabin_length
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
 
@@ -93,8 +93,12 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
@@ -113,8 +117,10 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_output("data:geometry:cabin:length", units="m")
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
         self.add_output("data:geometry:fuselage:luggage_length", units="m")
-        
-        self.declare_partials("*", "*", method="fd")  # FIXME: declare proper partials without int values
+
+        self.declare_partials(
+            "*", "*", method="fd"
+        )  # FIXME: declare proper partials without int values
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -142,13 +148,13 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         # Length of instrument panel
         l_instr = 0.7
         # Length of pax cabin
-        npax = math.ceil(float(npax_max)/float(seats_p_row)) * float(seats_p_row)
+        npax = math.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
         n_rows = npax / float(seats_p_row)
         lpax = l_pilot_seats + n_rows * l_pass_seats
         # Cabin width considered is for side by side seats
-        wcabin = max(2*w_pilot_seats, seats_p_row*w_pass_seats + w_aisle)
+        wcabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         r_i = wcabin / 2
-        radius = 1.06 * r_i 
+        radius = 1.06 * r_i
         # Cylindrical fuselage
         b_f = 2 * radius
         # 0.14m is the distance between both lobe centers of the fuselage
@@ -168,8 +174,10 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
             # around 1.40, though it varies a lot depending on the airplane and its use
         # Calculate fuselage length
         fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
-        plane_length = fa_length + max(ht_lp + 0.75 * ht_length + b_h / 2.0 * math.tan(sweep_25_ht * math.pi / 180),
-                                       vt_lp + 0.75 * vt_length + b_v * math.tan(sweep_25_vt * math.pi / 180))
+        plane_length = fa_length + max(
+            ht_lp + 0.75 * ht_length + b_h / 2.0 * math.tan(sweep_25_ht * math.pi / 180),
+            vt_lp + 0.75 * vt_length + b_v * math.tan(sweep_25_vt * math.pi / 180),
+        )
         lar = fus_length - (lav + cabin_length)
         # Calculate wet area
         fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
@@ -177,8 +185,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         wet_area_nose = 2.45 * fus_dia * lav
         wet_area_cyl = 3.1416 * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
-        wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
-        
+        wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
+
         outputs["data:geometry:cabin:NPAX"] = npax
         outputs["data:geometry:fuselage:length"] = fus_length
         outputs["data:geometry:plane:length"] = plane_length
@@ -229,7 +237,9 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
         self.add_output("data:geometry:fuselage:luggage_length", units="m")
 
-        self.declare_partials("*", "*", method="fd")  # FIXME: declare proper partials without int values
+        self.declare_partials(
+            "*", "*", method="fd"
+        )  # FIXME: declare proper partials without int values
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -280,7 +290,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         wet_area_nose = 2.45 * fus_dia * lav
         wet_area_cyl = 3.1416 * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
-        wet_area_fus = (wet_area_nose + wet_area_cyl + wet_area_tail)
+        wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
         outputs["data:geometry:cabin:NPAX"] = npax
         outputs["data:geometry:fuselage:length"] = fus_length

@@ -36,14 +36,16 @@ class ComputeFuselageCG(ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:CG:x", units="m")
 
-        self.declare_partials("data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length", method="fd")
+        self.declare_partials(
+            "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length", method="fd"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         prop_layout = inputs["data:geometry:propulsion:layout"]
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
-        
+
         # Fuselage gravity center
         if prop_layout == 1.0:
             x_cg_a2 = 0.39 * fus_length
@@ -52,5 +54,5 @@ class ComputeFuselageCG(ExplicitComponent):
             x_cg_a2 = lav + 0.45 * (fus_length - lav)
         else:
             x_cg_a2 = lav + 0.47 * (fus_length - lav)
-        
+
         outputs["data:weight:airframe:fuselage:CG:x"] = x_cg_a2

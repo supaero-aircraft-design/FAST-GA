@@ -27,10 +27,19 @@ from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from ..cg import CG
-from ..cg_components.a_airframe import ComputeWingCG, ComputeFuselageCG, ComputeTailCG, ComputeFlightControlCG, \
-    ComputeLandingGearCG
+from ..cg_components.a_airframe import (
+    ComputeWingCG,
+    ComputeFuselageCG,
+    ComputeTailCG,
+    ComputeFlightControlCG,
+    ComputeLandingGearCG,
+)
 from ..cg_components.b_propulsion import ComputeEngineCG, ComputeFuelLinesCG, ComputeTankCG
-from ..cg_components.c_systems import ComputePowerSystemsCG, ComputeLifeSupportCG, ComputeNavigationSystemsCG
+from ..cg_components.c_systems import (
+    ComputePowerSystemsCG,
+    ComputeLifeSupportCG,
+    ComputeNavigationSystemsCG,
+)
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
 from ..cg_components.payload import ComputePayloadCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
@@ -204,7 +213,9 @@ def test_compute_cg_payload():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputePayloadCG()), __file__, XML_FILE)
-    ivc.add_output("data:weight:furniture:passenger_seats:CG:x", 4.13, units="m")   # use old fast-version
+    ivc.add_output(
+        "data:weight:furniture:passenger_seats:CG:x", 4.13, units="m"
+    )  # use old fast-version
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePayloadCG(), ivc)
@@ -266,7 +277,9 @@ def test_compute_cg_loadcase():
     assert mac_min == pytest.approx(-0.243, abs=1e-2)
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeFlightCGCase(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFlightCGCase(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
     ivc.add_output("data:weight:propulsion:unusable_fuel:mass", 20.0, units="kg")
     ivc.add_output("data:weight:propulsion:tank:CG:x", 3.83, units="m")
     ivc.add_output("data:weight:payload:rear_fret:CG:x", 5.68, units="m")
@@ -321,7 +334,6 @@ def test_complete_cg():
     reader.path_separator = ":"
     input_vars = reader.read().to_ivc()
     input_vars.add_output("data:weight:propulsion:unusable_fuel:mass", 20.0, units="kg")
-
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
