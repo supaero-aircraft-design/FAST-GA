@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the landing gear profile drag
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -20,6 +20,13 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class Cd0LandingGear(ExplicitComponent):
+    """
+    Profile drag estimation for the landing gear
+
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013.
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
@@ -42,7 +49,7 @@ class Cd0LandingGear(ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
 
         if lg_type == 0.0:  # non-retractable LG AC (ref: Cirrus SR22)
-            # Gudmunsson example 15.12 (page 721)
+            # Gudmundsson example 15.12 (page 721)
             area_mlg = 15 * 6 * 0.0254 ** 2  # Frontal area of wheel (data in inches)
             area_nlg = 14 * 5 * 0.0254 ** 2
             # MLG

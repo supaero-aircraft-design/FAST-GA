@@ -192,7 +192,7 @@ class VTPConstraints(om.ExplicitComponent):
 
     def target_stability_constraint(self, inputs):
 
-        results = fsolve(self.lateral_stability, 2.0, args=inputs, xtol=1e-4)
+        results = fsolve(self.lateral_stability, np.array(2.0), args=inputs, xtol=1e-4)
         area = results[0]
 
         return area

@@ -39,7 +39,7 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 POINTS_NB_CLIMB = 100
 POINTS_NB_CRUISE = 500
 POINTS_NB_DESCENT = 100
-MAX_CALCULATION_TIME = 5  # time in seconds
+MAX_CALCULATION_TIME = 15  # time in seconds
 
 
 @RegisterOpenMDAOSystem("fastga.performances.mission", domain=ModelDomain.PERFORMANCE)

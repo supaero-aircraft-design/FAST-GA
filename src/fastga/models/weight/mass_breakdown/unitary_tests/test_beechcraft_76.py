@@ -44,6 +44,7 @@ from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
     ComputePowerSystemsWeight,
+    ComputeNavigationSystemsWeightFLOPS
 )
 from ..d_furniture import ComputePassengerSeatsWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
@@ -220,6 +221,18 @@ def test_compute_navigation_systems_weight():
     problem = run_system(ComputeNavigationSystemsWeight(), ivc)
     weight_c3 = problem.get_val("data:weight:systems:navigation:mass", units="kg")
     assert weight_c3 == pytest.approx(33.46, abs=1e-2)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeNavigationSystemsWeightFLOPS()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNavigationSystemsWeightFLOPS(), ivc)
+    weight_c3 = problem.get_val("data:weight:systems:navigation:mass", units="kg")
+    assert weight_c3 == pytest.approx(206.713, abs=1e-2)
+    weight_c31 = problem.get_val("data:weight:systems:navigation:instruments:mass", units="kg")
+    assert weight_c31 == pytest.approx(30.3320, abs=1e-2)
+    weight_c32 = problem.get_val("data:weight:systems:navigation:avionics:mass", units="kg")
+    assert weight_c32 == pytest.approx(176.381, abs=1e-2)
 
 
 def test_compute_power_systems_weight():

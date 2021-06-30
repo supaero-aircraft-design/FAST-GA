@@ -19,7 +19,7 @@ from openmdao.core.group import Group
 
 from .components.cd0 import Cd0
 from .components.compute_cl_extreme import ComputeExtremeCL
-from .components.clalpha_vt import ComputeClalphaVT
+from .components.clalpha_vt import ComputeClAlphaVT
 from .components.high_lift_aero import ComputeDeltaHighLift
 from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .components.compute_cy_rudder import ComputeCyDeltaRudder
@@ -103,7 +103,7 @@ class AerodynamicsLowSpeed(Group):
             ),
             promotes=["*"],
         )
-        self.add_subsystem("clAlpha_vt", ComputeClalphaVT(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("Cy_Delta_rudder", ComputeCyDeltaRudder(), promotes=["*"])
         if self.options["compute_slipstream"]:
             self.add_subsystem(

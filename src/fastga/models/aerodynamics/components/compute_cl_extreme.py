@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the 3D maximum lift coefficients for wing and tail
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -27,7 +27,8 @@ class ComputeExtremeCL(Group):
     """
     Computes maximum CL of the aircraft in landing/take-off conditions.
 
-    3D CL is deduced from 2D CL asymptote.
+    3D CL is deduced from 2D CL asymptote and the hypothesis that the max 3D lift corresponds to the lift at which one
+    section of the wing goes out of the linear range in its lift curve slope. Same hypothesis for the HTP
     Contribution of high-lift devices is done apart and added.
 
     """
@@ -223,15 +224,15 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
 
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vect = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
         cl_xfoil_max = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
         cl_xfoil_min = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
         )
         cl_curve = np.maximum(
-            np.interp(y_vect, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vect))
+            np.interp(y_vector, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vector))
         )  # avoid divide by 0
         cl_max_clean = cl0 * np.min(cl_xfoil_max / cl_curve)
         cl_min_clean = cl0 * np.max(cl_xfoil_min / cl_curve)
@@ -244,7 +245,7 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         """ Reshape data from openvsp/vlm lift curve """
 
         for idx in range(len(y)):
-            if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
+            if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
                 y = y[0:idx]
                 cl = cl[0:idx]
                 break
@@ -316,17 +317,17 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         # HTP stall but we already do something similar by taking as the highest value, the first value having an error
         # of 10% from linear behavior
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vect = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
         cl_xfoil_max = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
         cl_xfoil_min = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
         )
         cl_curve = np.array(
             max(
-                np.interp(y_vect, y_interp, cl_interp).tolist(),
-                (1e-12 * np.ones(np.size(y_vect))).tolist(),
+                np.interp(y_vector, y_interp, cl_interp).tolist(),
+                (1e-12 * np.ones(np.size(y_vector))).tolist(),
             )
         )  # avoid divide by 0
         cl_max_clean = cl_ref * np.min(cl_xfoil_max / cl_curve)
@@ -350,7 +351,7 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         """ Reshape data from openvsp/vlm lift curve """
 
         for idx in range(len(y)):
-            if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
+            if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
                 y = y[0:idx]
                 cl = cl[0:idx]
                 break

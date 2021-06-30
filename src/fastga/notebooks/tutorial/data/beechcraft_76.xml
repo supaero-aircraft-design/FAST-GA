@@ -26,8 +26,8 @@
 		</TLAR>
 		<geometry>
 			<flap>
-				<chord_ratio>0.197<!--mean value of (flap chord)/(section chord)--></chord_ratio>
-				<span_ratio>0.8<!--ratio (width of flaps)/(total span)--></span_ratio>
+				<chord_ratio>0.11<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+				<span_ratio>0.62<!--ratio (width of flaps)/(total span)--></span_ratio>
 			</flap>
 			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
 			<cabin>
@@ -170,6 +170,22 @@
 				</taxi_out>
 		  	</sizing>
 		</mission>
+		<weight>
+			<airframe>
+				<wing>
+				  <k_factor_a1>1.0</k_factor_a1>
+				</wing>
+				<fuselage>
+				  <k_factor_a2>1.0</k_factor_a2>
+				</fuselage>
+				<horizontal_tail>
+				  <k_factor_a31>1.0</k_factor_a31>
+				</horizontal_tail>
+				<vertical_tail>
+				  <k_factor_a32>1.0</k_factor_a32>
+				</vertical_tail>
+		  	</airframe>
+		</weight>
 	</data>
 	<settings>
 		<weight>

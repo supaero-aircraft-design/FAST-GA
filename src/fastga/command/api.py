@@ -17,16 +17,11 @@ API
 import logging
 import os.path as pth
 import os
-import types
-import copy
 import shutil
-import numpy as np
-from importlib.resources import path
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
 from openmdao.core.group import Group
-from openmdao.utils.file_wrap import InputFileGenerator
 from openmdao.core.system import System
 import openmdao.api as om
 from copy import deepcopy
@@ -101,7 +96,10 @@ def list_ivc_outputs_name(
     for sub_system_keys in dict_sub_system.keys():
         if dict_sub_system[sub_system_keys] == "IndepVarComp":
             actual_attribute_name = sub_system_keys.replace("model.system.", "")
-            component = getattr(model.system, actual_attribute_name)
+            address_levels = actual_attribute_name.split('.')
+            component = model.system
+            for next_level in address_levels:
+                component = getattr(component, next_level)
             component_output = component.list_outputs()
             for outputs in component_output:
                 ivc_outputs_names.append(outputs[0])
@@ -120,9 +118,9 @@ def generate_block_analysis(
     inputs_names = [var.name for var in variables if var.is_input]
     outputs_names = [var.name for var in variables if not var.is_input]
 
-    # Check the sub-sytems of the system in question, and if there are ivc, list the outputs  of those ivc. We are gonna
-    # assume that ivc are only use in a situation similar to the one for the ComputePropellerPerformance group, meaning
-    # if there is an ivc, it will always start the group
+    # Check the sub-systems of the system in question, and if there are ivc, list the outputs  of those ivc. We are
+    # gonna assume that ivc are only use in a situation similar to the one for the ComputePropellerPerformance group,
+    # meaning if there is an ivc, it will always start the group
 
     ivc_outputs_names = list_ivc_outputs_name(system)
 
@@ -133,12 +131,9 @@ def generate_block_analysis(
     # Perform some tests on the .xml availability and completeness
     if not (os.path.exists(xml_file_path)) and not (set(var_inputs) == set(inputs_names)):
         # If no input file and some inputs are missing, generate it and return None
-        if isinstance(system, Group):
-            problem = FASTOADProblem(system)
-        else:
-            group = AutoUnitsDefaultGroup()
-            group.add_subsystem("system", system, promotes=["*"])
-            problem = FASTOADProblem(group)
+        group = AutoUnitsDefaultGroup()
+        group.add_subsystem("system", system, promotes=["*"])
+        problem = FASTOADProblem(group)
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
         raise Exception(
@@ -156,7 +151,7 @@ def generate_block_analysis(
             # If some inputs are missing write an error message and add them to the problem if authorized
             missing_inputs = list(
                 set(inputs_names).difference(
-                    set(xml_inputs + var_inputs).intersection(set(inputs_names))
+                    set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
                 )
             )
             message = "The following inputs are missing in .xml file:"

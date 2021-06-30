@@ -27,7 +27,7 @@ from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
-from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _vloff_from_v2, _simulate_takeoff
+from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
 from ..mission import Mission
 
@@ -51,9 +51,11 @@ def test_v2():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(_v2(propulsion_id=ENGINE_WRAPPER), ivc)
     v2 = problem.get_val("v2:speed", units="m/s")
-    assert v2 == pytest.approx(43.18, abs=1e-2)
+    assert v2 == pytest.approx(39.777, abs=1e-2)
     alpha = problem.get_val("v2:angle", units="deg")
-    assert alpha == pytest.approx(7.538, abs=1e-2)
+    assert alpha == pytest.approx(9.694, abs=1e-2)
+    climb_gradient = problem.get_val("v2:climb_gradient")
+    assert climb_gradient == pytest.approx(0.216, abs=1e-2)
 
 
 def test_vloff():
@@ -61,16 +63,16 @@ def test_vloff():
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(_vloff_from_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(_v_lift_off_from_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
     ivc.add_output("v2:speed", 43.18, units="m/s")
     ivc.add_output("v2:angle", 7.538, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(_vloff_from_v2(propulsion_id=ENGINE_WRAPPER), ivc)
-    vloff = problem.get_val("vloff:speed", units="m/s")
+    problem = run_system(_v_lift_off_from_v2(propulsion_id=ENGINE_WRAPPER), ivc)
+    vloff = problem.get_val("v_lift_off:speed", units="m/s")
     assert vloff == pytest.approx(42.39, abs=1e-2)
-    alpha = problem.get_val("vloff:angle", units="deg")
+    alpha = problem.get_val("v_lift_off:angle", units="deg")
     assert alpha == pytest.approx(7.538, abs=1e-2)
 
 
@@ -81,8 +83,8 @@ def test_vr():
     ivc = get_indep_var_comp(
         list_inputs(_vr_from_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
-    ivc.add_output("vloff:speed", 42.39, units="m/s")
-    ivc.add_output("vloff:angle", 7.538, units="deg")
+    ivc.add_output("v_lift_off:speed", 42.39, units="m/s")
+    ivc.add_output("v_lift_off:angle", 7.538, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
 
@@ -110,7 +112,9 @@ def test_simulate_takeoff():
     v2 = problem.get_val("data:mission:sizing:takeoff:V2", units="m/s")
     assert v2 == pytest.approx(47.84, abs=1e-2)
     tofl = problem.get_val("data:mission:sizing:takeoff:TOFL", units="m")
-    assert tofl == pytest.approx(341.61, abs=1)
+    assert tofl == pytest.approx(562, abs=1)
+    ground_roll = problem.get_val("data:mission:sizing:takeoff:ground_roll", units="m")
+    assert ground_roll == pytest.approx(341, abs=1)
     duration = problem.get_val("data:mission:sizing:takeoff:duration", units="s")
     assert duration == pytest.approx(20.5, abs=1e-1)
     fuel1 = problem.get_val("data:mission:sizing:takeoff:fuel", units="kg")
@@ -131,19 +135,21 @@ def test_takeoff_phase_connections():
     # noinspection PyTypeChecker
     problem = run_system(TakeOffPhase(propulsion_id=ENGINE_WRAPPER), ivc)
     vr = problem.get_val("data:mission:sizing:takeoff:VR", units="m/s")
-    assert vr == pytest.approx(36.28, abs=1e-2)
+    assert vr == pytest.approx(35.960, abs=1e-2)
     vloff = problem.get_val("data:mission:sizing:takeoff:VLOF", units="m/s")
-    assert vloff == pytest.approx(42.52, abs=1e-2)
+    assert vloff == pytest.approx(42.37, abs=1e-2)
     v2 = problem.get_val("data:mission:sizing:takeoff:V2", units="m/s")
-    assert v2 == pytest.approx(47.84, abs=1e-2)
+    assert v2 == pytest.approx(45.27, abs=1e-2)
     tofl = problem.get_val("data:mission:sizing:takeoff:TOFL", units="m")
-    assert tofl == pytest.approx(341.49, abs=1)
+    assert tofl == pytest.approx(496, abs=1)
+    ground_roll = problem.get_val("data:mission:sizing:takeoff:ground_roll", units="m")
+    assert ground_roll == pytest.approx(336, abs=1)
     duration = problem.get_val("data:mission:sizing:takeoff:duration", units="s")
-    assert duration == pytest.approx(20.5, abs=1e-1)
+    assert duration == pytest.approx(19.1, abs=1e-1)
     fuel1 = problem.get_val("data:mission:sizing:takeoff:fuel", units="kg")
     assert fuel1 == pytest.approx(0.246, abs=1e-2)
     fuel2 = problem.get_val("data:mission:sizing:initial_climb:fuel", units="kg")
-    assert fuel2 == pytest.approx(0.075, abs=1e-2)
+    assert fuel2 == pytest.approx(0.056, abs=1e-2)
 
 
 def test_compute_taxi():

@@ -32,7 +32,7 @@ model:
             result_folder_path : D:/tmp
             use_openvsp : true
             compute_mach_interpolation : false
-            compute_slipstream : false
+            compute_slipstream : true
         weight:
             id: fastga.weight.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
@@ -49,3 +49,5 @@ model:
                 id: fastga.handling_qualities.static_margin
         wing_area:
             id: fastga.loop.wing_area
+        loads:
+            id: fastga.loads.legacy

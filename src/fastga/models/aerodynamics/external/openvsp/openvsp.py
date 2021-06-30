@@ -285,6 +285,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     y_vector_htp,
                     cl_vector_htp,
                     coef_k_htp,
+                    sref_wing,
                 ]
                 self.save_results(result_file_path, results)
 
@@ -292,18 +293,19 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         else:
             # Read values from result file -----------------------------------------------------------------------------
             data = self.read_results(result_file_path)
+            saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
                 [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             cl_vector_wing = np.array(
                 [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
             )
             chord_vector_wing = np.array(
                 [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             coef_k_wing = float(data.loc["coef_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
@@ -1171,6 +1173,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "y_vector_htp",
             "cl_vector_htp",
             "coef_k_htp",
+            "saved_ref_area"
         ]
         data = pd.DataFrame(results, index=labels)
         data.to_csv(result_file_path)
@@ -1199,7 +1202,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="rpm")
+        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)

@@ -1,5 +1,5 @@
 """
-    Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach number
+    Estimation of the slope of the airfoil of the different lifting surface using the results of xfoil runs
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -14,16 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 import logging
 
 import numpy as np
 import openmdao.api as om
 
 from ..external.xfoil.xfoil_polar import XfoilPolar
-from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
-
-from fastoad.model_base.atmosphere import Atmosphere
+from ..constants import POLAR_POINT_COUNT
 
 ALPHA_START_LINEAR = -5.0
 ALPHA_END_LINEAR = 10.0
@@ -146,7 +143,6 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
 
 class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
-    # Based on the equation of Roskam Part VI
     """ Lift curve slope coefficient from Xfoil polars """
 
     def setup(self):
@@ -177,8 +173,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_wing = int(np.min(np.where(wing_alpha >= ALPHA_START_LINEAR)))
         index_end_wing = int(np.max(np.where(wing_alpha <= ALPHA_END_LINEAR)))
         wing_airfoil_cl_alpha_array = (
-            wing_cl[index_start_wing + 1 : index_end_wing] - wing_cl[index_start_wing]
-        ) / (wing_alpha[index_start_wing + 1 : index_end_wing] - wing_alpha[index_start_wing])
+            wing_cl[index_start_wing + 1: index_end_wing] - wing_cl[index_start_wing]
+        ) / (wing_alpha[index_start_wing + 1: index_end_wing] - wing_alpha[index_start_wing])
         wing_airfoil_cl_alpha = np.mean(wing_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         htp_cl_orig = inputs["xfoil:horizontal_tail:CL"]
@@ -190,8 +186,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_htp = int(np.min(np.where(htp_alpha >= ALPHA_START_LINEAR)))
         index_end_htp = int(np.max(np.where(htp_alpha <= ALPHA_END_LINEAR)))
         htp_airfoil_cl_alpha_array = (
-            htp_cl[index_start_htp + 1 : index_end_htp] - htp_cl[index_start_htp]
-        ) / (htp_alpha[index_start_htp + 1 : index_end_htp] - htp_alpha[index_start_htp])
+            htp_cl[index_start_htp + 1: index_end_htp] - htp_cl[index_start_htp]
+        ) / (htp_alpha[index_start_htp + 1: index_end_htp] - htp_alpha[index_start_htp])
         htp_airfoil_cl_alpha = np.mean(htp_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         vtp_cl_orig = inputs["xfoil:horizontal_tail:CL"]
@@ -203,8 +199,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_vtp = int(np.min(np.where(vtp_alpha >= ALPHA_START_LINEAR)))
         index_end_vtp = int(np.max(np.where(vtp_alpha <= ALPHA_END_LINEAR)))
         vtp_airfoil_cl_alpha_array = (
-            vtp_cl[index_start_vtp + 1 : index_end_vtp] - vtp_cl[index_start_vtp]
-        ) / (vtp_alpha[index_start_vtp + 1 : index_end_vtp] - vtp_alpha[index_start_vtp])
+            vtp_cl[index_start_vtp + 1: index_end_vtp] - vtp_cl[index_start_vtp]
+        ) / (vtp_alpha[index_start_vtp + 1: index_end_vtp] - vtp_alpha[index_start_vtp])
         vtp_airfoil_cl_alpha = np.mean(vtp_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         outputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"] = htp_airfoil_cl_alpha

@@ -143,15 +143,18 @@ class AerodynamicLoads(AerostructuralLoad):
         # extrema that are missing, the root and the full span,
         y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
         y_vector_slip = AerostructuralLoad.delete_additional_zeros(y_vector_slip)
-        cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector)
-        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip)
-        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector)
+        cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector, len(y_vector))
+        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip, len(y_vector_slip))
+        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector, len(y_vector))
+
         y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)
         y_vector_slip, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, 0.0)
         cl_vector = np.insert(cl_vector, 0, cl_vector[0])
+
         cl_vector_slip = np.insert(cl_vector_slip, 0, cl_vector_slip[0])
         chord_vector = np.insert(chord_vector, 0, root_chord)
         y_vector_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, semi_span)
+
         y_vector_slip_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, semi_span)
         cl_vector = np.append(cl_vector, 0.0)
         cl_vector_slip = np.append(cl_vector_slip, 0.0)

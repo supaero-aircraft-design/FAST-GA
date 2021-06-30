@@ -16,13 +16,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from .external.openvsp.compute_vn import DOMAIN_PTS_NB
+from .components.compute_vn import DOMAIN_PTS_NB
 
 from openmdao.core.group import Group
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .external.vlm.compute_vn import ComputeVNvlmNoVH
-from .external.openvsp.compute_vn import ComputeVNopenvspNoVH
+from .components.compute_vn import ComputeVNAndVH
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -36,26 +35,9 @@ class LoadFactor(Group):
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("compute_cl_alpha", default=False, types=bool)
-        self.options.declare("use_openvsp", default=False, types=bool)
 
     def setup(self):
-        if not (self.options["use_openvsp"]):
-            self.add_subsystem("vn_vlm",
-                               ComputeVNvlmNoVH(
-                                   propulsion_id=self.options["propulsion_id"],
-                                   compute_cl_alpha=self.options["compute_cl_alpha"]
-                               ),
-                               promotes=["*"],
-                               )
-        else:
-            self.add_subsystem("vn_openvsp",
-                               ComputeVNopenvspNoVH(
-                                   propulsion_id=self.options["propulsion_id"],
-                                   compute_cl_alpha=self.options["compute_cl_alpha"]
-                               ),
-                               promotes=["*"],
-                               )
+        self.add_subsystem("vn_diagram", ComputeVNAndVH(propulsion_id=self.options["propulsion_id"]), promotes=["*"],)
         self.add_subsystem("sizing_load_factor",
                            _LoadFactorIdentification(),
                            promotes=["*"])

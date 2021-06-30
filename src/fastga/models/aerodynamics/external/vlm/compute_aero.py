@@ -54,23 +54,31 @@ class ComputeAEROvlm(Group):
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "wing_polar_ls",
-                XfoilPolar(airfoil_file=self.options["wing_airfoil_file"], alpha_end=30.0,),
+                XfoilPolar(airfoil_file=self.options["wing_airfoil_file"],
+                           alpha_end=20.0,
+                           activate_negative_angle=True,),
                 promotes=[],
             )
             self.add_subsystem(
                 "htp_polar_ls",
-                XfoilPolar(airfoil_file=self.options["htp_airfoil_file"], alpha_end=30.0,),
+                XfoilPolar(airfoil_file=self.options["htp_airfoil_file"],
+                           alpha_end=20.0,
+                           activate_negative_angle=True,),
                 promotes=[],
             )
         else:
             self.add_subsystem(
                 "wing_polar_hs",
-                XfoilPolar(airfoil_file=self.options["wing_airfoil_file"], alpha_end=30.0,),
+                XfoilPolar(airfoil_file=self.options["wing_airfoil_file"],
+                           alpha_end=20.0,
+                           activate_negative_angle=True,),
                 promotes=[],
             )
             self.add_subsystem(
                 "htp_polar_hs",
-                XfoilPolar(airfoil_file=self.options["htp_airfoil_file"], alpha_end=30.0,),
+                XfoilPolar(airfoil_file=self.options["htp_airfoil_file"],
+                           alpha_end=20.0,
+                           activate_negative_angle=True,),
                 promotes=[],
             )
         self.add_subsystem(

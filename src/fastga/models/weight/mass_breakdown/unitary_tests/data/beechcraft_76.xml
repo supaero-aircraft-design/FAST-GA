@@ -18,6 +18,7 @@
 		<TLAR>
 			<NPAX_design>2.0<!--top-level requirement: number of passengers in cabin for design mission--></NPAX_design>
 			<luggage_mass_design units="kg">30.0<!--luggage mass to carry during design mission--></luggage_mass_design>
+			<range units="nm">890.<!--luggage mass to carry during design mission--></range>
 			<v_cruise units="kn">158.0<!--top-level requirement: cruise speed--></v_cruise>
 			<v_limit units="kn">194.0<!--top-level requirement: limit speed--></v_limit>
 			<v_max_sl units="kn">171.0<!--top-level requirement: max level velocity--></v_max_sl>
@@ -120,6 +121,20 @@
 				<MTOW units="kg">1915.02<!--maximum takeoff weight--></MTOW>
 				<max_payload units="kg">478.0<!--max payload weight--></max_payload>
 			</aircraft>
+			<airframe>
+				<wing>
+				  	<k_factor_a1>1.0</k_factor_a1>
+				</wing>
+				<fuselage>
+				  	<k_factor_a2>1.0</k_factor_a2>
+				</fuselage>
+				<horizontal_tail>
+				  	<k_factor_a31>1.0</k_factor_a31>
+				</horizontal_tail>
+				<vertical_tail>
+				  	<k_factor_a32>1.0</k_factor_a32>
+				</vertical_tail>
+      		</airframe>
 		</weight>
 	</data>
 </FASTOAD_model>

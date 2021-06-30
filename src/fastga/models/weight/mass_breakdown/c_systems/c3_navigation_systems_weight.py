@@ -15,7 +15,9 @@ Estimation of navigation systems weight
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.model_base.atmosphere import Atmosphere
 
 
 class ComputeNavigationSystemsWeight(ExplicitComponent):
@@ -52,3 +54,68 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
             c3 = 40 + 0.008 * mtow  # mass formula in lb
 
         outputs["data:weight:systems:navigation:mass"] = c3
+
+
+class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
+    """
+    Weight estimation for navigation systems (includes avionics and instruments)
+
+    Based on : Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights
+    Estimation Method." (2017). Equation 102 for instruments and 108 for avionics
+    """
+
+    def setup(self):
+
+        self.add_input("data:TLAR:v_limit", val=np.nan, units="m/s")
+        self.add_input("data:TLAR:range", val=np.nan, units="nm")
+
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
+        self.add_input("data:geometry:propulsion:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:count", val=np.nan)
+
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
+
+        self.add_output("data:weight:systems:navigation:mass", units="lb")
+        self.add_output("data:weight:systems:navigation:instruments:mass", units="lb")
+        self.add_output("data:weight:systems:navigation:avionics:mass", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        v_limit = inputs["data:TLAR:v_limit"]
+        design_range = inputs["data:TLAR:range"]
+
+        fus_width = inputs["data:geometry:fuselage:maximum_width"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        prop_layout = inputs["data:geometry:propulsion:layout"]
+        prop_count = inputs["data:geometry:propulsion:count"]
+
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+
+        n_pilot = 2.0
+
+        atm_cruise = Atmosphere(cruise_alt, altitude_in_feet=True)
+        m_limit = v_limit / atm_cruise.speed_of_sound
+
+        fus_plan_area = fus_width * fus_length
+
+        # TODO: Adjust formula in case there is a strange engine location configuration (on nose and on the wing)
+        if prop_layout == 3.0 or prop_layout == 2.0:  # engine located in nose or in the rear
+            prop_nb_on_wing = 0.0
+            prop_nb_on_fus = prop_count
+
+        else:
+            prop_nb_on_wing = prop_count
+            prop_nb_on_fus = 0.0
+
+        c31 = 0.48 * fus_plan_area ** 0.57 * m_limit ** 0.5 * (
+                10. + 2.5 * n_pilot + prop_nb_on_wing + 1.5 * prop_nb_on_fus
+        )
+        c32 = 15.8 * design_range ** 0.1 * n_pilot ** 0.7 * fus_plan_area ** 0.43
+        c3 = c31 + c32
+
+        outputs["data:weight:systems:navigation:mass"] = c3
+        outputs["data:weight:systems:navigation:instruments:mass"] = c31
+        outputs["data:weight:systems:navigation:avionics:mass"] = c32

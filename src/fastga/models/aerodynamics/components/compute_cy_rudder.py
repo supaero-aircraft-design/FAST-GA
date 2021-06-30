@@ -1,5 +1,5 @@
 """
-    Estimation of yawing moment du to the ruddder
+    Estimation of yawing moment du to the rudder
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -24,9 +24,9 @@ class ComputeCyDeltaRudder(FigureDigitization):
     """
     Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam without the surface ratio
     to keep the coefficient relative to the VT area and dividing by the theoretical airfoil lift coefficient as
-    suggested by the formulae giving the wing lift increment du to flap deployment which can be considered similar
+    suggested by the formulae giving the wing lift increment due to flap deployment which can be considered similar
 
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power *
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
     Characteristics. DARcorporation, 1985.
     """
 

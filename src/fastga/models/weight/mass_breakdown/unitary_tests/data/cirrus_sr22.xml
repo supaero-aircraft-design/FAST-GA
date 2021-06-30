@@ -18,6 +18,7 @@
 		<TLAR>
 			<NPAX_design>2.0<!--number of passengers (2 pilots not included)--></NPAX_design>
 			<v_cruise units="kn">160.0<!--top-level requirement: cruise speed--></v_cruise>
+			<range units="nm">890.0</range>
 			<v_limit units="kn" is_input="True">202.6</v_limit>
 			<v_max_sl units="kn" is_input="True">186.0</v_max_sl>
 			<luggage_mass_design>20.0</luggage_mass_design>
@@ -203,6 +204,20 @@
 					<range>0.15<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
 				</CG>
 			</aircraft>
+			<airframe>
+				<wing>
+				  <k_factor_a1>0.875</k_factor_a1>
+				</wing>
+				<fuselage>
+				  <k_factor_a2>0.875</k_factor_a2>
+				</fuselage>
+				<horizontal_tail>
+				  <k_factor_a31>0.875</k_factor_a31>
+				</horizontal_tail>
+				<vertical_tail>
+				  <k_factor_a32>0.875</k_factor_a32>
+				</vertical_tail>
+		  	</airframe>
 		</weight>
 	</settings>
 </FASTOAD_model>

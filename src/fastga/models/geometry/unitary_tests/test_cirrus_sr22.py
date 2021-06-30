@@ -25,10 +25,13 @@ from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
-from ..geom_components.fuselage import (
+from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
+    ComputeFuselageGeometryCabinSizingFL,
 )
+from ..geom_components.fuselage.components import ComputeFuselageWetArea
+
 from ..geom_components.wing.components import (
     ComputeMFW,
     ComputeWingB50,
@@ -248,10 +251,6 @@ def test_compute_fuselage_cabin_sizing():
     assert fuselage_lpax == pytest.approx(1.550, abs=1e-3)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(2.714, abs=1e-3)
-    fuselage_wet_area = problem.get_val("data:geometry:fuselage:wet_area", units="m**2")
-    assert fuselage_wet_area == pytest.approx(
-        26.68, abs=1e-1
-    )  # difference comes from LAR=0.0 in old version
     luggage_length = problem.get_val("data:geometry:fuselage:luggage_length", units="m")
     assert luggage_length == pytest.approx(0.464, abs=1e-3)
 
@@ -271,8 +270,61 @@ def test_compute_fuselage_basic():
     problem = run_system(ComputeFuselageGeometryBasic(), ivc)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(3.762, abs=1e-3)
-    fuselage_wet_area = problem.get_val("data:geometry:fuselage:wet_area", units="m**2")
-    assert fuselage_wet_area == pytest.approx(30.321, abs=1e-3)
+
+
+def test_compute_fuselage_cabin_sizing_fl():
+    """ Tests computation of the fuselage with cabin sizing """
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
+    )
+    ivc.add_output("data:geometry:horizontal_tail:MAC:length", 0.868, units="m")
+    ivc.add_output("data:geometry:horizontal_tail:span", 5.095, units="m")
+    ivc.add_output("data:geometry:vertical_tail:MAC:length", 1.472, units="m")
+    ivc.add_output("data:geometry:vertical_tail:span", 1.734, units="m")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER), ivc)
+    npax = problem.get_val("data:geometry:cabin:NPAX")
+    assert npax == pytest.approx(2.0, abs=1)
+    fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
+    assert fuselage_length == pytest.approx(7.1383, abs=1e-3)
+    fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
+    assert fuselage_width_max == pytest.approx(1.198, abs=1e-3)
+    fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
+    assert fuselage_height_max == pytest.approx(1.338, abs=1e-3)
+    fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
+    assert fuselage_lav == pytest.approx(1.1488, abs=1e-3)
+    fuselage_lpax = problem.get_val("data:geometry:fuselage:PAX_length", units="m")
+    assert fuselage_lpax == pytest.approx(1.550, abs=1e-3)
+    fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
+    assert fuselage_lcabin == pytest.approx(2.714, abs=1e-3)
+    luggage_length = problem.get_val("data:geometry:fuselage:luggage_length", units="m")
+    assert luggage_length == pytest.approx(0.464, abs=1e-3)
+
+
+def test_fuselage_wet_area():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
+        __file__,
+        XML_FILE,
+    )
+    ivc.add_output("data:geometry:fuselage:length", 7.1383, units="m")
+    ivc.add_output("data:geometry:fuselage:maximum_height", 1.338, units="m")
+    ivc.add_output("data:geometry:fuselage:maximum_width", 1.198, units="m")
+    ivc.add_output("data:geometry:fuselage:front_length", 1.1488, units="m")
+
+    problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)
+    fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
+    assert fuselage_wet_area == pytest.approx(23.8968, abs=1e-3)
+
+    problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=1.0), ivc)
+    fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
+    assert fuselage_wet_area == pytest.approx(19.8315, abs=1e-3)
 
 
 def test_geometry_wing_toc():

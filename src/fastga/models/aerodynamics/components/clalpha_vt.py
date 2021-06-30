@@ -1,5 +1,5 @@
 """
-    Estimation of vertical tail lift coefficient
+    Estimation of vertical tail 3D lift coefficient
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -22,7 +22,7 @@ import scipy.interpolate as interp
 from .figure_digitization import FigureDigitization
 
 
-class ComputeClalphaVT(FigureDigitization):
+class ComputeClAlphaVT(FigureDigitization):
     """ Vertical tail lift coefficient estimation
 
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power

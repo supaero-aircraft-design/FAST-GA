@@ -1,6 +1,3 @@
-"""
-Estimation of geometry components
-"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,8 +11,9 @@ Estimation of geometry components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_total_area import ComputeTotalArea
-from .ht import ComputeHorizontalTailGeometryFD, ComputeHorizontalTailGeometryFL
-from .nacelle import ComputeNacelleGeometry
-from .vt import ComputeVerticalTailGeometryFD, ComputeVerticalTailGeometryFL
-from .wing import ComputeWingGeometry
+from .compute_fuselage_dimensions import (
+    ComputeFuselageGeometryBasic,
+    ComputeFuselageGeometryCabinSizingFD,
+    ComputeFuselageGeometryCabinSizingFL
+)
+from .compute_fuselage_wet_area import ComputeFuselageWetArea

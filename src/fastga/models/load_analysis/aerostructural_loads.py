@@ -23,8 +23,7 @@ from scipy.interpolate import interp1d
 from fastoad.model_base.atmosphere import Atmosphere
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS
-from fastga.models.aerodynamics.external.openvsp.compute_vn import ComputeVNopenvsp
-from fastga.models.aerodynamics.external.vlm.compute_vn import ComputeVNvlm
+from fastga.models.aerodynamics.components import ComputeVN
 
 NB_POINTS_POINT_MASS = 5
 # MUST BE AN EVEN NUMBER
@@ -32,18 +31,17 @@ POINT_MASS_SPAN_RATIO = 0.01
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 
 
-class AerostructuralLoad(ComputeVNopenvsp):
+class AerostructuralLoad(ComputeVN):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def initialize(self):
         super().initialize()
-        self.options.declare("use_openvsp", default=True, types=bool)
 
     def setup(self):
 
         self.add_input("data:TLAR:category", val=3.0)
-        self.add_input("data:TLAR:level", val=1.0)
+        self.add_input("data:TLAR:level", val=2.0)
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -189,9 +187,9 @@ class AerostructuralLoad(ComputeVNopenvsp):
         # We delete the zeros
         y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
         y_vector_slip = AerostructuralLoad.delete_additional_zeros(y_vector_slip)
-        cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector)
-        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip)
-        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector)
+        cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector, len(y_vector))
+        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip, len(y_vector_slip))
+        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector, len(y_vector))
 
         # We add the first point at the root
         y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)
@@ -243,12 +241,7 @@ class AerostructuralLoad(ComputeVNopenvsp):
             atm.true_airspeed = cruise_v_tas
             cruise_v_keas = atm.equivalent_airspeed
 
-            if self.options["use_openvsp"]:
-                flight_domain_calculator = ComputeVNopenvsp(compute_cl_alpha=True)
-            else:
-                flight_domain_calculator = ComputeVNvlm(compute_cl_alpha=True)
-
-            velocity_array, load_factor_array, _ = flight_domain_calculator.flight_domain(
+            velocity_array, load_factor_array, _ = self.flight_domain(
                 inputs, outputs, mass, cruise_alt, cruise_v_keas
             )
             v_c = float(velocity_array[6])
@@ -534,17 +527,21 @@ class AerostructuralLoad(ComputeVNopenvsp):
         return final_array, index
 
     @staticmethod
-    def delete_additional_zeros(array):
+    def delete_additional_zeros(array, length: int = None):
         """
         Function that delete the additional zeros we had to add to fit the format imposed by OpenMDAO
 
         @param array: an array with additional zeros we want to delete
+        @param length: if len is specified leave zeros up until the length of the array is len
         @return: final_array an array containing the same elements of the initial array but with the additional zeros
         deleted
         """
 
         last_zero = np.amax(np.where(array != 0.0)) + 1
-        final_array = array[: int(last_zero)]
+        if length is not None:
+            final_array = array[: max(int(last_zero), length)]
+        else:
+            final_array = array[: int(last_zero)]
 
         return final_array
 

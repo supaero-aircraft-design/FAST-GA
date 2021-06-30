@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the nacelle profile drag
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -26,6 +26,13 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
 class Cd0Nacelle(ExplicitComponent):
+    """
+    Profile drag estimation for the engine nacelle
+
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None

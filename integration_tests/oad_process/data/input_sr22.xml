@@ -170,6 +170,22 @@
 				</taxi_out>
 		  	</sizing>
 		</mission>
+		<weight>
+			<airframe>
+				<wing>
+				  	<k_factor_a1>0.925</k_factor_a1>
+				</wing>
+				<fuselage>
+				  	<k_factor_a2>0.925</k_factor_a2>
+				</fuselage>
+				<horizontal_tail>
+				  	<k_factor_a31>0.925</k_factor_a31>
+				</horizontal_tail>
+				<vertical_tail>
+				  	<k_factor_a32>0.925</k_factor_a32>
+				</vertical_tail>
+			</airframe>
+		</weight>
 	</data>
 	<settings>
 		<weight>
@@ -184,7 +200,7 @@
 						<weight_ratio>0.075<!--ratio of the weight supported by the front landing gear over the one supported by the main landing gear--></weight_ratio>
 					</front>
 				</landing_gear>
-			</airframe>
+		  	</airframe>
 		</weight>
 	</settings>
 </FASTOAD_model>

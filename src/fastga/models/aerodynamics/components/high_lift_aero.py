@@ -176,7 +176,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         cl_alpha_airfoil_wing = inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
 
         # 2D flap lift coefficient
-        delta_cl_airfoil = self._compute_delta_cl_airfoil_2D(inputs, flap_angle, mach)
+        delta_cl_airfoil = self._compute_delta_cl_airfoil_2d(inputs, flap_angle, mach)
         # Roskam 3D flap parameters
         eta_in = y1_wing / (span_wing / 2.0)
         eta_out = ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing)) / (
@@ -188,9 +188,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         delta_cl0_flaps = (
             kb * delta_cl_airfoil * (cl_alpha_wing / cl_alpha_airfoil_wing) * k_a_delta
         )
-        delta_clmax_flaps = self._compute_delta_clmax_flaps(inputs, flap_angle)
+        delta_cl_max_flaps = self._compute_delta_cl_max_flaps(inputs, flap_angle)
 
-        return delta_cl0_flaps, delta_clmax_flaps
+        return delta_cl0_flaps, delta_cl_max_flaps
 
     def _get_flaps_delta_cm(self, inputs, flap_angle: float, mach: float) -> float:
         """
@@ -218,7 +218,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_type, chord_ratio, thickness_ratio, flap_angle: float, area_ratio
     ) -> float:
         """
-        Method from Young (in Gudmunsson book; page 725)
+        Method from Young (in Gudmundsson book; page 725)
         
         :param flap_angle: flap angle (in Degree)
         :param flap_type: flap type
@@ -341,7 +341,7 @@ class ComputeDeltaHighLift(FigureDigitization):
 
         return delta_cd_flaps
 
-    def _compute_delta_cl_airfoil_2D(self, inputs, angle: float, mach: float) -> float:
+    def _compute_delta_cl_airfoil_2d(self, inputs, angle: float, mach: float) -> float:
         """
         Compute airfoil 2D lift contribution.
 
@@ -373,7 +373,7 @@ class ComputeDeltaHighLift(FigureDigitization):
 
         return delta_cl_airfoil
 
-    def _compute_delta_clmax_flaps(self, inputs, flap_angle) -> float:
+    def _compute_delta_cl_max_flaps(self, inputs, flap_angle) -> float:
         """
 
         Method from Roskam vol.6.  Particularised for single slotted flaps in 
@@ -394,9 +394,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         k3 = self.k3_max_lift(flap_angle, flap_type)
 
         k_planform = (1.0 - 0.08 * math.cos(sweep_25) ** 2.0) * math.cos(sweep_25) ** (3.0 / 4.0)
-        delta_clmax_flaps = base_increment * k1 * k2 * k3 * k_planform * flap_area_ratio
+        delta_cl_max_flaps = base_increment * k1 * k2 * k3 * k_planform * flap_area_ratio
 
-        return delta_clmax_flaps
+        return delta_cl_max_flaps
 
     @staticmethod
     def _compute_flap_area_ratio(inputs) -> float:

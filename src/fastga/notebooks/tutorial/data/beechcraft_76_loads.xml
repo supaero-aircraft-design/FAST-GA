@@ -127,7 +127,7 @@
 		</handling_qualities>
 		<propulsion>
 			<IC_engine>
-				<max_rpm units="rpm" is_input="True">2700.0</max_rpm>
+				<max_rpm units="1/min" is_input="True">2700.0</max_rpm>
 				<fuel_type>1.0<!--1=Avgas ICE engine / 2=Diesel ICE engine--></fuel_type>
 				<max_power units="W">130000.0<!--max power @ see level--></max_power>
 				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
@@ -192,6 +192,22 @@
 				</taxi_out>
 		  	</sizing>
 		</mission>
+		<weight>
+			<airframe>
+				<wing>
+				  <k_factor_a1>1.0</k_factor_a1>
+				</wing>
+				<fuselage>
+				  <k_factor_a2>1.0</k_factor_a2>
+				</fuselage>
+				<horizontal_tail>
+				  <k_factor_a31>1.0</k_factor_a31>
+				</horizontal_tail>
+				<vertical_tail>
+				  <k_factor_a32>1.0</k_factor_a32>
+				</vertical_tail>
+		  	</airframe>
+		</weight>
 	</data>
 	<settings>
 		<weight>
