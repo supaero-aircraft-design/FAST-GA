@@ -162,7 +162,7 @@
 				</landing>
 				<main_route>
 					<climb>
-					  <thrust_rate>1.0</thrust_rate>
+						<climb_rate units="ft/min">800.0</climb_rate>
 					</climb>
 					<cruise>
 					  <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
