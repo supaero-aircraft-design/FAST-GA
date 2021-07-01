@@ -51,6 +51,7 @@ class ComputePropellerPerformance(om.Group):
             default=["naca4430", "naca4424", "naca4420", "naca4414", "naca4412", "naca4409"],
             types=list,
         )
+        self.options.declare("vectors_length", default=10, types=int)
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -72,6 +73,7 @@ class ComputePropellerPerformance(om.Group):
             _ComputePropellerPerformance(
                 sections_profile_position_list=self.options["sections_profile_position_list"],
                 sections_profile_name_list=self.options["sections_profile_name_list"],
+                vectors_length=self.options["vectors_length"],
             ),
             promotes=["*"],
         )
@@ -88,12 +90,13 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.options.declare("sections_profile_name_list", types=list)
         self.options.declare("average_rpm", default=2500.0, types=float)
         self.options.declare("elements_number", default=20, types=int)
+        self.options.declare("vectors_length", default=10, types=int)
 
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:blades_number", val=np.nan)
-        nans_array = np.full(7, np.nan)
+        nans_array = np.full(self.options["vectors_length"], np.nan)
         self.add_input("data:geometry:propeller:sweep_vect", val=nans_array, units="deg")
         self.add_input("data:geometry:propeller:chord_vect", val=nans_array, units="m")
         self.add_input("data:geometry:propeller:twist_vect", val=nans_array, units="deg")
@@ -406,7 +409,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             if out_of_polars:
                 dT_vect[i] = 0.0
                 dQ_vect[i] = 0.0
-                warnings.warn("Propeller element out of calculated polars: contribution canceled!")
+                # warnings.warn("Propeller element out of calculated polars: contribution canceled!")
             else:
                 dT_vect[i] = results[0] * dr * atm.density
                 dQ_vect[i] = results[1] * dr * atm.density
@@ -417,8 +420,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
 
-        if eta < 0.0 or eta > 1.0:
-            warnings.warn("Propeller not working in propulsive mode!")
+        # if eta < 0.0 or eta > 1.0:
+        #     warnings.warn("Propeller not working in propulsive mode!")
 
         return thrust, eta, torque
 

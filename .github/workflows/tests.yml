@@ -1,0 +1,80 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'poetry.lock'
+      - '.github/workflows/**'
+      - 'CHANGELOG.rst'  # To ensure CI runs when merging release branch
+
+
+jobs:
+  tests:
+    runs-on: ${{ matrix.os }}
+    if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
+    strategy:
+      matrix:
+        python-version: [ 3.7 ]
+        os: [ windows-latest ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        shell: bash
+
+      - name: Poetry path
+        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - uses: actions/cache@v2
+        if: ${{ startsWith(runner.os, 'Linux') }}
+        with:
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+
+      - uses: actions/cache@v2
+        if: ${{ startsWith(runner.os, 'macOS') }}
+        with:
+          path: ~/Library/Caches/pypoetry
+          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Activate environment and install dependencies
+        run: poetry install
+        shell: bash
+
+      - name: Check with Black
+        run: |
+          # Fails if Black format is not respected
+          poetry run black --check .
+        shell: bash
+
+      - name: Unit tests
+        run: |
+          poetry run pytest src
+        shell: bash
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@master
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.7' }} # This action runs only on Linux
+        with:
+          project-token: ${{ secrets.codacy }}
+          coverage-reports: coverage.xml
+
+      - uses: codecov/codecov-action@v1
+        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.7' }} # Using Windows for covering XFOIL calls
+        with:
+          #          flags: unittests  # optional
+          name: codecov-FAST-GA  # optional
+          fail_ci_if_error: false  # optional (default = false)

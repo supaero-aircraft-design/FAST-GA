@@ -14,8 +14,9 @@ driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 model:
     propeller:
         id: fastga.aerodynamics.propeller
+        vectors_length: 7
     aircraft_sizing:
-        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-5, debug_print=True, reraise_child_analysiserror=True)
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
         linear_solver: om.DirectSolver()
         geometry:
             id: fastga.geometry.legacy

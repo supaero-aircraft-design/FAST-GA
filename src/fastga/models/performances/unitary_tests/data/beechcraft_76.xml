@@ -32,13 +32,23 @@
 					<CD0>0.0454</CD0>
 				</low_speed>
 			</aircraft>
+			<elevator>
+				<low_speed>
+					<CL_delta units="rad**-1">0.6167<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_delta>
+				</low_speed>
+			</elevator>
 			<horizontal_tail>
 				<cruise>
-					<induced_drag_coefficient>0.715</induced_drag_coefficient>
-					<CL_alpha>0.6826</CL_alpha>
+					<CL_alpha units="rad**-1">1.2589<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
+					<CL_alpha_isolated units="rad**-1">1.0234<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha_isolated>
+					<CL0>-0.00836<!--value of lift coefficient at angle of attack 0 in clean configuration at cruise--></CL0>
+					<induced_drag_coefficient>2.3486</induced_drag_coefficient>
 				</cruise>
 				<low_speed>
-					<CL_alpha>0.6760</CL_alpha>
+					<CL_alpha units="rad**-1">1.2457<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha>
+					<CL_alpha_isolated units="rad**-1">1.0198<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_alpha_isolated>
+					<CL_max_clean>1.2954</CL_max_clean>
+					<CL0>-0.00754<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
 				</low_speed>
 			</horizontal_tail>
 			<elevator>
@@ -131,13 +141,13 @@
 		  	<sizing>
 				<main_route>
 					<climb>
-						<thrust_rate>0.93</thrust_rate>
+						<climb_rate units="ft/min">800.0</climb_rate>
 					</climb>
 					<cruise>
 						<altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
 					</cruise>
 					<descent>
-						<descent_rate>0.05</descent_rate>
+						<descent_rate units="ft/min">-300.0</descent_rate>
 					</descent>
 					<reserve>
 						<duration units="min">45.0<!--reserve fuel to extend cruise phase duration--></duration>
@@ -182,6 +192,7 @@
 				<mass units="kg">950.3</mass>
 				<CG>
 					<x units="m">2.66</x>
+					<z units="m">1.216</z>
 				</CG>
 			</aircraft_empty>
 			<payload>
@@ -192,6 +203,11 @@
 				</rear_fret>
 			</payload>
 			<propulsion>
+				<engine>
+					<CG>
+						<z units="m">1.145</z>
+					</CG>
+				</engine>
 				<tank>
 					<CG>
 						<x units="m">3.83</x>

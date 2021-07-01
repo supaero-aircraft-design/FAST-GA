@@ -809,14 +809,14 @@ def test_compute_flight_points():
     )  # with engine_setting as int
     engine.compute_flight_points(flight_point)
     np.testing.assert_allclose(flight_point.thrust_rate, 0.5, rtol=1e-2)
-    np.testing.assert_allclose(flight_point.sfc, 1.0643878705638884e-05, rtol=1e-2)
+    np.testing.assert_allclose(flight_point.sfc, 1.356846e-05, rtol=1e-2)
 
     flight_point = FlightPoint(
         mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=0.8
     )  # with engine_setting as EngineSetting
     engine.compute_flight_points(flight_point)
     np.testing.assert_allclose(flight_point.thrust, 3992.47453905 * 0.8, rtol=1e-2)
-    np.testing.assert_allclose(flight_point.sfc, 2.3922265031519087e-26, rtol=1e-2)
+    np.testing.assert_allclose(flight_point.sfc, 2.414166e-16, rtol=1e-2)
 
     # Test full arrays
     # 2D arrays are used, where first line is for thrust rates, and second line
@@ -826,7 +826,7 @@ def test_compute_flight_points():
     machs = [0, 0.3, 0.3, 0.4, 0.4]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3193.97963124, 480.58508079, 480.58508079, 239.89658433, 361.0376104]
+    thrusts = [3193.97963124, 480.58508079, 480.58508079, 209.52130202, 339.32315391]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -834,7 +834,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [2.39222650e-26, 1.06438787e-05, 1.06438787e-05, 1.74044641e-05, 1.54211154e-05]
+    expected_sfc = [1.718857e-16, 1.114245e-05, 1.114245e-05, 1.907301e-05, 1.506827e-05]
 
     flight_points = pd.DataFrame()
     flight_points["mach"] = machs + machs
@@ -947,77 +947,3 @@ def test_engine_dim():
     np.testing.assert_allclose(
         _250kw_engine.compute_dimensions(), [0.77, 1.15, 1.53, 5.93], atol=1e-2
     )
-
-
-def test_sfc_at_max_thrust():
-    """
-    Checks model against values from :...
-
-    .. bibliography:: ../refs.bib
-    """
-
-    # Check with arrays
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb)
-    _50kw_engine = BasicICEngine(
-        50000.0,
-        2400.0,
-        81.0,
-        1.0,
-        4.0,
-        1.0,
-        SPEED,
-        THRUST_SL,
-        THRUST_SL_LIMIT,
-        EFFICIENCY_SL,
-        SPEED,
-        THRUST_CL,
-        THRUST_CL_LIMIT,
-        EFFICIENCY_CL,
-    )
-    atm = Atmosphere([0.0, 4000.0, 8000.0], altitude_in_feet=True)
-    sfc = _50kw_engine.sfc_at_max_power(atm)
-    np.testing.assert_allclose(sfc, [7.09319444e-08, 7.00738844e-08, 6.92699006e-08], rtol=1e-4)
-
-    # Check with scalars
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb)
-    _250kw_engine = BasicICEngine(
-        250000.0,
-        2400.0,
-        81.0,
-        1.0,
-        4.0,
-        1.0,
-        SPEED,
-        THRUST_SL,
-        THRUST_SL_LIMIT,
-        EFFICIENCY_SL,
-        SPEED,
-        THRUST_CL,
-        THRUST_CL_LIMIT,
-        EFFICIENCY_CL,
-    )
-    atm = Atmosphere(0, altitude_in_feet=False)
-    sfc = _250kw_engine.sfc_at_max_power(atm)
-    np.testing.assert_allclose(sfc, 8.540416666666667e-08, rtol=1e-4)
-
-    # Check with scalars
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb)
-    _130kw_engine = BasicICEngine(
-        130000.0,
-        2400.0,
-        81.0,
-        1.0,
-        4.0,
-        1.0,
-        SPEED,
-        THRUST_SL,
-        THRUST_SL_LIMIT,
-        EFFICIENCY_SL,
-        SPEED,
-        THRUST_CL,
-        THRUST_CL_LIMIT,
-        EFFICIENCY_CL,
-    )
-    atm = Atmosphere(0, altitude_in_feet=False)
-    sfc = _130kw_engine.sfc_at_max_power(atm)
-    np.testing.assert_allclose(sfc, 7.965417e-08, rtol=1e-4)

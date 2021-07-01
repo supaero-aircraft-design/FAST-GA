@@ -21,7 +21,7 @@
 			<range units="nm">890.0</range>
 			<v_limit units="kn" is_input="True">202.6</v_limit>
 			<v_max_sl units="kn" is_input="True">186.0</v_max_sl>
-			<luggage_mass_design>20.0</luggage_mass_design>
+			<luggage_mass_design units="kg">20.0</luggage_mass_design>
 		</TLAR>
 		<aerodynamics>
 			<aircraft>
