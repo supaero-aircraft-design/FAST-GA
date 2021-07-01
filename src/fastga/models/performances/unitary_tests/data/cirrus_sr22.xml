@@ -64,6 +64,7 @@
 					<CL_alpha units="rad**-1">0.51193<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>
 					<CL_alpha_isolated units="1/rad" is_input="False">4.6618138043024295</CL_alpha_isolated>
 					<induced_drag_coefficient>0.7159413983093388</induced_drag_coefficient>
+					<CL0>-0.0067<!--value of lift coefficient at angle of attack 0 in clean configuration at cruise--></CL0>
 					<hinge_moment_3D>
             			<AOA units="1/rad" is_input="False">-0.2782336149456651</AOA>
             			<elevator units="1/rad" is_input="False">-0.7579081975499105</elevator>
@@ -74,6 +75,7 @@
 					<CL_alpha_isolated units="1/rad" is_input="False">4.5774744168591734</CL_alpha_isolated>
 					<CL0>0.0<!--value of lift coefficient at angle of attack 0 in clean configuration at low speed--></CL0>
 					<induced_drag_coefficient is_input="False">0.710962791572814</induced_drag_coefficient>
+					<CL_max_clean>0.2767</CL_max_clean>
 					<clean>
             			<alpha_aircraft_max units="deg" is_input="False">31.34766054480521</alpha_aircraft_max>
             			<alpha_aircraft_min units="deg" is_input="False">-31.33300950550195</alpha_aircraft_min>
@@ -197,13 +199,13 @@
 				</landing>
 				<main_route>
 					<climb>
-					  <thrust_rate>1.0</thrust_rate>
+						<climb_rate units="ft/min">800.0</climb_rate>
 					</climb>
 					<cruise>
 						<altitude units="ft">8000<!--altitude during cruise phase in sizing mission--></altitude>
 					</cruise>
 					<descent>
-						<descent_rate>0.03</descent_rate>
+						<descent_rate units="ft/min">-300.0</descent_rate>
 					</descent>
 					<reserve>
 						<duration units="s" is_input="True">2700.0</duration>

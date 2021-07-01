@@ -7,6 +7,7 @@ data:aerodynamics:cruise:unit_reynolds || unitary reynolds number representative
 data:aerodynamics:cruise:neutral_point:free_elevator_factor || free elevator factor for computation of stick free static margin in high speed
 data:aerodynamics:cruise:neutral_point:stick_fixed:x || distance between the leading edge of the wing at the MAC and the stick fixed aerodynamic center
 data:aerodynamics:cruise:neutral_point:stick_free:x || distance between the leading edge of the wing at the MAC and the stick free aerodynamic center
+
 data:aerodynamics:horizontal_tail:efficiency || ratio between the dynamic pressure at the tail and the free stream dynamic pressure
 data:aerodynamics:horizontal_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
 data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail in cruise conditions
@@ -26,4 +27,30 @@ data:aerodynamics:horizontal_tail:low_speed:CL_max_clean || maximum horizontal t
 data:aerodynamics:horizontal_tail:low_speed:CL_min_clean || minimum horizontal tail lift coefficient in low speed altitude
 data:aerodynamics:horizontal_tail:low_speed:CL_ref || reference horizontal tail lift coefficient corresponding to the lift repartition in CL_vector
 data:aerodynamics:horizontal_tail:low_speed:CL_vector || horizontal tail lift coefficient repartition along the span corresponding to the lift coefficient in CL_ref
+data:aerodynamics:horizontal_tail:low_speed:Y_vector || point along the span at which the lift repartition on the horizontal tail is sampled
+data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions
+data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max || positive aircraft angle of attack that gives a stalled horizontal tail
+data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min || negative aircraft angle of attack that gives a stalled horizontal tail
+data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D || maximum lift coefficient at the root section of the horizontal tail given with respect to the horizontal tail surface
+data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D || minimum lift coefficient at the root section of the horizontal tail given with respect to the horizontal tail surface
+data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D || maximum lift coefficient at the tip section of the horizontal tail given with respect to the horizontal tail surface
+data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D || minimum lift coefficient at the tip section of the horizontal tail given with respect to the horizontal tail surface
+data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds || reynolds number at the horizontal tail mean aerodynamic chord in low speed conditions
+data:aerodynamics:horizontal_tail:root:low_speed:reynolds || reynolds number at the horizontal tail root section in low speed conditions
+data:aerodynamics:horizontal_tail:tip:low_speed:reynolds || reynolds number at the horizontal tail tip section in low speed conditions
+
+data:aerodynamics:low_speed:mach || mach number representative of low speed aerodynamics
+data:aerodynamics:low_speed:unit_reynolds || unitary reynolds number representative of low speed aerodynamics
+
+data:aerodynamics:propeller:mach || mach number used to compute the polar of the airfoil used in the propeller computation
+data:aerodynamics:propeller:reynolds || reynolds number used to compute the polar of the airfoil used in the propeller computation
+data:aerodynamics:propeller:cruise_level:efficiency || 2D matrix containing the efficiencies of the propeller in different speed conditions and for different thrust requirement at cruise level
+data:aerodynamics:propeller:cruise_level:speed || speed at which the efficiencies of the propeller at cruise level are computed
+data:aerodynamics:propeller:cruise_level:thrust || thrust produced by the propeller at cruise level and for which the efficiencies are given
+data:aerodynamics:propeller:cruise_level:thrust_limit || maximum thrust output of the propeller at cruise level for varying velocities
+data:aerodynamics:propeller:sea_level:efficiency || 2D matrix containing the efficiencies of the propeller in different speed conditions and for different thrust requirement at sea level
+data:aerodynamics:propeller:sea_level:speed || speed at which the efficiencies of the propeller at sea level are computed
+data:aerodynamics:propeller:sea_level:thrust || thrust produced by the propeller at sea level and for which the efficiencies are given
+data:aerodynamics:propeller:sea_level:thrust_limit || maximum thrust output of the propeller at sea level for varying velocities
+
 data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command

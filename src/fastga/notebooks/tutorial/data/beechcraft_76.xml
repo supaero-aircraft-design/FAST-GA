@@ -146,7 +146,7 @@
 					  <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
 					</cruise>
 					<descent>
-						<descent_rate>0.03</descent_rate>
+						<descent_rate units="ft/min">-300.0</descent_rate>
 					</descent>
 					<reserve>
 						<duration units="min">45.0<!--reserve fuel to extend cruise phase duration--></duration>

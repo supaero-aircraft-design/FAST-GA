@@ -1649,7 +1649,7 @@ def test_propeller():
     ivc.add_output("data:geometry:propeller:sweep_vect", sweep, units="deg")
 
     # Run problem
-    problem = run_system(ComputePropellerPerformance(), ivc)
+    problem = run_system(ComputePropellerPerformance(vectors_length=7), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)

@@ -32,11 +32,6 @@
 					<CD0>0.0454</CD0>
 				</low_speed>
 			</aircraft>
-			<elevator>
-				<low_speed>
-					<CL_delta units="rad**-1">0.6167<!--derivative of lift coefficient with respect to angle of attack in low speed conditions--></CL_delta>
-				</low_speed>
-			</elevator>
 			<horizontal_tail>
 				<cruise>
 					<CL_alpha units="rad**-1">1.2589<!--derivative of lift coefficient with respect to angle of attack in cruise conditions--></CL_alpha>

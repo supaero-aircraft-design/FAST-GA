@@ -17,6 +17,7 @@ import os
 import math
 import openmdao.api as om
 import copy
+import logging
 from typing import Sequence, Union
 
 from scipy.constants import g
@@ -41,6 +42,8 @@ POINTS_NB_CLIMB = 100
 POINTS_NB_CRUISE = 100
 POINTS_NB_DESCENT = 100
 MAX_CALCULATION_TIME = 10  # time in seconds
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @RegisterOpenMDAOSystem("fastga.performances.mission", domain=ModelDomain.PERFORMANCE)
