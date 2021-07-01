@@ -53,4 +53,6 @@ data:aerodynamics:propeller:sea_level:speed || speed at which the efficiencies o
 data:aerodynamics:propeller:sea_level:thrust || thrust produced by the propeller at sea level and for which the efficiencies are given
 data:aerodynamics:propeller:sea_level:thrust_limit || maximum thrust output of the propeller at sea level for varying velocities
 
+data:aerodynamics:vertical_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
+
 data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command
