@@ -21,6 +21,7 @@ import shutil
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
+from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.group import Group
 from openmdao.core.system import System
 import openmdao.api as om
@@ -141,12 +142,15 @@ def generate_block_analysis(
             "but no function is returned!\nConsider defining proper values before second execution!"
         )
 
-    elif os.path.exists(xml_file_path):
+    else:
 
-        reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
-            ignore=(var_inputs + outputs_names + ivc_outputs_names)
-        )
-        xml_inputs = reader.names()
+        if os.path.exists(xml_file_path):
+            reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
+                ignore=(var_inputs + outputs_names + ivc_outputs_names)
+            )
+            xml_inputs = reader.names()
+        else:
+            xml_inputs = []
         if not (set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names)) == set(inputs_names)):
             # If some inputs are missing write an error message and add them to the problem if authorized
             missing_inputs = list(
@@ -188,8 +192,11 @@ def generate_block_analysis(
                 """
 
                 # Read .xml file and construct Independent Variable Component excluding outputs
-                reader.path_separator = ":"
-                ivc_local = reader.to_ivc()
+                if os.path.exists(xml_file_path):
+                    reader.path_separator = ":"
+                    ivc_local = reader.to_ivc()
+                else:
+                    ivc_local = IndepVarComp()
                 for name, value in inputs_dict.items():
                     ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
