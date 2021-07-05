@@ -20,6 +20,7 @@ import numpy as np
 import openmdao.api as om
 import math
 import logging
+import time
 import pandas as pd
 from scipy.optimize import fsolve
 import warnings
@@ -174,7 +175,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
 
-        _LOGGER.debug("Done with propeller computation")
+        _LOGGER.debug("Finishing propeller computation")
 
         # Save results
         outputs["data:aerodynamics:propeller:cruise_level:efficiency"] = efficiency_interp
