@@ -14,6 +14,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+
 import numpy as np
 from openmdao.core.group import Group
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -22,6 +24,8 @@ from .vlm import VLMSimpleGeometry
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
+
+_LOGGER = logging.getLogger(__name__)
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
@@ -231,6 +235,8 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        _LOGGER.debug("Entering propeller computation")
 
         # Check AOA input is float
         if not (type(INPUT_AOA) == float):
