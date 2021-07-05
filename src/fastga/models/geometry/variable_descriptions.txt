@@ -2,4 +2,54 @@
 # Each line should be like:
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
-data:geometry:horizontal_tail:span || span of the horizontal tail
+
+data:aerodynamics:horizontal_tail:efficiency || 
+data:geometry:aircraft:wet_area || 
+data:geometry:cabin:length || 
+data:geometry:fuselage:wet_area || 
+data:geometry:horizontal_tail:aspect_ratio || 
+data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25 || 
+data:geometry:horizontal_tail:MAC:at25percent:x:local || 
+data:geometry:horizontal_tail:MAC:length || 
+data:geometry:horizontal_tail:MAC:y || 
+data:geometry:horizontal_tail:root:chord || 
+data:geometry:horizontal_tail:span || 
+data:geometry:horizontal_tail:sweep_0 || 
+data:geometry:horizontal_tail:sweep_100 || 
+data:geometry:horizontal_tail:tip:chord || 
+data:geometry:horizontal_tail:wet_area || 
+data:geometry:horizontal_tail:z:from_wingMAC25 || 
+data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25 || 
+data:geometry:vertical_tail:MAC:at25percent:x:local || 
+data:geometry:vertical_tail:MAC:length || 
+data:geometry:vertical_tail:MAC:z || 
+data:geometry:vertical_tail:root:chord || 
+data:geometry:vertical_tail:span || 
+data:geometry:vertical_tail:sweep_0 || 
+data:geometry:vertical_tail:sweep_100 || 
+data:geometry:vertical_tail:tip:chord || 
+data:geometry:vertical_tail:tip:x || 
+data:geometry:vertical_tail:wet_area || 
+data:geometry:wing:b_50 || 
+data:geometry:wing:kink:chord || 
+data:geometry:wing:kink:leading_edge:x:local || 
+data:geometry:wing:kink:thickness_ratio || 
+data:geometry:wing:kink:y || 
+data:geometry:wing:MAC:leading_edge:x:local || 
+data:geometry:wing:MAC:length || 
+data:geometry:wing:MAC:y || 
+data:geometry:wing:outer_area || 
+data:geometry:wing:root:chord || 
+data:geometry:wing:root:thickness_ratio || 
+data:geometry:wing:root:virtual_chord || 
+data:geometry:wing:root:y || 
+data:geometry:wing:span || 
+data:geometry:wing:sweep_0 || 
+data:geometry:wing:sweep_100_inner || 
+data:geometry:wing:sweep_100_outer || 
+data:geometry:wing:tip:chord || 
+data:geometry:wing:tip:leading_edge:x:local || 
+data:geometry:wing:tip:thickness_ratio || 
+data:geometry:wing:tip:y || 
+data:geometry:wing:wet_area || 
+data:weight:aircraft:MFW || 
