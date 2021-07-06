@@ -36,8 +36,8 @@ class ComputeTailWeight(om.ExplicitComponent):
 
         self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:weight:airframe:horizontal_tail:k_factor_a31", val=1.0)
-        self.add_input("data:weight:airframe:vertical_tail:k_factor_a32", val=1.0)
+        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
+        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
@@ -87,7 +87,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         # Mass formula in lb
 
         outputs["data:weight:airframe:horizontal_tail:mass"] = \
-            a31 * inputs["data:weight:airframe:horizontal_tail:k_factor_a31"]
+            a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
 
         has_t_tail = inputs["data:geometry:has_T_tail"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
@@ -111,4 +111,4 @@ class ComputeTailWeight(om.ExplicitComponent):
         # Mass formula in lb
 
         outputs["data:weight:airframe:vertical_tail:mass"] = \
-            a32 * inputs["data:weight:airframe:vertical_tail:k_factor_a32"]
+            a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]

@@ -3,14 +3,14 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:aerodynamics:aircraft:cruise:CD0 ||
-data:aerodynamics:aircraft:cruise:L_D_max ||
-data:aerodynamics:aircraft:cruise:optimal_alpha ||
-data:aerodynamics:aircraft:cruise:optimal_CD ||
-data:aerodynamics:aircraft:cruise:optimal_CL ||
-data:aerodynamics:aircraft:landing:CL_max ||
-data:aerodynamics:aircraft:low_speed:CD0 ||
-data:aerodynamics:aircraft:takeoff:CL_max ||
+data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for the complete aicraft in cruise conditions
+data:aerodynamics:aircraft:cruise:L_D_max || profile drag coefficient for the complete aicraft in low speed conditions
+data:aerodynamics:aircraft:cruise:optimal_alpha || wing angle of attack at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:cruise:optimal_CD || drag coefficient at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:cruise:optimal_CL || lift coefficient at maximum lift/drag ratio in cruise conditions
+data:aerodynamics:aircraft:landing:CL_max || maximum lift coefficient at landing
+data:aerodynamics:aircraft:low_speed:CD0 || profile drag coefficient for the complete aicraft in low speed conditions
+data:aerodynamics:aircraft:takeoff:CL_max || maximum lift coefficient during take-off
 
 data:aerodynamics:cruise:mach || mach number representative of high speed aerodynamics
 data:aerodynamics:cruise:unit_reynolds || unitary reynolds number representative of high speed aerodynamics
@@ -20,9 +20,9 @@ data:aerodynamics:cruise:neutral_point:stick_free:x || distance between the lead
 
 data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command
 
-data:aerodynamics:fuselage:cruise:CD0 ||
-data:aerodynamics:fuselage:cruise:CnBeta ||
-data:aerodynamics:fuselage:low_speed:CD0 ||
+data:aerodynamics:fuselage:cruise:CD0 || profile drag coefficient for fuselage in cruise conditions
+data:aerodynamics:fuselage:cruise:CnBeta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
+data:aerodynamics:fuselage:low_speed:CD0 || profile drag coefficient for fuselage in low speed conditions
 
 data:aerodynamics:horizontal_tail:efficiency || ratio between the dynamic pressure at the tail and the free stream dynamic pressure
 data:aerodynamics:horizontal_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
@@ -55,14 +55,14 @@ data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds || reynolds number at t
 data:aerodynamics:horizontal_tail:root:low_speed:reynolds || reynolds number at the horizontal tail root section in low speed conditions
 data:aerodynamics:horizontal_tail:tip:low_speed:reynolds || reynolds number at the horizontal tail tip section in low speed conditions
 
-data:aerodynamics:landing_gear:cruise:CD0 ||
-data:aerodynamics:landing_gear:low_speed:CD0 ||
+data:aerodynamics:landing_gear:cruise:CD0 || profile drag coefficient for landing gears in cruise conditions
+data:aerodynamics:landing_gear:low_speed:CD0 || profile drag coefficient for landing gears in low speed conditions
 
 data:aerodynamics:low_speed:mach || mach number representative of low speed aerodynamics
 data:aerodynamics:low_speed:unit_reynolds || unitary reynolds number representative of low speed aerodynamics
 
-data:aerodynamics:other:cruise:CD0 ||
-data:aerodynamics:other:low_speed:CD0 ||
+data:aerodynamics:other:cruise:CD0 || profile drag coefficient for other systems in cruise conditions
+data:aerodynamics:other:low_speed:CD0 || profile drag coefficient for other systems in low speed conditions
 
 data:aerodynamics:propeller:mach || mach number used to compute the polar of the airfoil used in the propeller computation
 data:aerodynamics:propeller:reynolds || reynolds number used to compute the polar of the airfoil used in the propeller computation
@@ -76,16 +76,16 @@ data:aerodynamics:propeller:sea_level:thrust || thrust produced by the propeller
 data:aerodynamics:propeller:sea_level:thrust_limit || maximum thrust output of the propeller at sea level for varying velocities
 
 data:aerodynamics:vertical_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
-data:aerodynamics:vertical_tail:cruise:CD0 ||
-data:aerodynamics:vertical_tail:low_speed:CD0 ||
+data:aerodynamics:vertical_tail:cruise:CD0 || profile drag coefficient for vertical tail in cruise conditions
+data:aerodynamics:vertical_tail:low_speed:CD0 || profile drag coefficient for vertical tail in low speed conditions
 
-data:aerodynamics:wing:cruise:CD0 ||
-data:aerodynamics:wing:low_speed:CD0 ||
-data:aerodynamics:wing:low_speed:CL_max_clean || 
-data:aerodynamics:wing:low_speed:CL_min_clean || 
-data:aerodynamics:wing:low_speed:root:CL_max_2D || 
-data:aerodynamics:wing:low_speed:root:CL_min_2D || 
-data:aerodynamics:wing:low_speed:tip:CL_max_2D || 
-data:aerodynamics:wing:low_speed:tip:CL_min_2D || 
-data:aerodynamics:wing:root:low_speed:reynolds || 
-data:aerodynamics:wing:tip:low_speed:reynolds || 
+data:aerodynamics:wing:cruise:CD0 || profile drag coefficient for wing in cruise conditions
+data:aerodynamics:wing:low_speed:CD0 || profile drag coefficient for wing in low speed conditions
+data:aerodynamics:wing:low_speed:CL_max_clean || wing maximum lift coefficient for positive angle of attack
+data:aerodynamics:wing:low_speed:CL_min_clean || wing maximum lift coefficient for negative angle of attack
+data:aerodynamics:wing:low_speed:root:CL_max_2D || wing root chord airfoil maximum lift coefficient for positive angle of attack
+data:aerodynamics:wing:low_speed:root:CL_min_2D || wing root chord airfoil maximum lift coefficient for negative angle of attack
+data:aerodynamics:wing:low_speed:tip:CL_max_2D || wing tip chord airfoil maximum lift coefficient for positive angle of attack
+data:aerodynamics:wing:low_speed:tip:CL_min_2D || wing tip chord airfoil maximum lift coefficient for negative angle of attack
+data:aerodynamics:wing:root:low_speed:reynolds || wing root chord reynolds in low speed conditions
+data:aerodynamics:wing:tip:low_speed:reynolds || wing tip chord reynolds in low speed conditions

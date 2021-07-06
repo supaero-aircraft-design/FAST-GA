@@ -3,103 +3,103 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || 
-data:aerodynamics:aircraft:mach_interpolation:mach_vector || 
-data:aerodynamics:flaps:landing:CD || 
-data:aerodynamics:flaps:landing:CL || 
-data:aerodynamics:flaps:landing:CL_max || 
-data:aerodynamics:flaps:landing:CM || 
-data:aerodynamics:flaps:takeoff:CL || 
-data:aerodynamics:flaps:takeoff:CL_max || 
-data:aerodynamics:nacelles:cruise:CD0 || 
-data:aerodynamics:nacelles:low_speed:CD0 || 
+data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || vector of the derivatives of the aicraft lift coefficient with respect to angle of attack for varius mach
+data:aerodynamics:aircraft:mach_interpolation:mach_vector || vector of mach used for the interpretation of CL_alpha_vector
+data:aerodynamics:flaps:landing:CD || flaps drag coefficient in landing conditions
+data:aerodynamics:flaps:landing:CL || flaps lift coefficient in landing conditions
+data:aerodynamics:flaps:landing:CL_max || flaps maximum lift coefficient in landing conditions
+data:aerodynamics:flaps:landing:CM || flaps moment coefficient in landing conditions
+data:aerodynamics:flaps:takeoff:CL || flaps lift coefficient in take-off conditions
+data:aerodynamics:flaps:takeoff:CL_max || flaps maximum lift coefficient in take-off conditions
+data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for nacelles in cruise conditions
+data:aerodynamics:nacelles:low_speed:CD0 || profile drag coefficient for nacelles in low speed conditions
 data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector || 
 data:aerodynamics:slipstream:wing:cruise:prop_on:velocity || 
 data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector || 
-data:aerodynamics:wing:cruise:CL0_clean || 
-data:aerodynamics:wing:cruise:CL_alpha || 
-data:aerodynamics:wing:cruise:CM0_clean || 
-data:aerodynamics:wing:cruise:induced_drag_coefficient || 
+data:aerodynamics:wing:cruise:CL0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during cruise
+data:aerodynamics:wing:cruise:CL_alpha || derivative of wing lift coefficient with respect to angle of attack in cruise conditions
+data:aerodynamics:wing:cruise:CM0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during cruise
+data:aerodynamics:wing:cruise:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
 data:aerodynamics:wing:low_speed:chord_vector || 
-data:aerodynamics:wing:low_speed:CL0_clean || 
-data:aerodynamics:wing:low_speed:CL_alpha || 
-data:aerodynamics:wing:low_speed:CL_vector || 
-data:aerodynamics:wing:low_speed:CM0_clean || 
-data:aerodynamics:wing:low_speed:Y_vector || 
-data:geometry:cabin:luggage:mass_max || 
-data:geometry:cabin:seats:passenger:count_by_row || 
-data:geometry:cabin:seats:passenger:length || 
+data:aerodynamics:wing:low_speed:CL0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during low speed
+data:aerodynamics:wing:low_speed:CL_alpha || derivative of wing lift coefficient with respect to angle of attack in low speed conditions
+data:aerodynamics:wing:low_speed:CL_vector || lift repartition along the wing span ratio (given at low speed)
+data:aerodynamics:wing:low_speed:CM0_clean || value of wing moment coefficient at angle of attack 0° in clean configuration during low speed
+data:aerodynamics:wing:low_speed:Y_vector || span ratio repatition vector for CL_vector interpolation
+data:geometry:cabin:luggage:mass_max || maximum luggage mass
+data:geometry:cabin:seats:passenger:count_by_row || number of passenger seats per row
+data:geometry:cabin:seats:passenger:length || passenger seats length
 data:geometry:cabin:seats:passenger:NPAX_max || 
-data:geometry:cabin:seats:pilot:length || 
-data:geometry:flap:chord_ratio || 
-data:geometry:fuselage:front_length || 
-data:geometry:fuselage:length || 
-data:geometry:fuselage:luggage_length || 
-data:geometry:fuselage:maximum_height || 
-data:geometry:fuselage:maximum_width || 
-data:geometry:fuselage:PAX_length || 
-data:geometry:fuselage:rear_length || 
-data:geometry:has_T_tail || 
-data:geometry:horizontal_tail:area || 
-data:geometry:horizontal_tail:elevator_chord_ratio || 
-data:geometry:horizontal_tail:sweep_25 || 
-data:geometry:horizontal_tail:taper_ratio || 
-data:geometry:horizontal_tail:thickness_ratio || 
-data:geometry:landing_gear:height || 
-data:geometry:landing_gear:type || 
-data:geometry:propulsion:count || 
-data:geometry:propulsion:layout || 
-data:geometry:propulsion:nacelle:length || 
-data:geometry:propulsion:nacelle:wet_area || 
-data:geometry:propulsion:nacelle:width || 
-data:geometry:propulsion:nacelle:y || 
-data:geometry:propulsion:propeller:depth || 
-data:geometry:propulsion:propeller:diameter || 
-data:geometry:propulsion:y_ratio || 
-data:geometry:vertical_tail:area || 
-data:geometry:vertical_tail:aspect_ratio || 
+data:geometry:cabin:seats:pilot:length || pilot seats length
+data:geometry:flap:chord_ratio || flap chord ratio
+data:geometry:fuselage:front_length || fuselage front length
+data:geometry:fuselage:length || fuselage lenth
+data:geometry:fuselage:luggage_length || fuselage length dedicated to luggage
+data:geometry:fuselage:maximum_height || fuselage maximum height
+data:geometry:fuselage:maximum_width || fuselage maximum width
+data:geometry:fuselage:PAX_length || cabine length
+data:geometry:fuselage:rear_length || fuselage rear length
+data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
+data:geometry:horizontal_tail:area || horizontal tail area
+data:geometry:horizontal_tail:elevator_chord_ratio || elevator chord ratio
+data:geometry:horizontal_tail:sweep_25 || sweep angle at 25% chord of horizontal tail
+data:geometry:horizontal_tail:taper_ratio || taper ratio of horizontal tail
+data:geometry:horizontal_tail:thickness_ratio || thickness ratio of horizontal tail
+data:geometry:landing_gear:height || height of landing gear
+data:geometry:landing_gear:type || 0=non-retractable / 1=retractable
+data:geometry:propulsion:count || number of engine
+data:geometry:propulsion:layout || position of engines (1=under the wing / 2=rear fuselage / 3=nose)
+data:geometry:propulsion:nacelle:length || nacelle length
+data:geometry:propulsion:nacelle:wet_area || nacelle wet area
+data:geometry:propulsion:nacelle:width || nacelle width
+data:geometry:propulsion:nacelle:y || nacelle position along Y-axes (span)
+data:geometry:propulsion:propeller:depth || propeller depth
+data:geometry:propulsion:propeller:diameter || propeller diameter
+data:geometry:propulsion:y_ratio || engine position along wing span (if layout=1-2)
+data:geometry:vertical_tail:area || vertical tail area
+data:geometry:vertical_tail:aspect_ratio || vertical tail aspect ratio
 data:geometry:vertical_tail:max_thickness:x_ratio || 
-data:geometry:vertical_tail:sweep_25 || 
-data:geometry:vertical_tail:taper_ratio || 
-data:geometry:vertical_tail:thickness_ratio || 
-data:geometry:wing:area || 
-data:geometry:wing:aspect_ratio || 
-data:geometry:wing:kink:span_ratio || 
-data:geometry:wing:MAC:at25percent:x || 
-data:geometry:wing:sweep_25 || 
-data:geometry:wing:taper_ratio || 
-data:geometry:wing:thickness_ratio || 
+data:geometry:vertical_tail:sweep_25 || sweep angle at 25% chord of vertical tail
+data:geometry:vertical_tail:taper_ratio || taper ratio of vertical tail
+data:geometry:vertical_tail:thickness_ratio || thickness ratio of vertical tail
+data:geometry:wing:area || wing area
+data:geometry:wing:aspect_ratio || wing aspect ratio
+data:geometry:wing:kink:span_ratio || ratio (Y-position of kink)/(semi-span)
+data:geometry:wing:MAC:at25percent:x || X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)
+data:geometry:wing:sweep_25 || sweep angle at 25% chord of wing
+data:geometry:wing:taper_ratio || taper ratio of wing
+data:geometry:wing:thickness_ratio || mean thickness ratio of wing
 data:mission:sizing:cs23:sizing_factor_ultimate || 
-data:mission:sizing:fuel || 
+data:mission:sizing:fuel || consumed fuel mass during whole mission
 data:mission:sizing:landing:elevator_angle || 
-data:mission:sizing:main_route:cruise:altitude || 
+data:mission:sizing:main_route:cruise:altitude || main route cruise phase altitude
 data:mission:sizing:takeoff:elevator_angle || 
-data:propulsion:IC_engine:fuel_type || 
-data:TLAR:category || 
-data:TLAR:level || 
-data:TLAR:luggage_mass_design || 
-data:TLAR:NPAX_design || 
-data:TLAR:range || 
-data:TLAR:v_approach || 
-data:TLAR:v_cruise || 
-data:TLAR:v_limit || 
-data:TLAR:v_max_sl || 
-data:weight:aircraft:CG:aft:x || 
+data:propulsion:IC_engine:fuel_type || engine fuel type (1.0 - gasoline, 2.0 - gasoil)
+data:TLAR:category || aircraft certification category (???)
+data:TLAR:level || aircraft certification level (???)
+data:TLAR:luggage_mass_design || luggage design mass
+data:TLAR:NPAX_design || design number of passengers (w.o. including pilots)
+data:TLAR:range || design range
+data:TLAR:v_approach || approach speed
+data:TLAR:v_cruise || cruise speed
+data:TLAR:v_limit || limit speed
+data:TLAR:v_max_sl || maximum speed at sea level
+data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
 data:weight:aircraft:CG:flight_condition:max:MAC_position || 
 data:weight:aircraft:CG:flight_condition:min:MAC_position || 
-data:weight:aircraft:CG:fwd:x || 
-data:weight:aircraft:MTOW || 
-data:weight:aircraft:OWE || 
-data:weight:airframe:fuselage:k_factor_a2 || 
-data:weight:airframe:horizontal_tail:k_factor_a31 || 
-data:weight:airframe:vertical_tail:k_factor_a32 || 
-data:weight:airframe:wing:k_factor_a1 || 
-data:weight:propulsion:engine:mass || 
-data:weight:propulsion:unusable_fuel:mass || 
-settings:weight:aircraft:CG:aft:MAC_position:margin || 
-settings:weight:aircraft:CG:fwd:MAC_position:margin || 
-settings:weight:aircraft:CG:range || 
-settings:weight:aircraft:payload:design_mass_per_passenger || 
-settings:weight:aircraft:payload:max_mass_per_passenger || 
-settings:weight:airframe:landing_gear:front:weight_ratio || 
+data:weight:aircraft:CG:fwd:x || most fwd X-position of center of gravity
+data:weight:aircraft:MTOW || maximum takeoff weight
+data:weight:aircraft:OWE || operating weight - empty
+data:weight:airframe:fuselage:k_factor || proportional corrective factor for fuselage mass
+data:weight:airframe:horizontal_tail:k_factor || proportional corrective factor for horizontal tail mass
+data:weight:airframe:vertical_tail:k_factor || proportional corrective factor for vertical tail mass
+data:weight:airframe:wing:k_factor ||proportional corrective factor for wing mass
+data:weight:propulsion:engine:mass || total engine mass
+data:weight:propulsion:unusable_fuel:mass || total unusable fuel mass
+settings:weight:aircraft:CG:aft:MAC_position:margin || most aft X-position of center of gravity as ratio of mean aerodynamic chord
+settings:weight:aircraft:CG:fwd:MAC_position:margin || most fwd X-position of center of gravity as ratio of mean aerodynamic chord
+settings:weight:aircraft:CG:range || distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)
+settings:weight:aircraft:payload:design_mass_per_passenger || design payload mass carried by passenger
+settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
+settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
 
