@@ -21,6 +21,7 @@ model:
         geometry:
             id: fastga.geometry.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            fuselage_wet_area: 1.0
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
@@ -42,6 +43,7 @@ model:
         performance:
             id: fastga.performances.mission
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            out_file: D:/tmp/cirrus_sr22.csv
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing
