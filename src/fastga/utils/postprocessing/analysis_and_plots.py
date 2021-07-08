@@ -18,11 +18,14 @@ import numpy as np
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-# from fastga.models.performances import Sizing
 from fastga.command import api as api_cs23
 from scipy.constants import g
 
+from typing import Dict
+from openmdao.utils.units import convert_units
+
 from fastoad.io import VariableIO
+from fastoad.openmdao.variables import VariableList
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -172,7 +175,7 @@ def aircraft_geometry_plot(
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name)
+    scatter = go.Scatter(x=y, y=x, mode="lines+markers", name=name,showlegend=True)
 
     fig.add_trace(scatter)
 
@@ -301,7 +304,15 @@ def cl_wing_diagram(
     """
     Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL before the added part of
     the wing or before the reduced part of the wing.
-    prop_on : bool stating if the rotor is on or off (for monoprop plane)
+
+    :param aircraft_ref_file_path: path of reference aircraft data file
+    :param aircraft_mod_file_path: path of modified aircraft data file
+    :param prop_on: boolean stating if the rotor is on or off (for monoprop plane)
+    :param name_ref: name to give to the trace of the reference aircraft
+    :param name_mod: name to give to the trace of the modified aircraft
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
+    :return: Cl distribution figure along the span
     """
 
     variables_ref = VariableIO(aircraft_ref_file_path, file_formatter).read()
@@ -405,7 +416,7 @@ def cg_lateral_diagram(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None, color=None
 ) -> go.FigureWidget:
     """
-    Returns a figure plot of the top view of the plane.
+    Returns a figure plot of the lateral view of the plane.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
 
@@ -481,33 +492,38 @@ def cg_lateral_diagram(
         fig = make_subplots(rows=1, cols=2, column_widths=[0.7, 0.3],
                             subplot_titles=("Aircraft Lateral View : Barycenter Position", "Zoom"))
         scatter = go.Scatter(x=x_fuselage, y=z_fuselage, mode="lines+markers", name=name + " geometry",
-                             line=dict(color="Brown"))
+                             line=dict(color=color))
         fig.add_trace(scatter, 1, 1)
         scatter = go.Scatter(x=x_vt, y=z_vt, mode="lines+markers", name=name,
-                             line=dict(color="Brown"), showlegend=False)
+                             line=dict(color=color), showlegend=False)
+        fig.add_trace(scatter, 1, 1)
+    else:
+        scatter = go.Scatter(x=x_fuselage, y=z_fuselage, mode="lines+markers", name=name + " geometry",
+                             line=dict(color=color))
+        fig.add_trace(scatter, 1, 1)
+        scatter = go.Scatter(x=x_vt, y=z_vt, mode="lines+markers", name=name,
+                             line=dict(color=color), showlegend=False)
         fig.add_trace(scatter, 1, 1)
 
     scatter = go.Scatter(x=x_cg, y=z_cg, mode="lines+markers", name=name + " CG positions",
-                         line=dict(color=color, width=2), marker_line=dict(width=1),
+                         line=dict(color=color, width=2), marker_line=dict(width=2),
                          )
     fig.add_trace(scatter, 1, 1)
     scatter = go.Scatter(x=x_cg, y=z_cg, text=["fwd CG", "empty CG", "aft CG"], mode="lines+markers+text",
                          textposition=["bottom center", "top center", "top center"], name=name + " CG positions",
-                         line={'dash': 'dash'}, marker_line=dict(width=1), line_color=color, showlegend=False
+                         line={'dash': 'dash'}, marker_line=dict(width=2), line_color=color, showlegend=False
                          )
     fig.add_trace(scatter, 1, 2)
 
-    scatter = go.Scatter(x=[ac_fixed_x], y=[z_cg[0]], text="Static Margin" + "<br>" + "Stick Fixed =" + "<br>" +
-                         str(round(stick_fixed_sm, 3)), textposition="bottom center", mode="markers+text",
-                         name=name + " Neutral Point Stick Fixed", line=dict(color="DarkRed"), showlegend=False,
-                         marker_line=dict(width=1)
+    scatter = go.Scatter(x=[ac_fixed_x], y=[z_cg[0]], text=" Neutral Point" + "<br>" + "Stick Fixed" + "<br>" +
+                         "Static Margin = " + str(round(stick_fixed_sm, 3)), textposition="bottom center",
+                         mode="markers+text", line=dict(color="DarkRed"), showlegend=False, marker_line=dict(width=2)
                          )
     fig.add_trace(scatter, 1, 2)
 
-    scatter = go.Scatter(x=[ac_free_x], y=[z_cg[0]], text="Static Margin" + "<br>" + "Stick Free =" + "<br>" +
-                         str(round(stick_free_sm, 3)), textposition="bottom center", mode="markers+text",
-                         name=name + " Neutral Point Stick Free", line=dict(color="DodgerBlue"), showlegend=False,
-                         marker_line=dict(width=1)
+    scatter = go.Scatter(x=[ac_free_x], y=[z_cg[0]], text="Neutral Point" + "<br>" + "Stick Free" + "<br>" +
+                         "Static Margin = " + str(round(stick_free_sm, 3)), textposition="bottom center",
+                         mode="markers+text", line=dict(color="DodgerBlue"), showlegend=False, marker_line=dict(width=2)
                          )
     fig.add_trace(scatter, 1, 2)
 
@@ -526,6 +542,65 @@ def cg_lateral_diagram(
     return fig
 
 
+def _get_variable_values_with_new_units(
+    variables: VariableList, var_names_and_new_units: Dict[str, str]
+):
+    """
+    Returns the value of the requested variable names with respect to their new units in the order
+    in which their were given. This function works only for variable of value with shape=1 or float.
+
+    :param variables: instance containing variables information
+    :param var_names_and_new_units: dictionary of the variable names as keys and units as value
+    :return: values of the requested variables with respect to their new units
+    """
+    new_values = []
+    for variable_name, unit in var_names_and_new_units.items():
+        new_values.append(
+            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit,)
+        )
+
+    return new_values
+
+
+def _data_weight_decomposition(variables: VariableList, owe=None):
+    """
+    Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
+    subcategories.
+
+    :param variables: instance containing variables information
+    :param owe: value of OWE, if provided names of owe subcategories will be provided
+    :return: variable values, names and optionally owe subcategories names
+    """
+    category_values = []
+    category_names = []
+    owe_subcategory_names = []
+    for variable in variables.names():
+        name_split = variable.split(":")
+        if isinstance(name_split, list) and len(name_split) == 4:
+            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
+                "aircraft" in name_split[2]
+            ):
+                category_values.append(
+                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
+                )
+                category_names.append(name_split[2])
+                if owe:
+                    owe_subcategory_names.append(
+                        name_split[2]
+                        + "<br>"
+                        + str(int(variables[variable].value[0]))
+                        + " [kg] ("
+                        + str(round(variables[variable].value[0] / owe * 100, 1))
+                        + "%)"
+                    )
+    if owe:
+        result = category_values, category_names, owe_subcategory_names
+    else:
+        result = category_values, category_names, None
+
+    return result
+
+
 def mass_breakdown_bar_plot(
     aircraft_file_path: str, name=None, fig=None, file_formatter=None
 ) -> go.FigureWidget:
@@ -537,26 +612,23 @@ def mass_breakdown_bar_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: bar plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    systems = variables["data:weight:systems:mass"].value[0]
+    var_names_and_new_units = {
+        "data:weight:aircraft:MTOW": "kg",
+        "data:weight:aircraft:OWE": "kg",
+        "data:weight:aircraft:payload": "kg",
+        "data:mission:sizing:fuel": "kg",
+    }
 
-    furniture = variables["data:weight:furniture:mass"].value[0]
-
-    airframe = variables["data:weight:airframe:mass"].value[0]
-
-    propulsion = variables["data:weight:propulsion:mass"].value[0]
-
-    # pylint: disable=invalid-name # that's a common naming
-    mtow = variables["data:weight:aircraft:MTOW"].value[0]
-    # pylint: disable=invalid-name # that's a common naming
-    owe = variables["data:weight:aircraft:OWE"].value[0]
-    payload = variables["data:weight:aircraft:payload"].value[0]
-    fuel_mission = variables["data:mission:sizing:fuel"].value[0]
+    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
+    mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
+        variables, var_names_and_new_units
+    )
 
     if fig is None:
         fig = make_subplots(
@@ -576,10 +648,12 @@ def mass_breakdown_bar_plot(
         col=1,
     )
 
-    weight_labels = ["Airframe", "Propulsion", "Systems", "Furniture"]
-    weight_values = [airframe, propulsion, systems, furniture]
+    # Get data:weight decomposition
+    main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
     fig.add_trace(
-        go.Bar(name=name, x=weight_labels, y=weight_values, marker_color=COLS[i]), row=1, col=2,
+        go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
+        row=1,
+        col=2,
     )
 
     fig.update_layout(yaxis_title="[kg]")
@@ -595,207 +669,104 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     Each design can be provided a name.
 
     :param aircraft_file_path: path of data file
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+                           default format will be assumed.
     :return: sunburst plot figure
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    systems = variables["data:weight:systems:mass"].value[0]
-    c12 = variables["data:weight:systems:power:electric_systems:mass"].value[0]
-    c13 = variables["data:weight:systems:power:hydraulic_systems:mass"].value[0]
-    c21 = variables["data:weight:systems:life_support:insulation:mass"].value[0]
-    c22 = variables["data:weight:systems:life_support:air_conditioning:mass"].value[0]
-    c23 = variables["data:weight:systems:life_support:de_icing:mass"].value[0]
-    c24 = variables["data:weight:systems:life_support:internal_lighting:mass"].value[0]
-    c25 = variables["data:weight:systems:life_support:seat_installation:mass"].value[0]
-    c26 = variables["data:weight:systems:life_support:fixed_oxygen:mass"].value[0]
-    c27 = variables["data:weight:systems:life_support:security_kits:mass"].value[0]
-    c3 = variables["data:weight:systems:navigation:mass"].value[0]
+    var_names_and_new_units = {
+        "data:weight:aircraft:MTOW": "kg",
+        "data:weight:aircraft:OWE": "kg",
+        "data:weight:aircraft:payload": "kg",
+        "data:mission:sizing:fuel": "kg",
+    }
 
-    furniture = variables["data:weight:furniture:mass"].value[0]
-    d2 = variables["data:weight:furniture:passenger_seats:mass"].value[0]
-
-    airframe = variables["data:weight:airframe:mass"].value[0]
-    wing = variables["data:weight:airframe:wing:mass"].value[0]
-    fuselage = variables["data:weight:airframe:fuselage:mass"].value[0]
-    h_tail = variables["data:weight:airframe:horizontal_tail:mass"].value[0]
-    v_tail = variables["data:weight:airframe:vertical_tail:mass"].value[0]
-    control_surface = variables["data:weight:airframe:flight_controls:mass"].value[0]
-    landing_gear_1 = variables["data:weight:airframe:landing_gear:main:mass"].value[0]
-    landing_gear_2 = variables["data:weight:airframe:landing_gear:front:mass"].value[0]
-
-    propulsion = variables["data:weight:propulsion:mass"].value[0]
-    b1 = variables["data:weight:propulsion:engine:mass"].value[0]
-    b2 = variables["data:weight:propulsion:fuel_lines:mass"].value[0]
-    b3 = variables["data:weight:propulsion:unusable_fuel:mass"].value[0]
-    b4 = variables["data:weight:propulsion:tank:mass"].value[0]
-
-    mtow = variables["data:weight:aircraft:MTOW"].value[0]
-    owe = variables["data:weight:aircraft:OWE"].value[0]
-    payload = variables["data:weight:aircraft:payload"].value[0]
-    fuel_mission = variables["data:mission:sizing:fuel"].value[0]
+    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
+    mtow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
+        variables, var_names_and_new_units
+    )
 
     # TODO: Deal with this in a more generic manner ?
-    if round(mtow, 6) == round(owe + payload + fuel_mission, 6):
-        mtow = owe + payload + fuel_mission
+    if round(mtow, 0) == round(owe + payload + onboard_fuel_at_takeoff, 0):
+        mtow = owe + payload + onboard_fuel_at_takeoff
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]])
+    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
 
-    labels = [
-        "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-        "payload"
-        + "<br>"
-        + str(int(payload))
-        + " [kg] ("
-        + str(round(payload / mtow * 100, 1))
-        + "%)",
-        "fuel_mission"
-        + "<br>"
-        + str(int(fuel_mission))
-        + " [kg] ("
-        + str(round(fuel_mission / mtow * 100, 1))
-        + "%)",
-        "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)"
-        ]
-    parent = [
-        "",
-        "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-        "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-        "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-        ]
-    value = [mtow, payload, fuel_mission, owe]
-    fig.add_trace(go.Sunburst(
-        labels=labels,
-        parents=parent,
-        values=value,
-    ), 1, 1)
-
-    airframe_str = (
-        "airframe"
-        + "<br>"
-        + str(int(airframe))
-        + " [kg] ("
-        + str(round(airframe / owe * 100, 1))
-        + "%)"
-    )
-    propulsion_str = (
-        "propulsion"
-        + "<br>"
-        + str(int(propulsion))
-        + " [kg] ("
-        + str(round(propulsion / mtow * 100, 1))
-        + "%)"
-    )
-    systems_str = (
-        "systems"
-        + "<br>"
-        + str(int(systems))
-        + " [kg] ("
-        + str(round(systems / mtow * 100, 1))
-        + "%)"
-    )
-    furniture_str = (
-        "furniture"
-        + "<br>"
-        + str(int(furniture))
-        + " [kg] ("
-        + str(round(furniture / mtow * 100, 1))
-        + "%)"
+    fig.add_trace(
+        go.Sunburst(
+            labels=[
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "payload"
+                + "<br>"
+                + str(int(payload))
+                + " [kg] ("
+                + str(round(payload / mtow * 100, 1))
+                + "%)",
+                "onboard_fuel_at_takeoff"
+                + "<br>"
+                + str(int(onboard_fuel_at_takeoff))
+                + " [kg] ("
+                + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
+                + "%)",
+                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
+            ],
+            parents=[
+                "",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+            ],
+            values=[mtow, payload, onboard_fuel_at_takeoff, owe],
+            branchvalues="total",
+        ),
+        1,
+        1,
     )
 
-    labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]",
-              airframe_str,
-              propulsion_str,
-              systems_str,
-              furniture_str,
-              "wing",
-              "fuselage",
-              "horizontal_tail",
-              "vertical_tail",
-              "flight_controls",
-              "landing_gear_main",
-              "landing_gear_front",
-              "engine",
-              "fuel_lines",
-              "unusable_fuel",
-              "fuel_tank",
-              "electric_systems",
-              "hydraulic_systems",
-              "insulation",
-              "air_conditioning",
-              "de_icing",
-              "internal_lighting",
-              "seat_installation",
-              "oxygen",
-              "security_kits",
-              "navigation",
-              "passenger_seats"
-              ]
+    # Get data:weight 2-levels decomposition
+    categories_values, categories_names, categories_labels = _data_weight_decomposition(
+        variables, owe=owe
+    )
 
-    parent = ["",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              "OWE" + "<br>" + str(int(owe)) + " [kg]",
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              airframe_str,
-              propulsion_str,
-              propulsion_str,
-              propulsion_str,
-              propulsion_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              systems_str,
-              furniture_str
-              ]
+    sub_categories_values = []
+    sub_categories_names = []
+    sub_categories_parent = []
+    for variable in variables.names():
+        name_split = variable.split(":")
+        if isinstance(name_split, list) and len(name_split) >= 5:
+            parent_name = name_split[2]
+            if parent_name in categories_names and name_split[-1] == "mass":
+                variable_name = "_".join(name_split[3:-1])
+                sub_categories_values.append(
+                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
+                )
+                sub_categories_parent.append(categories_labels[categories_names.index(parent_name)])
+                sub_categories_names.append(variable_name)
 
-    value = [owe,
-             airframe,
-             propulsion,
-             systems,
-             furniture,
-             wing,
-             fuselage,
-             h_tail,
-             v_tail,
-             control_surface,
-             landing_gear_1,
-             landing_gear_2,
-             b1,
-             b2,
-             b3,
-             b4,
-             c12,
-             c13,
-             c21,
-             c22,
-             c23,
-             c24,
-             c25,
-             c26,
-             c27,
-             c3,
-             d2
-             ]
+    # Define figure data
+    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]
+    figure_labels.extend(categories_labels)
+    figure_labels.extend(sub_categories_names)
+    figure_parents = [""]
+    for _ in categories_names:
+        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [kg]")
+    figure_parents.extend(sub_categories_parent)
+    figure_values = [owe]
+    figure_values.extend(categories_values)
+    figure_values.extend(sub_categories_values)
 
-    fig.add_trace(go.Sunburst(
-        labels=labels,
-        parents=parent,
-        values=value,
-    ), 1, 2)
+    # Plot figure
+    fig.add_trace(
+        go.Sunburst(
+            labels=figure_labels,
+            parents=figure_parents,
+            values=figure_values,
+            branchvalues="total",
+        ),
+        1,
+        2,
+    )
 
     fig.update_layout(title_text="Mass Breakdown", title_x=0.5)
 
@@ -817,159 +788,31 @@ def payload_range(
                            be assumed.
     :return: wing plot figure
     """
-    variables_design = VariableIO(aircraft_file_path, file_formatter).read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    payload_mission = variables_design["data:weight:aircraft:payload"].value[0]
-    range_mission = variables_design["data:TLAR:range"].value[0]
-    fuel_mission = variables_design["data:mission:sizing:fuel"].value[0]
-    mfw_aircraft = variables_design["data:weight:aircraft:MFW"].value[0]
-    mfw_unit = variables_design["data:weight:aircraft:MFW"].units
-    mtow_aircraft = variables_design["data:weight:aircraft:MTOW"].value[0]
-    mtow_unit = variables_design["data:weight:aircraft:MTOW"].units
+    payload_array = list(variables["data:payload_range:payload_array"].value)
+    range_array = list(variables["data:payload_range:range_array"].value)
+    sr_array = list(variables["data:payload_range:specific_range_array"].value)
 
-    if mfw_unit == 'lbm':
-        mfw_aircraft *= 0.45359
-    if mtow_unit == 'lbm':
-        mtow_aircraft *= 0.45359
-
-    range_plot = []
-    payload_plot = []
-
-    payload_min = 2 * variables_design["settings:weight:aircraft:payload:design_mass_per_passenger"].value[0]
-
-    # Point A : 0 fuel, payload mission and mass < MTOW
-    point_a_range = 0
-    point_a_payload = payload_mission
-    range_plot.append(point_a_range)
-    payload_plot.append(point_a_payload)
-
-    # Point B : payload = payload_mission, mass = MTOW -> fuel = fuel_mission -> range = range_mission
-    point_b_range = range_mission
-    point_b_payload = payload_mission
-    range_plot.append(point_b_range)
-    payload_plot.append(point_b_payload)
-
-    if (payload_mission - payload_min) >= (mfw_aircraft - fuel_mission):
-
-        # Point C : mass = MTOW, fuel = MFW, payload = payload_mission - MFW
-        # We need to find the range for fuel = MFW so starting from point B, for a delta_fuel = MFW - fuel_mission.
-        point_c_payload = payload_mission - (mfw_aircraft - fuel_mission)
-
-        var_inputs = ["data:TLAR:range"]
-        compute_fuel = api_cs23.generate_block_analysis(
-            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine",),
-            var_inputs,
-            aircraft_file_path,
-            True,
-        )
-
-        # Interpolation to get point C
-        point_c_range = 0
-        range_interpolation = 0
-        interpolation_index = 1
-
-        while point_c_range == range_interpolation or point_c_range == 0:
-
-            interpolation_index += 1
-            range_interpolation = interpolation_index * range_mission
-            inputs_dict = {"data:TLAR:range": (range_interpolation, "m")}
-            output = compute_fuel(inputs_dict)
-
-            variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
-            fuel_output_inter = variables_inter["data:mission:sizing:fuel"].value[0]
-            delta_fuel_inter = fuel_output_inter - fuel_mission
-            payload_mtow_constant_inter = payload_mission - delta_fuel_inter
-
-            point_c_range = np.interp([point_c_payload],
-                                      [payload_mtow_constant_inter, point_b_payload],
-                                      [range_interpolation, point_b_range])[0]
-
-        range_plot.append(point_c_range)
-        payload_plot.append(point_c_payload)
-
-        # Point D : minimum payload (2 pilots), MTOW decreased and fuel = MFW
-        point_d_payload = payload_min
-        point_d_mass_takeoff_aircraft = mtow_aircraft - (payload_mission - point_d_payload)
-
-        var_inputs = ["data:TLAR:range", "data:weight:aircraft:MTOW", "data:weight:aircraft:payload"]
-        compute_fuel_d = api_cs23.generate_block_analysis(
-            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine",),
-            var_inputs,
-            aircraft_file_path,
-            True,
-        )
-
-        range_interpolation_1 = range_mission
-        inputs_dict = {"data:TLAR:range": (range_interpolation_1, "m"),
-                       "data:weight:aircraft:MTOW": (point_d_mass_takeoff_aircraft, "kg"),
-                       "data:weight:aircraft:payload": (point_d_payload, "kg")}
-        output = compute_fuel_d(inputs_dict)
-        variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
-        fuel_output_inter_1 = variables_inter["data:mission:sizing:fuel"].value[0]
-
-        # While loop to make sure the interpolation returns a proper value,
-        # without taking a range too big that could cause errors
-        point_d_range = 0
-        range_interpolation_2 = 0
-        interpolation_index = 1
-
-        while point_d_range == range_interpolation_2 or point_d_range == 0:
-            interpolation_index += 1
-            range_interpolation_2 = interpolation_index * range_mission
-            inputs_dict = {"data:TLAR:range": (range_interpolation_2, "m"),
-                           "data:weight:aircraft:MTOW": (point_d_mass_takeoff_aircraft, "kg"),
-                           "data:weight:aircraft:payload": (point_d_payload, "kg")}
-            output = compute_fuel_d(inputs_dict)
-            variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
-            fuel_output_inter_2 = variables_inter["data:mission:sizing:fuel"].value[0]
-
-            point_d_range = np.interp([mfw_aircraft],
-                                      [fuel_output_inter_1, fuel_output_inter_2],
-                                      [range_interpolation_1, range_interpolation_2])[0]
-
-        range_plot.append(point_d_range)
-        payload_plot.append(point_d_payload)
-
+    # If point D doesn not exist, remove it
+    if range_array[3] == 0:
+        range_array = range_array[0:3] + [range_array[4]]
+        payload_array = payload_array[0:3] + [payload_array[4]]
+        sr_array = sr_array[0:3] + [sr_array[4]]
+        text_plot = ["A" + "<br>" + "SR = " + str(round(sr_array[0],1)), "B", "E"]
     else:
-        # Point C : mass = MTOW, fuel = fuel_mission + (payload_mission - payload_min), payload = payload_min
-        # We need to find the range for payload = payload_min for a delta_fuel = payload_mission - payload_min.
-        point_c_payload = payload_min
-
-        var_inputs = ["data:TLAR:range"]
-        compute_fuel = api_cs23.generate_block_analysis(
-            Sizing(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
-            var_inputs,
-            aircraft_file_path,
-            True,
-        )
-
-        # Interpolation to get point C
-        range_interpolation = 4 * range_mission
-        inputs_dict = {"data:TLAR:range": (range_interpolation, "m")}
-        output = compute_fuel(inputs_dict)
-
-        variables_inter = VariableIO(aircraft_file_path, file_formatter).read()
-        fuel_output_inter = variables_inter["data:mission:sizing:fuel"].value[0]
-        delta_fuel_inter = fuel_output_inter - fuel_mission
-        payload_mtow_constant_inter = payload_mission - delta_fuel_inter
-
-        point_c_range = np.interp([point_c_payload],
-                                  [payload_mtow_constant_inter, point_b_payload],
-                                  [range_interpolation, point_b_range])[0]
-
-        range_plot.append(point_c_range)
-        payload_plot.append(point_c_payload)
-
-        # No point D since the only way to gain range would be to add fuel to reach MFW, but doing so would make the
-        # plane mass go beyond its MTOW.
+        text_plot = ["A" + "<br>" + "SR = " +  str(round(sr_array[0],1)), "B" + "<br>" + "SR = " +  str(round(sr_array[1],1)), "D" + "<br>" + "SR = " +  str(round(sr_array[3],1)), "E" + "<br>" + "SR = " +  str(round(sr_array[4],1))]
 
     # Plotting of the diagram
-    # Conversion of the range in nautical miles
-    range_plot = [i / 1852 for i in range_plot]
-
     if fig is None:
         fig = go.Figure()
-    scatter = go.Scatter(x=range_plot, y=payload_plot, name=name)
+    scatter = go.Scatter(x=range_array[0:2]+range_array[3:], y=payload_array[0:2]+payload_array[3:],
+                         mode="lines+markers+text", name=name + " Computed Points", text=text_plot,
+                         textposition="bottom right", textfont=dict(size=14))
+    fig.add_trace(scatter)
+    scatter = go.Scatter(x=[range_array[2]], y=[payload_array[2]],
+                         mode="lines+markers+text", name=name + " Design Point", text=["C" + "<br>" + "SR = " +  str(round(sr_array[2],1))],
+                         textposition="bottom left", textfont=dict(size=14))
     fig.add_trace(scatter)
 
     fig = go.FigureWidget(fig)
@@ -986,52 +829,6 @@ def payload_range(
             x=0.99
         )
     )
-
-    return fig
-
-
-def payload_range_bis(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
-) -> go.FigureWidget:
-    """
-    Returns a figure plot of the top view of the plane.
-    Different designs can be superposed by providing an existing fig.
-    Each design can be provided a name.
-
-    :param aircraft_file_path: path of data file
-    :param name: name to give to the trace added to the figure
-    :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
-    :return: wing plot figure
-    """
-    variables = VariableIO(aircraft_file_path, file_formatter).read()
-
-    payload_mission = variables["data:weight:aircraft:payload"].value[0]
-    payload_max = variables["data:weight:aircraft:max_payload"].value[0]
-    lift_to_drag_ratio_max_cruise = variables["data:aerodynamics:aircraft:cruise:L_D_max"].value[0]
-    v_cruise = variables["data:TLAR:v_cruise"].value[0]
-    mtow = variables["data:weight:aircraft:mtow"].value[0]
-    mzfw = variables["data:weight:aircraft:mzfw"].value[0]
-
-    range_plot = []
-    payload_plot = []
-
-    # Point A : 0 fuel, payload max -> mass = MZFW < MTOW
-    range_plot.append(0)
-    payload_plot.append(payload_max)
-
-    # Point B : payload max, mass = MTOW -> fuel added up to MTOW
-    range = v_cruise * lift_to_drag_ratio_max_cruise / (g * sfc) * np.log(mtow / mzfw)
-    kra = 1 - 0.895 * np.exp(- range / 814)
-    range_refined = kra * range
-
-    range_plot.append(range)
-    payload_plot.append(payload_max)
-
-    # Point D : mass = MTOW, fuel = MFW
-
-    fig = go.FigureWidget(fig)
 
     return fig
 

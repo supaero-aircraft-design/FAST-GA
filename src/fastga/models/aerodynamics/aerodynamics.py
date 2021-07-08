@@ -18,6 +18,7 @@
 from .aerodynamics_high_speed import AerodynamicsHighSpeed
 from .aerodynamics_low_speed import AerodynamicsLowSpeed
 from .external.openvsp.compute_aero_slipstream import ComputeSlipstreamOpenvsp
+from .external.openvsp.compute_vn import ComputeVNopenvsp
 from openmdao.api import Group
 
 
@@ -59,3 +60,4 @@ class Aerodynamics(Group):
                                htp_airfoil=self.options["htp_airfoil"],
                                vtp_airfoil=self.options["vtp_airfoil"],
                            ), promotes=["*"])
+        # self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])

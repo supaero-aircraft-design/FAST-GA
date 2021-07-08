@@ -20,6 +20,7 @@ import os
 import types
 import copy
 import shutil
+import numpy as np
 from importlib.resources import path
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -68,9 +69,8 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
 
 def write_needed_inputs(
-        problem: FASTOADProblem,
-        xml_file_path: str,
-        source_formatter: IVariableIOFormatter = None):
+        problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
+):
     variables = DataFile(xml_file_path)
     variables.update(
         VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
@@ -84,67 +84,105 @@ def write_needed_inputs(
     variables.save()
 
 
+def list_ivc_outputs_name(
+        system: Union[ExplicitComponent, ImplicitComponent, Group],
+):
+    # List all "root" components in the systems, meaning the components that don't have any subcomponents
+    group = AutoUnitsDefaultGroup()
+    group.add_subsystem("system", system, promotes=["*"])
+    problem = FASTOADProblem(group)
+    problem.setup()
+    model = problem.model
+    dict_sub_system = {}
+    dict_sub_system = list_all_subsystem(model, "model", dict_sub_system)
+    ivc_outputs_names = []
+
+    # Find the outputs of all of those systems that are IndepVarComp
+    for sub_system_keys in dict_sub_system.keys():
+        if dict_sub_system[sub_system_keys] == "IndepVarComp":
+            actual_attribute_name = sub_system_keys.replace("model.system.", "")
+            component = getattr(model.system, actual_attribute_name)
+            component_output = component.list_outputs()
+            for outputs in component_output:
+                ivc_outputs_names.append(outputs[0])
+
+    return ivc_outputs_names
+
+
 def generate_block_analysis(
         system: Union[ExplicitComponent, ImplicitComponent, Group],
         var_inputs: List,
         xml_file_path: str,
         overwrite: bool = False,
 ):
-
     # Search what are the component/group outputs
     variables = list_variables(system)
     inputs_names = [var.name for var in variables if var.is_input]
     outputs_names = [var.name for var in variables if not var.is_input]
 
+    # Check the sub-sytems of the system in question, and if there are ivc, list the outputs  of those ivc. We are gonna
+    # assume that ivc are only used in a situation similar to the one for the ComputePropellerPerformance group, meaning
+    # if there is an ivc, it will always start the group
+
+    ivc_outputs_names = list_ivc_outputs_name(system)
+
     # Check that variable inputs are in the group/component list
-    if not(set(var_inputs) == set(inputs_names).intersection(set(var_inputs))):
-        raise Exception('The input list contains name(s) out of component/group input list!')
+    if not (set(var_inputs) == set(inputs_names).intersection(set(var_inputs))):
+        raise Exception("The input list contains name(s) out of component/group input list!")
 
     # Perform some tests on the .xml availability and completeness
-    if not(os.path.exists(xml_file_path)) and not(set(var_inputs) == set(inputs_names)):
+    if not (os.path.exists(xml_file_path)) and not (set(var_inputs) == set(inputs_names)):
         # If no input file and some inputs are missing, generate it and return None
         if isinstance(system, Group):
             problem = FASTOADProblem(system)
         else:
             group = AutoUnitsDefaultGroup()
-            group.add_subsystem('system', system, promotes=["*"])
+            group.add_subsystem("system", system, promotes=["*"])
             problem = FASTOADProblem(group)
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
-        raise Exception('Input .xml file not found, a default file has been created with default NaN values, '
-                        'but no function is returned!\nConsider defining proper values before second execution!')
+        raise Exception(
+            "Input .xml file not found, a default file has been created with default NaN values, "
+            "but no function is returned!\nConsider defining proper values before second execution!"
+        )
 
     elif os.path.exists(xml_file_path):
 
-        reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(ignore=(var_inputs + outputs_names))
+        reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
+            ignore=(var_inputs + outputs_names + ivc_outputs_names)
+        )
         xml_inputs = reader.names()
-        if not(set(xml_inputs + var_inputs).intersection(set(inputs_names)) == set(inputs_names)):
+        if not (set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names)) == set(inputs_names)):
             # If some inputs are missing write an error message and add them to the problem if authorized
             missing_inputs = list(
-                set(inputs_names).difference(set(xml_inputs + var_inputs).intersection(set(inputs_names)))
+                set(inputs_names).difference(
+                    set(xml_inputs + var_inputs).intersection(set(inputs_names))
+                )
             )
-            message = 'The following inputs are missing in .xml file:'
+            message = "The following inputs are missing in .xml file:"
             for item in missing_inputs:
-                message += ' [' + item + '],'
-            message = message[:-1] + '.\n'
+                message += " [" + item + "],"
+            message = message[:-1] + ".\n"
             if overwrite:
                 reader.path_separator = ":"
                 ivc = reader.to_ivc()
                 group = AutoUnitsDefaultGroup()
-                group.add_subsystem('system', system, promotes=["*"])
-                group.add_subsystem('ivc', ivc, promotes=["*"])
+                group.add_subsystem("system", system, promotes=["*"])
+                group.add_subsystem("ivc", ivc, promotes=["*"])
                 problem = FASTOADProblem(group)
                 problem.input_file_path = xml_file_path
                 problem.output_file_path = xml_file_path
                 problem.setup()
                 problem.write_outputs()
-                message += 'Default values have been added to {} file. ' \
-                           'Consider modifying them for a second run!'.format(xml_file_path)
+                message += (
+                    "Default values have been added to {} file. "
+                    "Consider modifying them for a second run!".format(xml_file_path)
+                )
                 raise Exception(message)
             else:
                 raise Exception(message)
         else:
-            # If all inputs addressed either by .xml or var_inputs, construct the function
+            # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the function
             def patched_function(inputs_dict: dict) -> dict:
                 """
                 The patched function perform a run of an openmdao component or group applying FASTOAD formalism.
@@ -154,15 +192,14 @@ def generate_block_analysis(
                 @return: dictionary of the component/group outputs saving names as keys and (value, units) as tuple.
                 """
 
-
                 # Read .xml file and construct Independent Variable Component excluding outputs
                 reader.path_separator = ":"
                 ivc_local = reader.to_ivc()
                 for name, value in inputs_dict.items():
                     ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
-                group_local.add_subsystem('system', system, promotes=["*"])
-                group_local.add_subsystem('ivc', ivc_local, promotes=["*"])
+                group_local.add_subsystem("system", system, promotes=["*"])
+                group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
                 problem_local = FASTOADProblem(group_local)
                 problem_local.setup()
                 problem_local.run_model()
@@ -176,11 +213,31 @@ def generate_block_analysis(
                     value = problem_local.get_val(outputs_names[idx], outputs_units[idx])
                     outputs_dict[outputs_names[idx]] = (value, outputs_units[idx])
                 return outputs_dict
+
             return patched_function
 
 
-class VariableListLocal(VariableList):
+def list_all_subsystem(model, model_address, dict_subsystems):
+    try:
+        subsystem_list = model._proc_info.keys()
+        for subsystem in subsystem_list:
+            dict_subsystems = list_all_subsystem(getattr(model, subsystem), model_address + '.' + subsystem,
+                                                 dict_subsystems)
+    except:
+        dict_subsystems[model_address] = get_type(model)
 
+    return dict_subsystems
+
+
+def get_type(model):
+    raw_type = model.msginfo.split('<')[-1]
+    type_alone = raw_type.split(' ')[-1]
+    model_type = type_alone[:-1]
+
+    return model_type
+
+
+class VariableListLocal(VariableList):
     @classmethod
     def from_system(cls, system: System) -> "VariableList":
         """
@@ -211,7 +268,7 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
     """ Reads all variables from a component/problem and return as a list """
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
-        new_component.add_subsystem("system", component, promotes=['*'])
+        new_component.add_subsystem("system", component, promotes=["*"])
         component = new_component
     variables = VariableListLocal.from_system(component)
 

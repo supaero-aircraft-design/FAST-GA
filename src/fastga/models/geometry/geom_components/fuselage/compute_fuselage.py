@@ -162,12 +162,13 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         l_lug_rear = (luggage_mass_max_rear / luggage_density) / (0.8 * math.pi * r_i ** 2)
         # Cabin total length
         cabin_length = l_instr + lpax + l_lug_rear
-        # Calculate nose length
+        # Calculate nose length. The front fret is supposed to be already included in the nose length.
+        # The front fret length is used to compute its CG.
         if prop_layout == 3.0:  # engine located in nose
             _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length + spinner_length + l_lug_front
+            lav = propulsion_length + spinner_length
         else:
-            lav = 1.40 * h_f + l_lug_front
+            lav = 1.40 * h_f
             # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76 tend to say it is
             # around 1.40, though it varies a lot depending on the airplane and its use
         # Calculate fuselage length
@@ -277,9 +278,9 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
             _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length + l_lug_front
+            lav = propulsion_length
         else:
-            lav = 1.7 * h_f + l_lug_front
+            lav = 1.7 * h_f
             # Calculate fuselage length
         fus_length = lav + cabin_length + lar
 

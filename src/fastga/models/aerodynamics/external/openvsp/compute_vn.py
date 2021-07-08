@@ -33,6 +33,9 @@ from ...constants import MACH_NB_PTS
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
+
 INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
@@ -114,7 +117,7 @@ class ComputeVh(om.ExplicitComponent):
 
         return thrust - drag
 
-
+# @RegisterOpenMDAOSystem("fastga.aerodynamics.vn", domain=ModelDomain.AERODYNAMICS)
 class ComputeVNopenvsp(OPENVSPSimpleGeometry):
 
     def __init__(self, **kwargs):
@@ -144,10 +147,10 @@ class ComputeVNopenvsp(OPENVSPSimpleGeometry):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         if not (self.options["compute_cl_alpha"]):
-            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan)
+            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
+            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1")
             self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
         self.add_output("data:flight_domain:velocity", units="m/s", shape=DOMAIN_PTS_NB)

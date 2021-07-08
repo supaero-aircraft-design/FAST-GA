@@ -61,13 +61,13 @@ class ComputePropellerPerformance(om.Group):
             self.connect("data:aerodynamics:propeller:mach", profile + "_polar.xfoil:mach")
             self.connect("data:aerodynamics:propeller:reynolds", profile + "_polar.xfoil:reynolds")
         self.add_subsystem("propeller_aero",
-                           _ComputePropellerPerformance(
+                           _ComputePropellePerformance(
                                sections_profile_position_list=self.options["sections_profile_position_list"],
                                sections_profile_name_list=self.options["sections_profile_name_list"],
                                ), promotes=["*"])
 
 
-class _ComputePropellerPerformance(om.ExplicitComponent):
+class _ComputePropellePerformance(om.ExplicitComponent):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -267,17 +267,14 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
     def compute_pitch_performance(self, inputs, theta_75, v_inf, h, omega, elements_number):
 
         """
-
         This function calculates the thrust, efficiency and power at a given flight speed, altitude h and propeller
         angular speed.
-
         :param inputs: structure of data relative to the blade geometry available from setup
         :param theta_75: pitch defined at r = 0.75*R radial position [deg.]
         :param v_inf: flight speeds [m/s]
         :param h: flight altitude [m]
         :param omega: angular velocity of the propeller [RPM]
         :param elements_number: number of elements for discretization [-]
-
         :return: thrust [N], eta (efficiency) [-] and power [W]
         """
 
@@ -381,7 +378,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
         conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
         momentum with BEM theory.
-
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
         :param chord: chord at the center of element [m]
@@ -394,7 +390,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :param cl_element: cl vector for element [-]
         :param cd_element: cd vector for element [-]
         :param atm: atmosphere properties
-
         :return: The calculated dT/(rho*dr) and dQ/(rho*dr) increments with BEM method.
         """
 
@@ -456,7 +451,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
         conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
         momentum with disk theory.
-
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
         :param radius_min: Hub radius [m]
@@ -465,7 +459,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :param sweep: sweep angle [deg.]
         :param omega: angular speed of propeller [rad/sec]
         :param v_inf: flight speed [m/s]
-
         :return: The calculated dT/(rho*dr) and dQ/(rho*dr) increments with disk theory method.
         """
 
@@ -530,7 +523,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
         conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
         momentum with disk theory.
-
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
         :param radius_min: Hub radius [m]
@@ -545,7 +537,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :param cl_element: cl vector for element [-]
         :param cd_element: cd vector for element [-]
         :param atm: atmosphere properties
-
         :return: The difference between BEM dual methods for dT/(rho*dr) and dQ/ increments.
         """
 

@@ -30,7 +30,6 @@ from ..geom_components.fuselage import (
     ComputeFuselageGeometryCabinSizingFD,
 )
 from ..geom_components.wing.components import (
-    ComputeMFW,
     ComputeWingB50,
     ComputeWingL1AndL4,
     ComputeWingL2AndL3,
@@ -432,20 +431,20 @@ def test_geometry_wing_wet_area():
     assert wet_area == pytest.approx(24.833, abs=1e-3)
 
 
-def test_geometry_wing_mfw():
-    """ Tests computation of the wing max fuel weight """
-
-    # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeMFW()), __file__, XML_FILE)
-    ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
-    ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMFW(), ivc)
-    mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
-    assert mfw == pytest.approx(396.60, abs=1e-2)
+# def test_geometry_wing_mfw():
+#     """ Tests computation of the wing max fuel weight """
+#
+#     # Research independent input value in .xml file and add values calculated from other modules
+#     ivc = get_indep_var_comp(list_inputs(ComputeMFW()), __file__, XML_FILE)
+#     ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
+#     ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
+#     ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
+#     ivc.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
+#
+#     # Run problem and check obtained value(s) is/(are) correct
+#     problem = run_system(ComputeMFW(), ivc)
+#     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
+#     assert mfw == pytest.approx(396.60, abs=1e-2)
 
 
 def test_geometry_nacelle():

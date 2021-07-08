@@ -1012,7 +1012,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="rpm")
+        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="min**-1")
         self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)

@@ -78,6 +78,8 @@ class _UpdateWingArea(om.ExplicitComponent):
             m_vol_fuel = 730  # gasoline volume-mass [kg/m**3], cold worst case
         elif fuel_type == 2.0:
             m_vol_fuel = 860  # gasoil volume-mass [kg/m**3], cold worst case
+        elif fuel_type == 3.0:
+            m_vol_fuel = 804.  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 730
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))

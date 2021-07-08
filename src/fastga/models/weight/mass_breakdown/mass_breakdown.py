@@ -19,7 +19,6 @@ import openmdao.api as om
 from .a_airframe import (
     ComputeWingWeight,
     ComputeFuselageWeight,
-    ComputeFuselageWeightRaymer,
     ComputeTailWeight,
     ComputeFlightControlsWeight,
     ComputeLandingGearWeight,
@@ -97,8 +96,7 @@ class ComputeOperatingWeightEmpty(om.Group):
     def setup(self):
         # Airframe
         self.add_subsystem("wing_weight", ComputeWingWeight(), promotes=["*"])
-        self.add_subsystem("fuselage_weight", ComputeFuselageWeight(), promotes=["*"])
-        self.add_subsystem("fuselage_weight_raymer", ComputeFuselageWeightRaymer(), promotes=["*"])
+        self.add_subsystem("fuselage_weight", ComputeFuselageWeight(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
         self.add_subsystem("empennage_weight", ComputeTailWeight(), promotes=["*"])
         self.add_subsystem("flight_controls_weight", ComputeFlightControlsWeight(), promotes=["*"])
         self.add_subsystem("landing_gear_weight", ComputeLandingGearWeight(), promotes=["*"])
@@ -139,6 +137,7 @@ class ComputeOperatingWeightEmpty(om.Group):
                 "data:weight:propulsion:engine:mass",
                 "data:weight:propulsion:fuel_lines:mass",
                 "data:weight:propulsion:tank:mass",
+                "data:weight:propulsion:unusable_fuel:mass",
             ],
             units="kg",
             desc="Mass of the propulsion system",

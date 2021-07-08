@@ -54,4 +54,8 @@ def test_oad_process(cleanup):
 
     api_cs25.optimization_viewer(PROCESS_FILE_PATH)
 
+    test2 = api_cs25.variable_viewer(INPUT_FILE_PATH)
+
+    test = 12
+
 

@@ -33,7 +33,7 @@
 			</flap>
 			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
 			<cabin>
-				<pressurized>0.0<!-- 0 = unpressurized / 1 = pressurized--></pressurized>
+				<max_differential_pressure>0.0<!-- 0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
 				<aisle_width units="m">0.0<!--cabin aisle width--></aisle_width>
 				<luggage>
 					<mass_max_front units="kg">50.<!--maximum luggage weight in the unpressurized front luggage compartment--></mass_max_front>
@@ -79,7 +79,10 @@
 				<count>1.0<!--number of engines--></count>
 				<y_ratio>0.0<!--engine position with respect to total span--></y_ratio>
 				<propeller_dia units="m">2.05<!--propeller diameter--></propeller_dia>
-				<y_ratio_tank_end>0.8<!--ratio of the total span dedicated to the fuel tanks, starting from the fuselage--></y_ratio_tank_end>
+				<y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+				<y_ratio_tank_end>0.62<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+				<LE_chord_percentage>0.1</LE_chord_percentage>
+				<TE_chord_percentage>0.1</TE_chord_percentage>
 			</propulsion>
 			<vertical_tail>
 				<area units="m**2">1.51<!--vertical tail area--></area>
@@ -189,6 +192,14 @@
 		</propulsion>
 	</data>
 	<settings>
+		<geometry>
+			<fuselage>
+				<min_skin_thickness units="m">0.0005</min_skin_thickness>
+			</fuselage>
+			<fuel_tanks>
+				<depth>0.55<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+			</fuel_tanks>
+		</geometry>
 		<weight>
 			<airframe>
 				<landing_gear>

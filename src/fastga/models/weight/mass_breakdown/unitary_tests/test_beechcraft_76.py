@@ -30,7 +30,6 @@ from ..a_airframe import (
     ComputeTailWeight,
     ComputeFlightControlsWeight,
     ComputeFuselageWeight,
-    ComputeFuselageWeightRaymer,
     ComputeWingWeight,
     ComputeLandingGearWeight,
 )
@@ -102,18 +101,6 @@ def test_compute_fuselage_weight():
     problem = run_system(ComputeFuselageWeight(), ivc)
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
     assert weight_a2 == pytest.approx(158.493, abs=1e-2)
-
-
-def test_compute_fuselage_weight_raymer():
-    """ Tests fuselage weight computation from sample XML data """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeightRaymer()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageWeightRaymer(), ivc)
-    weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass_raymer", units="kg")
-    assert weight_a2 == pytest.approx(186.93, abs=1e-2)
 
 
 def test_compute_empennage_weight():

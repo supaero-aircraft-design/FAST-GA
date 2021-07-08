@@ -40,6 +40,7 @@ class _UpdateSpan(om.ExplicitComponent):
         self.add_input("data_mod:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data_mod:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data_mod:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data_mod:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data_mod:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data_mod:geometry:flap:span_ratio", val=np.nan)
         self.add_input("data_mod:geometry:wing:aileron:span_ratio", val=np.nan)
@@ -49,6 +50,7 @@ class _UpdateSpan(om.ExplicitComponent):
         self.add_output("data:geometry:wing:taper_ratio")
         self.add_output("data:geometry:wing:area", units="m**2")
         self.add_output("data:geometry:propulsion:y_ratio")
+        self.add_output("data:geometry:propulsion:y_ratio_tank_beginning")
         self.add_output("data:geometry:propulsion:y_ratio_tank_end")
         self.add_output("data:geometry:flap:span_ratio")
         self.add_output("data:geometry:wing:aileron:span_ratio")
@@ -61,10 +63,10 @@ class _UpdateSpan(om.ExplicitComponent):
         outputs["data:geometry:wing:taper_ratio"] = inputs["data_mod:geometry:wing:taper_ratio"]
         outputs["data:geometry:wing:area"] = inputs["data_mod:geometry:wing:area"]
         outputs["data:geometry:propulsion:y_ratio"] = inputs["data_mod:geometry:propulsion:y_ratio"]
+        outputs["data:geometry:propulsion:y_ratio_tank_beginning"] = inputs["data_mod:geometry:propulsion:y_ratio_tank_beginning"]
         outputs["data:geometry:propulsion:y_ratio_tank_end"] = inputs["data_mod:geometry:propulsion:y_ratio_tank_end"]
         outputs["data:geometry:flap:span_ratio"] = inputs["data_mod:geometry:flap:span_ratio"]
-        # outputs["data:geometry:wing:aileron:span_ratio"] = inputs["data_mod:geometry:wing:aileron:span_ratio"]
-        outputs["data:geometry:wing:aileron:span_ratio"] = 50
+        outputs["data:geometry:wing:aileron:span_ratio"] = inputs["data_mod:geometry:wing:aileron:span_ratio"]
         outputs["settings:span_mod:span_multiplier"] = inputs["data_mod:settings:span_mod:span_multiplier"]
 
 

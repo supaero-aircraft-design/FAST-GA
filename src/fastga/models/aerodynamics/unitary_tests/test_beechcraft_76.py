@@ -130,7 +130,7 @@ def polar_result_retrieve(tmp_folder):
     tmp_folder.cleanup()
 
 
-def test_compute_reynolds():
+def _test_compute_reynolds():
     """ Tests high and low speed reynolds calculation """
 
     # Research independent input value in .xml file
@@ -154,7 +154,7 @@ def test_compute_reynolds():
     assert reynolds == pytest.approx(2746999, abs=1)
 
 
-def test_cd0_high_speed():
+def _test_cd0_high_speed():
     """ Tests drag coefficient @ high speed """
 
     # Research independent input value in .xml file
@@ -183,7 +183,7 @@ def test_cd0_high_speed():
     assert cd0_total == pytest.approx(0.01958, abs=1e-5)
 
 
-def test_cd0_low_speed():
+def _test_cd0_low_speed():
     """ Tests drag coefficient @ low speed """
 
     # Research independent input value in .xml file
@@ -212,7 +212,7 @@ def test_cd0_low_speed():
     assert cd0_total == pytest.approx(0.04513, abs=1e-5)
 
 
-def test_polar():
+def _test_polar():
     """ Tests polar execution (XFOIL) @ high and low speed """
 
     # Transfer saved polar results to temporary folder
@@ -266,7 +266,7 @@ def test_polar():
     assert cdp_1 == pytest.approx(0.0049, abs=1e-4)
 
 
-def test_airfoil_slope():
+def _test_airfoil_slope():
     """ Tests polar execution (XFOIL) @ high and low speed """
 
     # Transfer saved polar results to temporary folder
@@ -297,7 +297,7 @@ def test_airfoil_slope():
     assert cl_alpha_vtp == pytest.approx(6.3081, abs=1e-4)
 
 
-def test_vlm_comp_high_speed():
+def _test_vlm_comp_high_speed():
     """ Tests vlm components @ high speed """
 
     for mach_interpolation in [True, False]:
@@ -361,7 +361,7 @@ def test_vlm_comp_high_speed():
         results_folder.cleanup()
 
 
-def test_vlm_comp_low_speed():
+def _test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
 
     # Create result temporary directory
@@ -454,7 +454,7 @@ def test_vlm_comp_low_speed():
     results_folder.cleanup()
 
 
-def test_openvsp_comp_high_speed():
+def _test_openvsp_comp_high_speed():
     """ Tests openvsp components @ high speed """
 
     for mach_interpolation in [True, False]:
@@ -509,7 +509,7 @@ def test_openvsp_comp_high_speed():
         results_folder.cleanup()
 
 
-def test_openvsp_comp_low_speed():
+def _test_openvsp_comp_low_speed():
     """ Tests openvsp components @ low speed """
 
     # Create result temporary directory
@@ -596,7 +596,7 @@ def test_openvsp_comp_low_speed():
     results_folder.cleanup()
 
 
-def test_2d_hinge_moment():
+def _test_2d_hinge_moment():
     """ Tests tail hinge-moments """
 
     # Research independent input value in .xml file
@@ -612,7 +612,7 @@ def test_2d_hinge_moment():
     assert ch_delta_2d == pytest.approx(-0.5752, abs=1e-4)
 
 
-def test_3d_hinge_moment():
+def _test_3d_hinge_moment():
     """ Tests tail hinge-moments """
 
     # Research independent input value in .xml file
@@ -628,7 +628,7 @@ def test_3d_hinge_moment():
     assert ch_delta == pytest.approx(-0.6765, abs=1e-4)
 
 
-def test_high_lift():
+def _test_high_lift():
     """ Tests high-lift contribution """
 
     # Research independent input value in .xml file
@@ -660,7 +660,7 @@ def test_high_lift():
     assert cl_delta_elev == pytest.approx(0.5424, abs=1e-4)
 
 
-def test_extreme_cl():
+def _test_extreme_cl():
     """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
 
     # Transfer saved polar results to temporary folder
@@ -730,7 +730,7 @@ def test_extreme_cl():
     assert alpha_min_clean_htp == pytest.approx(-26.62, abs=1e-2)
 
 
-def test_l_d_max():
+def _test_l_d_max():
     """ Tests best lift/drag component """
 
     # Define independent input value (openVSP)
@@ -752,7 +752,7 @@ def test_l_d_max():
     assert optimal_alpha == pytest.approx(6.00, abs=1e-2)
 
 
-def test_cnbeta():
+def _test_cnbeta():
     """ Tests cn beta fuselage """
 
     # Research independent input value in .xml file
@@ -765,7 +765,7 @@ def test_cnbeta():
     assert cn_beta_fus == pytest.approx(-0.0599, abs=1e-4)
 
 
-def test_slipstream_openvsp_cruise():
+def _test_slipstream_openvsp_cruise():
 
     # Create result temporary directory
     results_folder = _create_tmp_directory()
@@ -810,7 +810,7 @@ def test_slipstream_openvsp_cruise():
     assert delta_cl == pytest.approx(0.00565, abs=1e-4)
 
 
-def test_slipstream_openvsp_low_speed():
+def _test_slipstream_openvsp_low_speed():
 
     # Create result temporary directory
     results_folder = _create_tmp_directory()
@@ -856,7 +856,7 @@ def test_slipstream_openvsp_low_speed():
     assert delta_cl == pytest.approx(0.02196, abs=1e-4)
 
 
-def test_compute_mach_interpolation_roskam():
+def _test_compute_mach_interpolation_roskam():
     """ Tests computation of the mach interpolation vector using Roskam's approach """
 
     # Research independent input value in .xml file
@@ -872,7 +872,7 @@ def test_compute_mach_interpolation_roskam():
     assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
 
 
-def test_cl_alpha_vt():
+def _test_cl_alpha_vt():
     """ Tests Cl alpha vt """
 
     # Research independent input value in .xml file
@@ -896,7 +896,7 @@ def test_cl_alpha_vt():
     assert cl_alpha_vt_cruise == pytest.approx(3.0044, abs=1e-4)
 
 
-def test_cy_delta_r():
+def _test_cy_delta_r():
     """ Tests cy delta of the rudder """
 
     # Research independent input value in .xml file
@@ -909,7 +909,7 @@ def test_cy_delta_r():
     assert cy_delta_r == pytest.approx(1.2506, abs=1e-4)
 
 
-def test_high_speed_connection():
+def _test_high_speed_connection():
     """ Tests high speed components connection """
 
     # load all inputs
@@ -928,7 +928,7 @@ def test_high_speed_connection():
     run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
 
 
-def test_low_speed_connection():
+def _test_low_speed_connection():
     """ Tests low speed components connection """
 
     # load all inputs
@@ -945,7 +945,7 @@ def test_low_speed_connection():
     run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
 
 
-def test_v_n_diagram_vlm():
+def _test_v_n_diagram_vlm():
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
@@ -1021,7 +1021,7 @@ def test_v_n_diagram_vlm():
     assert np.max(np.abs(load_factor_vect - load_factor_array)) <= 1e-3
 
 
-def test_v_n_diagram_openvsp():
+def _test_v_n_diagram_openvsp():
 
     # load all inputs
     reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
@@ -1065,7 +1065,7 @@ def test_propeller():
     reader.path_separator = ":"
     ivc = reader.read().to_ivc()
     ivc.add_output("data:geometry:propeller:diameter", 2.0 * 0.965, units="m")
-    ivc.add_output("data:geometry:propeller:hub:diameter", 2.0 * 0.965 * 0.18, units="m")
+    ivc.add_output("data:geometry:propeller:hub_diameter", 2.0 * 0.965 * 0.18, units="m")
     ivc.add_output("data:geometry:propeller:blades_number", 2)
     twist_law = lambda x: 25.0 / (x + 0.75)**1.5 + 46.3917 - 15.0
     radius_ratio = [0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]
@@ -1075,10 +1075,10 @@ def test_propeller():
     chord_vect = np.interp(radius_ratio_vect, radius_ratio, chord)
     sweep_vect = np.interp(radius_ratio_vect, radius_ratio, sweep)
     twist_vect = twist_law(radius_ratio_vect)
-    ivc.add_output("data:geometry:propeller:radius_ratio_vect", radius_ratio_vect)
-    ivc.add_output("data:geometry:propeller:chord_vect", chord_vect, units="m")
-    ivc.add_output("data:geometry:propeller:twist_vect", twist_vect, units="deg")
-    ivc.add_output("data:geometry:propeller:sweep_vect", sweep_vect, units="deg")
+    ivc.add_output("data:geometry:propeller:radius_ratio_vect", radius_ratio, shape=7)
+    ivc.add_output("data:geometry:propeller:chord_vect", chord, units="m", shape=7)
+    ivc.add_output("data:geometry:propeller:twist_vect", twist_law(np.array(radius_ratio)), units="deg", shape=7)
+    ivc.add_output("data:geometry:propeller:sweep_vect", sweep, units="deg", shape=7)
 
 
     # Run problem

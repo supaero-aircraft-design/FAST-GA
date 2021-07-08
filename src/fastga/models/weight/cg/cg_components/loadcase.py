@@ -87,7 +87,7 @@ class ComputeGroundCGCase(ExplicitComponent):
                     for m_pilot in m_pilot_array:
 
                         for m_pax in m_pax_array:
-                            mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
+                            mass = m_pax + m_pilot + m_fuel + m_lug_front + m_lug_rear + m_empty
                             cg = (
                                          m_empty * x_cg_plane_aft +
                                          m_pax * cg_pax +
@@ -123,7 +123,7 @@ class ComputeFlightCGCase(ExplicitComponent):
 
         self.add_input("data:geometry:cabin:luggage:mass_max_front", val=np.nan, units="kg")
         self.add_input("data:geometry:cabin:luggage:mass_max_rear", val=np.nan, units="kg")
-        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
@@ -216,7 +216,7 @@ class ComputeFlightCGCase(ExplicitComponent):
 
                                 for m_pax in m_pax_array:
 
-                                    mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
+                                    mass = m_pax + m_pilot + m_fuel + m_lug_front + m_lug_rear + m_empty
                                     cg = (
                                              m_empty * x_cg_plane_aft +
                                              m_pax * cg_pax +
@@ -274,7 +274,7 @@ class ComputeFlightCGCase(ExplicitComponent):
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
-        wing_area = inputs["data:geometry:wing:area"]
+        wing_area = inputs["data:geometry:wing:area"]*0.0929
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 

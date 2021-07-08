@@ -24,6 +24,8 @@ from .components.high_lift_aero import ComputeDeltaHighLift
 from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .components.compute_cy_rudder import ComputeCyDeltaRudder
 
+from .external.openvsp.compute_vn import ComputeVNopenvsp
+
 from .external.vlm import ComputeAEROvlm
 from .external.openvsp import ComputeAEROopenvsp
 # noinspection PyProtectedMember
@@ -94,3 +96,4 @@ class AerodynamicsLowSpeed(Group):
                                                          wing_airfoil_file=self.options["wing_airfoil"],
                                                          low_speed_aero=True,
                                                          ), promotes=["*"])
+        self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])
