@@ -17,8 +17,8 @@
 	<data>
 		<TLAR>
 			<NPAX_design>2.0<!--top-level requirement: number of passengers for the design mission, assuming a classic eco/business class repartition--></NPAX_design>
-			<luggage_mass_design units="kg">20.<!--top-level requirement: luggage mass per passenger for the design mission--></luggage_mass_design>
-			<range units="NM">890.0</range>
+			<luggage_mass_design units="kg">35.<!--top-level requirement: luggage mass per passenger for the design mission--></luggage_mass_design>
+			<range units="NM">860.0</range>
 			<v_approach units="kn">79.0<!--top-level requirement: approach speed--></v_approach>
 			<v_cruise units="kn">160.0<!--top-level requirement: cruise speed--></v_cruise>
 			<v_limit units="kn">202.6<!--top-level requirement: limit speed--></v_limit>
@@ -34,13 +34,13 @@
 				<aisle_width units="m">0.0<!--cabin aisle width--></aisle_width>
 				<seats>
 					<pilot>
-						<length units="m">0.75<!--pilot seats length--></length>
+						<length units="m">0.85<!--pilot seats length--></length>
 						<width units="m">0.565<!--pilot seats width--></width>
 					</pilot>
 					<passenger>
 						<NPAX_max>2.0<!--maximum seating capability of the aircraft--></NPAX_max>
 						<count_by_row>3.0<!--passenger seats per row--></count_by_row>
-						<length units="m">0.8<!--passenger seats length--></length>
+						<length units="m">0.9<!--passenger seats length--></length>
 						<width units="m">0.40<!--passenger seats width--></width>
 					</passenger>
 				</seats>
@@ -53,14 +53,14 @@
 				<MAC>
 					<at25percent>
 						<x>
-							<from_wingMAC25 units="m">3.91<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+							<from_wingMAC25 units="m">4.0<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
 						</x>
 					</at25percent>
 				</MAC>
 				<area units="m**2">2.75<!--horizontal tail area--></area>
 				<sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
 				<taper_ratio>0.613<!--taper ratio of horizontal tail--></taper_ratio>
-				<thickness_ratio>0.12<!--thickness ratio of horizontal tail--></thickness_ratio>
+				<thickness_ratio>0.10<!--thickness ratio of horizontal tail--></thickness_ratio>
 				<elevator_chord_ratio>0.30<!--ratio between elevator chord and tail chord--></elevator_chord_ratio>
 			</horizontal_tail>
 			<landing_gear>
@@ -93,7 +93,7 @@
 				<aspect_ratio>2.0<!--aspect ratio of vertical tail--></aspect_ratio>
 				<sweep_25 units="deg">10.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
 				<taper_ratio>0.502<!--taper ratio of vertical tail--></taper_ratio>
-				<thickness_ratio>0.12<!--thickness ratio of vertical tail--></thickness_ratio>
+				<thickness_ratio>0.1<!--thickness ratio of vertical tail--></thickness_ratio>
 				<rudder>
 					<chord_ratio>0.33</chord_ratio>
 					<max_deflection units="deg">20.0</max_deflection>
@@ -120,6 +120,11 @@
 				</aileron>
 			</wing>
 		</geometry>
+		<handling_qualities>
+				<static_margin>
+					<target>0.10<!--aircraft static margin--></target>
+				</static_margin>
+		</handling_qualities>
 		<propulsion>
 			<IC_engine>
 				<fuel_type>1.0<!--1=Avgas ICE engine / 2=Diesel ICE engine--></fuel_type>

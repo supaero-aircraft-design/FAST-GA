@@ -37,7 +37,9 @@ CSV_DATA_LABELS = [
     "alpha",
     "cl_wing",
     "cl_htp",
-    "thrust",
+    "thrust (N)",
+    "thrust_rate",
+    "tsfc (kg/s/N)",
     "name",
 ]
 
@@ -88,6 +90,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         )
         self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
         self.add_input(
             "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment",
@@ -158,6 +161,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         cl_max_clean = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
         cl_elevator_delta = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
+        cd_elevator_delta = inputs["data:aerodynamics:elevator:low_speed:CD_delta"]
         z_eng = z_cg_aircraft - z_cg_engine
         alpha_eng = 0.0  # fixme: angle between propulsion and wing not defined
 
@@ -192,7 +196,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 cl_wing = 0.0
                 cd0_flaps = 0.0
             cl_wing += cl0_wing + cl_alpha_wing * alpha
-            cd = cd0 + cd0_flaps + coef_k_wing * cl_wing ** 2 + coef_k_htp * cl_htp ** 2
+            # TODO : Change formula for trimmable htp
+            # Calculate the elevator command if htp not trimmed
+            delta_e = (cl_htp - (alpha * cl_alpha_htp + cl0_htp)) / cl_elevator_delta
+            cd = cd0 + cd0_flaps + coef_k_wing * cl_wing ** 2 + coef_k_htp * cl_htp ** 2 + (
+                    cd_elevator_delta * delta_e ** 2.0
+            )
             drag = q * cd * wing_area
             f1 = float(
                 thrust * math.cos(alpha - alpha_eng)
@@ -318,7 +327,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             return float(mass * g * load_factor / (q * wing_area)), 0.0, True
 
     def save_point(
-        self, time, altitude, distance, mass, v_tas, v_cas, rho, gamma, equilibrium_result, name: str
+        self, time, altitude, distance, mass, v_tas, v_cas, rho, gamma, equilibrium_result, thrust_rate, sfc, name: str
     ):
         """
         Method to save mission point to .csv file for further post-processing
@@ -332,8 +341,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param rho: air density in kg/m3
         :param gamma: slope angle in degree
         :param equilibrium_result: result vector of dynamic equilibrium
+        :param thrust_rate: thrust rate at flight point
+        :param sfc: sfc at flight point
         :param name: phase name
         """
+
         alpha = float(equilibrium_result[0]) * 180.0 / math.pi
         thrust = float(equilibrium_result[1])
         cl_wing = float(equilibrium_result[2])
@@ -356,6 +368,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 cl_wing,
                 cl_htp,
                 thrust,
+                float(thrust_rate),
+                float(sfc),
                 name,
             ]
             df.to_csv(self.options["out_file"])
@@ -376,6 +390,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 cl_wing,
                 cl_htp,
                 thrust,
+                float(thrust_rate),
+                float(sfc),
                 name,
             ]
             row = pd.Series(data, index=CSV_DATA_LABELS)

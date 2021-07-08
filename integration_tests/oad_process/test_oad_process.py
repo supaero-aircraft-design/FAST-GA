@@ -18,6 +18,7 @@ import os
 import logging
 import os.path as pth
 from shutil import rmtree
+from platform import system
 
 import openmdao.api as om
 import pytest
@@ -34,7 +35,6 @@ for folder in PATH[1: len(PATH) - 3]:
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
 AIRCRAFT_ID = ["sr22", "be76"]
-MDA_WING_POSITION = True
 
 
 @pytest.fixture(scope="module")
@@ -43,21 +43,17 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def test_oad_process(cleanup):
+def test_oad_process_vlm(cleanup):
     """
-    Test the overall aircraft design process without wing positioning.
+    Test the overall aircraft design process with wing positioning under VLM method.
     """
 
     logging.basicConfig(level=logging.WARNING)
 
     for aircraft_id in AIRCRAFT_ID:
         # Define used files depending on options
-        if MDA_WING_POSITION:
-            xml_file_name = "input_" + aircraft_id + "_wing_pos.xml"
-            process_file_name = "oad_process_" + aircraft_id + "_wing_pos.yml"
-        else:
-            xml_file_name = "input_" + aircraft_id + ".xml"
-            process_file_name = "oad_process_" + aircraft_id + ".yml"
+        xml_file_name = "input_" + aircraft_id + ".xml"
+        process_file_name = "oad_process_" + aircraft_id + ".yml"
 
         configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
@@ -82,39 +78,92 @@ def test_oad_process(cleanup):
         # Check that weight-performances loop correctly converged
         _check_weight_performance_loop(problem)
 
-        if MDA_WING_POSITION:
-            if aircraft_id == "sr22":
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:mission:sizing:fuel", units="kg"), 225, atol=1
-                )
-                assert_allclose(
-                    problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2
-                )
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1572, atol=1
-                )
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:weight:aircraft:OWE", units="kg"), 992, atol=1
-                )
-            else:
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:mission:sizing:fuel", units="kg"), 232.0, atol=1
-                )
-                assert_allclose(
-                    problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2
-                )
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1752.0, atol=1
-                )
-                # noinspection PyTypeChecker
-                assert_allclose(
-                    problem.get_val("data:weight:aircraft:OWE", units="kg"), 1130.0, atol=1
-                )
+        # Check values
+        if aircraft_id == "sr22":
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:mission:sizing:fuel", units="kg"), 225, atol=1
+            )
+            assert_allclose(
+                problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2
+            )
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1572, atol=1
+            )
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:weight:aircraft:OWE", units="kg"), 992, atol=1
+            )
+        else:
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:mission:sizing:fuel", units="kg"), 232.0, atol=1
+            )
+            assert_allclose(
+                problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2
+            )
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1752.0, atol=1
+            )
+            # noinspection PyTypeChecker
+            assert_allclose(
+                problem.get_val("data:weight:aircraft:OWE", units="kg"), 1130.0, atol=1
+            )
+
+
+@pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
+def test_oad_process_openvsp():
+    """
+    Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP method.
+    """
+
+    logging.basicConfig(level=logging.WARNING)
+
+    # Define used files depending on options
+    xml_file_name = "input_sr22.xml"
+    process_file_name = "oad_process_sr22_openvsp.yml"
+
+    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+
+    # Create inputs
+    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
+    configurator.write_needed_inputs(ref_inputs)
+
+    # Create problems with inputs
+    problem = configurator.get_problem(read_inputs=True)
+    problem.setup()
+    problem.run_model()
+    problem.write_outputs()
+
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+    om.view_connections(
+        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+    )
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+
+    # Check that weight-performances loop correctly converged
+    _check_weight_performance_loop(problem)
+
+    # Check values
+    # noinspection PyTypeChecker
+    assert_allclose(
+        problem.get_val("data:mission:sizing:fuel", units="kg"), 225, atol=1
+    )
+    assert_allclose(
+        problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2
+    )
+    # noinspection PyTypeChecker
+    assert_allclose(
+        problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1572, atol=1
+    )
+    # noinspection PyTypeChecker
+    assert_allclose(
+        problem.get_val("data:weight:aircraft:OWE", units="kg"), 992, atol=1
+    )
 
 
 def _check_weight_performance_loop(problem):

@@ -21,6 +21,7 @@ import logging
 from typing import Sequence, Union
 
 from scipy.constants import g
+from scipy.interpolate import interp1d
 import time
 
 from fastoad.model_base import Atmosphere, FlightPoint
@@ -38,10 +39,10 @@ from .dynamic_equilibrium import DynamicEquilibrium
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
-POINTS_NB_CLIMB = 100
-POINTS_NB_CRUISE = 100
-POINTS_NB_DESCENT = 100
-MAX_CALCULATION_TIME = 10  # time in seconds
+POINTS_NB_CLIMB = 50
+POINTS_NB_CRUISE = 50
+POINTS_NB_DESCENT = 50
+MAX_CALCULATION_TIME = 15  # time in seconds
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -99,13 +100,13 @@ class Mission(om.Group):
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 100
         # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
-        self.nonlinear_solver.options["rtol"] = 1e-5
+        self.nonlinear_solver.options["rtol"] = 1e-2
 
         self.linear_solver = om.LinearBlockGS()
         # self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
-        self.linear_solver.options["rtol"] = 1e-5
+        self.linear_solver.options["rtol"] = 1e-2
 
 
 class _compute_reserve(om.ExplicitComponent):
@@ -299,6 +300,9 @@ class _compute_taxi(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
+        if self.options["taxi_out"]:
+            _LOGGER.info("Entering mission computation")
+
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
@@ -343,14 +347,6 @@ class _compute_climb(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        # Delete previous .csv results
-        if self.options["out_file"] != "":
-            # noinspection PyBroadException
-            try:
-                os.remove(self.options["out_file"])
-            except:
-                pass
-
         self.add_input("data:geometry:propulsion:count", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
@@ -360,7 +356,8 @@ class _compute_climb(DynamicEquilibrium):
         self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
-        self.add_input("data:mission:sizing:main_route:climb:climb_rate", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:main_route:climb:climb_rate:sea_level", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s")
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:distance", units="m")
@@ -370,6 +367,14 @@ class _compute_climb(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        # Delete previous .csv results
+        if self.options["out_file"] != "":
+            # noinspection PyBroadException
+            try:
+                os.remove(self.options["out_file"])
+            except:
+                pass
 
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
@@ -383,7 +388,8 @@ class _compute_climb(DynamicEquilibrium):
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
-        climb_rate = inputs["data:mission:sizing:main_route:climb:climb_rate"]
+        climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
+        climb_rate_cl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"])
 
         # Define initial conditions
         t_start = time.time()
@@ -402,10 +408,10 @@ class _compute_climb(DynamicEquilibrium):
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
         v_tas = atm.true_airspeed
-        gamma = math.asin(climb_rate / v_tas)
+        gamma = math.asin(climb_rate_sl / v_tas)
 
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
-        time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate) / float(POINTS_NB_CLIMB)
+        time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate_sl) / float(POINTS_NB_CLIMB)
 
         while altitude_t < cruise_altitude:
 
@@ -413,6 +419,7 @@ class _compute_climb(DynamicEquilibrium):
             atm = _Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
+            climb_rate = interp1d([0., float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(altitude_t)
             gamma = math.asin(climb_rate / v_tas)
             mach = v_tas / atm.speed_of_sound
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
@@ -427,6 +434,18 @@ class _compute_climb(DynamicEquilibrium):
             )
             thrust = float(previous_step[1])
 
+            # Compute consumption
+            flight_point = FlightPoint(
+                mach=mach,
+                altitude=altitude_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                thrust=thrust,
+            )
+            propulsion_model.compute_flight_points(flight_point)
+            if flight_point.thrust_rate > 1.0:
+                _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
+
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -439,18 +458,11 @@ class _compute_climb(DynamicEquilibrium):
                     atm.density,
                     gamma * 180.0 / math.pi,
                     previous_step,
+                    flight_point.thrust_rate,
+                    flight_point.sfc,
                     "sizing:main_route:climb",
                 )
 
-            # Compute consumption
-            flight_point = FlightPoint(
-                mach=mach,
-                altitude=altitude_t,
-                engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
-            propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
             # Calculate distance variation (earth axis)
@@ -485,6 +497,8 @@ class _compute_climb(DynamicEquilibrium):
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
+                flight_point.thrust_rate,
+                flight_point.sfc,
                 "sizing:main_route:climb",
             )
 
@@ -579,6 +593,18 @@ class _compute_cruise(DynamicEquilibrium):
             )
             thrust = float(previous_step[1])
 
+            # Compute consumption
+            flight_point = FlightPoint(
+                mach=mach,
+                altitude=cruise_altitude,
+                engine_setting=EngineSetting.CRUISE,
+                thrust_is_regulated=True,
+                thrust=thrust,
+            )
+            propulsion_model.compute_flight_points(flight_point)
+            if flight_point.thrust_rate > 1.0:
+                _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
+
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -591,20 +617,12 @@ class _compute_cruise(DynamicEquilibrium):
                     atm.density,
                     0.0,
                     previous_step,
+                    flight_point.thrust_rate,
+                    flight_point.sfc,
                     "sizing:main_route:cruise",
                 )
 
-            # Compute consumption
-            flight_point = FlightPoint(
-                mach=mach,
-                altitude=cruise_altitude,
-                engine_setting=EngineSetting.CRUISE,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
-            propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
-
             # Calculate distance increase
             distance_t += v_tas * min(time_step, (cruise_distance - distance_t) / v_tas)
 
@@ -635,6 +653,8 @@ class _compute_cruise(DynamicEquilibrium):
                 atm.density,
                 0.0,
                 previous_step,
+                flight_point.thrust_rate,
+                flight_point.sfc,
                 "sizing:main_route:cruise",
             )
 
@@ -751,6 +771,16 @@ class _compute_descent(DynamicEquilibrium):
                 )
                 thrust = previous_step[1]
 
+            # Compute consumption
+            # FIXME: DESCENT setting on engine does not exist, replaced by CLIMB for test
+            flight_point = FlightPoint(
+                mach=mach,
+                altitude=altitude_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                thrust=thrust,
+            )
+            propulsion_model.compute_flight_points(flight_point)
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -767,19 +797,10 @@ class _compute_descent(DynamicEquilibrium):
                     atm.density,
                     gamma * 180.0 / np.pi,
                     previous_step,
+                    flight_point.thrust_rate,
+                    flight_point.sfc,
                     "sizing:main_route:descent",
                 )
-
-            # Compute consumption
-            # FIXME: DESCENT setting on engine does not exist, replaced by CLIMB for test
-            flight_point = FlightPoint(
-                mach=mach,
-                altitude=altitude_t,
-                engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
-            propulsion_model.compute_flight_points(flight_point)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
             # Calculate distance variation (earth axis)
@@ -818,6 +839,8 @@ class _compute_descent(DynamicEquilibrium):
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
+                flight_point.thrust_rate,
+                flight_point.sfc,
                 "sizing:main_route:descent",
             )
 
