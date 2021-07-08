@@ -19,10 +19,10 @@
 			<NPAX_design>4.0<!--top-level requirement: number of passengers for the design mission, assuming a classic eco/business class repartition--></NPAX_design>
 			<luggage_mass_design units="kg">40.<!--top-level requirement: luggage mass per passenger for the design mission--></luggage_mass_design>
 			<range units="NM">1250.0</range>
-			<v_approach units="kn">78.0<!--top-level requirement: approach speed--></v_approach>
-			<v_cruise units="kn">150.0<!--top-level requirement: cruise speed--></v_cruise>
-			<v_limit units="kn">192.0<!--top-level requirement: limit speed--></v_limit>
-			<v_max_sl units="kn">171.0<!--top-level requirement: sea level maximum speed--></v_max_sl>
+			<v_approach units="kn">128.0<!--top-level requirement: approach speed--></v_approach>
+			<v_cruise units="kn">200.0<!--top-level requirement: cruise speed--></v_cruise>
+			<v_limit units="kn">392.0<!--top-level requirement: limit speed--></v_limit>
+			<v_max_sl units="kn">380.0<!--top-level requirement: sea level maximum speed--></v_max_sl>
 			<level>2.0</level> # 0 to 1 pax : 1.0, 2 to 6 pax : 2.0, 7 to 9 pax : 3.0, 10 to 19 pax : 4.0
 			<category>3.0</category> # Aerobatic = 1.0, Utility = 2.0, Normal = 3.0, Commuter = 4.0
 		</TLAR>
@@ -33,7 +33,7 @@
 			</flap>
 			<flap_type>1.0<!--0=plain flap / 1=flap simple slotted--></flap_type>
 			<cabin>
-				<pressurized>1.0<!-- 0 = unpressurized / 1 = pressurized--></pressurized>
+				<max_differential_pressure units="Pa">42747.6<!-- 0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
 				<aisle_width units="m">0.22<!--cabin aisle width--></aisle_width>
 				<seats>
 					<pilot>
@@ -79,16 +79,19 @@
 				<depth units="m">0.3</depth>
 				<hub_diameter units="m">0.4</hub_diameter>
 				<diameter units="m">2.31</diameter>
-				<radius_ratio_vect>[0.0, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]<!--propeller radius ratio points--></radius_ratio_vect>
-				<twist_vect units="deg">[24.46, 24.46, 18.03, 11.52, 6.82, 2.59, -1.81, -5.87, -8.87, -10.47]<!--propeller twist angle defined at radius ratio points--></twist_vect>
-				<sweep_vect units="deg">[0.0, 0.0, 3.0, -0.2, -0.76, -0.16, 1.06, 2.63, 4.42, 6.19]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
+				<radius_ratio_vect>[0.0, 0.16666666666666666, 0.3333333333333333, 0.5, 0.6666666666666666, 0.8333333333333333, 1.0]<!--propeller radius ratio points--></radius_ratio_vect>
+				<twist_vect units="deg">[24.46, 24.46, 15.860000000000001, 6.82, -0.3433333333333337, -6.8699999999999966, -10.47]<!--propeller twist angle defined at radius ratio points--></twist_vect>
+				<sweep_vect units="deg">[0.0, 0.0, 1.9333333333333338, -0.76, 0.6533333333333333, 3.226666666666665, 6.19]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
 				<chord_vect units="m">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--propeller chord defined at radius ratio points--></chord_vect>
 			</propeller>
 			<propulsion>
 				<layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
 				<count>1.0<!--number of engines--></count>
 				<y_ratio>0.0<!--engine position with respect to total span--></y_ratio>
-				<y_ratio_tank_end>1.0<!--ratio of the total span dedicated to the fuel tanks, starting from the fuselage--></y_ratio_tank_end>
+				<y_ratio_tank_beginning>0.0<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+				<y_ratio_tank_end>1.0<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+				<LE_chord_percentage>0.1</LE_chord_percentage>
+				<TE_chord_percentage>0.05</TE_chord_percentage>
 			</propulsion>
 			<vertical_tail>
 				<area units="m**2">3.28<!--vertical tail area--></area>
@@ -99,6 +102,10 @@
 				<max_thickness>
 					<x_ratio>0.3<!--relative position of the max thickness of vertical tail--></x_ratio>
 				</max_thickness>
+				<rudder>
+					<chord_ratio>0.3</chord_ratio>
+					<max_deflection units="deg">25</max_deflection>
+				</rudder>
 			</vertical_tail>
 			<wing>
 				<MAC>
@@ -113,7 +120,7 @@
 				</kink>
 				<sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
 				<taper_ratio>0.636<!--taper ratio of wing--></taper_ratio>
-				<thickness_ratio>0.12<!--mean thickness ratio of wing--></thickness_ratio>
+				<thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>
 				<aileron>
 	          		<chord_ratio is_input="True">0.3</chord_ratio>
          			<max_deflection units="rad" is_input="True">40.0</max_deflection>
@@ -128,9 +135,10 @@
 		</handling_qualities>
 		<propulsion>
 			<IC_engine>
+				<max_rpm units="min**-1" is_input="True">2000.0</max_rpm>
 				<engine_rpm units="min**-1" is_input="True">2000.0</engine_rpm>
-				<fuel_type>1.0<!--1=Avgas ICE engine / 2=Diesel ICE engine / 3=Jet A1--></fuel_type>
-				<max_power units="W">130000.0<!--max power @ see level--></max_power>
+				<fuel_type>3.0<!--1=Avgas ICE engine / 2=Diesel ICE engine / 3=Jet A1--></fuel_type>
+				<max_power units="W">625600.0<!--max power @ see level--></max_power>
 				<strokes_nb>4.0<!--X-strokes engine (2.0 or 4.0)--></strokes_nb>
 			</IC_engine>
 		</propulsion>
@@ -151,7 +159,7 @@
 					  <thrust_rate>1.0</thrust_rate>
 					</climb>
 					<cruise>
-					  <altitude units="ft">5000.0<!--altitude during cruise phase in sizing mission--></altitude>
+					  <altitude units="ft">25000.0<!--altitude during cruise phase in sizing mission--></altitude>
 					</cruise>
 					<descent>
 						<descent_rate>0.03</descent_rate>
@@ -198,6 +206,14 @@
 		</loads>
 	</data>
 	<settings>
+		<geometry>
+			<fuselage>
+				<min_skin_thickness units="m">0.0005</min_skin_thickness>
+			</fuselage>
+			<fuel_tanks>
+				<depth>0.62<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+			</fuel_tanks>
+		</geometry>
 		<weight>
 			<airframe>
 				<landing_gear>

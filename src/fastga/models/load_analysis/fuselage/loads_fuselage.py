@@ -13,18 +13,12 @@
 
 import openmdao.api as om
 
-# from .compute_bending_moment import ComputeBendingMoment
+from .compute_bending_moment import ComputeBendingMoment
 from .compute_torsion_moment import ComputeTorsionMoment
-from .compute_fuselage_shell import ComputeFuselageShell
-from .compute_bending_moment_bis import ComputeBendingMomentBis
-from .compute_fuselage_additional_mass import ComputeFuselageAdditionalMass
 
 
 class LoadsFuselage(om.Group):
 
     def setup(self):
-        # self.add_subsystem("fuselage_bending_moment", ComputeBendingMoment(), promotes=["*"])
         self.add_subsystem("fuselage_torsion_moment", ComputeTorsionMoment(), promotes=["*"])
-        self.add_subsystem("fuselage_shell", ComputeFuselageShell(), promotes=["*"])
-        self.add_subsystem("fuselage_additional_mass", ComputeFuselageAdditionalMass(), promotes=["*"])
-        self.add_subsystem("fuselage_bending_moment", ComputeBendingMomentBis(), promotes=["*"])
+        self.add_subsystem("fuselage_bending_moment", ComputeBendingMoment(), promotes=["*"])

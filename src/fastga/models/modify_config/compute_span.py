@@ -33,6 +33,7 @@ class ComputeSpan(om.ExplicitComponent):
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
@@ -45,6 +46,7 @@ class ComputeSpan(om.ExplicitComponent):
         self.add_output("data_mod:geometry:wing:taper_ratio")
         self.add_output("data_mod:geometry:wing:area", units="m**2")
         self.add_output("data_mod:geometry:propulsion:y_ratio")
+        self.add_output("data_mod:geometry:propulsion:y_ratio_tank_beginning")
         self.add_output("data_mod:geometry:propulsion:y_ratio_tank_end")
         self.add_output("data_mod:geometry:flap:span_ratio")
         self.add_output("data_mod:geometry:wing:aileron:span_ratio")
@@ -56,7 +58,8 @@ class ComputeSpan(om.ExplicitComponent):
         taper_ratio_ref = inputs["data:geometry:wing:taper_ratio"]
         area_ref = inputs["data:geometry:wing:area"]
         y_ratio = inputs["data:geometry:propulsion:y_ratio"]
-        y_ratio_tank = inputs["data:geometry:propulsion:y_ratio_tank_end"]
+        y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
+        y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
         aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
@@ -79,15 +82,18 @@ class ComputeSpan(om.ExplicitComponent):
         taper_ratio_mod = multiplier * taper_ratio_ref + (1 - multiplier)
         area_mod = (2 * y_root_ref + (multiplier * y_tip_ref - y_root_ref) * (1 + taper_ratio_mod)) / \
                    (2 * y_root_ref + (y_tip_ref - y_root_ref) * (1 + taper_ratio_ref)) * area_ref
-        aspect_ratio_mod = (span_ref*multiplier)**2/area_mod
+        aspect_ratio_mod = (span_ref * multiplier) ** 2 / area_mod
 
         # Modify the y-ratio of the engine if its position is fixed along the span
         if self.options["span_mod"][1]:
             y_ratio = y_ratio / multiplier
 
+        # Modify the y-ratio defining the beginning of the wing fuel tanks to take in account the span increase
+        y_ratio_tank_beginning = y_ratio_tank_beginning / multiplier
+
         # Modify the y-ratio defining the end of the wing fuel tanks if the wing added section does not stock fuel
-        if y_ratio_tank < 1.0 or not self.options["span_mod"][2]:
-            y_ratio_tank = y_ratio_tank / multiplier
+        if y_ratio_tank_end < 1.0 or not self.options["span_mod"][2]:
+            y_ratio_tank_end = y_ratio_tank_end / multiplier
 
         # Compute new y-ratio for control surfaces. Flaps stay put, and an aileron is added on the extended part
         flap_span_ratio_mod = flap_span_ratio / multiplier
@@ -97,7 +103,8 @@ class ComputeSpan(om.ExplicitComponent):
         outputs["data_mod:geometry:wing:taper_ratio"] = taper_ratio_mod
         outputs["data_mod:geometry:wing:area"] = area_mod
         outputs["data_mod:geometry:propulsion:y_ratio"] = y_ratio
-        outputs["data_mod:geometry:propulsion:y_ratio_tank_end"] = y_ratio_tank
+        outputs["data_mod:geometry:propulsion:y_ratio_tank_beginning"] = y_ratio_tank_beginning
+        outputs["data_mod:geometry:propulsion:y_ratio_tank_end"] = y_ratio_tank_end
         outputs["data_mod:geometry:flap:span_ratio"] = flap_span_ratio_mod
         outputs["data_mod:geometry:wing:aileron:span_ratio"] = aileron_span_ratio_mod
         outputs["data_mod:settings:span_mod:span_multiplier"] = self.options["span_mod"][0]

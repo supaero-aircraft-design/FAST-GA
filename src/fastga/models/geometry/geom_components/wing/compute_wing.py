@@ -15,7 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .components import ComputeMFW
 from .components import ComputeWingB50
 from .components import ComputeWingL1AndL4
 from .components import ComputeWingL2AndL3
@@ -43,4 +42,3 @@ class ComputeWingGeometry(Group):
         self.add_subsystem("wing_mac", ComputeWingMAC(), promotes=["*"])
         self.add_subsystem("wing_sweep", ComputeWingSweep(), promotes=["*"])
         self.add_subsystem("wing_wet_area", ComputeWingWetArea(), promotes=["*"])
-        self.add_subsystem("mfw", ComputeMFW(), promotes=["*"])

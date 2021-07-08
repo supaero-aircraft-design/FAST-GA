@@ -25,7 +25,7 @@ POINTS_NB_WING = 50
 class ComputeMFW(ExplicitComponent):
 
     """
-    Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering Students' p.65
+    Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering Students' p.65.
     Only works for linear chord and thickness profiles.
     """
 
@@ -34,46 +34,53 @@ class ComputeMFW(ExplicitComponent):
         self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
-        self.add_output("data:weight:aircraft:new_MFW", units="kg")
+        self.add_output("data:weight:aircraft:MFW", units="kg")
 
-        self.declare_partials("data:weight:aircraft:new_MFW", [
-            "data:geometry:wing:root:chord",
-            "data:geometry:wing:tip:chord",
-            "data:geometry:wing:root:thickness_ratio",
-            "data:geometry:wing:tip:thickness_ratio",
-            ], method="fd")
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
-        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
-        tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
+        root_y = inputs["data:geometry:wing:root:y"]
+        tip_y = inputs["data:geometry:wing:tip:y"]
+        root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
+        tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
+        y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
         engine_config = inputs["data:geometry:propulsion:layout"]
         y_ratio_engine = inputs["data:geometry:propulsion:y_ratio"]
+        le_chord_percentage = inputs["data:geometry:propulsion:LE_chord_percentage"]
+        te_chord_percentage = inputs["data:geometry:propulsion:TE_chord_percentage"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
+        k = inputs["settings:geometry:fuel_tanks:depth"]
 
         span = inputs["data:geometry:wing:span"]
 
@@ -87,24 +94,24 @@ class ComputeMFW(ExplicitComponent):
             m_vol_fuel = 718.9
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
 
-        # Factor to relate the average tank depth to the max wing profile depth. The value depends on the shape of
-        # the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8
-        k = 0.6
-
         semi_span = span / 2
+        y_tank_beginning = semi_span * y_ratio_tank_beginning
         y_tank_end = semi_span * y_ratio_tank_end
-        length_tank = y_tank_end - fuselage_max_width / 2
+        length_tank = y_tank_end - y_tank_beginning
         y_flap_end = fuselage_max_width / 2 + flap_span_ratio * semi_span
-        y_array = np.linspace(fuselage_max_width / 2, y_tank_end, POINTS_NB_WING)
-        #
-        virtual_chord_center = (tip_chord - root_chord) / (semi_span - fuselage_max_width / 2) *\
-                               (-fuselage_max_width / 2) + root_chord
-        virtual_thickness_ratio_center = (tip_thickness_ratio - root_thickness_ratio) / (semi_span - fuselage_max_width / 2) * \
-                                         (-fuselage_max_width / 2) + root_thickness_ratio
+        y_array = np.linspace(y_tank_beginning, y_tank_end, POINTS_NB_WING)
 
-        chord_array = (tip_chord - root_chord) / (semi_span - fuselage_max_width / 2) * y_array + virtual_chord_center
-        thickness_ratio_array = (tip_thickness_ratio - root_thickness_ratio) / (semi_span - fuselage_max_width / 2) *\
-                                y_array + virtual_thickness_ratio_center
+        # Computation of the chord profile along the span, as chord = slope * y + chord_fuselage_center.
+        slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
+        virtual_chord_center = 0.5 * (root_chord + tip_chord - slope_chord * (root_y + tip_y))
+        chord_array = slope_chord * y_array + virtual_chord_center
+
+        # Computation of the thickness ratio profile along the span, as tc = slope * y + tc_fuselage_center.
+        slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
+        virtual_tc_center = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
+        thickness_ratio_array = slope_tc * y_array + virtual_tc_center
+
+        # The k facotr stating the depth of the fuel tanks is included here.
         thickness_array = k * chord_array * thickness_ratio_array
         width_array = []
 
@@ -113,11 +120,12 @@ class ComputeMFW(ExplicitComponent):
         else:
             y_engine = 0
 
+        # Computaiton of the fuel distribution along the span, taking in account the elements restricting it.
         for i in range(len(y_array)):
             if y_array[i] > y_flap_end:
-                width_i = (1 - 0.11 - 0.05 - aileron_chord_ratio) * chord_array[i]
+                width_i = (1 - le_chord_percentage - te_chord_percentage - aileron_chord_ratio) * chord_array[i]
             else:
-                width_i = (1 - 0.11 - 0.05 - flap_chord_ratio) * chord_array[i]
+                width_i = (1 - le_chord_percentage - te_chord_percentage - flap_chord_ratio) * chord_array[i]
             if engine_config == 1.0:
                 if abs(y_array[i] - y_engine) <= nacelle_width / 2:
                     # For now 50% size reduction in the fuel tank capacity due to the engine
@@ -128,11 +136,10 @@ class ComputeMFW(ExplicitComponent):
                     width_i = width_i * 0.2
             width_array.append(width_i)
 
-        # Computation of the three areas
         area_array = thickness_array * width_array
 
         # Computation of the fuel volume available in one wing. The 0.85 coefficient represents the internal
-        # obstructions caused by the structural and system components within the tank
+        # obstructions caused by the structural and system components within the tank, typical of integral tankage.
 
         tank_volume_one_wing = 0.85 * length_tank / (2 * (POINTS_NB_WING - 1)) *\
                                (area_array[0] + 2 * np.sum(area_array[1:-1]) + area_array[-1])
@@ -141,4 +148,4 @@ class ComputeMFW(ExplicitComponent):
 
         maximum_fuel_weight = tank_volume * m_vol_fuel
 
-        outputs["data:weight:aircraft:new_MFW"] = maximum_fuel_weight
+        outputs["data:weight:aircraft:MFW"] = maximum_fuel_weight

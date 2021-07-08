@@ -18,7 +18,7 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import g
-from fastoad.utils.physics import Atmosphere
+from fastoad.model_base import Atmosphere
 
 FUSELAGE_MESH_POINT = 100
 
