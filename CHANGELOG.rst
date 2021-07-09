@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.1.1-beta
+Version 0.1.2-beta
 ==============
 
 - Unitary tests based on converged OAD aircraft .XML
