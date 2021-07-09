@@ -68,7 +68,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_output("data:aerodynamics:flaps:takeoff:CM")
         self.add_output("data:aerodynamics:flaps:takeoff:CD")
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
-        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-1")
+        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
         self.declare_partials("*", "*", method="fd")
 
