@@ -3,7 +3,7 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:aerodynamics:horizontal_tail:efficiency || 
+data:aerodynamics:horizontal_tail:efficiency || ratio of dynamic pressure at the tail with respect to the free stream dynamic pressure
 data:geometry:aircraft:wet_area || aircraft total wet area
 data:geometry:cabin:length || cabin length
 data:geometry:fuselage:wet_area || fuselage wet area

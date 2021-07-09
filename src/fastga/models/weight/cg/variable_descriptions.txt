@@ -5,11 +5,11 @@
 
 data:weight:aircraft:CG:aft:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord
 data:weight:aircraft:CG:fwd:MAC_position || most fwd X-position of center of gravity as ratio of mean aerodynamic chord
-data:weight:aircraft:CG:ground_condition:max:MAC_position || 
-data:weight:aircraft:CG:ground_condition:min:MAC_position || 
+data:weight:aircraft:CG:ground_condition:max:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord for ground conditions
+data:weight:aircraft:CG:ground_condition:min:MAC_position || most fwd X-position of center of gravity as ratio of mean aerodynamic chord for ground conditions
 data:weight:aircraft:empty:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
-data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment || 
-data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass || 
+data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment || quantity used to compute the change in CG position during flight
+data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass || quantity used to compute the change in CG position during flight
 data:weight:aircraft_empty:CG:x || X-position center of gravity of empty aircraft
 data:weight:aircraft_empty:CG:z || Z-position center of gravity of empty aircraft
 data:weight:aircraft_empty:mass || mass of empty aircraft

@@ -607,28 +607,28 @@
           </CG>
         </flight_controls>
         <fuselage>
-          <k_factor_a2 is_input="True">0.925</k_factor_a2>
+          <k_factor is_input="True">0.925</k_factor>
           <mass units="lbm" is_input="False">286.30203490508717<!--fuselage (A2): total mass--></mass>
           <CG>
             <x units="m" is_input="False">4.168365243733302<!--fuselage (A2): X-position of center of gravity--></x>
           </CG>
         </fuselage>
         <horizontal_tail>
-          <k_factor_a31 is_input="True">0.925</k_factor_a31>
+          <k_factor is_input="True">0.925</k_factor>
           <mass units="lbm" is_input="False">30.55686120069882<!--horizontal tail (A31): mass--></mass>
           <CG>
             <x units="m" is_input="False">6.972888680417885<!--horizontal tail (A31): X-position of center of gravity--></x>
           </CG>
         </horizontal_tail>
         <vertical_tail>
-          <k_factor_a32 is_input="True">0.925</k_factor_a32>
+          <k_factor is_input="True">0.925</k_factor>
           <mass units="lbm" is_input="False">20.494995456985514<!--vertical tail (A32): mass--></mass>
           <CG>
             <x units="m" is_input="False">6.881184047579365<!--vertical tail (A32): X-position of center of gravity--></x>
           </CG>
         </vertical_tail>
         <wing>
-          <k_factor_a1 is_input="True">0.925</k_factor_a1>
+          <k_factor is_input="True">0.925</k_factor>
           <mass units="lbm" is_input="False">332.17154214244545<!--wing (A1): total mass--></mass>
           <CG>
             <x units="m" is_input="False">2.988551198231612<!--wing (A1): X-position of center of gravity--></x>

@@ -3,13 +3,13 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for the complete aicraft in cruise conditions
-data:aerodynamics:aircraft:cruise:L_D_max || profile drag coefficient for the complete aicraft in low speed conditions
+data:aerodynamics:aircraft:cruise:CD0 || profile drag coefficient for the complete aircraft in cruise conditions
+data:aerodynamics:aircraft:cruise:L_D_max || profile drag coefficient for the complete aircraft in low speed conditions
 data:aerodynamics:aircraft:cruise:optimal_alpha || wing angle of attack at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:cruise:optimal_CD || drag coefficient at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:cruise:optimal_CL || lift coefficient at maximum lift/drag ratio in cruise conditions
 data:aerodynamics:aircraft:landing:CL_max || maximum lift coefficient at landing
-data:aerodynamics:aircraft:low_speed:CD0 || profile drag coefficient for the complete aicraft in low speed conditions
+data:aerodynamics:aircraft:low_speed:CD0 || profile drag coefficient for the complete aircraft in low speed conditions
 data:aerodynamics:aircraft:takeoff:CL_max || maximum lift coefficient during take-off
 
 data:aerodynamics:cruise:mach || mach number representative of high speed aerodynamics
