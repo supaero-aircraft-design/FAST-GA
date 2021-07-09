@@ -17,6 +17,8 @@
 import math
 import numpy as np
 import warnings
+import logging
+
 from scipy.constants import g
 import scipy.optimize as optimize
 from scipy import interpolate
@@ -34,6 +36,8 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ComputeVNAndVH(om.Group):
@@ -78,6 +82,9 @@ class ComputeVh(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # The maximum Sea Level flight velocity is computed using a method which finds for which speed
         # the thrust required for flight (drag) is equal to the thrust available
+
+        _LOGGER.info("Entering load factors computation")
+
         design_mass = inputs["data:weight:aircraft:MTOW"]
         vh = self.max_speed(inputs, 0.0, design_mass)
 

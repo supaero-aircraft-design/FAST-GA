@@ -42,6 +42,7 @@ model:
         performance:
             id: fastga.performances.mission
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            out_file: ./workdir/mda_mission_results.csv
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing

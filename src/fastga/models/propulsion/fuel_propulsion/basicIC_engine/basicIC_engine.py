@@ -500,7 +500,6 @@ class BasicICEngine(AbstractFuelPropulsion):
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
                 sfc = ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx]
-
         return sfc, real_power
 
     def max_thrust(
@@ -642,7 +641,7 @@ class BasicICEngine(AbstractFuelPropulsion):
             nacelle_length = 1.15 * self.engine.length
             # Based on the length between nose and firewall for TB20 and SR22
         else:
-            nacelle_length = 1.50 * self.engine.length
+            nacelle_length = 2.0 * self.engine.length
 
         # Compute nacelle dimensions
         self.nacelle = Nacelle(
@@ -673,8 +672,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         )  # 100% turbulent
         f = self.nacelle.length / math.sqrt(4 * self.nacelle.height * self.nacelle.width / math.pi)
         ff_nac = 1 + 0.35 / f  # Raymer (seen in Gudmunsson)
-        if_nac = 0.036 * self.nacelle.width * wing_mac * 0.04
-        drag_force = cf_nac * ff_nac * self.nacelle.wet_area + if_nac
+        if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
+        drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
         return drag_force
 

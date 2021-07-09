@@ -68,7 +68,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_output("data:aerodynamics:flaps:takeoff:CM")
         self.add_output("data:aerodynamics:flaps:takeoff:CD")
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
-        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-1")
+        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -117,13 +117,13 @@ class ComputeDeltaHighLift(FigureDigitization):
         outputs["data:aerodynamics:elevator:low_speed:CL_delta"] = self._get_elevator_delta_cl(
             inputs, 25.0,
         )  # get derivative for 25° angle assuming it is linear when <= to 25 degree,
-        # derivative wrt to the wing
+        # derivative wrt to the wing, multiplies the deflection angle squared
         outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (
             self.delta_cd_plain_flap(
                 inputs["data:geometry:horizontal_tail:elevator_chord_ratio"],
                 abs(inputs["data:mission:sizing:landing:elevator_angle"]),
             )
-            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0)
+            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0) ** 2.
             * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
             * htp_area
             / wing_area
