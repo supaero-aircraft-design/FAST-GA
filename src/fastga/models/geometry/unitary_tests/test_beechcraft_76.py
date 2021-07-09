@@ -59,11 +59,14 @@ from ..geom_components.vt.components import (
 from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
+from .... import models
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
+
+from fastga.command.api import generate_variables_description
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 

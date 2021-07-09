@@ -18,6 +18,7 @@ import logging
 import os.path as pth
 import os
 import shutil
+import sys, inspect, importlib
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
@@ -26,6 +27,7 @@ from openmdao.core.group import Group
 from openmdao.core.system import System
 import openmdao.api as om
 from copy import deepcopy
+from itertools import product
 
 from fastoad.openmdao.variables import VariableList
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -40,6 +42,139 @@ from . import resources
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastga.yml"
+BOOLEAN_OPTIONS =["use_openvsp", "compute_mach_interpolation", "compute_slipstream", "low_speed_aero"]
+
+
+def generate_variables_description(subpackage_path: str, overwrite: bool = False):
+    """
+    Generates/append the variable descriptions file for a given subpackage.
+
+    To use it simply type:
+    from fastga.command.api import generate_variables_description
+    import my_package
+
+    generate_variables_description(my_package.__path__[0], overwrite=True)
+
+    :param subpackage_path: the path of the subpackage to explore
+    :param overwrite: if True, the file will be written, even if it already exists
+    :raise FastFileExistsError: if overwrite==False and subpackage_path already exists
+    """
+    if not overwrite and pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
+        raise FastFileExistsError(
+            "Variable descriptions file is not written because it already exists. "
+            "Use overwrite=True to bypass." % pth.join(subpackage_path, 'variable_descriptions.txt'),
+            pth.join(subpackage_path, 'variable_descriptions.txt'),
+        )
+
+    if not pth.exists(subpackage_path):
+        _LOGGER.info("Sub-package path %s not found!", subpackage_path)
+    else:
+        # Read file and construct dictionnary of variables name index
+        saved_dict = {}
+        if pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
+            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'r')
+            for line in file:
+                if line[0] != '#' and len(line.split('||')) == 2:
+                    variable_name, variable_description = line.split('||')
+                    variable_name_length = len(variable_name)
+                    variable_name = variable_name.replace(' ', '')
+                    while variable_name_length != len(variable_name):
+                        variable_name = variable_name.replace(' ', '')
+                        variable_name_length = len(variable_name)
+                    saved_dict[variable_name] = variable_description
+            file.close()
+
+        # If path point to ./models directory list output variables described in the different models
+        if subpackage_path.split('\\')[-1] == "models":
+            for root, dirs, files in os.walk(subpackage_path, topdown=False):
+                for name in files:
+                    if name == 'variable_descriptions.txt':
+                        file = open(pth.join(root, name), 'r')
+                        for line in file:
+                            if line[0] != '#' and len(line.split('||')) == 2:
+                                variable_name, variable_description = line.split('||')
+                                variable_name_length = len(variable_name)
+                                variable_name = variable_name.replace(' ', '')
+                                while variable_name_length != len(variable_name):
+                                    variable_name = variable_name.replace(' ', '')
+                                    variable_name_length = len(variable_name)
+                                if variable_name not in saved_dict.keys():
+                                    saved_dict[variable_name] = variable_description
+                        file.close()
+
+        # Explore subpackage models and find the output variables and store them in a dictionary
+        dict_to_be_saved = {}
+        for root, dirs, files in os.walk(subpackage_path, topdown=False):
+            for name in files:
+                if '.py' in name:
+                    spec = importlib.util.spec_from_file_location(name.replace(".py", ""), pth.join(root, name))
+                    module = importlib.util.module_from_spec(spec)
+                    try:
+                        spec.loader.exec_module(module)
+                        class_list = [x for x in dir(module) if inspect.isclass(getattr(module, x))]
+                        root_lib = '.'.join(root.split('\\')[root.split('\\').index("fastga"):])
+                        root_lib += '.' + name.replace(".py", "")
+                        for class_name in class_list:
+                            try:
+                                exec('from ' + root_lib + ' import ' + class_name + ' as my_class')
+                                exec('variables = list_variables(my_class())')
+                                options = eval("my_class().options")
+                                local_options =[]
+                                for option_name in BOOLEAN_OPTIONS:
+                                    if option_name in options._dict.keys():
+                                        local_options.append(option_name)
+                                if len(local_options) == 0:
+                                    if subpackage_path.split('\\')[-1] == "models":
+                                        var_names = eval('[var.name for var in variables if var.is_input]')
+                                    else:
+                                        var_names = eval('[var.name for var in variables if not var.is_input]')
+                                        if len(eval('list_ivc_outputs_name(my_class())')) != 0:
+                                            var_names.append(eval('list_ivc_outputs_name(my_class())'))
+                                    var_names = list(dict.fromkeys(var_names))
+                                    for key in var_names:
+                                        if ('data:' in key) or ('settings:' in key) or ('tuning:' in key):
+                                            if key not in dict_to_be_saved.keys():
+                                                dict_to_be_saved[key] = ''
+                                else:
+                                    for options_tuple in list(product([True, False], repeat=len(local_options))):
+                                        exec_line = 'variables = list_variables(my_class('
+                                        for idx in range(len(local_options)):
+                                            exec_line += local_options[idx] + '=' + str(options_tuple[idx]) + ','
+                                        exec_line = exec_line[0:-1] + '))'
+                                        exec(exec_line)
+                                        if subpackage_path.split('\\')[-1] == "models":
+                                            var_names = eval('[var.name for var in variables if var.is_input]')
+                                        else:
+                                            var_names = eval('[var.name for var in variables if not var.is_input]')
+                                            if len(eval(exec_line.replace('variables = list_variables',
+                                                                          'list_ivc_outputs_name'))) != 0:
+                                                var_names.append(eval(exec_line.replace('variables = list_variables',
+                                                                                        'list_ivc_outputs_name')))
+                                        var_names = list(dict.fromkeys(var_names))
+                                        for key in var_names:
+                                            if ('data:' in key) or ('settings:' in key) or ('tuning:' in key):
+                                                if key not in dict_to_be_saved.keys():
+                                                    dict_to_be_saved[key] = ''
+                            except:
+                                pass
+                    except:
+                        pass
+
+        # Complete the variable descriptions file with missing outputs
+        if pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
+            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'a')
+            file.write('\n')
+        else:
+            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'w')
+            file.write("# Documentation of variables used in FAST-GA models\n")
+            file.write("# Each line should be like:\n")
+            file.write("# my:variable||The description of my:variable, as long as needed, but on one line.\n")
+            file.write("# The separator \"||\" can be surrounded with spaces (that will be ignored)\n\n")
+        sortedkeys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
+        for key in sortedkeys:
+            if not(key in saved_dict.keys()):
+                file.write(key + " || \n")
+        file.close()
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):

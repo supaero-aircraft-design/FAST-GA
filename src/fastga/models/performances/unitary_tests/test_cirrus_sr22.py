@@ -15,17 +15,10 @@ Test takeoff module
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import pandas as pd
-import numpy as np
-from openmdao.core.component import Component
 from openmdao.core.group import Group
 import pytest
-from typing import Union
 
 from fastoad.io import VariableIO
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.model_base import FlightPoint, Atmosphere
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
@@ -34,8 +27,6 @@ from ..mission import Mission
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.propulsion import IPropulsion
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 
@@ -51,11 +42,11 @@ def test_v2():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(_v2(propulsion_id=ENGINE_WRAPPER), ivc)
     v2 = problem.get_val("v2:speed", units="m/s")
-    assert v2 == pytest.approx(39.777, abs=1e-2)
+    assert v2 == pytest.approx(39.47, abs=1e-2)
     alpha = problem.get_val("v2:angle", units="deg")
-    assert alpha == pytest.approx(9.694, abs=1e-2)
+    assert alpha == pytest.approx(10.25, abs=1e-2)
     climb_gradient = problem.get_val("v2:climb_gradient")
-    assert climb_gradient == pytest.approx(0.216, abs=1e-2)
+    assert climb_gradient == pytest.approx(0.22, abs=1e-2)
 
 
 def test_vloff():
@@ -65,15 +56,15 @@ def test_vloff():
     ivc = get_indep_var_comp(
         list_inputs(_v_lift_off_from_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
-    ivc.add_output("v2:speed", 43.18, units="m/s")
-    ivc.add_output("v2:angle", 7.538, units="deg")
+    ivc.add_output("v2:speed", 39.47, units="m/s")
+    ivc.add_output("v2:angle", 10.25, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(_v_lift_off_from_v2(propulsion_id=ENGINE_WRAPPER), ivc)
     vloff = problem.get_val("v_lift_off:speed", units="m/s")
-    assert vloff == pytest.approx(42.39, abs=1e-2)
+    assert vloff == pytest.approx(38.39, abs=1e-2)
     alpha = problem.get_val("v_lift_off:angle", units="deg")
-    assert alpha == pytest.approx(7.538, abs=1e-2)
+    assert alpha == pytest.approx(10.25, abs=1e-2)
 
 
 def test_vr():
@@ -84,14 +75,14 @@ def test_vr():
         list_inputs(_vr_from_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
 
-    ivc.add_output("v_lift_off:speed", 42.39, units="m/s")
-    ivc.add_output("v_lift_off:angle", 7.538, units="deg")
+    ivc.add_output("v_lift_off:speed", 38.39, units="m/s")
+    ivc.add_output("v_lift_off:angle", 10.25, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
 
     problem = run_system(_vr_from_v2(propulsion_id=ENGINE_WRAPPER), ivc)
     vr = problem.get_val("vr:speed", units="m/s")
-    assert vr == pytest.approx(36.27, abs=1e-2)
+    assert vr == pytest.approx(28.55, abs=1e-2)
 
 
 def test_simulate_takeoff():
@@ -101,57 +92,56 @@ def test_simulate_takeoff():
     ivc = get_indep_var_comp(
         list_inputs(_simulate_takeoff(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
-    ivc.add_output("vr:speed", 36.27, units="m/s")
-    ivc.add_output("v2:angle", 7.538, units="deg")
+    ivc.add_output("vr:speed", 28.55, units="m/s")
+    ivc.add_output("v2:angle", 10.25, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(_simulate_takeoff(propulsion_id=ENGINE_WRAPPER), ivc)
     vr = problem.get_val("data:mission:sizing:takeoff:VR", units="m/s")
-    assert vr == pytest.approx(36.27, abs=1e-2)
+    assert vr == pytest.approx(35.19, abs=1e-2)
     vloff = problem.get_val("data:mission:sizing:takeoff:VLOF", units="m/s")
-    assert vloff == pytest.approx(42.53, abs=1e-2)
+    assert vloff == pytest.approx(42.21, abs=1e-2)
     v2 = problem.get_val("data:mission:sizing:takeoff:V2", units="m/s")
-    assert v2 == pytest.approx(47.84, abs=1e-2)
+    assert v2 == pytest.approx(45.24, abs=1e-2)
     tofl = problem.get_val("data:mission:sizing:takeoff:TOFL", units="m")
-    assert tofl == pytest.approx(562, abs=1)
+    assert tofl == pytest.approx(475, abs=1)
     ground_roll = problem.get_val("data:mission:sizing:takeoff:ground_roll", units="m")
-    assert ground_roll == pytest.approx(341, abs=1)
+    assert ground_roll == pytest.approx(320, abs=1)
     duration = problem.get_val("data:mission:sizing:takeoff:duration", units="s")
-    assert duration == pytest.approx(20.5, abs=1e-1)
+    assert duration == pytest.approx(18.3, abs=1e-1)
     fuel1 = problem.get_val("data:mission:sizing:takeoff:fuel", units="kg")
-    assert fuel1 == pytest.approx(0.24, abs=1e-2)
+    assert fuel1 == pytest.approx(0.23, abs=1e-2)
     fuel2 = problem.get_val("data:mission:sizing:initial_climb:fuel", units="kg")
-    assert fuel2 == pytest.approx(0.075, abs=1e-2)
+    assert fuel2 == pytest.approx(0.06, abs=1e-2)
 
 
 def test_takeoff_phase_connections():
     """ Tests complete take-off phase connection with speeds """
 
-    # load all inputs
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    ivc = reader.read().to_ivc()
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(TakeOffPhase(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(TakeOffPhase(propulsion_id=ENGINE_WRAPPER), ivc)
     vr = problem.get_val("data:mission:sizing:takeoff:VR", units="m/s")
-
-    assert vr == pytest.approx(35.960, abs=1e-2)
+    assert vr == pytest.approx(35.19, abs=1e-2)
     vloff = problem.get_val("data:mission:sizing:takeoff:VLOF", units="m/s")
-    assert vloff == pytest.approx(42.37, abs=1e-2)
+    assert vloff == pytest.approx(42.21, abs=1e-2)
     v2 = problem.get_val("data:mission:sizing:takeoff:V2", units="m/s")
-    assert v2 == pytest.approx(45.27, abs=1e-2)
+    assert v2 == pytest.approx(45.24, abs=1e-2)
     tofl = problem.get_val("data:mission:sizing:takeoff:TOFL", units="m")
-    assert tofl == pytest.approx(496, abs=1)
+    assert tofl == pytest.approx(475, abs=1)
     ground_roll = problem.get_val("data:mission:sizing:takeoff:ground_roll", units="m")
-    assert ground_roll == pytest.approx(336, abs=1)
+    assert ground_roll == pytest.approx(320, abs=1)
     duration = problem.get_val("data:mission:sizing:takeoff:duration", units="s")
-    assert duration == pytest.approx(19.1, abs=1e-1)
+    assert duration == pytest.approx(18.3, abs=1e-1)
     fuel1 = problem.get_val("data:mission:sizing:takeoff:fuel", units="kg")
-    assert fuel1 == pytest.approx(0.246, abs=1e-2)
+    assert fuel1 == pytest.approx(0.23, abs=1e-2)
     fuel2 = problem.get_val("data:mission:sizing:initial_climb:fuel", units="kg")
-    assert fuel2 == pytest.approx(0.056, abs=1e-2)
+    assert fuel2 == pytest.approx(0.06, abs=1e-2)
 
 
 def test_compute_taxi():
@@ -190,22 +180,19 @@ def test_compute_climb():
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("descent", _compute_climb(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
-    ivc.add_output("data:mission:sizing:taxi_out:fuel", 0.50, units="kg")
-    ivc.add_output("data:mission:sizing:takeoff:fuel", 0.29, units="kg")
-    ivc.add_output("data:mission:sizing:initial_climb:fuel", 0.07, units="kg")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
-    assert v_cas == pytest.approx(90.9, abs=1e-1)
+    assert v_cas == pytest.approx(88.9, abs=1e-1)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:climb:fuel", units="kg")
-    assert fuel_mass == pytest.approx(4.613, abs=1e-1)
+    assert fuel_mass == pytest.approx(4.2, abs=1e-1)
     distance = (
         problem.get_val("data:mission:sizing:main_route:climb:distance", units="m") / 1000.0
     )  # conversion to km
-    assert distance == pytest.approx(29.500, abs=1e-2)
+    assert distance == pytest.approx(24.12, abs=1e-2)
     duration = problem.get_val("data:mission:sizing:main_route:climb:duration", units="min")
-    assert duration == pytest.approx(9.94, abs=1e-2)
+    assert duration == pytest.approx(8.28, abs=1e-2)
 
 
 def test_compute_cruise():
@@ -216,24 +203,17 @@ def test_compute_cruise():
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("cruise", _compute_cruise(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
-    ivc.add_output("data:mission:sizing:taxi_out:fuel", 0.50, units="kg")
-    ivc.add_output("data:mission:sizing:takeoff:fuel", 0.29, units="kg")
-    ivc.add_output("data:mission:sizing:initial_climb:fuel", 0.07, units="kg")
-    ivc.add_output("data:mission:sizing:main_route:climb:fuel", 4.4, units="kg")
-    ivc.add_output("data:mission:sizing:main_route:climb:distance", 29.5, units="km")
-    ivc.add_output("data:mission:sizing:main_route:climb:duration", 9.94, units="min")
-    ivc.add_output("data:mission:sizing:main_route:descent:distance", 0.0, units="km")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:cruise:fuel", units="kg")
-    assert fuel_mass == pytest.approx(152.117, abs=1e-1)
+    assert fuel_mass == pytest.approx(139, abs=1)
     distance = (
         problem.get_val("data:mission:sizing:main_route:cruise:distance", units="m") / 1000.0
     )  # conversion to km
-    assert distance == pytest.approx(1618.78, abs=1e-2)
+    assert distance == pytest.approx(1753, abs=1)
     duration = problem.get_val("data:mission:sizing:main_route:cruise:duration", units="h")
-    assert duration == pytest.approx(5.41, abs=1e-2)
+    assert duration == pytest.approx(5.80, abs=1e-2)
 
 
 def test_compute_descent():
@@ -244,41 +224,32 @@ def test_compute_descent():
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("descent", _compute_descent(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
-    ivc.add_output("data:mission:sizing:taxi_out:fuel", 0.98, units="kg")
-    ivc.add_output("data:mission:sizing:takeoff:fuel", 0.29, units="kg")
-    ivc.add_output("data:mission:sizing:initial_climb:fuel", 0.07, units="kg")
-    ivc.add_output("data:mission:sizing:main_route:climb:fuel", 5.56, units="kg")
-    ivc.add_output("data:mission:sizing:main_route:cruise:fuel", 188.05, units="kg")
-    ivc.add_output("data:mission:sizing:main_route:climb:distance", 29.50, units="km")
-    ivc.add_output("data:mission:sizing:main_route:climb:duration", 9.94, units="min")
-    ivc.add_output("data:mission:sizing:main_route:cruise:distance", 1618.78, units="km")
-    ivc.add_output("data:mission:sizing:main_route:cruise:duration", 5.45, units="h")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:descent:fuel", units="kg")
-    assert fuel_mass == pytest.approx(0.704, abs=1e-2)
+    assert fuel_mass == pytest.approx(0.53, abs=1e-2)
     distance = (
         problem.get_val("data:mission:sizing:main_route:descent:distance", units="m") / 1000
     )  # conversion to km
-    assert distance == pytest.approx(74.894, abs=1e-2)
+    assert distance == pytest.approx(75, abs=1)
     duration = problem.get_val("data:mission:sizing:main_route:descent:duration", units="min")
-    assert duration == pytest.approx(25.13, abs=1e-2)
+    assert duration == pytest.approx(25, abs=1)
 
 
 def test_loop_cruise_distance():
     """ Tests a distance computation loop matching the descent value/TLAR total range. """
 
-    # Get the parameters from .xml
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    ivc = reader.read().to_ivc()
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(Mission(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
-    assert m_total == pytest.approx(172.334, abs=1)
+    assert m_total == pytest.approx(162, abs=1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")
     cruise_distance = problem.get_val("data:mission:sizing:main_route:cruise:distance", units="NM")
     descent_distance = problem.get_val(
