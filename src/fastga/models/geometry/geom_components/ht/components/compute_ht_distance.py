@@ -32,16 +32,14 @@ class ComputeHTDistance(om.ExplicitComponent):
 
         self.declare_partials(
             "data:geometry:horizontal_tail:z:from_wingMAC25",
-            [
-                "data:geometry:vertical_tail:span",
-            ],
+            ["data:geometry:vertical_tail:span",],
             method="fd",
         )
-        
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         tail_type = inputs["data:geometry:has_T_tail"]
         span = inputs["data:geometry:vertical_tail:span"]
-        
+
         if tail_type == 0.0:
             height_ht = 0
         else:

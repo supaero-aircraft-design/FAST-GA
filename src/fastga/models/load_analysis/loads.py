@@ -23,14 +23,9 @@ from fastoad.module_management.constants import ModelDomain
 
 @RegisterOpenMDAOSystem("fastga.loads.legacy", domain=ModelDomain.OTHER)
 class Loads(om.Group):
-
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("use_openvsp", default=True, types=bool)
-
     def setup(self):
-        self.add_subsystem("aerostructural_loads", AerostructuralLoad(compute_cl_alpha=True,
-                                                                      use_openvsp=self.options["use_openvsp"],
-                                                                      ), promotes=["*"])
-        self.add_subsystem("structural_loads", StructuralLoads(compute_cl_alpha=True), promotes=["*"])
-        self.add_subsystem("aerodynamic_loads", AerodynamicLoads(compute_cl_alpha=True), promotes=["*"])
+        self.add_subsystem(
+            "aerostructural_loads", AerostructuralLoad(), promotes=["*"],
+        )
+        self.add_subsystem("structural_loads", StructuralLoads(), promotes=["*"])
+        self.add_subsystem("aerodynamic_loads", AerodynamicLoads(), promotes=["*"])

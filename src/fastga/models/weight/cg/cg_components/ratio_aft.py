@@ -86,7 +86,7 @@ class ComputeCG(om.ExplicitComponent):
         weight_moment = np.dot(cgs, masses)
         test = []
         for i in range(len(cgs)):
-            test.append(cgs[i]*masses[i]/np.sum(masses))
+            test.append(cgs[i] * masses[i] / np.sum(masses))
         outputs["data:weight:aircraft_empty:mass"] = np.sum(masses)
         x_cg_empty_aircraft = weight_moment / outputs["data:weight:aircraft_empty:mass"]
         outputs["data:weight:aircraft_empty:CG:x"] = x_cg_empty_aircraft
@@ -106,12 +106,11 @@ class CGRatio(om.ExplicitComponent):
         mac = inputs["data:geometry:wing:MAC:length"]
 
         outputs["data:weight:aircraft:empty:CG:MAC_position"] = (
-                                                                        x_cg_all - wing_position + 0.25 * mac
-                                                                ) / mac
+            x_cg_all - wing_position + 0.25 * mac
+        ) / mac
 
 
 class ComputeZCG(om.ExplicitComponent):
-
     def initialize(self):
         self.options.declare(
             "mass_names",
@@ -169,9 +168,24 @@ class ComputeZCG(om.ExplicitComponent):
         # 23 cm clearance as recommended for tail wheel landing gear
         cg_engine = 0.23 + prop_dia / 2.0
         cg_fuel_lines = (cg_engine + cg_wing) / 2.0
-        cgs = np.array([cg_wing, cg_fuselage, cg_horizontal_tail, cg_vertical_tail, cg_fuselage, cg_landing_gear,
-                        cg_landing_gear, cg_engine, cg_fuel_lines, cg_fuselage, cg_fuselage, cg_fuselage, cg_fuselage,
-                        cg_fuselage])
+        cgs = np.array(
+            [
+                cg_wing,
+                cg_fuselage,
+                cg_horizontal_tail,
+                cg_vertical_tail,
+                cg_fuselage,
+                cg_landing_gear,
+                cg_landing_gear,
+                cg_engine,
+                cg_fuel_lines,
+                cg_fuselage,
+                cg_fuselage,
+                cg_fuselage,
+                cg_fuselage,
+                cg_fuselage,
+            ]
+        )
 
         weight_moment = np.dot(cgs, masses)
         z_cg_empty_aircraft = weight_moment / np.sum(masses)

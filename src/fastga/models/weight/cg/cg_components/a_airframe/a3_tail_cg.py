@@ -37,7 +37,7 @@ class ComputeHTcg(ExplicitComponent):
         """
 
     def setup(self):
-    
+
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input(
@@ -56,7 +56,7 @@ class ComputeHTcg(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-    
+
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
@@ -67,7 +67,7 @@ class ComputeHTcg(ExplicitComponent):
         x0_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
 
         l_cg = 0.62 * (root_chord - tip_chord) + tip_chord
-        x_cg_ht = 0.38 * b_h * math.tan(sweep_25_ht / 180. * math.pi) + 0.42 * l_cg
+        x_cg_ht = 0.38 * b_h * math.tan(sweep_25_ht / 180.0 * math.pi) + 0.42 * l_cg
         x_cg_31 = lp_ht + fa_length - 0.25 * mac_ht + (x_cg_ht - x0_ht)
 
         outputs["data:weight:airframe:horizontal_tail:CG:x"] = x_cg_31
@@ -108,10 +108,10 @@ class ComputeVTcg(ExplicitComponent):
         l_cg_vt = (1 - 0.55) * (root_chord - tip_chord) + tip_chord
 
         if has_T_tail:
-            x_cg_vt = 0.55 * b_v * math.tan(sweep_25_vt / 180. * math.pi) + 0.42 * l_cg_vt
+            x_cg_vt = 0.55 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
 
         else:
-            x_cg_vt = 0.38 * b_v * math.tan(sweep_25_vt / 180. * math.pi) + 0.42 * l_cg_vt
+            x_cg_vt = 0.38 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
 
         x_cg_32 = lp_vt + fa_length - 0.25 * mac_vt + (x_cg_vt - x0_vt)
 

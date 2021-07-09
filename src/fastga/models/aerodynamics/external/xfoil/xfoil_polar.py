@@ -104,7 +104,7 @@ class XfoilPolar(ExternalCodeComp):
     def compute(self, inputs, outputs):
 
         # Define timeout for the function
-        self.options['timeout'] = 15.0
+        self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
@@ -116,22 +116,32 @@ class XfoilPolar(ExternalCodeComp):
         data_saved = None
         interpolated_result = None
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
-                                   self.options["airfoil_file"].replace('.af', '_' + str(
-                                       math.ceil(self.options[OPTION_ALPHA_END]))) + 'S.csv')
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(
+                    ".af", "_" + str(math.ceil(self.options[OPTION_ALPHA_END]))
+                )
+                + "S.csv",
+            )
         else:
-            result_file = pth.join(pth.split(os.path.realpath(__file__))[0], "resources",
-                                   self.options["airfoil_file"].replace('.af', '') + '.csv')
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
         if pth.exists(result_file):
             no_file = False
             data_saved = pd.read_csv(result_file)
-            values = data_saved.to_numpy()[:, 1:len(data_saved.to_numpy()[0])]
+            values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
             labels = data_saved.to_numpy()[:, 0].tolist()
             data_saved = pd.DataFrame(values, index=labels)
             index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
             data_reduced = data_saved.loc[labels, index_mach]
             # Search if this exact reynolds has been computed and save results
-            reynolds_vect = np.array([float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())])
+            reynolds_vect = np.array(
+                [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
+            )
             index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
             if len(index_reynolds) == 1:
                 interpolated_result = data_reduced.loc[labels, index_reynolds]
@@ -140,28 +150,48 @@ class XfoilPolar(ExternalCodeComp):
                 lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
                 upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
                 if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                    index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
-                    index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
+                    index_lower_reynolds = index_mach[
+                        np.where(reynolds_vect == max(lower_reynolds))[0]
+                    ]
+                    index_upper_reynolds = index_mach[
+                        np.where(reynolds_vect == min(upper_reynolds))[0]
+                    ]
                     lower_values = data_reduced.loc[labels, index_lower_reynolds]
                     upper_values = data_reduced.loc[labels, index_upper_reynolds]
                     # Initialise values with lower reynolds
                     interpolated_result = lower_values
                     # Calculate reynolds ratio split for linear interpolation
-                    x_ratio = (min(upper_reynolds) - reynolds) / (min(upper_reynolds) - max(lower_reynolds))
+                    x_ratio = (min(upper_reynolds) - reynolds) / (
+                        min(upper_reynolds) - max(lower_reynolds)
+                    )
                     # Search for common alpha range for linear interpolation
-                    alpha_lower = eval(lower_values.loc['alpha', index_lower_reynolds].to_numpy()[0])
-                    alpha_upper = eval(upper_values.loc['alpha', index_upper_reynolds].to_numpy()[0])
+                    alpha_lower = eval(
+                        lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]
+                    )
+                    alpha_upper = eval(
+                        upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]
+                    )
                     alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                    interpolated_result.loc['alpha', index_lower_reynolds] = str(alpha_shared.tolist())
-                    labels.remove('alpha')
+                    interpolated_result.loc["alpha", index_lower_reynolds] = str(
+                        alpha_shared.tolist()
+                    )
+                    labels.remove("alpha")
                     # Calculate average values (cd, cl...) with linear interpolation
                     for label in labels:
-                        lower_value = np.array(eval(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]))
-                        upper_value = np.array(eval(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]))
+                        lower_value = np.array(
+                            eval(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                        )
+                        upper_value = np.array(
+                            eval(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                        )
                         # If values relative to alpha vector, performs interpolation with shared vector
                         if np.size(lower_value) == len(alpha_lower):
-                            lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
-                            upper_value = np.interp(alpha_shared, np.array(alpha_upper), upper_value)
+                            lower_value = np.interp(
+                                alpha_shared, np.array(alpha_lower), lower_value
+                            )
+                            upper_value = np.interp(
+                                alpha_shared, np.array(alpha_upper), upper_value
+                            )
                         value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                         interpolated_result.loc[label, index_lower_reynolds] = str(value)
 
@@ -190,9 +220,7 @@ class XfoilPolar(ExternalCodeComp):
 
             # profile file
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            profile = get_profile(
-                file_name=self.options["airfoil_file"],
-            ).get_sides()
+            profile = get_profile(file_name=self.options["airfoil_file"],).get_sides()
             # noinspection PyTypeChecker
             np.savetxt(
                 tmp_profile_file_path,
@@ -206,8 +234,14 @@ class XfoilPolar(ExternalCodeComp):
             # standard input file
             tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
             self._write_script_file(
-                reynolds, mach, tmp_profile_file_path, tmp_result_file_path, self.options[OPTION_ALPHA_START],
-                self.options[OPTION_ALPHA_END], ALPHA_STEP)
+                reynolds,
+                mach,
+                tmp_profile_file_path,
+                tmp_result_file_path,
+                self.options[OPTION_ALPHA_START],
+                self.options[OPTION_ALPHA_END],
+                ALPHA_STEP,
+            )
 
             # Run XFOIL --------------------------------------------------------------------------------
             self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
@@ -229,9 +263,14 @@ class XfoilPolar(ExternalCodeComp):
                 os.remove(tmp_result_file_path)
                 alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
                 self._write_script_file(
-                    reynolds, mach, tmp_profile_file_path, tmp_result_file_path, alpha_start,
-                                                                                 -1 * self.options[OPTION_ALPHA_END],
-                    -ALPHA_STEP)
+                    reynolds,
+                    mach,
+                    tmp_profile_file_path,
+                    tmp_result_file_path,
+                    alpha_start,
+                    -1 * self.options[OPTION_ALPHA_END],
+                    -ALPHA_STEP,
+                )
                 try:
                     super().compute(inputs, outputs)
                     result_array_n = self._read_polar(tmp_result_file_path)
@@ -293,11 +332,28 @@ class XfoilPolar(ExternalCodeComp):
 
             # Save results to defined path -------------------------------------------------------------
             if not error:
-                results = [np.array(mach), np.array(reynolds), np.array(cl_max_2d), np.array(cl_min_2d),
-                           str(self._reshape(alpha, alpha).tolist()), str(self._reshape(alpha, cl).tolist()),
-                           str(self._reshape(alpha, cd).tolist()), str(self._reshape(alpha, cdp).tolist()),
-                           str(self._reshape(alpha, cm).tolist())]
-                labels = ["mach", "reynolds", "cl_max_2d", "cl_min_2d", "alpha", "cl", "cd", "cdp", "cm"]
+                results = [
+                    np.array(mach),
+                    np.array(reynolds),
+                    np.array(cl_max_2d),
+                    np.array(cl_min_2d),
+                    str(self._reshape(alpha, alpha).tolist()),
+                    str(self._reshape(alpha, cl).tolist()),
+                    str(self._reshape(alpha, cd).tolist()),
+                    str(self._reshape(alpha, cdp).tolist()),
+                    str(self._reshape(alpha, cm).tolist()),
+                ]
+                labels = [
+                    "mach",
+                    "reynolds",
+                    "cl_max_2d",
+                    "cl_min_2d",
+                    "alpha",
+                    "cl",
+                    "cd",
+                    "cdp",
+                    "cm",
+                ]
                 if no_file or (data_saved is None):
                     data = pd.DataFrame(results, index=labels)
                 else:
@@ -305,8 +361,10 @@ class XfoilPolar(ExternalCodeComp):
                 try:
                     data.to_csv(result_file)
                 except:
-                    warnings.warn('Unable to save XFoil results to *.csv file: writting permission denied for {} '
-                                  'folder!'.format(local_resources.__path__[0]))
+                    warnings.warn(
+                        "Unable to save XFoil results to *.csv file: writting permission denied for {} "
+                        "folder!".format(local_resources.__path__[0])
+                    )
 
             # Getting output files if needed ---------------------------------------------------------
             if self.options[OPTION_RESULT_FOLDER_PATH] != "":
@@ -387,8 +445,16 @@ class XfoilPolar(ExternalCodeComp):
         outputs["xfoil:CL_max_2D"] = cl_max_2d
         outputs["xfoil:CL_min_2D"] = cl_min_2d
 
-    def _write_script_file(self, reynolds, mach, tmp_profile_file_path, tmp_result_file_path, alpha_start,
-                           alpha_end, step):
+    def _write_script_file(
+        self,
+        reynolds,
+        mach,
+        tmp_profile_file_path,
+        tmp_result_file_path,
+        alpha_start,
+        alpha_end,
+        step,
+    ):
         parser = InputFileGenerator()
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
             parser.set_template_file(str(input_template_path))
@@ -435,13 +501,20 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if np.abs(covered_range / alpha_range) >= 0.4:
-                lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
-                                     + lift_coeff[0]
+                lift_fct = (
+                    lambda x: (lift_coeff[1] - lift_coeff[0])
+                    / (alpha[1] - alpha[0])
+                    * (x - alpha[0])
+                    + lift_coeff[0]
+                )
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return max(lift_coeff[delta <= 0.3]), False
 
-        _LOGGER.warning("2D CL max not found, less than 40% of angle range computed: using default value {}".format(
-            DEFAULT_2D_CL_MAX))
+        _LOGGER.warning(
+            "2D CL max not found, less than 40% of angle range computed: using default value {}".format(
+                DEFAULT_2D_CL_MAX
+            )
+        )
         return DEFAULT_2D_CL_MAX, True
 
     def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
@@ -455,20 +528,27 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if covered_range / alpha_range >= 0.4:
-                lift_fct = lambda x: (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (x - alpha[0]) \
-                                     + lift_coeff[0]
+                lift_fct = (
+                    lambda x: (lift_coeff[1] - lift_coeff[0])
+                    / (alpha[1] - alpha[0])
+                    * (x - alpha[0])
+                    + lift_coeff[0]
+                )
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return min(lift_coeff[delta <= 0.3]), False
 
-        _LOGGER.warning("2D CL min not found, less than 40% of angle range computed: using default value {}".format(
-            DEFAULT_2D_CL_MIN))
+        _LOGGER.warning(
+            "2D CL min not found, less than 40% of angle range computed: using default value {}".format(
+                DEFAULT_2D_CL_MIN
+            )
+        )
         return DEFAULT_2D_CL_MIN, True
 
     @staticmethod
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """ Delete ending 0.0 values """
         for idx in range(len(x)):
-            if np.sum(x[idx:len(x)] == 0.0) == (len(x) - idx):
+            if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]
                 break
         return y

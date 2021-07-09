@@ -35,14 +35,18 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
-                        units="rad**-1")
-        self.add_output("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D",
-                        units="rad**-1")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", units="rad**-1"
+        )
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", units="rad**-1"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
@@ -54,19 +58,31 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # Section 10.4.1.1
         # Step 1.
         def y(x):
-            return tail_thickness_ratio / 0.2 * (
-                0.2969 * x ** 0.5 - 0.126 * x - 0.3516 * x ** 2.0 + 0.2843 * x ** 3.0 - 0.105 * x ** 4.0)
+            return (
+                tail_thickness_ratio
+                / 0.2
+                * (
+                    0.2969 * x ** 0.5
+                    - 0.126 * x
+                    - 0.3516 * x ** 2.0
+                    + 0.2843 * x ** 3.0
+                    - 0.105 * x ** 4.0
+                )
+            )
 
         y_90 = y(0.90)
         y_95 = y(0.95)
         y_99 = y(0.99)
 
-        tan_0_5_phi_te = (y(1. - 1.e-6) - y(1.)) / 1e-6
+        tan_0_5_phi_te = (y(1.0 - 1.0e-6) - y(1.0)) / 1e-6
         tan_0_5_phi_te_prime = (y_90 / 2.0 - y_99 / 2.0) / 9.0
         tan_0_5_phi_te_prime_prime = (y_95 / 2.0 - y_99 / 2.0) / 9.0
 
-        if (tan_0_5_phi_te == tan_0_5_phi_te_prime) and (tan_0_5_phi_te_prime == tan_0_5_phi_te_prime_prime) and (
-                tan_0_5_phi_te_prime_prime == tail_thickness_ratio):
+        if (
+            (tan_0_5_phi_te == tan_0_5_phi_te_prime)
+            and (tan_0_5_phi_te_prime == tan_0_5_phi_te_prime_prime)
+            and (tan_0_5_phi_te_prime_prime == tail_thickness_ratio)
+        ):
             condition = True
         else:
             condition = False
@@ -76,7 +92,9 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         k_cl_alpha = float(cl_alpha_airfoil_ht) / float(cl_alpha_ht_th)
 
-        k_ch_alpha = self.k_ch_alpha(tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio)
+        k_ch_alpha = self.k_ch_alpha(
+            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+        )
 
         ch_alpha = self.ch_alpha_th(tail_thickness_ratio, elevator_chord_ratio)
 
@@ -88,16 +106,16 @@ class Compute2DHingeMomentsTail(FigureDigitization):
             ch_prime_prime_alpha = ch_prime_alpha
 
         else:
-            ch_prime_prime_alpha = ch_prime_alpha + \
-                                   2. * cl_alpha_ht_th * (1. - k_cl_alpha) * \
-                                   (tan_0_5_phi_te_prime_prime - tail_thickness_ratio)
+            ch_prime_prime_alpha = ch_prime_alpha + 2.0 * cl_alpha_ht_th * (1.0 - k_cl_alpha) * (
+                tan_0_5_phi_te_prime_prime - tail_thickness_ratio
+            )
 
         # Step 4.
         # The overhang cb/cf will we taken equal to 3 as we assume a 1/4, 3/4 chord repartition for the hinge line)
         # We will also assume that the thickness ratio of the elevator is the same as the tail and that it has a
         # round nose
 
-        balance_ratio = math.sqrt((1. / 3.) ** 2.0 - (tail_thickness_ratio * 5. / 4) ** 2.0)
+        balance_ratio = math.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0)
 
         if balance_ratio < 0.15:
             balance_ratio = 0.15
@@ -113,7 +131,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         sos_cruise = Atmosphere(cruise_alt, altitude_in_feet=False).speed_of_sound
         mach = v_cruise / sos_cruise
-        beta = math.sqrt(1. - mach ** 2.0)
+        beta = math.sqrt(1.0 - mach ** 2.0)
 
         ch_alpha_fin = ch_alpha_balance / beta
 
@@ -122,7 +140,9 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         # Step 2.
 
-        k_ch_delta = self.k_ch_delta(tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio)
+        k_ch_delta = self.k_ch_delta(
+            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+        )
 
         ch_delta = self.ch_delta_th(tail_thickness_ratio, elevator_chord_ratio)
 
@@ -134,13 +154,20 @@ class Compute2DHingeMomentsTail(FigureDigitization):
             ch_prime_prime_delta = ch_prime_delta
 
         else:
-            cl_delta_th = self.cl_delta_theory_plain_flap(tail_thickness_ratio, elevator_chord_ratio)
+            cl_delta_th = self.cl_delta_theory_plain_flap(
+                tail_thickness_ratio, elevator_chord_ratio
+            )
 
-            k_cl_delta = self.k_cl_delta_plain_flap(tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio)
+            k_cl_delta = self.k_cl_delta_plain_flap(
+                tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            )
 
             ch_prime_prime_delta = ch_prime_delta + (
-                    2. * cl_delta_th * (1. - k_cl_delta) *
-                    (tan_0_5_phi_te_prime_prime - tail_thickness_ratio))
+                2.0
+                * cl_delta_th
+                * (1.0 - k_cl_delta)
+                * (tan_0_5_phi_te_prime_prime - tail_thickness_ratio)
+            )
 
         # Step 4. Same assumption as the step 4. of the previous section. Only this time we only take the curve for
         # the NACA 0009
@@ -162,23 +189,33 @@ class Compute3DHingeMomentsTail(FigureDigitization):
     """
 
     def setup(self):
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
+            val=np.nan,
+            units="rad**-1",
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D",
+            val=np.nan,
+            units="rad**-1",
+        )
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
         self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
 
-        self.add_output("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
-                        units="rad**-1")
-        self.add_output("data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
-                        units="rad**-1")
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
+        )
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
-        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]*math.pi/180.
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"] * math.pi / 180.0
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
         elevator_angle = float(abs(inputs["data:mission:sizing:takeoff:elevator_angle"]))
@@ -186,7 +223,9 @@ class Compute3DHingeMomentsTail(FigureDigitization):
         # Section 10.4.2.1
         # Step 1. : delta_Ch_alpha we will ignore it for now, same for delta_Ch_delta
 
-        ch_alpha_3d = ((ar_ht * math.cos(sweep_25_ht))/(ar_ht + 2. * math.cos(sweep_25_ht))) * ch_alpha_2d
+        ch_alpha_3d = (
+            (ar_ht * math.cos(sweep_25_ht)) / (ar_ht + 2.0 * math.cos(sweep_25_ht))
+        ) * ch_alpha_2d
 
         # Section 10.4.2.2
         # We assume the same sweep angle for hl and tail
@@ -196,9 +235,15 @@ class Compute3DHingeMomentsTail(FigureDigitization):
         # angle which we will take at 25 degree
         a_delta = self.k_prime_single_slotted(elevator_angle, elevator_chord_ratio)
 
-        ch_delta_3d = math.cos(sweep_25_ht) * math.cos(sweep_hl) * (
-            ch_delta_2d +
-            a_delta * ((2.0 * math.cos(sweep_25_ht))/(ar_ht + 2. * math.cos(sweep_25_ht))) * ch_alpha_2d
+        ch_delta_3d = (
+            math.cos(sweep_25_ht)
+            * math.cos(sweep_hl)
+            * (
+                ch_delta_2d
+                + a_delta
+                * ((2.0 * math.cos(sweep_25_ht)) / (ar_ht + 2.0 * math.cos(sweep_25_ht)))
+                * ch_alpha_2d
+            )
         )
 
         outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha"] = ch_alpha_3d

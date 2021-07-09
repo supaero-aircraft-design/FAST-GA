@@ -32,7 +32,9 @@ class ComputeGlobalCG(Group):
     def setup(self):
         self.add_subsystem("cg_ratio_aft", ComputeCGRatioAft(), promotes=["*"])
         self.add_subsystem("cg_ratio_lc_ground", ComputeGroundCGCase(), promotes=["*"])
-        self.add_subsystem("cg_ratio_lc_flight",
-                           ComputeFlightCGCase(propulsion_id=self.options["propulsion_id"]),
-                           promotes=["*"])
+        self.add_subsystem(
+            "cg_ratio_lc_flight",
+            ComputeFlightCGCase(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
         self.add_subsystem("cg_ratio_extrema", ComputeMaxMinCGratio(), promotes=["*"])

@@ -15,8 +15,6 @@ Estimation of geometry components
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_total_area import ComputeTotalArea
-from .fuselage import ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizingFD, \
-    ComputeFuselageGeometryCabinSizingFL
 from .ht import ComputeHorizontalTailGeometryFD, ComputeHorizontalTailGeometryFL
 from .nacelle import ComputeNacelleGeometry
 from .vt import ComputeVerticalTailGeometryFD, ComputeVerticalTailGeometryFL

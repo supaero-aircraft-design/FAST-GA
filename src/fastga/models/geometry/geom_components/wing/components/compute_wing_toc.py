@@ -25,23 +25,23 @@ class ComputeWingToc(om.ExplicitComponent):
     """ Wing ToC estimation """
 
     def setup(self):
-        
+
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        
+
         self.add_output("data:geometry:wing:root:thickness_ratio")
         self.add_output("data:geometry:wing:kink:thickness_ratio")
         self.add_output("data:geometry:wing:tip:thickness_ratio")
-        
+
         self.declare_partials("*", "*", method="fd")
-        
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         el_aero = inputs["data:geometry:wing:thickness_ratio"]
-        
+
         el_emp = 1.24 * el_aero
         el_break = 0.94 * el_aero
         el_ext = 0.86 * el_aero
-        
+
         outputs["data:geometry:wing:root:thickness_ratio"] = el_emp
         outputs["data:geometry:wing:kink:thickness_ratio"] = el_break
         outputs["data:geometry:wing:tip:thickness_ratio"] = el_ext

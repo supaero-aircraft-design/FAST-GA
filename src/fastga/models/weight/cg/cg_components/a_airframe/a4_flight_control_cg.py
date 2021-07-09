@@ -40,7 +40,7 @@ class ComputeFlightControlCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         y0_wing = inputs["data:geometry:wing:MAC:y"]
@@ -59,8 +59,7 @@ class ComputeFlightControlCG(ExplicitComponent):
             x_cg_a4 = fa_length - 0.25 * l0_wing - x0_wing + x_cg_control
         else:
             x_leading_edge = x4_wing * (y0_wing - y2_wing) / (y4_wing - y2_wing)
-            l_cg_control = l2_wing + (y0_wing - y2_wing) \
-                            / (y4_wing - y2_wing) * (l4_wing - l2_wing)
+            l_cg_control = l2_wing + (y0_wing - y2_wing) / (y4_wing - y2_wing) * (l4_wing - l2_wing)
             x_cg_control = x_leading_edge + l_cg_control
             x_cg_a4 = fa_length - 0.25 * l0_wing - x0_wing + x_cg_control
 

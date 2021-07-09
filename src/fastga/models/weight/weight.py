@@ -41,5 +41,9 @@ class Weight(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self.add_subsystem("mass_breakdown", MassBreakdown(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "mass_breakdown",
+            MassBreakdown(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
         self.add_subsystem("cg", CG(propulsion_id=self.options["propulsion_id"]), promotes=["*"])

@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Computes Mach number and unitary Reynolds
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -22,6 +22,11 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeUnitReynolds(ExplicitComponent):
+    """
+    Computes the mach number and reynolds number based on inputs and the ISA model
+
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
@@ -43,10 +48,13 @@ class ComputeUnitReynolds(ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
-            mach = inputs["data:TLAR:v_approach"]/Atmosphere(altitude).speed_of_sound
+            mach = inputs["data:TLAR:v_approach"] / Atmosphere(altitude).speed_of_sound
         else:
             altitude = float(inputs["data:mission:sizing:main_route:cruise:altitude"])
-            mach = inputs["data:TLAR:v_cruise"]/Atmosphere(altitude, altitude_in_feet=False).speed_of_sound
+            mach = (
+                inputs["data:TLAR:v_cruise"]
+                / Atmosphere(altitude, altitude_in_feet=False).speed_of_sound
+            )
 
         atm = Atmosphere(altitude, altitude_in_feet=False)
         atm.mach = mach

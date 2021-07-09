@@ -49,24 +49,44 @@ def evolution_diagram(
     x_maneuver_pts = [velocity_array[0], velocity_array[2]]
     y_maneuver_pts = [load_factor_array[0], load_factor_array[2]]
     for idx in range(len(x_maneuver_line)):
-        y_maneuver_line.append(load_factor_array[0] * (x_maneuver_line[idx] / velocity_array[0])**2.0)
-    x_maneuver_line.extend([velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3]])
-    y_maneuver_line.extend([load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3]])
+        y_maneuver_line.append(
+            load_factor_array[0] * (x_maneuver_line[idx] / velocity_array[0]) ** 2.0
+        )
+    x_maneuver_line.extend(
+        [velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3]]
+    )
+    y_maneuver_line.extend(
+        [load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3]]
+    )
     x_local = list(np.linspace(velocity_array[3], velocity_array[1], 10))
     x_maneuver_line.extend(x_local)
-    x_maneuver_pts.extend([velocity_array[9], velocity_array[10], velocity_array[6], velocity_array[3],
-                           velocity_array[1]])
-    y_maneuver_pts.extend([load_factor_array[9], load_factor_array[10], load_factor_array[6], load_factor_array[3],
-                           load_factor_array[1]])
+    x_maneuver_pts.extend(
+        [
+            velocity_array[9],
+            velocity_array[10],
+            velocity_array[6],
+            velocity_array[3],
+            velocity_array[1],
+        ]
+    )
+    y_maneuver_pts.extend(
+        [
+            load_factor_array[9],
+            load_factor_array[10],
+            load_factor_array[6],
+            load_factor_array[3],
+            load_factor_array[1],
+        ]
+    )
     for idx in range(len(x_local)):
-        y_maneuver_line.append(load_factor_array[1] * (x_local[idx] / x_local[-1])**2.0)
+        y_maneuver_line.append(load_factor_array[1] * (x_local[idx] / x_local[-1]) ** 2.0)
     x_maneuver_line.extend([x_local[-1], velocity_array[0], velocity_array[0]])
     y_maneuver_line.extend([0.0, 0.0, load_factor_array[0]])
 
     # Save gust envelope
     x_gust = [0.0]
     y_gust = [1.0]
-    if not(velocity_array[4] == 0.0):
+    if not (velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
     x_gust.append(velocity_array[7])
@@ -83,19 +103,22 @@ def evolution_diagram(
     x_gust.append(0.0)
     y_gust.append(0.0)
 
-
     if fig is None:
         fig = go.Figure()
 
-    scatter = go.Scatter(x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + ' - maneuver')
+    scatter = go.Scatter(
+        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + " - maneuver"
+    )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + ' - maneuver [points]')
+    scatter = go.Scatter(
+        x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + " - maneuver [points]"
+    )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + ' - gust')
+    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + " - gust")
 
     fig.add_trace(scatter)
 
@@ -106,9 +129,13 @@ def evolution_diagram(
         title_x=0.5,
         xaxis=dict(range=[0.0, max(max(x_maneuver_line), max(x_gust)) * 1.1]),
         xaxis_title="speed [m/s]",
-        yaxis=dict(range=[min(min(y_maneuver_line), min(y_gust)) * 1.1, max(max(y_maneuver_line), max(y_gust)) * 1.1]),
+        yaxis=dict(
+            range=[
+                min(min(y_maneuver_line), min(y_gust)) * 1.1,
+                max(max(y_maneuver_line), max(y_gust)) * 1.1,
+            ]
+        ),
         yaxis_title="load [g]",
     )
-
 
     return fig

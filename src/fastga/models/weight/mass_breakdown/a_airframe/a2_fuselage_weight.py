@@ -35,6 +35,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -53,14 +54,22 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         fus_length = inputs["data:geometry:fuselage:length"]
         v_max_sl = inputs["data:TLAR:v_max_sl"]
 
-        a2 = 200.0 * (
+        a2 = (
+            200.0
+            * (
                 (mtow * sizing_factor_ultimate / (10.0 ** 5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
-                * (maximum_width + maximum_height) * 3.28084 / 10.0
+                * (maximum_width + maximum_height)
+                * 3.28084
+                / 10.0
                 * (v_max_sl / 100.0) ** 0.338
-        ) ** 1.1  # mass formula in lb
+            )
+            ** 1.1
+        )  # mass formula in lb
 
-        outputs["data:weight:airframe:fuselage:mass"] = a2
+        outputs["data:weight:airframe:fuselage:mass"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )
 
 
 class ComputeFuselageWeightRaymer(om.ExplicitComponent):
@@ -84,7 +93,10 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="ft**2")
         self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft")
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
+        )
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
 
@@ -113,23 +125,25 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         atm_sl = Atmosphere(0.0)
         pressure_sl = atm_sl.pressure
 
-        dynamic_pressure = 1. / 2. * rho_cruise * v_cruise ** 2. * 0.020885434273039
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise ** 2.0 * 0.020885434273039
 
-        if cruise_alt > 10000.:
-            fus_dia = (maximum_height + maximum_width) / 2.
-            v_press = (fus_length - lar - lav) * math.pi * (fus_dia / 2.) ** 2.0
+        if cruise_alt > 10000.0:
+            fus_dia = (maximum_height + maximum_width) / 2.0
+            v_press = (fus_length - lar - lav) * math.pi * (fus_dia / 2.0) ** 2.0
             delta_p = (pressure_sl - pressure_cruise) * 0.000145038
         else:
             v_press = 0.0
             delta_p = 0.0
 
         a2 = 0.052 * (
-                wet_area_fus ** 1.086 *
-                (sizing_factor_ultimate * mtow) ** 0.177 *
-                lp_ht ** (-0.051) *
-                ((fus_length - lar - lav) / maximum_height) ** (-0.072) *
-                dynamic_pressure ** 0.241 +
-                11.9 * (v_press * delta_p) ** 0.271
+            wet_area_fus ** 1.086
+            * (sizing_factor_ultimate * mtow) ** 0.177
+            * lp_ht ** (-0.051)
+            * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+            * dynamic_pressure ** 0.241
+            + 11.9 * (v_press * delta_p) ** 0.271
         )
 
-        outputs["data:weight:airframe:fuselage:mass_raymer"] = a2
+        outputs["data:weight:airframe:fuselage:mass_raymer"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )

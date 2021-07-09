@@ -167,15 +167,15 @@ class Profile:
         """
         x_up_vect = list(np.array(upper_side_points[X]).tolist())
         x_lo_vect = list(np.array(lower_side_points[X]).tolist())
-        x_start = (np.logspace(0, 1, 15)-1)/9.0 * (0.1 - max(min(x_up_vect), min(x_lo_vect))) +\
-                  max(min(x_up_vect), min(x_lo_vect))
-        x_interp = np.append(
-            x_start,
-            np.linspace(0.13, min(max(x_up_vect), max(x_lo_vect)), 25)
-        )
+        x_start = (np.logspace(0, 1, 15) - 1) / 9.0 * (
+            0.1 - max(min(x_up_vect), min(x_lo_vect))
+        ) + max(min(x_up_vect), min(x_lo_vect))
+        x_interp = np.append(x_start, np.linspace(0.13, min(max(x_up_vect), max(x_lo_vect)), 25))
         interp_lower = interp1d(lower_side_points[X], lower_side_points[Z], kind="slinear")
         interp_upper = interp1d(upper_side_points[X], upper_side_points[Z], kind="slinear")
-        z_sides = pd.DataFrame({"z_lower": interp_lower(x_interp), "z_upper": interp_upper(x_interp)})
+        z_sides = pd.DataFrame(
+            {"z_lower": interp_lower(x_interp), "z_upper": interp_upper(x_interp)}
+        )
         z = z_sides.mean(axis=1)
         thickness = z_sides.diff(axis=1).iloc[:, -1]
 
@@ -185,7 +185,7 @@ class Profile:
             data={
                 X: (x_interp / chord_length).tolist(),
                 Z: (z / chord_length).tolist(),
-                THICKNESS: (thickness / max_thickness).tolist()
+                THICKNESS: (thickness / max_thickness).tolist(),
             }
         )
         return chord_length, max_thickness
@@ -198,17 +198,17 @@ class Profile:
         # permanently for 0-1/0-1 (or 1-0/1-0) chord struct.)
         x_vect = np.array(x)
         if x_vect[0] > x_vect[1]:
-            list_index = np.where(x_vect[0:len(x_vect) - 1] < x_vect[1:len(x_vect)])[0].tolist()
+            list_index = np.where(x_vect[0 : len(x_vect) - 1] < x_vect[1 : len(x_vect)])[0].tolist()
         else:
-            list_index = np.where(x_vect[0:len(x_vect) - 1] > x_vect[1:len(x_vect)])[0].tolist()
+            list_index = np.where(x_vect[0 : len(x_vect) - 1] > x_vect[1 : len(x_vect)])[0].tolist()
         index = int(list_index[0] + 1)
 
         if index is None:
             side1 = pd.DataFrame({X: x, Z: z})
             # noinspection PyTypeChecker
-            side2 = pd.DataFrame({X: x, Z: -1.0*z})
+            side2 = pd.DataFrame({X: x, Z: -1.0 * z})
         else:
-            side1 = pd.DataFrame({X: x[0: index], Z: z[0: index]})
+            side1 = pd.DataFrame({X: x[0:index], Z: z[0:index]})
             side2 = pd.DataFrame({X: x[index:], Z: z[index:]})
 
         side1.sort_values(by=X, inplace=True)

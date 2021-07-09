@@ -31,19 +31,20 @@ class ComputeFuelLinesWeight(ExplicitComponent):
     """
 
     def setup(self):
-        
+
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
         self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
-        
+
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
         self.declare_partials(
-            "data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW", method="fd")
+            "data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW", method="fd"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
-        tank_nb = 2.  # Number of fuel tanks is assumed to be two, 1 per semi-wing
+
+        tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
         engine_nb = inputs["data:geometry:propulsion:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
@@ -54,9 +55,9 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         if fuel_type == 1.0:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
         elif fuel_type == 2.0:
-            m_vol_fuel = 860.  # Diesel volume-mass [kg/m**3], cold worst case
+            m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
         elif fuel_type == 3.0:
-            m_vol_fuel = 804.  # Jet-A1 volume mass [kg/m**3], cold worst case
+            m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 718.9
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
@@ -64,9 +65,9 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         k_fsp = m_vol_fuel * 0.008345
         # In lbs/gal
 
-        b2 = 2.49*(
-                (fuel_mass/k_fsp)**0.6 * 0.5**0.3
-                * tank_nb**0.2 * engine_nb**0.13
-        )**1.21  # mass formula in lb
-        
+        b2 = (
+            2.49
+            * ((fuel_mass / k_fsp) ** 0.6 * 0.5 ** 0.3 * tank_nb ** 0.2 * engine_nb ** 0.13) ** 1.21
+        )  # mass formula in lb
+
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
