@@ -20,10 +20,10 @@ Install
 
 **Prerequisite**:FAST-OAD-GA needs at least **Python 3.7.0**.
 
-It is recommended (but not required) to install FAST-(OAD)-GA in a virtual
+It is recommended (but not required) to install FAST-OAD-GA in a virtual
 environment ([conda](https://docs.conda.io/en/latest/),
 [venv](https://docs.python.org/3.7/library/venv.html), ...)
 
 The FAST-(OAD)-GA is not registered for a direct pip install.
-Yet an install using pip command is possible. To do so, use command:
-**pip install git+https://github.com/supaero-aircraft-design/FAST-GA.git@vxxx**, where xxx is the version number.
+Therefore, you can use poetry to make a build (using pyproject.toml) and then, use 
+created FASTGA-version-...whl file for a pip install.
