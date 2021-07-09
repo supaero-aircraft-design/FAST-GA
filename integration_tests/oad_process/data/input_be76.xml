@@ -178,16 +178,16 @@
 		<weight>
 			<airframe>
 				<wing>
-				  <k_factor_a1>1.0</k_factor_a1>
+				  <k_factor>1.0</k_factor>
 				</wing>
 				<fuselage>
-				  <k_factor_a2>1.0</k_factor_a2>
+				  <k_factor>1.0</k_factor>
 				</fuselage>
 				<horizontal_tail>
-				  <k_factor_a31>1.0</k_factor_a31>
+				  <k_factor>1.0</k_factor>
 				</horizontal_tail>
 				<vertical_tail>
-				  <k_factor_a32>1.0</k_factor_a32>
+				  <k_factor>1.0</k_factor>
 				</vertical_tail>
 		  	</airframe>
 		</weight>

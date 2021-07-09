@@ -42,7 +42,12 @@ from . import resources
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastga.yml"
-BOOLEAN_OPTIONS =["use_openvsp", "compute_mach_interpolation", "compute_slipstream", "low_speed_aero"]
+BOOLEAN_OPTIONS = [
+    "use_openvsp",
+    "compute_mach_interpolation",
+    "compute_slipstream",
+    "low_speed_aero",
+]
 
 
 def generate_variables_description(subpackage_path: str, overwrite: bool = False):
@@ -59,11 +64,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
     :param overwrite: if True, the file will be written, even if it already exists
     :raise FastFileExistsError: if overwrite==False and subpackage_path already exists
     """
-    if not overwrite and pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
+    if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
         raise FastFileExistsError(
             "Variable descriptions file is not written because it already exists. "
-            "Use overwrite=True to bypass." % pth.join(subpackage_path, 'variable_descriptions.txt'),
-            pth.join(subpackage_path, 'variable_descriptions.txt'),
+            "Use overwrite=True to bypass."
+            % pth.join(subpackage_path, "variable_descriptions.txt"),
+            pth.join(subpackage_path, "variable_descriptions.txt"),
         )
 
     if not pth.exists(subpackage_path):
@@ -71,32 +77,32 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
     else:
         # Read file and construct dictionnary of variables name index
         saved_dict = {}
-        if pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
-            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'r')
+        if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "r")
             for line in file:
-                if line[0] != '#' and len(line.split('||')) == 2:
-                    variable_name, variable_description = line.split('||')
+                if line[0] != "#" and len(line.split("||")) == 2:
+                    variable_name, variable_description = line.split("||")
                     variable_name_length = len(variable_name)
-                    variable_name = variable_name.replace(' ', '')
+                    variable_name = variable_name.replace(" ", "")
                     while variable_name_length != len(variable_name):
-                        variable_name = variable_name.replace(' ', '')
+                        variable_name = variable_name.replace(" ", "")
                         variable_name_length = len(variable_name)
                     saved_dict[variable_name] = variable_description
             file.close()
 
         # If path point to ./models directory list output variables described in the different models
-        if subpackage_path.split('\\')[-1] == "models":
+        if subpackage_path.split("\\")[-1] == "models":
             for root, dirs, files in os.walk(subpackage_path, topdown=False):
                 for name in files:
-                    if name == 'variable_descriptions.txt':
-                        file = open(pth.join(root, name), 'r')
+                    if name == "variable_descriptions.txt":
+                        file = open(pth.join(root, name), "r")
                         for line in file:
-                            if line[0] != '#' and len(line.split('||')) == 2:
-                                variable_name, variable_description = line.split('||')
+                            if line[0] != "#" and len(line.split("||")) == 2:
+                                variable_name, variable_description = line.split("||")
                                 variable_name_length = len(variable_name)
-                                variable_name = variable_name.replace(' ', '')
+                                variable_name = variable_name.replace(" ", "")
                                 while variable_name_length != len(variable_name):
-                                    variable_name = variable_name.replace(' ', '')
+                                    variable_name = variable_name.replace(" ", "")
                                     variable_name_length = len(variable_name)
                                 if variable_name not in saved_dict.keys():
                                     saved_dict[variable_name] = variable_description
@@ -106,73 +112,119 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         dict_to_be_saved = {}
         for root, dirs, files in os.walk(subpackage_path, topdown=False):
             for name in files:
-                if '.py' in name:
-                    spec = importlib.util.spec_from_file_location(name.replace(".py", ""), pth.join(root, name))
+                if ".py" in name:
+                    spec = importlib.util.spec_from_file_location(
+                        name.replace(".py", ""), pth.join(root, name)
+                    )
                     module = importlib.util.module_from_spec(spec)
                     try:
                         spec.loader.exec_module(module)
                         class_list = [x for x in dir(module) if inspect.isclass(getattr(module, x))]
-                        root_lib = '.'.join(root.split('\\')[root.split('\\').index("fastga"):])
-                        root_lib += '.' + name.replace(".py", "")
+                        root_lib = ".".join(root.split("\\")[root.split("\\").index("fastga") :])
+                        root_lib += "." + name.replace(".py", "")
                         for class_name in class_list:
                             try:
-                                exec('from ' + root_lib + ' import ' + class_name + ' as my_class')
-                                exec('variables = list_variables(my_class())')
+                                exec("from " + root_lib + " import " + class_name + " as my_class")
+                                exec("variables = list_variables(my_class())")
                                 options = eval("my_class().options")
-                                local_options =[]
+                                local_options = []
                                 for option_name in BOOLEAN_OPTIONS:
                                     if option_name in options._dict.keys():
                                         local_options.append(option_name)
                                 if len(local_options) == 0:
-                                    if subpackage_path.split('\\')[-1] == "models":
-                                        var_names = eval('[var.name for var in variables if var.is_input]')
+                                    if subpackage_path.split("\\")[-1] == "models":
+                                        var_names = eval(
+                                            "[var.name for var in variables if var.is_input]"
+                                        )
                                     else:
-                                        var_names = eval('[var.name for var in variables if not var.is_input]')
-                                        if len(eval('list_ivc_outputs_name(my_class())')) != 0:
-                                            var_names.append(eval('list_ivc_outputs_name(my_class())'))
+                                        var_names = eval(
+                                            "[var.name for var in variables if not var.is_input]"
+                                        )
+                                        if len(eval("list_ivc_outputs_name(my_class())")) != 0:
+                                            var_names.append(
+                                                eval("list_ivc_outputs_name(my_class())")
+                                            )
                                     var_names = list(dict.fromkeys(var_names))
                                     for key in var_names:
-                                        if ('data:' in key) or ('settings:' in key) or ('tuning:' in key):
+                                        if (
+                                            ("data:" in key)
+                                            or ("settings:" in key)
+                                            or ("tuning:" in key)
+                                        ):
                                             if key not in dict_to_be_saved.keys():
-                                                dict_to_be_saved[key] = ''
+                                                dict_to_be_saved[key] = ""
                                 else:
-                                    for options_tuple in list(product([True, False], repeat=len(local_options))):
-                                        exec_line = 'variables = list_variables(my_class('
+                                    for options_tuple in list(
+                                        product([True, False], repeat=len(local_options))
+                                    ):
+                                        exec_line = "variables = list_variables(my_class("
                                         for idx in range(len(local_options)):
-                                            exec_line += local_options[idx] + '=' + str(options_tuple[idx]) + ','
-                                        exec_line = exec_line[0:-1] + '))'
+                                            exec_line += (
+                                                local_options[idx]
+                                                + "="
+                                                + str(options_tuple[idx])
+                                                + ","
+                                            )
+                                        exec_line = exec_line[0:-1] + "))"
                                         exec(exec_line)
-                                        if subpackage_path.split('\\')[-1] == "models":
-                                            var_names = eval('[var.name for var in variables if var.is_input]')
+                                        if subpackage_path.split("\\")[-1] == "models":
+                                            var_names = eval(
+                                                "[var.name for var in variables if var.is_input]"
+                                            )
                                         else:
-                                            var_names = eval('[var.name for var in variables if not var.is_input]')
-                                            if len(eval(exec_line.replace('variables = list_variables',
-                                                                          'list_ivc_outputs_name'))) != 0:
-                                                var_names.append(eval(exec_line.replace('variables = list_variables',
-                                                                                        'list_ivc_outputs_name')))
+                                            var_names = eval(
+                                                "[var.name for var in variables if not var.is_input]"
+                                            )
+                                            if (
+                                                len(
+                                                    eval(
+                                                        exec_line.replace(
+                                                            "variables = list_variables",
+                                                            "list_ivc_outputs_name",
+                                                        )
+                                                    )
+                                                )
+                                                != 0
+                                            ):
+                                                var_names.append(
+                                                    eval(
+                                                        exec_line.replace(
+                                                            "variables = list_variables",
+                                                            "list_ivc_outputs_name",
+                                                        )
+                                                    )
+                                                )
                                         var_names = list(dict.fromkeys(var_names))
                                         for key in var_names:
-                                            if ('data:' in key) or ('settings:' in key) or ('tuning:' in key):
+                                            if (
+                                                ("data:" in key)
+                                                or ("settings:" in key)
+                                                or ("tuning:" in key)
+                                            ):
                                                 if key not in dict_to_be_saved.keys():
-                                                    dict_to_be_saved[key] = ''
+                                                    dict_to_be_saved[key] = ""
                             except:
                                 pass
                     except:
                         pass
 
         # Complete the variable descriptions file with missing outputs
-        if pth.exists(pth.join(subpackage_path, 'variable_descriptions.txt')):
-            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'a')
-            file.write('\n')
+        if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
+            file.write("\n")
         else:
-            file = open(pth.join(subpackage_path, 'variable_descriptions.txt'), 'w')
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
             file.write("# Documentation of variables used in FAST-GA models\n")
             file.write("# Each line should be like:\n")
-            file.write("# my:variable||The description of my:variable, as long as needed, but on one line.\n")
-            file.write("# The separator \"||\" can be surrounded with spaces (that will be ignored)\n\n")
+            file.write(
+                "# my:variable||The description of my:variable, as long as needed, but on one line.\n"
+            )
+            file.write(
+                '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
+            )
         sortedkeys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
         for key in sortedkeys:
-            if not(key in saved_dict.keys()):
+            if not (key in saved_dict.keys()):
                 file.write(key + " || \n")
         file.close()
 
@@ -200,7 +252,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
 
 def write_needed_inputs(
-        problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
+    problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
 ):
     variables = DataFile(xml_file_path)
     variables.update(
@@ -215,9 +267,7 @@ def write_needed_inputs(
     variables.save()
 
 
-def list_ivc_outputs_name(
-        system: Union[ExplicitComponent, ImplicitComponent, Group],
-):
+def list_ivc_outputs_name(system: Union[ExplicitComponent, ImplicitComponent, Group],):
     # List all "root" components in the systems, meaning the components that don't have any subcomponents
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", system, promotes=["*"])
@@ -232,7 +282,7 @@ def list_ivc_outputs_name(
     for sub_system_keys in dict_sub_system.keys():
         if dict_sub_system[sub_system_keys] == "IndepVarComp":
             actual_attribute_name = sub_system_keys.replace("model.system.", "")
-            address_levels = actual_attribute_name.split('.')
+            address_levels = actual_attribute_name.split(".")
             component = model.system
             for next_level in address_levels:
                 component = getattr(component, next_level)
@@ -244,10 +294,10 @@ def list_ivc_outputs_name(
 
 
 def generate_block_analysis(
-        system: Union[ExplicitComponent, ImplicitComponent, Group],
-        var_inputs: List,
-        xml_file_path: str,
-        overwrite: bool = False,
+    system: Union[ExplicitComponent, ImplicitComponent, Group],
+    var_inputs: List,
+    xml_file_path: str,
+    overwrite: bool = False,
 ):
     # Search what are the component/group outputs
     variables = list_variables(system)
@@ -286,7 +336,10 @@ def generate_block_analysis(
             xml_inputs = reader.names()
         else:
             xml_inputs = []
-        if not (set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names)) == set(inputs_names)):
+        if not (
+            set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
+            == set(inputs_names)
+        ):
             # If some inputs are missing write an error message and add them to the problem if authorized
             missing_inputs = list(
                 set(inputs_names).difference(
@@ -358,8 +411,9 @@ def list_all_subsystem(model, model_address, dict_subsystems):
     try:
         subsystem_list = model._proc_info.keys()
         for subsystem in subsystem_list:
-            dict_subsystems = list_all_subsystem(getattr(model, subsystem), model_address + '.' + subsystem,
-                                                 dict_subsystems)
+            dict_subsystems = list_all_subsystem(
+                getattr(model, subsystem), model_address + "." + subsystem, dict_subsystems
+            )
     except:
         dict_subsystems[model_address] = get_type(model)
 
@@ -367,8 +421,8 @@ def list_all_subsystem(model, model_address, dict_subsystems):
 
 
 def get_type(model):
-    raw_type = model.msginfo.split('<')[-1]
-    type_alone = raw_type.split(' ')[-1]
+    raw_type = model.msginfo.split("<")[-1]
+    type_alone = raw_type.split(" ")[-1]
     model_type = type_alone[:-1]
 
     return model_type

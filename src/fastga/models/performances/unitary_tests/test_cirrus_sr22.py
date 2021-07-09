@@ -241,9 +241,7 @@ def test_loop_cruise_distance():
     """ Tests a distance computation loop matching the descent value/TLAR total range. """
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(
-        list_inputs(Mission(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
-    )
+    ivc = get_indep_var_comp(list_inputs(Mission(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker

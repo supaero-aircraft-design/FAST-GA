@@ -287,9 +287,7 @@ def test_compute_fuselage_basic():
 def test_fuselage_wet_area():
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
-        __file__,
-        XML_FILE,
+        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)), __file__, XML_FILE,
     )
 
     problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)

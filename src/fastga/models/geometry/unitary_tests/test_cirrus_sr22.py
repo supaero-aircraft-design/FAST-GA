@@ -103,7 +103,7 @@ def test_compute_vt_mac():
     vt_lp = problem.get_val(
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
-    assert vt_lp == pytest.approx(4., abs=1e-3)
+    assert vt_lp == pytest.approx(4.0, abs=1e-3)
 
 
 def test_compute_vt_sweep():
@@ -286,9 +286,7 @@ def test_compute_fuselage_cabin_sizing_fl():
 def test_fuselage_wet_area():
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
-        __file__,
-        XML_FILE,
+        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)), __file__, XML_FILE,
     )
 
     problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)

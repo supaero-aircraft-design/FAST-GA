@@ -44,11 +44,9 @@ def test_update_wing_area():
 
     problem = run_system(UpdateWingArea(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 20.05, atol=1e-2)
+    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.61, atol=1e-2)
     assert_allclose(
-        problem["data:aerodynamics:aircraft:landing:additional_CL_capacity"], 0.61, atol=1e-2
-    )
-    assert_allclose(
-        problem.get_val("data:weight:aircraft:additional_fuel_capacity", units="kg"), -27, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), -27, atol=1
     )
     # not 0.0 because MFW not updated
 
@@ -67,9 +65,7 @@ def test_update_wing_area():
 
     problem = run_system(UpdateWingArea(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 14.02, atol=1e-2)
+    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.0, atol=1e-2)
     assert_allclose(
-        problem["data:aerodynamics:aircraft:landing:additional_CL_capacity"], 0.0, atol=1e-2
-    )
-    assert_allclose(
-        problem.get_val("data:weight:aircraft:additional_fuel_capacity", units="kg"), 273, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 273, atol=1
     )

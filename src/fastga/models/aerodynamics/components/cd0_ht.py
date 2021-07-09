@@ -79,7 +79,9 @@ class Cd0HorizontalTail(ExplicitComponent):
         # Root: 50% NLF
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
-        cf_root = 0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
+        cf_root = (
+            0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
+        )
         # Tip: 50% NLF
         x_trans = 0.5
         x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375

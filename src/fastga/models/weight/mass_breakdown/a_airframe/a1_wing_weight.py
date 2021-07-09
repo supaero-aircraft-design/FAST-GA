@@ -69,5 +69,6 @@ class ComputeWingWeight(om.ExplicitComponent):
             ** 0.993
         )  # mass formula in lb
 
-        outputs["data:weight:airframe:wing:mass"] = a1 * inputs["data:weight:airframe:wing:k_factor"]
-
+        outputs["data:weight:airframe:wing:mass"] = (
+            a1 * inputs["data:weight:airframe:wing:k_factor"]
+        )

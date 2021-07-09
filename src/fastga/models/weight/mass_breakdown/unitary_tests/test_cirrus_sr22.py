@@ -35,7 +35,7 @@ from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
     ComputePowerSystemsWeight,
-    ComputeNavigationSystemsWeightFLOPS
+    ComputeNavigationSystemsWeightFLOPS,
 )
 from ..d_furniture import ComputePassengerSeatsWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
@@ -276,12 +276,12 @@ def test_compute_passenger_seats_weight():
 def test_evaluate_owe():
     """ Tests a simple evaluation of Operating Weight Empty from sample XML data. """
 
-    ivc = get_indep_var_comp(list_inputs(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # noinspection PyTypeChecker
-    mass_computation = run_system(
-        ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER), ivc
-    )
+    mass_computation = run_system(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER), ivc)
 
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1004, abs=1)
@@ -291,8 +291,11 @@ def test_loop_compute_owe():
     """ Tests a weight computation loop matching the max payload criterion. """
 
     # Payload is computed from NPAX_design
-    ivc = get_indep_var_comp(list_inputs(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True)),
+        __file__,
+        XML_FILE,
+    )
 
     # noinspection PyTypeChecker
     mass_computation = run_system(

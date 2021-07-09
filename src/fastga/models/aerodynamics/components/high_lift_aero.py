@@ -123,7 +123,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                 inputs["data:geometry:horizontal_tail:elevator_chord_ratio"],
                 abs(inputs["data:mission:sizing:landing:elevator_angle"]),
             )
-            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0) ** 2.
+            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0) ** 2.0
             * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
             * htp_area
             / wing_area

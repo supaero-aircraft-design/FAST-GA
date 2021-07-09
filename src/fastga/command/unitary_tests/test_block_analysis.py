@@ -29,10 +29,9 @@ def test_simple_working():
     complete_xml_file = pth.join(pth.dirname(__file__), "data/complete.xml")
     var_inputs = []
 
-    test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                               var_inputs,
-                                                               complete_xml_file,
-                                                               False)
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc1(), var_inputs, complete_xml_file, False
+    )
     input_dict = {}
     output_dict = test_generate_block_analysis(input_dict)
     value = output_dict.get("data:geometry:variable_4")[0]
@@ -44,10 +43,9 @@ def test_input_vars_working():
     missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
     var_inputs = ["data:geometry:variable_1"]
 
-    test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                               var_inputs,
-                                                               missing_input_xml_file,
-                                                               False)
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc1(), var_inputs, missing_input_xml_file, False
+    )
     input_dict = {"data:geometry:variable_1": (4.0, None)}
     output_dict = test_generate_block_analysis(input_dict)
     value = output_dict.get("data:geometry:variable_4")[0]
@@ -59,10 +57,9 @@ def test_ivc_working():
 
     var_inputs = []
 
-    test_generate_block_analysis = api.generate_block_analysis(Disc2(),
-                                                               var_inputs,
-                                                               missing_input_xml_file,
-                                                               False)
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc2(), var_inputs, missing_input_xml_file, False
+    )
     input_dict = {}
     output_dict = test_generate_block_analysis(input_dict)
     value = output_dict.get("data:geometry:variable_4")[0]
@@ -79,10 +76,9 @@ def test_supernumerary_inputs():
     # noinspection PyBroadException
     try:
         # noinspection PyUnusedLocal
-        test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                                   var_inputs,
-                                                                   xml_file,
-                                                                   False)
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, xml_file, False
+        )
         function_generated = True
         right_error = False
 
@@ -110,10 +106,9 @@ def test_empty_xml():
     # noinspection PyBroadException
     try:
         # noinspection PyUnusedLocal
-        test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                                   var_inputs,
-                                                                   missing_xml,
-                                                                   False)
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_xml, False
+        )
         function_generated = True
         right_error = False
 
@@ -121,8 +116,11 @@ def test_empty_xml():
 
         function_generated = False
 
-        if error.args[0] == "Input .xml file not found, a default file has been created with default NaN values, " \
-                            "but no function is returned!\nConsider defining proper values before second execution!":
+        if (
+            error.args[0]
+            == "Input .xml file not found, a default file has been created with default NaN values, "
+            "but no function is returned!\nConsider defining proper values before second execution!"
+        ):
             right_error = True
         else:
             right_error = False
@@ -135,19 +133,24 @@ def test_empty_xml():
 
     # Then test with empty xml file but var_inputs is contains all the necessary data, should succeed
 
-    var_inputs = ["data:geometry:variable_1", "data:geometry:variable_2", "data:geometry:variable_3"]
+    var_inputs = [
+        "data:geometry:variable_1",
+        "data:geometry:variable_2",
+        "data:geometry:variable_3",
+    ]
 
     # noinspection PyBroadException
     # noinspection PyUnusedLocal
     try:
-        test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                                   var_inputs,
-                                                                   missing_xml,
-                                                                   False)
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_xml, False
+        )
         function_generated = True
-        input_dict = {"data:geometry:variable_1": (1.0, None),
-                      "data:geometry:variable_2": ([3.0, 5.0], "m**2"),
-                      "data:geometry:variable_3": (2.0, None)}
+        input_dict = {
+            "data:geometry:variable_1": (1.0, None),
+            "data:geometry:variable_2": ([3.0, 5.0], "m**2"),
+            "data:geometry:variable_3": (2.0, None),
+        }
         output_dict = test_generate_block_analysis(input_dict)
         value = output_dict.get("data:geometry:variable_4")[0]
 
@@ -171,10 +174,9 @@ def test_missing_inputs_in_xml():
     # noinspection PyBroadException
     try:
         # noinspection PyUnusedLocal
-        test_generate_block_analysis = api.generate_block_analysis(Disc1(),
-                                                                   var_inputs,
-                                                                   missing_inputs_xml_file,
-                                                                   False)
+        test_generate_block_analysis = api.generate_block_analysis(
+            Disc1(), var_inputs, missing_inputs_xml_file, False
+        )
         function_generated = True
         right_error = False
 

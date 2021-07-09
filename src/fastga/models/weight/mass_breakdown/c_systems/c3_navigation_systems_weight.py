@@ -110,8 +110,11 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
             prop_nb_on_wing = prop_count
             prop_nb_on_fus = 0.0
 
-        c31 = 0.48 * fus_plan_area ** 0.57 * m_limit ** 0.5 * (
-                10. + 2.5 * n_pilot + prop_nb_on_wing + 1.5 * prop_nb_on_fus
+        c31 = (
+            0.48
+            * fus_plan_area ** 0.57
+            * m_limit ** 0.5
+            * (10.0 + 2.5 * n_pilot + prop_nb_on_wing + 1.5 * prop_nb_on_fus)
         )
         c32 = 15.8 * design_range ** 0.1 * n_pilot ** 0.7 * fus_plan_area ** 0.43
         c3 = c31 + c32

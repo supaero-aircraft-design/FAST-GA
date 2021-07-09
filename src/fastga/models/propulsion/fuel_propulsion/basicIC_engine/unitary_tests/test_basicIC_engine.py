@@ -925,7 +925,7 @@ def test_engine_dim():
         EFFICIENCY_CL,
     )
     np.testing.assert_allclose(
-        _50kw_engine.compute_dimensions(), [0.45, 0.67, 0.89, 2.03], atol=1e-2
+        _50kw_engine.compute_dimensions(), [0.45, 0.67, 1.20, 2.71], atol=1e-2
     )
     # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
     _250kw_engine = BasicICEngine(
@@ -945,5 +945,5 @@ def test_engine_dim():
         EFFICIENCY_CL,
     )
     np.testing.assert_allclose(
-        _250kw_engine.compute_dimensions(), [0.77, 1.15, 1.53, 5.93], atol=1e-2
+        _250kw_engine.compute_dimensions(), [0.77, 1.15, 2.05, 7.92], atol=1e-2
     )

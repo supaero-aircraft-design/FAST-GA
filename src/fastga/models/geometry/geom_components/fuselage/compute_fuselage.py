@@ -16,14 +16,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from openmdao.core.group import Group
-from .components import ComputeFuselageWetArea, ComputeFuselageGeometryBasic, ComputeFuselageGeometryCabinSizingFD, \
-    ComputeFuselageGeometryCabinSizingFL
+from .components import (
+    ComputeFuselageWetArea,
+    ComputeFuselageGeometryBasic,
+    ComputeFuselageGeometryCabinSizingFD,
+    ComputeFuselageGeometryCabinSizingFL,
+)
 
 from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION
 
 
 class ComputeFuselageAlternate(Group):
-
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
@@ -37,14 +40,17 @@ class ComputeFuselageAlternate(Group):
                 promotes=["*"],
             )
         else:
-            self.add_subsystem("compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"])
-        self.add_subsystem("compute_fus_wet_area", ComputeFuselageWetArea(
-                           fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
-                           promotes=["*"])
+            self.add_subsystem(
+                "compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"]
+            )
+        self.add_subsystem(
+            "compute_fus_wet_area",
+            ComputeFuselageWetArea(fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
+            promotes=["*"],
+        )
 
 
 class ComputeFuselageLegacy(Group):
-
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
@@ -58,8 +64,11 @@ class ComputeFuselageLegacy(Group):
                 promotes=["*"],
             )
         else:
-            self.add_subsystem("compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"])
-        self.add_subsystem("compute_fus_wet_area", ComputeFuselageWetArea(
-                           fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
-                           promotes=["*"])
-
+            self.add_subsystem(
+                "compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"]
+            )
+        self.add_subsystem(
+            "compute_fus_wet_area",
+            ComputeFuselageWetArea(fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
+            promotes=["*"],
+        )

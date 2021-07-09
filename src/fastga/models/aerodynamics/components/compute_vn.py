@@ -58,6 +58,7 @@ class ComputeVh(om.ExplicitComponent):
     Computes the maximum level velocity of the aircraft at sea level
 
     """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
@@ -193,9 +194,11 @@ class ComputeVN(om.ExplicitComponent):
         )
 
         if DOMAIN_PTS_NB < len(velocity_array):
-            velocity_array = velocity_array[0: DOMAIN_PTS_NB - 1]
-            load_factor_array = load_factor_array[0: DOMAIN_PTS_NB - 1]
-            warnings.warn("Defined maximum stored domain points at the beginning of the file exceeded!")
+            velocity_array = velocity_array[0 : DOMAIN_PTS_NB - 1]
+            load_factor_array = load_factor_array[0 : DOMAIN_PTS_NB - 1]
+            warnings.warn(
+                "Defined maximum stored domain points at the beginning of the file exceeded!"
+            )
         else:
             additional_zeros = list(np.zeros(DOMAIN_PTS_NB - len(velocity_array)))
             velocity_array.extend(additional_zeros)
@@ -259,9 +262,7 @@ class ComputeVN(om.ExplicitComponent):
         v_interp = []
         for mach in mach_interp:
             v_interp.append(float(mach * atm.speed_of_sound))
-        cl_alpha_interp = inputs[
-            "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-        ]
+        cl_alpha_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
         cl_alpha_fct = interpolate.interp1d(
             v_interp, cl_alpha_interp, fill_value="extrapolate", kind="quadratic"
         )
@@ -315,7 +316,9 @@ class ComputeVN(om.ExplicitComponent):
 
         # Let us define aeroplane mass ratio formula and alleviation factor formula
         def mu_g(x):
-            return (2.0 * mass * g / wing_area) / (atm.density * mean_chord * x * g)  # [x = cl_alpha]
+            return (2.0 * mass * g / wing_area) / (
+                atm.density * mean_chord * x * g
+            )  # [x = cl_alpha]
 
         def k_g(x):
             return (0.88 * x) / (5.3 + x)  # [x = mu_g]
@@ -323,26 +326,27 @@ class ComputeVN(om.ExplicitComponent):
         # Now, define the gust function
         def load_factor_gust_p(u_de_v, x):
             return float(
-                        1. + k_g(mu_g(cl_alpha_fct(x)))
-                        * atm_0.density
-                        * u_de_v
-                        * self.ft_to_m
-                        * x
-                        * cl_alpha_fct(x)
-                        / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
-                    )
+                1.0
+                + k_g(mu_g(cl_alpha_fct(x)))
+                * atm_0.density
+                * u_de_v
+                * self.ft_to_m
+                * x
+                * cl_alpha_fct(x)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+            )
 
         def load_factor_gust_n(u_de_v, x):
             return float(
-                        1
-                        - k_g(mu_g(cl_alpha_fct(x)))
-                        * atm_0.density
-                        * u_de_v
-                        * self.ft_to_m
-                        * x
-                        * cl_alpha_fct(x)
-                        / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
-                    )
+                1
+                - k_g(mu_g(cl_alpha_fct(x)))
+                * atm_0.density
+                * u_de_v
+                * self.ft_to_m
+                * x
+                * cl_alpha_fct(x)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+            )
 
         def load_factor_stall_p(x):
             return (x / vs_1g_ps) ** 2.0
@@ -372,6 +376,7 @@ class ComputeVN(om.ExplicitComponent):
             # between both curve to be 0.0 to find intersect
             def delta(x):
                 return load_factor_gust_p(u_de_vc, x) - load_factor_stall_p(x)
+
             vma_ps = max(optimize.fsolve(delta, np.array(1000.0)))
             n_ma_ps = load_factor_gust_p(u_de_vc, vma_ps)  # [-]
             velocity_array.append(float(vma_ps))
@@ -389,6 +394,7 @@ class ComputeVN(om.ExplicitComponent):
             # between both curve to be 0.0 to find intersect
             def delta(x):
                 return load_factor_gust_n(u_de_vc, x) - load_factor_stall_n(x)
+
             vma_ng = max(optimize.fsolve(delta, np.array(1000.0)))
             n_ma_ng = load_factor_gust_n(u_de_vc, vma_ng)  # [-]
             velocity_array.append(float(vma_ng))

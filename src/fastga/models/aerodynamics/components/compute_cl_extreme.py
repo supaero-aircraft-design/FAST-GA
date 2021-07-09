@@ -224,7 +224,9 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
 
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vector = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(
+            max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
+        )
         cl_xfoil_max = np.interp(
             y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
@@ -245,7 +247,7 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         """ Reshape data from openvsp/vlm lift curve """
 
         for idx in range(len(y)):
-            if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
+            if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
                 y = y[0:idx]
                 cl = cl[0:idx]
                 break
@@ -317,7 +319,9 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         # HTP stall but we already do something similar by taking as the highest value, the first value having an error
         # of 10% from linear behavior
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vector = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(
+            max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
+        )
         cl_xfoil_max = np.interp(
             y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
@@ -351,7 +355,7 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         """ Reshape data from openvsp/vlm lift curve """
 
         for idx in range(len(y)):
-            if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
+            if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
                 y = y[0:idx]
                 cl = cl[0:idx]
                 break

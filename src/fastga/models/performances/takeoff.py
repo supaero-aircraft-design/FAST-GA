@@ -57,7 +57,7 @@ class TakeOffPhase(om.Group):
             _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
-                excludes=["v2:speed", "v2:angle", ],
+                excludes=["v2:speed", "v2:angle",],
                 iotypes="inputs",
             ),
         )
@@ -66,7 +66,7 @@ class TakeOffPhase(om.Group):
             _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
-                excludes=["v_lift_off:speed", "v_lift_off:angle", ],
+                excludes=["v_lift_off:speed", "v_lift_off:angle",],
                 iotypes="inputs",
             ),
         )
@@ -75,7 +75,7 @@ class TakeOffPhase(om.Group):
             _simulate_takeoff(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _simulate_takeoff(propulsion_id=self.options["propulsion_id"]),
-                excludes=["vr:speed", "v2:angle", ],
+                excludes=["vr:speed", "v2:angle",],
             ),
         )
         self.connect("compute_v2.v2:speed", "compute_v_lift_off.v2:speed")
@@ -175,7 +175,7 @@ class _v2(om.ExplicitComponent):
         # Define Cl considering 30% margin and estimate alpha
         while True:
             cl = cl_max_takeoff / factor ** 2.0
-            v2 = math.sqrt((2. * mtow * g) / (cl * atm.density * wing_area))
+            v2 = math.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
             mach = v2 / atm.speed_of_sound
 
             flight_point = FlightPoint(
@@ -189,17 +189,18 @@ class _v2(om.ExplicitComponent):
 
             cd = cd0 + delta_cd_takeoff + coeff_k * cl ** 2.0
 
-            climb_gradient = (thrust / (mtow * g) - cd / cl)
+            climb_gradient = thrust / (mtow * g) - cd / cl
             if climb_gradient > CLIMB_GRAD_AEO:
                 break
-            elif iteration_number < 100.:
+            elif iteration_number < 100.0:
                 iteration_number += 1
                 factor += 0.01
             else:
                 _LOGGER.critical(
                     "Climb rate is less than {}, adjust weight, propulsion or takeoff configuration".format(
                         CLIMB_GRAD_AEO
-                    ))
+                    )
+                )
                 raise RuntimeError()
 
         alpha = (cl - cl0 - delta_cl_takeoff) / cl_alpha
@@ -273,9 +274,11 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         # Define ground factor effect on Drag
         def k_ground(altitude):
             return (
-                    33.0 * ((lg_height + altitude) / wing_span) ** 1.5 / (
-                        1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5
-                    ))
+                33.0
+                * ((lg_height + altitude) / wing_span) ** 1.5
+                / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
+            )
+
         # Calculate v2 speed @ safety height for different alpha lift-off
         alpha = np.linspace(0.0, min(ALPHA_LIMIT, alpha_v2), num=10)
         v_lift_off = np.zeros(np.size(alpha))
@@ -553,9 +556,11 @@ class _simulate_takeoff(om.ExplicitComponent):
         # Define ground factor effect on Drag
         def k_ground(altitude):
             return (
-                    33.0 * ((lg_height + altitude) / wing_span) ** 1.5 / (
-                        1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5
-                    ))
+                33.0
+                * ((lg_height + altitude) / wing_span) ** 1.5
+                / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
+            )
+
         # Determine rotation speed from regulation CS23.51
         vs1 = math.sqrt((mtow * g) / (0.5 * Atmosphere(0).density * wing_area * cl_max_clean))
         if inputs["data:geometry:propulsion:count"] == 1.0:
@@ -635,7 +640,7 @@ class _simulate_takeoff(om.ExplicitComponent):
                 time_t = time_t + TIME_STEP
             v_t = v_t_new
 
-        climb_gradient = (thrust / (mtow * g) - cd / cl)
+        climb_gradient = thrust / (mtow * g) - cd / cl
 
         outputs["data:mission:sizing:takeoff:VR"] = vr
         outputs["data:mission:sizing:takeoff:VLOF"] = v_lift_off

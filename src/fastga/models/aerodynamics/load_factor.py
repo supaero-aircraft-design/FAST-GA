@@ -37,14 +37,15 @@ class LoadFactor(Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self.add_subsystem("vn_diagram", ComputeVNAndVH(propulsion_id=self.options["propulsion_id"]), promotes=["*"],)
-        self.add_subsystem("sizing_load_factor",
-                           _LoadFactorIdentification(),
-                           promotes=["*"])
+        self.add_subsystem(
+            "vn_diagram",
+            ComputeVNAndVH(propulsion_id=self.options["propulsion_id"]),
+            promotes=["*"],
+        )
+        self.add_subsystem("sizing_load_factor", _LoadFactorIdentification(), promotes=["*"])
 
 
 class _LoadFactorIdentification(ExplicitComponent):
-
     def setup(self):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
         self.add_input("data:flight_domain:load_factor", val=nan_array, shape=DOMAIN_PTS_NB)

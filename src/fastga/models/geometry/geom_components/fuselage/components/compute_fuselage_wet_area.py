@@ -58,7 +58,7 @@ class ComputeFuselageWetArea(ExplicitComponent):
         if self.options[FUSELAGE_WET_AREA_OPTION] == 1.0:
             """ Using the formula from The Flight Optimization System Weights Estimation Method """
             fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-            wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.
+            wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
         else:
             """ Using the simple geometric description """
             fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage

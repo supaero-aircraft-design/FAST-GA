@@ -67,7 +67,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             ** 1.1
         )  # mass formula in lb
 
-        outputs["data:weight:airframe:fuselage:mass"] = a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        outputs["data:weight:airframe:fuselage:mass"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )
 
 
 class ComputeFuselageWeightRaymer(om.ExplicitComponent):
@@ -142,4 +144,6 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             + 11.9 * (v_press * delta_p) ** 0.271
         )
 
-        outputs["data:weight:airframe:fuselage:mass_raymer"] = a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        outputs["data:weight:airframe:fuselage:mass_raymer"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )

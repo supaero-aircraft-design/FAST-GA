@@ -70,22 +70,28 @@ class Mission(om.Group):
         self.add_subsystem(
             "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
-        self.add_subsystem("climb",
-                           _compute_climb(
-                               propulsion_id=self.options["propulsion_id"],
-                               out_file=self.options["out_file"],
-                           ), promotes=["*"])
-        self.add_subsystem("cruise",
-                           _compute_cruise(
-                               propulsion_id=self.options["propulsion_id"],
-                               out_file=self.options["out_file"],
-                           ), promotes=["*"])
+        self.add_subsystem(
+            "climb",
+            _compute_climb(
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cruise",
+            _compute_cruise(
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+            ),
+            promotes=["*"],
+        )
         self.add_subsystem("reserve", _compute_reserve(), promotes=["*"])
-        self.add_subsystem("descent",
-                           _compute_descent(
-                               propulsion_id=self.options["propulsion_id"],
-                               out_file=self.options["out_file"],
-                           ), promotes=["*"])
+        self.add_subsystem(
+            "descent",
+            _compute_descent(
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+            ),
+            promotes=["*"],
+        )
         self.add_subsystem(
             "taxi_in",
             _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
@@ -356,8 +362,12 @@ class _compute_climb(DynamicEquilibrium):
         self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
-        self.add_input("data:mission:sizing:main_route:climb:climb_rate:sea_level", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s")
+        self.add_input(
+            "data:mission:sizing:main_route:climb:climb_rate:sea_level", val=np.nan, units="m/s"
+        )
+        self.add_input(
+            "data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s"
+        )
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:distance", units="m")
@@ -389,7 +399,9 @@ class _compute_climb(DynamicEquilibrium):
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
-        climb_rate_cl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"])
+        climb_rate_cl = float(
+            inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
+        )
 
         # Define initial conditions
         t_start = time.time()
@@ -419,7 +431,9 @@ class _compute_climb(DynamicEquilibrium):
             atm = _Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
-            climb_rate = interp1d([0., float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(altitude_t)
+            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
+                altitude_t
+            )
             gamma = math.asin(climb_rate / v_tas)
             mach = v_tas / atm.speed_of_sound
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)

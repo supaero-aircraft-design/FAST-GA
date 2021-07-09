@@ -1173,7 +1173,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "y_vector_htp",
             "cl_vector_htp",
             "coef_k_htp",
-            "saved_ref_area"
+            "saved_ref_area",
         ]
         data = pd.DataFrame(results, index=labels)
         data.to_csv(result_file_path)

@@ -144,7 +144,9 @@ class AerodynamicLoads(AerostructuralLoad):
         y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
         y_vector_slip = AerostructuralLoad.delete_additional_zeros(y_vector_slip)
         cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector, len(y_vector))
-        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip, len(y_vector_slip))
+        cl_vector_slip = AerostructuralLoad.delete_additional_zeros(
+            cl_vector_slip, len(y_vector_slip)
+        )
         chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector, len(y_vector))
 
         y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)

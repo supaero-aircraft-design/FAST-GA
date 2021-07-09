@@ -86,8 +86,9 @@ class ComputeTailWeight(om.ExplicitComponent):
         )
         # Mass formula in lb
 
-        outputs["data:weight:airframe:horizontal_tail:mass"] = \
+        outputs["data:weight:airframe:horizontal_tail:mass"] = (
             a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
+        )
 
         has_t_tail = inputs["data:geometry:has_T_tail"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
@@ -110,5 +111,6 @@ class ComputeTailWeight(om.ExplicitComponent):
         )
         # Mass formula in lb
 
-        outputs["data:weight:airframe:vertical_tail:mass"] = \
+        outputs["data:weight:airframe:vertical_tail:mass"] = (
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
+        )

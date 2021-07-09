@@ -199,8 +199,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
             # TODO : Change formula for trimmable htp
             # Calculate the elevator command if htp not trimmed
             delta_e = (cl_htp - (alpha * cl_alpha_htp + cl0_htp)) / cl_elevator_delta
-            cd = cd0 + cd0_flaps + coef_k_wing * cl_wing ** 2 + coef_k_htp * cl_htp ** 2 + (
-                    cd_elevator_delta * delta_e ** 2.0
+            cd = (
+                cd0
+                + cd0_flaps
+                + coef_k_wing * cl_wing ** 2
+                + coef_k_htp * cl_htp ** 2
+                + (cd_elevator_delta * delta_e ** 2.0)
             )
             drag = q * cd * wing_area
             f1 = float(
@@ -327,7 +331,19 @@ class DynamicEquilibrium(om.ExplicitComponent):
             return float(mass * g * load_factor / (q * wing_area)), 0.0, True
 
     def save_point(
-        self, time, altitude, distance, mass, v_tas, v_cas, rho, gamma, equilibrium_result, thrust_rate, sfc, name: str
+        self,
+        time,
+        altitude,
+        distance,
+        mass,
+        v_tas,
+        v_cas,
+        rho,
+        gamma,
+        equilibrium_result,
+        thrust_rate,
+        sfc,
+        name: str,
     ):
         """
         Method to save mission point to .csv file for further post-processing

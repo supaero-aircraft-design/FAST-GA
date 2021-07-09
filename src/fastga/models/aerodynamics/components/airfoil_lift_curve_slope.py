@@ -173,8 +173,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_wing = int(np.min(np.where(wing_alpha >= ALPHA_START_LINEAR)))
         index_end_wing = int(np.max(np.where(wing_alpha <= ALPHA_END_LINEAR)))
         wing_airfoil_cl_alpha_array = (
-            wing_cl[index_start_wing + 1: index_end_wing] - wing_cl[index_start_wing]
-        ) / (wing_alpha[index_start_wing + 1: index_end_wing] - wing_alpha[index_start_wing])
+            wing_cl[index_start_wing + 1 : index_end_wing] - wing_cl[index_start_wing]
+        ) / (wing_alpha[index_start_wing + 1 : index_end_wing] - wing_alpha[index_start_wing])
         wing_airfoil_cl_alpha = np.mean(wing_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         htp_cl_orig = inputs["xfoil:horizontal_tail:CL"]
@@ -186,8 +186,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_htp = int(np.min(np.where(htp_alpha >= ALPHA_START_LINEAR)))
         index_end_htp = int(np.max(np.where(htp_alpha <= ALPHA_END_LINEAR)))
         htp_airfoil_cl_alpha_array = (
-            htp_cl[index_start_htp + 1: index_end_htp] - htp_cl[index_start_htp]
-        ) / (htp_alpha[index_start_htp + 1: index_end_htp] - htp_alpha[index_start_htp])
+            htp_cl[index_start_htp + 1 : index_end_htp] - htp_cl[index_start_htp]
+        ) / (htp_alpha[index_start_htp + 1 : index_end_htp] - htp_alpha[index_start_htp])
         htp_airfoil_cl_alpha = np.mean(htp_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         vtp_cl_orig = inputs["xfoil:horizontal_tail:CL"]
@@ -199,8 +199,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         index_start_vtp = int(np.min(np.where(vtp_alpha >= ALPHA_START_LINEAR)))
         index_end_vtp = int(np.max(np.where(vtp_alpha <= ALPHA_END_LINEAR)))
         vtp_airfoil_cl_alpha_array = (
-            vtp_cl[index_start_vtp + 1: index_end_vtp] - vtp_cl[index_start_vtp]
-        ) / (vtp_alpha[index_start_vtp + 1: index_end_vtp] - vtp_alpha[index_start_vtp])
+            vtp_cl[index_start_vtp + 1 : index_end_vtp] - vtp_cl[index_start_vtp]
+        ) / (vtp_alpha[index_start_vtp + 1 : index_end_vtp] - vtp_alpha[index_start_vtp])
         vtp_airfoil_cl_alpha = np.mean(vtp_airfoil_cl_alpha_array) * 180.0 / np.pi
 
         outputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"] = htp_airfoil_cl_alpha
