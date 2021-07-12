@@ -133,7 +133,7 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(result_file):
             no_file = False
             data_saved = pd.read_csv(result_file)
-            values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
+            values = data_saved.to_numpy()[:, 1: len(data_saved.to_numpy()[0])]
             labels = data_saved.to_numpy()[:, 0].tolist()
             data_saved = pd.DataFrame(values, index=labels)
             index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
@@ -246,6 +246,7 @@ class XfoilPolar(ExternalCodeComp):
             # Run XFOIL --------------------------------------------------------------------------------
             self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
             self.options["external_output_files"] = [tmp_result_file_path]
+            # noinspection PyBroadException
             try:
                 super().compute(inputs, outputs)
                 result_array_p = self._read_polar(tmp_result_file_path)
@@ -271,6 +272,7 @@ class XfoilPolar(ExternalCodeComp):
                     -1 * self.options[OPTION_ALPHA_END],
                     -ALPHA_STEP,
                 )
+                # noinspection PyBroadException
                 try:
                     super().compute(inputs, outputs)
                     result_array_n = self._read_polar(tmp_result_file_path)
@@ -284,6 +286,7 @@ class XfoilPolar(ExternalCodeComp):
             # Post-processing --------------------------------------------------------------------------
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+                # noinspection PyUnboundLocalVariable
                 cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
                 alpha = result_array_n["alpha"].tolist()
                 alpha.reverse()
@@ -358,11 +361,12 @@ class XfoilPolar(ExternalCodeComp):
                     data = pd.DataFrame(results, index=labels)
                 else:
                     data = pd.DataFrame(np.c_[data_saved, results], index=labels)
+                # noinspection PyBroadException
                 try:
                     data.to_csv(result_file)
                 except:
                     warnings.warn(
-                        "Unable to save XFoil results to *.csv file: writting permission denied for {} "
+                        "Unable to save XFoil results to *.csv file: writing permission denied for {} "
                         "folder!".format(local_resources.__path__[0])
                     )
 
@@ -381,16 +385,21 @@ class XfoilPolar(ExternalCodeComp):
                 if pth.exists(self.stderr):
                     stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
                     shutil.move(self.stderr, stderr_file_path)
-            # Try to delete the temp directory, if process not finished correctely try to close files before removing
+            # Try to delete the temp directory, if process not finished correctly try to close files before removing
             # directory for second attempt
+            # noinspection PyBroadException
             try:
                 tmp_directory.cleanup()
             except:
-                for file in os.listdir(tmp_directory.name):
-                    try:
-                        file.close()
-                    except:
-                        pass
+                for file_path in os.listdir(tmp_directory.name):
+                    if os.path.isfile(file_path):
+                        # noinspection PyBroadException
+                        try:
+                            file = os.open(file_path, os.O_WRONLY)
+                            os.close(file)
+                        except:
+                            pass
+                # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
                 except:
@@ -495,7 +504,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -522,7 +531,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
+        :return: min CL +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -548,7 +557,7 @@ class XfoilPolar(ExternalCodeComp):
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """ Delete ending 0.0 values """
         for idx in range(len(x)):
-            if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
+            if np.sum(x[idx: len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]
                 break
         return y

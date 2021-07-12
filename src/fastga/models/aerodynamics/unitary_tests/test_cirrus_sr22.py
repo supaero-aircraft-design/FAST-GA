@@ -18,7 +18,6 @@ import os.path as pth
 import os
 import shutil
 import glob
-import openmdao.api as om
 import numpy as np
 from platform import system
 import tempfile
@@ -52,7 +51,6 @@ from ..components import (
 from ..aerodynamics_high_speed import AerodynamicsHighSpeed
 from ..aerodynamics_low_speed import AerodynamicsLowSpeed
 from ..load_factor import LoadFactor
-from ..constants import SPAN_MESH_POINT
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -81,7 +79,7 @@ def _create_tmp_directory() -> TemporaryDirectory:
 def reshape_curve(y, cl):
     """ Reshape data from openvsp/vlm lift curve """
     for idx in range(len(y)):
-        if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
+        if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
             y = y[0:idx]
             cl = cl[0:idx]
             break
@@ -92,7 +90,7 @@ def reshape_curve(y, cl):
 def reshape_polar(cl, cdp):
     """ Reshape data from xfoil polar vectors """
     for idx in range(len(cl)):
-        if np.sum(cl[idx : len(cl)] == 0) == (len(cl) - idx):
+        if np.sum(cl[idx: len(cl)] == 0) == (len(cl) - idx):
             cl = cl[0:idx]
             cdp = cdp[0:idx]
             break
@@ -110,6 +108,7 @@ def polar_result_transfer():
     for file in files:
         if os.path.isfile(file):
             shutil.copy(file, tmp_folder.name)
+            # noinspection PyBroadException
             try:
                 os.remove(file)
             except:
@@ -125,6 +124,7 @@ def polar_result_retrieve(tmp_folder):
 
     for file in files:
         if os.path.isfile(file):
+            # noinspection PyBroadException
             try:
                 shutil.copy(file, resources.__path__[0])
             except:
@@ -320,6 +320,9 @@ def test_airfoil_slope():
     assert cl_alpha_vtp == pytest.approx(6.2703, abs=1e-4)
 
 
+@pytest.mark.skipif(
+    system() != "Windows", reason="No XFOIL executable available: VLM basic function not computed with empty "
+                                  "result folder")
 def test_vlm_comp_high_speed():
     """ Tests vlm f @ high speed """
 
@@ -398,6 +401,9 @@ def test_vlm_comp_high_speed():
         results_folder.cleanup()
 
 
+@pytest.mark.skipif(
+    system() != "Windows", reason="No XFOIL executable available: VLM basic function not computed with empty "
+                                  "result folder")
 def test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
 
