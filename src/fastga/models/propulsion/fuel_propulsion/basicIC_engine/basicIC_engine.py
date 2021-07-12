@@ -550,11 +550,12 @@ class BasicICEngine(AbstractFuelPropulsion):
         power_max_vect = torque_vect * rpm_vect * (np.pi / 30.0)
         if np.size(engine_setting) == 1:
             rpm_values = np.array(self.rpm_values[int(engine_setting)])
+            max_power_SL = np.interp(rpm_values, rpm_vect, power_max_vect)
         else:
             rpm_values = np.array(
                 [self.rpm_values[engine_setting[idx]] for idx in range(np.size(engine_setting))]
             )
-        max_power_SL = np.interp(list(rpm_values), rpm_vect, power_max_vect)
+            max_power_SL = np.interp(list(rpm_values), rpm_vect, power_max_vect)
         sigma = atmosphere.density / Atmosphere(0.0).density
         max_power = max_power_SL * (sigma - (1 - sigma) / 7.55)
 
