@@ -133,7 +133,7 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(result_file):
             no_file = False
             data_saved = pd.read_csv(result_file)
-            values = data_saved.to_numpy()[:, 1: len(data_saved.to_numpy()[0])]
+            values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
             labels = data_saved.to_numpy()[:, 0].tolist()
             data_saved = pd.DataFrame(values, index=labels)
             index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
@@ -557,7 +557,7 @@ class XfoilPolar(ExternalCodeComp):
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
         """ Delete ending 0.0 values """
         for idx in range(len(x)):
-            if np.sum(x[idx: len(x)] == 0.0) == (len(x) - idx):
+            if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]
                 break
         return y

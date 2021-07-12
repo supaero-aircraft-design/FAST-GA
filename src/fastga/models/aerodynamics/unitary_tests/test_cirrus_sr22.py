@@ -26,6 +26,7 @@ from tempfile import TemporaryDirectory
 import pytest
 import time
 
+# FIXME: deleting this non-used import leads to upper level import error with plugin register
 from fastoad.io import VariableIO
 
 from ..components.cd0 import Cd0
@@ -62,6 +63,7 @@ TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "cirrus_sr22.xml"
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
 def _create_tmp_directory() -> TemporaryDirectory:
@@ -79,7 +81,7 @@ def _create_tmp_directory() -> TemporaryDirectory:
 def reshape_curve(y, cl):
     """ Reshape data from openvsp/vlm lift curve """
     for idx in range(len(y)):
-        if np.sum(y[idx: len(y)] == 0) == (len(y) - idx):
+        if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
             y = y[0:idx]
             cl = cl[0:idx]
             break
@@ -90,7 +92,7 @@ def reshape_curve(y, cl):
 def reshape_polar(cl, cdp):
     """ Reshape data from xfoil polar vectors """
     for idx in range(len(cl)):
-        if np.sum(cl[idx: len(cl)] == 0) == (len(cl) - idx):
+        if np.sum(cl[idx : len(cl)] == 0) == (len(cl) - idx):
             cl = cl[0:idx]
             cdp = cdp[0:idx]
             break
@@ -98,7 +100,7 @@ def reshape_polar(cl, cdp):
 
 
 def polar_result_transfer():
-    # Put saved polar results in a temporary folder to activate Xfoil run and have repeatable results  [need writting
+    # Put saved polar results in a temporary folder to activate Xfoil run and have repeatable results  [need writing
     # permission]
 
     tmp_folder = _create_tmp_directory()
@@ -118,7 +120,7 @@ def polar_result_transfer():
 
 
 def polar_result_retrieve(tmp_folder):
-    # Retrieve the polar results set aside during the test duration if there are some [need writting permission]
+    # Retrieve the polar results set aside during the test duration if there are some [need writing permission]
 
     files = glob.iglob(pth.join(tmp_folder.name, "*.csv"))
 
@@ -321,8 +323,10 @@ def test_airfoil_slope():
 
 
 @pytest.mark.skipif(
-    system() != "Windows", reason="No XFOIL executable available: VLM basic function not computed with empty "
-                                  "result folder")
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed "
+    "with empty result folder",
+)
 def test_vlm_comp_high_speed():
     """ Tests vlm f @ high speed """
 
@@ -402,8 +406,10 @@ def test_vlm_comp_high_speed():
 
 
 @pytest.mark.skipif(
-    system() != "Windows", reason="No XFOIL executable available: VLM basic function not computed with empty "
-                                  "result folder")
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed "
+    "with empty result folder",
+)
 def test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
 
@@ -615,7 +621,9 @@ def test_vlm_comp_low_speed():
     results_folder.cleanup()
 
 
-@pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform"
+)
 def test_openvsp_comp_high_speed():
     """ Tests openvsp components @ high speed """
 
@@ -686,7 +694,9 @@ def test_openvsp_comp_high_speed():
         results_folder.cleanup()
 
 
-@pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform"
+)
 def test_openvsp_comp_low_speed():
     """ Tests openvsp components @ low speed """
 
@@ -966,6 +976,10 @@ def test_high_lift():
     assert cd_delta_elev == pytest.approx(0.06226, abs=1e-4)
 
 
+@pytest.mark.skipif(
+    system() != "Windows",
+    reason="No XFOIL executable available: not computed with empty result folder",
+)
 def test_extreme_cl():
     """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
 
@@ -1393,57 +1407,61 @@ def test_cy_delta_r():
 
 
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
-def test_high_speed_connection():
+def test_high_speed_connection_openvsp():
     """ Tests high speed components connection """
 
     # load all inputs
-    ivc_vlm = get_indep_var_comp(
-        list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
-        __file__,
-        XML_FILE,
-    )
-
-    # Run problem with VLM
-    # noinspection PyTypeChecker
-    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), ivc_vlm)
-
-    # load all inputs
-    ivc_openvsp = get_indep_var_comp(
+    ivc = get_indep_var_comp(
         list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True)),
         __file__,
         XML_FILE,
     )
 
-    # Run problem with OPENVSP
     # noinspection PyTypeChecker
-    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), ivc_openvsp)
+    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), ivc)
 
 
-@pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
-def test_low_speed_connection():
-    """ Tests low speed components connection """
+def test_high_speed_connection_vlm():
+    """ Tests high speed components connection """
 
     # load all inputs
-    ivc_vlm = get_indep_var_comp(
-        list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
+    ivc = get_indep_var_comp(
+        list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
         __file__,
         XML_FILE,
     )
 
-    # Run problem with VLM
     # noinspection PyTypeChecker
-    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), ivc_vlm)
+    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), ivc)
+
+
+@pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
+def test_low_speed_connection_openvsp():
+    """ Tests low speed components connection """
 
     # load all inputs
-    ivc_openvsp = get_indep_var_comp(
+    ivc = get_indep_var_comp(
         list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True)),
         __file__,
         XML_FILE,
     )
 
-    # Run problem with OPENVSP
     # noinspection PyTypeChecker
-    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), ivc_openvsp)
+    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), ivc)
+
+
+def test_low_speed_connection_vlm():
+    """ Tests low speed components connection """
+
+    # load all inputs
+    ivc = get_indep_var_comp(
+        list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
+        __file__,
+        XML_FILE,
+    )
+
+    # noinspection PyTypeChecker
+    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), ivc)
 
 
 def test_v_n_diagram():

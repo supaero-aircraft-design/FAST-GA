@@ -52,6 +52,7 @@ class ComputePropellerPerformance(om.Group):
             default=["naca4430", "naca4424", "naca4420", "naca4414", "naca4412", "naca4409"],
             types=list,
         )
+        self.options.declare("elements_number", default=20, types=int)
         self.options.declare("vectors_length", default=10, types=int)
 
     def setup(self):
@@ -74,6 +75,7 @@ class ComputePropellerPerformance(om.Group):
             _ComputePropellerPerformance(
                 sections_profile_position_list=self.options["sections_profile_position_list"],
                 sections_profile_name_list=self.options["sections_profile_name_list"],
+                elements_number=self.options["elements_number"],
                 vectors_length=self.options["vectors_length"],
             ),
             promotes=["*"],
@@ -561,7 +563,11 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     * (
                         (radius_max - radius)
                         / radius
-                        * math.sqrt(1 + (omega * radius / (v_inf + v_i)) ** 2.0)
+                        * math.sqrt(
+                            1
+                            + (omega * radius / ((v_inf + v_i) + 1e-12 * ((v_inf + v_i) == 0.0)))
+                            ** 2.0
+                        )
                     )
                 )
             )

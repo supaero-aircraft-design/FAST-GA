@@ -41,7 +41,7 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 POINTS_NB_CLIMB = 50
 POINTS_NB_CRUISE = 50
-POINTS_NB_DESCENT = 50
+POINTS_NB_DESCENT = 20
 MAX_CALCULATION_TIME = 15  # time in seconds
 
 _LOGGER = logging.getLogger(__name__)

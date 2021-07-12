@@ -55,21 +55,21 @@ NACELLE_LABELS = {
 
 class BasicICEngine(AbstractFuelPropulsion):
     def __init__(
-            self,
-            max_power: float,
-            design_altitude: float,
-            design_speed: float,
-            fuel_type: float,
-            strokes_nb: float,
-            prop_layout: float,
-            speed_SL,
-            thrust_SL,
-            thrust_limit_SL,
-            efficiency_SL,
-            speed_CL,
-            thrust_CL,
-            thrust_limit_CL,
-            efficiency_CL,
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+        speed_SL,
+        thrust_SL,
+        thrust_limit_SL,
+        efficiency_SL,
+        speed_CL,
+        thrust_CL,
+        thrust_limit_CL,
+        efficiency_CL,
     ):
         """
         Parametric Internal Combustion engine.
@@ -228,13 +228,13 @@ class BasicICEngine(AbstractFuelPropulsion):
                 flight_points.thrust = thrust
 
     def _compute_flight_points(
-            self,
-            mach: Union[float, Sequence],
-            altitude: Union[float, Sequence],
-            engine_setting: Union[EngineSetting, Sequence],
-            thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
-            thrust_rate: Optional[Union[float, Sequence]] = None,
-            thrust: Optional[Union[float, Sequence]] = None,
+        self,
+        mach: Union[float, Sequence],
+        altitude: Union[float, Sequence],
+        engine_setting: Union[EngineSetting, Sequence],
+        thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
+        thrust_rate: Optional[Union[float, Sequence]] = None,
+        thrust: Optional[Union[float, Sequence]] = None,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
         """
         Same as :meth:`compute_flight_points`.
@@ -311,9 +311,9 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @staticmethod
     def _check_thrust_inputs(
-            thrust_is_regulated: Optional[Union[float, Sequence]],
-            thrust_rate: Optional[Union[float, Sequence]],
-            thrust: Optional[Union[float, Sequence]],
+        thrust_is_regulated: Optional[Union[float, Sequence]],
+        thrust_rate: Optional[Union[float, Sequence]],
+        thrust: Optional[Union[float, Sequence]],
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         Checks that inputs are consistent and return them in proper shape.
@@ -373,7 +373,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                     "provided."
                 )
             if np.shape(thrust_rate) != np.shape(thrust_is_regulated) or np.shape(
-                    thrust
+                thrust
             ) != np.shape(thrust_is_regulated):
                 raise FastBasicICEngineInconsistentInputParametersError(
                     "When use_thrust_rate is a sequence, both thrust_rate and thrust should have "
@@ -383,7 +383,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         return thrust_is_regulated, thrust_rate, thrust
 
     def propeller_efficiency(
-            self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
     ) -> Union[float, Sequence]:
         """
         Compute the propeller efficiency.
@@ -435,10 +435,10 @@ class BasicICEngine(AbstractFuelPropulsion):
                 )
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
                 propeller_efficiency[idx] = (
-                        lower_bound
-                        + (upper_bound - lower_bound)
-                        * np.minimum(altitude, self.design_altitude)
-                        / self.design_altitude
+                    lower_bound
+                    + (upper_bound - lower_bound)
+                    * np.minimum(altitude, self.design_altitude)
+                    / self.design_altitude
                 )
 
         return propeller_efficiency
@@ -458,10 +458,10 @@ class BasicICEngine(AbstractFuelPropulsion):
         return max_power
 
     def sfc(
-            self,
-            thrust: Union[float, Sequence[float]],
-            engine_setting: Union[float, Sequence[float]],
-            atmosphere: Atmosphere,
+        self,
+        thrust: Union[float, Sequence[float]],
+        engine_setting: Union[float, Sequence[float]],
+        atmosphere: Atmosphere,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Computation of the SFC.
@@ -495,7 +495,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         sfc = np.zeros(np.size(thrust))
         if np.size(thrust) == 1:
             real_power = (
-                    thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
+                thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
             )
             torque = real_power / (rpm_values * np.pi / 30.0)
             sfc = ICE_sfc(torque, rpm_values) * mixture_values
@@ -506,16 +506,16 @@ class BasicICEngine(AbstractFuelPropulsion):
                 )
                 local_atmosphere.mach = atmosphere.mach[idx]
                 real_power[idx] = (
-                        thrust[idx]
-                        * atmosphere.true_airspeed[idx]
-                        / self.propeller_efficiency(thrust[idx], local_atmosphere)
+                    thrust[idx]
+                    * atmosphere.true_airspeed[idx]
+                    / self.propeller_efficiency(thrust[idx], local_atmosphere)
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
                 sfc = ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx]
         return sfc, real_power
 
     def max_thrust(
-            self, engine_setting: Union[float, Sequence[float]], atmosphere: Atmosphere,
+        self, engine_setting: Union[float, Sequence[float]], atmosphere: Atmosphere,
     ) -> np.ndarray:
         """
         Computation of maximum thrust either due to propeller thrust limit or ICE max power.
@@ -530,14 +530,18 @@ class BasicICEngine(AbstractFuelPropulsion):
             lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
             upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
         else:
-            lower_bound = np.interp(list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL)
-            upper_bound = np.interp(list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL)
+            lower_bound = np.interp(
+                list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL
+            )
+            upper_bound = np.interp(
+                list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL
+            )
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         thrust_max_propeller = (
-                lower_bound
-                + (upper_bound - lower_bound)
-                * np.minimum(altitude, self.design_altitude)
-                / self.design_altitude
+            lower_bound
+            + (upper_bound - lower_bound)
+            * np.minimum(altitude, self.design_altitude)
+            / self.design_altitude
         )
 
         # Calculate engine max power @ given RPM & altitude
@@ -596,10 +600,10 @@ class BasicICEngine(AbstractFuelPropulsion):
                     thrust_interp[idx], local_atmosphere
                 )
                 mechanical_power = (
-                        thrust_interp[idx] * atmosphere.true_airspeed[idx] / propeller_efficiency
+                    thrust_interp[idx] * atmosphere.true_airspeed[idx] / propeller_efficiency
                 )
                 if (
-                        np.min(mechanical_power) > max_power[idx]
+                    np.min(mechanical_power) > max_power[idx]
                 ):  # take the lower bound efficiency for calculation
                     efficiency_relative_error = 1
                     local_atmosphere = Atmosphere(altitude[idx], altitude_in_feet=False)
@@ -607,7 +611,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                     propeller_efficiency = propeller_efficiency[0]
                     while efficiency_relative_error > 1e-2:
                         thrust_max_global[idx] = (
-                                max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
+                            max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
                         )
                         propeller_efficiency_new = self.propeller_efficiency(
                             thrust_max_global[idx], local_atmosphere
@@ -647,10 +651,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Compute engine dimensions
         self.engine.length = self.ref["length"] * (self.max_power / self.ref["max_power"]) ** (
-                1 / 3
+            1 / 3
         )
         self.engine.height = self.ref["height"] * (self.max_power / self.ref["max_power"]) ** (
-                1 / 3
+            1 / 3
         )
         self.engine.width = self.ref["width"] * (self.max_power / self.ref["max_power"]) ** (1 / 3)
 
@@ -685,7 +689,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)
         cf_nac = 0.455 / (
-                (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds)) ** 2.58
+            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds)) ** 2.58
         )  # 100% turbulent
         f = self.nacelle.length / math.sqrt(4 * self.nacelle.height * self.nacelle.width / math.pi)
         ff_nac = 1 + 0.35 / f  # Raymer (seen in Gudmunsson)
