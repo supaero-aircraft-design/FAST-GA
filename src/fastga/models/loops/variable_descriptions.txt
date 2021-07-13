@@ -2,3 +2,8 @@
 # Each line should be like:
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
+
+data:constraints:wing:additional_CL_capacity || 
+data:constraints:wing:additional_fuel_capacity || 
+data:geometry:wing:area || 
+data:geometry:wing:MAC:at25percent:x || 

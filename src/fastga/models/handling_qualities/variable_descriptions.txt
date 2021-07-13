@@ -16,3 +16,6 @@ data:constraints:vertical_tail:engine_out_climb || margin on the vertical tail a
 data:constraints:vertical_tail:engine_out_takeoff || margin on the vertical tail area with respect to the takeoff with one engine out condition
 data:constraints:vertical_tail:engine_out_landing || margin on the vertical tail area with respect to the landing with one engine out condition
 data:geometry:vertical_tail:area || vertical tail area
+data:aerodynamics:cruise:neutral_point:free_elevator_factor || 
+data:aerodynamics:cruise:neutral_point:stick_fixed:x || 
+data:aerodynamics:cruise:neutral_point:stick_free:x || 

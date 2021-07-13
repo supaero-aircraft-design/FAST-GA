@@ -14,3 +14,14 @@ data:loads:max_rbm:weight_rbm || root bending moment due to the structure in the
 data:loads:y_vector || position along the wing span where efforts are sampled
 data:flight_domain:velocity || velocity used to scale aero-propulsive effect
 data:flight_domain:load_factor || maximum load factor in the flight domain
+
+data:loads:aerodynamic:ultimate:force_distribution || 
+data:loads:structure:ultimate:force_distribution:fuel || 
+data:loads:structure:ultimate:force_distribution:point_mass || 
+data:loads:structure:ultimate:force_distribution:wing || 
+data:loads:structure:ultimate:root_bending:fuel || 
+data:loads:structure:ultimate:root_bending:point_mass || 
+data:loads:structure:ultimate:root_bending:wing || 
+data:loads:structure:ultimate:shear:fuel || 
+data:loads:structure:ultimate:shear:point_mass || 
+data:loads:structure:ultimate:shear:wing || 

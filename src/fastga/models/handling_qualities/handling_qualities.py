@@ -17,10 +17,14 @@ Estimation of static margin
 
 import openmdao.api as om
 
-from ..aerodynamics.aero_center import ComputeAeroCenter
-from .compute_static_margin import _ComputeStaticMargin
-from .tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
-from .tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit
+from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
+from fastga.models.handling_qualities.compute_static_margin import _ComputeStaticMargin
+from fastga.models.handling_qualities.tail_sizing.compute_to_rotation_limit import (
+    ComputeTORotationLimitGroup,
+)
+from fastga.models.handling_qualities.tail_sizing.compute_balked_landing_limit import (
+    ComputeBalkedLandingLimit,
+)
 
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem

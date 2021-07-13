@@ -20,7 +20,7 @@ import openmdao.api as om
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
-from .geom_components import (
+from fastga.models.geometry.geom_components import (
     ComputeTotalArea,
     ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
@@ -29,7 +29,7 @@ from .geom_components import (
     ComputeVerticalTailGeometryFL,
     ComputeWingGeometry,
 )
-from .geom_components.fuselage.compute_fuselage import (
+from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )

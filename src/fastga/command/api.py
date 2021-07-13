@@ -18,7 +18,8 @@ import logging
 import os.path as pth
 import os
 import shutil
-import sys, inspect, importlib
+import inspect
+import importlib
 from typing import Union, List
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
@@ -28,6 +29,10 @@ from openmdao.core.system import System
 import openmdao.api as om
 from copy import deepcopy
 from itertools import product
+from tempfile import TemporaryDirectory
+from pathlib import Path
+import tempfile
+import glob
 
 from fastoad.openmdao.variables import VariableList
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -36,6 +41,9 @@ from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import AutoUnitsDefaultGroup
+
+# noinspection PyProtectedMember
+from fastoad.cmd.api import _get_simple_system_list
 
 from . import resources
 
@@ -48,6 +56,51 @@ BOOLEAN_OPTIONS = [
     "compute_slipstream",
     "low_speed_aero",
 ]
+
+
+def _create_tmp_directory() -> TemporaryDirectory:
+    """Provide temporary directory."""
+
+    for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
+        if tmp_base_path is not None:
+            os.makedirs(tmp_base_path, exist_ok=True)
+        tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
+        break
+
+    return tmp_directory
+
+
+def file_temporary_transfer(file_path: str):
+    # Put a copy of original python file into temporary directory and remove plugin registration from current file
+
+    tmp_folder = _create_tmp_directory()
+    file_name = pth.split(file_path)[-1]
+    shutil.copy(file_path, pth.join(tmp_folder.name, file_name))
+    file = open(file_path, "r")
+    lines = file.read()
+    lines = lines.split("\n")
+    idx_to_remove = []
+    for idx in range(len(lines)):
+        if "@RegisterOpenMDAOSystem" in lines[idx]:
+            idx_to_remove.append(idx)
+    for idx in sorted(idx_to_remove, reverse=True):
+        del lines[idx]
+    file.close()
+    file = open(file_path, "w")
+    for line in lines:
+        file.write(line + "\n")
+    file.close()
+
+    return tmp_folder
+
+
+def retrieve_original_file(tmp_folder, file_path: str):
+    # Retrieve the original file
+
+    file_name = pth.split(file_path)[-1]
+    shutil.copy(pth.join(tmp_folder.name, file_name), file_path)
+
+    tmp_folder.cleanup()
 
 
 def generate_variables_description(subpackage_path: str, overwrite: bool = False):
@@ -64,7 +117,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
     :param overwrite: if True, the file will be written, even if it already exists
     :raise FastFileExistsError: if overwrite==False and subpackage_path already exists
     """
+
     if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
+        # noinspection PyStringFormat
         raise FastFileExistsError(
             "Variable descriptions file is not written because it already exists. "
             "Use overwrite=True to bypass."
@@ -75,7 +130,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
     if not pth.exists(subpackage_path):
         _LOGGER.info("Sub-package path %s not found!", subpackage_path)
     else:
-        # Read file and construct dictionnary of variables name index
+        # Read file and construct dictionary of variables name index
         saved_dict = {}
         if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
             file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "r")
@@ -106,29 +161,68 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     variable_name_length = len(variable_name)
                                 if variable_name not in saved_dict.keys():
                                     saved_dict[variable_name] = variable_description
+                                else:
+                                    print(
+                                        "\nWarning: file contains parameter "
+                                        + variable_name
+                                        + " already saved in "
+                                        + pth.split(root)[-1]
+                                        + " subpackage !"
+                                    )
                         file.close()
 
         # Explore subpackage models and find the output variables and store them in a dictionary
         dict_to_be_saved = {}
         for root, dirs, files in os.walk(subpackage_path, topdown=False):
             for name in files:
-                if ".py" in name:
+                if name[-3:] == ".py":
                     spec = importlib.util.spec_from_file_location(
                         name.replace(".py", ""), pth.join(root, name)
                     )
                     module = importlib.util.module_from_spec(spec)
+                    tmp_folder = None
+                    # noinspection PyBroadException
                     try:
+                        # if register decorator in module, temporary replace file removing decorators
+                        # noinspection PyBroadException
+                        try:
+                            spec.loader.exec_module(module)
+                        except:
+                            pass
+                        if "RegisterOpenMDAOSystem" in dir(module):
+                            tmp_folder = file_temporary_transfer(pth.join(root, name))
                         spec.loader.exec_module(module)
                         class_list = [x for x in dir(module) if inspect.isclass(getattr(module, x))]
+                        # noinspection PyUnboundLocalVariable
+                        retrieve_original_file(tmp_folder, pth.join(root, name))
                         root_lib = ".".join(root.split("\\")[root.split("\\").index("fastga") :])
                         root_lib += "." + name.replace(".py", "")
                         for class_name in class_list:
+                            # noinspection PyBroadException
                             try:
                                 exec("from " + root_lib + " import " + class_name + " as my_class")
-                                exec("variables = list_variables(my_class())")
                                 options = eval("my_class().options")
+                                if "propulsion_id" in options:
+                                    available_id_list = _get_simple_system_list()
+                                    idx_to_remove = []
+                                    for idx in range(len(available_id_list)):
+                                        available_id_list[idx] = available_id_list[idx][0]
+                                        if "PROPULSION" in available_id_list[idx]:
+                                            idx_to_remove.extend(list(range(idx + 1)))
+                                        if not ("fastga" in available_id_list[idx]):
+                                            idx_to_remove.append(idx)
+                                    idx_to_remove = list(dict.fromkeys(idx_to_remove))
+                                    for idx in sorted(idx_to_remove, reverse=True):
+                                        del available_id_list[idx]
+                                    exec_base = (
+                                        'my_class(propulsion_id="' + available_id_list[0] + '"'
+                                    )
+                                else:
+                                    exec_base = "my_class("
+                                exec("variables = list_variables(" + exec_base + "))")
                                 local_options = []
                                 for option_name in BOOLEAN_OPTIONS:
+                                    # noinspection PyProtectedMember
                                     if option_name in options._dict.keys():
                                         local_options.append(option_name)
                                 if len(local_options) == 0:
@@ -140,9 +234,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         var_names = eval(
                                             "[var.name for var in variables if not var.is_input]"
                                         )
-                                        if len(eval("list_ivc_outputs_name(my_class())")) != 0:
+                                        if (
+                                            len(eval("list_ivc_outputs_name(" + exec_base + "))"))
+                                            != 0
+                                        ):
                                             var_names.append(
-                                                eval("list_ivc_outputs_name(my_class())")
+                                                eval("list_ivc_outputs_name(" + exec_base + "))")
                                             )
                                     var_names = list(dict.fromkeys(var_names))
                                     for key in var_names:
@@ -157,7 +254,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     for options_tuple in list(
                                         product([True, False], repeat=len(local_options))
                                     ):
-                                        exec_line = "variables = list_variables(my_class("
+                                        if "=" in exec_base:
+                                            exec_line = (
+                                                "variables = list_variables(" + exec_base + ","
+                                            )
+                                        else:
+                                            exec_line = "variables = list_variables(" + exec_base
                                         for idx in range(len(local_options)):
                                             exec_line += (
                                                 local_options[idx]
@@ -206,27 +308,35 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                             except:
                                 pass
                     except:
-                        pass
+                        if not (tmp_folder is None):
+                            # noinspection PyUnboundLocalVariable
+                            retrieve_original_file(tmp_folder, pth.join(root, name))
 
         # Complete the variable descriptions file with missing outputs
         if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
             file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
-            file.write("\n")
+            if len(
+                set(list(dict_to_be_saved.keys())).intersection(set(list(saved_dict.keys())))
+            ) != len(dict_to_be_saved.keys()):
+                file.write("\n")
         else:
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
-            file.write("# Documentation of variables used in FAST-GA models\n")
-            file.write("# Each line should be like:\n")
-            file.write(
-                "# my:variable||The description of my:variable, as long as needed, but on one line.\n"
-            )
-            file.write(
-                '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
-            )
-        sortedkeys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
-        for key in sortedkeys:
-            if not (key in saved_dict.keys()):
-                file.write(key + " || \n")
-        file.close()
+            if len(dict_to_be_saved.keys()) != 0:
+                file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
+                file.write("# Documentation of variables used in FAST-GA models\n")
+                file.write("# Each line should be like:\n")
+                file.write(
+                    "# my:variable||The description of my:variable, as long as needed, but on one line.\n"
+                )
+                file.write(
+                    '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
+                )
+        if len(dict_to_be_saved.keys()) != 0:
+            sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
+            for key in sorted_keys:
+                if not (key in saved_dict.keys()):
+                    # noinspection PyUnboundLocalVariable
+                    file.write(key + " || \n")
+            file.close()
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -351,6 +461,7 @@ def generate_block_analysis(
                 message += " [" + item + "],"
             message = message[:-1] + ".\n"
             if overwrite:
+                # noinspection PyUnboundLocalVariable
                 reader.path_separator = ":"
                 ivc = reader.to_ivc()
                 group = AutoUnitsDefaultGroup()
@@ -408,7 +519,9 @@ def generate_block_analysis(
 
 
 def list_all_subsystem(model, model_address, dict_subsystems):
+    # noinspection PyBroadException
     try:
+        # noinspection PyProtectedMember
         subsystem_list = model._proc_info.keys()
         for subsystem in subsystem_list:
             dict_subsystems = list_all_subsystem(

@@ -17,23 +17,27 @@
 import numpy as np
 import openmdao.api as om
 
-from .cg_components.a_airframe import (
+from fastga.models.weight.cg.cg_components.a_airframe import (
     ComputeWingCG,
     ComputeFuselageCG,
     ComputeTailCG,
     ComputeFlightControlCG,
     ComputeLandingGearCG,
 )
-from .cg_components.b_propulsion import ComputeEngineCG, ComputeFuelLinesCG, ComputeTankCG
-from .cg_components.c_systems import (
+from fastga.models.weight.cg.cg_components.b_propulsion import (
+    ComputeEngineCG,
+    ComputeFuelLinesCG,
+    ComputeTankCG,
+)
+from fastga.models.weight.cg.cg_components.c_systems import (
     ComputePowerSystemsCG,
     ComputeLifeSupportCG,
     ComputeNavigationSystemsCG,
 )
-from .cg_components.d_furniture import ComputePassengerSeatsCG
-from .cg_components.payload import ComputePayloadCG
-from .cg_components.global_cg import ComputeGlobalCG
-from .cg_components.update_mlg import UpdateMLG
+from fastga.models.weight.cg.cg_components.d_furniture import ComputePassengerSeatsCG
+from fastga.models.weight.cg.cg_components.payload import ComputePayloadCG
+from fastga.models.weight.cg.cg_components.global_cg import ComputeGlobalCG
+from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
 
 
 class CG(om.Group):

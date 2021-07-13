@@ -16,26 +16,26 @@ Main components for mass breakdown
 
 import openmdao.api as om
 
-from .a_airframe import (
+from fastga.models.weight.mass_breakdown.a_airframe import (
     ComputeWingWeight,
     ComputeFuselageWeight,
     ComputeTailWeight,
     ComputeFlightControlsWeight,
     ComputeLandingGearWeight,
 )
-from .b_propulsion import (
+from fastga.models.weight.mass_breakdown.b_propulsion import (
     ComputeEngineWeight,
     ComputeFuelLinesWeight,
     ComputeUnusableFuelWeight,
 )
-from .c_systems import (
+from fastga.models.weight.mass_breakdown.c_systems import (
     ComputePowerSystemsWeight,
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
 )
-from .d_furniture import ComputePassengerSeatsWeight
-from .payload import ComputePayload
-from .update_mlw_and_mzfw import UpdateMLWandMZFW
+from fastga.models.weight.mass_breakdown.d_furniture import ComputePassengerSeatsWeight
+from fastga.models.weight.mass_breakdown.payload import ComputePayload
+from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 from fastga.models.options import PAYLOAD_FROM_NPAX
 

@@ -90,3 +90,44 @@ data:aerodynamics:wing:low_speed:tip:CL_max_2D || wing tip chord airfoil maximum
 data:aerodynamics:wing:low_speed:tip:CL_min_2D || wing tip chord airfoil maximum lift coefficient for negative angle of attack
 data:aerodynamics:wing:root:low_speed:reynolds || wing root chord reynolds in low speed conditions
 data:aerodynamics:wing:tip:low_speed:reynolds || wing tip chord reynolds in low speed conditions
+
+data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || 
+data:aerodynamics:aircraft:mach_interpolation:mach_vector || 
+data:aerodynamics:elevator:low_speed:CD_delta || 
+data:aerodynamics:flaps:landing:CD || 
+data:aerodynamics:flaps:landing:CL || 
+data:aerodynamics:flaps:landing:CL_max || 
+data:aerodynamics:flaps:landing:CM || 
+data:aerodynamics:flaps:takeoff:CD || 
+data:aerodynamics:flaps:takeoff:CL || 
+data:aerodynamics:flaps:takeoff:CL_max || 
+data:aerodynamics:flaps:takeoff:CM || 
+data:aerodynamics:horizontal_tail:cruise:CDp || 
+data:aerodynamics:horizontal_tail:cruise:CL || 
+data:aerodynamics:horizontal_tail:cruise:reynolds || 
+data:aerodynamics:horizontal_tail:low_speed:CDp || 
+data:aerodynamics:horizontal_tail:low_speed:CL || 
+data:aerodynamics:horizontal_tail:low_speed:reynolds || 
+data:aerodynamics:rudder:low_speed:Cy_delta_r || 
+data:aerodynamics:vertical_tail:cruise:CL_alpha || 
+data:aerodynamics:vertical_tail:low_speed:CL_alpha || 
+data:aerodynamics:vertical_tail:MAC:low_speed:reynolds || 
+data:aerodynamics:wing:airfoil:CL_alpha || 
+data:aerodynamics:wing:cruise:CDp || 
+data:aerodynamics:wing:cruise:CL || 
+data:aerodynamics:wing:cruise:CL0_clean || 
+data:aerodynamics:wing:cruise:CL_alpha || 
+data:aerodynamics:wing:cruise:CM0_clean || 
+data:aerodynamics:wing:cruise:induced_drag_coefficient || 
+data:aerodynamics:wing:cruise:reynolds || 
+data:aerodynamics:wing:low_speed:CDp || 
+data:aerodynamics:wing:low_speed:chord_vector || 
+data:aerodynamics:wing:low_speed:CL || 
+data:aerodynamics:wing:low_speed:CL0_clean || 
+data:aerodynamics:wing:low_speed:CL_alpha || 
+data:aerodynamics:wing:low_speed:CL_vector || 
+data:aerodynamics:wing:low_speed:CM0_clean || 
+data:aerodynamics:wing:low_speed:induced_drag_coefficient || 
+data:aerodynamics:wing:low_speed:reynolds || 
+data:aerodynamics:wing:low_speed:Y_vector || 
+data:aerodynamics:wing:MAC:low_speed:reynolds || 

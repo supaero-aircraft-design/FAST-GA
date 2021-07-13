@@ -16,8 +16,8 @@ Weight computation (mass and CG)
 
 import openmdao.api as om
 
-from .cg.cg import CG
-from .mass_breakdown.mass_breakdown import MassBreakdown
+from fastga.models.weight.cg.cg import CG
+from fastga.models.weight.mass_breakdown.mass_breakdown import MassBreakdown
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
