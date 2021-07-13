@@ -103,3 +103,48 @@ settings:weight:aircraft:payload:design_mass_per_passenger || design payload mas
 settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
 settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
 
+
+data:geometry:flap:span_ratio || 
+data:geometry:flap_type || 
+data:geometry:propeller:blades_number || 
+data:geometry:propeller:chord_vect || 
+data:geometry:propeller:diameter || 
+data:geometry:propeller:hub_diameter || 
+data:geometry:propeller:radius_ratio_vect || 
+data:geometry:propeller:sweep_vect || 
+data:geometry:propeller:twist_vect || 
+data:geometry:vertical_tail:rudder:chord_ratio || 
+data:geometry:vertical_tail:rudder:max_deflection || 
+data:handling_qualities:static_margin:target || 
+data:mission:sizing:initial_climb:fuel || 
+data:mission:sizing:landing:flap_angle || 
+data:mission:sizing:main_route:climb:fuel || 
+data:mission:sizing:main_route:cruise:duration || 
+data:mission:sizing:main_route:cruise:fuel || 
+data:mission:sizing:main_route:descent:fuel || 
+data:mission:sizing:main_route:reserve:duration || 
+data:mission:sizing:takeoff:flap_angle || 
+data:mission:sizing:takeoff:fuel || 
+data:mission:sizing:taxi_in:fuel || 
+data:mission:sizing:taxi_out:fuel || 
+
+data:geometry:cabin:aisle_width || 
+data:geometry:cabin:seats:passenger:width || 
+data:geometry:cabin:seats:pilot:width || 
+data:geometry:propeller:depth || 
+data:mission:sizing:holding:fuel || 
+data:mission:sizing:main_route:climb:climb_rate:cruise_level || 
+data:mission:sizing:main_route:climb:climb_rate:sea_level || 
+data:mission:sizing:main_route:descent:descent_rate || 
+data:mission:sizing:takeoff:friction_coefficient_no_brake || 
+data:mission:sizing:takeoff:thrust_rate || 
+data:mission:sizing:taxi_in:duration || 
+data:mission:sizing:taxi_in:speed || 
+data:mission:sizing:taxi_in:thrust_rate || 
+data:mission:sizing:taxi_out:duration || 
+data:mission:sizing:taxi_out:speed || 
+data:mission:sizing:taxi_out:thrust_rate || 
+data:propulsion:IC_engine:max_power || 
+data:propulsion:IC_engine:max_rpm || 
+data:propulsion:IC_engine:strokes_nb || 
+data:weight:propulsion:tank:mass || 

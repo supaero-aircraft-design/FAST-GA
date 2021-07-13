@@ -21,6 +21,9 @@ import openmdao.api as om
 from numpy.testing import assert_allclose
 
 from ..update_wing_area import UpdateWingArea
+from .... import models
+from ...weight import mass_breakdown, cg
+from fastga.command.api import generate_variables_description
 
 from tests.testing_utilities import run_system
 
@@ -69,3 +72,7 @@ def test_update_wing_area():
     assert_allclose(
         problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 273, atol=1
     )
+
+
+def test_write_variables():
+    generate_variables_description(models.__path__[0], True)

@@ -13,9 +13,9 @@
 
 import openmdao.api as om
 
-from .aerostructural_loads import AerostructuralLoad
-from .structural_loads import StructuralLoads
-from .aerodynamic_loads import AerodynamicLoads
+from fastga.models.load_analysis.aerostructural_loads import AerostructuralLoad
+from fastga.models.load_analysis.structural_loads import StructuralLoads
+from fastga.models.load_analysis.aerodynamic_loads import AerodynamicLoads
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain

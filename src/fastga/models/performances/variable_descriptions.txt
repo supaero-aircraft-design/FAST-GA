@@ -1,0 +1,31 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+
+
+data:mission:sizing:fuel || 
+data:mission:sizing:main_route:reserve:fuel || 
+data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment || 
+data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass ||
+data:mission:sizing:initial_climb:fuel || 
+data:mission:sizing:main_route:climb:distance || 
+data:mission:sizing:main_route:climb:duration || 
+data:mission:sizing:main_route:climb:fuel || 
+data:mission:sizing:main_route:climb:v_cas || 
+data:mission:sizing:main_route:cruise:distance || 
+data:mission:sizing:main_route:cruise:duration || 
+data:mission:sizing:main_route:cruise:fuel || 
+data:mission:sizing:main_route:descent:distance || 
+data:mission:sizing:main_route:descent:duration || 
+data:mission:sizing:main_route:descent:fuel || 
+data:mission:sizing:takeoff:climb_gradient || 
+data:mission:sizing:takeoff:duration || 
+data:mission:sizing:takeoff:fuel || 
+data:mission:sizing:takeoff:ground_roll || 
+data:mission:sizing:takeoff:TOFL || 
+data:mission:sizing:takeoff:V2 || 
+data:mission:sizing:takeoff:VLOF || 
+data:mission:sizing:takeoff:VR || 
+data:mission:sizing:taxi_in:fuel || 
+data:mission:sizing:taxi_out:fuel || 

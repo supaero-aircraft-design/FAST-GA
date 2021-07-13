@@ -17,18 +17,21 @@
 
 from openmdao.core.group import Group
 
-from .components.cd0 import Cd0
-from .components.compute_cl_extreme import ComputeExtremeCL
-from .components.clalpha_vt import ComputeClAlphaVT
-from .components.high_lift_aero import ComputeDeltaHighLift
-from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
-from .components.compute_cy_rudder import ComputeCyDeltaRudder
-
-from .external.vlm import ComputeAEROvlm
-from .external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components.cd0 import Cd0
+from fastga.models.aerodynamics.components.compute_cl_extreme import ComputeExtremeCL
+from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
+from fastga.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
+from fastga.models.aerodynamics.components.airfoil_lift_curve_slope import (
+    ComputeAirfoilLiftCurveSlope,
+)
+from fastga.models.aerodynamics.components.compute_cy_rudder import ComputeCyDeltaRudder
+from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
 # noinspection PyProtectedMember
-from .external.openvsp.compute_aero_slipstream import _ComputeSlipstreamOpenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
+    _ComputeSlipstreamOpenvsp,
+)
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
