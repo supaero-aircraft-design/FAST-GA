@@ -14,17 +14,13 @@ Computation of propeller aero properties
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import os.path as pth
 import numpy as np
 import openmdao.api as om
 import math
 import logging
-import time
 import pandas as pd
 from scipy.optimize import fsolve
-import warnings
-import matplotlib.pyplot as plt
 
 from fastoad.model_base import Atmosphere
 import fastga.models.aerodynamics.external.xfoil as xfoil
@@ -186,17 +182,13 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         outputs["data:aerodynamics:propeller:cruise_level:speed"] = speed_interp
 
     def compute_extreme_pitch(self, inputs, v_inf):
-        twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
-        delta_pos = []
-        delta_neg = []
         omega = self.options["average_rpm"]
         phi_vect = (
             180.0
             / math.pi
             * np.arctan((v_inf + 60.0 / v_inf) / (omega * 2.0 * math.pi / 60.0 * radius_ratio_vect))
         )
-        theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
         phi_75 = np.interp(0.75, radius_ratio_vect, phi_vect)
         self.theta_min = phi_75 - 10.0
         self.theta_max = phi_75 + 25.0
@@ -225,6 +217,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     local_eta_vect.append(eta)
 
             # Find first the "monotone" zone (10 points of increase)
+            idx_in_zone = 0
             thrust_difference = np.array(local_thrust_vect[1:]) - np.array(local_thrust_vect[0:-1])
             for idx in range(5, len(thrust_difference)):
                 if np.sum(np.array(thrust_difference[idx - 5 : idx + 5]) > 0.0) == len(
@@ -283,7 +276,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return thrust_vect, theta_vect, eta_vect
 
-    def reformat_table(self, thrust_vect, eta_vect):
+    @staticmethod
+    def reformat_table(thrust_vect, eta_vect):
         min_thrust = 0.0
         max_thrust = 0.0
         thrust_limit = []
@@ -516,6 +510,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return f
 
+    # noinspection PyUnusedLocal
     @staticmethod
     def disk_theory(
         speed_vect: np.array,
@@ -681,27 +676,29 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
                 index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
                 index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
-                lower_values = data_reduced.loc[labels, index_lower_reynolds]
-                upper_values = data_reduced.loc[labels, index_upper_reynolds]
-                interpolated_result = lower_values
+                interpolated_result = data_reduced.loc[labels, index_lower_reynolds]
                 # Calculate reynolds interval ratio
                 x_ratio = (min(upper_reynolds) - reynolds) / (
                     min(upper_reynolds) - max(lower_reynolds)
                 )
                 # Search for common alpha range
-                alpha_lower = eval(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                alpha_upper = eval(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                alpha_lower = np.array(
+                    np.matrix(data_reduced.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                ).ravel()
+                alpha_upper = np.array(
+                    np.matrix(data_reduced.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                ).ravel()
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                interpolated_result.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
+                data_reduced.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
                 labels.remove("alpha")
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
                     lower_value = np.array(
-                        eval(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                    )
+                        np.matrix(data_reduced.loc[label, index_lower_reynolds].to_numpy()[0])
+                    ).ravel()
                     upper_value = np.array(
-                        eval(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                    )
+                        np.matrix(data_reduced.loc[label, index_upper_reynolds].to_numpy()[0])
+                    ).ravel()
                     # If values relative to alpha vector, performs interpolation with shared vector
                     if np.size(lower_value) == len(alpha_lower):
                         lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
@@ -710,7 +707,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
         # Extract alpha, cl and cd vectors
         # noinspection PyUnboundLocalVariable
-        alpha_vect = np.array(eval(interpolated_result.loc["alpha", :].to_numpy()[0]))
-        cl_vect = np.array(eval(interpolated_result.loc["cl", :].to_numpy()[0]))
-        cd_vect = np.array(eval(interpolated_result.loc["cd", :].to_numpy()[0]))
+        alpha_vect = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
+        cl_vect = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
+        cd_vect = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
         return alpha_vect, cl_vect, cd_vect

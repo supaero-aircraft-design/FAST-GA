@@ -53,3 +53,20 @@ data:geometry:wing:tip:thickness_ratio || thickness ratio at wing tip
 data:geometry:wing:tip:y || Y-position of wing tip
 data:geometry:wing:wet_area || wet area of wing
 data:weight:aircraft:MFW || maximum fuel weight
+data:geometry:cabin:NPAX || 
+data:geometry:fuselage:front_length || 
+data:geometry:fuselage:length || 
+data:geometry:fuselage:luggage_length || 
+data:geometry:fuselage:maximum_height || 
+data:geometry:fuselage:maximum_width || 
+data:geometry:fuselage:PAX_length || 
+data:geometry:fuselage:rear_length || 
+data:geometry:landing_gear:height || 
+data:geometry:plane:length || 
+data:geometry:propulsion:nacelle:height || 
+data:geometry:propulsion:nacelle:length || 
+data:geometry:propulsion:nacelle:wet_area || 
+data:geometry:propulsion:nacelle:width || 
+data:geometry:propulsion:nacelle:y || 
+data:geometry:propulsion:propeller:depth || 
+data:geometry:propulsion:propeller:diameter || 

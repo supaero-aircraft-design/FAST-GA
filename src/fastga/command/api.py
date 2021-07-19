@@ -163,7 +163,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     saved_dict[variable_name] = variable_description
                                 else:
                                     print(
-                                        "\nWarning: file contains parameter "
+                                        "\nWarning: file ./models/variable_descriptions.txt contains parameter "
                                         + variable_name
                                         + " already saved in "
                                         + pth.split(root)[-1]
@@ -205,9 +205,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         for class_name in class_list:
                             # noinspection PyBroadException
                             try:
-                                exec("from " + root_lib + " import " + class_name + " as my_class")
-                                options = eval("my_class().options")
-                                if "propulsion_id" in options:
+                                my_class = getattr(importlib.import_module(root_lib), class_name)
+                                options_dictionary = {}
+                                if "propulsion_id" in my_class().options:
                                     available_id_list = _get_simple_system_list()
                                     idx_to_remove = []
                                     for idx in range(len(available_id_list)):
@@ -219,34 +219,25 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     idx_to_remove = list(dict.fromkeys(idx_to_remove))
                                     for idx in sorted(idx_to_remove, reverse=True):
                                         del available_id_list[idx]
-                                    exec_base = (
-                                        'my_class(propulsion_id="' + available_id_list[0] + '"'
-                                    )
-                                else:
-                                    exec_base = "my_class("
-                                exec("variables = list_variables(" + exec_base + "))")
+                                    options_dictionary["propulsion_id"] = available_id_list[0]
+                                variables = list_variables(my_class(**options_dictionary))
                                 local_options = []
                                 for option_name in BOOLEAN_OPTIONS:
                                     # noinspection PyProtectedMember
-                                    if option_name in options._dict.keys():
+                                    if option_name in my_class().options._dict.keys():
                                         local_options.append(option_name)
+                                # If no boolean options alternatives to be tested, search for input variables in models
+                                # and output variables for subpackages (including ivc)
                                 if len(local_options) == 0:
                                     if subpackage_path.split("\\")[-1] == "models":
-                                        var_names = eval(
-                                            "[var.name for var in variables if var.is_input]"
-                                        )
+                                        var_names = [var.name for var in variables if var.is_input]
                                     else:
-                                        var_names = eval(
-                                            "[var.name for var in variables if not var.is_input]"
-                                        )
-                                        if (
-                                            len(eval("list_ivc_outputs_name(" + exec_base + "))"))
-                                            != 0
-                                        ):
-                                            var_names.append(
-                                                eval("list_ivc_outputs_name(" + exec_base + "))")
-                                            )
+                                        var_names = [var.name for var in variables if not var.is_input]
+                                        if len(list_ivc_outputs_name(my_class(**options_dictionary))) != 0:
+                                            var_names.append(list_ivc_outputs_name(my_class(**options_dictionary)))
+                                    # Remove duplicates
                                     var_names = list(dict.fromkeys(var_names))
+                                    # Add to dictionary only variable name including data:, settings: or tuning:
                                     for key in var_names:
                                         if (
                                             ("data:" in key)
@@ -255,53 +246,25 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         ):
                                             if key not in dict_to_be_saved.keys():
                                                 dict_to_be_saved[key] = ""
+                                # If boolean options alternatives encountered, all alternatives have to be tested to
+                                # ensure complete coverage of variables. Working principle is similar to previous one.
                                 else:
                                     for options_tuple in list(
                                         product([True, False], repeat=len(local_options))
                                     ):
-                                        if "=" in exec_base:
-                                            exec_line = (
-                                                "variables = list_variables(" + exec_base + ","
-                                            )
-                                        else:
-                                            exec_line = "variables = list_variables(" + exec_base
+                                        # Define local option dictionary
                                         for idx in range(len(local_options)):
-                                            exec_line += (
-                                                local_options[idx]
-                                                + "="
-                                                + str(options_tuple[idx])
-                                                + ","
-                                            )
-                                        exec_line = exec_line[0:-1] + "))"
-                                        exec(exec_line)
+                                            options_dictionary[local_options[idx]] = options_tuple[idx]
+                                        variables = list_variables(my_class(**options_dictionary))
                                         if subpackage_path.split("\\")[-1] == "models":
-                                            var_names = eval(
-                                                "[var.name for var in variables if var.is_input]"
-                                            )
+                                            var_names = [var.name for var in variables if var.is_input]
                                         else:
-                                            var_names = eval(
-                                                "[var.name for var in variables if not var.is_input]"
-                                            )
-                                            if (
-                                                len(
-                                                    eval(
-                                                        exec_line.replace(
-                                                            "variables = list_variables",
-                                                            "list_ivc_outputs_name",
-                                                        )
-                                                    )
-                                                )
-                                                != 0
-                                            ):
-                                                var_names.append(
-                                                    eval(
-                                                        exec_line.replace(
-                                                            "variables = list_variables",
-                                                            "list_ivc_outputs_name",
-                                                        )
-                                                    )
-                                                )
+                                            var_names = [var.name for var in variables if not var.is_input]
+                                            if len(list_ivc_outputs_name(my_class(**options_dictionary))) != 0:
+                                                var_names.append(list_ivc_outputs_name(my_class(**options_dictionary)))
+                                        # Remove duplicates
                                         var_names = list(dict.fromkeys(var_names))
+                                        # Add to dictionary only variable name including data:, settings: or tuning:
                                         for key in var_names:
                                             if (
                                                 ("data:" in key)

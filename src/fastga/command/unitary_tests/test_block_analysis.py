@@ -20,7 +20,9 @@ import pytest
 
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
-from fastga.models import aerodynamics
+from fastga import models
+from fastga.models import aerodynamics, geometry, handling_qualities, load_analysis, loops, performances
+from fastga.models.weight import cg, mass_breakdown
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
 
@@ -195,4 +197,13 @@ def test_missing_inputs_in_xml():
 
 
 def test_variable_descriptions_auto_gen():
+
     api.generate_variables_description(aerodynamics.__path__[0], True)
+    api.generate_variables_description(geometry.__path__[0], True)
+    api.generate_variables_description(handling_qualities.__path__[0], True)
+    api.generate_variables_description(load_analysis.__path__[0], True)
+    api.generate_variables_description(loops.__path__[0], True)
+    api.generate_variables_description(performances.__path__[0], True)
+    api.generate_variables_description(cg.__path__[0], True)
+    api.generate_variables_description(mass_breakdown.__path__[0], True)
+    api.generate_variables_description(models.__path__[0], True)
