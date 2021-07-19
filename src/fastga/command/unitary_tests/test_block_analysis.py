@@ -20,6 +20,7 @@ import pytest
 
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
+from fastga.models import aerodynamics
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
 
@@ -191,3 +192,7 @@ def test_missing_inputs_in_xml():
 
     assert not function_generated
     assert right_error
+
+
+def test_variable_descriptions_auto_gen():
+    api.generate_variables_description(aerodynamics.__path__[0], True)

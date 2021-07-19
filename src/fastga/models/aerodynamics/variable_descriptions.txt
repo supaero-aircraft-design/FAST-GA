@@ -131,3 +131,24 @@ data:aerodynamics:wing:low_speed:induced_drag_coefficient ||
 data:aerodynamics:wing:low_speed:reynolds || 
 data:aerodynamics:wing:low_speed:Y_vector || 
 data:aerodynamics:wing:MAC:low_speed:reynolds || 
+
+data:aerodynamics:nacelles:cruise:CD0 || 
+data:aerodynamics:nacelles:low_speed:CD0 || 
+data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector || 
+data:aerodynamics:slipstream:wing:cruise:prop_off:CL || 
+data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector || 
+data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector || 
+data:aerodynamics:slipstream:wing:cruise:prop_on:CL || 
+data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector || 
+data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref || 
+data:aerodynamics:slipstream:wing:cruise:prop_on:velocity || 
+data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector || 
+data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector || 
+data:aerodynamics:slipstream:wing:low_speed:prop_off:CL || 
+data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector || 
+data:aerodynamics:slipstream:wing:low_speed:prop_off:Y_vector || 
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CL || 
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector || 
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref || 
+data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity || 
+data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector || 

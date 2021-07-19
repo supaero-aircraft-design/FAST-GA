@@ -32,7 +32,7 @@ from itertools import product
 from tempfile import TemporaryDirectory
 from pathlib import Path
 import tempfile
-import glob
+from platform import system
 
 from fastoad.openmdao.variables import VariableList
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -195,7 +195,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         class_list = [x for x in dir(module) if inspect.isclass(getattr(module, x))]
                         # noinspection PyUnboundLocalVariable
                         retrieve_original_file(tmp_folder, pth.join(root, name))
-                        root_lib = ".".join(root.split("\\")[root.split("\\").index("fastga") :])
+                        if system() != "Windows":
+                            root_lib = ".".join(root.split("/")[root.split("/").index("fastga") :])
+                        else:
+                            root_lib = ".".join(
+                                root.split("\\")[root.split("\\").index("fastga") :]
+                            )
                         root_lib += "." + name.replace(".py", "")
                         for class_name in class_list:
                             # noinspection PyBroadException
