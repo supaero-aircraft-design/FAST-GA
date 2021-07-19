@@ -21,7 +21,14 @@ import pytest
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
 from fastga import models
-from fastga.models import aerodynamics, geometry, handling_qualities, load_analysis, loops, performances
+from fastga.models import (
+    aerodynamics,
+    geometry,
+    handling_qualities,
+    load_analysis,
+    loops,
+    performances,
+)
 from fastga.models.weight import cg, mass_breakdown
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")

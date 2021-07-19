@@ -232,9 +232,22 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     if subpackage_path.split("\\")[-1] == "models":
                                         var_names = [var.name for var in variables if var.is_input]
                                     else:
-                                        var_names = [var.name for var in variables if not var.is_input]
-                                        if len(list_ivc_outputs_name(my_class(**options_dictionary))) != 0:
-                                            var_names.append(list_ivc_outputs_name(my_class(**options_dictionary)))
+                                        var_names = [
+                                            var.name for var in variables if not var.is_input
+                                        ]
+                                        if (
+                                            len(
+                                                list_ivc_outputs_name(
+                                                    my_class(**options_dictionary)
+                                                )
+                                            )
+                                            != 0
+                                        ):
+                                            var_names.append(
+                                                list_ivc_outputs_name(
+                                                    my_class(**options_dictionary)
+                                                )
+                                            )
                                     # Remove duplicates
                                     var_names = list(dict.fromkeys(var_names))
                                     # Add to dictionary only variable name including data:, settings: or tuning:
@@ -254,14 +267,31 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     ):
                                         # Define local option dictionary
                                         for idx in range(len(local_options)):
-                                            options_dictionary[local_options[idx]] = options_tuple[idx]
+                                            options_dictionary[local_options[idx]] = options_tuple[
+                                                idx
+                                            ]
                                         variables = list_variables(my_class(**options_dictionary))
                                         if subpackage_path.split("\\")[-1] == "models":
-                                            var_names = [var.name for var in variables if var.is_input]
+                                            var_names = [
+                                                var.name for var in variables if var.is_input
+                                            ]
                                         else:
-                                            var_names = [var.name for var in variables if not var.is_input]
-                                            if len(list_ivc_outputs_name(my_class(**options_dictionary))) != 0:
-                                                var_names.append(list_ivc_outputs_name(my_class(**options_dictionary)))
+                                            var_names = [
+                                                var.name for var in variables if not var.is_input
+                                            ]
+                                            if (
+                                                len(
+                                                    list_ivc_outputs_name(
+                                                        my_class(**options_dictionary)
+                                                    )
+                                                )
+                                                != 0
+                                            ):
+                                                var_names.append(
+                                                    list_ivc_outputs_name(
+                                                        my_class(**options_dictionary)
+                                                    )
+                                                )
                                         # Remove duplicates
                                         var_names = list(dict.fromkeys(var_names))
                                         # Add to dictionary only variable name including data:, settings: or tuning:
