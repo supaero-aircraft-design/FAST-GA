@@ -1549,6 +1549,9 @@ def test_load_factor():
     assert vh == pytest.approx(102.09, abs=1e-2)
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
+)
 def test_propeller():
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
