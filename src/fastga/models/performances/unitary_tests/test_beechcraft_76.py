@@ -17,10 +17,6 @@ Test takeoff module
 from openmdao.core.group import Group
 import pytest
 
-# fixme: problem with the plugin register mechanism, if line is removed mission unable to import SAFETY_HEIGHT and
-#  Takeoff from takeoff.py!
-from fastoad.io import VariableIO
-
 from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
 from ..mission import Mission

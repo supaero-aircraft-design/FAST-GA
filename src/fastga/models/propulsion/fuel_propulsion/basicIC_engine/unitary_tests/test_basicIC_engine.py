@@ -17,8 +17,8 @@ Test module for basicIC_engine.py
 
 import numpy as np
 import pandas as pd
-import pytest
-from fastoad.model_base import FlightPoint, Atmosphere
+
+from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 
 from ..basicIC_engine import BasicICEngine

@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         python-version: [ 3.7, 3.8, 3.9 ]
-        os: [ windows-latest ]
+        os: [ windows-latest, ubuntu-latest ]
 
     steps:
       - uses: actions/checkout@v2
@@ -63,3 +63,17 @@ jobs:
       - name: Unit tests
         run: poetry run pytest src
         shell: bash
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.8' }} # This action runs only on Linux
+        with:
+          project-token: ${{ secrets.codacy }}
+          coverage-reports: coverage.xml
+
+      - uses: codecov/codecov-action@v1
+        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
+        with:
+          #          flags: unittests  # optional
+          name: codecov-FAST-GA  # optional
+          fail_ci_if_error: false  # optional (default = false)

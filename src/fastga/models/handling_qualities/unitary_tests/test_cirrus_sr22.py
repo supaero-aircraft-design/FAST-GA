@@ -11,10 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import pytest
-
-from fastoad.io import VariableIO
 
 from ..compute_static_margin import ComputeStaticMargin
 from ..tail_sizing.update_vt_area import UpdateVTArea

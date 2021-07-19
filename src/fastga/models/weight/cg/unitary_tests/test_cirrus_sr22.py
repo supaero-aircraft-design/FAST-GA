@@ -17,8 +17,6 @@ Test module for geometry functions of cg components
 
 import pytest
 
-# from fastoad.module_management.service_registry import RegisterPropulsion
-
 from ..cg import CG
 from ..cg_components.a_airframe import (
     ComputeWingCG,

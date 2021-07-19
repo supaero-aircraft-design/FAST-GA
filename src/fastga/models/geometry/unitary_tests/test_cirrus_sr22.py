@@ -15,15 +15,7 @@ Test module for geometry functions of cg components
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-import pandas as pd
-from openmdao.core.component import Component
 import pytest
-from typing import Union
-import numpy as np
-
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
@@ -61,9 +53,6 @@ from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.propulsion import IPropulsion
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 

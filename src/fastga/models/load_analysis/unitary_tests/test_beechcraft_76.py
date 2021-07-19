@@ -17,8 +17,6 @@ Test load_analysis module
 import numpy as np
 import pytest
 
-from fastoad.module_management.service_registry import RegisterPropulsion
-
 from ..aerostructural_loads import AerostructuralLoad
 from ..structural_loads import StructuralLoads
 from ..aerodynamic_loads import AerodynamicLoads

@@ -26,9 +26,6 @@ from tempfile import TemporaryDirectory
 import pytest
 import time
 
-# FIXME: deleting this non-used import leads to upper level import error with plugin register
-from fastoad.io import VariableIO
-
 from ..components.cd0 import Cd0
 from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..external.xfoil import resources

@@ -14,11 +14,8 @@ Test takeoff module
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 from openmdao.core.group import Group
 import pytest
-
-from fastoad.io import VariableIO
 
 from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
