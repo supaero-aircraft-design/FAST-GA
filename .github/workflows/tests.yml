@@ -61,7 +61,9 @@ jobs:
         shell: bash
 
       - name: Unit tests
-        run: poetry run pytest src
+        run: |
+          poetry run pytest src
+          poetry run coverage xml  # for sending coverage report
         shell: bash
 
       - name: Run codacy-coverage-reporter
