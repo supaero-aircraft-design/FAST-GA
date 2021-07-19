@@ -17,6 +17,7 @@ Test load_analysis module
 import numpy as np
 import pytest
 
+
 from ..aerostructural_loads import AerostructuralLoad
 from ..structural_loads import StructuralLoads
 from ..aerodynamic_loads import AerodynamicLoads
