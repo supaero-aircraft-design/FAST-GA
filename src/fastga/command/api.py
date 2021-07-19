@@ -382,10 +382,10 @@ def write_needed_inputs(
     variables.save()
 
 
-def list_ivc_outputs_name(system: Union[ExplicitComponent, ImplicitComponent, Group],):
+def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitComponent, Group]):
     # List all "root" components in the systems, meaning the components that don't have any subcomponents
     group = AutoUnitsDefaultGroup()
-    group.add_subsystem("system", system, promotes=["*"])
+    group.add_subsystem("system", local_system, promotes=["*"])
     problem = FASTOADProblem(group)
     problem.setup()
     model = problem.model
@@ -409,21 +409,21 @@ def list_ivc_outputs_name(system: Union[ExplicitComponent, ImplicitComponent, Gr
 
 
 def generate_block_analysis(
-    system: Union[ExplicitComponent, ImplicitComponent, Group],
+    local_system: Union[ExplicitComponent, ImplicitComponent, Group],
     var_inputs: List,
     xml_file_path: str,
     overwrite: bool = False,
 ):
     # Search what are the component/group outputs
-    variables = list_variables(system)
+    variables = list_variables(local_system)
     inputs_names = [var.name for var in variables if var.is_input]
     outputs_names = [var.name for var in variables if not var.is_input]
 
-    # Check the sub-systems of the system in question, and if there are ivc, list the outputs  of those ivc. We are
-    # gonna assume that ivc are only use in a situation similar to the one for the ComputePropellerPerformance group,
-    # meaning if there is an ivc, it will always start the group
+    # Check the sub-systems of the local_system in question, and if there are ivc, list the outputs  of those ivc.
+    # We are gonna assume that ivc are only use in a situation similar to the one for the ComputePropellerPerformance
+    # group, meaning if there is an ivc, it will always start the group
 
-    ivc_outputs_names = list_ivc_outputs_name(system)
+    ivc_outputs_names = list_ivc_outputs_name(local_system)
 
     # Check that variable inputs are in the group/component list
     if not (set(var_inputs) == set(inputs_names).intersection(set(var_inputs))):
@@ -433,7 +433,7 @@ def generate_block_analysis(
     if not (os.path.exists(xml_file_path)) and not (set(var_inputs) == set(inputs_names)):
         # If no input file and some inputs are missing, generate it and return None
         group = AutoUnitsDefaultGroup()
-        group.add_subsystem("system", system, promotes=["*"])
+        group.add_subsystem("system", local_system, promotes=["*"])
         problem = FASTOADProblem(group)
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
@@ -470,7 +470,7 @@ def generate_block_analysis(
                 reader.path_separator = ":"
                 ivc = reader.to_ivc()
                 group = AutoUnitsDefaultGroup()
-                group.add_subsystem("system", system, promotes=["*"])
+                group.add_subsystem("system", local_system, promotes=["*"])
                 group.add_subsystem("ivc", ivc, promotes=["*"])
                 problem = FASTOADProblem(group)
                 problem.input_file_path = xml_file_path
@@ -504,7 +504,7 @@ def generate_block_analysis(
                 for name, value in inputs_dict.items():
                     ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
-                group_local.add_subsystem("system", system, promotes=["*"])
+                group_local.add_subsystem("system", local_system, promotes=["*"])
                 group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
                 problem_local = FASTOADProblem(group_local)
                 problem_local.setup()
@@ -548,7 +548,7 @@ def get_type(model):
 
 class VariableListLocal(VariableList):
     @classmethod
-    def from_system(cls, system: System) -> "VariableList":
+    def from_system(cls, local_system: System) -> "VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
@@ -559,16 +559,16 @@ class VariableListLocal(VariableList):
         In the case of a group, if variables are promoted, the promoted name
         will be used. Otherwise, the absolute name will be used.
 
-        :param system: OpenMDAO Component instance to inspect
+        :param local_system: OpenMDAO Component instance to inspect
         :return: VariableList instance
         """
 
         problem = om.Problem()
-        if isinstance(system, om.Group):
-            problem.model = deepcopy(system)
+        if isinstance(local_system, om.Group):
+            problem.model = deepcopy(local_system)
         else:
             # problem.model has to be a group
-            problem.model.add_subsystem("comp", deepcopy(system), promotes=["*"])
+            problem.model.add_subsystem("comp", deepcopy(local_system), promotes=["*"])
         problem.setup()
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
