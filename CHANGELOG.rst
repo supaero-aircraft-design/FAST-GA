@@ -2,6 +2,12 @@
 Changelog
 =========
 
+Version 0.1.3-beta
+==============
+
+- NACA .csv polar files replaced to correct xfoil_polar.py read issues
+- Correction of security issues using **exec** and **eval** commands
+
 Version 0.1.2-beta
 ==============
 
