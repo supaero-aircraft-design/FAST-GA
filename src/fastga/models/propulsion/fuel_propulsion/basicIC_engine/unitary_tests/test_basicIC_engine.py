@@ -836,13 +836,14 @@ def test_compute_flight_points():
     ]  # mix EngineSetting with integers
     expected_sfc = [1.718857e-16, 1.114245e-05, 1.114245e-05, 1.907301e-05, 1.506827e-05]
 
-    flight_points = pd.DataFrame()
-    flight_points["mach"] = machs + machs
-    flight_points["altitude"] = altitudes + altitudes
-    flight_points["engine_setting"] = engine_settings + engine_settings
-    flight_points["thrust_is_regulated"] = [False] * 5 + [True] * 5
-    flight_points["thrust_rate"] = thrust_rates + [0.0] * 5
-    flight_points["thrust"] = [0.0] * 5 + thrusts
+    flight_points = FlightPoint(
+    mach=machs + machs,
+    altitude=altitudes + altitudes,
+    engine_setting=engine_settings + engine_settings,
+    thrust_is_regulated=[False] * 5 + [True] * 5,
+    thrust_rate=thrust_rates + [0.0] * 5,
+    thrust=[0.0] * 5 + thrusts
+    )
     engine.compute_flight_points(flight_points)
     np.testing.assert_allclose(flight_points.sfc, expected_sfc + expected_sfc, rtol=1e-4)
     np.testing.assert_allclose(flight_points.thrust_rate, thrust_rates + thrust_rates, rtol=1e-4)

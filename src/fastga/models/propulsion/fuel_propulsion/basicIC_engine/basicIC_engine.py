@@ -223,7 +223,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                 # noinspection PyUnresolvedReferences
                 flight_points.thrust = thrust.reshape(self.specific_shape)
             else:
-                flight_points["sfc"] = sfc
+                flight_points.sfc = sfc
                 flight_points.thrust_rate = thrust_rate
                 flight_points.thrust = thrust
 
