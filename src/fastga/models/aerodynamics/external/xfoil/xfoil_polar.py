@@ -165,11 +165,19 @@ class XfoilPolar(ExternalCodeComp):
                         min(upper_reynolds) - max(lower_reynolds)
                     )
                     # Search for common alpha range for linear interpolation
-                    alpha_lower = eval(
-                        lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]
+                    alpha_lower = (
+                        np.array(
+                            np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                        )
+                        .ravel()
+                        .tolist()
                     )
-                    alpha_upper = eval(
-                        upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]
+                    alpha_upper = (
+                        np.array(
+                            np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                        )
+                        .ravel()
+                        .tolist()
                     )
                     alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                     interpolated_result.loc["alpha", index_lower_reynolds] = str(
@@ -179,11 +187,11 @@ class XfoilPolar(ExternalCodeComp):
                     # Calculate average values (cd, cl...) with linear interpolation
                     for label in labels:
                         lower_value = np.array(
-                            eval(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                        )
+                            np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                        ).ravel()
                         upper_value = np.array(
-                            eval(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                        )
+                            np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                        ).ravel()
                         # If values relative to alpha vector, performs interpolation with shared vector
                         if np.size(lower_value) == len(alpha_lower):
                             lower_value = np.interp(
@@ -407,13 +415,17 @@ class XfoilPolar(ExternalCodeComp):
 
         else:
             # Extract results
-            cl_max_2d = np.array(eval(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]))
-            cl_min_2d = np.array(eval(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]))
-            ALPHA = np.array(eval(interpolated_result.loc["alpha", :].to_numpy()[0]))
-            CL = np.array(eval(interpolated_result.loc["cl", :].to_numpy()[0]))
-            CD = np.array(eval(interpolated_result.loc["cd", :].to_numpy()[0]))
-            CDP = np.array(eval(interpolated_result.loc["cdp", :].to_numpy()[0]))
-            CM = np.array(eval(interpolated_result.loc["cm", :].to_numpy()[0]))
+            cl_max_2d = np.array(
+                np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+            ).ravel()
+            cl_min_2d = np.array(
+                np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+            ).ravel()
+            ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
+            CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
+            CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
+            CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
+            CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
 
             # Modify vector length if necessary
             if POLAR_POINT_COUNT < len(ALPHA):
@@ -555,7 +567,7 @@ class XfoilPolar(ExternalCodeComp):
 
     @staticmethod
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """ Delete ending 0.0 values """
+        # Delete ending 0.0 values
         for idx in range(len(x)):
             if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]

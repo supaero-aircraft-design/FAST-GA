@@ -1,5 +1,5 @@
 """
-Test module for aerodynamics groups
+    Test module for aerodynamics groups
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -19,12 +19,15 @@ import os
 import shutil
 import glob
 import numpy as np
-from platform import system
-import tempfile
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import pytest
 import time
+import tempfile
+from platform import system
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 from ..components.cd0 import Cd0
 from ..external.xfoil.xfoil_polar import XfoilPolar
@@ -51,9 +54,6 @@ from ..aerodynamics_low_speed import AerodynamicsLowSpeed
 from ..load_factor import LoadFactor
 from ..components.compute_propeller_aero import ComputePropellerPerformance
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
-
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
@@ -66,7 +66,6 @@ SKIP_STEPS = True
 
 def _create_tmp_directory() -> TemporaryDirectory:
     """Provide temporary directory for calculation."""
-
     for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
         if tmp_base_path is not None:
             os.makedirs(tmp_base_path, exist_ok=True)
@@ -135,7 +134,6 @@ def polar_result_retrieve(tmp_folder):
 
 def test_compute_reynolds():
     """ Tests high and low speed reynolds calculation """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeUnitReynolds()), __file__, XML_FILE)
 
@@ -161,7 +159,6 @@ def test_compute_reynolds():
 
 def test_cd0_high_speed():
     """ Tests drag coefficient @ high speed """
-
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
@@ -188,7 +185,6 @@ def test_cd0_high_speed():
 
 def test_cd0_low_speed():
     """ Tests drag coefficient @ low speed """
-
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(
@@ -221,7 +217,6 @@ def test_cd0_low_speed():
 )
 def test_polar():
     """ Tests polar execution (XFOIL) @ high and low speed """
-
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -278,8 +273,7 @@ def test_polar():
     reason="No XFOIL executable available",
 )
 def test_airfoil_slope():
-    """ Tests polar execution (XFOIL) @ high and low speed """
-
+    """ Tests polar execution (XFOIL) @ high speed """
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -322,6 +316,32 @@ def test_airfoil_slope():
     assert cl_alpha_vtp == pytest.approx(6.3321, abs=1e-4)
 
 
+def test_airfoil_slope_wt_xfoil():
+    """ Tests polar reading @ high speed """
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(
+        list_inputs(
+            ComputeAirfoilLiftCurveSlope(
+                wing_airfoil_file="naca63_415.af",
+                htp_airfoil_file="naca0012.af",
+                vtp_airfoil_file="naca0012.af",
+            )
+        ),
+        __file__,
+        XML_FILE,
+    )
+
+    # Run problem
+    run_system(
+        ComputeAirfoilLiftCurveSlope(
+            wing_airfoil_file="naca63_415.af",
+            htp_airfoil_file="naca0012.af",
+            vtp_airfoil_file="naca0012.af",
+        ),
+        ivc,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
@@ -329,7 +349,6 @@ def test_airfoil_slope():
 )
 def test_vlm_comp_high_speed():
     """ Tests vlm components @ high speed """
-
     for mach_interpolation in [True, False]:
 
         # Create result temporary directory
@@ -413,7 +432,6 @@ def test_vlm_comp_high_speed():
 )
 def test_vlm_comp_low_speed():
     """ Tests vlm components @ low speed """
-
     # Create result temporary directory
     results_folder = _create_tmp_directory()
 
@@ -627,7 +645,6 @@ def test_vlm_comp_low_speed():
 )
 def test_openvsp_comp_high_speed():
     """ Tests openvsp components @ high speed """
-
     for mach_interpolation in [True, False]:
 
         # Create result temporary directory
@@ -700,7 +717,6 @@ def test_openvsp_comp_high_speed():
 )
 def test_openvsp_comp_low_speed():
     """ Tests openvsp components @ low speed """
-
     # Create result temporary directory
     results_folder = _create_tmp_directory()
 
@@ -909,7 +925,6 @@ def test_openvsp_comp_low_speed():
 
 def test_2d_hinge_moment():
     """ Tests tail hinge-moments """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, XML_FILE)
 
@@ -927,7 +942,6 @@ def test_2d_hinge_moment():
 
 def test_3d_hinge_moment():
     """ Tests tail hinge-moments """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Compute3DHingeMomentsTail()), __file__, XML_FILE)
 
@@ -945,7 +959,6 @@ def test_3d_hinge_moment():
 
 def test_high_lift():
     """ Tests high-lift contribution """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
 
@@ -983,7 +996,6 @@ def test_high_lift():
 )
 def test_extreme_cl():
     """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
-
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -1021,7 +1033,6 @@ def test_extreme_cl():
 
 def test_l_d_max():
     """ Tests best lift/drag component """
-
     # Define independent input value (openVSP)
     ivc = get_indep_var_comp(list_inputs(ComputeLDMax()), __file__, XML_FILE)
 
@@ -1039,7 +1050,6 @@ def test_l_d_max():
 
 def test_cnbeta():
     """ Tests cn beta fuselage """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCnBetaFuselage()), __file__, XML_FILE)
 
@@ -1358,7 +1368,6 @@ def test_slipstream_openvsp_low_speed():
 
 def test_compute_mach_interpolation_roskam():
     """ Tests computation of the mach interpolation vector using Roskam's approach """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeMachInterpolation()), __file__, XML_FILE)
 
@@ -1374,7 +1383,6 @@ def test_compute_mach_interpolation_roskam():
 
 def test_cl_alpha_vt():
     """ Tests Cl alpha vt """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVT(low_speed_aero=True)), __file__, XML_FILE)
 
@@ -1400,7 +1408,6 @@ def test_cl_alpha_vt():
 
 def test_cy_delta_r():
     """ Tests cy delta of the rudder """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
 
@@ -1415,7 +1422,6 @@ def test_cy_delta_r():
 )
 def test_high_speed_connection_openvsp():
     """ Tests high speed components connection """
-
     # load all inputs
     ivc = get_indep_var_comp(
         list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True)),
@@ -1430,7 +1436,6 @@ def test_high_speed_connection_openvsp():
 @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_high_speed_connection_vlm():
     """ Tests high speed components connection """
-
     # load all inputs
     ivc = get_indep_var_comp(
         list_inputs(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
@@ -1447,7 +1452,6 @@ def test_high_speed_connection_vlm():
 )
 def test_low_speed_connection_openvsp():
     """ Tests low speed components connection """
-
     # load all inputs
     ivc = get_indep_var_comp(
         list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True)),
@@ -1462,7 +1466,6 @@ def test_low_speed_connection_openvsp():
 @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_low_speed_connection_vlm():
     """ Tests low speed components connection """
-
     # load all inputs
     ivc = get_indep_var_comp(
         list_inputs(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False)),
@@ -1554,7 +1557,7 @@ def test_load_factor():
 )
 def test_propeller():
     # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
+    # tmp_folder = polar_result_transfer()
 
     # load all inputs and add missing ones
     ivc = get_indep_var_comp(
@@ -1582,7 +1585,7 @@ def test_propeller():
     )
 
     # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
+    # polar_result_retrieve(tmp_folder)
 
     # Check obtained value(s) is/(are) correct
     thrust_SL = np.array(

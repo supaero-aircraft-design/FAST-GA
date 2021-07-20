@@ -21,6 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputePassengerSeatsCG(ExplicitComponent):
+
     # TODO: Document equations. Cite sources
     """ Passenger seats center of gravity estimation """
 

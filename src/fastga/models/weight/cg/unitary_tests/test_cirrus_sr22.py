@@ -1,5 +1,5 @@
 """
-Test module for geometry functions of cg components
+    Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -16,6 +16,8 @@ Test module for geometry functions of cg components
 
 
 import pytest
+
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from ..cg import CG
 from ..cg_components.a_airframe import (
@@ -38,8 +40,6 @@ from ..cg_components.ratio_aft import ComputeCGRatioAft
 from ..cg_components.max_cg_ratio import ComputeMaxMinCGratio
 from ..cg_components.update_mlg import UpdateMLG
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 
 XML_FILE = "cirrus_sr22.xml"
@@ -47,7 +47,6 @@ XML_FILE = "cirrus_sr22.xml"
 
 def test_compute_cg_wing():
     """ Tests computation of wing center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWingCG()), __file__, XML_FILE)
 
@@ -59,7 +58,6 @@ def test_compute_cg_wing():
 
 def test_compute_cg_fuselage():
     """ Tests computation of fuselage center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuselageCG()), __file__, XML_FILE)
 
@@ -71,7 +69,6 @@ def test_compute_cg_fuselage():
 
 def test_compute_cg_tail():
     """ Tests computation of tail center(s) of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeTailCG()), __file__, XML_FILE)
 
@@ -85,7 +82,6 @@ def test_compute_cg_tail():
 
 def test_compute_cg_flight_control():
     """ Tests computation of flight control center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFlightControlCG()), __file__, XML_FILE)
 
@@ -97,7 +93,6 @@ def test_compute_cg_flight_control():
 
 def test_compute_cg_landing_gear():
     """ Tests computation of landing gear center(s) of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLandingGearCG()), __file__, XML_FILE)
 
@@ -109,7 +104,6 @@ def test_compute_cg_landing_gear():
 
 def test_compute_cg_engine():
     """ Tests computation of engine(s) center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeEngineCG()), __file__, XML_FILE)
 
@@ -121,7 +115,6 @@ def test_compute_cg_engine():
 
 def test_compute_cg_fuel_lines():
     """ Tests fuel lines center of gravity """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs((ComputeFuelLinesCG())), __file__, XML_FILE)
 
@@ -133,7 +126,6 @@ def test_compute_cg_fuel_lines():
 
 def test_compute_cg_tank():
     """ Tests tank center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeTankCG()), __file__, XML_FILE)
 
@@ -145,7 +137,6 @@ def test_compute_cg_tank():
 
 def test_compute_cg_power_systems():
     """ Tests computation of power systems center of gravity """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputePowerSystemsCG()), __file__, XML_FILE)
     ivc.add_output("data:weight:propulsion:engine:CG:x", 2.7, units="m")
@@ -160,7 +151,6 @@ def test_compute_cg_power_systems():
 
 def test_compute_cg_life_support_systems():
     """ Tests computation of life support systems center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLifeSupportCG()), __file__, XML_FILE)
 
@@ -172,7 +162,6 @@ def test_compute_cg_life_support_systems():
 
 def test_compute_cg_navigation_systems():
     """ Tests computation of navigation systems center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeNavigationSystemsCG()), __file__, XML_FILE)
 
@@ -184,7 +173,6 @@ def test_compute_cg_navigation_systems():
 
 def test_compute_cg_passenger_seats():
     """ Tests computation of passenger seats center of gravity """
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePassengerSeatsCG()), __file__, XML_FILE)
 
@@ -196,7 +184,6 @@ def test_compute_cg_passenger_seats():
 
 def test_compute_cg_payload():
     """ Tests computation of payload center(s) of gravity """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputePayloadCG()), __file__, XML_FILE)
 
@@ -212,7 +199,6 @@ def test_compute_cg_payload():
 
 def test_compute_cg_ratio_aft():
     """ Tests computation of center of gravity with aft estimation """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeCGRatioAft()), __file__, XML_FILE)
 
@@ -228,7 +214,6 @@ def test_compute_cg_ratio_aft():
 
 def test_compute_cg_load_case():
     """ Tests computation of center of gravity for ground/flight conf. """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeGroundCGCase()), __file__, XML_FILE)
 
@@ -254,7 +239,6 @@ def test_compute_cg_load_case():
 
 def test_compute_max_cg_ratio():
     """ Tests computation of maximum center of gravity ratio """
-
     # Define the independent input values that should be filled if basic function is chosen
     ivc = get_indep_var_comp(list_inputs(ComputeMaxMinCGratio()), __file__, XML_FILE)
 
@@ -268,7 +252,6 @@ def test_compute_max_cg_ratio():
 
 def test_update_mlg():
     """ Tests computation of MLG update """
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(UpdateMLG()), __file__, XML_FILE)
 
@@ -280,7 +263,6 @@ def test_update_mlg():
 
 def test_complete_cg():
     """ Run computation of all models """
-
     # with data from file
     ivc = get_indep_var_comp(list_inputs(CG(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
 

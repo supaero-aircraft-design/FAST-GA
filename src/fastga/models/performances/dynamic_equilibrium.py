@@ -175,9 +175,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
             load_factor = (
                 -dvz_dt + g * math.cos(gamma) - thrust / mass * math.sin(alpha - alpha_eng)
             ) / g
-            # Additionnal aerodynamics
+            # Additional aerodynamics
             delta_cl = 0.0
-            delta_cd = 0.0
             delta_cm = z_eng * thrust * math.cos(alpha - alpha_eng) / (wing_mac * q * wing_area)
             cl_wing_blown, cl_htp, _ = self.found_cl_repartition(
                 inputs, load_factor, mass, q, delta_cm, low_speed
