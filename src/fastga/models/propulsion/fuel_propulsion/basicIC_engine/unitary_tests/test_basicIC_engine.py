@@ -837,12 +837,12 @@ def test_compute_flight_points():
     expected_sfc = [1.718857e-16, 1.114245e-05, 1.114245e-05, 1.907301e-05, 1.506827e-05]
 
     flight_points = FlightPoint(
-    mach=machs + machs,
-    altitude=altitudes + altitudes,
-    engine_setting=engine_settings + engine_settings,
-    thrust_is_regulated=[False] * 5 + [True] * 5,
-    thrust_rate=thrust_rates + [0.0] * 5,
-    thrust=[0.0] * 5 + thrusts
+        mach=machs + machs,
+        altitude=altitudes + altitudes,
+        engine_setting=engine_settings + engine_settings,
+        thrust_is_regulated=[False] * 5 + [True] * 5,
+        thrust_rate=thrust_rates + [0.0] * 5,
+        thrust=[0.0] * 5 + thrusts,
     )
     engine.compute_flight_points(flight_points)
     np.testing.assert_allclose(flight_points.sfc, expected_sfc + expected_sfc, rtol=1e-4)

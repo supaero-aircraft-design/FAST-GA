@@ -188,7 +188,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         try:
                             spec.loader.exec_module(module)
                         except:
-                            _LOGGER.info("Trying to load {}, but it is not a module!".format(pth.join(root, name)))
+                            _LOGGER.info(
+                                "Trying to load {}, but it is not a module!".format(
+                                    pth.join(root, name)
+                                )
+                            )
                         if "RegisterOpenMDAOSystem" in dir(module):
                             tmp_folder = file_temporary_transfer(pth.join(root, name))
                         spec.loader.exec_module(module)
@@ -304,7 +308,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                 if key not in dict_to_be_saved.keys():
                                                     dict_to_be_saved[key] = ""
                             except:
-                                _LOGGER.info("Failed to read {}.{} class parameters!".format(root_lib, class_name))
+                                _LOGGER.info(
+                                    "Failed to read {}.{} class parameters!".format(
+                                        root_lib, class_name
+                                    )
+                                )
                     except:
                         if not (tmp_folder is None):
                             # noinspection PyUnboundLocalVariable

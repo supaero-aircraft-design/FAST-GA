@@ -411,7 +411,11 @@ class XfoilPolar(ExternalCodeComp):
                 try:
                     tmp_directory.cleanup()
                 except:
-                    _LOGGER.info("Error while trying to erase {} temporary directory!".format(tmp_directory.name))
+                    _LOGGER.info(
+                        "Error while trying to erase {} temporary directory!".format(
+                            tmp_directory.name
+                        )
+                    )
 
         else:
             # Extract results
