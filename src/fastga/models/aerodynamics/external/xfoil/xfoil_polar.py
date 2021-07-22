@@ -406,12 +406,12 @@ class XfoilPolar(ExternalCodeComp):
                             file = os.open(file_path, os.O_WRONLY)
                             os.close(file)
                         except:
-                            pass
+                            _LOGGER.info("Error while trying to close {} file!".format(file_path))
                 # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
                 except:
-                    pass
+                    _LOGGER.info("Error while trying to erase {} temporary directory!".format(tmp_directory.name))
 
         else:
             # Extract results
