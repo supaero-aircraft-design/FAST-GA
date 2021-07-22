@@ -21,7 +21,7 @@ from fastoad.model_base.atmosphere import Atmosphere
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class AerodynamicLoads(AerostructuralLoad):
@@ -96,7 +96,7 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")

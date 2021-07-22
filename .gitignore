@@ -40,7 +40,7 @@ tags
 *.egg-info
 
 # Unittest and coverage
-htmlcov/*
+**/htmlcov/**
 .coverage
 .tox
 junit.xml

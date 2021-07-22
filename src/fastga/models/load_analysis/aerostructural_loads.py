@@ -22,7 +22,7 @@ from scipy.interpolate import interp1d
 
 from fastoad.model_base.atmosphere import Atmosphere
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
 from fastga.models.aerodynamics.components import ComputeVN
 
 NB_POINTS_POINT_MASS = 5
@@ -130,7 +130,7 @@ class AerostructuralLoad(ComputeVN):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
@@ -431,7 +431,9 @@ class AerostructuralLoad(ComputeVN):
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
-            y_ratio = inputs["data:geometry:propulsion:y_ratio"]
+            y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
+            used_index = np.where(y_ratio_data >= 0.)[0]
+            y_ratio = y_ratio_data[used_index]
 
         g = 9.81
 
@@ -452,10 +454,13 @@ class AerostructuralLoad(ComputeVN):
         # Adding the motor weight
         # TODO : MODIFY THIS PART TO ACCOUNT FOR MULTIPLE MOTORS, SEE THE X-57 VERSION OF THIS FILE FOR AN EXAMPLE
         if engine_config == 1.0:
-            y_eng = y_ratio * semi_span
-            y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
-                y_vector, chord_vector, point_mass_array, y_eng, single_engine_mass, inputs
-            )
+            for y_ratio_mot in y_ratio:
+                y_eng = y_ratio_mot * semi_span
+                y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
+                    y_vector, chord_vector, point_mass_array, y_eng, single_engine_mass, inputs
+                )
+
+        y_eng_array = semi_span * np.array(y_ratio)
 
         # Computing and adding the lg weight
         # Overturn angle set as a fixed value, it is recommended to take over 25° and check that we can fit both LG in
@@ -483,6 +488,12 @@ class AerostructuralLoad(ComputeVN):
 
         readjust_struct = trapz(struct_weight_distribution, y_vector)
 
+        in_eng_nacelle = np.full(len(y_vector), False)
+        for y_eng in y_eng_array:
+            for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.):
+                in_eng_nacelle[i] = True
+        where_engine = np.where(in_eng_nacelle)
+
         if distribution_type == 1.0:
             y_ratio = y_vector / semi_span
             fuel_weight_distribution = 4.0 / np.pi * np.sqrt(1.0 - y_ratio ** 2.0)
@@ -494,7 +505,7 @@ class AerostructuralLoad(ComputeVN):
                     fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.2
             if engine_config == 1.0:
                 y_eng = y_ratio * semi_span
-                for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.0):
+                for i in where_engine:
                     # For now 50% size reduction in the fuel tank capacity due to the engine
                     fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.5
 

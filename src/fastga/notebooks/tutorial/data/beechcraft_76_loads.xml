@@ -85,7 +85,7 @@
 			<propulsion>
 				<layout>1.0</layout>
 				<count>2.0</count>
-				<y_ratio>0.34</y_ratio>
+				<y_ratio>[0.34, -1., -1., -1., -1., -1., -1., -1., -1., -1.]</y_ratio>
 			</propulsion>
 			<vertical_tail>
 				<area units="m**2">2.653</area>

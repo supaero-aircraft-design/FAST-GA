@@ -15,6 +15,7 @@ Test module for geometry functions of cg components
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
+import numpy as np
 import pytest
 
 from ..geom_components.fuselage.components import (
@@ -467,7 +468,11 @@ def test_geometry_nacelle():
     lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
     assert lg_height == pytest.approx(0.811, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
-    assert y_nacelle == pytest.approx(0.0, abs=1e-3)
+    y_nacelle_result = [0.0, -1., -1., -1., -1., -1., -1., -1., -1., -1.]
+    assert np.max(abs(y_nacelle - y_nacelle_result)) < 1e-3
+    x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
+    x_nacelle_result = [1.148, -1., -1., -1., -1., -1., -1., -1., -1., -1.]
+    assert np.max(abs(x_nacelle - x_nacelle_result)) < 1e-3
 
 
 def test_geometry_total_area():
