@@ -106,7 +106,8 @@
           <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
           <wet_area units="m**2" is_input="False">4.3197777006580775</wet_area>
           <width units="m" is_input="False">1.1253790627855103</width>
-          <y units="m" is_input="False">0.0<!--Y-position of nacelle center--></y>
+          <y units="m" is_input="False">[0.0, -1., -1., -1., -1., -1., -1., -1., -1., -1.]<!--Y-position of nacelle center--></y>
+          <x units="m" is_input="False">[1.148, -1., -1., -1., -1., -1., -1., -1., -1., -1.]<!--Y-position of nacelle center--></x>
         </nacelle>
         <propeller>
           <depth units="m" is_input="False">1.0</depth>

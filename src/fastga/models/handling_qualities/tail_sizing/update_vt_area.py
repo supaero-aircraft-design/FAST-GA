@@ -18,11 +18,14 @@ import numpy as np
 import openmdao.api as om
 
 from scipy.optimize import fsolve
+
 from fastoad.model_base.atmosphere import Atmosphere
 from fastoad.module_management.service_registry import BundleLoader
-from ...propulsion.fuel_propulsion.base import FuelEngineSet
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
+
+from ...propulsion.fuel_propulsion.base import FuelEngineSet
+from ...aerodynamics.constants import ENGINE_COUNT
 
 
 class UpdateVTArea(om.Group):
@@ -226,7 +229,8 @@ class VTPConstraints(om.ExplicitComponent):
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
 
-        y_nacelle = inputs["data:geometry:propulsion:nacelle:y"]
+        y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
+        engine_number = inputs["data:geometry:propulsion:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -269,7 +273,8 @@ class VTPConstraints(om.ExplicitComponent):
         propulsion_model.compute_flight_points(flight_point_cl)
         # If you look at FuelEngineSet method to compute flight point you will see that it is multiplied buy engine
         # count so we must divide it here to get the thrust of 1 engine only
-        thrust_cl = float(flight_point_cl.thrust) / 2.0
+        # FIXME : Take the thrust of one engine
+        thrust_cl = float(flight_point_cl.thrust) / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_cl_hp = propulsion_model.compute_max_power(flight_point_cl) * 1.34102
         speed_cl_fps = speed_cl * 3.28084
@@ -293,7 +298,8 @@ class VTPConstraints(om.ExplicitComponent):
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
 
-        y_nacelle = inputs["data:geometry:propulsion:nacelle:y"]
+        y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
+        engine_number = inputs["data:geometry:propulsion:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -336,7 +342,7 @@ class VTPConstraints(om.ExplicitComponent):
             thrust_rate=1.0,
         )  # forced to maximum thrust
         propulsion_model.compute_flight_points(flight_point_to)
-        thrust_to = float(flight_point_to.thrust) / 2.0
+        thrust_to = float(flight_point_to.thrust) / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_to_hp = propulsion_model.compute_max_power(flight_point_to) * 1.34102
         mc_speed_to_fps = vmc_to * 3.28084
@@ -364,7 +370,8 @@ class VTPConstraints(om.ExplicitComponent):
         return area
 
     def engine_out_landing(self, inputs):
-        y_nacelle = inputs["data:geometry:propulsion:nacelle:y"]
+        y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
+        engine_number = inputs["data:geometry:propulsion:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -413,7 +420,7 @@ class VTPConstraints(om.ExplicitComponent):
             thrust_rate=1.0,
         )  # forced to maximum thrust
         propulsion_model.compute_flight_points(flight_point_ldg)
-        thrust_ldg = float(flight_point_ldg.thrust) / 2.0
+        thrust_ldg = float(flight_point_ldg.thrust) / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
         max_power_oe_ldg_hp = propulsion_model.compute_max_power(flight_point_ldg) * 1.34102
         mc_speed_ldg_fps = vmc_ldg * 3.28084
@@ -475,7 +482,9 @@ class _UpdateVTArea(VTPConstraints):
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
-        self.add_input("data:geometry:propulsion:nacelle:y", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
@@ -600,7 +609,9 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         )
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:nacelle:y", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")

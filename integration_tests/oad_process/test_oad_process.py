@@ -141,12 +141,12 @@ def test_oad_process_openvsp():
 
     # Check values
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 255.0, atol=1)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 252.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1653.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1613.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1043.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1006.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):

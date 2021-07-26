@@ -15,11 +15,13 @@ Defines the analysis and plotting functions for postprocessing
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import plotly
 import plotly.graph_objects as go
+import matplotlib.colors as colour
+
+import plotly
+import random
+
 from plotly.subplots import make_subplots
-from fastga.command import api as api_cs23
-from scipy.constants import g
 
 from typing import Dict
 from openmdao.utils.units import convert_units
@@ -41,6 +43,7 @@ def aircraft_geometry_plot(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
+    :param plot_nacelle: boolean to turn on or off the plotting of the nacelles
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
     :return: wing plot figure
@@ -129,47 +132,6 @@ def aircraft_geometry_plot(
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # Nacelle + propeller
-    prop_layout = variables["data:geometry:propulsion:layout"].value[0]
-    nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
-    nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
-    prop_diam = variables["data:geometry:propulsion:propeller:diameter"].value[0]
-    pos_y_nacelle = variables["data:geometry:propulsion:nacelle:y"].value[0]
-
-    y_nacelle_left = 0
-    y_nacelle_right = 0
-
-    if prop_layout == 1.0:
-        x_nacelle = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
-        x_nacelle += wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
-        y_nacelle = np.array(
-            [
-                -nac_width / 2,
-                -nac_width / 2,
-                nac_width / 2,
-                nac_width / 2,
-                prop_diam / 2,
-                -prop_diam / 2,
-            ]
-        )
-        y_nacelle_left = y_nacelle + pos_y_nacelle
-        y_nacelle_right = -y_nacelle - pos_y_nacelle
-    elif prop_layout == 3.0:
-        x_nacelle = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
-        y_nacelle = np.array(
-            [
-                max(-nac_width / 2, -fuselage_max_width / 4.0),
-                -nac_width / 2,
-                nac_width / 2,
-                min(nac_width / 2, fuselage_max_width / 4.0),
-                prop_diam / 2,
-                -prop_diam / 2,
-            ]
-        )
-    else:
-        x_nacelle = np.array([])
-        y_nacelle = np.array([])
-
     # pylint: disable=invalid-name # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
     # pylint: disable=invalid-name # that's a common naming
@@ -187,27 +149,95 @@ def aircraft_geometry_plot(
 
     fig.add_trace(scatter)
 
+    # Nacelle + propeller
+    prop_layout = variables["data:geometry:propulsion:layout"].value[0]
+    nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
+    nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
+    prop_diam = variables["data:geometry:propulsion:propeller:diameter"].value[0]
+    pos_y_nacelle = np.array(variables["data:geometry:propulsion:nacelle:y"].value)
+    pos_x_nacelle = np.array(variables["data:geometry:propulsion:nacelle:x"].value)
+
+    if prop_layout == 1.0:
+        x_nacelle_plot = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
+        y_nacelle_plot = np.array(
+            [
+                -nac_width / 2,
+                -nac_width / 2,
+                nac_width / 2,
+                nac_width / 2,
+                prop_diam / 2,
+                -prop_diam / 2,
+            ]
+        )
+    elif prop_layout == 3.0:
+        x_nacelle_plot = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
+        y_nacelle_plot = np.array(
+            [
+                max(-nac_width / 2, -fuselage_max_width / 4.0),
+                -nac_width / 2,
+                nac_width / 2,
+                min(nac_width / 2, fuselage_max_width / 4.0),
+                prop_diam / 2,
+                -prop_diam / 2,
+            ]
+        )
+    else:
+        x_nacelle_plot = np.array([])
+        y_nacelle_plot = np.array([])
+
     if plot_nacelle:
         if prop_layout == 1.0:
-            scatter = go.Scatter(
-                x=y_nacelle_right,
-                y=x_nacelle,
-                mode="lines+markers",
-                line=dict(color="LimeGreen"),
-                name=name + " nacelle + propeller",
-            )
-            fig.add_trace(scatter)
-            scatter = go.Scatter(
-                x=y_nacelle_left,
-                y=x_nacelle,
-                mode="lines+markers",
-                line=dict(color="LimeGreen"),
-                showlegend=False,
-            )
-            fig.add_trace(scatter)
+
+            all_colour = colour.CSS4_COLORS.keys()
+            trace_colour = random.choice(list(all_colour))
+            used_index = np.where(pos_y_nacelle >= 0.0)[0]
+            show_legend = True
+
+            for index in used_index:
+
+                y_nacelle_local = pos_y_nacelle[index]
+                x_nacelle_local = pos_x_nacelle[index]
+
+                y_nacelle_left = y_nacelle_plot + y_nacelle_local
+                y_nacelle_right = -y_nacelle_plot - y_nacelle_local
+                x_nacelle = x_nacelle_local - x_nacelle_plot
+
+                if show_legend:
+                    scatter = go.Scatter(
+                        x=y_nacelle_right,
+                        y=x_nacelle,
+                        mode="lines+markers",
+                        line=dict(color=trace_colour),
+                        name=name + " nacelle + propeller",
+                    )
+                    show_legend = False
+
+                else:
+                    scatter = go.Scatter(
+                        x=y_nacelle_right,
+                        y=x_nacelle,
+                        mode="lines+markers",
+                        line=dict(color=trace_colour),
+                        showlegend=False,
+                    )
+
+                fig.add_trace(scatter)
+
+                scatter = go.Scatter(
+                    x=y_nacelle_left,
+                    y=x_nacelle,
+                    mode="lines+markers",
+                    line=dict(color=trace_colour),
+                    showlegend=False,
+                )
+
+                fig.add_trace(scatter)
         else:
             scatter = go.Scatter(
-                x=y_nacelle, y=x_nacelle, mode="lines+markers", name=name + " nacelle + propeller"
+                x=y_nacelle_plot,
+                y=x_nacelle_plot,
+                mode="lines+markers",
+                name=name + " nacelle + propeller",
             )
             fig.add_trace(scatter)
 
@@ -358,7 +388,7 @@ def cl_wing_diagram(
 
     :param aircraft_ref_file_path: path of reference aircraft data file
     :param aircraft_mod_file_path: path of modified aircraft data file
-    :param prop_on: boolean stating if the rotor is on or off (for monoprop plane)
+    :param prop_on: boolean stating if the rotor is on or off (for single propeller plane)
     :param name_ref: name to give to the trace of the reference aircraft
     :param name_mod: name to give to the trace of the modified aircraft
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
@@ -439,12 +469,12 @@ def cl_wing_diagram(
     fig = go.FigureWidget(fig)
 
     if prop_on:
-        name_diag = "propeller ON"
+        name_diagram = "propeller ON"
     else:
-        name_diag = "propeller OFF"
+        name_diagram = "propeller OFF"
 
     fig.update_layout(
-        title_text="CL wing distribution with " + name_diag,
+        title_text="CL wing distribution with " + name_diagram,
         title_x=0.5,
         xaxis=dict(range=[0.0, max(span_array_long) * 1.1]),
         xaxis_title="Semi-Span [m]",
@@ -464,7 +494,7 @@ def cl_wing_diagram(
     fig1 = go.FigureWidget(fig1)
     fig1.update_layout(
         title_text="Delta_CL wing Modified Configuration minus Reference Configuration with "
-        + name_diag,
+        + name_diagram,
         title_x=0.5,
         xaxis=dict(range=[0.0, max(span_array_short) * 1.1]),
         xaxis_title="Semi-Span of shortest configuration : " + name_short + " [m]",
@@ -932,7 +962,7 @@ def payload_range(
     range_array = list(variables["data:payload_range:range_array"].value)
     sr_array = list(variables["data:payload_range:specific_range_array"].value)
 
-    # If point D doesn not exist, remove it
+    # If point D does not not exist, remove it
     if range_array[3] == 0:
         range_array = range_array[0:3] + [range_array[4]]
         payload_array = payload_array[0:3] + [payload_array[4]]
