@@ -60,7 +60,7 @@ TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "cirrus_sr22.xml"
-SKIP_STEPS = False  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
 def _create_tmp_directory() -> TemporaryDirectory:
