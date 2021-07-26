@@ -13,17 +13,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import os
 import shutil
 import glob
-import numpy as np
 import pytest
 import time
 import tempfile
-import os.path as pth
+import os
 from platform import system
 from pathlib import Path
 from tempfile import TemporaryDirectory
+import os.path as pth
+import numpy as np
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -63,7 +63,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 def _create_tmp_directory() -> TemporaryDirectory:
-    """Provide temporary directory for calculation"""
+    """Provide temporary directory for calculation!"""
     for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
         if tmp_base_path is not None:
             os.makedirs(tmp_base_path, exist_ok=True)
@@ -74,7 +74,7 @@ def _create_tmp_directory() -> TemporaryDirectory:
 
 
 def reshape_curve(y, cl):
-    """Reshape data from openvsp/vlm lift curve"""
+    """Reshape data from openvsp/vlm lift curve!"""
     for idx in range(len(y)):
         if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
             y = y[0:idx]
@@ -85,7 +85,7 @@ def reshape_curve(y, cl):
 
 
 def reshape_polar(cl, cdp):
-    """Reshape data from xfoil polar vectors"""
+    """Reshape data from xfoil polar vectors!"""
     for idx in range(len(cl)):
         if np.sum(cl[idx : len(cl)] == 0) == (len(cl) - idx):
             cl = cl[0:idx]
@@ -125,7 +125,7 @@ def polar_result_retrieve(tmp_folder):
             try:
                 shutil.copy(file, resources.__path__[0])
             except:
-                pass
+                _LOGGER.info("Cannot copy {} file to {}!".format(file, tmp_folder.name))
 
     tmp_folder.cleanup()
 
@@ -137,7 +137,7 @@ def compute_reynolds(
     mach_high_speed: float,
     reynolds_high_speed: float,
 ):
-    """Tests high and low speed reynolds calculation"""
+    """Tests high and low speed reynolds calculation!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeUnitReynolds(low_speed_aero=True)), __file__, XML_FILE
@@ -175,7 +175,7 @@ def cd0_high_speed(
     cd0_other: float,
     cd0_total: float,
 ):
-    """Tests drag coefficient @ high speed"""
+    """Tests drag coefficient @ high speed!"""
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
@@ -215,7 +215,7 @@ def cd0_low_speed(
     cd0_other: float,
     cd0_total: float,
 ):
-    """Tests drag coefficient @ low speed"""
+    """Tests drag coefficient @ low speed!"""
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(
@@ -259,7 +259,7 @@ def polar(
     cl_max_2d: float,
     cdp_1_low_speed: float,
 ):
-    """Tests polar execution (XFOIL) @ high and low speed"""
+    """Tests polar execution (XFOIL) @ high and low speed!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -311,7 +311,7 @@ def polar(
 def airfoil_slope_wt_xfoil(
     XML_FILE: str, wing_airfoil_file: str, htp_airfoil_file: str, vtp_airfoil_file: str,
 ):
-    """Tests polar execution (XFOIL) @ high speed"""
+    """Tests polar execution (XFOIL) @ high speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(
         list_inputs(
@@ -348,7 +348,7 @@ def airfoil_slope_xfoil(
     cl_alpha_htp: float,
     cl_alpha_vtp: float,
 ):
-    """Tests polar reading @ high speed"""
+    """Tests polar reading @ high speed!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -374,7 +374,7 @@ def airfoil_slope_xfoil(
 def compute_aero(
     XML_FILE: str, use_openvsp: bool, mach_interpolation: bool, low_speed_aero: bool,
 ):
-    """Compute aero components"""
+    """Compute aero components!"""
     # Create result temporary directory
     results_folder = _create_tmp_directory()
 
@@ -471,7 +471,7 @@ def comp_high_speed(
     cl_alpha_vector: np.ndarray,
     mach_vector: np.ndarray,
 ):
-    """Tests components @ high speed"""
+    """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
         problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
 
@@ -528,7 +528,7 @@ def comp_low_speed(
     y_vector_htp: np.ndarray,
     cl_vector_htp: np.ndarray,
 ):
-    """Tests components @ low speed"""
+    """Tests components @ low speed!"""
     problem = compute_aero(XML_FILE, use_openvsp, False, True)
 
     # Check obtained value(s) is/(are) correct
@@ -592,7 +592,7 @@ def hinge_moment_2d(XML_FILE: str, ch_alpha_2d: float, ch_delta_2d: float):
 
 
 def hinge_moment_3d(XML_FILE: str, ch_alpha: float, ch_delta: float):
-    """Tests tail hinge-moments"""
+    """Tests tail hinge-moments!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Compute3DHingeMomentsTail()), __file__, XML_FILE)
 
@@ -619,7 +619,7 @@ def high_lift(
     cl_delta_elev: float,
     cd_delta_elev: float,
 ):
-    """Tests high-lift contribution"""
+    """Tests high-lift contribution!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
 
@@ -668,7 +668,7 @@ def extreme_cl(
     alpha_max_clean_htp: float,
     alpha_min_clean_htp: float,
 ):
-    """Tests maximum/minimum cl component with default result cl=f(y) curve"""
+    """Tests maximum/minimum cl component with default result cl=f(y) curve!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -711,7 +711,7 @@ def extreme_cl(
 def l_d_max(
     XML_FILE: str, l_d_max_: float, optimal_cl: float, optimal_cd: float, optimal_alpha: float
 ):
-    """Tests best lift/drag component"""
+    """Tests best lift/drag component!"""
     # Define independent input value (openVSP)
     ivc = get_indep_var_comp(list_inputs(ComputeLDMax()), __file__, XML_FILE)
 
@@ -836,7 +836,7 @@ def slipstream_openvsp_low_speed(
 def compute_mach_interpolation_roskam(
     XML_FILE: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
 ):
-    """Tests computation of the mach interpolation vector using Roskam's approach"""
+    """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeMachInterpolation()), __file__, XML_FILE)
 
@@ -851,7 +851,7 @@ def compute_mach_interpolation_roskam(
 def cl_alpha_vt(
     XML_FILE: str, cl_alpha_vt_ls: float, k_ar_effective: float, cl_alpha_vt_cruise: float
 ):
-    """Tests Cl alpha vt"""
+    """Tests Cl alpha vt!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVT(low_speed_aero=True)), __file__, XML_FILE)
 
@@ -875,7 +875,7 @@ def cl_alpha_vt(
 
 
 def cy_delta_r(XML_FILE: str, cy_delta_r_: float):
-    """Tests cy delta of the rudder"""
+    """Tests cy delta of the rudder!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
 
@@ -887,7 +887,7 @@ def cy_delta_r(XML_FILE: str, cy_delta_r_: float):
 
 
 def high_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):
-    """Tests high speed components connection"""
+    """Tests high speed components connection!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -906,7 +906,7 @@ def high_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool)
 
 
 def low_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):
-    """Tests low speed components connection"""
+    """Tests low speed components connection!"""
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 

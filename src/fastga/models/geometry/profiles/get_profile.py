@@ -14,14 +14,17 @@ Airfoil reshape function
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import pandas as pd
 import math
 import warnings
+import logging
 
+import os.path as pth
 from .profile import Profile
 
 from fastga.models.aerodynamics import resources
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def get_profile(file_name: str = None, thickness_ratio=None, chord_length=None,) -> Profile:
@@ -70,6 +73,10 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                         x_data.append(float(line[0]))
                         z_data.append(float(line[1]))
                 except:
-                    pass
+                    _LOGGER.info(
+                        "Problem occurred while reading {} file!".format(
+                            pth.join(resources.__path__[0], file_name)
+                        )
+                    )
 
     return pd.DataFrame(data={"x": x_data, "z": z_data})

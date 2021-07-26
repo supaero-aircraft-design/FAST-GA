@@ -116,7 +116,7 @@ def test_polar():
     reason="No XFOIL executable available (or skipped)",
 )
 def test_airfoil_slope():
-    """Tests polar execution (XFOIL) @ high speed"""
+    """Tests polar execution (XFOIL) @ low speed!"""
     airfoil_slope_xfoil(
         XML_FILE,
         wing_airfoil_file="roncz.af",
@@ -129,7 +129,7 @@ def test_airfoil_slope():
 
 
 def test_airfoil_slope_wt_xfoil():
-    """Tests polar reading @ high speed"""
+    """Tests polar reading @ low speed!"""
     airfoil_slope_wt_xfoil(
         XML_FILE,
         wing_airfoil_file="roncz.af",
@@ -144,7 +144,7 @@ def test_airfoil_slope_wt_xfoil():
     "empty result folder (or skipped)",
 )
 def test_vlm_comp_high_speed():
-    """Tests vlm components @ high speed"""
+    """Tests vlm components @ high speed!"""
     comp_high_speed(
         XML_FILE,
         use_openvsp=False,
@@ -584,7 +584,7 @@ def test_cnbeta():
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_slipstream_openvsp_cruise():
-    """Compute slipstream @ high speed"""
+    """Compute slipstream @ high speed!"""
     y_vector_prop_on = np.array(
         [
             0.05,
@@ -707,7 +707,7 @@ def test_slipstream_openvsp_cruise():
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_slipstream_openvsp_low_speed():
-    """Compute slipstream @ low speed"""
+    """Compute slipstream @ low speed!"""
     y_vector_prop_on = np.array(
         [
             0.05,

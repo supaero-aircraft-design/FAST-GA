@@ -117,7 +117,7 @@ def test_polar():
     reason="No XFOIL executable available (or skipped)",
 )
 def test_airfoil_slope():
-    """Tests polar execution (XFOIL) @ high speed"""
+    """Tests polar execution (XFOIL) @ low speed"""
     airfoil_slope_xfoil(
         XML_FILE,
         wing_airfoil_file="naca63_415.af",
@@ -130,7 +130,7 @@ def test_airfoil_slope():
 
 
 def test_airfoil_slope_wt_xfoil():
-    """Tests polar reading @ high speed"""
+    """Tests polar reading @ low speed"""
     airfoil_slope_wt_xfoil(
         XML_FILE,
         wing_airfoil_file="naca63_415.af",

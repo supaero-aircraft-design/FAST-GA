@@ -40,12 +40,12 @@
   needed by the GUI program and graphics-enabled API are marked
   GRAPHICS_ONLY.
 
-##### Assumed provided by the operating system
+#### Assumed provided by the operating system
   
 - [OpenGL](http://www.opengl.org) - 3D graphics library. OpenGL should be 
   available on any platform capable of displaying 3D graphics. GRAPHICS_ONLY
 
-##### Installed by the developer
+#### Installed by the developer
 
 - C++ Compiler -  OpenVSP requires a modern C++ compiler that supports 
   some C++11 features.  We try to support popular free compilers on the
@@ -70,7 +70,7 @@
   also utilize graphviz dot to generate improved figures in the
   documentation. (http://www.graphviz.org)
 
-##### Bundled with OpenVSP, but system libraries may substitute
+#### Bundled with OpenVSP, but system libraries may substitute
 
 - [Code-Eli](http://github.com/ddmarshall/Code-Eli) - Curve & surface library.
   Code-Eli was developed by David Marshall to meet OpenVSP's needs.
@@ -113,7 +113,7 @@
 - [exprparse](http://github.com/amgary/exprparse) - A simple c++ library to
   compute values from simple math expressions stored as strings.
 
-##### Bundled with OpenVSP
+#### Bundled with OpenVSP
 
 - [AngelScript](http://www.angelcode.com/angelscript) - Embedded scripting
   language for C++.  Used for user-defined components.
@@ -128,27 +128,26 @@
 - [Triangle by Jonathan Shewchuk](http://www.cs.cmu.edu/~quake/triangle.html)
   2D Delaunay triangulator.  This routine has been included in
   this distribution.
-    
+  
 - [triInt by Tomas Möller (was: jgt.akpeters.com/papers/Moller97)](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97) - Fast triangle-triangle intersection test.
   This code comes from two sources previously available online.
   When JGT was taken over by Taylor and Francis, the source
   accompanying the articles became unavailable.  The routines are
   included in this distribution.
-     - Old URL:
-       -[jgt.akpeters.com/papers/Moller97/tritri.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97/tritri.html)
-       -[jgt.akpeters.com/papers/MollerTrumbore97/code.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/MollerTrumbore97/code.html)
-    
-     - Tomas Möller, Ben Trumbore, "Fast, Minimum Storage Ray-Triangle
-      Intersection", Journal of Graphics Tools, Vol. 2, Iss. 1, 1997.
-
-     - Tomas Möller, "A Fast Triangle-Triangle Intersection Test", Journal
-      of Graphics Tools, Vol. 2, Iss. 2, 1997.
   
-- [glFont2 by Brad Fish (was: students.cs.byu.edu/~bfish/glfont2.php)](http://web.archive.org/web/*/https://students.cs.byu.edu/~bfish/glfont2.php) - 
+    - Old URL:
+        - [jgt.akpeters.com/papers/Moller97/tritri.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97/tritri.html)
+        - [jgt.akpeters.com/papers/MollerTrumbore97/code.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/MollerTrumbore97/code.html)
+    - Tomas Möller, Ben Trumbore, "Fast, Minimum Storage Ray-Triangle
+      Intersection", Journal of Graphics Tools, Vol. 2, Iss. 1, 1997.
+    - Tomas Möller, "A Fast Triangle-Triangle Intersection Test", Journal
+      of Graphics Tools, Vol. 2, Iss. 2, 1997.
+
+- [glFont2 by Brad Fish (was: students.cs.byu.edu/~bfish/glfont2.php)](http://web.archive.org/web/*/https://students.cs.byu.edu/~bfish/glfont2.php) -
   2D OpenGL font tool.  glFont2 has been included in this source
   distribution.  GRAPHICS_ONLY
-    
-- [cartesian](https://sourceforge.net/p/rfltk/code/HEAD/tree/cartesian/) -
+      
+- [cartesian](https://sourceforge.net/p/rfltk/code/HEAD/tree/cartesian/) - 
   Simple 2D plotting library for FLTK.  GRAPHICS_ONLY
     
 - [clipper](http://www.angusj.com/delphi/clipper.php) - An open source 
@@ -212,64 +211,64 @@
    handful of variables.  These variables may be relevant to some
    or all of the projects.
 
-##### All project variables:
+#### All project variables:
 
-- `VSP_NO_GRAPHICS` -- Set this variable to disable everything
+  - `VSP_NO_GRAPHICS` -- Set this variable to disable everything
   to do with graphics.  The build system will not search for
   or build any graphics libraries.  It will only build the
   headless batch-mode VSP, API, and bindings.  This is ideal
   for building VSP on a HPC machine with limited access.
     
-- `XXX_OMP_COMPILER` -- Set these variables to point at secondary
+  - `XXX_OMP_COMPILER` -- Set these variables to point at secondary
   compilers to use when the primary compiler does not support
   OpenMP.  This will allow the VSPAERO solver to be built as
   a multithreaded program.  Expected versions of this variable
   are:
-  - `C_OMP_COMPILER`
-  - `CXX_OMP_COMPILER`
-  - `VSP_INSTALL_API_TEST` -- Set to include the `apitest` executable 
+    - `C_OMP_COMPILER`
+    - `CXX_OMP_COMPILER`
+    - `VSP_INSTALL_API_TEST` -- Set to include the `apitest` executable 
     in the installation package.
 
-##### OpenVSP project variables:
+#### OpenVSP project variables:
 
-- `VSP_LIBRARY_PATH` -- Set this variable to point at the
+  - `VSP_LIBRARY_PATH` -- Set this variable to point at the
   directory where the Libraries project was built.  The
   SuperProject sets this path automatically.  The Libraries
   project writes a file `VSP_Libraries_Config.cmake`
   containing numerous settings to this path.
     
-- `XXXX_INSTALL_DIR` -- Set this variable to point to a
+  - `XXXX_INSTALL_DIR` -- Set this variable to point to a
   directory where a library has been installed.  This provides
   a suggestion to a corresponding `FIND_PACKAGE( XXXX )`.  Do
   not use these variables with `VSP_LIBRARY_PATH`, it will
   overwrite them.  Acceptable versions of this variable are:
 
-  - `FLTK_INSTALL_DIR`
-  - `CPPTEST_INSTALL_DIR`
-  - `LIBXML2_INSTALL_DIR`
-  - `GLM_INSTALL_DIR`
-  - `GLEW_INSTALL_DIR`
-  - `EIGEN_INSTALL_DIR`
-  - `CODEELI_INSTALL_DIR`
-  - `CMINPACK_INSTALL_DIR`
-  - `LIBIGES_INSTALL_DIR`
-  - `STEPCODE_INSTALL_DIR`
-  - `EXPRPARSE_INSTALL_DIR`
+    - `FLTK_INSTALL_DIR`
+    - `CPPTEST_INSTALL_DIR`
+    - `LIBXML2_INSTALL_DIR`
+    - `GLM_INSTALL_DIR`
+    - `GLEW_INSTALL_DIR`
+    - `EIGEN_INSTALL_DIR`
+    - `CODEELI_INSTALL_DIR`
+    - `CMINPACK_INSTALL_DIR`
+    - `LIBIGES_INSTALL_DIR`
+    - `STEPCODE_INSTALL_DIR`
+    - `EXPRPARSE_INSTALL_DIR`
 
-##### Libraries & SuperProject project variables:
+#### Libraries & SuperProject project variables:
 
-- `VSP_USE_SYSTEM_XXXX` -- Set this variable to search for the
+  - `VSP_USE_SYSTEM_XXXX` -- Set this variable to search for the
   particular library rather than use the bundled versions.
   Acceptable versions of this variable are:
 
-  - `VSP_USE_SYSTEM_CPPTEST`
-  - `VSP_USE_SYSTEM_LIBXML2`
-  - `VSP_USE_SYSTEM_EIGEN`
-  - `VSP_USE_SYSTEM_CODEELI`
-  - `VSP_USE_SYSTEM_FLTK`
-  - `VSP_USE_SYSTEM_GLM`
-  - `VSP_USE_SYSTEM_GLEW`
-  - `VSP_USE_SYSTEM_CMINPACK`
-  - `VSP_USE_SYSTEM_LIBIGES`
-  - `VSP_USE_SYSTEM_STEPCODE`
-  - `VSP_USE_SYSTEM_EXPRPARSE`
+    - `VSP_USE_SYSTEM_CPPTEST`
+    - `VSP_USE_SYSTEM_LIBXML2`
+    - `VSP_USE_SYSTEM_EIGEN`
+    - `VSP_USE_SYSTEM_CODEELI`
+    - `VSP_USE_SYSTEM_FLTK`
+    - `VSP_USE_SYSTEM_GLM`
+    - `VSP_USE_SYSTEM_GLEW`
+    - `VSP_USE_SYSTEM_CMINPACK`
+    - `VSP_USE_SYSTEM_LIBIGES`
+    - `VSP_USE_SYSTEM_STEPCODE`
+    - `VSP_USE_SYSTEM_EXPRPARSE`
