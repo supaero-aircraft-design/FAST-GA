@@ -80,7 +80,7 @@
 			<propulsion>
 				<layout>3.0</layout>
 				<count>1.0</count>
-				<y_ratio>0.34</y_ratio>
+				<y_ratio>[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
 			</propulsion>
 			<vertical_tail>
 				<MAC>

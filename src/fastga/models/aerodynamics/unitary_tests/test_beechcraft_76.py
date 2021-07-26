@@ -61,7 +61,7 @@ TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 XML_FILE = "beechcraft_76.xml"
-SKIP_STEPS = True
+SKIP_STEPS = False
 
 
 def _create_tmp_directory() -> TemporaryDirectory:

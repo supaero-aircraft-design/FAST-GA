@@ -466,10 +466,10 @@ def test_geometry_nacelle():
     lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
     assert lg_height == pytest.approx(0.791, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
-    y_nacelle_result = [1.972, -1., -1., -1., -1., -1., -1., -1., -1., -1.]
-    assert np.max(abs(y_nacelle-y_nacelle_result)) < 1e-3
+    y_nacelle_result = [1.972, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+    assert np.max(abs(y_nacelle - y_nacelle_result)) < 1e-3
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
-    x_nacelle_result = [3.092, -1., -1., -1., -1., -1., -1., -1., -1., -1.]
+    x_nacelle_result = [3.092, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     assert np.max(abs(x_nacelle - x_nacelle_result)) < 1e-3
 
 

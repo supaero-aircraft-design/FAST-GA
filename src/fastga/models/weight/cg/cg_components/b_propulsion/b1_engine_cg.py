@@ -40,8 +40,12 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m")
-        self.add_input("data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m")
+        self.add_input(
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
+        self.add_input(
+            "data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
         self.add_input("data:geometry:propulsion:propeller:depth", val=np.nan, units="m")
 
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
@@ -87,7 +91,7 @@ class ComputeEngineCG(ExplicitComponent):
         if prop_layout == 1.0:
 
             x_cg_b1 = 0
-            used_index = np.where(y_nacelle_array >= 0.)[0]
+            used_index = np.where(y_nacelle_array >= 0.0)[0]
 
             for index in used_index:
                 y_nacelle = y_nacelle_array[index]

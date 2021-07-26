@@ -199,7 +199,7 @@ def aircraft_geometry_plot(
                 x_nacelle_local = pos_x_nacelle[index]
 
                 y_nacelle_left = y_nacelle_plot + y_nacelle_local
-                y_nacelle_right = - y_nacelle_plot - y_nacelle_local
+                y_nacelle_right = -y_nacelle_plot - y_nacelle_local
                 x_nacelle = x_nacelle_local - x_nacelle_plot
 
                 if show_legend:
@@ -234,7 +234,10 @@ def aircraft_geometry_plot(
                 fig.add_trace(scatter)
         else:
             scatter = go.Scatter(
-                x=y_nacelle_plot, y=x_nacelle_plot, mode="lines+markers", name=name + " nacelle + propeller"
+                x=y_nacelle_plot,
+                y=x_nacelle_plot,
+                mode="lines+markers",
+                name=name + " nacelle + propeller",
             )
             fig.add_trace(scatter)
 

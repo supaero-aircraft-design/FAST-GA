@@ -92,10 +92,12 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
         if prop_layout == 1.0:
             y_nacelle_array = y_ratio * span / 2
             unused_index = np.where(y_nacelle_array < 0.0)
-            if ENGINE_COUNT - len(unused_index[0]) != prop_count:
-                warnings.warn("Engine count and engine position do not match, change value in the xml")
+            if ENGINE_COUNT - len(unused_index[0]) != int(prop_count / 2.0):
+                warnings.warn(
+                    "Engine count and engine position do not match, change value in the xml"
+                )
             for i in unused_index:
-                y_nacelle_array[i] = -1.
+                y_nacelle_array[i] = -1.0
 
             used_index = np.where(y_nacelle_array >= 0.0)[0]
             x_nacelle_array = np.copy(y_nacelle_array)
@@ -103,28 +105,38 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
             for index in used_index:
                 y_nacelle = y_nacelle_array[index]
                 if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
-                    delta_x_nacelle = (
-                            x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing)
-                    )
+                    delta_x_nacelle = x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                 else:  # Nacelle in the straight part of the wing
                     delta_x_nacelle = 0
                 x_nacelle_array[index] = fa_length - x0_wing - 0.25 * l0_wing + delta_x_nacelle
 
         elif prop_layout == 2.0:
             y_nacelle = b_f / 2 + 0.8 * nac_width
-            y_nacelle_array = np.concatenate((np.array([y_nacelle]), np.full(ENGINE_COUNT-1, -1.)))
+            y_nacelle_array = np.concatenate(
+                (np.array([y_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
             x_nacelle = fus_length - 0.1 * rear_length
-            x_nacelle_array = np.concatenate((np.array([x_nacelle]), np.full(ENGINE_COUNT-1, -1.)))
+            x_nacelle_array = np.concatenate(
+                (np.array([x_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
         elif prop_layout == 3.0:
             y_nacelle = 0.0
-            y_nacelle_array = np.concatenate((np.array([y_nacelle]), np.full(ENGINE_COUNT - 1, -1.)))
-            x_nacelle = nac_length
-            x_nacelle_array = np.concatenate((np.array([x_nacelle]), np.full(ENGINE_COUNT - 1, -1.)))
+            y_nacelle_array = np.concatenate(
+                (np.array([y_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
+            x_nacelle = float(nac_length)
+            x_nacelle_array = np.concatenate(
+                (np.array([x_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
         else:
             y_nacelle = 0.0
-            y_nacelle_array = np.concatenate((np.array([y_nacelle]), np.full(ENGINE_COUNT - 1, -1.)))
-            x_nacelle = nac_length
-            x_nacelle_array = np.concatenate((np.array([x_nacelle]), np.full(ENGINE_COUNT - 1, -1.)))
+            y_nacelle_array = np.concatenate(
+                (np.array([y_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
+            x_nacelle = float(nac_length)
+            x_nacelle_array = np.concatenate(
+                (np.array([x_nacelle]), np.full(ENGINE_COUNT - 1, -1.0))
+            )
             warnings.warn(
                 "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
                     prop_layout

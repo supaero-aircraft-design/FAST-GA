@@ -432,7 +432,7 @@ class AerostructuralLoad(ComputeVN):
             y_ratio = 0.0
         else:
             y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
-            used_index = np.where(y_ratio_data >= 0.)[0]
+            used_index = np.where(y_ratio_data >= 0.0)[0]
             y_ratio = y_ratio_data[used_index]
 
         g = 9.81
@@ -490,7 +490,7 @@ class AerostructuralLoad(ComputeVN):
 
         in_eng_nacelle = np.full(len(y_vector), False)
         for y_eng in y_eng_array:
-            for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.):
+            for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.0):
                 in_eng_nacelle[i] = True
         where_engine = np.where(in_eng_nacelle)
 
