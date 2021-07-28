@@ -62,3 +62,5 @@ class Disc3(om.ExplicitComponent):
         x21 = inputs["data:geometry:variable_2"][0]
         x22 = inputs["data:geometry:variable_2"][1]
         x3 = inputs["data:geometry:variable_3"][0]
+
+        outputs["data:geometry:variable_4"] = x1 + x21 * x22 - x3

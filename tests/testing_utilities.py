@@ -108,7 +108,10 @@ class VariableListLocal(VariableList):
         try:
             problem.setup()
         except RuntimeError:
-            _LOGGER.info("Unable to setup properly the problem!")
+            _LOGGER.info(
+                "Some problem occurred while setting-up the problem without input file probably "
+                "because shape_by_conn variables exist!"
+            )
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 

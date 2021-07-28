@@ -408,7 +408,13 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
     problem = FASTOADProblem(group)
-    problem.setup()
+    try:
+        problem.setup()
+    except RuntimeError:
+        _LOGGER.info(
+            "Some problem occurred while setting-up the problem without input file probably "
+            "because shape_by_conn variables exist!"
+        )
     model = problem.model
     dict_sub_system = {}
     dict_sub_system = list_all_subsystem(model, "model", dict_sub_system)
@@ -590,7 +596,13 @@ class VariableListLocal(VariableList):
         else:
             # problem.model has to be a group
             problem.model.add_subsystem("comp", deepcopy(local_system), promotes=["*"])
-        problem.setup()
+        try:
+            problem.setup()
+        except RuntimeError:
+            _LOGGER.info(
+                "Some problem occurred while setting-up the problem without input file probably "
+                "because shape_by_conn variables exist!"
+            )
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 
