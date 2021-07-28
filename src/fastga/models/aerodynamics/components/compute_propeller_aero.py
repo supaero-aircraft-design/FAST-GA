@@ -95,11 +95,17 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:blades_number", val=np.nan)
-        nans_array = np.full(self.options["vectors_length"], np.nan)
-        self.add_input("data:geometry:propeller:sweep_vect", val=nans_array, units="deg")
-        self.add_input("data:geometry:propeller:chord_vect", val=nans_array, units="m")
-        self.add_input("data:geometry:propeller:twist_vect", val=nans_array, units="deg")
-        self.add_input("data:geometry:propeller:radius_ratio_vect", val=nans_array)
+        # nans_array = np.full(self.options["vectors_length"], np.nan)
+        self.add_input(
+            "data:geometry:propeller:sweep_vect", shape_by_conn=True, val=np.nan, units="deg"
+        )
+        self.add_input(
+            "data:geometry:propeller:chord_vect", shape_by_conn=True, val=np.nan, units="m"
+        )
+        self.add_input(
+            "data:geometry:propeller:twist_vect", shape_by_conn=True, val=np.nan, units="deg"
+        )
+        self.add_input("data:geometry:propeller:radius_ratio_vect", shape_by_conn=True, val=np.nan)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 

@@ -105,7 +105,10 @@ class VariableListLocal(VariableList):
         else:
             # problem.model has to be a group
             problem.model.add_subsystem("comp", deepcopy(system), promotes=["*"])
-        problem.setup()
+        try:
+            problem.setup()
+        except RuntimeError:
+            _LOGGER.info("Unable to setup properly the problem!")
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 

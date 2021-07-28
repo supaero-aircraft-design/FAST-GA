@@ -72,11 +72,7 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                     if 0.0 <= math.ceil(float(line[0])) <= 1.0:
                         x_data.append(float(line[0]))
                         z_data.append(float(line[1]))
-                except:
-                    _LOGGER.info(
-                        "Problem occurred while reading {} file!".format(
-                            pth.join(resources.__path__[0], file_name)
-                        )
-                    )
+                except ValueError:
+                    pass
 
     return pd.DataFrame(data={"x": x_data, "z": z_data})
