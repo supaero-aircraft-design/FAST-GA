@@ -136,7 +136,19 @@ class XfoilPolar(ExternalCodeComp):
             values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
             labels = data_saved.to_numpy()[:, 0].tolist()
             data_saved = pd.DataFrame(values, index=labels)
-            index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
+            saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
+            index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
+            near_mach = []
+            distance_to_mach = []
+            for index in index_near_mach:
+                if not (saved_mach_list[index] in near_mach):
+                    near_mach.append(saved_mach_list[index])
+                    distance_to_mach.append(abs(saved_mach_list[index] - mach))
+            if len(near_mach) == 0:
+                index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
+            else:
+                selected_mach_index = distance_to_mach.index(min(distance_to_mach))
+                index_mach = np.where(saved_mach_list == near_mach[selected_mach_index])[0]
             data_reduced = data_saved.loc[labels, index_mach]
             # Search if this exact reynolds has been computed and save results
             reynolds_vect = np.array(
