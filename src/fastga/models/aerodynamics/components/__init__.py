@@ -22,3 +22,4 @@ from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .compute_cy_rudder import ComputeCyDeltaRudder
 from .clalpha_vt import ComputeClAlphaVT
 from .compute_vn import ComputeVNAndVH, ComputeVN
+from .compute_polar import ComputePolar

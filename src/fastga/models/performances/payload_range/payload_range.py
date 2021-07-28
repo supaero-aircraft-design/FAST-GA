@@ -42,8 +42,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
-        variables = api_cs23.list_variables(Mission(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"))
+        variables = api_cs23.list_variables(Mission(propulsion_id=self.options["propulsion_id"]))
 
         inputs_mission = [var for var in variables if var.is_input]
 
@@ -83,7 +82,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         # Point B : max payload, enough fuel to have mass = MTOW
         fuel_target_b = mtow - mzfw
-        range_b, dic, _, _ = fsolve(self.fuel_function, range_mission / 2, args=(fuel_target_b, mtow, inputs), xtol=1, full_output= True)
+        range_b, dic, _, _ = fsolve(self.fuel_function, range_mission / 2, args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]), xtol=1, full_output= True)
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
@@ -102,7 +101,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         payload_d = max_payload - (mfw - fuel_target_b)
 
         if payload_d > 2 * mass_pilot:
-            range_d, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_d, mtow, inputs), xtol=1, full_output=True)
+            range_d, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]), xtol=1, full_output=True)
             _LOGGER.warning("Number of fsolve iterations for point D :")
             _LOGGER.warning(dic["nfev"])
         else:
@@ -116,7 +115,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         fuel_target_e = mfw
         payload_e = 2 * mass_pilot
         mass_aircraft = owe + mfw + payload_e
-        range_e, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_e, mass_aircraft, inputs), xtol=1, full_output=True)
+        range_e, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]), xtol=1, full_output=True)
 
         _LOGGER.warning("Number of fsolve iterations for point E :")
         _LOGGER.warning(dic["nfev"])
@@ -134,16 +133,16 @@ class ComputePayloadRange(om.ExplicitComponent):
         outputs["data:payload_range:specific_range_array"] = sr_array
 
     @staticmethod
-    def fuel_function(range_parameter, fuel_target, mass, inputs):
+    def fuel_function(range_parameter, fuel_target, mass, inputs, prop_id):
 
-        variables = api_cs23.list_variables(Mission(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"))
+        variables = api_cs23.list_variables(Mission(propulsion_id=prop_id))
         inputs_mission = [var for var in variables if var.is_input]
         for i in range(len(inputs_mission)):
-            inputs_mission[i].metadata["value"] = inputs[inputs_mission[i].name]
+            inputs_mission[i].value = inputs[inputs_mission[i].name]
 
         var_names = np.array([var.name for var in inputs_mission])
-        var_value = np.array([var.metadata["value"].tolist() for var in inputs_mission], dtype='object')
-        var_units = np.array([var.metadata["units"] for var in inputs_mission])
+        var_value = np.array([var.value.tolist() for var in inputs_mission], dtype='object')
+        var_units = np.array([var.units for var in inputs_mission])
 
         index_range = np.where(var_names == "data:TLAR:range")
         var_value[index_range[0]] = range_parameter
@@ -152,7 +151,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         var_value[index_mtow[0]] = mass
 
         compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+            Mission(propulsion_id=prop_id),
             var_names.tolist(),
             XML_FILE,
             True,

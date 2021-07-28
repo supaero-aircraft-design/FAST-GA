@@ -28,6 +28,7 @@ from fastga.models.aerodynamics.components.hinge_moments_elevator import (
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components import ComputePolar
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
@@ -148,3 +149,4 @@ class AerodynamicsHighSpeed(Group):
                 ),
                 promotes=["*"],
             )
+        self.add_subsystem("compute_polar", ComputePolar(low_speed_aero=False), promotes=["*"])
