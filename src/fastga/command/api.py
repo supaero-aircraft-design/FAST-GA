@@ -15,6 +15,7 @@ API
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import warnings
 import os.path as pth
 import os
 import shutil
@@ -142,34 +143,45 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                     while variable_name_length != len(variable_name):
                         variable_name = variable_name.replace(" ", "")
                         variable_name_length = len(variable_name)
-                    saved_dict[variable_name] = variable_description
+                    saved_dict[variable_name] = (variable_description, subpackage_path)
             file.close()
 
         # If path point to ./models directory list output variables described in the different models
         if subpackage_path.split("\\")[-1] == "models":
             for root, dirs, files in os.walk(subpackage_path, topdown=False):
+                vd_file_empty_description = False
                 for name in files:
                     if name == "variable_descriptions.txt":
                         file = open(pth.join(root, name), "r")
                         for line in file:
                             if line[0] != "#" and len(line.split("||")) == 2:
                                 variable_name, variable_description = line.split("||")
+                                if variable_description.replace(" ", "") == "\n":
+                                    vd_file_empty_description = True
                                 variable_name_length = len(variable_name)
                                 variable_name = variable_name.replace(" ", "")
                                 while variable_name_length != len(variable_name):
                                     variable_name = variable_name.replace(" ", "")
                                     variable_name_length = len(variable_name)
                                 if variable_name not in saved_dict.keys():
-                                    saved_dict[variable_name] = variable_description
+                                    saved_dict[variable_name] = (variable_description, root)
                                 else:
-                                    print(
-                                        "\nWarning: file ./models/variable_descriptions.txt contains parameter "
+                                    warnings.warn(
+                                        "file variable_descriptions.txt from subpackage "
+                                        + pth.split(root)[-1]
+                                        + " contains parameter "
                                         + variable_name
                                         + " already saved in "
-                                        + pth.split(root)[-1]
-                                        + " subpackage !"
+                                        + pth.split(saved_dict[variable_name][1])[-1]
+                                        + " subpackage!"
                                     )
                         file.close()
+                if vd_file_empty_description:
+                    warnings.warn(
+                        "file variable_descriptions.txt from {} subpackage contains empty descriptions!".format(
+                            pth.split(root)[-1]
+                        )
+                    )
 
         # Explore subpackage models and find the output variables and store them in a dictionary
         dict_to_be_saved = {}
@@ -338,11 +350,19 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 )
         if len(dict_to_be_saved.keys()) != 0:
             sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
+            added_key = False
             for key in sorted_keys:
                 if not (key in saved_dict.keys()):
                     # noinspection PyUnboundLocalVariable
                     file.write(key + " || \n")
+                    added_key = True
             file.close()
+            if added_key:
+                warnings.warn(
+                    "file variable_descriptions.txt from {} subpackage contains empty descriptions!".format(
+                        pth.split(subpackage_path)[-1]
+                    )
+                )
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):

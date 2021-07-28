@@ -19,7 +19,7 @@ import os
 import pytest
 
 from fastga.command import api
-from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
+from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
 from fastga import models
 from fastga.models import (
     aerodynamics,
@@ -174,6 +174,21 @@ def test_empty_xml():
 
     if os.path.exists(missing_xml):
         os.remove(missing_xml)
+
+
+def test_shape_by_conn_component():
+    """ Tests if a component having shape_by_conn component can be used alongside an input .xml """
+
+    complete_xml_file = pth.join(pth.dirname(__file__), "data/complete.xml")
+    var_inputs = []
+
+    test_generate_block_analysis = api.generate_block_analysis(
+        Disc3(), var_inputs, complete_xml_file, False
+    )
+    input_dict = {}
+    output_dict = test_generate_block_analysis(input_dict)
+    value = output_dict.get("data:geometry:variable_4")[0]
+    assert value == pytest.approx(14.0, abs=1e-3)
 
 
 def test_missing_inputs_in_xml():
