@@ -3,29 +3,6 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || vector of the derivatives of the aicraft lift coefficient with respect to angle of attack for varius mach
-data:aerodynamics:aircraft:mach_interpolation:mach_vector || vector of mach used for the interpretation of CL_alpha_vector
-data:aerodynamics:flaps:landing:CD || flaps drag coefficient in landing conditions
-data:aerodynamics:flaps:landing:CL || flaps lift coefficient in landing conditions
-data:aerodynamics:flaps:landing:CL_max || flaps maximum lift coefficient in landing conditions
-data:aerodynamics:flaps:landing:CM || flaps moment coefficient in landing conditions
-data:aerodynamics:flaps:takeoff:CL || flaps lift coefficient in take-off conditions
-data:aerodynamics:flaps:takeoff:CL_max || flaps maximum lift coefficient in take-off conditions
-data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for nacelles in cruise conditions
-data:aerodynamics:nacelles:low_speed:CD0 || profile drag coefficient for nacelles in low speed conditions
-data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:velocity || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector || 
-data:aerodynamics:wing:cruise:CL0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during cruise
-data:aerodynamics:wing:cruise:CL_alpha || derivative of wing lift coefficient with respect to angle of attack in cruise conditions
-data:aerodynamics:wing:cruise:CM0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during cruise
-data:aerodynamics:wing:cruise:induced_drag_coefficient || multiply squared lift coefficient by this coefficient to get induced drag coefficient
-data:aerodynamics:wing:low_speed:chord_vector || 
-data:aerodynamics:wing:low_speed:CL0_clean || value of wing lift coefficient at angle of attack 0° in clean configuration during low speed
-data:aerodynamics:wing:low_speed:CL_alpha || derivative of wing lift coefficient with respect to angle of attack in low speed conditions
-data:aerodynamics:wing:low_speed:CL_vector || lift repartition along the wing span ratio (given at low speed)
-data:aerodynamics:wing:low_speed:CM0_clean || value of wing moment coefficient at angle of attack 0° in clean configuration during low speed
-data:aerodynamics:wing:low_speed:Y_vector || span ratio repatition vector for CL_vector interpolation
 data:geometry:cabin:luggage:mass_max || maximum luggage mass
 data:geometry:cabin:seats:passenger:count_by_row || number of passenger seats per row
 data:geometry:cabin:seats:passenger:length || passenger seats length
@@ -33,11 +10,11 @@ data:geometry:cabin:seats:passenger:NPAX_max ||
 data:geometry:cabin:seats:pilot:length || pilot seats length
 data:geometry:flap:chord_ratio || flap chord ratio
 data:geometry:fuselage:front_length || fuselage front length
-data:geometry:fuselage:length || fuselage lenth
+data:geometry:fuselage:length || fuselage length
 data:geometry:fuselage:luggage_length || fuselage length dedicated to luggage
 data:geometry:fuselage:maximum_height || fuselage maximum height
 data:geometry:fuselage:maximum_width || fuselage maximum width
-data:geometry:fuselage:PAX_length || cabine length
+data:geometry:fuselage:PAX_length || cabin length
 data:geometry:fuselage:rear_length || fuselage rear length
 data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
 data:geometry:horizontal_tail:area || horizontal tail area

@@ -70,3 +70,5 @@ data:geometry:propulsion:nacelle:width ||
 data:geometry:propulsion:nacelle:y || 
 data:geometry:propulsion:propeller:depth || 
 data:geometry:propulsion:propeller:diameter || 
+
+data:geometry:propulsion:nacelle:x || 
