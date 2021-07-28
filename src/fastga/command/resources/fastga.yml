@@ -19,34 +19,40 @@ model:
         linear_solver: om.DirectSolver()
         geometry:
             id: fastga.geometry.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            propulsion_id: fastga.wrapper.propulsion.basic_turboprop
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            propulsion_id: fastga.wrapper.propulsion.basic_turboprop
             result_folder_path : ./workdir
             use_openvsp : True
             compute_mach_interpolation : True
-            compute_slipstream : True
+            compute_slipstream : False
 #            wing_arfoil_file : "naca43013.af"
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            propulsion_id: fastga.wrapper.propulsion.basic_turboprop
             result_folder_path : ./workdir
             use_openvsp : True
-            compute_slipstream : True
+            compute_slipstream : False
 #            wing_arfoil_file : "naca43013.af"
         weight:
             id: fastga.weight.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            propulsion_id: fastga.wrapper.propulsion.basic_turboprop
         mtow:
             id: fastga.loop.mtow
         performance:
             id: fastga.performances.mission
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            propulsion_id: fastga.wrapper.propulsion.basic_turboprop
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing
-                propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+#                propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+                propulsion_id: fastga.wrapper.propulsion.basic_turboprop
             static_margin:
                 id: fastga.handling_qualities.static_margin
         wing_position:

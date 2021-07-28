@@ -55,8 +55,8 @@ class ComputeFuselageMod(om.ExplicitComponent):
 
         # Initialization of the output variables
         npax_max_mod = npax_max
-        npax_design_mod = npax_design + self.options["fuselage_mod"][2]
-        luggage_mass_design_mod = luggage_mass_design + self.options["fuselage_mod"][3]
+        npax_design_mod = npax_design + self.options["fuselage_mod"][3]
+        luggage_mass_design_mod = luggage_mass_design + self.options["fuselage_mod"][4]
         ht_lp_mod = ht_lp
         fa_length_mod = fa_length
 

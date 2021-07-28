@@ -74,14 +74,24 @@
 			<landing_gear>
 				<type>1.0<!--0=non-retractable landing gears / 1=retractable landing gear--></type>
 			</landing_gear>
+<!--			<propeller>-->
+<!--				<blades_number>5.0</blades_number>-->
+<!--				<depth units="m">0.3</depth>-->
+<!--				<hub_diameter units="m">0.4</hub_diameter>-->
+<!--				<diameter units="m">2.31</diameter>-->
+<!--				<radius_ratio_vect>[0.01, 0.16666666666666666, 0.3333333333333333, 0.5, 0.6666666666666666, 0.8333333333333333, 1.0]&lt;!&ndash;propeller radius ratio points&ndash;&gt;</radius_ratio_vect>-->
+<!--				<twist_vect units="deg">[24.46, 24.46, 15.860000000000001, 6.82, -0.3433333333333337, -6.8699999999999966, -10.47]&lt;!&ndash;propeller twist angle defined at radius ratio points&ndash;&gt;</twist_vect>-->
+<!--				<sweep_vect units="deg">[0.0, 0.0, 1.9333333333333338, -0.76, 0.6533333333333333, 3.226666666666665, 6.19]&lt;!&ndash;propeller sweep angle defined at radius ratio points&ndash;&gt;</sweep_vect>-->
+<!--				<chord_vect units="m">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]&lt;!&ndash;propeller chord defined at radius ratio points&ndash;&gt;</chord_vect>-->
+<!--			</propeller>-->
 			<propeller>
 				<blades_number>5.0</blades_number>
 				<depth units="m">0.3</depth>
-				<hub_diameter units="m">0.4</hub_diameter>
+				<hub_diameter units="m">0.366</hub_diameter>
 				<diameter units="m">2.31</diameter>
-				<radius_ratio_vect>[0.0, 0.16666666666666666, 0.3333333333333333, 0.5, 0.6666666666666666, 0.8333333333333333, 1.0]<!--propeller radius ratio points--></radius_ratio_vect>
-				<twist_vect units="deg">[24.46, 24.46, 15.860000000000001, 6.82, -0.3433333333333337, -6.8699999999999966, -10.47]<!--propeller twist angle defined at radius ratio points--></twist_vect>
-				<sweep_vect units="deg">[0.0, 0.0, 1.9333333333333338, -0.76, 0.6533333333333333, 3.226666666666665, 6.19]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
+				<radius_ratio_vect>[0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]<!--propeller radius ratio points--></radius_ratio_vect>
+				<twist_vect units="deg">[59.9549991 , 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]<!--propeller twist angle defined at radius ratio points--></twist_vect>
+				<sweep_vect units="deg">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
 				<chord_vect units="m">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--propeller chord defined at radius ratio points--></chord_vect>
 			</propeller>
 			<propulsion>

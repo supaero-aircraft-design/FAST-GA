@@ -23,6 +23,7 @@ from .components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
 from .components.clalpha_vt import ComputeClalphaVT
 from .components.hinge_moments_elevator import Compute2DHingeMomentsTail, Compute3DHingeMomentsTail
 from .components import ComputeMachInterpolation
+from .components import ComputePolar
 
 from .external.vlm import ComputeAEROvlm
 from .external.openvsp import ComputeAEROopenvsp
@@ -118,3 +119,4 @@ class AerodynamicsHighSpeed(Group):
                                                          wing_airfoil_file=self.options["wing_airfoil"],
                                                          low_speed_aero=False,
                                                          ), promotes=["*"])
+        self.add_subsystem("compute_polar", ComputePolar(low_speed_aero=False), promotes=["*"])

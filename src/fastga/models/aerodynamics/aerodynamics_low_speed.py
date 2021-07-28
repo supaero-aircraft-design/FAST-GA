@@ -23,6 +23,7 @@ from .components.clalpha_vt import ComputeClalphaVT
 from .components.high_lift_aero import ComputeDeltaHighLift
 from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .components.compute_cy_rudder import ComputeCyDeltaRudder
+from .components import ComputePolar
 
 from .external.openvsp.compute_vn import ComputeVNopenvsp
 
@@ -97,3 +98,4 @@ class AerodynamicsLowSpeed(Group):
                                                          low_speed_aero=True,
                                                          ), promotes=["*"])
         self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])
+        self.add_subsystem("compute_polar", ComputePolar(low_speed_aero=True), promotes=["*"])
