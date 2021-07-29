@@ -47,7 +47,7 @@ from .test_functions import (
 )
 
 XML_FILE = "cirrus_sr22.xml"
-SKIP_STEPS = False  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
 def test_compute_reynolds():
