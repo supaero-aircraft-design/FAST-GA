@@ -359,7 +359,6 @@ class _compute_climb(DynamicEquilibrium):
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
-        self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
         self.add_input(
@@ -548,7 +547,6 @@ class _compute_cruise(DynamicEquilibrium):
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
-        self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:climb:fuel", np.nan, units="kg")
@@ -706,7 +704,6 @@ class _compute_descent(DynamicEquilibrium):
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
-        self.add_input("data:mission:sizing:holding:fuel", 0.0, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:climb:fuel", np.nan, units="kg")
@@ -733,7 +730,6 @@ class _compute_descent(DynamicEquilibrium):
         wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
-        m_ho = inputs["data:mission:sizing:holding:fuel"]
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
@@ -745,7 +741,7 @@ class _compute_descent(DynamicEquilibrium):
         distance_t = 0.0
         time_t = 0.0
         mass_fuel_t = 0.0
-        mass_t = mtow - (m_to + m_ho + m_tk + m_ic + m_cl + m_cr)
+        mass_t = mtow - (m_to + m_tk + m_ic + m_cl + m_cr)
         previous_step = ()
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle

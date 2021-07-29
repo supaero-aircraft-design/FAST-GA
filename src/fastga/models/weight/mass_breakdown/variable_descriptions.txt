@@ -31,4 +31,4 @@ data:weight:systems:navigation:mass || total navigation systems mass
 data:weight:systems:power:electric_systems:mass || electric power system mass
 data:weight:systems:power:hydraulic_systems:mass || hydraulic power system mass
 
-data:weight:aircraft:MTOW || 
+data:weight:aircraft:MTOW || maximum takeoff weight of the aircraft
