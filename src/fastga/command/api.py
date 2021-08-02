@@ -147,7 +147,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             file.close()
 
         # If path point to ./models directory list output variables described in the different models
-        if subpackage_path.split("\\")[-1] == "models":
+        if pth.split(subpackage_path)[-1] == "models":
             for root, dirs, files in os.walk(subpackage_path, topdown=False):
                 vd_file_empty_description = False
                 empty_description_variables = []
@@ -255,7 +255,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 # If no boolean options alternatives to be tested, search for input variables in models
                                 # and output variables for subpackages (including ivc)
                                 if len(local_options) == 0:
-                                    if subpackage_path.split("\\")[-1] == "models":
+                                    if pth.split(subpackage_path)[-1] == "models":
                                         var_names = [var.name for var in variables if var.is_input]
                                     else:
                                         var_names = [
@@ -297,7 +297,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                 idx
                                             ]
                                         variables = list_variables(my_class(**options_dictionary))
-                                        if subpackage_path.split("\\")[-1] == "models":
+                                        if pth.split(subpackage_path)[-1] == "models":
                                             var_names = [
                                                 var.name for var in variables if var.is_input
                                             ]
