@@ -364,17 +364,21 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
             sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
             added_key = False
+            added_key_names = []
             for key in sorted_keys:
                 if not (key in saved_dict.keys()):
                     # noinspection PyUnboundLocalVariable
                     file.write(key + " || \n")
                     added_key = True
+                    added_key_names.append(key)
             file.close()
             if added_key:
                 warnings.warn(
-                    "file variable_descriptions.txt from {} subpackage contains empty descriptions!".format(
+                    "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
                         pth.split(subpackage_path)[-1]
                     )
+                    + "\tFollowing variables have empty descriptions : "
+                    + ", ".join(added_key_names)
                 )
 
 
