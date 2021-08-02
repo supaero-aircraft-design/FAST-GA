@@ -58,10 +58,6 @@ data:TLAR:v_cruise || cruise speed
 data:TLAR:v_limit || limit speed
 data:TLAR:v_max_sl || maximum speed at sea level
 
-data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
-data:weight:aircraft:CG:flight_condition:max:MAC_position || most aft position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
-data:weight:aircraft:CG:flight_condition:min:MAC_position || most fwd position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
-data:weight:aircraft:CG:fwd:x || most fwd X-position of center of gravity
 data:weight:aircraft:OWE || operating weight - empty
 data:weight:airframe:fuselage:k_factor || proportional corrective factor for fuselage mass
 data:weight:airframe:horizontal_tail:k_factor || proportional corrective factor for horizontal tail mass

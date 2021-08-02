@@ -30,3 +30,8 @@ data:weight:systems:life_support:air_conditioning:CG:x || X-position of center o
 data:weight:systems:navigation:CG:x || X-position of center of gravity of the navigation system
 data:weight:systems:power:electric_systems:CG:x || X-position of center of gravity of the electric power unit
 data:weight:systems:power:hydraulic_systems:CG:x || X-position of center of gravity of the hydraulic power unit
+
+data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
+data:weight:aircraft:CG:flight_condition:max:MAC_position || most aft position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
+data:weight:aircraft:CG:flight_condition:min:MAC_position || most fwd position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
+data:weight:aircraft:CG:fwd:x || most fwd X-position of center of gravity
