@@ -144,11 +144,7 @@ class ComputeOperatingWeightEmpty(om.Group):
         propulsion_sum = om.AddSubtractComp()
         propulsion_sum.add_equation(
             "data:weight:propulsion:mass",
-            [
-                "data:weight:propulsion:engine:mass",
-                "data:weight:propulsion:fuel_lines:mass",
-                "data:weight:propulsion:tank:mass",
-            ],
+            ["data:weight:propulsion:engine:mass", "data:weight:propulsion:fuel_lines:mass",],
             units="kg",
             desc="Mass of the propulsion system",
         )

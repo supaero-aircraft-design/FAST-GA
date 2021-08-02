@@ -94,7 +94,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:cabin:NPAX")
-        self.add_output("data:geometry:plane:length", units="m")
+        self.add_output("data:geometry:aircraft:length", units="m")
         self.add_output("data:geometry:fuselage:length", val=10.0, units="m")
         self.add_output("data:geometry:fuselage:maximum_width", units="m")
         self.add_output("data:geometry:fuselage:maximum_height", units="m")
@@ -168,7 +168,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
 
         outputs["data:geometry:cabin:NPAX"] = npax
         outputs["data:geometry:fuselage:length"] = fus_length
-        outputs["data:geometry:plane:length"] = plane_length
+        outputs["data:geometry:aircraft:length"] = plane_length
         outputs["data:geometry:fuselage:maximum_width"] = b_f
         outputs["data:geometry:fuselage:maximum_height"] = h_f
         outputs["data:geometry:fuselage:front_length"] = lav

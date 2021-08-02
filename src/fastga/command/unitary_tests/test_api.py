@@ -17,6 +17,7 @@ Test module for the generate_block_analysis function
 import os.path as pth
 import os
 import pytest
+import warnings
 
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
@@ -205,12 +206,25 @@ def test_missing_inputs_in_xml():
 
 def test_variable_descriptions_auto_gen():
 
-    api.generate_variables_description(aerodynamics.__path__[0], True)
-    api.generate_variables_description(geometry.__path__[0], True)
-    api.generate_variables_description(handling_qualities.__path__[0], True)
-    api.generate_variables_description(load_analysis.__path__[0], True)
-    api.generate_variables_description(loops.__path__[0], True)
-    api.generate_variables_description(performances.__path__[0], True)
-    api.generate_variables_description(cg.__path__[0], True)
-    api.generate_variables_description(mass_breakdown.__path__[0], True)
-    api.generate_variables_description(models.__path__[0], True)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+
+        api.generate_variables_description(aerodynamics.__path__[0], True)
+        api.generate_variables_description(geometry.__path__[0], True)
+        api.generate_variables_description(handling_qualities.__path__[0], True)
+        api.generate_variables_description(load_analysis.__path__[0], True)
+        api.generate_variables_description(loops.__path__[0], True)
+        api.generate_variables_description(performances.__path__[0], True)
+        api.generate_variables_description(cg.__path__[0], True)
+        api.generate_variables_description(mass_breakdown.__path__[0], True)
+        api.generate_variables_description(models.__path__[0], True)
+
+        # Check that there are no warnings, which would mean we filled our description correctly
+        counter = 0
+        if len(w) != 0:
+            for warning_message in w:
+                print(warning_message.message)
+                if not issubclass(warning_message.category, DeprecationWarning):
+                    counter += 1
+
+        assert counter == 0

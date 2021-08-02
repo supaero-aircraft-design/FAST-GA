@@ -511,7 +511,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                     / self.propeller_efficiency(thrust[idx], local_atmosphere)
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
-                sfc = ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx]
+                sfc[idx] = ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx]
         return sfc, real_power
 
     def max_thrust(
