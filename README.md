@@ -1,4 +1,5 @@
 ![Tests](https://github.com/supaero-aircraft-design/FAST-GA/workflows/Tests/badge.svg)
+[![Documentation Status](https://readthedocs.org/projects/fast-ga/badge/?version=latest)](https://fast-ga.readthedocs.io/en/latest/?badge=latest)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee153dd5e82d41e7b2f3a964ef5756f5)](https://www.codacy.com/gh/supaero-aircraft-design/FAST-GA/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=supaero-aircraft-design/FAST-GA&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/supaero-aircraft-design/FAST-GA/branch/main/graph/badge.svg?token=VZEDUOFE8V)](https://codecov.io/gh/supaero-aircraft-design/FAST-GA)
