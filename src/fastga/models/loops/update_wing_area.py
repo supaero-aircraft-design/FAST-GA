@@ -96,7 +96,7 @@ class _UpdateWingArea(om.ExplicitComponent):
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
 
-        _LOGGER.warning(
+        _LOGGER.info(
             "Looping on wing area with new value equal to {}".format(
                 max(wing_area_mission, wing_area_approach)
             )

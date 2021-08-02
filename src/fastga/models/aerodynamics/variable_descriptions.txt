@@ -19,18 +19,21 @@ data:aerodynamics:cruise:neutral_point:stick_fixed:x || distance between the lea
 data:aerodynamics:cruise:neutral_point:stick_free:x || distance between the leading edge of the wing at the MAC and the stick free aerodynamic center
 
 data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail lift coefficient with respect to elevator command
+data:aerodynamics:elevator:low_speed:CD_delta || derivative of horizontal tail drag coefficient with respect to elevator command
 
 data:aerodynamics:fuselage:cruise:CD0 || profile drag coefficient for fuselage in cruise conditions
 data:aerodynamics:fuselage:cruise:CnBeta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
 data:aerodynamics:fuselage:low_speed:CD0 || profile drag coefficient for fuselage in low speed conditions
 
-data:aerodynamics:horizontal_tail:efficiency || ratio between the dynamic pressure at the tail and the free stream dynamic pressure
 data:aerodynamics:horizontal_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
 data:aerodynamics:horizontal_tail:cruise:CD0 || profile drag coefficient for horizontal tail in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:CL0 || lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:CL_alpha || derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated || derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:CDp || pressure drag coefficient of the horizontal tail profile for various angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:CL || lift coefficient of the horizontal tail profile for various angle of attack in cruise conditions
+data:aerodynamics:horizontal_tail:cruise:reynolds || reynolds number on the horizontal tail in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha || derivative of 3D hinge moment coefficient with respect to the local angle of attack in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D || derivative of 2D hinge moment coefficient with respect to the local angle of attack in cruise conditions
 data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta || derivative of 3D hinge moment coefficient with respect to elevator deflection in cruise conditions
@@ -44,7 +47,10 @@ data:aerodynamics:horizontal_tail:low_speed:CL_min_clean || minimum horizontal t
 data:aerodynamics:horizontal_tail:low_speed:CL_ref || reference horizontal tail lift coefficient corresponding to the lift repartition in CL_vector
 data:aerodynamics:horizontal_tail:low_speed:CL_vector || horizontal tail lift coefficient repartition along the span corresponding to the lift coefficient in CL_ref
 data:aerodynamics:horizontal_tail:low_speed:Y_vector || point along the span at which the lift repartition on the horizontal tail is sampled
-data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions
+data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get induced drag in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CDp || pressure drag coefficient of the horizontal tail profile for various angle of attack in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:CL || lift coefficient of the horizontal tail profile for various angle of attack in low speed conditions
+data:aerodynamics:horizontal_tail:low_speed:reynolds || reynolds number on the horizontal tail in low speed conditions
 data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max || positive aircraft angle of attack that gives a stalled horizontal tail
 data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min || negative aircraft angle of attack that gives a stalled horizontal tail
 data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D || maximum lift coefficient at the root section of the horizontal tail given with respect to the horizontal tail surface
@@ -76,11 +82,32 @@ data:aerodynamics:propeller:sea_level:thrust || thrust produced by the propeller
 data:aerodynamics:propeller:sea_level:thrust_limit || maximum thrust output of the propeller at sea level for varying velocities
 
 data:aerodynamics:vertical_tail:k_ar_effective || coefficient to multiply the vertical tail aspect ratio to get the effective aspect ratio which includes fuselage and horizontal tail end-plate effect
-data:aerodynamics:vertical_tail:airfoil:CL_alpha || horizontal tail airfoil lift curve slope
+data:aerodynamics:vertical_tail:airfoil:CL_alpha || vertical tail airfoil lift curve slope
 data:aerodynamics:vertical_tail:cruise:CD0 || profile drag coefficient for vertical tail in cruise conditions
+data:aerodynamics:vertical_tail:cruise:CL_alpha || derivative of the vertical tail side force coefficient with respect to the local sideslip angle in cruise conditions
 data:aerodynamics:vertical_tail:low_speed:CD0 || profile drag coefficient for vertical tail in low speed conditions
+data:aerodynamics:vertical_tail:low_speed:CL_alpha || derivative of the vertical tail side force coefficient with respect to the local sideslip angle in low speed conditions
+data:aerodynamics:vertical_tail:MAC:low_speed:reynolds || reynolds number at the horizontal tail in cruise conditions
 
 data:aerodynamics:wing:cruise:CD0 || profile drag coefficient for wing in cruise conditions
+data:aerodynamics:wing:cruise:CDp || pressure drag coefficient of the wing profile for various angle of attack in cruise conditions
+data:aerodynamics:wing:cruise:CL || lift coefficient of the wing profile for various angle of attack in cruise conditions
+data:aerodynamics:wing:cruise:CL0_clean || wing lift coefficient at zero aircraft angle of attack in cruise conditions and with no flaps deployed
+data:aerodynamics:wing:cruise:CL_alpha || wing lift coefficient slope with respect to aircraft angle of attack in cruise conditions
+data:aerodynamics:wing:cruise:CM0_clean || wing pitching moment coefficient in cruise conditions and with no flaps deployed
+data:aerodynamics:wing:cruise:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get wing induced drag in cruise conditions
+data:aerodynamics:wing:cruise:reynolds || reynolds number on the wing in cruise conditions
+data:aerodynamics:wing:airfoil:CL_alpha || wing tail airfoil lift curve slope
+data:aerodynamics:wing:low_speed:CDp || pressure drag coefficient of the wing profile for various angle of attack in low speed conditions
+data:aerodynamics:wing:low_speed:chord_vector || wing chord length at the station along the wing span in Y_vector
+data:aerodynamics:wing:low_speed:CL || lift coefficient of the wing profile for various angle of attack in low speed conditions
+data:aerodynamics:wing:low_speed:CL0_clean || wing lift coefficient at zero aircraft angle of attack in low speed conditions and with no flaps deployed
+data:aerodynamics:wing:low_speed:CL_alpha || wing lift coefficient slope with respect to aircraft angle of attack in low speed conditions
+data:aerodynamics:wing:low_speed:CL_vector || lift coefficient of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL0_clean
+data:aerodynamics:wing:low_speed:CM0_clean || wing pitching moment coefficient in low speed conditions and with no flaps deployed
+data:aerodynamics:wing:low_speed:induced_drag_coefficient || coefficient to multiply by the lift coefficient squared to get wing induced drag in low speed conditions
+data:aerodynamics:wing:low_speed:reynolds || reynolds number on the wing in low speed conditions
+data:aerodynamics:wing:low_speed:Y_vector || wing station along the wing span at which chord_vector and Cl_vector are sampled
 data:aerodynamics:wing:low_speed:CD0 || profile drag coefficient for wing in low speed conditions
 data:aerodynamics:wing:low_speed:CL_max_clean || wing maximum lift coefficient for positive angle of attack
 data:aerodynamics:wing:low_speed:CL_min_clean || wing maximum lift coefficient for negative angle of attack
@@ -88,67 +115,42 @@ data:aerodynamics:wing:low_speed:root:CL_max_2D || wing root chord airfoil maxim
 data:aerodynamics:wing:low_speed:root:CL_min_2D || wing root chord airfoil maximum lift coefficient for negative angle of attack
 data:aerodynamics:wing:low_speed:tip:CL_max_2D || wing tip chord airfoil maximum lift coefficient for positive angle of attack
 data:aerodynamics:wing:low_speed:tip:CL_min_2D || wing tip chord airfoil maximum lift coefficient for negative angle of attack
+data:aerodynamics:wing:MAC:low_speed:reynolds || wing reynolds number in low speed conditions at the mean aerodynamic chord
 data:aerodynamics:wing:root:low_speed:reynolds || wing root chord reynolds in low speed conditions
 data:aerodynamics:wing:tip:low_speed:reynolds || wing tip chord reynolds in low speed conditions
 
-data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || 
-data:aerodynamics:aircraft:mach_interpolation:mach_vector || 
-data:aerodynamics:elevator:low_speed:CD_delta || 
-data:aerodynamics:flaps:landing:CD || 
-data:aerodynamics:flaps:landing:CL || 
-data:aerodynamics:flaps:landing:CL_max || 
-data:aerodynamics:flaps:landing:CM || 
-data:aerodynamics:flaps:takeoff:CD || 
-data:aerodynamics:flaps:takeoff:CL || 
-data:aerodynamics:flaps:takeoff:CL_max || 
-data:aerodynamics:flaps:takeoff:CM || 
-data:aerodynamics:horizontal_tail:cruise:CDp || 
-data:aerodynamics:horizontal_tail:cruise:CL || 
-data:aerodynamics:horizontal_tail:cruise:reynolds || 
-data:aerodynamics:horizontal_tail:low_speed:CDp || 
-data:aerodynamics:horizontal_tail:low_speed:CL || 
-data:aerodynamics:horizontal_tail:low_speed:reynolds || 
-data:aerodynamics:rudder:low_speed:Cy_delta_r || 
-data:aerodynamics:vertical_tail:cruise:CL_alpha || 
-data:aerodynamics:vertical_tail:low_speed:CL_alpha || 
-data:aerodynamics:vertical_tail:MAC:low_speed:reynolds || 
-data:aerodynamics:wing:airfoil:CL_alpha || 
-data:aerodynamics:wing:cruise:CDp || 
-data:aerodynamics:wing:cruise:CL || 
-data:aerodynamics:wing:cruise:CL0_clean || 
-data:aerodynamics:wing:cruise:CL_alpha || 
-data:aerodynamics:wing:cruise:CM0_clean || 
-data:aerodynamics:wing:cruise:induced_drag_coefficient || 
-data:aerodynamics:wing:cruise:reynolds || 
-data:aerodynamics:wing:low_speed:CDp || 
-data:aerodynamics:wing:low_speed:chord_vector || 
-data:aerodynamics:wing:low_speed:CL || 
-data:aerodynamics:wing:low_speed:CL0_clean || 
-data:aerodynamics:wing:low_speed:CL_alpha || 
-data:aerodynamics:wing:low_speed:CL_vector || 
-data:aerodynamics:wing:low_speed:CM0_clean || 
-data:aerodynamics:wing:low_speed:induced_drag_coefficient || 
-data:aerodynamics:wing:low_speed:reynolds || 
-data:aerodynamics:wing:low_speed:Y_vector || 
-data:aerodynamics:wing:MAC:low_speed:reynolds || 
+data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector || lift curve slope coefficients of the aircraft at the mach number given in mach_vector
+data:aerodynamics:aircraft:mach_interpolation:mach_vector || mach numbers at which the aircraft lift curve slope in CL_alpha_vector was computed
 
-data:aerodynamics:nacelles:cruise:CD0 || 
-data:aerodynamics:nacelles:low_speed:CD0 || 
-data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector || 
-data:aerodynamics:slipstream:wing:cruise:prop_off:CL || 
-data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector || 
-data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:CL || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:velocity || 
-data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector || 
-data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector || 
-data:aerodynamics:slipstream:wing:low_speed:prop_off:CL || 
-data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector || 
-data:aerodynamics:slipstream:wing:low_speed:prop_off:Y_vector || 
-data:aerodynamics:slipstream:wing:low_speed:prop_on:CL || 
-data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector || 
-data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref || 
-data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity || 
-data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector || 
+data:aerodynamics:flaps:landing:CD || additional drag coefficient due to flaps deployment in landing configuration
+data:aerodynamics:flaps:landing:CL || lift coefficient increment due to flaps deployment in landing configuration
+data:aerodynamics:flaps:landing:CL_max || maximum lift coefficient increment due to flaps deployment in landing configuration
+data:aerodynamics:flaps:landing:CM || additional pitching moment coefficient ue to the deployment of flaps in landing configuration
+data:aerodynamics:flaps:takeoff:CD || additional drag coefficient due to flaps deployment in takeoff configuration
+data:aerodynamics:flaps:takeoff:CL || lift coefficient increment due to flaps deployment in takeoff configuration
+data:aerodynamics:flaps:takeoff:CL_max || maximum lift coefficient increment due to flaps deployment in takeoff configuration
+data:aerodynamics:flaps:takeoff:CM || additional pitching moment coefficient due to the deployment of flaps in takeoff configuration
+
+data:aerodynamics:rudder:low_speed:Cy_delta_r || derivative of the side force coefficient with respect to the rudder command
+
+data:aerodynamics:nacelles:cruise:CD0 || profile drag coefficient for the nacelles in cruise conditions
+data:aerodynamics:nacelles:low_speed:CD0 || profile drag coefficient for the nacelles in low speed conditions
+
+data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector || lift coefficient of the wing due to the slipstream effect only at the station along the wing span in Y_vector
+data:aerodynamics:slipstream:wing:cruise:prop_off:CL || wing lift coefficient without slipstream effect, used as a reference value for scaling
+data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector || lift coefficient without slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL
+data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector || station along the wing span at which lift is sampled
+data:aerodynamics:slipstream:wing:cruise:prop_on:CL || wing lift coefficient with slipstream effect, used as a reference value for scaling
+data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector || lift coefficient with slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL
+data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref || thrust coefficient of the propeller used in the computation of the slipstream effect
+data:aerodynamics:slipstream:wing:cruise:prop_on:velocity || velocity at which the slipstream effect were computed in cruise conditions
+data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector || station along the wing span at which lift is sampled
+data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector || lift coefficient of the wing due to the slipstream effect only at the station along the wing span in Y_vector
+data:aerodynamics:slipstream:wing:low_speed:prop_off:CL || wing lift coefficient without slipstream effect, used as a reference value for scaling
+data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector || lift coefficient without slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL
+data:aerodynamics:slipstream:wing:low_speed:prop_off:Y_vector || station along the wing span at which lift is sampled
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CL || wing lift coefficient with slipstream effect, used as a reference value for scaling
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector || lift coefficient with slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL
+data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref || thrust coefficient of the propeller used in the computation of the slipstream effect
+data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity || velocity at which the slipstream effect were computed in low speed conditions
+data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector || station along the wing span at which lift is sampled

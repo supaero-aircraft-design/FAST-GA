@@ -834,7 +834,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [1.718857e-16, 1.114245e-05, 1.114245e-05, 1.907301e-05, 1.506827e-05]
+    expected_sfc = [2.41416580e-16, 1.35684586e-05, 1.35684586e-05, 1.96216640e-05, 1.50682721e-05]
 
     flight_points = FlightPoint(
         mach=machs + machs,

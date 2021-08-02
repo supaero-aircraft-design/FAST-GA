@@ -15,6 +15,7 @@ API
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import warnings
 import os.path as pth
 import os
 import shutil
@@ -142,34 +143,55 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                     while variable_name_length != len(variable_name):
                         variable_name = variable_name.replace(" ", "")
                         variable_name_length = len(variable_name)
-                    saved_dict[variable_name] = variable_description
+                    saved_dict[variable_name] = (variable_description, subpackage_path)
             file.close()
 
         # If path point to ./models directory list output variables described in the different models
-        if subpackage_path.split("\\")[-1] == "models":
+        if pth.split(subpackage_path)[-1] == "models":
             for root, dirs, files in os.walk(subpackage_path, topdown=False):
+                vd_file_empty_description = False
+                empty_description_variables = []
                 for name in files:
                     if name == "variable_descriptions.txt":
                         file = open(pth.join(root, name), "r")
                         for line in file:
                             if line[0] != "#" and len(line.split("||")) == 2:
                                 variable_name, variable_description = line.split("||")
+                                if variable_description.replace(" ", "") == "\n":
+                                    vd_file_empty_description = True
+                                    empty_description_variables.append(
+                                        variable_name.replace(" ", "")
+                                    )
                                 variable_name_length = len(variable_name)
                                 variable_name = variable_name.replace(" ", "")
                                 while variable_name_length != len(variable_name):
                                     variable_name = variable_name.replace(" ", "")
                                     variable_name_length = len(variable_name)
                                 if variable_name not in saved_dict.keys():
-                                    saved_dict[variable_name] = variable_description
+                                    saved_dict[variable_name] = (variable_description, root)
                                 else:
-                                    print(
-                                        "\nWarning: file ./models/variable_descriptions.txt contains parameter "
-                                        + variable_name
-                                        + " already saved in "
-                                        + pth.split(root)[-1]
-                                        + " subpackage !"
-                                    )
+                                    if not (
+                                        pth.split(root)[-1]
+                                        == pth.split(saved_dict[variable_name][1])[-1]
+                                    ):
+                                        warnings.warn(
+                                            "file variable_descriptions.txt from subpackage "
+                                            + pth.split(root)[-1]
+                                            + " contains parameter "
+                                            + variable_name
+                                            + " already saved in "
+                                            + pth.split(saved_dict[variable_name][1])[-1]
+                                            + " subpackage!"
+                                        )
                         file.close()
+                if vd_file_empty_description:
+                    warnings.warn(
+                        "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
+                            pth.split(root)[-1]
+                        )
+                        + "\tFollowing variables have empty descriptions : "
+                        + ", ".join(empty_description_variables)
+                    )
 
         # Explore subpackage models and find the output variables and store them in a dictionary
         dict_to_be_saved = {}
@@ -233,7 +255,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 # If no boolean options alternatives to be tested, search for input variables in models
                                 # and output variables for subpackages (including ivc)
                                 if len(local_options) == 0:
-                                    if subpackage_path.split("\\")[-1] == "models":
+                                    if pth.split(subpackage_path)[-1] == "models":
                                         var_names = [var.name for var in variables if var.is_input]
                                     else:
                                         var_names = [
@@ -275,7 +297,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                 idx
                                             ]
                                         variables = list_variables(my_class(**options_dictionary))
-                                        if subpackage_path.split("\\")[-1] == "models":
+                                        if pth.split(subpackage_path)[-1] == "models":
                                             var_names = [
                                                 var.name for var in variables if var.is_input
                                             ]
@@ -325,6 +347,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 set(list(dict_to_be_saved.keys())).intersection(set(list(saved_dict.keys())))
             ) != len(dict_to_be_saved.keys()):
                 file.write("\n")
+            file.close()
         else:
             if len(dict_to_be_saved.keys()) != 0:
                 file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
@@ -336,13 +359,27 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 file.write(
                     '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
                 )
+                file.close()
         if len(dict_to_be_saved.keys()) != 0:
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
             sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
+            added_key = False
+            added_key_names = []
             for key in sorted_keys:
                 if not (key in saved_dict.keys()):
                     # noinspection PyUnboundLocalVariable
                     file.write(key + " || \n")
+                    added_key = True
+                    added_key_names.append(key)
             file.close()
+            if added_key:
+                warnings.warn(
+                    "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
+                        pth.split(subpackage_path)[-1]
+                    )
+                    + "\tFollowing variables have empty descriptions : "
+                    + ", ".join(added_key_names)
+                )
 
 
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
@@ -388,7 +425,13 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
     problem = FASTOADProblem(group)
-    problem.setup()
+    try:
+        problem.setup()
+    except RuntimeError:
+        _LOGGER.info(
+            "Some problem occurred while setting-up the problem without input file probably "
+            "because shape_by_conn variables exist!"
+        )
     model = problem.model
     dict_sub_system = {}
     dict_sub_system = list_all_subsystem(model, "model", dict_sub_system)
@@ -570,7 +613,13 @@ class VariableListLocal(VariableList):
         else:
             # problem.model has to be a group
             problem.model.add_subsystem("comp", deepcopy(local_system), promotes=["*"])
-        problem.setup()
+        try:
+            problem.setup()
+        except RuntimeError:
+            _LOGGER.info(
+                "Some problem occurred while setting-up the problem without input file probably "
+                "because shape_by_conn variables exist!"
+            )
         return VariableListLocal.from_problem(problem, use_initial_values=True)
 
 

@@ -86,10 +86,10 @@ def test_oad_process_vlm(cleanup):
             )
             # noinspection PyTypeChecker
             assert_allclose(
-                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1628.0, atol=1
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1627.0, atol=1
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1010.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1008.0, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 246.0, atol=1)
@@ -98,14 +98,14 @@ def test_oad_process_vlm(cleanup):
             )
             # noinspection PyTypeChecker
             assert_allclose(
-                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1770.0, atol=1
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1767.0, atol=1
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1133.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1131.0, atol=1)
 
 
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
-def test_oad_process_openvsp():
+def _test_oad_process_openvsp():
     """
     Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP method.
     """

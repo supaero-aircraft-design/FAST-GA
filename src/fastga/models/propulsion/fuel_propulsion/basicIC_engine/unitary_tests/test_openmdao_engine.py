@@ -799,7 +799,7 @@ def test_OMBasicICEngineComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [1.71027519e-16, 1.10868197e-05, 1.10868197e-05, 2.90330512e-05, 2.17207210e-05]
+    expected_sfc = [2.414166e-16, 1.356846e-05, 1.356846e-05, 2.939614e-05, 2.172072e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:IC_engine:max_power", 130000, units="W")
