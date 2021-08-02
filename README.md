@@ -21,6 +21,9 @@ Currently, FAST-(OAD)-GA is bundled with models for general aviation and convent
 propulsion (ICE propeller based). Other models will come soon, and you may create
 your own models and use them instead of bundled ones.
 
+More details can be found in the [official
+documentation](https://fast-ga.readthedocs.io/).
+
 Install
 -------
 
