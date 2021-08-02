@@ -66,7 +66,7 @@ data:weight:aircraft:OWE || operating weight - empty
 data:weight:airframe:fuselage:k_factor || proportional corrective factor for fuselage mass
 data:weight:airframe:horizontal_tail:k_factor || proportional corrective factor for horizontal tail mass
 data:weight:airframe:vertical_tail:k_factor || proportional corrective factor for vertical tail mass
-data:weight:airframe:wing:k_factor ||proportional corrective factor for wing mass
+data:weight:airframe:wing:k_factor || proportional corrective factor for wing mass
 data:weight:propulsion:engine:mass || total engine mass
 data:weight:propulsion:unusable_fuel:mass || total unusable fuel mass
 

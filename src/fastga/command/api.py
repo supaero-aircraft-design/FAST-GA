@@ -150,6 +150,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         if subpackage_path.split("\\")[-1] == "models":
             for root, dirs, files in os.walk(subpackage_path, topdown=False):
                 vd_file_empty_description = False
+                empty_description_variables = []
                 for name in files:
                     if name == "variable_descriptions.txt":
                         file = open(pth.join(root, name), "r")
@@ -158,6 +159,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 variable_name, variable_description = line.split("||")
                                 if variable_description.replace(" ", "") == "\n":
                                     vd_file_empty_description = True
+                                    empty_description_variables.append(
+                                        variable_name.replace(" ", "")
+                                    )
                                 variable_name_length = len(variable_name)
                                 variable_name = variable_name.replace(" ", "")
                                 while variable_name_length != len(variable_name):
@@ -182,9 +186,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         file.close()
                 if vd_file_empty_description:
                     warnings.warn(
-                        "file variable_descriptions.txt from {} subpackage contains empty descriptions!".format(
+                        "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
                             pth.split(root)[-1]
                         )
+                        + "\tFollowing variables have empty descriptions : "
+                        + ", ".join(empty_description_variables)
                     )
 
         # Explore subpackage models and find the output variables and store them in a dictionary
