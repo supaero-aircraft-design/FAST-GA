@@ -303,7 +303,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         fuel_mass = mass - c3
         x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
 
-        # Calculate cm_alpha_fus from Raymer equations (figure 16.14, eqn 16.22)
+        # Calculate cm_alpha_fus from Raymer equations (figure 16.14, eqn 16.25)
         x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
         ratio_x025 = x0_25 / fus_length
         k_h = 0.01222 - 7.40541e-4 * ratio_x025 * 100 + 2.1956e-5 * (ratio_x025 * 100) ** 2
