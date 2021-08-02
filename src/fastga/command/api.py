@@ -166,15 +166,19 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 if variable_name not in saved_dict.keys():
                                     saved_dict[variable_name] = (variable_description, root)
                                 else:
-                                    warnings.warn(
-                                        "file variable_descriptions.txt from subpackage "
-                                        + pth.split(root)[-1]
-                                        + " contains parameter "
-                                        + variable_name
-                                        + " already saved in "
-                                        + pth.split(saved_dict[variable_name][1])[-1]
-                                        + " subpackage!"
-                                    )
+                                    if not (
+                                        pth.split(root)[-1]
+                                        == pth.split(saved_dict[variable_name][1])[-1]
+                                    ):
+                                        warnings.warn(
+                                            "file variable_descriptions.txt from subpackage "
+                                            + pth.split(root)[-1]
+                                            + " contains parameter "
+                                            + variable_name
+                                            + " already saved in "
+                                            + pth.split(saved_dict[variable_name][1])[-1]
+                                            + " subpackage!"
+                                        )
                         file.close()
                 if vd_file_empty_description:
                     warnings.warn(
@@ -337,6 +341,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 set(list(dict_to_be_saved.keys())).intersection(set(list(saved_dict.keys())))
             ) != len(dict_to_be_saved.keys()):
                 file.write("\n")
+            file.close()
         else:
             if len(dict_to_be_saved.keys()) != 0:
                 file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
@@ -348,7 +353,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 file.write(
                     '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
                 )
+                file.close()
         if len(dict_to_be_saved.keys()) != 0:
+            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
             sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
             added_key = False
             for key in sorted_keys:
