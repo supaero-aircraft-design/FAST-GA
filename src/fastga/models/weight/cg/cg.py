@@ -17,6 +17,9 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
+
 from fastga.models.weight.cg.cg_components.a_airframe import (
     ComputeWingCG,
     ComputeFuselageCG,
@@ -40,6 +43,7 @@ from fastga.models.weight.cg.cg_components.global_cg import ComputeGlobalCG
 from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
 
 
+@RegisterOpenMDAOSystem("fastga.weight.cg", domain=ModelDomain.WEIGHT)
 class CG(om.Group):
     """ Model that computes the global center of gravity """
 
