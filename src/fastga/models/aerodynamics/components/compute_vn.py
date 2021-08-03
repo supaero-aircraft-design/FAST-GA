@@ -301,7 +301,7 @@ class ComputeVN(om.ExplicitComponent):
         # the case of the commuter nor do we implement the reduction of gust intensity with the location
         # of the gust center
 
-        if altitude < 20000.0:
+        if altitude <= 20000.0:
             u_de_vc = 50.0  # [ft/s]
             u_de_vd = 25.0  # [ft/s]
             u_de_vmg = 66.0  # [ft/s]

@@ -44,7 +44,7 @@ python = "^3.7"
 fast-oad = "^1.0.4"
 
 [tool.poetry.plugins."fastoad_model"]
-"internal_models" = "fastga"
+"internal_models" = "fastga.models"
 
 [tool.poetry.dev-dependencies]
 wheel = "*"
