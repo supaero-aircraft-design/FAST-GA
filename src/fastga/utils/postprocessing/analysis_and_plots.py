@@ -318,7 +318,7 @@ def evolution_diagram(
 
     # Save gust envelope
     x_gust = [0.0]
-    y_gust = [0.0]
+    y_gust = [1.0]
     if not (velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
@@ -334,7 +334,7 @@ def evolution_diagram(
         x_gust.append(velocity_array[5])
         y_gust.append(load_factor_array[5])
     x_gust.append(0.0)
-    y_gust.append(0.0)
+    y_gust.append(1.0)
 
     if fig is None:
         fig = go.Figure()
