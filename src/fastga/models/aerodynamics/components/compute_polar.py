@@ -205,7 +205,7 @@ class _compute_equilibrated_polar(AircraftEquilibrium):
         cl_wing_array = np.array([])
         cl_htp_only_array = np.array([])
         cl_elevator_array = np.array([])
-        cl_array = np.array([1])
+        cl_array = np.array([])
 
         # TODO improve the way the mass array is created in order to match a specified range of cl
         # lower_boundary = 0.6
