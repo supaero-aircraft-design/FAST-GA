@@ -17,21 +17,21 @@
 
 from openmdao.core.group import Group
 
-from .components.cd0 import Cd0
-from .components.compute_cl_extreme import ComputeExtremeCL
-from .components.clalpha_vt import ComputeClalphaVT
-from .components.high_lift_aero import ComputeDeltaHighLift
-from .components.airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
-from .components.compute_cy_rudder import ComputeCyDeltaRudder
-from .components.compute_polar import _compute_non_equilibrated_polar
-
-from .external.openvsp.compute_vn import ComputeVNopenvsp
-
-from .external.vlm import ComputeAEROvlm
-from .external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components.cd0 import Cd0
+from fastga.models.aerodynamics.components.compute_cl_extreme import ComputeExtremeCL
+from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
+from fastga.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
+from fastga.models.aerodynamics.components.airfoil_lift_curve_slope import (
+    ComputeAirfoilLiftCurveSlope,
+)
+from fastga.models.aerodynamics.components.compute_cy_rudder import ComputeCyDeltaRudder
+from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
 # noinspection PyProtectedMember
-from .external.openvsp.compute_aero_slipstream import _ComputeSlipstreamOpenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
+    _ComputeSlipstreamOpenvsp,
+)
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -79,21 +79,21 @@ class AerodynamicsLowSpeed(Group):
                 promotes=["*"],
             )
         self.add_subsystem(
-            "airfoil_lift_slope",
-            ComputeAirfoilLiftCurveSlope(
-                wing_airfoil_file=self.options["wing_airfoil"],
-                htp_airfoil_file=self.options["htp_airfoil"],
-                vtp_airfoil_file=self.options["htp_airfoil"],
-            ),
-            promotes=["*"],
-        )
-        self.add_subsystem(
             "Cd0_all",
             Cd0(
                 low_speed_aero=True,
                 wing_airfoil_file=self.options["wing_airfoil"],
                 htp_airfoil_file=self.options["htp_airfoil"],
                 propulsion_id=self.options["propulsion_id"],
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "airfoil_lift_slope",
+            ComputeAirfoilLiftCurveSlope(
+                wing_airfoil_file=self.options["wing_airfoil"],
+                htp_airfoil_file=self.options["htp_airfoil"],
+                vtp_airfoil_file=self.options["htp_airfoil"],
             ),
             promotes=["*"],
         )
@@ -106,7 +106,7 @@ class AerodynamicsLowSpeed(Group):
             ),
             promotes=["*"],
         )
-        self.add_subsystem("clAlpha_vt", ComputeClalphaVT(low_speed_aero=True), promotes=["*"])
+        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(low_speed_aero=True), promotes=["*"])
         self.add_subsystem("Cy_Delta_rudder", ComputeCyDeltaRudder(), promotes=["*"])
         if self.options["compute_slipstream"]:
             self.add_subsystem(
@@ -119,9 +119,3 @@ class AerodynamicsLowSpeed(Group):
                 ),
                 promotes=["*"],
             )
-        self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])
-        self.add_subsystem(
-            "non_equilibrated_polar_cruise",
-            _compute_non_equilibrated_polar(low_speed_aero=True),
-            promotes=["*"],
-        )

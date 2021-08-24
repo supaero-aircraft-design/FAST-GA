@@ -41,14 +41,33 @@ def test_update_wing_area():
     ivc.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc.add_output("data:weight:aircraft:MFW", val=573.00, units="kg")
     ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc.add_output("data:geometry:wing:taper_ratio", val=0.8)
+    ivc.add_output("data:geometry:wing:aspect_ratio", val=4)
+    ivc.add_output("data:geometry:flap:chord_ratio", val=0.15)
+    ivc.add_output("data:geometry:flap:span_ratio", val=0.6)
+    ivc.add_output("data:geometry:aileron:chord_ratio", val=0.2)
+    ivc.add_output("data:geometry:aileron:span_ratio", val=0.3)
+    ivc.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
+    ivc.add_output("data:geometry:propulsion:y_ratio_tank_beginning", val=0.2)
+    ivc.add_output("data:geometry:propulsion:y_ratio_tank_end", val=0.8)
+    ivc.add_output("data:geometry:propulsion:layout", val=1.0)
+    ivc.add_output(
+        "data:geometry:propulsion:y_ratio",
+        shape=10,
+        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+    )
+    ivc.add_output("data:geometry:propulsion:LE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:TE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:nacelle:width", val=1.0, units="m")
+    ivc.add_output("data:geometry:landing_gear:type", val=1.0)
+    ivc.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
+    ivc.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
 
     problem = run_system(UpdateWingArea(), ivc)
-    assert_allclose(problem["data:geometry:wing:area"], 20.05, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:area"], 19.16, atol=1e-2)
+    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.54, atol=1e-2)
     assert_allclose(
-        problem["data:aerodynamics:aircraft:landing:additional_CL_capacity"], 0.61, atol=1e-2
-    )
-    assert_allclose(
-        problem.get_val("data:weight:aircraft:additional_fuel_capacity", units="kg"), -27, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), -27, atol=1
     )
     # not 0.0 because MFW not updated
 
@@ -64,12 +83,31 @@ def test_update_wing_area():
     ivc.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc.add_output("data:weight:aircraft:MFW", val=573.00, units="kg")
     ivc.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
+    ivc.add_output("data:geometry:wing:taper_ratio", val=0.8)
+    ivc.add_output("data:geometry:wing:aspect_ratio", val=4)
+    ivc.add_output("data:geometry:flap:chord_ratio", val=0.15)
+    ivc.add_output("data:geometry:flap:span_ratio", val=0.6)
+    ivc.add_output("data:geometry:aileron:chord_ratio", val=0.2)
+    ivc.add_output("data:geometry:aileron:span_ratio", val=0.3)
+    ivc.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
+    ivc.add_output("data:geometry:propulsion:y_ratio_tank_beginning", val=0.0)
+    ivc.add_output("data:geometry:propulsion:y_ratio_tank_end", val=1.0)
+    ivc.add_output("data:geometry:propulsion:layout", val=1.0)
+    ivc.add_output(
+        "data:geometry:propulsion:y_ratio",
+        shape=10,
+        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+    )
+    ivc.add_output("data:geometry:propulsion:LE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:TE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:nacelle:width", val=1.0, units="m")
+    ivc.add_output("data:geometry:landing_gear:type", val=1.0)
+    ivc.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
+    ivc.add_output("settings:geometry:fuel_tanks:depth", val=1.0)
 
     problem = run_system(UpdateWingArea(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 14.02, atol=1e-2)
+    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.0, atol=1e-2)
     assert_allclose(
-        problem["data:aerodynamics:aircraft:landing:additional_CL_capacity"], 0.0, atol=1e-2
-    )
-    assert_allclose(
-        problem.get_val("data:weight:aircraft:additional_fuel_capacity", units="kg"), 273, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 273, atol=1
     )

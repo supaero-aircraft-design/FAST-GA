@@ -43,8 +43,8 @@ class ComputePayload(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
-        self.add_output("data:weight:payload:front_fret:mass", units="kg")
-        self.add_output("data:weight:payload:rear_fret:mass", units="kg")
+        self.add_output("data:weight:payload:front_freight:mass", units="kg")
+        self.add_output("data:weight:payload:rear_freight:mass", units="kg")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -76,8 +76,8 @@ class ComputePayload(om.ExplicitComponent):
                 luggage_mass_rear = luggage_mass_max_rear
                 luggage_mass_front = luggage_mass_design - luggage_mass_max_rear
 
-        outputs["data:weight:payload:front_fret:mass"] = luggage_mass_front
-        outputs["data:weight:payload:rear_fret:mass"] = luggage_mass_rear
+        outputs["data:weight:payload:front_freight:mass"] = luggage_mass_front
+        outputs["data:weight:payload:rear_freight:mass"] = luggage_mass_rear
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
         outputs["data:weight:aircraft:max_payload"] = (
             npax_max * max_mass_per_pax + luggage_mass_max_front + luggage_mass_max_rear

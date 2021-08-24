@@ -16,8 +16,10 @@ data:geometry:cabin:seats:passenger:NPAX_max || maximum number of passengers in 
 data:geometry:cabin:seats:passenger:width || width of passenger seats
 data:geometry:cabin:seats:pilot:length || pilot seats length
 data:geometry:cabin:seats:pilot:width || width of pilot seats
-data:geometry:cabin:luggage:mass_max || maximum luggage mass
 data:geometry:cabin:aisle_width || width of the aisle
+data:geometry:cabin:luggage:front_compartment_first || if front luggage compartment is filled at max capacity first
+data:geometry:cabin:luggage:mass_max_front || maximum luggage mass for front compartment
+data:geometry:cabin:luggage:mass_max_rear || maximum luggage mass for rear compartment
 
 data:geometry:fuselage:wet_area || fuselage wet area
 data:geometry:fuselage:front_length || length of the front cone of the aircraft
@@ -81,6 +83,7 @@ data:geometry:wing:tip:y || Y-position of wing tip
 data:geometry:wing:wet_area || wet area of wing
 
 data:geometry:landing_gear:height || height of the landing gear
+data:geometry:landing_gear:y || Y-position of landing gear when deployed
 data:geometry:landing_gear:type || 0=non-retractable / 1=retractable
 
 data:geometry:propulsion:nacelle:height || height of the nacelle
@@ -89,6 +92,10 @@ data:geometry:propulsion:nacelle:wet_area || nacelle wet area
 data:geometry:propulsion:nacelle:width || width of the nacelle
 data:geometry:propulsion:nacelle:y || position of the nacelles along the wing
 data:geometry:propulsion:nacelle:x || position, with respect to the aircraft nose, of the furthest point of the nacelle from the nose
+data:geometry:propulsion:LE_chord_percentage || distance between wing fuel tank and leading edge as percentage of chord
+data:geometry:propulsion:TE_chord_percentage || distance between wing fuel tank and trailing edge as percentage of chord
+data:geometry:propulsion:y_ratio_tank_beginning || beginning of the wing fuel tank as percentage of span
+data:geometry:propulsion:y_ratio_tank_end || end of the wing fuel tank as percentage of span
 
 data:geometry:propulsion:propeller:depth || depth of the propeller
 data:geometry:propulsion:propeller:diameter || diameter of the propeller
@@ -102,3 +109,9 @@ data:geometry:flap:chord_ratio || flap chord as a percentage of the wing chord
 data:geometry:flap:span_ratio || flap span as a percentage of the wing span
 data:geometry:flap_type || flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)
 data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
+
+data:geometry:fuselage:luggage_length_front || length of the front luggage compartment
+data:geometry:fuselage:luggage_length_rear || length of the rear luggage compartment
+
+data:geometry:aileron:chord_ratio || aileron chord as a percentage of the wing chord
+data:geometry:aileron:span_ratio || aileron span as a percentage of the wing span

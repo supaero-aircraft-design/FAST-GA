@@ -1,5 +1,5 @@
 """
-    Estimation of yawing moment du to the ruddder
+    Estimation of yawing moment du to the rudder
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -15,21 +15,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
-from scipy import interpolate
-from openmdao.core.explicitcomponent import ExplicitComponent
-from .high_lift_aero import ComputeDeltaHighLift
 
 from .figure_digitization import FigureDigitization
 
 
 class ComputeCyDeltaRudder(FigureDigitization):
     """
-    Yawing moment due to rudder estimation, rudder considered as a plian flap
+    Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam without the surface ratio
+    to keep the coefficient relative to the VT area and dividing by the theoretical airfoil lift coefficient as
+    suggested by the formulae giving the wing lift increment due to flap deployment which can be considered similar
 
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power *
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
     Characteristics. DARcorporation, 1985.
     """
 
@@ -37,10 +34,15 @@ class ComputeCyDeltaRudder(FigureDigitization):
         self.add_input(
             "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
+        self.add_input(
+            "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
+        )
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:rudder:chord_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
+        self.add_input("data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan)
 
         self.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
 
@@ -50,10 +52,12 @@ class ComputeCyDeltaRudder(FigureDigitization):
 
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         aspect_ratio_vt = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
+        thickness_ratio_vt = float(inputs["data:geometry:vertical_tail:thickness_ratio"])
         rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
-        rudder_max_deflection = inputs["data:geometry:vertical_tail:rudder:max_deflection"]
+        k_ar_effective = float(inputs["data:aerodynamics:vertical_tail:k_ar_effective"])
 
         cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
+        cl_alpha_vt_airfoil = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"]
 
         # Assumed that the rudder covers more or less all of the vertical tail while leaving a small gap at the bottom
         # and at the top
@@ -63,13 +67,16 @@ class ComputeCyDeltaRudder(FigureDigitization):
 
         # Interpolation of the first graph of figure 8.53 of Roskam
         rudder_effectiveness_parameter = self.a_delta_airfoil(rudder_chord_ratio)
-        k_prime = self.k_a_delta(float(rudder_effectiveness_parameter), aspect_ratio_vt)
-
-        # TODO: Check coherence with Roskam formula
-        rudder_effectiveness_2d = self.k_prime_plain_flap(
-            abs(rudder_max_deflection), rudder_chord_ratio
+        k_a_delta = self.k_a_delta(
+            float(rudder_effectiveness_parameter), k_ar_effective * aspect_ratio_vt
         )
 
-        cy_delta_r = cl_alpha_vt * kb * k_prime * rudder_effectiveness_2d
+        k_cl_delta = self.k_cl_delta_plain_flap(
+            thickness_ratio_vt, cl_alpha_vt_airfoil, rudder_chord_ratio
+        )
+
+        cl_delta_th = self.cl_delta_theory_plain_flap(thickness_ratio_vt, rudder_chord_ratio)
+
+        cy_delta_r = cl_alpha_vt / cl_alpha_vt_airfoil * kb * k_a_delta * k_cl_delta * cl_delta_th
 
         outputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"] = cy_delta_r

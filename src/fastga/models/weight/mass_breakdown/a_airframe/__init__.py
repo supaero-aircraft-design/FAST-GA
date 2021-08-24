@@ -13,8 +13,8 @@
 
 from .a1_wing_weight import ComputeWingWeight
 from .a2_fuselage_weight import ComputeFuselageWeight
-
-# from .a2_fuselage_weight_old import ComputeFuselageWeightRaymer
+from .a2_fuselage_weight import ComputeFuselageWeightAlternate
+from .a2_fuselage_weight import ComputeFuselageWeightRaymer
 from .a3_tail_weight import ComputeTailWeight
 from .a4_flight_control_weight import ComputeFlightControlsWeight
 from .a5_landing_gear_weight import ComputeLandingGearWeight

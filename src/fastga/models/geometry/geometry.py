@@ -20,29 +20,23 @@ import openmdao.api as om
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
-from .geom_components import (
+from fastga.models.geometry.geom_components import (
     ComputeTotalArea,
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizingFL,
+    ComputeMFW,
+    ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
     ComputeNacelleGeometry,
+    ComputeLGGeometry,
+    ComputeVerticalTailGeometryFD,
     ComputeVerticalTailGeometryFL,
     ComputeWingGeometry,
-    ComputeLGGeometry,
-    ComputeMFW,
 )
-from .geom_components import (
-    ComputeTotalArea,
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizingFD,
-    ComputeHorizontalTailGeometryFD,
-    ComputeNacelleGeometry,
-    ComputeVerticalTailGeometryFD,
-    ComputeWingGeometry,
-    ComputeLGGeometry,
-    ComputeMFW,
+from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
+    ComputeFuselageAlternate,
+    ComputeFuselageLegacy,
 )
-from fastga.models.options import CABIN_SIZING_OPTION
+
+from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION
 
 
 @RegisterOpenMDAOSystem("fastga.geometry.alternate", domain=ModelDomain.GEOMETRY)
@@ -60,18 +54,20 @@ class GeometryFixedFuselage(om.Group):
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
+        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
 
-        if self.options[CABIN_SIZING_OPTION] == 1.0:
-            self.add_subsystem(
-                "compute_fuselage",
-                ComputeFuselageGeometryCabinSizingFL(propulsion_id=self.options["propulsion_id"]),
-                promotes=["*"],
-            )
-        else:
-            self.add_subsystem("compute_fuselage", ComputeFuselageGeometryBasic(), promotes=["*"])
+        self.add_subsystem(
+            "compute_fuselage",
+            ComputeFuselageAlternate(
+                cabin_sizing=self.options[CABIN_SIZING_OPTION],
+                fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION],
+                propulsion_id=self.options["propulsion_id"],
+            ),
+            promotes=["*"],
+        )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFL(), promotes=["*"])
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFL(), promotes=["*"])
         self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
@@ -80,7 +76,7 @@ class GeometryFixedFuselage(om.Group):
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
-        self.add_subsystem("compute_landing_gears", ComputeLGGeometry(), promotes=["*"])
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
         self.add_subsystem("compute_mfw", ComputeMFW(), promotes=["*"])
 
@@ -99,26 +95,28 @@ class GeometryFixedTailDistance(om.Group):
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
+        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
 
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFD(), promotes=["*"])
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFD(), promotes=["*"])
-        if self.options[CABIN_SIZING_OPTION] == 1.0:
-            self.add_subsystem(
-                "compute_fuselage",
-                ComputeFuselageGeometryCabinSizingFD(propulsion_id=self.options["propulsion_id"]),
-                promotes=["*"],
-            )
-        else:
-            self.add_subsystem("compute_fuselage", ComputeFuselageGeometryBasic(), promotes=["*"])
+        self.add_subsystem(
+            "compute_fuselage",
+            ComputeFuselageLegacy(
+                cabin_sizing=self.options[CABIN_SIZING_OPTION],
+                fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION],
+                propulsion_id=self.options["propulsion_id"],
+            ),
+            promotes=["*"],
+        )
         self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
         self.add_subsystem(
             "compute_engine_nacelle",
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
-        self.add_subsystem("compute_landing_gears", ComputeLGGeometry(), promotes=["*"])
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
         self.add_subsystem("compute_mfw", ComputeMFW(), promotes=["*"])

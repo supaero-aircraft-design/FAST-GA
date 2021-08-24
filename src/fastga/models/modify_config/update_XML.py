@@ -17,6 +17,7 @@
 
 import numpy as np
 import openmdao.api as om
+from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 
 class UpdateXML(om.Group):
@@ -42,21 +43,21 @@ class _UpdateSpan(om.ExplicitComponent):
         self.add_input("data_mod:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data_mod:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data_mod:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data_mod:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data_mod:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data_mod:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data_mod:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data_mod:geometry:flap:span_ratio", val=np.nan)
-        self.add_input("data_mod:geometry:wing:aileron:span_ratio", val=np.nan)
+        self.add_input("data_mod:geometry:aileron:span_ratio", val=np.nan)
         self.add_input("data_mod:settings:span_mod:span_multiplier", val=np.nan)
 
         self.add_output("data:geometry:wing:aspect_ratio")
         self.add_output("data:geometry:wing:taper_ratio")
         self.add_output("data:geometry:wing:area", units="m**2")
-        self.add_output("data:geometry:propulsion:y_ratio")
+        self.add_output("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT)
         self.add_output("data:geometry:propulsion:y_ratio_tank_beginning")
         self.add_output("data:geometry:propulsion:y_ratio_tank_end")
         self.add_output("data:geometry:flap:span_ratio")
-        self.add_output("data:geometry:wing:aileron:span_ratio")
+        self.add_output("data:geometry:aileron:span_ratio")
         self.add_output("settings:span_mod:span_multiplier")
 
         self.declare_partials("*", "*", method="fd")
@@ -73,9 +74,7 @@ class _UpdateSpan(om.ExplicitComponent):
             "data_mod:geometry:propulsion:y_ratio_tank_end"
         ]
         outputs["data:geometry:flap:span_ratio"] = inputs["data_mod:geometry:flap:span_ratio"]
-        outputs["data:geometry:wing:aileron:span_ratio"] = inputs[
-            "data_mod:geometry:wing:aileron:span_ratio"
-        ]
+        outputs["data:geometry:aileron:span_ratio"] = inputs["data_mod:geometry:aileron:span_ratio"]
         outputs["settings:span_mod:span_multiplier"] = inputs[
             "data_mod:settings:span_mod:span_multiplier"
         ]

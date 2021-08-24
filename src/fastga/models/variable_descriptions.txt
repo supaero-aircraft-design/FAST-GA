@@ -74,3 +74,8 @@ settings:weight:aircraft:CG:range || distance between front position and aft pos
 settings:weight:aircraft:payload:design_mass_per_passenger || design payload mass carried by passenger
 settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
 settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
+
+settings:geometry:fuel_tanks:depth || depth of the wing fuel tanks as the wing thickness percentage
+
+data:weight:payload:front_fret:mass || mass of the design mission front fret payload
+data:weight:payload:rear_fret:mass || mass of the design mission rear fret payload

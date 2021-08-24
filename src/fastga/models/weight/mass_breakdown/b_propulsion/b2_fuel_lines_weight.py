@@ -50,7 +50,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
 
         # The 0.5**0.3 refers to the ratio between the total fuel quantity and the total fuel quantity plus the
-        # quantity in integral tanks. We will assume that we only have intergral tank hence the 0.5
+        # quantity in integral tanks. We will assume that we only have integral tank hence the 0.5
 
         if fuel_type == 1.0:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas

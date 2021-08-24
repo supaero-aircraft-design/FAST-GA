@@ -32,8 +32,8 @@ class ComputePayloadCG(ExplicitComponent):
         self.add_input("data:geometry:fuselage:luggage_length_rear", val=np.nan, units="m")
 
         self.add_output("data:weight:payload:PAX:CG:x", units="m")
-        self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
-        self.add_output("data:weight:payload:front_fret:CG:x", units="m")
+        self.add_output("data:weight:payload:rear_freight:CG:x", units="m")
+        self.add_output("data:weight:payload:front_freight:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -54,5 +54,5 @@ class ComputePayloadCG(ExplicitComponent):
         x_cg_r_fret = lav + l_instr + lpax + l_lug_rear / 2
 
         outputs["data:weight:payload:PAX:CG:x"] = x_cg_pax
-        outputs["data:weight:payload:rear_fret:CG:x"] = x_cg_r_fret
-        outputs["data:weight:payload:front_fret:CG:x"] = x_cg_f_fret
+        outputs["data:weight:payload:rear_freight:CG:x"] = x_cg_r_fret
+        outputs["data:weight:payload:front_freight:CG:x"] = x_cg_f_fret

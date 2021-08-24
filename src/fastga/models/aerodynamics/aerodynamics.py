@@ -15,13 +15,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .aerodynamics_high_speed import AerodynamicsHighSpeed
-from .aerodynamics_low_speed import AerodynamicsLowSpeed
-from .external.openvsp.compute_aero_slipstream import ComputeSlipstreamOpenvsp
-from .external.openvsp.compute_vn import ComputeVNopenvsp
+from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from openmdao.api import Group
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
 
+
+@RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
 class Aerodynamics(Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -65,4 +67,3 @@ class Aerodynamics(Group):
             ),
             promotes=["*"],
         )
-        # self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])

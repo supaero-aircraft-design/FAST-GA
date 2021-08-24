@@ -74,7 +74,7 @@ class ComputeTailWeight(om.ExplicitComponent):
 
         rho_cruise = Atmosphere(cruise_alt).density
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * (v_cruise_ktas * 0.5144) ** 2.0 * 0.0208854
-        # In lb/ft2
+        # In lbf/ft2
 
         a31 = 0.016 * (
             (sizing_factor_ultimate * mtow) ** 0.414

@@ -1,5 +1,5 @@
 """
-    Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach number
+    Estimation of the slope of the airfoil of the different lifting surface using the results of xfoil runs
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -14,18 +14,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
+import logging
 
 import numpy as np
 import openmdao.api as om
 
 from ..external.xfoil.xfoil_polar import XfoilPolar
-from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
-
-from fastoad.model_base.atmosphere import Atmosphere
+from ..constants import POLAR_POINT_COUNT
 
 ALPHA_START_LINEAR = -5.0
 ALPHA_END_LINEAR = 10.0
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ComputeAirfoilLiftCurveSlope(om.Group):
@@ -143,7 +143,6 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
 
 class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
-    # Based on the equation of Roskam Part VI
     """ Lift curve slope coefficient from Xfoil polars """
 
     def setup(self):
@@ -164,6 +163,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
         wing_cl_orig = inputs["xfoil:wing:CL"]
         wing_alpha_orig = inputs["xfoil:wing:alpha"]
         wing_alpha, wing_cl = self.delete_additional_zeros(

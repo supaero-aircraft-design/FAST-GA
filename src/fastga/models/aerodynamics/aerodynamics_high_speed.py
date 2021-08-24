@@ -17,19 +17,22 @@
 
 from openmdao.core.group import Group
 
-from .components.cd0 import Cd0
-from .components.compute_L_D_max import ComputeLDMax
-from .components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from .components.clalpha_vt import ComputeClalphaVT
-from .components.hinge_moments_elevator import Compute2DHingeMomentsTail, Compute3DHingeMomentsTail
-from .components import ComputeMachInterpolation
-from .components.compute_polar import _compute_non_equilibrated_polar
-
-from .external.vlm import ComputeAEROvlm
-from .external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components.cd0 import Cd0
+from fastga.models.aerodynamics.components.compute_L_D_max import ComputeLDMax
+from fastga.models.aerodynamics.components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
+from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
+from fastga.models.aerodynamics.components.hinge_moments_elevator import (
+    Compute2DHingeMomentsTail,
+    Compute3DHingeMomentsTail,
+)
+from fastga.models.aerodynamics.components import ComputeMachInterpolation
+from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
 # noinspection PyProtectedMember
-from .external.openvsp.compute_aero_slipstream import _ComputeSlipstreamOpenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
+    _ComputeSlipstreamOpenvsp,
+)
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -131,7 +134,7 @@ class AerodynamicsHighSpeed(Group):
         )
         self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
         self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
-        self.add_subsystem("clAlpha_vt", ComputeClalphaVT(), promotes=["*"])
+        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(), promotes=["*"])
         self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
         self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])
         if self.options["compute_slipstream"]:
@@ -145,8 +148,3 @@ class AerodynamicsHighSpeed(Group):
                 ),
                 promotes=["*"],
             )
-        self.add_subsystem(
-            "non_equilibrated_polar_cruise",
-            _compute_non_equilibrated_polar(low_speed_aero=False),
-            promotes=["*"],
-        )

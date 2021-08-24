@@ -1,6 +1,4 @@
-"""
-Test module for geometry functions of cg components
-"""
+"""Dummy engines declaration for aerodynamic module!"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +19,6 @@ import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint
-from fastoad.constants import EngineSetting
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
@@ -30,9 +27,9 @@ from fastga.models.propulsion.propulsion import IPropulsion
 ENGINE_WRAPPER_BE76 = "test.wrapper.aerodynamics.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.aerodynamics.cirrus.dummy_engine"
 
-########################################################################################################################
-########################### Beechcraft BE76 dummy engine ###############################################################
-########################################################################################################################
+
+# Beechcraft BE76 dummy engine ###############################################################
+##############################################################################################
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
@@ -104,9 +101,8 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         return DummyEngineBE76(**engine_params)
 
 
-########################################################################################################################
-########################### Cirrus SR22 dummy engine ###################################################################
-########################################################################################################################
+# Cirrus SR22 dummy engine ###################################################################
+##############################################################################################
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):

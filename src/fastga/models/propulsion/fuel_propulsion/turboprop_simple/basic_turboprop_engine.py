@@ -16,17 +16,14 @@
 import logging
 import math
 import numpy as np
-import pandas as pd
 from typing import Union, Sequence, Tuple, Optional
-from scipy.constants import g
 from scipy.interpolate import interp2d
-import warnings
 
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 
-from .exceptions import FastBasicTurboPropEngineInconsistentInputParametersError
+from .exceptions import FastBasicICEngineInconsistentInputParametersError
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
@@ -60,7 +57,6 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         design_altitude: float,
         design_speed: float,
         fuel_type: float,
-        strokes_nb: float,
         prop_layout: float,
         speed_SL,
         thrust_SL,
@@ -82,7 +78,6 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         :param design_altitude: design altitude for cruise (units=m)
         :param design_speed: design altitude for cruise (units=m/s)
         :param fuel_type: 1.0 for gasoline and 2.0 for diesel engine and 3.0 for Jet Fuel
-        :param strokes_nb: can be either 2-strockes (=2.0) or 4-strockes (=4.0)
         :param prop_layout: propulsion position in nose (=3.0) or wing (=1.0)
         """
         if fuel_type == 1.0:
@@ -106,7 +101,6 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         self.design_altitude = design_altitude
         self.design_speed = design_speed
         self.fuel_type = fuel_type
-        self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01
         self.speed_SL = speed_SL
         self.thrust_SL = thrust_SL
@@ -125,10 +119,16 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
         self.mixture_values = {
-            EngineSetting.TAKEOFF: 1.5,
-            EngineSetting.CLIMB: 1.5,
+            EngineSetting.TAKEOFF: 1.15,
+            EngineSetting.CLIMB: 1.15,
             EngineSetting.CRUISE: 1.0,
             EngineSetting.IDLE: 1.0,
+        }
+        self.rpm_values = {
+            EngineSetting.TAKEOFF: 2700.0,
+            EngineSetting.CLIMB: 2700.0,
+            EngineSetting.CRUISE: 2500.0,
+            EngineSetting.IDLE: 2300.0,
         }
 
         # ... so check that all EngineSetting values are in dict
@@ -172,8 +172,11 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
                 mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust,
             )
             if len(self.specific_shape) != 1:  # reshape data that is not array form
+                # noinspection PyUnresolvedReferences
                 flight_points.sfc = sfc.reshape(self.specific_shape)
+                # noinspection PyUnresolvedReferences
                 flight_points.thrust_rate = thrust_rate.reshape(self.specific_shape)
+                # noinspection PyUnresolvedReferences
                 flight_points.thrust = thrust.reshape(self.specific_shape)
             else:
                 flight_points.sfc = sfc
@@ -202,7 +205,7 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         """
         """
         Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
-        
+
         :param flight_points.mach: Mach number
         :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
         :param flight_points.engine_setting: define
@@ -255,12 +258,12 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         # as some thrust rates that are computed may have been provided as input)
         out_thrust_rate = out_thrust / max_thrust
 
-        # Now SFC can be computed
-        sfc_pmax = self.sfc_at_max_power(atmosphere)
-        sfc_ratio, mech_power = self.sfc_ratio(out_thrust_rate, atmosphere)
-        sfc = (sfc_pmax * sfc_ratio * mech_power) / np.maximum(out_thrust, 1e-6)  # avoid 0 division
+        # Now SFC (g/kWh) can be computed and converted to sfc_thrust (kg/N) to match computation from turboshaft
+        sfc, mech_power = self.sfc(out_thrust, atmosphere)  # sfc in g/kwh
+        sfc_time_hour = sfc * (mech_power / 1000) / 3.6e6  # kg/s
+        sfc_thrust = sfc_time_hour / np.maximum(out_thrust, 1e-6)  # avoid 0 division
 
-        return sfc, out_thrust_rate, out_thrust
+        return sfc_thrust, out_thrust_rate, out_thrust
 
     @staticmethod
     def _check_thrust_inputs(
@@ -297,7 +300,7 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
                 thrust_is_regulated = True
                 thrust_rate = np.empty_like(thrust)
             else:
-                raise FastBasicTurboPropEngineInconsistentInputParametersError(
+                raise FastBasicICEngineInconsistentInputParametersError(
                     "When use_thrust_rate is None, either thrust_rate or thrust should be provided."
                 )
 
@@ -306,13 +309,13 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
             # thrust) must be provided.
             if thrust_is_regulated:
                 if thrust is None:
-                    raise FastBasicTurboPropEngineInconsistentInputParametersError(
+                    raise FastBasicICEngineInconsistentInputParametersError(
                         "When thrust_is_regulated is True, thrust should be provided."
                     )
                 thrust_rate = np.empty_like(thrust)
             else:
                 if thrust_rate is None:
-                    raise FastBasicTurboPropEngineInconsistentInputParametersError(
+                    raise FastBasicICEngineInconsistentInputParametersError(
                         "When thrust_is_regulated is False, thrust_rate should be provided."
                     )
                 thrust = np.empty_like(thrust_rate)
@@ -321,14 +324,14 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
             # Check inputs: if use_thrust_rate is not a scalar, both thrust_rate and thrust must be
             # provided and have the same shape as use_thrust_rate
             if thrust_rate is None or thrust is None:
-                raise FastBasicTurboPropEngineInconsistentInputParametersError(
+                raise FastBasicICEngineInconsistentInputParametersError(
                     "When thrust_is_regulated is a sequence, both thrust_rate and thrust should be "
                     "provided."
                 )
             if np.shape(thrust_rate) != np.shape(thrust_is_regulated) or np.shape(
                 thrust
             ) != np.shape(thrust_is_regulated):
-                raise FastBasicTurboPropEngineInconsistentInputParametersError(
+                raise FastBasicICEngineInconsistentInputParametersError(
                     "When use_thrust_rate is a sequence, both thrust_rate and thrust should have "
                     "same shape as use_thrust_rate"
                 )
@@ -340,7 +343,8 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
     ) -> Union[float, Sequence]:
         """
         Compute the propeller efficiency.
-        :param thrust: Thrust in N
+
+        :param thrust: Thrust (in N)
         :param atmosphere: Atmosphere instance at intended altitude
         :return: efficiency
         """
@@ -351,14 +355,24 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         propeller_efficiency_CL = interp2d(
             self.thrust_CL, self.speed_CL, self.efficiency_CL, kind="cubic"
         )
-        thrust_interp_SL = np.minimum(
-            np.maximum(np.min(self.thrust_SL), thrust),
-            np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL),
-        )
-        thrust_interp_CL = np.minimum(
-            np.maximum(np.min(self.thrust_CL), thrust),
-            np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL),
-        )
+        if isinstance(atmosphere.true_airspeed, float):
+            thrust_interp_SL = np.minimum(
+                np.maximum(np.min(self.thrust_SL), thrust),
+                np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL),
+            )
+            thrust_interp_CL = np.minimum(
+                np.maximum(np.min(self.thrust_CL), thrust),
+                np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL),
+            )
+        else:
+            thrust_interp_SL = np.minimum(
+                np.maximum(np.min(self.thrust_SL), thrust),
+                np.interp(list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL),
+            )
+            thrust_interp_CL = np.minimum(
+                np.maximum(np.min(self.thrust_CL), thrust),
+                np.interp(list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL),
+            )
         if np.size(thrust) == 1:  # calculate for float
             lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, atmosphere.true_airspeed))
             upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, atmosphere.true_airspeed))
@@ -387,118 +401,122 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
 
     def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
         """
-        Compute the ICE maximum power @ given flight-point.
-        :param flight_points: current flight point(s)
+        Compute the turboprop maximum power @ given flight-point.
+        :param flight_points: flight points
         :return: maximum power in kW
         """
 
-        # We will implement the model from Mattingly et al. presented in Gudmunsson with an estimate
-        # of the static thrust based on ADT with the inclusion of efficiency
-
-        atm_SL = Atmosphere(0)
-        temperature_SL = atm_SL.temperature
-        density_SL = atm_SL.density
-        pressure_SL = atm_SL.pressure
+        altitude_array_ft = [
+            0,
+            5000,
+            10000,
+            15000,
+            18000,
+            20000,
+            21000,
+            22000,
+            23000,
+            24000,
+            25000,
+            26000,
+            27000,
+            28000,
+            29000,
+            30000,
+            31000,
+        ]
+        torque_array = [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            99,
+            96,
+            92,
+            89,
+        ]
 
         atmosphere = Atmosphere(np.asarray(flight_points.altitude), altitude_in_feet=False)
-        temperature = atmosphere.temperature
-        pressure = atmosphere.pressure
-        sos = atmosphere.speed_of_sound
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
 
-        # prop_dia = self.propeller_diameter
-        prop_dia = 2.31
-        p_to = self.max_power
-        thrust = flight_points.thrust
-        prop_eff = self.propeller_efficiency(thrust, atmosphere)
-        gamma = 1.4
-        TR = 1.0  # Throttle ratio, value used here correspond to a design point in static conditions at SL
-        v_tas = flight_points.true_airspeed
+        torque_points = np.interp(altitude, altitude_array_ft, torque_array)
 
-        prop_swept_area = math.pi * (prop_dia / 2.0) ** (2.0)
+        max_power = self.max_power * torque_points / 100
 
-        T_SL = p_to ** (2.0 / 3.0) * (2.0 * density_SL * prop_swept_area) ** (1.0 / 3.0) * prop_eff
+        return max_power / 1000
 
-        Mach = v_tas / sos
-
-        theta_0 = temperature / temperature_SL * (1.0 + (gamma - 1.0) / 2.0 * Mach ** (2.0))
-        delta_0 = (
-            pressure
-            / pressure_SL
-            * (1.0 + (gamma - 1.0) / 2.0 * Mach ** (2.0)) ** (gamma / (gamma - 1.0))
-        )
-
-        if Mach < 0.1:  # For low flight speed we take this simple approach which reminds of ICE
-            thrust = T_SL * delta_0
-            max_power = p_to * delta_0
-        elif theta_0 <= TR:
-            thrust = T_SL * delta_0 * (1.0 - 0.96 * (Mach - 0.1) ** 0.25)
-            max_power = thrust * v_tas / prop_eff
-        else:
-            thrust = (
-                T_SL
-                * delta_0
-                * (1.0 - 0.96 * (Mach - 0.1) ** 0.25 - 3.0 * (theta_0 - TR) / (8.13 * (Mach - 0.1)))
-            )
-            max_power = thrust * v_tas / prop_eff
-
-        return max_power
-
-    def sfc_at_max_power(self, atmosphere: Atmosphere) -> Union[float, Sequence]:
+    def sfc(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere,
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Computation of Specific Fuel Consumption at maximum power.
+        Computation of the SFC.
+
+        :param thrust: Thrust (in N)
         :param atmosphere: Atmosphere instance at intended altitude
-        :return: SFC_P (in kg/s/W)
+        :return: SFC (in g/kWh)
         """
 
         altitude = atmosphere.get_altitude(altitude_in_feet=True)
+        # regression from TBM 900 Pilot Instruction Manual, in kg/kWs
+        psfc_1 = 3.447e-14 * altitude ** 2 - 2.359e-9 * altitude + 1.298e-4
+        psfc_2 = (
+            3.056e-14 * altitude ** 2 - 2.049e-9 * altitude + 1.129e-4
+        )  # 40 drag points penalty
+        psfc_3 = (
+            2.892e-14 * altitude ** 2 - 1.922e-9 * altitude + 1.059e-4
+        )  # 60 drag points penalty
+        psfc = (psfc_1 + psfc_2) / 2
+        # Compute sfc @ 2500RPM
+        real_power = np.zeros(np.size(thrust))
+        sfc = np.zeros(np.size(thrust))
 
-        # we compute the Power Specific Fuel Consumption (PSFC, in (kg/s)/kW) as a function of altitude
-        sfc_p = (
-            3.447e-14 * altitude ** 2 - 2.359e-9 * altitude + 1.298e-4
-        )  # regression from TBM 900 Pilot Instruction Manual
-
-        sfc_p = sfc_p / 1e3  # change units to be in kg/s/W
-
-        return sfc_p
-
-    def sfc_ratio(
-        self, thrust_rate: Union[float, Sequence[float]], atmosphere: Atmosphere,
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Computation of ratio :math:`\\frac{SFC(P)}{SFC(Pmax)}`, given altitude
-        and thrust_rate :math:`\\frac{F}{Fmax}`.
-
-        :param thrust_rate:
-        :param atmosphere: Atmosphere instance at intended altitude
-        :return: SFC ratio and Power (in W)
-        """
-
-        max_thrust = self.max_thrust(atmosphere)
-        thrust = max_thrust * thrust_rate
-        sigma = atmosphere.density / Atmosphere(0.0).density
-        # Compute power rate @ICE level (mechanical)
-        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
-        real_power = (
-            thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
-        )
-
-        power_rate = real_power / max_power
-
-        sfc_ratio = -0.9976 * power_rate ** 2 + 1.9964 * power_rate
-
-        return sfc_ratio, (power_rate * max_power)
+        if np.size(thrust) == 1:
+            real_power = (
+                thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
+            )
+            sfc = psfc * 3.6e6
+        else:
+            for idx in range(np.size(thrust)):
+                local_atmosphere = Atmosphere(
+                    atmosphere.get_altitude()[idx], altitude_in_feet=False
+                )
+                local_atmosphere.mach = atmosphere.mach[idx]
+                real_power[idx] = (
+                    thrust[idx]
+                    * atmosphere.true_airspeed[idx]
+                    / self.propeller_efficiency(thrust[idx], local_atmosphere)
+                )
+                sfc[idx] = psfc[idx] * 3.6e6
+        return sfc, real_power
 
     def max_thrust(self, atmosphere: Atmosphere,) -> np.ndarray:
         """
-        Computation of maximum thrust either due to propeller thrust limit or ICE max power.
+        Computation of maximum thrust either due to propeller thrust limit or turboprop max power.
 
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :return: maximum thrust (in N)
         """
 
         # Calculate maximum propeller thrust @ given altitude and speed
-        lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
-        upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
+        if isinstance(atmosphere.true_airspeed, float):
+            lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
+            upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
+        else:
+            lower_bound = np.interp(
+                list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL
+            )
+            upper_bound = np.interp(
+                list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL
+            )
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         thrust_max_propeller = (
             lower_bound
@@ -507,17 +525,66 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
             / self.design_altitude
         )
 
+        # Calculate engine max power @ given altitude
+        altitude_array = [
+            0,
+            5000,
+            10000,
+            15000,
+            18000,
+            20000,
+            21000,
+            22000,
+            23000,
+            24000,
+            25000,
+            26000,
+            27000,
+            28000,
+            29000,
+            30000,
+            31000,
+        ]
+        torque_array = [
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            100,
+            99,
+            96,
+            92,
+            89,
+        ]
+
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
+
+        torque_points = np.interp(altitude, altitude_array, torque_array)
+
+        max_power = self.max_power * torque_points / 100  # W
+        # if np.size(max_power) > 1:
+        #     max_power = max_power.max
+
+        altitude = atmosphere.get_altitude(altitude_in_feet=False)
+
         # Found thrust relative to ICE maximum power @ given altitude and speed:
         # calculates first thrust interpolation vector (between min and max of propeller table) and associated
         # efficiency, then calculates power and found thrust (interpolation limits to max propeller thrust)
-        sigma = atmosphere.density / Atmosphere(0.0).density
-        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
         thrust_interp = np.linspace(
             np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
             thrust_max_propeller,
             10,
         ).transpose()
         if np.size(altitude) == 1:  # Calculate for float
+            thrust_max_global = 0.0
             local_atmosphere = Atmosphere(
                 altitude * np.ones(np.size(thrust_interp)), altitude_in_feet=False
             )
@@ -582,11 +649,11 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         """
         Computes weight of installed propulsion (engine, nacelle and propeller) depending on maximum power.
         Uses model described in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-        Butterworth-Heinemann, 2013. Equation (6-44)
+        Butterworth-Heinemann, 2013. Equation (6-45)
 
         """
 
-        power_sl = self.max_power / 745.7  # conversion to european hp
+        power_sl = self.max_power / 745.7  # conversion from W to european hp
         uninstalled_weight = (power_sl - 110.7) / 2.631
         self.engine.mass = uninstalled_weight
 

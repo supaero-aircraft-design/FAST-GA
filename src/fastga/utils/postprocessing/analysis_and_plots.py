@@ -194,7 +194,7 @@ def aircraft_geometry_plot(
                 y=x_nacelle,
                 mode="lines+markers",
                 line=dict(color="LimeGreen"),
-                name=name + " nacelle + propeller",
+                name=name + "right nacelle + propeller",
             )
             fig.add_trace(scatter)
             scatter = go.Scatter(
@@ -202,7 +202,7 @@ def aircraft_geometry_plot(
                 y=x_nacelle,
                 mode="lines+markers",
                 line=dict(color="LimeGreen"),
-                showlegend=False,
+                name=name + "left nacelle + propeller",
             )
             fig.add_trace(scatter)
         else:
@@ -288,7 +288,7 @@ def evolution_diagram(
 
     # Save gust envelope
     x_gust = [0.0]
-    y_gust = [0.0]
+    y_gust = [1.0]
     if not (velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
@@ -304,41 +304,107 @@ def evolution_diagram(
         x_gust.append(velocity_array[5])
         y_gust.append(load_factor_array[5])
     x_gust.append(0.0)
-    y_gust.append(0.0)
+    y_gust.append(1.0)
 
     if fig is None:
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + " - maneuver"
+        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=" " + name + " - <br> maneuver"
     )
 
     fig.add_trace(scatter)
 
     scatter = go.Scatter(
-        x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + " - maneuver [points]"
+        x=x_maneuver_pts,
+        y=y_maneuver_pts,
+        mode="markers",
+        name=" " + name + " - <br> maneuver [points]",
     )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + " - gust")
+    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=" " + name + " - <br> gust")
 
     fig.add_trace(scatter)
+
+    fig.add_vline(
+        x=velocity_array[2], line_width=3, line_dash="dash", line_color="black", opacity=0.5
+    )
+    fig.add_vline(
+        x=velocity_array[7], line_width=3, line_dash="dash", line_color="black", opacity=0.5
+    )
+    fig.add_vline(
+        x=velocity_array[11], line_width=3, line_dash="dash", line_color="black", opacity=0.5
+    )
+
+    fig.add_annotation(
+        x=velocity_array[2],
+        y=load_factor_array[2],
+        xref="x",
+        yref="y",
+        text="Va",
+        showarrow=True,
+        font=dict(size=20, color="black"),
+        align="center",
+        ax=-40,
+        ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ffffff",
+        opacity=0.8,
+    )
+    fig.add_annotation(
+        x=velocity_array[7],
+        y=load_factor_array[7],
+        xref="x",
+        yref="y",
+        text="Vc",
+        showarrow=True,
+        font=dict(size=20, color="black"),
+        align="center",
+        ax=-40,
+        ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ffffff",
+        opacity=0.8,
+    )
+    fig.add_annotation(
+        x=velocity_array[9],
+        y=load_factor_array[9],
+        xref="x",
+        yref="y",
+        text="Vd",
+        showarrow=True,
+        font=dict(size=20, color="black"),
+        align="center",
+        ax=-40,
+        ay=-30,
+        bordercolor="#c7c7c7",
+        borderwidth=2,
+        borderpad=4,
+        bgcolor="#ffffff",
+        opacity=0.8,
+    )
 
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Evolution Diagram",
+        title_text="<b>Evolution Diagram</b>",
         title_x=0.5,
         xaxis=dict(range=[0.0, max(max(x_maneuver_line), max(x_gust)) * 1.1]),
-        xaxis_title="speed [m/s]",
+        xaxis_title="<b>Speed [m/s]</b>",
         yaxis=dict(
             range=[
                 min(min(y_maneuver_line), min(y_gust)) * 1.1,
                 max(max(y_maneuver_line), max(y_gust)) * 1.1,
             ]
         ),
-        yaxis_title="load [g]",
+        yaxis_title="<b>Load [g]</b>",
+        font=dict(family="Courier New, monospace", size=18),
     )
 
     return fig
@@ -627,7 +693,7 @@ def cg_lateral_diagram(
         y=z_cg,
         text=["fwd CG", "empty CG", "aft CG"],
         mode="lines+markers+text",
-        textposition=["bottom center", "top center", "top center"],
+        textposition=["top center", "top center", "top center"],
         name=name + " CG positions",
         line={"dash": "dash"},
         marker_line=dict(width=2),
@@ -636,39 +702,39 @@ def cg_lateral_diagram(
     )
     fig.add_trace(scatter, 1, 2)
 
-    scatter = go.Scatter(
-        x=[ac_fixed_x],
-        y=[z_cg[0]],
-        text=" Neutral Point"
-        + "<br>"
-        + "Stick Fixed"
-        + "<br>"
-        + "Static Margin = "
-        + str(round(stick_fixed_sm, 3)),
-        textposition="bottom center",
-        mode="markers+text",
-        line=dict(color="DarkRed"),
-        showlegend=False,
-        marker_line=dict(width=2),
-    )
-    fig.add_trace(scatter, 1, 2)
-
-    scatter = go.Scatter(
-        x=[ac_free_x],
-        y=[z_cg[0]],
-        text="Neutral Point"
-        + "<br>"
-        + "Stick Free"
-        + "<br>"
-        + "Static Margin = "
-        + str(round(stick_free_sm, 3)),
-        textposition="bottom center",
-        mode="markers+text",
-        line=dict(color="DodgerBlue"),
-        showlegend=False,
-        marker_line=dict(width=2),
-    )
-    fig.add_trace(scatter, 1, 2)
+    # scatter = go.Scatter(
+    #     x=[ac_fixed_x],
+    #     y=[z_cg[0]],
+    #     text=" Neutral Point"
+    #     + "<br>"
+    #     + "Stick Fixed"
+    #     + "<br>"
+    #     + "Static Margin = "
+    #     + str(round(stick_fixed_sm, 3)),
+    #     textposition="bottom center",
+    #     mode="markers+text",
+    #     line=dict(color="DarkRed"),
+    #     showlegend=False,
+    #     marker_line=dict(width=2),
+    # )
+    # fig.add_trace(scatter, 1, 2)
+    #
+    # scatter = go.Scatter(
+    #     x=[ac_free_x],
+    #     y=[z_cg[0]],
+    #     text="Neutral Point"
+    #     + "<br>"
+    #     + "Stick Free"
+    #     + "<br>"
+    #     + "Static Margin = "
+    #     + str(round(stick_free_sm, 3)),
+    #     textposition="bottom center",
+    #     mode="markers+text",
+    #     line=dict(color="DodgerBlue"),
+    #     showlegend=False,
+    #     marker_line=dict(width=2),
+    # )
+    # fig.add_trace(scatter, 1, 2)
 
     fig.update_xaxes(title_text="X", row=1, col=1)
     fig.update_xaxes(title_text="X", row=1, col=2)
@@ -826,8 +892,8 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     )
 
     # TODO: Deal with this in a more generic manner ?
-    if round(mtow, 0) == round(owe + payload + onboard_fuel_at_takeoff, 0):
-        mtow = owe + payload + onboard_fuel_at_takeoff
+    # if round(mtow, 0) == round(owe + payload + onboard_fuel_at_takeoff, 0):
+    mtow = owe + payload + onboard_fuel_at_takeoff
 
     fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
 
@@ -874,7 +940,11 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) >= 5:
             parent_name = name_split[2]
-            if parent_name in categories_names and name_split[-1] == "mass":
+            if (
+                parent_name in categories_names
+                and name_split[-1] == "mass"
+                and name_split[-2] != "unusable_fuel"
+            ):
                 variable_name = "_".join(name_split[3:-1])
                 sub_categories_values.append(
                     convert_units(variables[variable].value[0], variables[variable].units, "kg")
@@ -938,17 +1008,23 @@ def payload_range(
         payload_array = payload_array[0:3] + [payload_array[4]]
         sr_array = sr_array[0:3] + [sr_array[4]]
         text_plot = [
-            "A" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " [nm/kg]",
-            "B" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " [nm/kg]",
-            "E" + "<br>" + "SR = " + str(round(sr_array[3], 1)) + " [nm/kg]",
+            "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
+            "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
+            "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
+            "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
         ]
+        ax = [0, 0, 0, 0]
+        ay = [0, 0, 0, 0]
     else:
         text_plot = [
-            "A" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " [nm/kg]",
-            "B" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " [nm/kg]",
-            "D" + "<br>" + "SR = " + str(round(sr_array[3], 1)) + " [nm/kg]",
-            "E" + "<br>" + "SR = " + str(round(sr_array[4], 1)) + " [nm/kg]",
+            "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
+            "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
+            "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
+            "  <b>D<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
+            "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[4], 1)) + " nm/kg",
         ]
+        ax = [0, 0, 50, 50, 75]
+        ay = [0, 0, 0, 0, 0]
 
     # Plotting of the diagram
     if fig is None:
@@ -956,33 +1032,41 @@ def payload_range(
     scatter = go.Scatter(
         x=range_array[0:2] + range_array[3:],
         y=payload_array[0:2] + payload_array[3:],
-        mode="lines+markers+text",
+        mode="lines+markers",
         name=name + " Computed Points",
-        text=text_plot,
-        textposition="bottom right",
-        textfont=dict(size=14),
     )
     fig.add_trace(scatter)
     scatter = go.Scatter(
-        x=[range_array[2]],
-        y=[payload_array[2]],
-        mode="lines+markers+text",
-        name=name + " Design Point",
-        text=["C" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " [nm/kg]"],
-        textposition="bottom left",
-        textfont=dict(size=14),
+        x=[range_array[2]], y=[payload_array[2]], mode="lines+markers", name=name + " Design Point",
     )
     fig.add_trace(scatter)
+
+    for i in range(len(text_plot)):
+        fig.add_annotation(
+            x=range_array[i],
+            y=payload_array[i],
+            text=text_plot[i],
+            font=dict(size=14,),
+            align="center",
+            bordercolor="Black",
+            borderpad=4,
+            ax=ax[i],
+        )
 
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Payload Range",
+        title_text="Payload Range Diagram",
         title_x=0.5,
         xaxis_title="Range [nm]",
         yaxis_title="Payload [kg]",
         legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
     )
+
+    fig.update_xaxes(
+        range=[-100, range_array[-1] * 1.15], title_font=dict(size=18), tickfont=dict(size=14)
+    )
+    fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=14))
 
     return fig
 
@@ -1138,6 +1222,7 @@ def aircraft_polar(
     Returns a figure plot of the polar of the plane.
     Different designs can be superposed by providing an existing fig.
     Each design can be provided a name.
+    The value obtained for the finesse for the equilibrated drag polar is quite low.
 
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
@@ -1197,95 +1282,6 @@ def aircraft_polar(
             text_low_speed.append("max L/D = " + "<br>" + str(round(L_D_max_low_speed, 3)))
         else:
             text_low_speed.append("")
-
-    # Plotting of the diagram
-    if fig is None:
-        fig = make_subplots(rows=1, cols=2, subplot_titles=("Cruise", "Low Speed"))
-
-    scatter = go.Scatter(
-        x=cd_array_cruise,
-        y=cl_array_cruise,
-        mode="lines+markers+text",
-        name=name,
-        text=text_cruise,
-        textposition="top left",
-    )
-    fig.add_trace(scatter, 1, 1)
-
-    scatter = go.Scatter(
-        x=cd_array_cruise,
-        y=cl_array_cruise[int(L_D_max_cruise_index)]
-        / cd_array_cruise[int(L_D_max_cruise_index)]
-        * np.asarray(cd_array_cruise),
-        mode="lines",
-        line=dict(width=2, dash="dot"),
-        showlegend=False,
-    )
-    fig.add_trace(scatter, 1, 1)
-
-    scatter = go.Scatter(
-        x=cd_array_low_speed,
-        y=cl_array_low_speed,
-        mode="lines+markers+text",
-        name=name,
-        text=text_low_speed,
-        textposition="top left",
-    )
-    fig.add_trace(scatter, 1, 2)
-
-    scatter = go.Scatter(
-        x=cd_array_low_speed,
-        y=cl_array_low_speed[int(L_D_max_low_speed_index)]
-        / cd_array_low_speed[int(L_D_max_low_speed_index)]
-        * np.asarray(cd_array_low_speed),
-        mode="lines",
-        line=dict(width=2, dash="dot"),
-        showlegend=False,
-    )
-    fig.add_trace(scatter, 1, 2)
-
-    fig = go.FigureWidget(fig)
-
-    fig.update_xaxes(title_text="CD", row=1, col=1)
-    fig.update_xaxes(title_text="CD", row=1, col=2)
-    fig.update_yaxes(title_text="CL", row=1, col=1)
-    fig.update_yaxes(title_text="CL", row=1, col=2)
-
-    if equilibrated:
-        title = "Equilibrated Aircraft Polar"
-    else:
-        title = "Non Equilibrated Aircraft Polar"
-
-    fig.update_layout(
-        title_text=title, title_x=0.5, legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
-    )
-
-    return fig
-
-
-def thrust_drag_speed(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None,
-) -> go.FigureWidget:
-    """
-    Returns a figure plot of the available power and the required power with the variation of speed.
-    Different designs can be superposed by providing an existing fig.
-    Each design can be provided a name.
-
-    :param aircraft_file_path: path of data file
-    :param name: name to give to the trace added to the figure
-    :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
-    :return: power available VS required power figure
-    WORK ON PROGRESS
-    """
-    variables = VariableIO(aircraft_file_path, file_formatter).read()
-
-    mtow = variables["data:weight:aircraft:MTOW"]
-
-    cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(
-        inputs, 1.0, mass_t, (0.5 * atm.density * v_tas ** 2), False
-    )
 
     # Plotting of the diagram
     if fig is None:

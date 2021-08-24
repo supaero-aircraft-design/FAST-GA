@@ -1,0 +1,83 @@
+LIST OF THE MODELS MODIFIED IN THIS BRANCH W.R.T TO THE MAIN BRANCH
+
+Under each section the eventual quantities that have to be added to the initial xml files are written.
+These quantities should be quite easy to find for each aircraft.
+For the fuselage structural analysis the material properties are implemented as settings.
+I already added them for the beechcraft 76, the cirrus sr22 and the TBM930.
+
+Unitary tests can be found in the dedicated files.
+
+MAXIMUM FUEL WEIGHT COMPUTATION
+compute_mfw outside of wing components since it uses the LG and nacelle geometry to reduce the fuel distribution
+update_wing_area : modified to take in account the new way to compute mfw. fsolve is used
+"data:geometry:propulsion:y_ratio_tank_beginning", "data:geometry:propulsion:y_ratio_tank_end"
+"data:geometry:propulsion:LE_chord_percentage", "data:geometry:propulsion:TE_chord_percentage"
+"settings:geometry:fuel_tanks:depth"
+
+MODIFY CONFIG
+module for analysis mode
+autonomous
+
+PAYLOAD RANGE
+currently in the performance module (not executed during MDA)
+autonomous
+uses a blank xml file for the use of generate_block_analysis
+
+LANDING GEARS GEOMETRY
+removed computation of landing gears geometry in nacelle component and added the lg component
+
+WING LOAD ANALYSIS
+compute_relief_force fuel distribution takes in input the beginning and the end of the fuel tanks along the span
+it also takes in input the lg y position instead of manually calculating it
+as a consequence the classes that call compute_relief_force have seen their inputs updated
+
+DYNAMIC EQUILIBRIUM
+the parameter x_cg has been put again in the function found_cl_repartition (allows to compute the equilibrated polar)
+
+DRAG POLARS
+autonomous
+in aerodynamics components
+not executed during MDA
+
+TURBOPROP MODEL
+autonomous
+same code structure as IC engine (same inputs / outputs / classes)
+folder in fuel_propulsion
+
+FUSELAGE AIRFRAME MASS
+added as ComputeFuselageWeightAlternate in the same file as the original model (a1_fuselage_weight)
+same output mass name as ComputeFuselageWeight so the new airframe mass is used in the mass breakdown instead of the old one
+"data:geometry:cabin:max_differential_pressure", "settings:geometry:fuselage:min_skin_thickness"
+
+FUSELAGE STRUCTURAL ANALYSIS
+the bending moment distribution requires the new fuselage airframe mass model to work
+autonomous
+folder in load analysis module
+"settings:materials:fuselage:skin:density"
+"settings:materials:fuselage:skin:young_modulus"
+"settings:materials:fuselage:skin:sigma_02"
+"settings:materials:fuselage:skin:sigma_max"
+"settings:materials:fuselage:stringer:density"
+"settings:materials:fuselage:stringer:young_modulus"
+
+FRONT AND REAR FREIGHTS
+mass of payload updated
+cg of payload updated
+loadcase : ground and flight load cases updated to take in account the freight variation
+cg_variation updated to take in account front and rear freights
+"data:geometry:cabin:luggage:mass_max_front", "data:geometry:cabin:luggage:mass_max_rear", "data:geometry:cabin:luggage:front_compartment_first"
+
+FURNISHING MASS BREAKDOWN
+in mass_breakdown the eventual extra furnishing weight is taken in account in the furnishing system
+"settings:weight:aircraft:extra_furniture_mass"
+
+UTILS.POSTPROCESSING
+- new functions in analysis_and_plots
+- analysis_and_plots_tbm : file containing the definition of the function generating the comparison table and the polar for tbm convergence analysis in the related notebook
+The reference data of the TBM930 is stored in the xml file named TBM-930_reference.
+
+mettre les grandeurs ajoutées au xml initial
+
+
+
+

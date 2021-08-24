@@ -61,6 +61,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
@@ -298,6 +299,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     y_vector_htp,
                     cl_vector_htp,
                     coef_k_htp,
+                    sref_wing,
                 ]
                 self.save_results(result_file_path, results)
 
@@ -305,23 +307,26 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         else:
             # Read values from result file -----------------------------------------------------------------------------
             data = self.read_results(result_file_path)
+            saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
                 [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             cl_vector_wing = np.array(
                 [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
             )
             chord_vector_wing = np.array(
                 [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             coef_k_wing = float(data.loc["coef_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0])
+            cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
+                area_ratio / saved_area_ratio
+            )
             y_vector_htp = np.array(
                 [float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(",")]
             )
@@ -494,7 +499,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alphaind = np.dot(AIC_wake, gamma) / v_inf
         cdind_panel = cp * alphaind
         cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
-        htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * cdi_htp)
+        htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avod 0.0 division
         cmpanel = np.multiply(cp, (xc[: self.nx * self.ny] - meanchord / 4))
         cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
@@ -841,17 +846,18 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]"""
 
         root_chord = inputs["data:geometry:wing:root:chord"]
-        x_start = (1.0 - inputs["data:geometry:flap:span_ratio"]) * root_chord
+        x_start = (1.0 - inputs["data:geometry:flap:chord_ratio"]) * root_chord
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
 
         deflection_angle *= math.pi / 180  # converted to radian
-        z_ = self.WING["z"]
+        # z_ = self.WING["z"]
         x_panel = self.WING["x_panel"]
         y_panel = self.WING["y_panel"]
         panelangle = self.WING["panel_angle"]
         panelangle_vect = self.WING["panel_angle_vect"]
 
         z = np.zeros(self.nx + 1)
+        z_ = np.zeros(self.nx + 1)
         for i in range(self.nx + 1):
             if x_panel[i, 0] > x_start:
                 z[i] = z_[i] - math.sin(deflection_angle) * (x_panel[i, 0] - x_start)
@@ -985,6 +991,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "y_vector_htp",
             "cl_vector_htp",
             "coef_k_htp",
+            "saved_ref_area",
         ]
         data = pd.DataFrame(results, index=labels)
         data.to_csv(result_file_path)

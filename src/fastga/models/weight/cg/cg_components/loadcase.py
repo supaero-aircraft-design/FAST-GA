@@ -40,8 +40,8 @@ class ComputeGroundCGCase(ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:weight:furniture:passenger_seats:CG:x", val=np.nan, units="m")
-        self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
-        self.add_input("data:weight:payload:front_fret:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:rear_freight:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:front_freight:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
         self.add_input("data:weight:propulsion:unusable_fuel:mass", val=np.nan, units="kg")
@@ -58,8 +58,8 @@ class ComputeGroundCGCase(ExplicitComponent):
         cg_pax = inputs["data:weight:furniture:passenger_seats:CG:x"]
         lav = inputs["data:geometry:fuselage:front_length"]
         l_pilot_seat = inputs["data:geometry:cabin:seats:pilot:length"]
-        cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
-        cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
+        cg_rear_fret = inputs["data:weight:payload:rear_freight:CG:x"]
+        cg_front_fret = inputs["data:weight:payload:front_freight:CG:x"]
         x_cg_plane_aft = inputs["data:weight:aircraft_empty:CG:x"]
         m_empty = inputs["data:weight:aircraft_empty:mass"]
         m_unusable_fuel = inputs["data:weight:propulsion:unusable_fuel:mass"]
@@ -123,7 +123,7 @@ class ComputeFlightCGCase(ExplicitComponent):
 
         self.add_input("data:geometry:cabin:luggage:mass_max_front", val=np.nan, units="kg")
         self.add_input("data:geometry:cabin:luggage:mass_max_rear", val=np.nan, units="kg")
-        self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
@@ -135,8 +135,8 @@ class ComputeFlightCGCase(ExplicitComponent):
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
-        self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
-        self.add_input("data:weight:payload:front_fret:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:rear_freight:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:front_freight:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
@@ -158,8 +158,8 @@ class ComputeFlightCGCase(ExplicitComponent):
         l_pilot_seat = inputs["data:geometry:cabin:seats:pilot:length"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         l_pass_seat = inputs["data:geometry:cabin:seats:passenger:length"]
-        cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
-        cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
+        cg_rear_fret = inputs["data:weight:payload:rear_freight:CG:x"]
+        cg_front_fret = inputs["data:weight:payload:front_freight:CG:x"]
         x_cg_plane_aft = inputs["data:weight:aircraft_empty:CG:x"]
         m_empty = inputs["data:weight:aircraft_empty:mass"]
         m_unusable_fuel = inputs["data:weight:propulsion:unusable_fuel:mass"]
@@ -284,7 +284,7 @@ class ComputeFlightCGCase(ExplicitComponent):
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
-        wing_area = inputs["data:geometry:wing:area"] * 0.0929
+        wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 

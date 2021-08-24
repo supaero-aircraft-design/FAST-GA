@@ -89,7 +89,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             self.fuel_function,
             range_mission / 2,
             args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]),
-            xtol=1,
+            xtol=0.01,
             full_output=True,
         )
 
@@ -114,11 +114,11 @@ class ComputePayloadRange(om.ExplicitComponent):
                 self.fuel_function,
                 range_mission,
                 args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]),
-                xtol=1,
+                xtol=0.01,
                 full_output=True,
             )
-            _LOGGER.warning("Number of fsolve iterations for point D :")
-            _LOGGER.warning(dic["nfev"])
+            _LOGGER.info("Number of fsolve iterations for point D :")
+            _LOGGER.info(dic["nfev"])
         else:
             range_d = 0
             _LOGGER.warning(
@@ -136,7 +136,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             self.fuel_function,
             range_mission,
             args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]),
-            xtol=1,
+            xtol=0.01,
             full_output=True,
         )
 
@@ -163,9 +163,9 @@ class ComputePayloadRange(om.ExplicitComponent):
         for i in range(len(inputs_mission)):
             inputs_mission[i].value = inputs[inputs_mission[i].name]
 
-        var_names = np.array([var.name for var in inputs_mission])
+        var_names = np.array([var.name for var in inputs_mission], dtype="object")
         var_value = np.array([var.value.tolist() for var in inputs_mission], dtype="object")
-        var_units = np.array([var.units for var in inputs_mission])
+        var_units = np.array([var.units for var in inputs_mission], dtype="object")
 
         index_range = np.where(var_names == "data:TLAR:range")
         var_value[index_range[0]] = range_parameter

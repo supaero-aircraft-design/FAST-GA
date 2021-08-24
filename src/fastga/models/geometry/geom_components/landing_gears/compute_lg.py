@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Landing gears geometry estimation. Position along the span is based on aircraft pictures anlysis """
+    """ Landing gears geometry estimation. Position along the span is based on aircraft pictures analysis """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -29,7 +29,7 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
         self.add_output("data:geometry:landing_gear:height", units="m")
@@ -39,10 +39,10 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        prop_dia = inputs["data:geometry:propulsion:propeller:diameter"]
+        prop_dia = inputs["data:geometry:propeller:diameter"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         lg_height = 0.41 * prop_dia
-        y_lg = fuselage_max_width / 2 + lg_height * 1.1
+        y_lg = fuselage_max_width / 2 + lg_height * 1.2
 
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg

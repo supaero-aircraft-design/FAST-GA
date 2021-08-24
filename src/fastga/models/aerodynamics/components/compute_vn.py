@@ -17,6 +17,8 @@
 import math
 import numpy as np
 import warnings
+import logging
+
 from scipy.constants import g
 import scipy.optimize as optimize
 from scipy import interpolate
@@ -28,32 +30,35 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.constants import EngineSetting
 
-from .vlm import VLMSimpleGeometry
+from ..constants import MACH_NB_PTS
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
-MACH_NB_PTS = 5  # number of points for cl_alpha_aircraft fitting along mach axis
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
+_LOGGER = logging.getLogger(__name__)
 
-class ComputeVNvlmNoVH(om.Group):
+
+class ComputeVNAndVH(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("compute_cl_alpha", default=False, types=bool)
 
     def setup(self):
         self.add_subsystem(
             "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
         self.add_subsystem(
-            "compute_vn_diagram",
-            ComputeVNvlm(compute_cl_alpha=self.options["compute_cl_alpha"]),
-            promotes=["*"],
+            "compute_vn_diagram", ComputeVN(), promotes=["*"],
         )
 
 
 class ComputeVh(om.ExplicitComponent):
+    """
+    Computes the maximum level velocity of the aircraft at sea level
+
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
@@ -71,34 +76,34 @@ class ComputeVh(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
 
-        self.add_output("data:TLAR:v_max_sl", units="kn")
+        self.add_output("data:TLAR:v_max_sl", units="m/s")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # The maximum Sea Level flight velocity is computed using a method which finds for which speed
         # the thrust required for flight (drag) is equal to the thrust available
-        design_mass = inputs["data:weight:aircraft:MTOW"]
-        Vh = self.max_speed(inputs, 0.0, design_mass)
 
-        outputs["data:TLAR:v_max_sl"] = Vh
+        _LOGGER.info("Entering load factors computation")
+
+        design_mass = inputs["data:weight:aircraft:MTOW"]
+        vh = self.max_speed(inputs, 0.0, design_mass)
+
+        outputs["data:TLAR:v_max_sl"] = vh
 
     def max_speed(self, inputs, altitude, mass):
-
         # noinspection PyTypeChecker
         roots = optimize.fsolve(self.delta_axial_load, 300.0, args=(inputs, altitude, mass))[0]
 
         return np.max(roots[roots > 0.0])
 
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
-
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
-        coef_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
+        coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 
         # Get the available thrust from propulsion system
         atm = Atmosphere(altitude, altitude_in_feet=False)
@@ -113,28 +118,35 @@ class ComputeVh(om.ExplicitComponent):
 
         # Get the necessary thrust to overcome
         cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed ** 2.0)
-        cd = cd0 + coef_k * cl ** 2.0
+        cd = cd0 + coeff_k * cl ** 2.0
         drag = 0.5 * atm.density * wing_area * cd * air_speed ** 2.0
 
         return thrust - drag
 
 
-class ComputeVNvlm(VLMSimpleGeometry):
+class ComputeVN(om.ExplicitComponent):
+    """
+    Computes the load diagram of the aircraft.
+
+    Based on the methodology presented in Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation.
+    DARcorporation, 1985. adapted with the certifications of CS-23 Amendment 4 and ASTM F1336:
+    https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
+    https://www.astm.org/Standards/F3116.htm
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.kts_to_ms = knot  # Converting from knots to meters per seconds
         self.ft_to_m = foot  # Converting from feet to meters
         self.lbf_to_N = lbf  # Converting from pound force to Newtons
 
-    def initialize(self):
-        super().initialize()
-        self.options.declare("compute_cl_alpha", default=False, types=bool)
-
     def setup(self):
-        super().setup()
         nans_array = np.full(MACH_NB_PTS + 1, np.nan)
         self.add_input("data:TLAR:category", val=3.0)
-        self.add_input("data:TLAR:level", val=1.0)
+        self.add_input("data:TLAR:level", val=2.0)
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
@@ -153,12 +165,6 @@ class ComputeVNvlm(VLMSimpleGeometry):
         )
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
-        if not (self.options["compute_cl_alpha"]):
-            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan)
-            self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
         self.add_output("data:flight_domain:velocity", units="m/s", shape=DOMAIN_PTS_NB)
         self.add_output("data:flight_domain:load_factor", shape=DOMAIN_PTS_NB)
@@ -190,7 +196,9 @@ class ComputeVNvlm(VLMSimpleGeometry):
         if DOMAIN_PTS_NB < len(velocity_array):
             velocity_array = velocity_array[0 : DOMAIN_PTS_NB - 1]
             load_factor_array = load_factor_array[0 : DOMAIN_PTS_NB - 1]
-            warnings.warn("Defined maximum stored domain points in fast compute_vn.py exceeded!")
+            warnings.warn(
+                "Defined maximum stored domain points at the beginning of the file exceeded!"
+            )
         else:
             additional_zeros = list(np.zeros(DOMAIN_PTS_NB - len(velocity_array)))
             velocity_array.extend(additional_zeros)
@@ -211,7 +219,7 @@ class ComputeVNvlm(VLMSimpleGeometry):
             "data:TLAR:category"
         ]  # Aerobatic = 1.0, Utility = 2.0, Normal = 3.0, Commuter = 4.0
         level = inputs["data:TLAR:level"]
-        Vh = inputs["data:TLAR:v_max_sl"]
+        vh = inputs["data:TLAR:v_max_sl"]
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
         cl_max_flaps = inputs["data:aerodynamics:aircraft:landing:CL_max"]
@@ -238,11 +246,11 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # over the values written in the documents.
 
         # Lets start by computing the 1g/-1g stall speeds using the usual formulations
-        Vs_1g_ps = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * cl_max))  # [m/s]
-        Vs_1g_ng = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * abs(cl_min)))  # [m/s]
-        velocity_array.append(float(Vs_1g_ps))
+        vs_1g_ps = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * cl_max))  # [m/s]
+        vs_1g_ng = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * abs(cl_min)))  # [m/s]
+        velocity_array.append(float(vs_1g_ps))
         load_factor_array.append(1.0)
-        velocity_array.append(float(Vs_1g_ng))
+        velocity_array.append(float(vs_1g_ng))
         load_factor_array.append(-1.0)
 
         # As we will consider all the calculated speed to be Vs_1g_ps < V < 1.4*Vh, we will compute cl_alpha for N
@@ -250,33 +258,14 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # If the option is not selected, we will only consider low_speed and cruise cl_alpha points and consider a
         # square regression between both.
 
-        if self.options["compute_cl_alpha"]:
-            mach_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-            v_interp = []
-            for mach in mach_interp:
-                v_interp.append(float(mach * atm.speed_of_sound))
-            cl_alpha_interp = inputs[
-                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-            ]
-            cl_alpha_fct = interpolate.interp1d(
-                v_interp, cl_alpha_interp, fill_value="extrapolate", kind="quadratic"
-            )
-        else:
-            v_interp = np.array(
-                [float(inputs["data:TLAR:v_approach"]), float(inputs["data:TLAR:v_cruise"])]
-            )
-            cl_alpha_1 = float(
-                inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
-                + inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
-            )
-            cl_alpha_2 = float(
-                inputs["data:aerodynamics:wing:cruise:CL_alpha"]
-                + inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
-            )
-            cl_alpha_interp = np.array([cl_alpha_1, cl_alpha_2])
-            cl_alpha_fct = interpolate.interp1d(
-                v_interp, cl_alpha_interp, fill_value="extrapolate", kind="linear"
-            )
+        mach_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
+        v_interp = []
+        for mach in mach_interp:
+            v_interp.append(float(mach * atm.speed_of_sound))
+        cl_alpha_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
+        cl_alpha_fct = interpolate.interp1d(
+            v_interp, cl_alpha_interp, fill_value="extrapolate", kind="quadratic"
+        )
 
         # We will now establish the minimum limit maneuvering load factors outside of gust load
         # factors. Th designer can take higher load factor if he so wish. As will later be done for the
@@ -313,46 +302,57 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # of the gust center
 
         if altitude < 20000.0:
-            U_de_Vc = 50.0  # [ft/s]
-            U_de_Vd = 25.0  # [ft/s]
-            U_de_Vmg = 66.0  # [ft/s]
+            u_de_vc = 50.0  # [ft/s]
+            u_de_vd = 25.0  # [ft/s]
+            u_de_vmg = 66.0  # [ft/s]
         elif 20000.0 < altitude < 50000.0:
-            U_de_Vc = 66.7 - 0.000833 * altitude  # [ft/s]
-            U_de_Vd = 33.4 - 0.000417 * altitude  # [ft/s]
-            U_de_Vmg = 84.7 - 0.000933 * altitude  # [ft/s]
+            u_de_vc = 66.7 - 0.000833 * altitude  # [ft/s]
+            u_de_vd = 33.4 - 0.000417 * altitude  # [ft/s]
+            u_de_vmg = 84.7 - 0.000933 * altitude  # [ft/s]
         else:
-            U_de_Vc = 25.0  # [ft/s]
-            U_de_Vd = 12.5  # [ft/s]
-            U_de_Vmg = 38.0  # [ft/s]
+            u_de_vc = 25.0  # [ft/s]
+            u_de_vd = 12.5  # [ft/s]
+            u_de_vmg = 38.0  # [ft/s]
 
         # Let us define aeroplane mass ratio formula and alleviation factor formula
-        mu_g = lambda x: (2.0 * mass * g / wing_area) / (
-            atm.density * mean_chord * x * g
-        )  # [x = cl_alpha]
-        K_g = lambda x: (0.88 * x) / (5.3 + x)  # [x = mu_g]
+        def mu_g(x):
+            return (2.0 * mass * g / wing_area) / (
+                atm.density * mean_chord * x * g
+            )  # [x = cl_alpha]
+
+        def k_g(x):
+            return (0.88 * x) / (5.3 + x)  # [x = mu_g]
+
         # Now, define the gust function
-        load_factor_gust_p = lambda u_de_v, x: float(
-            1
-            + K_g(mu_g(cl_alpha_fct(x)))
-            * atm_0.density
-            * u_de_v
-            * self.ft_to_m
-            * x
-            * cl_alpha_fct(x)
-            / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
-        )
-        load_factor_gust_n = lambda u_de_v, x: float(
-            1
-            - K_g(mu_g(cl_alpha_fct(x)))
-            * atm_0.density
-            * u_de_v
-            * self.ft_to_m
-            * x
-            * cl_alpha_fct(x)
-            / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
-        )
-        load_factor_stall_p = lambda x: (x / Vs_1g_ps) ** 2.0
-        load_factor_stall_n = lambda x: -((x / Vs_1g_ng) ** 2.0)
+        def load_factor_gust_p(u_de_v, x):
+            return float(
+                1.0
+                + k_g(mu_g(cl_alpha_fct(x)))
+                * atm_0.density
+                * u_de_v
+                * self.ft_to_m
+                * x
+                * cl_alpha_fct(x)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+            )
+
+        def load_factor_gust_n(u_de_v, x):
+            return float(
+                1
+                - k_g(mu_g(cl_alpha_fct(x)))
+                * atm_0.density
+                * u_de_v
+                * self.ft_to_m
+                * x
+                * cl_alpha_fct(x)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+            )
+
+        def load_factor_stall_p(x):
+            return (x / vs_1g_ps) ** 2.0
+
+        def load_factor_stall_n(x):
+            return -((x / vs_1g_ng) ** 2.0)
 
         # We can now go back to the computation of the maneuvering speeds, we will first compute it
         # "traditionally" and should we find out that the line limited by the Cl max is under the gust
@@ -361,23 +361,25 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
         # https://www.astm.org/Standards/F3116.htm
 
-        Vma_ps = Vs_1g_ps * math.sqrt(n_lim_ps)  # [m/s]
-        Vma_ng = Vs_1g_ng * math.sqrt(abs(n_lim_ng))  # [m/s]
-        velocity_array.append(float(Vma_ps))
-        velocity_array.append(float(Vma_ng))
+        vma_ps = vs_1g_ps * math.sqrt(n_lim_ps)  # [m/s]
+        vma_ng = vs_1g_ng * math.sqrt(abs(n_lim_ng))  # [m/s]
+        velocity_array.append(float(vma_ps))
+        velocity_array.append(float(vma_ng))
 
         # We now need to check if we are in the aforementioned case (usually happens for low design wing
         # loading aircraft and/or mission wing loading)
 
-        n_ma_ps = load_factor_gust_p(U_de_Vc, Vma_ps)
+        n_ma_ps = load_factor_gust_p(u_de_vc, vma_ps)
 
         if n_ma_ps > n_lim_ps:
             # In case the gust line load factor is above the maneuvering load factor, we need to solve the difference
             # between both curve to be 0.0 to find intersect
-            delta = lambda x: load_factor_gust_p(U_de_Vc, x) - load_factor_stall_p(x)
-            Vma_ps = max(optimize.fsolve(delta, np.array(1000.0)))
-            n_ma_ps = load_factor_gust_p(U_de_Vc, Vma_ps)  # [-]
-            velocity_array.append(float(Vma_ps))
+            def delta(x):
+                return load_factor_gust_p(u_de_vc, x) - load_factor_stall_p(x)
+
+            vma_ps = max(optimize.fsolve(delta, np.array(1000.0)))
+            n_ma_ps = load_factor_gust_p(u_de_vc, vma_ps)  # [-]
+            velocity_array.append(float(vma_ps))
             load_factor_array.append(float(n_ma_ps))
         else:
             velocity_array.append(0.0)
@@ -385,15 +387,17 @@ class ComputeVNvlm(VLMSimpleGeometry):
 
         # We now need to do the same thing for the negative maneuvering speed
 
-        n_ma_ng = load_factor_gust_n(U_de_Vc, Vma_ng)  # [-]
+        n_ma_ng = load_factor_gust_n(u_de_vc, vma_ng)  # [-]
 
         if n_ma_ng < n_lim_ng:
             # In case the gust line load factor is above the maneuvering load factor, we need to solve the difference
             # between both curve to be 0.0 to find intersect
-            delta = lambda x: load_factor_gust_n(U_de_Vc, x) - load_factor_stall_n(x)
-            Vma_ng = max(optimize.fsolve(delta, np.array(1000.0))[0])
-            n_ma_ng = load_factor_gust_n(U_de_Vc, Vma_ng)  # [-]
-            velocity_array.append(float(Vma_ng))
+            def delta(x):
+                return load_factor_gust_n(u_de_vc, x) - load_factor_stall_n(x)
+
+            vma_ng = max(optimize.fsolve(delta, np.array(1000.0)))
+            n_ma_ng = load_factor_gust_n(u_de_vc, vma_ng)  # [-]
+            velocity_array.append(float(vma_ng))
             load_factor_array.append(float(n_ma_ng))
         else:
             velocity_array.append(0.0)
@@ -425,36 +429,36 @@ class ComputeVNvlm(VLMSimpleGeometry):
             else:
                 k_c = 28.6
 
-        Vc_min_1 = k_c * math.sqrt(weight_lbf / wing_area_sft) * self.kts_to_ms  # [m/s]
+        vc_min_1 = k_c * math.sqrt(weight_lbf / wing_area_sft) * self.kts_to_ms  # [m/s]
 
         # This second constraint rather refers to the paragraph on maneuvering speeds, which needs to be chosen
         # so that they are smaller than cruising speeds
-        Vc_min_2 = Vma_ps  # [m/s]
-        Vc_min = max(Vc_min_1, Vc_min_2)  # [m/s]
+        vc_min_2 = vma_ps  # [m/s]
+        vc_min = max(vc_min_1, vc_min_2)  # [m/s]
 
         # The certifications specifies that Vc need not be more than 0.9 Vh so we will simply take the
         # minimum value between the Vc_min and this value
 
-        Vc_min_fin = min(Vc_min, 0.9 * Vh)  # [m/s]
+        vc_min_fin = min(vc_min, 0.9 * vh)  # [m/s]
 
         # The constraint regarding the maximum velocity for cruise does not appear in the certifications but
         # from a physics point of view we can easily infer that the cruise speed will never be greater than
         # the maximum level velocity at sea level hence
 
-        Vc = max(min(design_vc, Vh), Vc_min_fin)  # [m/s]
-        velocity_array.append(float(Vc))
+        vc = max(min(design_vc, vh), vc_min_fin)  # [m/s]
+        velocity_array.append(float(vc))
         load_factor_array.append(float(n_lim_ng))
 
         # Lets now look at the load factors associated with the Vc, since it is here that the greatest
         # load factors can appear
 
-        n_Vc_ps = max(load_factor_gust_p(U_de_Vc, Vc), n_lim_ps)  # [-]
-        n_Vc_ng = min(load_factor_gust_n(U_de_Vc, Vc), n_lim_ng)  # [-]
+        n_vc_ps = max(load_factor_gust_p(u_de_vc, vc), n_lim_ps)  # [-]
+        n_vc_ng = min(load_factor_gust_n(u_de_vc, vc), n_lim_ng)  # [-]
 
-        velocity_array.append(float(Vc))
-        load_factor_array.append(float(n_Vc_ps))
-        velocity_array.append(float(Vc))
-        load_factor_array.append(float(n_Vc_ng))
+        velocity_array.append(float(vc))
+        load_factor_array.append(float(n_vc_ps))
+        velocity_array.append(float(vc))
+        load_factor_array.append(float(n_vc_ng))
 
         # We now compute the diving speed, methods are described in CS 23.335 (b). We will take the minimum
         # diving speed allowable as our design diving speed. We need to keep in mind that this speed could
@@ -464,7 +468,7 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
         # https://www.astm.org/Standards/F3116.htm
 
-        Vd_min_1 = 1.25 * Vc  # [m/s]
+        vd_min_1 = 1.25 * vc  # [m/s]
 
         if category == 1.0:
             if mtow_loading_psf < 20.0:
@@ -491,19 +495,19 @@ class ComputeVNvlm(VLMSimpleGeometry):
             else:
                 k_d = 1.35
 
-        Vd_min_2 = k_d * Vc_min_fin  # [m/s]
-        Vd = max(Vd_min_1, Vd_min_2)  # [m/s]
+        vd_min_2 = k_d * vc_min_fin  # [m/s]
+        vd = max(vd_min_1, vd_min_2)  # [m/s]
 
-        velocity_array.append(float(Vd))
+        velocity_array.append(float(vd))
         load_factor_array.append(float(n_lim_ps))
-        velocity_array.append(float(Vd))
+        velocity_array.append(float(vd))
         load_factor_array.append(0.0)
 
         # Similarly to what was done for the design cruising speed we will explore the load factors
         # associated with the diving speed since gusts are likely to broaden the flight domain around
         # these points
 
-        n_Vd_ps = load_factor_gust_p(U_de_Vd, Vd)  # [-]
+        n_vd_ps = load_factor_gust_p(u_de_vd, vd)  # [-]
 
         # For the negative load factor at the diving speed, it seems that for non_aerobatic airplanes, it is
         # always sized according to the gust lines, regardless of the negative design load factor. For aerobatic
@@ -513,12 +517,12 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # design load factor or the load factor given by the gust, whichever is the greatest (most negative).
         # This way, for non aerobatic airplane, we ensure to be conservative.
 
-        n_Vd_ng = load_factor_gust_n(U_de_Vd, Vd)  # [-]
+        n_vd_ng = load_factor_gust_n(u_de_vd, vd)  # [-]
 
-        velocity_array.append(float(Vd))
-        load_factor_array.append(float(n_Vd_ps))
-        velocity_array.append(float(Vd))
-        load_factor_array.append(float(n_Vd_ng))
+        velocity_array.append(float(vd))
+        load_factor_array.append(float(n_vd_ps))
+        velocity_array.append(float(vd))
+        load_factor_array.append(float(n_vd_ng))
 
         # We have now calculated all the velocities need to plot the flight domain. For the sake of
         # thoroughness we will also compute the maximal structural cruising speed and cruise never-exceed
@@ -535,20 +539,20 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # buffeting which serves as an additional upper limit is not included but should be taken into
         # account in detailed analysis phases
 
-        V_ne = 0.9 * Vd  # [m/s]
+        v_ne = 0.9 * vd  # [m/s]
 
-        velocity_array.append(float(V_ne))
+        velocity_array.append(float(v_ne))
         load_factor_array.append(0.0)
 
-        V_no_min = Vc_min  # [m/s]
-        V_no_max = min(Vc, 0.89 * V_ne)  # [m/s]
+        v_no_min = vc_min  # [m/s]
+        v_no_max = min(vc, 0.89 * v_ne)  # [m/s]
 
         # Again we need to make a choice for this speed : what value would be retained. We will take the
         # highest speed acceptable for certification, i.e
 
-        V_no = max(V_no_min, V_no_max)  # [m/s]
+        v_no = max(v_no_min, v_no_max)  # [m/s]
 
-        velocity_array.append(float(V_no))
+        velocity_array.append(float(v_no))
         load_factor_array.append(0.0)
 
         # One additional velocity needs to be computed if we are talking about commuter aircraft. It is
@@ -569,29 +573,31 @@ class ComputeVNvlm(VLMSimpleGeometry):
             # We first need to compute the intersection of the stall line with the gust line given by the
             # gust of maximum intensity. Similar calculation were already done in case the maneuvering speed
             # is dictated by the Vc gust line so the computation will be very similar
-            delta = lambda x: load_factor_gust_p(U_de_Vmg, x) - load_factor_stall_p(x)
-            Vmg_min_1 = max(optimize.fsolve(delta, np.array(1000.0))[0])
+            def delta(x):
+                return load_factor_gust_p(u_de_vmg, x) - load_factor_stall_p(x)
+
+            vmg_min_1 = max(optimize.fsolve(delta, np.array(1000.0)))
 
             # The second candidate for the Vmg is given by the stall speed and the load factor at the cruise
             # speed
-            Vmg_min_2 = Vs_1g_ps * math.sqrt(load_factor_gust_p(U_de_Vc, Vc))  # [m/s]
-            Vmg = min(Vmg_min_1, Vmg_min_2)  # [m/s]
+            vmg_min_2 = vs_1g_ps * math.sqrt(load_factor_gust_p(u_de_vc, vc))  # [m/s]
+            vmg = min([vmg_min_1, vmg_min_2])  # [m/s]
 
             # As for the computation of the associated load factor, no source were found for any formula or
             # hint as to its computation. It can however be guessed that depending on the minimum value found
             # above, it will either be on the stall line or at the maximum design load factor
 
-            if Vmg == Vmg_min_1:  # On the gust line
-                n_Vmg = load_factor_gust_n(U_de_Vmg, Vmg_min_1)  # [-]
+            if vmg == vmg_min_1:  # On the gust line
+                n_vmg = load_factor_gust_n(u_de_vmg, vmg_min_1)  # [-]
             else:
-                n_Vmg = n_Vc_ps  # [-]
+                n_vmg = n_vc_ps  # [-]
 
         else:
-            Vmg = 0.0  # [m/s]
-            n_Vmg = 0.0
+            vmg = 0.0  # [m/s]
+            n_vmg = 0.0
 
-        velocity_array.append(float(Vmg))
-        load_factor_array.append(float(n_Vmg))
+        velocity_array.append(float(vmg))
+        load_factor_array.append(float(n_vmg))
 
         # Let us now look at the flight domain in the flap extended configuration. For the computation of these
         # speeds and load factors, we will use the formula provided in CS 23.1511
@@ -603,15 +609,15 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # load factors that are prescribed we will use the guidelines provided in CS 23.345 (b)
 
         # Let us start by computing the Vfe
-        Vsfe_1g_ps = math.sqrt(
+        vs_fe_1g_ps = math.sqrt(
             (2.0 * mass * g) / (atm_0.density * wing_area * cl_max_flaps)
         )  # [m/s]
-        Vfe_min_1 = 1.4 * Vs_1g_ps  # [m/s]
-        Vfe_min_2 = 1.8 * Vsfe_1g_ps  # [m/s]
-        Vfe_min = max(Vfe_min_1, Vfe_min_2)  # [m/s]
-        Vfe = Vfe_min  # [m/s]
+        vfe_min_1 = 1.4 * vs_1g_ps  # [m/s]
+        vfe_min_2 = 1.8 * vs_fe_1g_ps  # [m/s]
+        vfe_min = max(vfe_min_1, vfe_min_2)  # [m/s]
+        vfe = vfe_min  # [m/s]
 
-        velocity_array.append(float(Vsfe_1g_ps))
+        velocity_array.append(float(vs_fe_1g_ps))
         load_factor_array.append(1.0)
 
         # We can then move on to the computation of the load limitation of the flapped flight domain, which
@@ -619,14 +625,14 @@ class ComputeVNvlm(VLMSimpleGeometry):
         # Also since the use of flaps is limited to take-off, approach and landing, we will use the SL density
         # and a constant gust velocity
 
-        U_de_fe = 25.0  # [ft/s]
+        u_de_fe = 25.0  # [ft/s]
         n_lim_ps_fe = 2.0
-        n_Vfe = max(n_lim_ps_fe, load_factor_gust_n(U_de_fe, Vfe))
+        n_vfe = max(n_lim_ps_fe, load_factor_gust_n(u_de_fe, vfe))
 
-        velocity_array.append(float(Vsfe_1g_ps * math.sqrt(n_Vfe)))
-        load_factor_array.append(float(n_Vfe))
-        velocity_array.append(float(Vfe))
-        load_factor_array.append(float(n_Vfe))
+        velocity_array.append(float(vs_fe_1g_ps * math.sqrt(n_vfe)))
+        load_factor_array.append(float(n_vfe))
+        velocity_array.append(float(vfe))
+        load_factor_array.append(float(n_vfe))
 
         # We also store the conditions in which the values were computed so that we can easily access
         # them when drawing the flight domains

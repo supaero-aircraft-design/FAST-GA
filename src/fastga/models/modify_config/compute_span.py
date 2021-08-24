@@ -1,5 +1,5 @@
 """
-    COmputation of the wing span modifications.
+    Computation of the wing span modifications.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -17,6 +17,7 @@
 
 import numpy as np
 import openmdao.api as om
+from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 
 class ComputeSpan(om.ExplicitComponent):
@@ -27,11 +28,11 @@ class ComputeSpan(om.ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:flap:span_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
+        self.add_input("data:geometry:aileron:span_ratio", val=np.nan)
         self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
@@ -40,11 +41,11 @@ class ComputeSpan(om.ExplicitComponent):
         self.add_output("data_mod:geometry:wing:aspect_ratio")
         self.add_output("data_mod:geometry:wing:taper_ratio")
         self.add_output("data_mod:geometry:wing:area", units="m**2")
-        self.add_output("data_mod:geometry:propulsion:y_ratio")
+        self.add_output("data_mod:geometry:propulsion:y_ratio", shape=ENGINE_COUNT)
         self.add_output("data_mod:geometry:propulsion:y_ratio_tank_beginning")
         self.add_output("data_mod:geometry:propulsion:y_ratio_tank_end")
         self.add_output("data_mod:geometry:flap:span_ratio")
-        self.add_output("data_mod:geometry:wing:aileron:span_ratio")
+        self.add_output("data_mod:geometry:aileron:span_ratio")
         self.add_output("data_mod:settings:span_mod:span_multiplier")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -56,7 +57,7 @@ class ComputeSpan(om.ExplicitComponent):
         y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
-        aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
+        aileron_span_ratio = inputs["data:geometry:aileron:span_ratio"]
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
         w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
@@ -82,7 +83,7 @@ class ComputeSpan(om.ExplicitComponent):
         )
         aspect_ratio_mod = (span_ref * multiplier) ** 2 / area_mod
 
-        # Modify the y-ratio of the engine if its position is fixed along the span
+        # Modify the y-ratio of the engines if their position is fixed along the span
         if self.options["span_mod"][1]:
             y_ratio = y_ratio / multiplier
 
@@ -104,5 +105,5 @@ class ComputeSpan(om.ExplicitComponent):
         outputs["data_mod:geometry:propulsion:y_ratio_tank_beginning"] = y_ratio_tank_beginning
         outputs["data_mod:geometry:propulsion:y_ratio_tank_end"] = y_ratio_tank_end
         outputs["data_mod:geometry:flap:span_ratio"] = flap_span_ratio_mod
-        outputs["data_mod:geometry:wing:aileron:span_ratio"] = aileron_span_ratio_mod
+        outputs["data_mod:geometry:aileron:span_ratio"] = aileron_span_ratio_mod
         outputs["data_mod:settings:span_mod:span_multiplier"] = self.options["span_mod"][0]

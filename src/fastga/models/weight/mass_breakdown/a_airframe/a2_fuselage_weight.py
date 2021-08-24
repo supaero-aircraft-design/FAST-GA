@@ -1,7 +1,6 @@
 """
-    Estimation of fuselage aiframe mass
+Estimation of fuselage weight
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,23 +16,82 @@
 
 import numpy as np
 import openmdao.api as om
+import math
+
+from fastoad.model_base import Atmosphere
+
 from fastoad.module_management._bundle_loader import BundleLoader
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
-DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
-
 
 class ComputeFuselageWeight(om.ExplicitComponent):
     """
-        The geometry of the aircraft fuselage is inspired by the one proposed in the TASOPT 2.0 (2010). In the FASTGA
-        model the cabin is delimited by two flat bulkheads, which separate the cabin from the non pressurized nose and
-        tail cone.
-        The mass models of the fuselage extra components (windows, doors,...) are extracted from the Torenbeek weight
-        penalty method presented page 457 of his book "Synthesis of Subsonic Aircraft Design".
-        Through all this model the hypothesis is made that the thickness of the fuselage skin is far inferior to the
-        fuselage radius.
+    Fuselage weight estimation
+
+    Based on : Nicolai, Leland M., and Grant E. Carichner. Fundamentals of aircraft and airship design,
+    Volume 1–Aircraft Design. American Institute of Aeronautics and Astronautics, 2010.
+
+    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013. Equation (6-25)
     """
+
+    def setup(self):
+        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
+
+        self.add_output("data:weight:airframe:fuselage:mass", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        maximum_width = inputs["data:geometry:fuselage:maximum_width"]
+        maximum_height = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        v_max_sl = inputs["data:TLAR:v_max_sl"]
+
+        a2 = (
+            200.0
+            * (
+                (mtow * sizing_factor_ultimate / (10.0 ** 5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 3.28084
+                / 10.0
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
+        )  # mass formula in lb
+
+        outputs["data:weight:airframe:fuselage:mass"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )
+
+
+class ComputeFuselageWeightAlternate(om.ExplicitComponent):
+    """
+    The geometry of the aircraft fuselage is inspired by the one proposed in the TASOPT 2.0 (2010). In the FASTGA
+    model the cabin is delimited by two flat bulkheads, which separate the cabin from the non pressurized nose and
+    tail cone.
+    The mass models of the fuselage extra components (windows, doors,...) are extracted from the Torenbeek weight
+    penalty method presented page 457 of his book "Synthesis of Subsonic Aircraft Design".
+    Through all this model the hypothesis is made that the thickness of the fuselage skin is far inferior to the
+    fuselage radius.
+    For the moment no k factor has been considered to correct the value of the output mass. TODO ? Apply this factor
+    on all the output components or only on the final airframe mass ?
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -56,7 +114,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
-        self.add_input("data:flight_domain:velocity", val=np.nan, units="m/s", shape=DOMAIN_PTS_NB)
+        self.add_input("data:flight_domain:diving_speed", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("settings:materials:fuselage:skin:density", val=np.nan, units="kg/m**3")
         self.add_input("settings:materials:fuselage:skin:young_modulus", val=np.nan, units="Pa")
@@ -67,17 +125,17 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.add_input("settings:geometry:fuselage:min_skin_thickness", val=np.nan, units="m")
 
         self.add_output("data:geometry:fuselage:skin_thickness", units="m")
-        self.add_output("data:weight:fuselage:shell_mass", units="kg")
-        self.add_output("data:weight:fuselage:tail_cone_mass", units="kg")
-        self.add_output("data:weight:fuselage:nose_mass", units="kg")
-        self.add_output("data:weight:fuselage:pax_windows_mass", units="kg")
-        self.add_output("data:weight:fuselage:cockpit_window_mass", units="kg")
-        self.add_output("data:weight:fuselage:nlg_door_mass", units="kg")
-        self.add_output("data:weight:fuselage:doors_mass", units="kg")
-        self.add_output("data:weight:fuselage:wing_fuselage_connection_mass", units="kg")
-        self.add_output("data:weight:fuselage:engine_support_mass", units="kg")
-        self.add_output("data:weight:fuselage:floor_mass", units="kg")
-        self.add_output("data:weight:fuselage:bulkheads_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:shell_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:tail_cone_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:nose_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:pax_windows_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:cockpit_window_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:nlg_door_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:doors_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:wing_fuselage_connection_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:engine_support_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:floor_mass", units="kg")
+        self.add_output("data:weight:airframe:fuselage:bulkheads_mass", units="kg")
         self.add_output("data:weight:airframe:fuselage:mass", units="kg")
         self.add_output("data:weight:airframe:fuselage:total_additional_mass", units="kg")
 
@@ -101,7 +159,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         lg_height = inputs["data:geometry:landing_gear:height"]
         engine_layout = inputs["data:geometry:propulsion:layout"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
-        v_d = inputs["data:flight_domain:velocity"][9]
+        v_d = inputs["data:flight_domain:diving_speed"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         rho_skin = inputs["settings:materials:fuselage:skin:density"]
         e_skin = inputs["settings:materials:fuselage:skin:young_modulus"]
@@ -117,7 +175,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         # Load cases (factor of safety = 1.5)
         thickness_limit = 1.33 * delta_p_max * fuselage_radius / sigma_02_skin
-        thickness_ultimate = 1.995 * delta_p_max * fuselage_radius / sigma_max_skin
+        thickness_ultimate = 1.5 * thickness_limit
 
         fuselage_skin_thickness = max(thickness_limit, thickness_ultimate, min_skin_thickness)
 
@@ -129,9 +187,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             * (1 / 3 + 2 / 3 * (l_front / fuselage_radius) ** (8 / 5)) ** (5 / 8)
             * fuselage_skin_thickness
         )
-        volume_cabin_skin_cyl = 2 * np.pi * fuselage_radius * fuselage_skin_thickness * l_cabin
-        volume_cabin_skin_bulk = 2 * np.pi * fuselage_radius ** 2 * fuselage_skin_thickness
-        volume_cabin_skin = volume_cabin_skin_cyl + volume_cabin_skin_bulk
+        volume_cabin_skin = 2 * np.pi * fuselage_radius * fuselage_skin_thickness * l_cabin
         volume_cabin_inside = (
             np.pi * fuselage_radius ** 2 * l_cabin + 2 / 3 * np.pi * fuselage_radius ** 3
         )
@@ -273,20 +329,97 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         )
 
         outputs["data:geometry:fuselage:skin_thickness"] = fuselage_skin_thickness
-        outputs["data:weight:fuselage:shell_mass"] = fuselage_shell_mass
-        outputs["data:weight:fuselage:tail_cone_mass"] = cone_mass
-        outputs["data:weight:fuselage:nose_mass"] = nose_mass
-        outputs["data:weight:fuselage:pax_windows_mass"] = mass_windows
-        outputs["data:weight:fuselage:cockpit_window_mass"] = mass_cockpit_window
-        outputs["data:weight:fuselage:nlg_door_mass"] = mass_nlg_door
-        outputs["data:weight:fuselage:doors_mass"] = mass_doors
-        outputs["data:weight:fuselage:wing_fuselage_connection_mass"] = mass_wing_fuselage
-        outputs["data:weight:fuselage:engine_support_mass"] = mass_support_engine
-        outputs["data:weight:fuselage:floor_mass"] = mass_floor
-        outputs["data:weight:fuselage:bulkheads_mass"] = mass_bulkheads
+        outputs["data:weight:airframe:fuselage:shell_mass"] = fuselage_shell_mass
+        outputs["data:weight:airframe:fuselage:tail_cone_mass"] = cone_mass
+        outputs["data:weight:airframe:fuselage:nose_mass"] = nose_mass
+        outputs["data:weight:airframe:fuselage:pax_windows_mass"] = mass_windows
+        outputs["data:weight:airframe:fuselage:cockpit_window_mass"] = mass_cockpit_window
+        outputs["data:weight:airframe:fuselage:nlg_door_mass"] = mass_nlg_door
+        outputs["data:weight:airframe:fuselage:doors_mass"] = mass_doors
+        outputs["data:weight:airframe:fuselage:wing_fuselage_connection_mass"] = mass_wing_fuselage
+        outputs["data:weight:airframe:fuselage:engine_support_mass"] = mass_support_engine
+        outputs["data:weight:airframe:fuselage:floor_mass"] = mass_floor
+        outputs["data:weight:airframe:fuselage:bulkheads_mass"] = mass_bulkheads
         outputs["data:weight:airframe:fuselage:mass"] = (
             fuselage_shell_mass + fuselage_additional_mass
         )
         outputs["data:weight:airframe:fuselage:total_additional_mass"] = fuselage_additional_mass
         outputs["data:loads:fuselage:inertia"] = i_shell
         outputs["data:loads:fuselage:sigmaMh"] = sigma_mh
+
+
+class ComputeFuselageWeightRaymer(om.ExplicitComponent):
+    """
+        Fuselage weight estimation
+
+        Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
+        Astronautics, Inc., 2012.
+
+        Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+        Butterworth-Heinemann, 2013. Equation (6-25)
+        """
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="ft**2")
+        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
+        )
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
+
+        self.add_output("data:weight:airframe:fuselage:mass_raymer", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lar = inputs["data:geometry:fuselage:rear_length"]
+        maximum_width = inputs["data:geometry:fuselage:maximum_width"]
+        maximum_height = inputs["data:geometry:fuselage:maximum_height"]
+        wet_area_fus = inputs["data:geometry:fuselage:wet_area"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        v_cruise = inputs["data:TLAR:v_cruise"] * 0.5144
+
+        atm_cruise = Atmosphere(cruise_alt)
+        rho_cruise = atm_cruise.density
+        pressure_cruise = atm_cruise.pressure
+
+        atm_sl = Atmosphere(0.0)
+        pressure_sl = atm_sl.pressure
+
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise ** 2.0 * 0.020885434273039
+
+        if cruise_alt > 10000.0:
+            fus_dia = (maximum_height + maximum_width) / 2.0
+            v_press = (fus_length - lar - lav) * math.pi * (fus_dia / 2.0) ** 2.0
+            delta_p = (pressure_sl - pressure_cruise) * 0.000145038
+        else:
+            v_press = 0.0
+            delta_p = 0.0
+
+        a2 = 0.052 * (
+            wet_area_fus ** 1.086
+            * (sizing_factor_ultimate * mtow) ** 0.177
+            * lp_ht ** (-0.051)
+            * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+            * dynamic_pressure ** 0.241
+            + 11.9 * (v_press * delta_p) ** 0.271
+        )
+
+        outputs["data:weight:airframe:fuselage:mass_raymer"] = (
+            a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )

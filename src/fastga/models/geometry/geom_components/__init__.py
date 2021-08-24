@@ -16,11 +16,6 @@ Estimation of geometry components
 
 from .compute_total_area import ComputeTotalArea
 from .compute_mfw import ComputeMFW
-from .fuselage import (
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizingFD,
-    ComputeFuselageGeometryCabinSizingFL,
-)
 from .ht import ComputeHorizontalTailGeometryFD, ComputeHorizontalTailGeometryFL
 from .nacelle import ComputeNacelleGeometry
 from .vt import ComputeVerticalTailGeometryFD, ComputeVerticalTailGeometryFL

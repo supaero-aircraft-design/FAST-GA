@@ -60,7 +60,8 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=1.0)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
 

@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the wing profile drag
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -24,6 +24,13 @@ from fastga.models.geometry.profiles.get_profile import get_profile
 
 
 class Cd0Wing(ExplicitComponent):
+    """
+    Profile drag estimation for the wing
+
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013.
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare(
@@ -76,20 +83,20 @@ class Cd0Wing(ExplicitComponent):
         index = int(
             np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]
         )
-        x_tmax = relative_thickness["x"][index]
+        x_t_max = relative_thickness["x"][index]
         # Root: 45% NLF
         x_trans = 0.45
-        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l2_wing)) ** 0.375
-        cf_root = 0.074 / (unit_reynolds * l2_wing) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
+        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l2_wing)) ** 0.375
+        cf_root = 0.074 / (unit_reynolds * l2_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         # Tip: 55% NLF
         x_trans = 0.55
-        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l4_wing)) ** 0.375
-        cf_tip = 0.074 / (unit_reynolds * l4_wing) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
+        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l4_wing)) ** 0.375
+        cf_tip = 0.074 / (unit_reynolds * l4_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         # Global
         cf_wing = (
             cf_root * (y2_wing - y1_wing) + 0.5 * (span / 2.0 - y2_wing) * (cf_root + cf_tip)
         ) / (span / 2.0 - y1_wing)
-        ff = 1 + 0.6 / x_tmax * thickness + 100 * thickness ** 4
+        ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
         if mach > 0.2:
             ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25 * math.pi / 180)) ** 0.28
         cd0_wing = ff * cf_wing * wet_area_wing / wing_area

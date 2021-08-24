@@ -16,11 +16,14 @@
         <wet_area units="m**2" is_input="False">82.21685637423752</wet_area>
       </aircraft>
       <cabin>
+        <max_differential_pressure units="Pa">0.0<!-- 0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <NPAX is_input="False">2.0</NPAX>
         <aisle_width units="m" is_input="True">0.0<!--width of aisles--></aisle_width>
         <length units="m" is_input="False">2.896754653679918<!--cabin length--></length>
         <luggage>
-          <mass_max units="kg" is_input="True">90.0</mass_max>
+          <mass_max_front units="kg">0.<!--maximum luggage weight in the unpressurized front luggage compartment--></mass_max_front>
+          <mass_max_rear units="kg">90.<!--maximum luggage weight in the permanent rear luggage compartment--></mass_max_rear>
+          <front_compartment_first> 0.0 <!-- 1 front luggage compartment filled at max capacity first then the rear one / 0 = rear luggage compartment filled at max capacity first then the front one --></front_compartment_first>
         </luggage>
         <seats>
           <passenger>
@@ -39,11 +42,16 @@
         <chord_ratio is_input="True">0.1<!--mean value of (flap chord)/(section chord)--></chord_ratio>
         <span_ratio is_input="True">0.65<!--ratio (width of flaps)/(total span)--></span_ratio>
       </flap>
+      <aileron>
+        <chord_ratio is_input="True">0.26<!--mean value of (aileron chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.32<!--ratio (width of ailerons)/(total span)--></span_ratio>
+      </aileron>
       <fuselage>
         <PAX_length units="m" is_input="False">1.5<!--length of passenger-dedicated zone--></PAX_length>
         <front_length units="m" is_input="False">1.87292<!--length of front non-cylindrical part of the fuselage--></front_length>
         <length units="m" is_input="False">8.994853092667494<!--total fuselage length--></length>
-        <luggage_length units="m" is_input="False">0.6967546536799178</luggage_length>
+        <luggage_length_rear units="m" is_input="False">0.6967546536799178</luggage_length_rear>
+        <luggage_length_front units="m" is_input="False">0.0</luggage_length_front>
         <maximum_height units="m" is_input="False">1.3378<!--maximum fuselage height--></maximum_height>
         <maximum_width units="m" is_input="False">1.1978<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">4.225178438987577<!--length of rear non-cylindrical part of the fuselage--></rear_length>
@@ -82,6 +90,7 @@
       </horizontal_tail>
       <landing_gear>
         <height units="m" is_input="False">0.7912999999999999<!--height of landing gear--></height>
+        <y units="m" is_input="False">1.46933</y>
         <type is_input="True">1.0</type>
       </landing_gear>
       <plane>
@@ -100,7 +109,11 @@
       <propulsion>
         <count is_input="True">2.0</count>
         <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
-        <y_ratio is_input="True">0.34</y_ratio>
+        <y_ratio is_input="True">[0.34,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0,-1.0]</y_ratio>
+        <y_ratio_tank_beginning>0.42<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+        <y_ratio_tank_end>0.92<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+        <LE_chord_percentage>0.04</LE_chord_percentage>
+        <TE_chord_percentage>0.1</TE_chord_percentage>
         <nacelle>
           <height units="m" is_input="False">0.6230628899061188</height>
           <length units="m" is_input="False">1.6495763911390064<!--nacelle length--></length>
@@ -767,6 +780,14 @@
     </wing>
   </xfoil>
   <settings>
+    <geometry>
+        <fuselage>
+            <min_skin_thickness units="m">0.0005</min_skin_thickness>
+        </fuselage>
+        <fuel_tanks>
+            <depth>0.5<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+        </fuel_tanks>
+    </geometry>
     <handling_qualities>
       <rudder>
         <safety_margin is_input="True">0.2</safety_margin>
@@ -800,5 +821,19 @@
         </landing_gear>
       </airframe>
     </weight>
+    <materials>
+        <fuselage>
+            <skin>
+                <density units="kg/m**3">2700</density>
+                <young_modulus units="GPa">69.5</young_modulus>
+                <sigma_02 units="MPa">110<!--elasticity limit of the material--></sigma_02>
+                <sigma_max units="MPa">180<!--ultimate tensile strength of the material--></sigma_max>
+            </skin>
+            <stringer>
+                <density units="kg/m**3">2700</density>
+                <young_modulus units="GPa">69.5</young_modulus>
+            </stringer>
+        </fuselage>
+    </materials>
   </settings>
 </FASTOAD_model>

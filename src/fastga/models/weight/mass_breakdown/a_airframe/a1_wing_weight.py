@@ -37,6 +37,7 @@ class ComputeWingWeight(om.ExplicitComponent):
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:airframe:wing:k_factor", val=1.0)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
@@ -68,4 +69,6 @@ class ComputeWingWeight(om.ExplicitComponent):
             ** 0.993
         )  # mass formula in lb
 
-        outputs["data:weight:airframe:wing:mass"] = a1
+        outputs["data:weight:airframe:wing:mass"] = (
+            a1 * inputs["data:weight:airframe:wing:k_factor"]
+        )

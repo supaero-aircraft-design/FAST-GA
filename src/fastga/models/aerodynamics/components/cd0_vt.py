@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the vertical tail profile drag
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -22,6 +22,16 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class Cd0VerticalTail(ExplicitComponent):
+    """
+    Profile drag estimation for the vertical tail
+
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013.
+    And :
+    Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and Astronautics, Inc.,
+    2012.
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
@@ -53,7 +63,7 @@ class Cd0VerticalTail(ExplicitComponent):
         wet_area_vt = inputs["data:geometry:vertical_tail:wet_area"]
         wing_area = inputs["data:geometry:wing:area"]
         thickness = inputs["data:geometry:vertical_tail:thickness_ratio"]
-        x_tmax = inputs["data:geometry:vertical_tail:max_thickness:x_ratio"]
+        x_t_max = inputs["data:geometry:vertical_tail:max_thickness:x_ratio"]
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
             unit_reynolds = inputs["data:aerodynamics:low_speed:unit_reynolds"]
@@ -63,20 +73,22 @@ class Cd0VerticalTail(ExplicitComponent):
 
         # Root: 50% NLF
         x_trans = 0.5
-        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
-        cf_root = 0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
+        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * root_chord)) ** 0.375
+        cf_root = (
+            0.074 / (unit_reynolds * root_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
+        )
         # Tip: 50% NLF
         x_trans = 0.5
-        x0_turb = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375
-        cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turb)) ** 0.8
+        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * tip_chord)) ** 0.375
+        cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         # Global
         cf_vt = (cf_root + cf_tip) * 0.5
-        ff = 1 + 0.6 / x_tmax * thickness + 100 * thickness ** 4
+        ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
         ff = ff * 1.05  # Due to hinged elevator (Raymer)
         if mach > 0.2:
             ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25_vt * math.pi / 180)) ** 0.28
-        interf = 1.05
-        cd0 = ff * interf * cf_vt * wet_area_vt / wing_area
+        interference_factor = 1.05
+        cd0 = ff * interference_factor * cf_vt * wet_area_vt / wing_area
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:vertical_tail:low_speed:CD0"] = cd0

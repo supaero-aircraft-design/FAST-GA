@@ -60,11 +60,26 @@ class UpdateHTArea(om.Group):
                 excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
             ),
         )
+        self.add_subsystem(
+            "ht_area_constraints",
+            _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
+            promotes=self.get_io_names(
+                _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
+                excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
+            ),
+        )
 
         self.connect("aero_coeff_landing.cl_htp", "ht_area.landing:cl_htp")
         self.connect("aero_coeff_takeoff.cl_htp", "ht_area.takeoff:cl_htp")
         self.connect(
             "aero_coeff_takeoff.cl_alpha_htp_isolated", "ht_area.low_speed:cl_alpha_htp_isolated"
+        )
+
+        self.connect("aero_coeff_landing.cl_htp", "ht_area_constraints.landing:cl_htp")
+        self.connect("aero_coeff_takeoff.cl_htp", "ht_area_constraints.takeoff:cl_htp")
+        self.connect(
+            "aero_coeff_takeoff.cl_alpha_htp_isolated",
+            "ht_area_constraints.low_speed:cl_alpha_htp_isolated",
         )
 
     @staticmethod
@@ -96,7 +111,179 @@ class UpdateHTArea(om.Group):
         return list_names
 
 
-class _UpdateArea(om.ExplicitComponent):
+class HTPConstraints(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def takeoff_rotation(self, inputs):
+
+        n_engines = inputs["data:geometry:propulsion:count"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+
+        cg_range = inputs["settings:weight:aircraft:CG:range"]
+
+        takeoff_t_rate = inputs["data:mission:sizing:takeoff:thrust_rate"]
+
+        x_wing_aero_center = inputs["data:geometry:wing:MAC:at25percent:x"]
+
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
+        x_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
+        z_cg_aircraft = inputs["data:weight:aircraft_empty:CG:z"]
+        z_cg_engine = inputs["data:weight:propulsion:engine:CG:z"]
+
+        cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        cl_max_takeoff = inputs["data:aerodynamics:aircraft:takeoff:CL_max"]
+        cl_flaps_takeoff = inputs["data:aerodynamics:flaps:takeoff:CL"]
+        tail_efficiency_factor = inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        cl_htp_takeoff = inputs["takeoff:cl_htp"]
+        cm_takeoff = (
+            inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
+            + inputs["data:aerodynamics:flaps:takeoff:CM"]
+        )
+        cl_alpha_htp_isolated = inputs["low_speed:cl_alpha_htp_isolated"]
+
+        z_eng = z_cg_aircraft - z_cg_engine
+
+        # Conditions for calculation
+        atm = Atmosphere(0.0)
+        rho = atm.density
+
+        propulsion_model = FuelEngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+        )
+
+        # Calculation of take-off minimum speed
+        weight = mtow * g
+        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
+        vs1 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
+        # Rotation speed requirement from FAR 23.51 (depends on number of engines)
+        if n_engines == 1:
+            v_r = vs1 * 1.0
+        else:
+            v_r = vs1 * 1.1
+        # Definition of max forward gravity center position
+        x_cg = x_cg_aft - cg_range * wing_mac
+        # Definition of horizontal tail global position
+        x_ht = x_wing_aero_center + lp_ht
+        # Calculation of wheel factor
+        flight_point = FlightPoint(
+            mach=v_r / atm.speed_of_sound,
+            altitude=0.0,
+            engine_setting=EngineSetting.TAKEOFF,
+            thrust_rate=takeoff_t_rate,
+        )
+        propulsion_model.compute_flight_points(flight_point)
+        thrust = float(flight_point.thrust)
+        fact_wheel = (
+            (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
+        )  # FIXME: not clear if vs0 or vs1 should be used in formula
+        # Compute aerodynamic coefficients for takeoff @ 0° aircraft angle
+        cl0_takeoff = cl0_clean + cl_flaps_takeoff
+        # Calculation of correction coefficient n_h and n_q
+        n_h = (
+            (x_ht - x_lg) / lp_ht * tail_efficiency_factor
+        )  # tail_efficiency_factor: dynamic pressure reduction at
+        # tail (typical value)
+        n_q = 1 + cl_alpha_htp_isolated / cl_htp_takeoff * _ANG_VEL * (x_ht - x_lg) / v_r
+        # Calculation of volume coefficient based on Torenbeek formula
+        coeff_vol = (
+            cl_max_takeoff
+            / (n_h * n_q * cl_htp_takeoff)
+            * (cm_takeoff / cl_max_takeoff - fact_wheel)
+            + cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
+        )
+        # Calculation of equivalent area
+        area = coeff_vol * wing_area * wing_mac / lp_ht
+
+        return area
+
+    def landing(self, inputs):
+
+        propulsion_model = FuelEngineSet(
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+        )
+
+        wing_area = inputs["data:geometry:wing:area"]
+        x_wing_aero_center = inputs["data:geometry:wing:MAC:at25percent:x"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+
+        mlw = inputs["data:weight:aircraft:MLW"]
+        cg_range = inputs["settings:weight:aircraft:CG:range"]
+        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
+        z_cg_aircraft = inputs["data:weight:aircraft_empty:CG:z"]
+        z_cg_engine = inputs["data:weight:propulsion:engine:CG:z"]
+        x_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
+
+        cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_max_landing = inputs["data:aerodynamics:aircraft:landing:CL_max"]
+        cl_flaps_landing = inputs["data:aerodynamics:flaps:landing:CL"]
+        tail_efficiency_factor = inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        cl_htp_landing = inputs["landing:cl_htp"]
+        cm_landing = (
+            inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
+            + inputs["data:aerodynamics:flaps:landing:CM"]
+        )
+        cl_alpha_htp_isolated = inputs["low_speed:cl_alpha_htp_isolated"]
+
+        z_eng = z_cg_aircraft - z_cg_engine
+
+        # Conditions for calculation
+        atm = Atmosphere(0.0)
+        rho = atm.density
+
+        # Definition of max forward gravity center position
+        x_cg = x_cg_aft - cg_range * wing_mac
+        # Definition of horizontal tail global position
+        x_ht = x_wing_aero_center + lp_ht
+
+        # Calculation of take-off minimum speed
+        weight = mlw * g
+        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
+        # Rotation speed requirement from FAR 23.73
+        v_r = vs0 * 1.3
+        # Calculation of wheel factor
+        flight_point = FlightPoint(
+            mach=v_r / atm.speed_of_sound,
+            altitude=0.0,
+            engine_setting=EngineSetting.IDLE,
+            thrust_rate=0.1,
+        )  # FIXME: fixed thrust rate (should depend on wished descent rate)
+        propulsion_model.compute_flight_points(flight_point)
+        thrust = float(flight_point.thrust)
+        fact_wheel = (
+            (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
+        )  # FIXME: not clear if vs0 or vs1 should be used in formula
+        # Evaluate aircraft overall angle (aoa)
+        cl0_landing = cl0_clean + cl_flaps_landing
+        # Calculation of correction coefficient n_h and n_q
+        n_h = (
+            (x_ht - x_lg) / lp_ht * tail_efficiency_factor
+        )  # tail_efficiency_factor: dynamic pressure reduction at
+        # tail (typical value)
+        n_q = 1 + cl_alpha_htp_isolated / cl_htp_landing * _ANG_VEL * (x_ht - x_lg) / v_r
+        # Calculation of volume coefficient based on Torenbeek formula
+        coeff_vol = (
+            cl_max_landing
+            / (n_h * n_q * cl_htp_landing)
+            * (cm_landing / cl_max_landing - fact_wheel)
+            + cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
+        )
+        # Calculation of equivalent area
+        area = coeff_vol * wing_area * wing_mac / lp_ht
+
+        return area
+
+
+class _UpdateArea(HTPConstraints):
     """
     Computes area of horizontal tail plane (internal function)
     """
@@ -157,136 +344,96 @@ class _UpdateArea(om.ExplicitComponent):
         # Limiting cases: Rotating power at takeoff/landing, with the most
         # forward CG position. Returns maximum area.
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
-        )
-        n_engines = inputs["data:geometry:propulsion:count"]
-        cg_range = inputs["settings:weight:aircraft:CG:range"]
-        takeoff_t_rate = inputs["data:mission:sizing:takeoff:thrust_rate"]
-        wing_area = inputs["data:geometry:wing:area"]
-        x_wing_aero_center = inputs["data:geometry:wing:MAC:at25percent:x"]
-        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        wing_mac = inputs["data:geometry:wing:MAC:length"]
-        mtow = inputs["data:weight:aircraft:MTOW"]
-        mlw = inputs["data:weight:aircraft:MLW"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
-        z_cg_aircraft = inputs["data:weight:aircraft_empty:CG:z"]
-        z_cg_engine = inputs["data:weight:propulsion:engine:CG:z"]
-        x_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
-        cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        cl_max_landing = inputs["data:aerodynamics:aircraft:landing:CL_max"]
-        cl_max_takeoff = inputs["data:aerodynamics:aircraft:takeoff:CL_max"]
-        cl_flaps_landing = inputs["data:aerodynamics:flaps:landing:CL"]
-        cl_flaps_takeoff = inputs["data:aerodynamics:flaps:takeoff:CL"]
-        tail_efficiency_factor = inputs["data:aerodynamics:horizontal_tail:efficiency"]
-        cl_htp_landing = inputs["landing:cl_htp"]
-        cl_htp_takeoff = inputs["takeoff:cl_htp"]
-        cm_landing = (
-            inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
-            + inputs["data:aerodynamics:flaps:landing:CM"]
-        )
-        cm_takeoff = (
-            inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
-            + inputs["data:aerodynamics:flaps:takeoff:CM"]
-        )
-        cl_alpha_htp_isolated = inputs["low_speed:cl_alpha_htp_isolated"]
-
-        z_eng = z_cg_aircraft - z_cg_engine
-
-        # Conditions for calculation
-        atm = Atmosphere(0.0)
-        rho = atm.density
-
         # CASE1: TAKE-OFF ##############################################################################################
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of take-off minimum speed
-        weight = mtow * g
-        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
-        vs1 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
-        # Rotation speed requirement from FAR 23.51 (depends on number of engines)
-        if n_engines == 1:
-            v_r = vs1 * 1.0
-        else:
-            v_r = vs1 * 1.1
-        # Definition of max forward gravity center position
-        x_cg = x_cg_aft - cg_range * wing_mac
-        # Definition of horizontal tail global position
-        x_ht = x_wing_aero_center + lp_ht
-        # Calculation of wheel factor
-        flight_point = FlightPoint(
-            mach=v_r / atm.speed_of_sound,
-            altitude=0.0,
-            engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=takeoff_t_rate,
-        )
-        propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
-        fact_wheel = (
-            (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
-        )  # FIXME: not clear if vs0 or vs1 should be used in formula
-        # Compute aerodynamic coefficients for takeoff @ 0° aircraft angle
-        cl0_takeoff = cl0_clean + cl_flaps_takeoff
-        # Calculation of correction coefficient n_h and n_q
-        n_h = (
-            (x_ht - x_lg) / lp_ht * tail_efficiency_factor
-        )  # tail_efficiency_factor: dynamic pressure reduction at
-        # tail (typical value)
-        n_q = 1 + cl_alpha_htp_isolated / cl_htp_takeoff * _ANG_VEL * (x_ht - x_lg) / v_r
-        # Calculation of volume coefficient based on Torenbeek formula
-        coef_vol = (
-            cl_max_takeoff
-            / (n_h * n_q * cl_htp_takeoff)
-            * (cm_takeoff / cl_max_takeoff - fact_wheel)
-            + cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
-        )
-        # Calculation of equivalent area
-        area_1 = coef_vol * wing_area * wing_mac / lp_ht
+        area_1 = self.takeoff_rotation(inputs)
 
         # CASE2: LANDING ###############################################################################################
         # method extracted from Torenbeek 1982 p325
 
-        # Calculation of take-off minimum speed
-        weight = mlw * g
-        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
-        # Rotation speed requirement from FAR 23.73
-        v_r = vs0 * 1.3
-        # Calculation of wheel factor
-        flight_point = FlightPoint(
-            mach=v_r / atm.speed_of_sound,
-            altitude=0.0,
-            engine_setting=EngineSetting.IDLE,
-            thrust_rate=0.1,
-        )  # FIXME: fixed thrust rate (should depend on wished descent rate)
-        propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
-        fact_wheel = (
-            (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
-        )  # FIXME: not clear if vs0 or vs1 should be used in formula
-        # Evaluate aircraft overall angle (aoa)
-        cl0_landing = cl0_clean + cl_flaps_landing
-        # Calculation of correction coefficient n_h and n_q
-        n_h = (
-            (x_ht - x_lg) / lp_ht * tail_efficiency_factor
-        )  # tail_efficiency_factor: dynamic pressure reduction at
-        # tail (typical value)
-        n_q = 1 + cl_alpha_htp_isolated / cl_htp_landing * _ANG_VEL * (x_ht - x_lg) / v_r
-        # Calculation of volume coefficient based on Torenbeek formula
-        coef_vol = (
-            cl_max_landing
-            / (n_h * n_q * cl_htp_landing)
-            * (cm_landing / cl_max_landing - fact_wheel)
-            + cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
-        )
         # Calculation of equivalent area
-        area_2 = coef_vol * wing_area * wing_mac / lp_ht
+        area_2 = self.landing(inputs)
 
         if max(area_1, area_2) < 0.0:
             print("Warning: HTP area estimated negative (in ComputeHTArea) forced to 1m²!")
             outputs["data:geometry:horizontal_tail:area"] = 1.0
         else:
             outputs["data:geometry:horizontal_tail:area"] = max(area_1, area_2)
+
+
+class _ComputeHTPAreaConstraints(HTPConstraints):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper.setup(self)
+
+        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("settings:weight:aircraft:CG:range", val=0.3)
+        self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan)
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+        self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:height", val=np.nan, units="m")
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
+        self.add_input("data:weight:airframe:landing_gear:main:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
+        self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
+        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:takeoff:CL", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:takeoff:CM", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
+
+        self.add_input("landing:cl_htp", val=np.nan)
+        self.add_input("takeoff:cl_htp", val=np.nan)
+        self.add_input("low_speed:cl_alpha_htp_isolated", val=np.nan)
+
+        self.add_output("data:constraints:horizontal_tail:takeoff_rotation", units="m**2")
+        self.add_output("data:constraints:horizontal_tail:landing", units="m**2")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        # Sizing constraints margin for the horizontal tail (methods from Torenbeek).
+        # Limiting cases: Rotating power at takeoff/landing, with the most
+        # forward CG position. Returns maximum area.
+
+        area_htp = inputs["data:geometry:horizontal_tail:area"]
+
+        # CASE1: TAKE-OFF ##############################################################################################
+        # method extracted from Torenbeek 1982 p325
+
+        # Calculation of take-off minimum speed
+        area_diff_1 = area_htp - self.takeoff_rotation(inputs)
+
+        # CASE2: LANDING ###############################################################################################
+        # method extracted from Torenbeek 1982 p325
+
+        # Calculation of equivalent area
+        area_diff_2 = area_htp - self.landing(inputs)
+
+        outputs["data:constraints:horizontal_tail:takeoff_rotation"] = area_diff_1
+        outputs["data:constraints:horizontal_tail:landing"] = area_diff_2
 
 
 class _ComputeAeroCoeff(om.ExplicitComponent):

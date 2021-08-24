@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the optimal aerodynamics configuration for the aircraft in cruise condition
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -45,11 +45,11 @@ class ComputeLDMax(ExplicitComponent):
         cl0_clean = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
         cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
-        coef_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
+        coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 
-        cl_opt = math.sqrt(cd0 / coef_k)
+        cl_opt = math.sqrt(cd0 / coeff_k)
         alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / math.pi
-        cd_opt = cd0 + coef_k * cl_opt ** 2
+        cd_opt = cd0 + coeff_k * cl_opt ** 2
 
         outputs["data:aerodynamics:aircraft:cruise:L_D_max"] = cl_opt / cd_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_CL"] = cl_opt

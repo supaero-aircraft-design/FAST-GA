@@ -1,6 +1,4 @@
-"""
-Test module for aerodynamics groups
-"""
+"""Test module for aerodynamics groups"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,1235 +12,581 @@ Test module for aerodynamics groups
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
-import os
-import glob
-import shutil
-import pandas as pd
-import openmdao.api as om
-from openmdao.core.component import Component
-import numpy as np
-from platform import system
-import tempfile
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import pytest
-from typing import Union
-import time
 
-from fastoad.io import VariableIO
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
-
-from ..components.cd0 import Cd0
-from ..external.xfoil.xfoil_polar import XfoilPolar
-from ..external.xfoil import resources
-from ..external.vlm import ComputeAEROvlm, ComputeVNvlmNoVH
-from ..external.openvsp import ComputeAEROopenvsp, ComputeVNopenvspNoVH
-from ..external.openvsp.compute_aero_slipstream import ComputeSlipstreamOpenvsp
-from ..components import (
-    ComputeExtremeCL,
-    ComputeUnitReynolds,
-    ComputeCnBetaFuselage,
-    ComputeLDMax,
-    ComputeDeltaHighLift,
-    Compute2DHingeMomentsTail,
-    Compute3DHingeMomentsTail,
-    ComputeMachInterpolation,
-    ComputeCyDeltaRudder,
-    ComputeAirfoilLiftCurveSlope,
-    ComputeClalphaVT,
-)
-from ..aerodynamics_high_speed import AerodynamicsHighSpeed
-from ..aerodynamics_low_speed import AerodynamicsLowSpeed
-from ..external.vlm.compute_aero import DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
-from ..constants import SPAN_MESH_POINT, POLAR_POINT_COUNT
-from ..components.compute_propeller_aero import ComputePropellerPerformance
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
-
-from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.propulsion import IPropulsion
+from platform import system
+import numpy as np
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
-RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
-xfoil_path = None if system() == "Windows" else get_xfoil_path()
+from .test_functions import (
+    xfoil_path,
+    compute_reynolds,
+    cd0_high_speed,
+    cd0_low_speed,
+    polar,
+    airfoil_slope_wt_xfoil,
+    airfoil_slope_xfoil,
+    comp_high_speed,
+    comp_low_speed,
+    hinge_moment_2d,
+    hinge_moment_3d,
+    high_lift,
+    extreme_cl,
+    l_d_max,
+    cnbeta,
+    slipstream_openvsp_cruise,
+    slipstream_openvsp_low_speed,
+    compute_mach_interpolation_roskam,
+    cl_alpha_vt,
+    cy_delta_r,
+    high_speed_connection,
+    low_speed_connection,
+    v_n_diagram,
+    load_factor,
+    propeller,
+)
 
 XML_FILE = "beechcraft_76.xml"
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
-def _create_tmp_directory() -> TemporaryDirectory:
-    """Provide temporary directory for calculation."""
-
-    for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
-        if tmp_base_path is not None:
-            os.makedirs(tmp_base_path, exist_ok=True)
-        tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
-        break
-
-    return tmp_directory
-
-
-def reshape_curve(y, cl):
-    """ Reshape data from openvsp/vlm lift curve """
-    for idx in range(len(y)):
-        if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
-            y = y[0:idx]
-            cl = cl[0:idx]
-            break
-
-    return y, cl
-
-
-def reshape_polar(cl, cdp):
-    """ Reshape data from xfoil polar vectors """
-    for idx in range(len(cl)):
-        if np.sum(cl[idx : len(cl)] == 0) == (len(cl) - idx):
-            cl = cl[0:idx]
-            cdp = cdp[0:idx]
-            break
-    return cl, cdp
-
-
-def polar_result_transfer():
-    # Put saved polar results in a temporary folder to activate Xfoil run and have repeatable results  [need writting
-    # permission]
-
-    tmp_folder = _create_tmp_directory()
-
-    files = glob.iglob(pth.join(resources.__path__[0], "*.csv"))
-
-    for file in files:
-        if os.path.isfile(file):
-            shutil.copy(file, tmp_folder.name)
-            try:
-                os.remove(file)
-            except:
-                pass
-
-    return tmp_folder
-
-
-def polar_result_retrieve(tmp_folder):
-    # Retrieve the polar results set aside during the test duration if there are some [need writting permission]
-
-    files = glob.iglob(pth.join(tmp_folder.name, "*.csv"))
-
-    for file in files:
-        if os.path.isfile(file):
-            try:
-                shutil.copy(file, resources.__path__[0])
-            except:
-                pass
-
-    tmp_folder.cleanup()
-
-
-def _test_compute_reynolds():
-    """ Tests high and low speed reynolds calculation """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeUnitReynolds()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeUnitReynolds(), ivc)
-    mach = problem["data:aerodynamics:cruise:mach"]
-    assert mach == pytest.approx(0.255041, abs=1e-4)
-    reynolds = problem.get_val("data:aerodynamics:cruise:unit_reynolds", units="m**-1")
-    assert reynolds == pytest.approx(4745380, abs=1)
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeUnitReynolds(low_speed_aero=True)), __file__, XML_FILE
-    )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeUnitReynolds(low_speed_aero=True), ivc)
-    mach = problem["data:aerodynamics:low_speed:mach"]
-    assert mach == pytest.approx(0.1179, abs=1e-4)
-    reynolds = problem.get_val("data:aerodynamics:low_speed:unit_reynolds", units="m**-1")
-    assert reynolds == pytest.approx(2746999, abs=1)
-
-
-def _test_cd0_high_speed():
-    """ Tests drag coefficient @ high speed """
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:cruise:mach", 0.2457)
-    ivc.add_output("data:aerodynamics:cruise:unit_reynolds", 4571770, units="m**-1")
-
-    # noinspection PyTypeChecker
-    problem = run_system(Cd0(propulsion_id=ENGINE_WRAPPER), ivc)
-    cd0_wing = problem["data:aerodynamics:wing:cruise:CD0"]
-    assert cd0_wing == pytest.approx(0.00503, abs=1e-5)
-    cd0_fus = problem["data:aerodynamics:fuselage:cruise:CD0"]
-    assert cd0_fus == pytest.approx(0.00490, abs=1e-5)
-    cd0_ht = problem["data:aerodynamics:horizontal_tail:cruise:CD0"]
-    assert cd0_ht == pytest.approx(0.00123, abs=1e-5)
-    cd0_vt = problem["data:aerodynamics:vertical_tail:cruise:CD0"]
-    assert cd0_vt == pytest.approx(0.00077, abs=1e-5)
-    cd0_nac = problem["data:aerodynamics:nacelles:cruise:CD0"]
-    assert cd0_nac == pytest.approx(0.00185, abs=1e-5)
-    cd0_lg = problem["data:aerodynamics:landing_gear:cruise:CD0"]
-    assert cd0_lg == pytest.approx(0.0, abs=1e-5)
-    cd0_other = problem["data:aerodynamics:other:cruise:CD0"]
-    assert cd0_other == pytest.approx(0.00187, abs=1e-5)
-    cd0_total = 1.25 * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_nac + cd0_lg + cd0_other)
-    assert cd0_total == pytest.approx(0.01958, abs=1e-5)
-
-
-def _test_cd0_low_speed():
-    """ Tests drag coefficient @ low speed """
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(Cd0(propulsion_id=ENGINE_WRAPPER, low_speed_aero=True)), __file__, XML_FILE
-    )
-    ivc.add_output(
-        "data:aerodynamics:low_speed:mach", 0.1149
-    )  # correction to compensate old version conversion error
-    ivc.add_output(
-        "data:aerodynamics:low_speed:unit_reynolds", 2613822, units="m**-1"
-    )  # correction to ...
-
-    # noinspection PyTypeChecker
-    problem = run_system(Cd0(propulsion_id=ENGINE_WRAPPER, low_speed_aero=True), ivc)
-    cd0_wing = problem["data:aerodynamics:wing:low_speed:CD0"]
-    assert cd0_wing == pytest.approx(0.00552, abs=1e-5)
-    cd0_fus = problem["data:aerodynamics:fuselage:low_speed:CD0"]
-    assert cd0_fus == pytest.approx(0.00547, abs=1e-5)
-    cd0_ht = problem["data:aerodynamics:horizontal_tail:low_speed:CD0"]
-    assert cd0_ht == pytest.approx(0.00135, abs=1e-5)
-    cd0_vt = problem["data:aerodynamics:vertical_tail:low_speed:CD0"]
-    assert cd0_vt == pytest.approx(0.00086, abs=1e-5)
-    cd0_nac = problem["data:aerodynamics:nacelles:low_speed:CD0"]
-    assert cd0_nac == pytest.approx(0.00202, abs=1e-5)
-    cd0_lg = problem["data:aerodynamics:landing_gear:low_speed:CD0"]
-    assert cd0_lg == pytest.approx(0.01900, abs=1e-5)
-    cd0_other = problem["data:aerodynamics:other:low_speed:CD0"]
-    assert cd0_other == pytest.approx(0.00187, abs=1e-5)
-    cd0_total = 1.25 * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_nac + cd0_lg + cd0_other)
-    assert cd0_total == pytest.approx(0.04513, abs=1e-5)
-
-
-def _test_polar():
-    """ Tests polar execution (XFOIL) @ high and low speed """
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", 0.245)
-    ivc.add_output("xfoil:reynolds", 4571770 * 1.549)
-
-    # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=0.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
-    problem = run_system(xfoil_comp, ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl = problem["xfoil:CL"]
-    cdp = problem["xfoil:CDp"]
-    cl, cdp = reshape_polar(cl, cdp)
-    cdp_1 = np.interp(1.0, cl, cdp)
-    assert cdp_1 == pytest.approx(0.0046, abs=1e-4)
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", 0.1179)
-    ivc.add_output("xfoil:reynolds", 2746999 * 1.549)
-
-    # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=0.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
-    problem = run_system(xfoil_comp, ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl = problem["xfoil:CL"]
-    cdp = problem["xfoil:CDp"]
-    cl_max_2d = problem["xfoil:CL_max_2D"]
-    assert cl_max_2d == pytest.approx(1.6965, abs=1e-4)
-    cl, cdp = reshape_polar(cl, cdp)
-    cdp_1 = np.interp(1.0, cl, cdp)
-    assert cdp_1 == pytest.approx(0.0049, abs=1e-4)
-
-
-def _test_airfoil_slope():
-    """ Tests polar execution (XFOIL) @ high and low speed """
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(
-        list_inputs(
-            ComputeAirfoilLiftCurveSlope(
-                wing_airfoil_file="naca63_415.af",
-                htp_airfoil_file="naca0012.af",
-                vtp_airfoil_file="naca0012.af",
-            )
-        ),
-        __file__,
+def test_compute_reynolds():
+    """Tests high and low speed reynolds calculation"""
+    compute_reynolds(
         XML_FILE,
-    )
-    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", val=2782216)
-    ivc.add_output("data:aerodynamics:low_speed:mach", val=0.1194)
-
-    # Run problem
-    problem = run_system(
-        ComputeAirfoilLiftCurveSlope(
-            wing_airfoil_file="naca63_415.af",
-            htp_airfoil_file="naca0012.af",
-            vtp_airfoil_file="naca0012.af",
-        ),
-        ivc,
+        mach_high_speed=0.2488,
+        reynolds_high_speed=4629639,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999,
     )
 
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
 
-    # Check obtained value(s) is/(are) correct
-    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
-    assert cl_alpha_wing == pytest.approx(6.4810, abs=1e-4)
-    cl_alpha_htp = problem.get_val(
-        "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1"
+def test_cd0_high_speed():
+    """Tests drag coefficient @ high speed"""
+    cd0_high_speed(
+        XML_FILE,
+        ENGINE_WRAPPER,
+        cd0_wing=0.00541,
+        cd0_fus=0.00490,
+        cd0_ht=0.00119,
+        cd0_vt=0.00066,
+        cd0_nac=0.00209,
+        cd0_lg=0.0,
+        cd0_other=0.00205,
+        cd0_total=0.02040,
     )
-    assert cl_alpha_htp == pytest.approx(6.3081, abs=1e-4)
-    cl_alpha_vtp = problem.get_val(
-        "data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1"
+
+
+def test_cd0_low_speed():
+    """Tests drag coefficient @ low speed"""
+    cd0_low_speed(
+        XML_FILE,
+        ENGINE_WRAPPER,
+        cd0_wing=0.00587,
+        cd0_fus=0.00543,
+        cd0_ht=0.00129,
+        cd0_vt=0.00074,
+        cd0_nac=0.00229,
+        cd0_lg=0.01459,
+        cd0_other=0.00205,
+        cd0_total=0.04036,
     )
-    assert cl_alpha_vtp == pytest.approx(6.3081, abs=1e-4)
 
 
-def _test_vlm_comp_high_speed():
-    """ Tests vlm components @ high speed """
-
-    for mach_interpolation in [True, False]:
-
-        # Create result temporary directory
-        results_folder = _create_tmp_directory()
-
-        # Transfer saved polar results to temporary folder
-        tmp_folder = polar_result_transfer()
-
-        # Research independent input value in .xml file
-        # noinspection PyTypeChecker
-        ivc = get_indep_var_comp(list_inputs(ComputeAEROvlm()), __file__, XML_FILE)
-
-        # Run problem twice
-        start = time.time()
-        # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROvlm(
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
-        )
-        stop = time.time()
-        duration_1st_run = stop - start
-        start = time.time()
-        # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROvlm(
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
-        )
-        stop = time.time()
-        duration_2nd_run = stop - start
-
-        # Retrieve polar results from temporary folder
-        polar_result_retrieve(tmp_folder)
-
-        # Check obtained value(s) is/(are) correct
-        cl0_wing = problem["data:aerodynamics:wing:cruise:CL0_clean"]
-        assert cl0_wing == pytest.approx(0.1511, abs=1e-4)
-        cl_alpha_wing = problem.get_val("data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1")
-        assert cl_alpha_wing == pytest.approx(4.832, abs=1e-3)
-        cm0 = problem["data:aerodynamics:wing:cruise:CM0_clean"]
-        assert cm0 == pytest.approx(-0.0563, abs=1e-4)
-        coef_k_wing = problem["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        assert coef_k_wing == pytest.approx(0.05219, abs=1e-4)
-        cl0_htp = problem["data:aerodynamics:horizontal_tail:cruise:CL0"]
-        assert cl0_htp == pytest.approx(-0.0122, abs=1e-4)
-        cl_alpha_htp = problem.get_val(
-            "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
-        )
-        assert cl_alpha_htp == pytest.approx(0.6266, abs=1e-4)
-        cl_alpha_htp_isolated = problem.get_val(
-            "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
-        )
-        assert cl_alpha_htp_isolated == pytest.approx(1.0182, abs=1e-4)
-        coef_k_htp = problem["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"]
-        assert coef_k_htp == pytest.approx(0.2759, abs=1e-4)
-        if mach_interpolation:
-            cl_alpha_vector = problem[
-                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-            ]
-            assert cl_alpha_vector == pytest.approx(
-                [4.823, 4.823, 4.884, 4.964, 5.064, 5.184], abs=1e-2
-            )
-            mach_vector = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-            assert mach_vector == pytest.approx([0.0, 0.15, 0.217, 0.28, 0.339, 0.395], abs=1e-2)
-
-        # Run problem 2nd time to check time reduction
-
-        assert (duration_2nd_run / duration_1st_run) <= 0.1
-
-        # Remove existing result files
-        results_folder.cleanup()
-
-
-def _test_vlm_comp_low_speed():
-    """ Tests vlm components @ low speed """
-
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(list_inputs(ComputeAEROvlm(low_speed_aero=True)), __file__, XML_FILE)
-
-    # Run problem twice
-    start = time.time()
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeAEROvlm(low_speed_aero=True, result_folder_path=results_folder.name), ivc
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available",
+)
+def test_polar():
+    """Tests polar execution (XFOIL) @ high and low speed"""
+    polar(
+        XML_FILE,
+        mach_high_speed=0.245,
+        reynolds_high_speed=4571770 * 1.549,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+        cdp_1_high_speed=0.0046,
+        cl_max_2d=1.6965,
+        cdp_1_low_speed=0.0049,
     )
-    stop = time.time()
-    duration_1st_run = stop - start
-    start = time.time()
-    # noinspection PyTypeChecker
-    run_system(ComputeAEROvlm(low_speed_aero=True, result_folder_path=results_folder.name), ivc)
-    stop = time.time()
-    duration_2nd_run = stop - start
 
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
 
-    # Check obtained value(s) is/(are) correct
-    cl0_wing = problem["data:aerodynamics:wing:low_speed:CL0_clean"]
-    assert cl0_wing == pytest.approx(0.1471, abs=1e-4)
-    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1")
-    assert cl_alpha_wing == pytest.approx(4.705, abs=1e-3)
-    cm0 = problem["data:aerodynamics:wing:low_speed:CM0_clean"]
-    assert cm0 == pytest.approx(-0.0548, abs=1e-4)
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_airfoil_slope():
+    """Tests polar execution (XFOIL) @ low speed"""
+    airfoil_slope_xfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+        cl_alpha_wing=6.4975,
+        cl_alpha_htp=6.3321,
+        cl_alpha_vtp=6.3321,
+    )
+
+
+def test_airfoil_slope_wt_xfoil():
+    """Tests polar reading @ low speed"""
+    airfoil_slope_wt_xfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
+def test_vlm_comp_high_speed():
+    """Tests vlm components @ high speed"""
+    comp_high_speed(
+        XML_FILE,
+        use_openvsp=False,
+        cl0_wing=0.0894,
+        cl_alpha_wing=4.820,
+        cm0=-0.0247,
+        coef_k_wing=0.0522,
+        cl0_htp=-0.0058,
+        cl_alpha_htp=0.5068,
+        cl_alpha_htp_isolated=0.8223,
+        coef_k_htp=0.4252,
+        cl_alpha_vector=np.array([4.8, 4.8, 4.86, 4.94, 5.03, 5.14]),
+        mach_vector=np.array([0.0, 0.15, 0.21, 0.27, 0.33, 0.39]),
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
+def test_vlm_comp_low_speed():
+    """Tests vlm components @ low speed"""
     y_vector_wing = np.array(
         [
-            0.09983333,
-            0.2995,
-            0.49916667,
-            0.918,
-            1.556,
-            2.194,
-            2.832,
-            3.47,
-            4.108,
-            4.746,
-            5.14475,
-            5.30425,
-            5.46375,
-            5.62325,
-            5.78275,
-            5.94225,
-            6.10175,
+            0.09981667,
+            0.29945,
+            0.49908333,
+            0.84051074,
+            1.32373222,
+            1.8069537,
+            2.29017518,
+            2.77339666,
+            3.25661814,
+            3.73983962,
+            4.11154845,
+            4.37174463,
+            4.63194081,
+            4.89213699,
+            5.15233317,
+            5.41252935,
+            5.67272554,
         ]
     )
     cl_vector_wing = np.array(
         [
-            0.14401017,
-            0.1463924,
-            0.15226592,
-            0.16893604,
-            0.17265623,
-            0.17246168,
-            0.16990552,
-            0.16492115,
-            0.15646116,
-            0.14158877,
-            0.11655005,
-            0.10320515,
-            0.09218582,
-            0.08158985,
-            0.07026192,
-            0.05685002,
-            0.03852811,
+            0.0992114,
+            0.09916514,
+            0.09906688,
+            0.09886668,
+            0.09832802,
+            0.09747888,
+            0.09626168,
+            0.09457869,
+            0.09227964,
+            0.08915983,
+            0.08571362,
+            0.08229423,
+            0.07814104,
+            0.07282649,
+            0.06570522,
+            0.05554471,
+            0.03926555,
         ]
     )
     chord_vector_wing = np.array(
         [
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            1.549,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
+            1.45415954,
         ]
     )
-    y, cl = reshape_curve(
-        problem.get_val("data:aerodynamics:wing:low_speed:Y_vector", "m"),
-        problem["data:aerodynamics:wing:low_speed:CL_vector"],
-    )
-    chord = problem.get_val("data:aerodynamics:wing:low_speed:chord_vector", "m")
-    assert np.max(np.abs(y_vector_wing - y)) <= 1e-3
-    assert np.max(np.abs(cl_vector_wing - cl)) <= 1e-3
-    assert np.max(np.abs(chord_vector_wing - chord)) <= 1e-3
-    coef_k_wing = problem["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
-    assert coef_k_wing == pytest.approx(0.04978358, abs=1e-4)
-    cl0_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL0"]
-    assert cl0_htp == pytest.approx(-0.0116, abs=1e-4)
-    cl_ref_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_ref"]
-    assert cl_ref_htp == pytest.approx(0.0966, abs=1e-4)
     y_vector_htp = np.array(
         [
-            0.07492647,
-            0.22477941,
-            0.37463235,
-            0.52448529,
-            0.67433824,
-            0.82419118,
-            0.97404412,
-            1.12389706,
-            1.27375,
-            1.42360294,
-            1.57345588,
-            1.72330882,
-            1.87316176,
-            2.02301471,
-            2.17286765,
-            2.32272059,
-            2.47257353,
+            0.05551452,
+            0.16654356,
+            0.2775726,
+            0.38860163,
+            0.49963067,
+            0.61065971,
+            0.72168875,
+            0.83271779,
+            0.94374682,
+            1.05477586,
+            1.1658049,
+            1.27683394,
+            1.38786298,
+            1.49889201,
+            1.60992105,
+            1.72095009,
+            1.83197913,
         ]
     )
     cl_vector_htp = np.array(
         [
-            0.11302182,
-            0.11283237,
-            0.11244797,
-            0.11185721,
-            0.11104205,
-            0.10997647,
-            0.10862448,
-            0.10693711,
-            0.10484791,
-            0.10226597,
-            0.09906504,
-            0.09506558,
-            0.09000346,
-            0.08347052,
-            0.07478576,
-            0.0626507,
-            0.04381395,
+            0.09855168,
+            0.09833078,
+            0.09788402,
+            0.09720113,
+            0.09626606,
+            0.09505592,
+            0.09353963,
+            0.09167573,
+            0.08940928,
+            0.08666708,
+            0.08335027,
+            0.07932218,
+            0.07438688,
+            0.06824747,
+            0.06041279,
+            0.04994064,
+            0.03442474,
         ]
     )
-    y, cl = reshape_curve(
-        problem.get_val("data:aerodynamics:horizontal_tail:low_speed:Y_vector", "m"),
-        problem["data:aerodynamics:horizontal_tail:low_speed:CL_vector"],
-    )
-    assert np.max(np.abs(y_vector_htp - y)) <= 1e-3
-    assert np.max(np.abs(cl_vector_htp - cl)) <= 1e-3
-    cl_alpha_htp = problem.get_val(
-        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
-    )
-    assert cl_alpha_htp == pytest.approx(0.6202, abs=1e-4)
-    cl_alpha_htp_isolated = problem.get_val(
-        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
-    )
-    assert cl_alpha_htp_isolated == pytest.approx(0.9915, abs=1e-4)
-    coef_k_htp = problem["data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"]
-    assert coef_k_htp == pytest.approx(0.2800, abs=1e-4)
-    assert (duration_2nd_run / duration_1st_run) <= 0.1
-
-    # Remove existing result files
-    results_folder.cleanup()
-
-
-def _test_openvsp_comp_high_speed():
-    """ Tests openvsp components @ high speed """
-
-    for mach_interpolation in [True, False]:
-
-        # Create result temporary directory
-        results_folder = _create_tmp_directory()
-
-        # Research independent input value in .xml file
-        # noinspection PyTypeChecker
-        ivc = get_indep_var_comp(list_inputs(ComputeAEROopenvsp()), __file__, XML_FILE)
-
-        # Run problem twice
-        start = time.time()
-        # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROopenvsp(
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
-        )
-        stop = time.time()
-        duration_1st_run = stop - start
-        start = time.time()
-        # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROopenvsp(
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
-        )
-        stop = time.time()
-        duration_2nd_run = stop - start
-
-        # Check obtained value(s) is/(are) correct
-        cl0_wing = problem["data:aerodynamics:wing:cruise:CL0_clean"]
-        assert cl0_wing == pytest.approx(0.1171, abs=1e-4)
-        cl_alpha_wing = problem.get_val("data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1")
-        assert cl_alpha_wing == pytest.approx(4.595, abs=1e-3)
-        cm0 = problem["data:aerodynamics:wing:cruise:CM0_clean"]
-        assert cm0 == pytest.approx(-0.0265, abs=1e-4)
-        coef_k_wing = problem["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        assert coef_k_wing == pytest.approx(0.0482, abs=1e-4)
-        if mach_interpolation:
-            cl_alpha_vector = problem[
-                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-            ]
-            assert cl_alpha_vector == pytest.approx([5.20, 5.20, 5.24, 5.30, 5.37, 5.45], abs=1e-2)
-            mach_vector = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-            assert mach_vector == pytest.approx([0.0, 0.15, 0.21, 0.28, 0.34, 0.39], abs=1e-2)
-        cl0_htp = problem["data:aerodynamics:horizontal_tail:cruise:CL0"]
-        assert cl0_htp == pytest.approx(-0.0058, abs=1e-4)
-        cl_alpha_htp = problem.get_val(
-            "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
-        )
-        assert cl_alpha_htp == pytest.approx(0.6826, abs=1e-4)
-        cl_alpha_htp_isolated = problem.get_val(
-            "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
-        )
-        assert cl_alpha_htp_isolated == pytest.approx(1.0387, abs=1e-4)
-        coef_k_htp = problem["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"]
-        assert coef_k_htp == pytest.approx(0.4605, abs=1e-4)
-        assert (duration_2nd_run / duration_1st_run) <= 0.01
-
-        # Remove existing result files
-        results_folder.cleanup()
-
-
-def _test_openvsp_comp_low_speed():
-    """ Tests openvsp components @ low speed """
-
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeAEROopenvsp(low_speed_aero=True)), __file__, XML_FILE
+    comp_low_speed(
+        XML_FILE,
+        use_openvsp=False,
+        cl0_wing=0.0872,
+        cl_alpha_wing=4.701,
+        cm0=-0.0241,
+        coef_k_wing=0.0500,
+        cl0_htp=-0.0055,
+        cl_alpha_htp=0.5019,
+        cl_alpha_htp_isolated=0.8020,
+        coef_k_htp=0.4287,
+        y_vector_wing=y_vector_wing,
+        cl_vector_wing=cl_vector_wing,
+        chord_vector_wing=chord_vector_wing,
+        cl_ref_htp=0.0820,
+        y_vector_htp=y_vector_htp,
+        cl_vector_htp=cl_vector_htp,
     )
 
-    # Run problem twice
-    start = time.time()
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeAEROopenvsp(low_speed_aero=True, result_folder_path=results_folder.name), ivc
-    )
-    stop = time.time()
-    duration_1st_run = stop - start
-    start = time.time()
-    # noinspection PyTypeChecker
-    run_system(ComputeAEROopenvsp(low_speed_aero=True, result_folder_path=results_folder.name), ivc)
-    stop = time.time()
-    duration_2nd_run = stop - start
 
-    # Check obtained value(s) is/(are) correct
-    cl0_wing = problem["data:aerodynamics:wing:low_speed:CL0_clean"]
-    assert cl0_wing == pytest.approx(0.1147, abs=1e-4)
-    cl_alpha_wing = problem.get_val("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1")
-    assert cl_alpha_wing == pytest.approx(4.509, abs=1e-3)
-    cm0 = problem["data:aerodynamics:wing:low_speed:CM0_clean"]
-    assert cm0 == pytest.approx(-0.0258, abs=1e-4)
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_openvsp_comp_high_speed():
+    """Tests openvsp components @ high speed"""
+    comp_high_speed(
+        XML_FILE,
+        use_openvsp=True,
+        cl0_wing=0.1170,
+        cl_alpha_wing=4.591,
+        cm0=-0.0264,
+        coef_k_wing=0.0483,
+        cl0_htp=-0.0046,
+        cl_alpha_htp=0.5433,
+        cl_alpha_htp_isolated=0.8438,
+        coef_k_htp=0.6684,
+        cl_alpha_vector=np.array([5.06, 5.06, 5.10, 5.15, 5.22, 5.29]),
+        mach_vector=np.array([0.0, 0.15, 0.21, 0.27, 0.33, 0.38]),
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_openvsp_comp_low_speed():
+    """Tests openvsp components @ low speed"""
     y_vector_wing = np.array(
         [
-            0.04279,
-            0.12836,
-            0.21393,
-            0.2995,
-            0.38507,
-            0.47064,
-            0.55621,
-            0.68649,
-            0.862,
-            1.0385,
-            1.21588,
-            1.39404,
-            1.57287,
-            1.75226,
-            1.93212,
-            2.11231,
-            2.29274,
-            2.47328,
-            2.65384,
-            2.83429,
-            3.01452,
-            3.19443,
-            3.37389,
-            3.5528,
-            3.73106,
-            3.90855,
-            4.08517,
-            4.26082,
-            4.43539,
-            4.60879,
-            4.78093,
-            4.9517,
-            5.12103,
-            5.28882,
-            5.45499,
-            5.61947,
-            5.78218,
-            5.94305,
-            6.10201,
+            0.04278,
+            0.12834,
+            0.21389,
+            0.29945,
+            0.38501,
+            0.47056,
+            0.55612,
+            0.68047,
+            0.84409,
+            1.00863,
+            1.174,
+            1.34009,
+            1.50681,
+            1.67405,
+            1.84172,
+            2.00971,
+            2.17792,
+            2.34624,
+            2.51456,
+            2.68279,
+            2.85082,
+            3.01853,
+            3.18584,
+            3.35264,
+            3.51882,
+            3.68429,
+            3.84895,
+            4.0127,
+            4.17545,
+            4.3371,
+            4.49758,
+            4.65679,
+            4.81464,
+            4.97107,
+            5.12599,
+            5.27933,
+            5.43102,
+            5.58099,
+            5.72918,
         ]
     )
     cl_vector_wing = np.array(
         [
-            0.12714757,
-            0.1275284,
-            0.12742818,
-            0.12739811,
-            0.12730792,
-            0.12730792,
-            0.1272077,
-            0.12667654,
-            0.12628568,
-            0.12660638,
-            0.126887,
-            0.12680682,
-            0.12623558,
-            0.12584472,
-            0.12580463,
-            0.12553404,
-            0.12503295,
-            0.12456192,
-            0.12390048,
-            0.12320897,
-            0.12222682,
-            0.12144512,
-            0.12058324,
-            0.11971133,
-            0.11849869,
-            0.11724595,
-            0.11562241,
-            0.11403895,
-            0.11208468,
-            0.11031081,
-            0.10819619,
-            0.10589116,
-            0.10301488,
-            0.10000832,
-            0.09569891,
-            0.09022697,
-            0.08247003,
-            0.07037363,
-            0.05267499,
+            0.12775493,
+            0.127785,
+            0.12768477,
+            0.12756449,
+            0.12749433,
+            0.12745424,
+            0.12734398,
+            0.12666241,
+            0.12616125,
+            0.12662232,
+            0.12676264,
+            0.12664236,
+            0.12611114,
+            0.12582047,
+            0.12587058,
+            0.12554984,
+            0.12503866,
+            0.12455755,
+            0.12389602,
+            0.12322447,
+            0.1222422,
+            0.12147042,
+            0.12058839,
+            0.11969633,
+            0.11841337,
+            0.11723063,
+            0.11562693,
+            0.11409339,
+            0.11226918,
+            0.11052515,
+            0.10843032,
+            0.10615507,
+            0.10331852,
+            0.10026146,
+            0.09581119,
+            0.0902283,
+            0.08231002,
+            0.07021209,
+            0.05284199,
         ]
     )
-    y, cl = reshape_curve(
-        problem.get_val("data:aerodynamics:wing:low_speed:Y_vector", "m"),
-        problem["data:aerodynamics:wing:low_speed:CL_vector"],
+    chord_vector_wing = np.array(
+        [
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+            1.44645,
+        ]
     )
-    assert np.max(np.abs(y_vector_wing - y)) <= 1e-3
-    assert np.max(np.abs(cl_vector_wing - cl)) <= 1e-3
-    coef_k_wing = problem["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
-    assert coef_k_wing == pytest.approx(0.0482, abs=1e-4)
-    cl0_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL0"]
-    assert cl0_htp == pytest.approx(-0.0055, abs=1e-4)
-    cl_ref_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_ref"]
-    assert cl_ref_htp == pytest.approx(0.1124, abs=1e-4)
     y_vector_htp = np.array(
         [
-            0.05307,
-            0.15922,
-            0.26536,
-            0.37151,
-            0.47766,
-            0.5838,
-            0.68995,
-            0.79609,
-            0.90224,
-            1.00839,
-            1.11453,
-            1.22068,
-            1.32682,
-            1.43297,
-            1.53911,
-            1.64526,
-            1.75141,
-            1.85755,
-            1.9637,
-            2.06984,
-            2.17599,
-            2.28214,
-            2.38828,
-            2.49443,
+            0.03932,
+            0.11797,
+            0.19661,
+            0.27526,
+            0.35391,
+            0.43255,
+            0.5112,
+            0.58984,
+            0.66849,
+            0.74713,
+            0.82578,
+            0.90442,
+            0.98307,
+            1.06172,
+            1.14036,
+            1.21901,
+            1.29765,
+            1.3763,
+            1.45494,
+            1.53359,
+            1.61223,
+            1.69088,
+            1.76953,
+            1.84817,
         ]
     )
     cl_vector_htp = np.array(
         [
-            0.12706265,
-            0.12950803,
-            0.12983592,
-            0.12961425,
-            0.12981745,
-            0.12923324,
-            0.12780388,
-            0.12690332,
-            0.12606048,
-            0.12506524,
-            0.12356892,
-            0.12197331,
-            0.11966648,
-            0.11778684,
-            0.11551696,
-            0.11321936,
-            0.11022672,
-            0.10689925,
-            0.1019831,
-            0.0968037,
-            0.08927591,
-            0.08074826,
-            0.06745917,
-            0.05250057,
+            0.10558592,
+            0.10618191,
+            0.10586742,
+            0.10557932,
+            0.10526483,
+            0.10469962,
+            0.10383751,
+            0.10288744,
+            0.10180321,
+            0.10075857,
+            0.09939723,
+            0.09789734,
+            0.09558374,
+            0.09371877,
+            0.09145355,
+            0.08914873,
+            0.08635569,
+            0.08325035,
+            0.07887824,
+            0.07424443,
+            0.06829986,
+            0.06080702,
+            0.05132166,
+            0.04379143,
         ]
     )
-    y, cl = reshape_curve(
-        problem.get_val("data:aerodynamics:horizontal_tail:low_speed:Y_vector", "m"),
-        problem["data:aerodynamics:horizontal_tail:low_speed:CL_vector"],
-    )
-    assert np.max(np.abs(y_vector_htp - y)) <= 1e-3
-    assert np.max(np.abs(cl_vector_htp - cl)) <= 1e-3
-    cl_alpha_htp = problem.get_val(
-        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
-    )
-    assert cl_alpha_htp == pytest.approx(0.6760, abs=1e-4)
-    cl_alpha_htp_isolated = problem.get_val(
-        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
-    )
-    assert cl_alpha_htp_isolated == pytest.approx(1.0198, abs=1e-4)
-    coef_k_htp = problem["data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"]
-    assert coef_k_htp == pytest.approx(0.4587, abs=1e-4)
-    assert (duration_2nd_run / duration_1st_run) <= 0.1
-
-    # Remove existing result files
-    results_folder.cleanup()
-
-
-def _test_2d_hinge_moment():
-    """ Tests tail hinge-moments """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(Compute2DHingeMomentsTail()), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:horizontal_tail:cruise:CL_alpha", 0.6826, units="rad**-1")
-    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(Compute2DHingeMomentsTail(), ivc)
-    ch_alpha_2d = problem.get_val(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D", units="rad**-1"
-    )
-    assert ch_alpha_2d == pytest.approx(-0.3557, abs=1e-4)
-    ch_delta_2d = problem.get_val(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", units="rad**-1"
-    )
-    assert ch_delta_2d == pytest.approx(-0.5752, abs=1e-4)
-
-
-def _test_3d_hinge_moment():
-    """ Tests tail hinge-moments """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(Compute3DHingeMomentsTail()), __file__, XML_FILE)
-    ivc.add_output(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
-        -0.3339,
-        units="rad**-1",
-    )
-    ivc.add_output(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D",
-        -0.6358,
-        units="rad**-1",
-    )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(Compute3DHingeMomentsTail(), ivc)
-    ch_alpha = problem.get_val(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
-    )
-    assert ch_alpha == pytest.approx(-0.2486, abs=1e-4)
-    ch_delta = problem.get_val(
-        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
-    )
-    assert ch_delta == pytest.approx(-0.6765, abs=1e-4)
-
-
-def _test_high_lift():
-    """ Tests high-lift contribution """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeDeltaHighLift()), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:low_speed:mach", 0.1149)
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL_alpha", 4.569, units="rad**-1")
-    ivc.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1")
-    ivc.add_output("data:aerodynamics:wing:airfoil:CL_alpha", 6.4810, units="rad**-1")
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeDeltaHighLift(), ivc)
-    delta_cl0_landing = problem["data:aerodynamics:flaps:landing:CL"]
-    assert delta_cl0_landing == pytest.approx(0.7145, abs=1e-4)
-    delta_clmax_landing = problem["data:aerodynamics:flaps:landing:CL_max"]
-    assert delta_clmax_landing == pytest.approx(0.5258, abs=1e-4)
-    delta_cm_landing = problem["data:aerodynamics:flaps:landing:CM"]
-    assert delta_cm_landing == pytest.approx(-0.0964, abs=1e-4)
-    delta_cd_landing = problem["data:aerodynamics:flaps:landing:CD"]
-    assert delta_cd_landing == pytest.approx(0.01383, abs=1e-4)
-    delta_cl0_takeoff = problem["data:aerodynamics:flaps:takeoff:CL"]
-    assert delta_cl0_takeoff == pytest.approx(0.2735, abs=1e-4)
-    delta_clmax_takeoff = problem["data:aerodynamics:flaps:takeoff:CL_max"]
-    assert delta_clmax_takeoff == pytest.approx(0.1076, abs=1e-4)
-    delta_cm_takeoff = problem["data:aerodynamics:flaps:takeoff:CM"]
-    assert delta_cm_takeoff == pytest.approx(-0.0369, abs=1e-4)
-    delta_cd_takeoff = problem["data:aerodynamics:flaps:takeoff:CD"]
-    assert delta_cd_takeoff == pytest.approx(0.00111811, abs=1e-4)
-    cl_delta_elev = problem.get_val(
-        "data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1"
-    )
-    assert cl_delta_elev == pytest.approx(0.5424, abs=1e-4)
-
-
-def _test_extreme_cl():
-    """ Tests maximum/minimum cl component with default result cl=f(y) curve"""
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCL()), __file__, XML_FILE)
-    y_vector_wing = np.zeros(SPAN_MESH_POINT)
-    cl_vector_wing = np.zeros(SPAN_MESH_POINT)
-    y_vector_htp = np.zeros(SPAN_MESH_POINT)
-    cl_vector_htp = np.zeros(SPAN_MESH_POINT)
-    y_vector_wing[0:39] = [
-        0.04279,
-        0.12836,
-        0.21393,
-        0.2995,
-        0.38507,
-        0.47064,
-        0.55621,
-        0.68649,
-        0.862,
-        1.0385,
-        1.21588,
-        1.39404,
-        1.57287,
-        1.75226,
-        1.93212,
-        2.11231,
-        2.29274,
-        2.47328,
-        2.65384,
-        2.83429,
-        3.01452,
-        3.19443,
-        3.37389,
-        3.5528,
-        3.73106,
-        3.90855,
-        4.08517,
-        4.26082,
-        4.43539,
-        4.60879,
-        4.78093,
-        4.9517,
-        5.12103,
-        5.28882,
-        5.45499,
-        5.61947,
-        5.78218,
-        5.94305,
-        6.10201,
-    ]
-    cl_vector_wing[0:39] = [
-        0.0989,
-        0.09908,
-        0.09901,
-        0.09898,
-        0.09892,
-        0.09888,
-        0.09887,
-        0.09871,
-        0.09823,
-        0.09859,
-        0.09894,
-        0.09888,
-        0.09837,
-        0.098,
-        0.0979,
-        0.09763,
-        0.09716,
-        0.09671,
-        0.0961,
-        0.09545,
-        0.09454,
-        0.09377,
-        0.09295,
-        0.09209,
-        0.09087,
-        0.08965,
-        0.08812,
-        0.0866,
-        0.08465,
-        0.08284,
-        0.08059,
-        0.07817,
-        0.07494,
-        0.07178,
-        0.06773,
-        0.06279,
-        0.05602,
-        0.04639,
-        0.03265,
-    ]
-    y_vector_htp[0:24] = [
-        0.05307,
-        0.15922,
-        0.26536,
-        0.37151,
-        0.47766,
-        0.5838,
-        0.68995,
-        0.79609,
-        0.90224,
-        1.00839,
-        1.11453,
-        1.22068,
-        1.32682,
-        1.43297,
-        1.53911,
-        1.64526,
-        1.75141,
-        1.85755,
-        1.9637,
-        2.06984,
-        2.17599,
-        2.28214,
-        2.38828,
-        2.49443,
-    ]
-    cl_vector_htp[0:24] = [
-        0.12706265,
-        0.12950803,
-        0.12983592,
-        0.12961425,
-        0.12981745,
-        0.12923324,
-        0.12780388,
-        0.12690332,
-        0.12606048,
-        0.12506524,
-        0.12356892,
-        0.12197331,
-        0.11966648,
-        0.11778684,
-        0.11551696,
-        0.11321936,
-        0.11022672,
-        0.10689925,
-        0.1019831,
-        0.0968037,
-        0.08927591,
-        0.08074826,
-        0.06745917,
-        0.05250057,
-    ]
-    ivc.add_output("data:aerodynamics:flaps:landing:CL_max", 0.5788)
-    ivc.add_output("data:aerodynamics:flaps:takeoff:CL_max", 0.1218)
-    ivc.add_output("data:aerodynamics:wing:low_speed:Y_vector", y_vector_wing, units="m")
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL_vector", cl_vector_wing)
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL0_clean", 0.0877)
-    ivc.add_output("data:aerodynamics:horizontal_tail:low_speed:Y_vector", y_vector_htp, units="m")
-    ivc.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_vector", cl_vector_htp)
-    ivc.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_ref", 0.11245)
-    ivc.add_output("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", 0.6760, units="rad**-1")
-    ivc.add_output("data:aerodynamics:low_speed:mach", 0.1149)
-    ivc.add_output("data:aerodynamics:low_speed:unit_reynolds", 2613822, units="m**-1")
-
-    # Run problem
-    problem = run_system(ComputeExtremeCL(), ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl_max_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_max_clean"]
-    assert cl_max_clean_wing == pytest.approx(1.49, abs=1e-2)
-    cl_min_clean_wing = problem["data:aerodynamics:wing:low_speed:CL_min_clean"]
-    assert cl_min_clean_wing == pytest.approx(-1.19, abs=1e-2)
-    cl_max_takeoff_wing = problem["data:aerodynamics:aircraft:takeoff:CL_max"]
-    assert cl_max_takeoff_wing == pytest.approx(1.618, abs=1e-2)
-    cl_max_landing_wing = problem["data:aerodynamics:aircraft:landing:CL_max"]
-    assert cl_max_landing_wing == pytest.approx(2.07, abs=1e-2)
-    cl_max_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
-    assert cl_max_clean_htp == pytest.approx(1.36, abs=1e-2)
-    cl_min_clean_htp = problem["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"]
-    assert cl_min_clean_htp == pytest.approx(-1.36, abs=1e-2)
-    alpha_max_clean_htp = problem[
-        "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"
-    ]
-    assert alpha_max_clean_htp == pytest.approx(26.64, abs=1e-2)
-    alpha_min_clean_htp = problem[
-        "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"
-    ]
-    assert alpha_min_clean_htp == pytest.approx(-26.62, abs=1e-2)
-
-
-def _test_l_d_max():
-    """ Tests best lift/drag component """
-
-    # Define independent input value (openVSP)
-    ivc = om.IndepVarComp()
-    ivc.add_output("data:aerodynamics:wing:cruise:CL0_clean", 0.0906)
-    ivc.add_output("data:aerodynamics:wing:cruise:CL_alpha", 4.650, units="rad**-1")
-    ivc.add_output("data:aerodynamics:aircraft:cruise:CD0", 0.01603)
-    ivc.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient", 0.0480)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeLDMax(), ivc)
-    l_d_max = problem["data:aerodynamics:aircraft:cruise:L_D_max"]
-    assert l_d_max == pytest.approx(18.0, abs=1e-1)
-    optimal_cl = problem["data:aerodynamics:aircraft:cruise:optimal_CL"]
-    assert optimal_cl == pytest.approx(0.5778, abs=1e-4)
-    optimal_cd = problem["data:aerodynamics:aircraft:cruise:optimal_CD"]
-    assert optimal_cd == pytest.approx(0.0320, abs=1e-4)
-    optimal_alpha = problem.get_val("data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg")
-    assert optimal_alpha == pytest.approx(6.00, abs=1e-2)
-
-
-def _test_cnbeta():
-    """ Tests cn beta fuselage """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCnBetaFuselage()), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:cruise:mach", 0.245)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeCnBetaFuselage(), ivc)
-    cn_beta_fus = problem["data:aerodynamics:fuselage:cruise:CnBeta"]
-    assert cn_beta_fus == pytest.approx(-0.0599, abs=1e-4)
-
-
-def _test_slipstream_openvsp_cruise():
-
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(
-            ComputeSlipstreamOpenvsp(
-                propulsion_id=ENGINE_WRAPPER, result_folder_path=results_folder.name,
-            )
-        ),
-        __file__,
+    comp_low_speed(
         XML_FILE,
+        use_openvsp=True,
+        cl0_wing=0.1147,
+        cl_alpha_wing=4.510,
+        cm0=-0.0258,
+        coef_k_wing=0.0483,
+        cl0_htp=-0.0044,
+        cl_alpha_htp=0.5401,
+        cl_alpha_htp_isolated=0.8318,
+        coef_k_htp=0.6648,
+        y_vector_wing=y_vector_wing,
+        cl_vector_wing=cl_vector_wing,
+        chord_vector_wing=chord_vector_wing,
+        cl_ref_htp=0.0897,
+        y_vector_htp=y_vector_htp,
+        cl_vector_htp=cl_vector_htp,
     )
-    ivc.add_output("data:aerodynamics:wing:cruise:CL0_clean", val=0.1173)
-    ivc.add_output("data:aerodynamics:wing:cruise:CL_alpha", val=4.5996, units="rad**-1")
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", val=1.4465)
-    # Run problem and check obtained value(s) is/(are) correct
-    # start = time.time()
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeSlipstreamOpenvsp(
-            propulsion_id=ENGINE_WRAPPER,
-            result_folder_path=results_folder.name,
-            low_speed_aero=False,
-        ),
-        ivc,
+
+
+def test_2d_hinge_moment():
+    """Tests tail hinge-moments"""
+    hinge_moment_2d(XML_FILE, ch_alpha_2d=-0.3998, ch_delta_2d=-0.6146)
+
+
+def test_3d_hinge_moment():
+    """Tests tail hinge-moments"""
+    hinge_moment_3d(XML_FILE, ch_alpha=-0.2625, ch_delta=-0.6822)
+
+
+def test_high_lift():
+    """Tests high-lift contribution"""
+    high_lift(
+        XML_FILE,
+        delta_cl0_landing=0.5037,
+        delta_clmax_landing=0.3613,
+        delta_cm_landing=-0.0680,
+        delta_cd_landing=0.005,
+        delta_cl0_takeoff=0.1930,
+        delta_clmax_takeoff=0.0740,
+        delta_cm_takeoff=-0.0260,
+        delta_cd_takeoff=0.0004,
+        cl_delta_elev=0.5115,
+        cd_delta_elev=0.0680,
     )
-    # stop = time.time()
-    # duration_1st_run = stop - start
-    y_vector_prop_on = problem.get_val(
-        "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", units="m"
+
+
+@pytest.mark.skipif(
+    system() != "Windows",
+    reason="No XFOIL executable available: not computed with empty result folder",
+)
+def test_extreme_cl():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve"""
+    extreme_cl(
+        XML_FILE,
+        cl_max_clean_wing=1.50,
+        cl_min_clean_wing=-1.20,
+        cl_max_takeoff_wing=1.58,
+        cl_max_landing_wing=1.87,
+        cl_max_clean_htp=0.30,
+        cl_min_clean_htp=-0.30,
+        alpha_max_clean_htp=30.39,
+        alpha_min_clean_htp=-30.36,
     )
-    y_result_prop_on = np.array(
+
+
+def test_l_d_max():
+    """Tests best lift/drag component"""
+    l_d_max(XML_FILE, l_d_max_=15.422, optimal_cl=0.6475, optimal_cd=0.0419, optimal_alpha=4.92)
+
+
+def test_cnbeta():
+    """Tests cn beta fuselage"""
+    cnbeta(XML_FILE, cn_beta_fus=-0.0557)
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_slipstream_openvsp_cruise():
+    """Compute slipstream @ high speed"""
+    y_vector_prop_on = np.array(
         [
             0.04,
             0.13,
@@ -1251,38 +595,38 @@ def _test_slipstream_openvsp_cruise():
             0.39,
             0.47,
             0.56,
-            0.69,
-            0.86,
-            1.04,
-            1.22,
-            1.39,
-            1.57,
-            1.75,
-            1.93,
-            2.11,
-            2.29,
-            2.47,
-            2.65,
-            2.83,
-            3.01,
+            0.68,
+            0.84,
+            1.01,
+            1.17,
+            1.34,
+            1.51,
+            1.67,
+            1.84,
+            2.01,
+            2.18,
+            2.35,
+            2.51,
+            2.68,
+            2.85,
+            3.02,
             3.19,
-            3.37,
-            3.55,
-            3.73,
-            3.91,
-            4.09,
-            4.26,
-            4.44,
-            4.61,
-            4.78,
-            4.95,
-            5.12,
-            5.29,
-            5.45,
-            5.62,
-            5.78,
-            5.94,
-            6.1,
+            3.35,
+            3.52,
+            3.68,
+            3.85,
+            4.01,
+            4.18,
+            4.34,
+            4.5,
+            4.66,
+            4.81,
+            4.97,
+            5.13,
+            5.28,
+            5.43,
+            5.58,
+            5.73,
             0.0,
             0.0,
             0.0,
@@ -1296,51 +640,170 @@ def _test_slipstream_openvsp_cruise():
             0.0,
         ]
     )
-    assert np.max(np.abs(y_vector_prop_on - y_result_prop_on)) <= 1e-2
-    cl_vector_prop_on = problem.get_val(
-        "data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"
-    )
-    cl_result_prop_on = np.array(
+    cl_vector_prop_on = np.array(
         [
-            1.657,
-            1.655,
-            1.655,
-            1.655,
-            1.654,
-            1.653,
-            1.658,
-            1.649,
-            1.645,
-            1.65,
-            1.659,
-            1.714,
-            1.737,
-            1.752,
-            1.737,
-            1.658,
-            1.627,
-            1.606,
-            1.594,
-            1.571,
-            1.535,
-            1.529,
-            1.518,
-            1.506,
-            1.484,
-            1.465,
-            1.439,
-            1.414,
-            1.378,
-            1.348,
-            1.309,
-            1.271,
-            1.22,
-            1.171,
+            1.43,
+            1.42,
+            1.42,
+            1.42,
+            1.42,
+            1.41,
+            1.42,
+            1.41,
+            1.4,
+            1.4,
+            1.41,
+            1.4,
+            1.4,
+            1.46,
+            1.5,
+            1.38,
+            1.35,
+            1.36,
+            1.35,
+            1.34,
+            1.33,
+            1.32,
+            1.31,
+            1.3,
+            1.28,
+            1.26,
+            1.24,
+            1.21,
+            1.19,
+            1.16,
+            1.13,
+            1.09,
+            1.05,
+            1.01,
+            0.95,
+            0.88,
+            0.79,
+            0.67,
+            0.63,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+    slipstream_openvsp_cruise(
+        XML_FILE,
+        ENGINE_WRAPPER,
+        y_vector_prop_on=y_vector_prop_on,
+        cl_vector_prop_on=cl_vector_prop_on,
+        ct=0.6154,
+        delta_cl=0.0004,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_slipstream_openvsp_low_speed():
+    """Compute slipstream @ low speed"""
+    y_vector_prop_on = np.array(
+        [
+            0.04,
+            0.13,
+            0.21,
+            0.3,
+            0.39,
+            0.47,
+            0.56,
+            0.68,
+            0.84,
+            1.01,
+            1.17,
+            1.34,
+            1.51,
+            1.67,
+            1.84,
+            2.01,
+            2.18,
+            2.35,
+            2.51,
+            2.68,
+            2.85,
+            3.02,
+            3.19,
+            3.35,
+            3.52,
+            3.68,
+            3.85,
+            4.01,
+            4.18,
+            4.34,
+            4.5,
+            4.66,
+            4.81,
+            4.97,
+            5.13,
+            5.28,
+            5.43,
+            5.58,
+            5.73,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+        ]
+    )
+    cl_vector_prop_on = np.array(
+        [
+            1.45,
+            1.42,
+            1.42,
+            1.41,
+            1.41,
+            1.41,
+            1.41,
+            1.4,
+            1.4,
+            1.4,
+            1.4,
+            1.4,
+            1.39,
+            1.66,
+            1.79,
+            1.56,
+            1.49,
+            1.34,
+            1.33,
+            1.33,
+            1.32,
+            1.31,
+            1.3,
+            1.29,
+            1.27,
+            1.26,
+            1.23,
+            1.21,
+            1.18,
+            1.16,
+            1.13,
             1.1,
-            1.024,
-            0.923,
-            0.793,
-            0.758,
+            1.05,
+            1.01,
+            0.95,
+            0.88,
+            0.79,
+            0.68,
+            0.63,
             0.0,
             0.0,
             0.0,
@@ -1354,502 +817,87 @@ def _test_slipstream_openvsp_cruise():
             0.0,
         ]
     )
-    assert np.max(np.abs(cl_vector_prop_on - cl_result_prop_on)) <= 1e-2
-    ct = problem.get_val("data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref")
-    assert ct == pytest.approx(0.0483, abs=1e-4)
-    delta_cl = problem.get_val(
-        "data:aerodynamics:slipstream:wing:cruise:prop_on:CL"
-    ) - problem.get_val("data:aerodynamics:slipstream:wing:cruise:prop_off:CL")
-    assert delta_cl == pytest.approx(0.00565, abs=1e-4)
-
-
-def _test_slipstream_openvsp_low_speed():
-
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
-
-    # Research independent input value in .xml file
-    # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(
-            ComputeSlipstreamOpenvsp(
-                propulsion_id=ENGINE_WRAPPER,
-                result_folder_path=results_folder.name,
-                low_speed_aero=True,
-            )
-        ),
-        __file__,
+    slipstream_openvsp_low_speed(
         XML_FILE,
-    )
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL0_clean", val=0.1147)
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL_alpha", val=4.509, units="rad**-1")
-    ivc.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", val=1.4465)
-    # Run problem and check obtained value(s) is/(are) correct
-    # start = time.time()
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeSlipstreamOpenvsp(
-            propulsion_id=ENGINE_WRAPPER,
-            result_folder_path=results_folder.name,
-            low_speed_aero=True,
-        ),
-        ivc,
-    )
-    # stop = time.time()
-    # duration_1st_run = stop - start
-    y_vector_prop_on = problem.get_val(
-        "data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector", units="m"
-    )
-    y_result_prop_on = np.array(
-        [
-            0.04,
-            0.13,
-            0.21,
-            0.3,
-            0.39,
-            0.47,
-            0.56,
-            0.69,
-            0.86,
-            1.04,
-            1.22,
-            1.39,
-            1.57,
-            1.75,
-            1.93,
-            2.11,
-            2.29,
-            2.47,
-            2.65,
-            2.83,
-            3.01,
-            3.19,
-            3.37,
-            3.55,
-            3.73,
-            3.91,
-            4.09,
-            4.26,
-            4.44,
-            4.61,
-            4.78,
-            4.95,
-            5.12,
-            5.29,
-            5.45,
-            5.62,
-            5.78,
-            5.94,
-            6.1,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-    )
-    assert np.max(np.abs(y_vector_prop_on - y_result_prop_on)) <= 1e-2
-    cl_vector_prop_on = problem.get_val(
-        "data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector"
-    )
-    cl_result_prop_on = np.array(
-        [
-            1.691,
-            1.653,
-            1.653,
-            1.653,
-            1.653,
-            1.652,
-            1.658,
-            1.648,
-            1.645,
-            1.652,
-            1.663,
-            1.83,
-            1.926,
-            1.96,
-            1.939,
-            1.798,
-            1.751,
-            1.713,
-            1.668,
-            1.617,
-            1.513,
-            1.513,
-            1.505,
-            1.496,
-            1.477,
-            1.459,
-            1.435,
-            1.411,
-            1.375,
-            1.346,
-            1.309,
-            1.272,
-            1.221,
-            1.173,
-            1.103,
-            1.028,
-            0.928,
-            0.799,
-            0.767,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]
-    )
-    assert np.max(np.abs(cl_vector_prop_on - cl_result_prop_on)) <= 1e-2
-    ct = problem.get_val("data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref")
-    assert ct == pytest.approx(0.03796, abs=1e-4)
-    delta_cl = problem.get_val(
-        "data:aerodynamics:slipstream:wing:low_speed:prop_on:CL"
-    ) - problem.get_val("data:aerodynamics:slipstream:wing:low_speed:prop_off:CL")
-    assert delta_cl == pytest.approx(0.02196, abs=1e-4)
-
-
-def _test_compute_mach_interpolation_roskam():
-    """ Tests computation of the mach interpolation vector using Roskam's approach """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeMachInterpolation()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMachInterpolation(), ivc)
-    cl_alpha_vector = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
-    cl_alpha_result = np.array([5.45, 5.48, 5.55, 5.68, 5.87, 6.14])
-    assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
-    mach_vector = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-    mach_result = np.array([0.0, 0.08, 0.16, 0.24, 0.32, 0.40])
-    assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
-
-
-def _test_cl_alpha_vt():
-    """ Tests Cl alpha vt """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT(low_speed_aero=True)), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:low_speed:mach", 0.119)
-    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeClalphaVT(low_speed_aero=True), ivc)
-    cl_alpha_vt_ls = problem.get_val(
-        "data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1"
-    )
-    assert cl_alpha_vt_ls == pytest.approx(2.92419, abs=1e-4)
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeClalphaVT()), __file__, XML_FILE)
-    ivc.add_output("data:aerodynamics:cruise:mach", 0.248)
-    ivc.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.4038, units="rad**-1")
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeClalphaVT(), ivc)
-    cl_alpha_vt_cruise = problem.get_val(
-        "data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1"
-    )
-    assert cl_alpha_vt_cruise == pytest.approx(3.0044, abs=1e-4)
-
-
-def _test_cy_delta_r():
-    """ Tests cy delta of the rudder """
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
-    ivc.add_output(
-        "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=1.94358, units="rad**-1"
+        ENGINE_WRAPPER,
+        y_vector_prop_on=y_vector_prop_on,
+        cl_vector_prop_on=cl_vector_prop_on,
+        ct=0.4837,
+        delta_cl=0.0088,
     )
 
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeCyDeltaRudder(), ivc)
-    cy_delta_r = problem.get_val("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
-    assert cy_delta_r == pytest.approx(1.2506, abs=1e-4)
+
+def test_compute_mach_interpolation_roskam():
+    """Tests computation of the mach interpolation vector using Roskam's approach"""
+    compute_mach_interpolation_roskam(
+        XML_FILE,
+        cl_alpha_vector=np.array([5.33, 5.35, 5.42, 5.54, 5.72, 5.96]),
+        mach_vector=np.array([0.0, 0.08, 0.15, 0.23, 0.31, 0.39]),
+    )
 
 
-def _test_high_speed_connection():
-    """ Tests high speed components connection """
+def test_cl_alpha_vt():
+    """Tests Cl alpha vt"""
+    cl_alpha_vt(XML_FILE, cl_alpha_vt_ls=2.6812, k_ar_effective=1.8630, cl_alpha_vt_cruise=2.7321)
 
+
+def test_cy_delta_r():
+    """Tests cy delta of the rudder"""
+    cy_delta_r(XML_FILE, cy_delta_r_=1.8882)
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_high_speed_connection_openvsp():
+    """Tests high speed components connection"""
+    high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
+
+
+@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+def test_high_speed_connection_vlm():
+    """Tests high speed components connection"""
+    high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_low_speed_connection_openvsp():
+    """Tests low speed components connection"""
+    low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
+
+
+@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+def test_low_speed_connection_vlm():
+    """Tests low speed components connection"""
+    low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
+
+
+@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+def test_v_n_diagram():
     # load all inputs
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    input_vars = reader.read().to_ivc()
-    input_vars.add_output(
-        "data:aerodynamics:vertical_tail:airfoil:CL_alpha", 6.3090, units="rad**-1"
-    )
-    input_vars.add_output(
-        "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", 6.3090, units="rad**-1"
-    )
-
-    # Run problem with VLM
-    # noinspection PyTypeChecker
-    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), input_vars)
-
-    # Run problem with OPENVSP
-    # noinspection PyTypeChecker
-    run_system(AerodynamicsHighSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
-
-
-def _test_low_speed_connection():
-    """ Tests low speed components connection """
-
-    # load all inputs
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    input_vars = reader.read().to_ivc()
-
-    # Run problem with VLM
-    # noinspection PyTypeChecker
-    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=False), input_vars)
-
-    # Run problem with OPENVSP
-    # noinspection PyTypeChecker
-    run_system(AerodynamicsLowSpeed(propulsion_id=ENGINE_WRAPPER, use_openvsp=True), input_vars)
-
-
-def _test_v_n_diagram_vlm():
-
-    # load all inputs
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    input_vars = reader.read().to_ivc()
-    cl_wing_airfoil = np.zeros(POLAR_POINT_COUNT)
-    cdp_wing_airfoil = np.zeros(POLAR_POINT_COUNT)
-    cl_htp_airfoil = np.zeros(POLAR_POINT_COUNT)
-    cdp_htp_airfoil = np.zeros(POLAR_POINT_COUNT)
-    cl_wing_airfoil[0:38] = np.array(
-        [
-            0.1391,
-            0.1988,
-            0.2581,
-            0.3177,
-            0.377,
-            0.4903,
-            0.5477,
-            0.6062,
-            0.6647,
-            0.7226,
-            0.7807,
-            0.838,
-            0.8939,
-            0.9473,
-            1.1335,
-            1.1968,
-            1.2451,
-            1.296,
-            1.3424,
-            1.4014,
-            1.4597,
-            1.5118,
-            1.5575,
-            1.6006,
-            1.6383,
-            1.664,
-            1.6845,
-            1.7023,
-            1.7152,
-            1.7196,
-            1.7121,
-            1.6871,
-            1.6386,
-            1.563,
-            1.4764,
-            1.3993,
-            1.3418,
-            1.2981,
-        ]
-    )
-    cdp_wing_airfoil[0:38] = np.array(
-        [
-            0.00143,
-            0.00147,
-            0.00154,
-            0.00163,
-            0.00173,
-            0.00196,
-            0.00214,
-            0.00235,
-            0.0026,
-            0.00287,
-            0.00317,
-            0.00349,
-            0.00385,
-            0.00424,
-            0.00572,
-            0.00636,
-            0.00701,
-            0.00777,
-            0.00908,
-            0.00913,
-            0.00923,
-            0.00982,
-            0.01098,
-            0.01221,
-            0.01357,
-            0.01508,
-            0.01715,
-            0.01974,
-            0.02318,
-            0.02804,
-            0.035,
-            0.04486,
-            0.05824,
-            0.07544,
-            0.09465,
-            0.1133,
-            0.1299,
-            0.14507,
-        ]
-    )
-    cl_htp_airfoil[0:41] = np.array(
-        [
-            -0.0,
-            0.0582,
-            0.117,
-            0.1751,
-            0.2333,
-            0.291,
-            0.3486,
-            0.4064,
-            0.4641,
-            0.5216,
-            0.5789,
-            0.6356,
-            0.6923,
-            0.747,
-            0.8027,
-            0.8632,
-            0.9254,
-            0.9935,
-            1.0611,
-            1.127,
-            1.1796,
-            1.227,
-            1.2762,
-            1.3255,
-            1.3756,
-            1.4232,
-            1.4658,
-            1.5084,
-            1.5413,
-            1.5655,
-            1.5848,
-            1.5975,
-            1.6002,
-            1.5894,
-            1.5613,
-            1.5147,
-            1.4515,
-            1.3761,
-            1.2892,
-            1.1988,
-            1.1276,
-        ]
-    )
-    cdp_htp_airfoil[0:41] = np.array(
-        [
-            0.00074,
-            0.00075,
-            0.00078,
-            0.00086,
-            0.00095,
-            0.00109,
-            0.00126,
-            0.00145,
-            0.00167,
-            0.00191,
-            0.00218,
-            0.00249,
-            0.00283,
-            0.00324,
-            0.00365,
-            0.00405,
-            0.00453,
-            0.00508,
-            0.00559,
-            0.00624,
-            0.00679,
-            0.0074,
-            0.00813,
-            0.00905,
-            0.01,
-            0.01111,
-            0.0126,
-            0.01393,
-            0.0155,
-            0.01743,
-            0.01993,
-            0.02332,
-            0.0282,
-            0.03541,
-            0.04577,
-            0.05938,
-            0.07576,
-            0.0944,
-            0.11556,
-            0.13878,
-            0.16068,
-        ]
-    )
-    input_vars.add_output("data:aerodynamics:wing:cruise:CL", cl_wing_airfoil)
-    input_vars.add_output("data:aerodynamics:wing:cruise:CDp", cdp_wing_airfoil)
-    input_vars.add_output("data:aerodynamics:horizontal_tail:cruise:CL", cl_htp_airfoil)
-    input_vars.add_output("data:aerodynamics:horizontal_tail:cruise:CDp", cdp_htp_airfoil)
-    input_vars.add_output("data:aerodynamics:aircraft:landing:CL_max", 1.9)
-    input_vars.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", 1.5)
-    input_vars.add_output("data:aerodynamics:wing:low_speed:CL_min_clean", -1.5)
-    input_vars.add_output("data:weight:aircraft:MTOW", 1700.0, units="kg")
-    input_vars.add_output("data:aerodynamics:cruise:mach", 0.21)
-    input_vars.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient", 0.048)
-    input_vars.add_output("data:aerodynamics:aircraft:cruise:CD0", 0.016)
-    input_vars.add_output(
-        "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
-        [4.823, 4.823, 4.884, 4.964, 5.064, 5.184],
-    )
-    input_vars.add_output(
-        "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
-        [0.0, 0.15, 0.217, 0.28, 0.339, 0.395],
-    )
-
-    # Run problem with VLM and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeVNvlmNoVH(propulsion_id=ENGINE_WRAPPER, compute_cl_alpha=True), input_vars
-    )
     velocity_vect = np.array(
         [
-            30.782,
-            30.782,
-            60.006,
-            37.951,
+            34.688,
+            45.763,
+            67.62,
+            56.42,
             0.0,
             0.0,
-            74.799,
-            74.799,
-            74.799,
-            101.345,
-            101.345,
-            101.345,
-            101.345,
-            91.211,
-            74.799,
+            77.998,
+            77.998,
+            77.998,
+            109.139,
+            109.139,
+            109.139,
+            109.139,
+            98.225,
+            77.998,
             0.0,
-            27.351,
-            38.68,
-            49.232,
+            30.871,
+            43.659,
+            55.568,
         ]
     )
     load_factor_vect = np.array(
@@ -1861,12 +909,12 @@ def _test_v_n_diagram_vlm():
             0.0,
             0.0,
             -1.52,
-            3.836,
-            -1.836,
+            3.8,
+            -1.52,
             3.8,
             0.0,
-            2.957,
-            -0.957,
+            2.805,
+            -0.805,
             0.0,
             0.0,
             0.0,
@@ -1875,932 +923,785 @@ def _test_v_n_diagram_vlm():
             2.0,
         ]
     )
-    velocity_array = problem.get_val("data:flight_domain:velocity", units="m/s")
-    load_factor_array = problem["data:flight_domain:load_factor"]
-    assert np.max(np.abs(velocity_vect - velocity_array)) <= 1e-3
-    assert np.max(np.abs(load_factor_vect - load_factor_array)) <= 1e-3
+    v_n_diagram(
+        XML_FILE, ENGINE_WRAPPER, velocity_vect=velocity_vect, load_factor_vect=load_factor_vect
+    )
 
 
-def _test_v_n_diagram_openvsp():
-
+def test_load_factor():
     # load all inputs
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    input_vars = reader.read().to_ivc()
-    input_vars.add_output("data:aerodynamics:aircraft:landing:CL_max", 1.9)
-    input_vars.add_output("data:aerodynamics:wing:low_speed:CL_max_clean", 1.5)
-    input_vars.add_output("data:aerodynamics:wing:low_speed:CL_min_clean", -1.5)
-    input_vars.add_output(
-        "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
-        [5.20, 5.20, 5.24, 5.30, 5.37, 5.45],
-    )
-    input_vars.add_output(
-        "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
-        [0.0, 0.15, 0.21, 0.28, 0.34, 0.39],
-    )
-    input_vars.add_output("data:weight:aircraft:MTOW", 1700.0, units="kg")
-    input_vars.add_output("data:aerodynamics:cruise:mach", 0.21)
-    input_vars.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient", 0.048)
-    input_vars.add_output("data:aerodynamics:aircraft:cruise:CD0", 0.016)
-
-    # Run problem with VLM and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
-    problem = run_system(
-        ComputeVNopenvspNoVH(propulsion_id=ENGINE_WRAPPER, compute_cl_alpha=True), input_vars
-    )
-    velocity_vect = np.array(
-        [
-            30.782,
-            30.782,
-            60.006,
-            37.951,
-            0.0,
-            0.0,
-            74.799,
-            74.799,
-            74.799,
-            101.345,
-            101.345,
-            101.345,
-            101.345,
-            91.210,
-            74.799,
-            0.0,
-            27.350,
-            38.680,
-            49.231,
-        ]
-    )
-    load_factor_vect = np.array(
-        [
-            1.0,
-            -1.0,
-            3.8,
-            -1.52,
-            0.0,
-            0.0,
-            -1.52,
-            4.004,
-            -2.004,
-            3.8,
-            0.0,
-            3.059,
-            -1.059,
-            0.0,
-            0.0,
-            0.0,
-            1.0,
-            2.0,
-            2.0,
-        ]
-    )
-    velocity_array = problem.get_val("data:flight_domain:velocity", units="m/s")
-    load_factor_array = problem["data:flight_domain:load_factor"]
-    assert np.max(np.abs(velocity_vect - velocity_array)) <= 1e-3
-    assert np.max(np.abs(load_factor_vect - load_factor_array)) <= 1e-3
+    load_factor(XML_FILE, ENGINE_WRAPPER, load_factor_ultimate=5.7, vh=102.09)
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
+)
 def test_propeller():
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # load all inputs and add missing ones
-    reader = VariableIO(pth.join(pth.dirname(__file__), "data", XML_FILE))
-    reader.path_separator = ":"
-    ivc = reader.read().to_ivc()
-    ivc.add_output("data:geometry:propeller:diameter", 2.0 * 0.965, units="m")
-    ivc.add_output("data:geometry:propeller:hub_diameter", 2.0 * 0.965 * 0.18, units="m")
-    ivc.add_output("data:geometry:propeller:blades_number", 2)
-    twist_law = lambda x: 25.0 / (x + 0.75) ** 1.5 + 46.3917 - 15.0
-    radius_ratio = [0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]
-    chord = list(
-        np.array(
-            [0.11568421, 0.16431579, 0.16844211, 0.21957895, 0.19231579, 0.11568421, 0.11568421]
-        )
-        * 0.965
-    )
-    sweep = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    radius_ratio_vect = np.linspace(radius_ratio[0], radius_ratio[-1], 100)
-    chord_vect = np.interp(radius_ratio_vect, radius_ratio, chord)
-    sweep_vect = np.interp(radius_ratio_vect, radius_ratio, sweep)
-    twist_vect = twist_law(radius_ratio_vect)
-    ivc.add_output("data:geometry:propeller:radius_ratio_vect", radius_ratio, shape=7)
-    ivc.add_output("data:geometry:propeller:chord_vect", chord, units="m", shape=7)
-    ivc.add_output(
-        "data:geometry:propeller:twist_vect",
-        twist_law(np.array(radius_ratio)),
-        units="deg",
-        shape=7,
-    )
-    ivc.add_output("data:geometry:propeller:sweep_vect", sweep, units="deg", shape=7)
-
-    # Run problem
-    problem = run_system(ComputePropellerPerformance(), ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
     thrust_SL = np.array(
         [
-            165.55463516,
-            363.74098297,
-            561.92733079,
-            760.11367861,
-            958.30002643,
-            1156.48637424,
-            1354.67272206,
-            1552.85906988,
-            1751.04541769,
-            1949.23176551,
-            2147.41811333,
-            2345.60446114,
-            2543.79080896,
-            2741.97715678,
-            2940.16350459,
-            3138.34985241,
-            3336.53620023,
-            3534.72254804,
-            3732.90889586,
-            3931.09524368,
-            4129.2815915,
-            4327.46793931,
-            4525.65428713,
-            4723.84063495,
-            4922.02698276,
-            5120.21333058,
-            5318.3996784,
-            5516.58602621,
-            5714.77237403,
-            5912.95872185,
+            118.28404737,
+            343.04728219,
+            567.810517,
+            792.57375182,
+            1017.33698664,
+            1242.10022145,
+            1466.86345627,
+            1691.62669108,
+            1916.3899259,
+            2141.15316071,
+            2365.91639553,
+            2590.67963035,
+            2815.44286516,
+            3040.20609998,
+            3264.96933479,
+            3489.73256961,
+            3714.49580442,
+            3939.25903924,
+            4164.02227405,
+            4388.78550887,
+            4613.54874369,
+            4838.3119785,
+            5063.07521332,
+            5287.83844813,
+            5512.60168295,
+            5737.36491776,
+            5962.12815258,
+            6186.89138739,
+            6411.65462221,
+            6636.41785703,
         ]
     )
-    trust_SL_limit = np.array(
+    thrust_SL_limit = np.array(
         [
-            3992.47453905,
-            4354.01018556,
-            4627.19987747,
-            4851.0636332,
-            5044.6557686,
-            5220.57194688,
-            5390.01724447,
-            5560.09096074,
-            5735.92640037,
-            5912.95872185,
-        ]
-    )
-    speed = np.array(
-        [
-            5.0,
-            15.69362963,
-            26.38725926,
-            37.08088889,
-            47.77451852,
-            58.46814815,
-            69.16177778,
-            79.85540741,
-            90.54903704,
-            101.24266667,
+            4208.4616783,
+            4505.40962551,
+            4789.77591159,
+            5058.48426464,
+            5306.73819484,
+            5543.13586359,
+            5794.74759939,
+            6060.43907064,
+            6338.4260971,
+            6636.41785703,
         ]
     )
     efficiency_SL = np.array(
         [
             [
-                0.10624897,
-                0.18013462,
-                0.21651981,
-                0.22807006,
-                0.22721517,
-                0.22083446,
-                0.21221014,
-                0.20288339,
-                0.19375159,
-                0.18521768,
-                0.17695007,
-                0.16861719,
-                0.16072916,
-                0.15320241,
-                0.14590992,
-                0.13921122,
-                0.1334496,
-                0.12795466,
-                0.12241574,
-                0.11577645,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
-                0.11271665,
+                0.05822727,
+                0.13977398,
+                0.18159523,
+                0.19849126,
+                0.2018458,
+                0.1990279,
+                0.19295559,
+                0.18574411,
+                0.1781099,
+                0.17047836,
+                0.16317614,
+                0.15608156,
+                0.14922972,
+                0.14273312,
+                0.13636042,
+                0.1301907,
+                0.12361888,
+                0.11615645,
+                0.10360319,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
+                0.09637868,
             ],
             [
-                0.27467896,
-                0.4344713,
-                0.50019948,
-                0.52210089,
-                0.52331264,
-                0.51450441,
-                0.50108722,
-                0.48583145,
-                0.47029896,
-                0.45541008,
-                0.44104008,
-                0.42584508,
-                0.41088675,
-                0.3965363,
-                0.3823869,
-                0.36810154,
-                0.35501908,
-                0.34370124,
-                0.33279269,
-                0.32200437,
-                0.31026176,
-                0.29307527,
-                0.28733591,
-                0.28733591,
-                0.28733591,
-                0.28733591,
-                0.28733591,
-                0.28733591,
-                0.28733591,
-                0.28733591,
+                0.16440952,
+                0.34718785,
+                0.43041829,
+                0.4636416,
+                0.47226257,
+                0.4698733,
+                0.46045339,
+                0.44883606,
+                0.43531374,
+                0.42188159,
+                0.40813311,
+                0.39476957,
+                0.38164161,
+                0.36868179,
+                0.35626102,
+                0.34406412,
+                0.33189893,
+                0.31952329,
+                0.30582993,
+                0.28635943,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
+                0.26619418,
             ],
             [
-                0.39000222,
-                0.57044741,
-                0.63699228,
-                0.66146452,
-                0.66549523,
-                0.66001213,
-                0.64930646,
-                0.63598725,
-                0.62156858,
-                0.60764123,
-                0.59469412,
-                0.57995927,
-                0.56458934,
-                0.54967715,
-                0.53514192,
-                0.52045092,
-                0.50471251,
-                0.49125795,
-                0.47913675,
-                0.46718454,
-                0.45538279,
-                0.44289265,
-                0.42604793,
-                0.40954706,
-                0.40954706,
-                0.40954706,
-                0.40954706,
-                0.40954706,
-                0.40954706,
-                0.40954706,
+                0.24784447,
+                0.47373779,
+                0.56486852,
+                0.60220775,
+                0.61475448,
+                0.61476364,
+                0.60799142,
+                0.5977694,
+                0.58543972,
+                0.57223204,
+                0.55854393,
+                0.54485208,
+                0.53113312,
+                0.51753348,
+                0.5039672,
+                0.4905188,
+                0.4774016,
+                0.46415346,
+                0.45053412,
+                0.43546808,
+                0.41555585,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
+                0.38462898,
             ],
             [
-                0.45696153,
-                0.63245969,
-                0.69803342,
-                0.72446018,
-                0.73281662,
-                0.73178886,
-                0.72538282,
-                0.71598956,
-                0.70509116,
-                0.69372407,
-                0.6836798,
-                0.67181609,
-                0.65838315,
-                0.64512732,
-                0.63194556,
-                0.61905296,
-                0.60503622,
-                0.59093406,
-                0.57890255,
-                0.56763984,
-                0.55636957,
-                0.54503321,
-                0.53306416,
-                0.51715615,
-                0.49662567,
-                0.49662567,
-                0.49662567,
-                0.49662567,
-                0.49662567,
-                0.49662567,
+                0.30608854,
+                0.54429969,
+                0.63616786,
+                0.67504266,
+                0.69043073,
+                0.6929904,
+                0.69014147,
+                0.6827371,
+                0.67307863,
+                0.66239424,
+                0.65074542,
+                0.63888842,
+                0.6265992,
+                0.6143684,
+                0.60191776,
+                0.58944273,
+                0.57698492,
+                0.56462733,
+                0.55200457,
+                0.53874821,
+                0.52423645,
+                0.50503998,
+                0.46943816,
+                0.46943816,
+                0.46943816,
+                0.46943816,
+                0.46943816,
+                0.46943816,
+                0.46943816,
+                0.46943816,
             ],
             [
-                0.47572647,
-                0.65142816,
-                0.71998696,
-                0.75036676,
-                0.76306201,
-                0.76643601,
-                0.76440373,
-                0.75915986,
-                0.75198267,
-                0.74433328,
-                0.73669419,
-                0.72755218,
-                0.71693665,
-                0.7058908,
-                0.69470578,
-                0.68367562,
-                0.67205808,
-                0.65958055,
-                0.64809168,
-                0.63756928,
-                0.627485,
-                0.61741439,
-                0.60709627,
-                0.59588947,
-                0.58106966,
-                0.56259329,
-                0.56259329,
-                0.56259329,
-                0.56259329,
-                0.56259329,
+                0.34007528,
+                0.58054599,
+                0.67376707,
+                0.71356005,
+                0.73165884,
+                0.73727781,
+                0.73684619,
+                0.73268604,
+                0.72597082,
+                0.71786017,
+                0.70872569,
+                0.69906156,
+                0.68881949,
+                0.67841664,
+                0.66773992,
+                0.65688926,
+                0.64579144,
+                0.63476471,
+                0.62374823,
+                0.61226421,
+                0.59997916,
+                0.58634737,
+                0.56873011,
+                0.53566428,
+                0.5315517,
+                0.5315517,
+                0.5315517,
+                0.5315517,
+                0.5315517,
+                0.5315517,
             ],
             [
-                0.46755441,
-                0.64686877,
-                0.72044175,
-                0.7562094,
-                0.77394705,
-                0.78185907,
-                0.78396766,
-                0.78252236,
-                0.77890522,
-                0.77465356,
-                0.76942822,
-                0.76247608,
-                0.7543838,
-                0.74564022,
-                0.7366293,
-                0.72748983,
-                0.71776748,
-                0.70736368,
-                0.69732461,
-                0.68787651,
-                0.67878305,
-                0.66980521,
-                0.66084096,
-                0.65160745,
-                0.64117342,
-                0.62731614,
-                0.61203777,
-                0.61203777,
-                0.61203777,
-                0.61203777,
+                0.34307711,
+                0.59743354,
+                0.68946849,
+                0.73294957,
+                0.75358771,
+                0.76278853,
+                0.76519866,
+                0.7635913,
+                0.75924055,
+                0.75331617,
+                0.74643723,
+                0.73881224,
+                0.73061866,
+                0.72206102,
+                0.71313835,
+                0.70394178,
+                0.69452939,
+                0.68501267,
+                0.6752966,
+                0.66543289,
+                0.65516064,
+                0.64401444,
+                0.63164348,
+                0.61538335,
+                0.58596082,
+                0.57801417,
+                0.57801417,
+                0.57801417,
+                0.57801417,
+                0.57801417,
             ],
             [
-                0.44964411,
-                0.62979713,
-                0.71092595,
-                0.75259286,
-                0.77515639,
-                0.78705554,
-                0.79282371,
-                0.79475707,
-                0.79457721,
-                0.7930026,
-                0.7898828,
-                0.78503361,
-                0.77907539,
-                0.77244989,
-                0.76540475,
-                0.75804781,
-                0.75010758,
-                0.74151402,
-                0.73300844,
-                0.72486176,
-                0.71688625,
-                0.70899465,
-                0.70108463,
-                0.69306823,
-                0.68471333,
-                0.67504824,
-                0.66188233,
-                0.64998888,
-                0.64998888,
-                0.64998888,
+                0.34112256,
+                0.59956891,
+                0.69591324,
+                0.74168853,
+                0.76453618,
+                0.77660405,
+                0.78191473,
+                0.78259502,
+                0.78106457,
+                0.777386,
+                0.772183,
+                0.766279,
+                0.759598,
+                0.75272135,
+                0.7453902,
+                0.73775181,
+                0.72985757,
+                0.72171251,
+                0.71344196,
+                0.70489371,
+                0.69620055,
+                0.68691217,
+                0.67678873,
+                0.66564501,
+                0.6507914,
+                0.62568955,
+                0.61369045,
+                0.61369045,
+                0.61369045,
+                0.61369045,
             ],
             [
-                0.41597783,
-                0.6106596,
-                0.69887042,
-                0.74406057,
-                0.77069263,
-                0.78662226,
-                0.79581753,
-                0.80082936,
-                0.80345225,
-                0.80415093,
-                0.8028508,
-                0.79994596,
-                0.79585717,
-                0.79108738,
-                0.78578353,
-                0.77999311,
-                0.77361158,
-                0.76666696,
-                0.75959304,
-                0.75263267,
-                0.74580499,
-                0.73897916,
-                0.73207307,
-                0.72509322,
-                0.71792275,
-                0.71028881,
-                0.70132514,
-                0.68838938,
-                0.67973214,
-                0.67973214,
+                0.34829032,
+                0.59717235,
+                0.69564344,
+                0.74376438,
+                0.76999397,
+                0.7840045,
+                0.79149927,
+                0.79475601,
+                0.79488539,
+                0.7933805,
+                0.79022314,
+                0.78593621,
+                0.78095263,
+                0.77503085,
+                0.76905952,
+                0.76271836,
+                0.75612639,
+                0.74927534,
+                0.74223533,
+                0.73499466,
+                0.72745938,
+                0.71972347,
+                0.71143357,
+                0.70209462,
+                0.69206076,
+                0.67846608,
+                0.6572271,
+                0.64146696,
+                0.64146696,
+                0.64146696,
             ],
             [
-                0.39388674,
-                0.59361286,
-                0.68254224,
-                0.73406677,
-                0.76407991,
-                0.78323456,
-                0.79552201,
-                0.80329205,
-                0.80823338,
-                0.81082741,
-                0.81117791,
-                0.80987937,
-                0.80751355,
-                0.80434656,
-                0.80055104,
-                0.79619451,
-                0.79120453,
-                0.78566054,
-                0.77985385,
-                0.77403874,
-                0.76825303,
-                0.76237137,
-                0.75641685,
-                0.7503678,
-                0.74418538,
-                0.73774801,
-                0.73069332,
-                0.72233462,
-                0.70917405,
-                0.70352754,
+                0.32471476,
+                0.58635818,
+                0.69039558,
+                0.74192999,
+                0.7712092,
+                0.78798684,
+                0.79738905,
+                0.80228425,
+                0.80432569,
+                0.80415267,
+                0.80281659,
+                0.80005516,
+                0.7963294,
+                0.79217418,
+                0.78707586,
+                0.78177645,
+                0.77622345,
+                0.77040122,
+                0.76451095,
+                0.7582906,
+                0.75198211,
+                0.74523106,
+                0.7382862,
+                0.7309323,
+                0.72253913,
+                0.71336896,
+                0.70163365,
+                0.68447983,
+                0.663251,
+                0.663251,
             ],
             [
-                0.37986866,
-                0.57166131,
-                0.66845157,
-                0.72246303,
-                0.75663953,
-                0.77839387,
-                0.79349744,
-                0.80353619,
-                0.81049222,
-                0.81452268,
-                0.81642655,
-                0.81673453,
-                0.81581215,
-                0.81398968,
-                0.81151883,
-                0.80843284,
-                0.80466699,
-                0.80034478,
-                0.79568565,
-                0.79085532,
-                0.78600398,
-                0.78104705,
-                0.77593328,
-                0.77067985,
-                0.76533983,
-                0.759812,
-                0.75399333,
-                0.74748603,
-                0.73970246,
-                0.72610238,
+                0.32060259,
+                0.57825861,
+                0.68342211,
+                0.73802561,
+                0.76980819,
+                0.78909635,
+                0.80050975,
+                0.80718087,
+                0.81063591,
+                0.81174742,
+                0.81157086,
+                0.81028252,
+                0.80785159,
+                0.80471234,
+                0.80107565,
+                0.79676752,
+                0.79205362,
+                0.78712525,
+                0.78197697,
+                0.77675869,
+                0.77131429,
+                0.76570256,
+                0.75976232,
+                0.75338828,
+                0.74681263,
+                0.73940135,
+                0.73114866,
+                0.72130738,
+                0.70767664,
+                0.68050973,
             ],
         ]
     )
-    assert np.sum(
-        np.abs(
-            thrust_SL - problem.get_val("data:aerodynamics:propeller:sea_level:thrust", units="N")
-        )
-        < 1
-    ) == np.size(problem["data:aerodynamics:propeller:sea_level:thrust"])
-    assert np.sum(
-        np.abs(
-            trust_SL_limit
-            - problem.get_val("data:aerodynamics:propeller:sea_level:thrust_limit", units="N")
-        )
-        < 1
-    ) == np.size(problem["data:aerodynamics:propeller:sea_level:thrust_limit"])
-    assert np.sum(
-        np.abs(speed - problem.get_val("data:aerodynamics:propeller:sea_level:speed", units="m/s"))
-        < 1e-2
-    ) == np.size(problem["data:aerodynamics:propeller:sea_level:speed"])
-    assert np.sum(
-        np.abs(efficiency_SL - problem["data:aerodynamics:propeller:sea_level:efficiency"]) < 1e-5
-    ) == np.size(problem["data:aerodynamics:propeller:sea_level:efficiency"])
     thrust_CL = np.array(
         [
-            130.02473826,
-            286.71392915,
-            443.40312004,
-            600.09231092,
-            756.78150181,
-            913.47069269,
-            1070.15988358,
-            1226.84907447,
-            1383.53826535,
-            1540.22745624,
-            1696.91664713,
-            1853.60583801,
-            2010.2950289,
-            2166.98421978,
-            2323.67341067,
-            2480.36260156,
-            2637.05179244,
-            2793.74098333,
-            2950.43017421,
-            3107.1193651,
-            3263.80855599,
-            3420.49774687,
-            3577.18693776,
-            3733.87612864,
-            3890.56531953,
-            4047.25451042,
-            4203.9437013,
-            4360.63289219,
-            4517.32208307,
-            4674.01127396,
+            93.15819825,
+            272.74322548,
+            452.3282527,
+            631.91327993,
+            811.49830716,
+            991.08333439,
+            1170.66836162,
+            1350.25338884,
+            1529.83841607,
+            1709.4234433,
+            1889.00847053,
+            2068.59349776,
+            2248.17852498,
+            2427.76355221,
+            2607.34857944,
+            2786.93360667,
+            2966.5186339,
+            3146.10366112,
+            3325.68868835,
+            3505.27371558,
+            3684.85874281,
+            3864.44377003,
+            4044.02879726,
+            4223.61382449,
+            4403.19885172,
+            4582.78387895,
+            4762.36890617,
+            4941.9539334,
+            5121.53896063,
+            5301.12398786,
         ]
     )
-    trust_CL_limit = np.array(
+    thrust_CL_limit = np.array(
         [
-            3143.48677725,
-            3428.45974096,
-            3644.13600906,
-            3821.24591387,
-            3974.64021074,
-            4114.38712534,
-            4249.22691158,
-            4384.69046768,
-            4524.95060164,
-            4674.01127396,
+            3332.22612057,
+            3568.5270316,
+            3795.79754353,
+            4010.15603254,
+            4211.1313009,
+            4403.77876683,
+            4607.16086781,
+            4825.00322804,
+            5052.98188671,
+            5301.12398786,
         ]
     )
     efficiency_CL = np.array(
         [
             [
-                0.10608816,
-                0.18034658,
-                0.21668281,
-                0.22807476,
-                0.22706235,
-                0.22055878,
-                0.21184539,
-                0.20245902,
-                0.19328207,
-                0.1847079,
-                0.17642882,
-                0.16809556,
-                0.16020603,
-                0.15268613,
-                0.145397,
-                0.13871568,
-                0.13296437,
-                0.12745844,
-                0.12187893,
-                0.11501007,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
-                0.11261989,
+                0.05832829,
+                0.14079049,
+                0.18250237,
+                0.19889311,
+                0.20185194,
+                0.19864187,
+                0.19232217,
+                0.18489622,
+                0.17713393,
+                0.169383,
+                0.16202158,
+                0.15487315,
+                0.14799255,
+                0.14147145,
+                0.1350509,
+                0.12884379,
+                0.12218142,
+                0.1143114,
+                0.098278,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
+                0.09629643,
             ],
             [
-                0.27437851,
-                0.43483937,
-                0.50046579,
-                0.52210109,
-                0.5230512,
-                0.51403102,
-                0.50044969,
-                0.48506752,
-                0.46943296,
-                0.45444031,
-                0.44001314,
-                0.42481021,
-                0.40983547,
-                0.39547941,
-                0.38130631,
-                0.36702687,
-                0.35398164,
-                0.3426632,
-                0.33173048,
-                0.32089245,
-                0.30894696,
-                0.29021217,
-                0.28715199,
-                0.28715199,
-                0.28715199,
-                0.28715199,
-                0.28715199,
-                0.28715199,
-                0.28715199,
-                0.28715199,
+                0.16464549,
+                0.34937694,
+                0.4320869,
+                0.46456366,
+                0.47241919,
+                0.46932065,
+                0.45942554,
+                0.44737059,
+                0.43355694,
+                0.41984293,
+                0.40593461,
+                0.39239829,
+                0.37916171,
+                0.36607983,
+                0.35356898,
+                0.34131591,
+                0.32908306,
+                0.31649795,
+                0.30220592,
+                0.28047326,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
+                0.26582644,
             ],
             [
-                0.38955417,
-                0.57085698,
-                0.63719913,
-                0.66140144,
-                0.66521047,
-                0.65951903,
-                0.64865822,
-                0.63520988,
-                0.62067866,
-                0.60662068,
-                0.59357506,
-                0.57882788,
-                0.56343443,
-                0.54851317,
-                0.53395338,
-                0.51923439,
-                0.50350864,
-                0.49005808,
-                0.47792195,
-                0.46594175,
-                0.45409059,
-                0.44139855,
-                0.42397755,
-                0.40932274,
-                0.40932274,
-                0.40932274,
-                0.40932274,
-                0.40932274,
-                0.40932274,
-                0.40932274,
+                0.24807387,
+                0.47626515,
+                0.56688916,
+                0.60334754,
+                0.6150433,
+                0.61437775,
+                0.60704808,
+                0.5963657,
+                0.58367032,
+                0.5701879,
+                0.55623785,
+                0.54233945,
+                0.52843778,
+                0.51468738,
+                0.50095422,
+                0.48741274,
+                0.47419021,
+                0.46079011,
+                0.44699676,
+                0.43163168,
+                0.40985175,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
+                0.38410368,
             ],
             [
-                0.45561907,
-                0.63276693,
-                0.69812978,
-                0.72431866,
-                0.73248072,
-                0.73128936,
-                0.72476624,
-                0.71525397,
-                0.7042555,
-                0.69273891,
-                0.68260341,
-                0.67074194,
-                0.65728513,
-                0.64400762,
-                0.6308024,
-                0.61789298,
-                0.60385179,
-                0.58971891,
-                0.57769924,
-                0.56641794,
-                0.55510551,
-                0.54372095,
-                0.53160721,
-                0.51513089,
-                0.49638912,
-                0.49638912,
-                0.49638912,
-                0.49638912,
-                0.49638912,
-                0.49638912,
+                0.30685727,
+                0.54665378,
+                0.63797837,
+                0.67605774,
+                0.69082869,
+                0.69276381,
+                0.68945124,
+                0.68159086,
+                0.67158595,
+                0.66056794,
+                0.64868949,
+                0.63657521,
+                0.62409671,
+                0.61166259,
+                0.59908618,
+                0.58639865,
+                0.57391603,
+                0.56144183,
+                0.54859472,
+                0.53520903,
+                0.52011367,
+                0.50012129,
+                0.46878648,
+                0.46878648,
+                0.46878648,
+                0.46878648,
+                0.46878648,
+                0.46878648,
+                0.46878648,
+                0.46878648,
             ],
             [
-                0.47585855,
-                0.65158176,
-                0.71994647,
-                0.75014468,
-                0.76268261,
-                0.76592657,
-                0.76379348,
-                0.7584549,
-                0.7511925,
-                0.74336715,
-                0.73568604,
-                0.72656528,
-                0.71592465,
-                0.70486546,
-                0.6936497,
-                0.68259358,
-                0.670996,
-                0.65846917,
-                0.64695721,
-                0.6364223,
-                0.62631211,
-                0.61620639,
-                0.60583408,
-                0.59445407,
-                0.57916424,
-                0.56234249,
-                0.56234249,
-                0.56234249,
-                0.56234249,
-                0.56234249,
+                0.340129,
+                0.58270009,
+                0.67554724,
+                0.7145794,
+                0.7321444,
+                0.7371614,
+                0.73633602,
+                0.73175949,
+                0.72473221,
+                0.71632368,
+                0.70692595,
+                0.69705051,
+                0.68658939,
+                0.67602641,
+                0.66515926,
+                0.65418825,
+                0.64290923,
+                0.63181933,
+                0.62065987,
+                0.60898019,
+                0.59660921,
+                0.58251464,
+                0.56399548,
+                0.53084885,
+                0.53084885,
+                0.53084885,
+                0.53084885,
+                0.53084885,
+                0.53084885,
+                0.53084885,
             ],
             [
-                0.46767189,
-                0.64593106,
-                0.71993781,
-                0.75574295,
-                0.77343038,
-                0.78128505,
-                0.78332623,
-                0.7818116,
-                0.77808668,
-                0.7737207,
-                0.7684629,
-                0.76155754,
-                0.75344859,
-                0.74469707,
-                0.7356597,
-                0.72649847,
-                0.71678839,
-                0.70636234,
-                0.6962931,
-                0.68681983,
-                0.67770403,
-                0.66870286,
-                0.65970997,
-                0.65041342,
-                0.63981451,
-                0.6254655,
-                0.61178354,
-                0.61178354,
-                0.61178354,
-                0.61178354,
+                0.34184802,
+                0.59950129,
+                0.69104455,
+                0.73395353,
+                0.75405815,
+                0.76278581,
+                0.7648174,
+                0.7628961,
+                0.75819446,
+                0.75201648,
+                0.74490195,
+                0.73705107,
+                0.72867309,
+                0.71993475,
+                0.71084771,
+                0.70150699,
+                0.69196096,
+                0.68227681,
+                0.67252741,
+                0.6625356,
+                0.65207525,
+                0.64079986,
+                0.62818434,
+                0.61097824,
+                0.57760451,
+                0.57729546,
+                0.57729546,
+                0.57729546,
+                0.57729546,
+                0.57729546,
             ],
             [
-                0.44513886,
-                0.62874897,
-                0.71032027,
-                0.75204099,
-                0.77458361,
-                0.78635328,
-                0.79210351,
-                0.79400371,
-                0.7936974,
-                0.79206531,
-                0.78898049,
-                0.78414413,
-                0.77820458,
-                0.77156226,
-                0.7644998,
-                0.75713663,
-                0.74921362,
-                0.74061084,
-                0.7320752,
-                0.72389855,
-                0.71589941,
-                0.70798877,
-                0.70005254,
-                0.69200947,
-                0.68360997,
-                0.6737865,
-                0.66000601,
-                0.64973358,
-                0.64973358,
-                0.64973358,
+                0.3412724,
+                0.60122211,
+                0.69728334,
+                0.74265334,
+                0.76500517,
+                0.77666731,
+                0.78165439,
+                0.78201356,
+                0.78021451,
+                0.77626877,
+                0.7708136,
+                0.76475612,
+                0.75787127,
+                0.75083939,
+                0.74335507,
+                0.73557937,
+                0.72755363,
+                0.71928625,
+                0.71088322,
+                0.70226482,
+                0.69347577,
+                0.68404099,
+                0.67383429,
+                0.66250047,
+                0.64697365,
+                0.62053704,
+                0.61292161,
+                0.61292161,
+                0.61292161,
+                0.61292161,
             ],
             [
-                0.41286626,
-                0.60976727,
-                0.69812203,
-                0.7431451,
-                0.76990787,
-                0.78586351,
-                0.7949721,
-                0.79993854,
-                0.80250421,
-                0.80319149,
-                0.80196185,
-                0.79909761,
-                0.79500433,
-                0.79022682,
-                0.78491469,
-                0.77912962,
-                0.77277299,
-                0.76583082,
-                0.75873595,
-                0.751745,
-                0.74489843,
-                0.73805432,
-                0.73113139,
-                0.72413379,
-                0.71693525,
-                0.7092516,
-                0.70015481,
-                0.6863676,
-                0.67947196,
-                0.67947196,
+                0.35036934,
+                0.59905036,
+                0.69698069,
+                0.74466696,
+                0.77044277,
+                0.78410506,
+                0.7912957,
+                0.79426072,
+                0.79414541,
+                0.7924214,
+                0.78904834,
+                0.78457615,
+                0.77938224,
+                0.77333485,
+                0.76721963,
+                0.76076506,
+                0.7540438,
+                0.74707494,
+                0.73994021,
+                0.73259243,
+                0.72498673,
+                0.7171197,
+                0.70878265,
+                0.69934165,
+                0.68926762,
+                0.67541168,
+                0.65337175,
+                0.64065639,
+                0.64065639,
+                0.64065639,
             ],
             [
-                0.39274883,
-                0.59105147,
-                0.68133411,
-                0.73315527,
-                0.76300913,
-                0.78228744,
-                0.79447731,
-                0.80224646,
-                0.80717386,
-                0.80985899,
-                0.81021727,
-                0.80899167,
-                0.80664047,
-                0.80348132,
-                0.79968891,
-                0.79534928,
-                0.79039593,
-                0.7848619,
-                0.77904345,
-                0.77320609,
-                0.76740301,
-                0.76150944,
-                0.75554648,
-                0.74948449,
-                0.74328696,
-                0.73682998,
-                0.7297194,
-                0.72125358,
-                0.70668174,
-                0.70325717,
+                0.32469377,
+                0.5876176,
+                0.69155958,
+                0.74273127,
+                0.7716199,
+                0.78808525,
+                0.79719517,
+                0.8018334,
+                0.80365341,
+                0.80326908,
+                0.80174261,
+                0.79880096,
+                0.79492425,
+                0.7906093,
+                0.78537555,
+                0.77997202,
+                0.77430827,
+                0.76838767,
+                0.76239203,
+                0.75607923,
+                0.74968677,
+                0.7428594,
+                0.73586644,
+                0.72842889,
+                0.72003172,
+                0.71087646,
+                0.6990703,
+                0.68166696,
+                0.66238912,
+                0.66238912,
             ],
             [
-                0.37372212,
-                0.57015445,
-                0.6664333,
-                0.72116761,
-                0.75521021,
-                0.77720271,
-                0.792199,
-                0.80231108,
-                0.80932662,
-                0.81341586,
-                0.81541422,
-                0.81579073,
-                0.81487394,
-                0.81308074,
-                0.81063329,
-                0.80757868,
-                0.80384315,
-                0.79954793,
-                0.7948973,
-                0.7900533,
-                0.78518887,
-                0.78022594,
-                0.77511,
-                0.76985526,
-                0.76450674,
-                0.75896819,
-                0.75313416,
-                0.7465912,
-                0.73871676,
-                0.72264884,
+                0.3145431,
+                0.57867382,
+                0.68424655,
+                0.73867142,
+                0.77014463,
+                0.78915803,
+                0.80029181,
+                0.80674024,
+                0.80998128,
+                0.81092258,
+                0.81055898,
+                0.80911526,
+                0.80654143,
+                0.80325933,
+                0.79950918,
+                0.79507275,
+                0.79024699,
+                0.78523908,
+                0.77999356,
+                0.77469879,
+                0.76916701,
+                0.7634865,
+                0.75749943,
+                0.75109724,
+                0.7444907,
+                0.73707485,
+                0.72888744,
+                0.71917273,
+                0.70566043,
+                0.67963045,
             ],
         ]
     )
-    assert np.sum(
-        np.abs(
-            thrust_CL
-            - problem.get_val("data:aerodynamics:propeller:cruise_level:thrust", units="N")
-        )
-        < 1
-    ) == np.size(problem["data:aerodynamics:propeller:cruise_level:thrust"])
-    assert np.sum(
-        np.abs(
-            trust_CL_limit
-            - problem.get_val("data:aerodynamics:propeller:cruise_level:thrust_limit", units="N")
-        )
-        < 1
-    ) == np.size(problem["data:aerodynamics:propeller:cruise_level:thrust_limit"])
-    assert np.sum(
-        np.abs(
-            speed - problem.get_val("data:aerodynamics:propeller:cruise_level:speed", units="m/s")
-        )
-        < 1e-2
-    ) == np.size(problem["data:aerodynamics:propeller:cruise_level:speed"])
-    assert np.sum(
-        np.abs(efficiency_CL - problem["data:aerodynamics:propeller:cruise_level:efficiency"])
-        < 1e-5
-    ) == np.size(problem["data:aerodynamics:propeller:cruise_level:efficiency"])
+    speed = np.array(
+        [
+            5.0,
+            15.41925926,
+            25.83851852,
+            36.25777778,
+            46.67703704,
+            57.0962963,
+            67.51555556,
+            77.93481481,
+            88.35407407,
+            98.77333333,
+        ]
+    )
+    propeller(
+        XML_FILE,
+        thrust_SL=thrust_SL,
+        thrust_SL_limit=thrust_SL_limit,
+        efficiency_SL=efficiency_SL,
+        thrust_CL=thrust_CL,
+        thrust_CL_limit=thrust_CL_limit,
+        efficiency_CL=efficiency_CL,
+        speed=speed,
+    )

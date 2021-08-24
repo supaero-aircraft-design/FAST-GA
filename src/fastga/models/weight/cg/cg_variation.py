@@ -24,10 +24,10 @@ class InFlightCGVariation(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
-        self.add_input("data:weight:payload:front_fret:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:payload:rear_fret:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:payload:front_fret:CG:x", val=np.nan, units="m")
-        self.add_input("data:weight:payload:rear_fret:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:front_freight:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:rear_freight:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:payload:front_freight:CG:x", val=np.nan, units="m")
+        self.add_input("data:weight:payload:rear_freight:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
@@ -52,10 +52,10 @@ class InFlightCGVariation(om.ExplicitComponent):
 
         npax = inputs["data:TLAR:NPAX_design"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
-        luggage_mass_front = inputs["data:weight:payload:front_fret:mass"]
-        luggage_mass_rear = inputs["data:weight:payload:rear_fret:mass"]
-        cg_front_fret = inputs["data:weight:payload:front_fret:CG:x"]
-        cg_rear_fret = inputs["data:weight:payload:rear_fret:CG:x"]
+        luggage_mass_front = inputs["data:weight:payload:front_freight:mass"]
+        luggage_mass_rear = inputs["data:weight:payload:rear_freight:mass"]
+        cg_front_fret = inputs["data:weight:payload:front_freight:CG:x"]
+        cg_rear_fret = inputs["data:weight:payload:rear_freight:CG:x"]
         l_pilot_seat = inputs["data:geometry:cabin:seats:pilot:length"]
         l_pass_seat = inputs["data:geometry:cabin:seats:passenger:length"]
         design_mass_p_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]

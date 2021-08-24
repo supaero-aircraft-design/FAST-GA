@@ -43,6 +43,9 @@ class LoadFactor(Group):
             promotes=["*"],
         )
         self.add_subsystem("sizing_load_factor", _LoadFactorIdentification(), promotes=["*"])
+        self.add_subsystem(
+            "characteristic_speeds", _CharacteristicSpeedIdentification(), promotes=["*"]
+        )
 
 
 class _LoadFactorIdentification(ExplicitComponent):
@@ -59,3 +62,19 @@ class _LoadFactorIdentification(ExplicitComponent):
         outputs["data:mission:sizing:cs23:sizing_factor_ultimate"] = 1.5 * max(
             abs(max(load_factor_array)), abs(min(load_factor_array))
         )
+
+
+class _CharacteristicSpeedIdentification(ExplicitComponent):
+    def setup(self):
+        nan_array = np.full(DOMAIN_PTS_NB, np.nan)
+        self.add_input(
+            "data:flight_domain:velocity", val=nan_array, shape=DOMAIN_PTS_NB, units="m/s"
+        )
+
+        self.add_output("data:flight_domain:diving_speed", units="m/s")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        velocity_array = inputs["data:flight_domain:velocity"]
+        outputs["data:flight_domain:diving_speed"] = velocity_array[9]

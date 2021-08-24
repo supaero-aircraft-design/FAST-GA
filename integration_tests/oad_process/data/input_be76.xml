@@ -29,6 +29,10 @@
 				<chord_ratio>0.10</chord_ratio>
 				<span_ratio>0.65</span_ratio>
 			</flap>
+			<aileron>
+				<chord_ratio>0.26</chord_ratio>
+				<span_ratio>0.32</span_ratio>
+			</aileron>
 			<flap_type>1.0</flap_type>
 			<cabin>
 				<aisle_width units="m">0.0</aisle_width>
@@ -45,7 +49,9 @@
 					</passenger>
 				</seats>
 				<luggage>
-					<mass_max units="kg">90.</mass_max>
+					<mass_max_front units="kg">0.</mass_max_front>
+					<mass_max_rear units="kg">90.</mass_max_rear>
+					<front_compartment_first>0.0</front_compartment_first>
 				</luggage>
 			</cabin>
 			<fuselage>
@@ -84,6 +90,10 @@
 				<layout>1.0</layout>
 				<count>2.0</count>
 				<y_ratio>[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
+				<y_ratio_tank_beginning>0.42</y_ratio_tank_beginning>
+				<y_ratio_tank_end>0.92</y_ratio_tank_end>
+				<LE_chord_percentage>0.04</LE_chord_percentage>
+				<TE_chord_percentage>0.1</TE_chord_percentage>
 			</propulsion>
 			<vertical_tail>
 				<area units="m**2">2.653</area>
@@ -193,6 +203,11 @@
 		</weight>
 	</data>
 	<settings>
+		<geometry>
+			<fuel_tanks>
+				<depth>0.5</depth>
+			</fuel_tanks>
+		</geometry>
 		<weight>
 			<aircraft>
 				<CG>

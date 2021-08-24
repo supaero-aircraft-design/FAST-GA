@@ -791,7 +791,7 @@ def test_OMBasicICEngineComponent():
     machs = [0, 0.3, 0.3, 0.5, 0.5]
     altitudes = [0, 0, 0, 4000, 8000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3193.97963124, 480.58508079, 480.58508079, 169.24247257, 258.404271]
+    thrusts = [3193.97963124, 480.58508079, 480.58508079, 145.47341988, 241.10415143]
     phases = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -799,7 +799,7 @@ def test_OMBasicICEngineComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [2.39222650e-26, 1.06438787e-05, 1.06438787e-05, 2.70547387e-05, 2.23273004e-05]
+    expected_sfc = [2.414166e-16, 1.356846e-05, 1.356846e-05, 2.939614e-05, 2.172072e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:IC_engine:max_power", 130000, units="W")
@@ -808,13 +808,15 @@ def test_OMBasicICEngineComponent():
     ivc.add_output("data:TLAR:v_cruise", 158.0, units="kn")
     ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 8000.0, units="ft")
     ivc.add_output("data:geometry:propulsion:layout", 1.0)
-    ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED)
-    ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL)
-    ivc.add_output("data:aerodynamics:propeller:sea_level:thrust_limit", THRUST_SL_LIMIT)
+    ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
+    ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")
+    ivc.add_output("data:aerodynamics:propeller:sea_level:thrust_limit", THRUST_SL_LIMIT, units="N")
     ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", EFFICIENCY_SL)
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:speed", SPEED)
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust", THRUST_CL)
-    ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT)
+    ivc.add_output("data:aerodynamics:propeller:cruise_level:speed", SPEED, units="m/s")
+    ivc.add_output("data:aerodynamics:propeller:cruise_level:thrust", THRUST_CL, units="N")
+    ivc.add_output(
+        "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
+    )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
 
     ivc.add_output("data:propulsion:mach", [machs, machs])

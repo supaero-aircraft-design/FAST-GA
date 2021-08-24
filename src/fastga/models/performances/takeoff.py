@@ -16,6 +16,8 @@ import numpy as np
 import math
 import openmdao.api as om
 import warnings
+import logging
+
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
@@ -32,6 +34,9 @@ ALPHA_LIMIT = 13.5 * math.pi / 180.0  # Limit angle to touch tail on ground in r
 ALPHA_RATE = 3.0 * math.pi / 180.0  # Angular rotation speed in rad/s
 SAFETY_HEIGHT = 50 * 0.3048  # Height in meters to reach V2 speed
 TIME_STEP = 0.1  # For time dependent simulation
+CLIMB_GRAD_AEO = 0.083  # Climb gradient when all engine are operating, based on CS23.65
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class TakeOffPhase(om.Group):
@@ -44,14 +49,14 @@ class TakeOffPhase(om.Group):
             "compute_v2",
             _v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
-                _v2(propulsion_id=self.options["propulsion_id"]), iotypes="inputs"
+                _v2(propulsion_id=self.options["propulsion_id"]), iotypes="inputs",
             ),
         )
         self.add_subsystem(
-            "compute_vloff",
-            _vloff_from_v2(propulsion_id=self.options["propulsion_id"]),
+            "compute_v_lift_off",
+            _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
-                _vloff_from_v2(propulsion_id=self.options["propulsion_id"]),
+                _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
                 excludes=["v2:speed", "v2:angle",],
                 iotypes="inputs",
             ),
@@ -61,7 +66,7 @@ class TakeOffPhase(om.Group):
             _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
-                excludes=["vloff:speed", "vloff:angle",],
+                excludes=["v_lift_off:speed", "v_lift_off:angle",],
                 iotypes="inputs",
             ),
         )
@@ -73,10 +78,10 @@ class TakeOffPhase(om.Group):
                 excludes=["vr:speed", "v2:angle",],
             ),
         )
-        self.connect("compute_v2.v2:speed", "compute_vloff.v2:speed")
-        self.connect("compute_v2.v2:angle", "compute_vloff.v2:angle")
-        self.connect("compute_vloff.vloff:speed", "compute_vr.vloff:speed")
-        self.connect("compute_vloff.vloff:angle", "compute_vr.vloff:angle")
+        self.connect("compute_v2.v2:speed", "compute_v_lift_off.v2:speed")
+        self.connect("compute_v2.v2:angle", "compute_v_lift_off.v2:angle")
+        self.connect("compute_v_lift_off.v_lift_off:speed", "compute_vr.v_lift_off:speed")
+        self.connect("compute_v_lift_off.v_lift_off:angle", "compute_vr.v_lift_off:angle")
         self.connect("compute_vr.vr:speed", "simulate_takeoff.vr:speed")
         self.connect("compute_v2.v2:angle", "simulate_takeoff.v2:angle")
 
@@ -84,7 +89,7 @@ class TakeOffPhase(om.Group):
     def get_io_names(
         component: om.ExplicitComponent,
         excludes: Optional[Union[str, List[str]]] = None,
-        iotypes: Optional[Union[str, Tuple[str]]] = ("inputs", "outputs"),
+        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
         prob = om.Problem(model=component)
         prob.setup()
@@ -136,13 +141,11 @@ class _v2(om.ExplicitComponent):
         self.add_input("data:aerodynamics:flaps:takeoff:CD", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", np.nan)
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
-        self.add_input("data:geometry:wing:span", np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:height", np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
 
         self.add_output("v2:speed", units="m/s")
         self.add_output("v2:angle", units="rad")
-        self.add_output("v2:climb_rate")
+        self.add_output("v2:climb_gradient")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -151,61 +154,65 @@ class _v2(om.ExplicitComponent):
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
         )
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        cl0 = (
-            inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
-            + inputs["data:aerodynamics:flaps:takeoff:CL"]
-        )
+        cl0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         cl_alpha = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
-        cd0 = (
-            inputs["data:aerodynamics:aircraft:low_speed:CD0"]
-            + inputs["data:aerodynamics:flaps:takeoff:CD"]
-        )
-        coef_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
+        delta_cl_takeoff = inputs["data:aerodynamics:flaps:takeoff:CL"]
+        cl_max_takeoff = cl_max_clean + delta_cl_takeoff
+
+        cd0 = inputs["data:aerodynamics:aircraft:low_speed:CD0"]
+        delta_cd_takeoff = inputs["data:aerodynamics:flaps:takeoff:CD"]
+
+        coeff_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         wing_area = inputs["data:geometry:wing:area"]
-        wing_span = inputs["data:geometry:wing:span"]
-        lg_height = inputs["data:geometry:landing_gear:height"]
         mtow = inputs["data:weight:aircraft:MTOW"]
 
         # Define atmospheric condition for safety height
         atm = Atmosphere(SAFETY_HEIGHT, altitude_in_feet=False)
+
+        iteration_number = 0
+        factor = 1.2  # Minimum safety factor between stall speed and V2 according to CS 23.65 for the climb with all
+        # engines operating
         # Define Cl considering 30% margin and estimate alpha
-        cl = cl_max_clean / 1.2 ** 2  # V2>=1.2*VS1
-        alpha_interp = np.linspace(0.0, 30.0, 31) * math.pi / 180.0
-        cl_interp = cl0 + alpha_interp * cl_alpha
-        alpha = np.interp(cl, cl_interp, alpha_interp)
-        # Calculate drag coefficient
-        k_ground = (
-            33.0
-            * ((lg_height + SAFETY_HEIGHT) / wing_span) ** 1.5
-            / (1.0 + 33.0 * ((lg_height + SAFETY_HEIGHT) / wing_span) ** 1.5)
-        )
-        cd = cd0 + k_ground * coef_k * cl ** 2
-        # Find v2 safety speed for 0% climb rate
-        v2 = math.sqrt((mtow * g) / (0.5 * atm.density * wing_area * cl))
-        # Estimate climb rate considering alpha~0° and max thrust rate for CS23.65 (loop on error)
-        flight_point = FlightPoint(
-            mach=v2 / atm.speed_of_sound,
-            altitude=SAFETY_HEIGHT,
-            engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=1.0,
-        )
-        propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
-        gamma = math.asin(thrust / (mtow * g) - cd / cl)
-        rel_error = 0.1
-        while rel_error > 0.05:
-            new_gamma = math.asin(thrust / (mtow * g) - cd / cl * math.cos(gamma))
-            rel_error = abs((new_gamma - gamma) / new_gamma)
-            gamma = new_gamma
+        while True:
+            cl = cl_max_takeoff / factor ** 2.0
+            v2 = math.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
+            mach = v2 / atm.speed_of_sound
+
+            flight_point = FlightPoint(
+                mach=mach,
+                altitude=SAFETY_HEIGHT,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_rate=1.0,
+            )
+            propulsion_model.compute_flight_points(flight_point)
+            thrust = float(flight_point.thrust)
+
+            cd = cd0 + delta_cd_takeoff + coeff_k * cl ** 2.0
+
+            climb_gradient = thrust / (mtow * g) - cd / cl
+            if climb_gradient > CLIMB_GRAD_AEO:
+                break
+            elif iteration_number < 100.0:
+                iteration_number += 1
+                factor += 0.01
+            else:
+                _LOGGER.critical(
+                    "Climb rate is less than {}, adjust weight, propulsion or takeoff configuration".format(
+                        CLIMB_GRAD_AEO
+                    )
+                )
+                raise RuntimeError()
+
+        alpha = (cl - cl0 - delta_cl_takeoff) / cl_alpha
 
         outputs["v2:speed"] = v2
         outputs["v2:angle"] = alpha
-        outputs["v2:climb_rate"] = math.sin(gamma)
+        outputs["v2:climb_gradient"] = climb_gradient
 
 
-class _vloff_from_v2(om.ExplicitComponent):
+class _v_lift_off_from_v2(om.ExplicitComponent):
     """
-    Search alpha-angle<=alpha(v2) at which Vloff is operated such that
+    Search alpha-angle<=alpha(v2) at which v_lift_off is operated such that
     aircraft reaches v>=v2 speed @ safety height with imposed rotation speed.
     Fuel burn is neglected : mass = MTOW.
     """
@@ -236,8 +243,8 @@ class _vloff_from_v2(om.ExplicitComponent):
         self.add_input("v2:speed", np.nan, units="m/s")
         self.add_input("v2:angle", np.nan, units="rad")
 
-        self.add_output("vloff:speed", units="m/s")
-        self.add_output("vloff:angle", units="rad")
+        self.add_output("v_lift_off:speed", units="m/s")
+        self.add_output("v_lift_off:angle", units="rad")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -255,7 +262,7 @@ class _vloff_from_v2(om.ExplicitComponent):
             inputs["data:aerodynamics:aircraft:low_speed:CD0"]
             + inputs["data:aerodynamics:flaps:takeoff:CD"]
         )
-        coef_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
+        coeff_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
         lg_height = inputs["data:geometry:landing_gear:height"]
@@ -265,33 +272,40 @@ class _vloff_from_v2(om.ExplicitComponent):
         alpha_v2 = float(inputs["v2:angle"])
 
         # Define ground factor effect on Drag
-        k_ground = lambda altitude: (
-            33.0
-            * ((lg_height + altitude) / wing_span) ** 1.5
-            / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
-        )
+        def k_ground(altitude):
+            return (
+                33.0
+                * ((lg_height + altitude) / wing_span) ** 1.5
+                / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
+            )
+
         # Calculate v2 speed @ safety height for different alpha lift-off
         alpha = np.linspace(0.0, min(ALPHA_LIMIT, alpha_v2), num=10)
-        vloff = np.zeros(np.size(alpha))
+        v_lift_off = np.zeros(np.size(alpha))
         v2 = np.zeros(np.size(alpha))
         atm_0 = Atmosphere(0.0)
+
+        # Step 1.0 computes the lift-off speed for different value of angle of attack ranging from 0° to the angle of
+        # attack corresponding to the V2 computation from previously
+
         for i in range(len(alpha)):
+
             # Calculate lift coefficient
             cl = cl0 + cl_alpha * alpha[i]
             # Loop on estimated lift-off speed error induced by thrust estimation
             rel_error = 0.1
-            vloff[i] = math.sqrt((mtow * g) / (0.5 * atm_0.density * wing_area * cl))
+            v_lift_off[i] = math.sqrt((mtow * g) / (0.5 * atm_0.density * wing_area * cl))
             while rel_error > 0.05:
-                # Update thrust with vloff
+                # Update thrust with v_lift_off
                 flight_point = FlightPoint(
-                    mach=vloff[i] / atm_0.speed_of_sound,
+                    mach=v_lift_off[i] / atm_0.speed_of_sound,
                     altitude=0.0,
                     engine_setting=EngineSetting.TAKEOFF,
                     thrust_rate=thrust_rate,
                 )
                 propulsion_model.compute_flight_points(flight_point)
                 thrust = float(flight_point.thrust)
-                # Calculate vloff necessary to overcome weight
+                # Calculate v_lift_off necessary to overcome weight
                 if thrust * math.sin(alpha[i]) > mtow * g:
                     break
                 else:
@@ -299,12 +313,16 @@ class _vloff_from_v2(om.ExplicitComponent):
                         (mtow * g - thrust * math.sin(alpha[i]))
                         / (0.5 * atm_0.density * wing_area * cl)
                     )
-                rel_error = abs(v - vloff[i]) / v
-                vloff[i] = v
+                rel_error = abs(v - v_lift_off[i]) / v
+                v_lift_off[i] = v
+
+            # Step 2.0 consists in performing the transition from v_lift_off to V2 with a constant rotation speed for
+            # the same range of AOA
+
             # Perform climb with imposed rotational speed till reaching safety height
             alpha_t = alpha[i]
             gamma_t = 0.0
-            v_t = float(vloff[i])
+            v_t = float(v_lift_off[i])
             altitude_t = 0.0
             distance_t = 0.0
             while altitude_t < SAFETY_HEIGHT:
@@ -321,7 +339,7 @@ class _vloff_from_v2(om.ExplicitComponent):
                 # Calculate lift and drag
                 cl = cl0 + cl_alpha * alpha_t
                 lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-                cd = cd0 + k_ground(altitude_t) * coef_k * cl ** 2
+                cd = cd0 + k_ground(altitude_t) * coeff_k * cl ** 2
                 drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
                 # Calculate acceleration on x/z air axis
                 weight = mtow * g
@@ -349,22 +367,23 @@ class _vloff_from_v2(om.ExplicitComponent):
                 v_t = v_t_new
             # Save obtained v2
             v2[i] = v_t
+
         # If v2 target speed not reachable maximum lift-off speed chosen (alpha=0°)
         if sum(v2 > v2_target) == 0:
             alpha = 0.0
-            vloff = vloff[0]  # FIXME: not reachable v2
+            v_lift_off = v_lift_off[0]  # FIXME: not reachable v2
             warnings.warn("V2 @ 50ft requirement not reachable with max lift-off speed!")
         else:
             # If max alpha angle lead to v2 > v2 target take it
             if v2[-1] > v2_target:
                 alpha = alpha[-1]
-                vloff = vloff[-1]
+                v_lift_off = v_lift_off[-1]
             else:
                 alpha = np.interp(v2_target, v2, alpha)
-                vloff = np.interp(v2_target, v2, vloff)
+                v_lift_off = np.interp(v2_target, v2, v_lift_off)
 
-        outputs["vloff:speed"] = vloff
-        outputs["vloff:angle"] = alpha
+        outputs["v_lift_off:speed"] = v_lift_off
+        outputs["v_lift_off:angle"] = alpha
 
 
 class _vr_from_v2(om.ExplicitComponent):
@@ -399,8 +418,8 @@ class _vr_from_v2(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
         self.add_input("data:mission:sizing:takeoff:thrust_rate", np.nan)
         self.add_input("data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan)
-        self.add_input("vloff:speed", np.nan, units="m/s")
-        self.add_input("vloff:angle", np.nan, units="rad")
+        self.add_input("v_lift_off:speed", np.nan, units="m/s")
+        self.add_input("v_lift_off:angle", np.nan, units="rad")
 
         self.add_output("vr:speed", units="m/s")
 
@@ -419,15 +438,15 @@ class _vr_from_v2(om.ExplicitComponent):
             inputs["data:aerodynamics:aircraft:low_speed:CD0"]
             + inputs["data:aerodynamics:flaps:takeoff:CD"]
         )
-        coef_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
+        coeff_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
         lg_height = inputs["data:geometry:landing_gear:height"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         thrust_rate = inputs["data:mission:sizing:takeoff:thrust_rate"]
         friction_coeff = inputs["data:mission:sizing:takeoff:friction_coefficient_no_brake"]
-        v_t = float(inputs["vloff:speed"])
-        alpha_t = float(inputs["vloff:angle"])
+        v_t = float(inputs["v_lift_off:speed"])
+        alpha_t = float(inputs["v_lift_off:angle"])
 
         # Define ground factor effect on Drag
         k_ground = (
@@ -435,6 +454,8 @@ class _vr_from_v2(om.ExplicitComponent):
         )
         # Start reverted calculation of flight from lift-off to 0° alpha angle
         atm = Atmosphere(0.0)
+        # We find the value that corresponds to the speed at which, if we engage in a constant speed rotation we will
+        # get the AOA computed for v_lift_off at v_lift_off
         while (alpha_t != 0.0) and (v_t != 0.0):
             # Estimation of thrust
             flight_point = FlightPoint(
@@ -448,7 +469,7 @@ class _vr_from_v2(om.ExplicitComponent):
             # Calculate lift and drag
             cl = cl0 + cl_alpha * alpha_t
             lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-            cd = cd0 + k_ground * coef_k * cl ** 2
+            cd = cd0 + k_ground * coeff_k * cl ** 2
             drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
             # Calculate rolling resistance load
             friction = (mtow * g - lift - thrust * math.sin(alpha_t)) * friction_coeff
@@ -499,6 +520,8 @@ class _simulate_takeoff(om.ExplicitComponent):
         self.add_output("data:mission:sizing:takeoff:VR", units="m/s")
         self.add_output("data:mission:sizing:takeoff:VLOF", units="m/s")
         self.add_output("data:mission:sizing:takeoff:V2", units="m/s")
+        self.add_output("data:mission:sizing:takeoff:climb_gradient")
+        self.add_output("data:mission:sizing:takeoff:ground_roll", units="m")
         self.add_output("data:mission:sizing:takeoff:TOFL", units="m")
         self.add_output("data:mission:sizing:takeoff:duration", units="s")
         self.add_output("data:mission:sizing:takeoff:fuel", units="kg")
@@ -521,7 +544,7 @@ class _simulate_takeoff(om.ExplicitComponent):
             inputs["data:aerodynamics:aircraft:low_speed:CD0"]
             + inputs["data:aerodynamics:flaps:takeoff:CD"]
         )
-        coef_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
+        coeff_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
         lg_height = inputs["data:geometry:landing_gear:height"]
@@ -531,11 +554,13 @@ class _simulate_takeoff(om.ExplicitComponent):
         alpha_v2 = float(inputs["v2:angle"])
 
         # Define ground factor effect on Drag
-        k_ground = lambda altitude: (
-            33.0
-            * ((lg_height + altitude) / wing_span) ** 1.5
-            / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
-        )
+        def k_ground(altitude):
+            return (
+                33.0
+                * ((lg_height + altitude) / wing_span) ** 1.5
+                / (1.0 + 33.0 * ((lg_height + altitude) / wing_span) ** 1.5)
+            )
+
         # Determine rotation speed from regulation CS23.51
         vs1 = math.sqrt((mtow * g) / (0.5 * Atmosphere(0).density * wing_area * cl_max_clean))
         if inputs["data:geometry:propulsion:count"] == 1.0:
@@ -548,11 +573,12 @@ class _simulate_takeoff(om.ExplicitComponent):
         gamma_t = 0.0
         v_t = 0.0
         altitude_t = 0.0
-        distance_t = 0.0
+        distance_t_ground = 0.0
+        distance_t_airborne = 0.0
         mass_fuel1_t = 0.0
         mass_fuel2_t = 0.0
         time_t = 0.0
-        vloff = 0.0
+        v_lift_off = 0.0
         climb = False
         while altitude_t < SAFETY_HEIGHT:
             # Estimation of thrust
@@ -569,14 +595,14 @@ class _simulate_takeoff(om.ExplicitComponent):
             # Calculate lift and drag
             cl = cl0 + cl_alpha * alpha_t
             lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-            cd = cd0 + k_ground(altitude_t) * coef_k * cl ** 2
+            cd = cd0 + k_ground(altitude_t) * coeff_k * cl ** 2
             drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
             # Check if lift-off condition reached
             if (
                 (lift + thrust * math.sin(alpha_t) - mtow * g * math.cos(gamma_t)) >= 0.0
             ) and not climb:
                 climb = True
-                vloff = v_t
+                v_lift_off = v_t
             # Calculate acceleration on x/z air axis
             if climb:
                 acc_z = (lift + thrust * math.sin(alpha_t) - mtow * g * math.cos(gamma_t)) / mtow
@@ -606,17 +632,22 @@ class _simulate_takeoff(om.ExplicitComponent):
             altitude_t = altitude_t + delta_altitude
             if not climb:
                 mass_fuel1_t += propulsion_model.get_consumed_mass(flight_point, TIME_STEP)
-                distance_t = distance_t + delta_distance
+                distance_t_ground += delta_distance
                 time_t = time_t + TIME_STEP
             else:
                 mass_fuel2_t += propulsion_model.get_consumed_mass(flight_point, TIME_STEP)
+                distance_t_airborne += delta_distance
                 time_t = time_t + TIME_STEP
             v_t = v_t_new
 
+        climb_gradient = thrust / (mtow * g) - cd / cl
+
         outputs["data:mission:sizing:takeoff:VR"] = vr
-        outputs["data:mission:sizing:takeoff:VLOF"] = vloff
+        outputs["data:mission:sizing:takeoff:VLOF"] = v_lift_off
         outputs["data:mission:sizing:takeoff:V2"] = v_t
-        outputs["data:mission:sizing:takeoff:TOFL"] = distance_t
+        outputs["data:mission:sizing:takeoff:climb_gradient"] = climb_gradient
+        outputs["data:mission:sizing:takeoff:ground_roll"] = distance_t_ground
+        outputs["data:mission:sizing:takeoff:TOFL"] = distance_t_ground + distance_t_airborne
         outputs["data:mission:sizing:takeoff:duration"] = time_t
         outputs["data:mission:sizing:takeoff:fuel"] = mass_fuel1_t
         outputs["data:mission:sizing:initial_climb:fuel"] = mass_fuel2_t

@@ -136,7 +136,19 @@ class XfoilPolar(ExternalCodeComp):
             values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
             labels = data_saved.to_numpy()[:, 0].tolist()
             data_saved = pd.DataFrame(values, index=labels)
-            index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
+            saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
+            index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
+            near_mach = []
+            distance_to_mach = []
+            for index in index_near_mach:
+                if not (saved_mach_list[index] in near_mach):
+                    near_mach.append(saved_mach_list[index])
+                    distance_to_mach.append(abs(saved_mach_list[index] - mach))
+            if len(near_mach) == 0:
+                index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
+            else:
+                selected_mach_index = distance_to_mach.index(min(distance_to_mach))
+                index_mach = np.where(saved_mach_list == near_mach[selected_mach_index])[0]
             data_reduced = data_saved.loc[labels, index_mach]
             # Search if this exact reynolds has been computed and save results
             reynolds_vect = np.array(
@@ -165,11 +177,19 @@ class XfoilPolar(ExternalCodeComp):
                         min(upper_reynolds) - max(lower_reynolds)
                     )
                     # Search for common alpha range for linear interpolation
-                    alpha_lower = eval(
-                        lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]
+                    alpha_lower = (
+                        np.array(
+                            np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                        )
+                        .ravel()
+                        .tolist()
                     )
-                    alpha_upper = eval(
-                        upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]
+                    alpha_upper = (
+                        np.array(
+                            np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                        )
+                        .ravel()
+                        .tolist()
                     )
                     alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                     interpolated_result.loc["alpha", index_lower_reynolds] = str(
@@ -179,11 +199,11 @@ class XfoilPolar(ExternalCodeComp):
                     # Calculate average values (cd, cl...) with linear interpolation
                     for label in labels:
                         lower_value = np.array(
-                            eval(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                        )
+                            np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                        ).ravel()
                         upper_value = np.array(
-                            eval(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                        )
+                            np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                        ).ravel()
                         # If values relative to alpha vector, performs interpolation with shared vector
                         if np.size(lower_value) == len(alpha_lower):
                             lower_value = np.interp(
@@ -246,6 +266,7 @@ class XfoilPolar(ExternalCodeComp):
             # Run XFOIL --------------------------------------------------------------------------------
             self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
             self.options["external_output_files"] = [tmp_result_file_path]
+            # noinspection PyBroadException
             try:
                 super().compute(inputs, outputs)
                 result_array_p = self._read_polar(tmp_result_file_path)
@@ -271,6 +292,7 @@ class XfoilPolar(ExternalCodeComp):
                     -1 * self.options[OPTION_ALPHA_END],
                     -ALPHA_STEP,
                 )
+                # noinspection PyBroadException
                 try:
                     super().compute(inputs, outputs)
                     result_array_n = self._read_polar(tmp_result_file_path)
@@ -284,6 +306,7 @@ class XfoilPolar(ExternalCodeComp):
             # Post-processing --------------------------------------------------------------------------
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+                # noinspection PyUnboundLocalVariable
                 cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
                 alpha = result_array_n["alpha"].tolist()
                 alpha.reverse()
@@ -358,11 +381,12 @@ class XfoilPolar(ExternalCodeComp):
                     data = pd.DataFrame(results, index=labels)
                 else:
                     data = pd.DataFrame(np.c_[data_saved, results], index=labels)
+                # noinspection PyBroadException
                 try:
                     data.to_csv(result_file)
                 except:
                     warnings.warn(
-                        "Unable to save XFoil results to *.csv file: writting permission denied for {} "
+                        "Unable to save XFoil results to *.csv file: writing permission denied for {} "
                         "folder!".format(local_resources.__path__[0])
                     )
 
@@ -381,30 +405,43 @@ class XfoilPolar(ExternalCodeComp):
                 if pth.exists(self.stderr):
                     stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
                     shutil.move(self.stderr, stderr_file_path)
-            # Try to delete the temp directory, if process not finished correctely try to close files before removing
+            # Try to delete the temp directory, if process not finished correctly try to close files before removing
             # directory for second attempt
+            # noinspection PyBroadException
             try:
                 tmp_directory.cleanup()
             except:
-                for file in os.listdir(tmp_directory.name):
-                    try:
-                        file.close()
-                    except:
-                        pass
+                for file_path in os.listdir(tmp_directory.name):
+                    if os.path.isfile(file_path):
+                        # noinspection PyBroadException
+                        try:
+                            file = os.open(file_path, os.O_WRONLY)
+                            os.close(file)
+                        except:
+                            _LOGGER.info("Error while trying to close {} file!".format(file_path))
+                # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
                 except:
-                    pass
+                    _LOGGER.info(
+                        "Error while trying to erase {} temporary directory!".format(
+                            tmp_directory.name
+                        )
+                    )
 
         else:
             # Extract results
-            cl_max_2d = np.array(eval(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]))
-            cl_min_2d = np.array(eval(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]))
-            ALPHA = np.array(eval(interpolated_result.loc["alpha", :].to_numpy()[0]))
-            CL = np.array(eval(interpolated_result.loc["cl", :].to_numpy()[0]))
-            CD = np.array(eval(interpolated_result.loc["cd", :].to_numpy()[0]))
-            CDP = np.array(eval(interpolated_result.loc["cdp", :].to_numpy()[0]))
-            CM = np.array(eval(interpolated_result.loc["cm", :].to_numpy()[0]))
+            cl_max_2d = np.array(
+                np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+            ).ravel()
+            cl_min_2d = np.array(
+                np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+            ).ravel()
+            ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
+            CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
+            CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
+            CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
+            CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
 
             # Modify vector length if necessary
             if POLAR_POINT_COUNT < len(ALPHA):
@@ -495,7 +532,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -522,7 +559,7 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL +/- 0.3 arround linear zone if enough alpha computed, or default value otherwise
+        :return: min CL +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:
@@ -546,7 +583,7 @@ class XfoilPolar(ExternalCodeComp):
 
     @staticmethod
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """ Delete ending 0.0 values """
+        # Delete ending 0.0 values
         for idx in range(len(x)):
             if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]

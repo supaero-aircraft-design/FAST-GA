@@ -39,7 +39,7 @@ from fastoad.constants import EngineSetting
 from ... import resources
 from . import resources as local_resources
 from . import openvsp3201
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
@@ -285,6 +285,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     y_vector_htp,
                     cl_vector_htp,
                     coef_k_htp,
+                    sref_wing,
                 ]
                 self.save_results(result_file_path, results)
 
@@ -292,18 +293,19 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         else:
             # Read values from result file -----------------------------------------------------------------------------
             data = self.read_results(result_file_path)
+            saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
                 [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             cl_vector_wing = np.array(
                 [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
             )
             chord_vector_wing = np.array(
                 [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            )
+            ) * math.sqrt(sref_wing / saved_area_wing)
             coef_k_wing = float(data.loc["coef_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
@@ -316,7 +318,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             )
             cl_vector_htp = np.array(
                 [float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")]
-            )
+            ) * (area_ratio / saved_area_ratio)
             coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
 
         return (
@@ -1171,6 +1173,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "y_vector_htp",
             "cl_vector_htp",
             "coef_k_htp",
+            "saved_ref_area",
         ]
         data = pd.DataFrame(results, index=labels)
         data.to_csv(result_file_path)
@@ -1198,12 +1201,13 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         super().setup()
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
+        nan_array = np.full(ENGINE_COUNT, np.nan)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="min**-1")
+        self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=nan_array)
 
     def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust_rate):
         """
@@ -1249,7 +1253,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         if engine_config != 1.0:
             y_ratio_array = 0.0
         else:
-            y_ratio_array = np.array(inputs["data:geometry:propulsion:y_ratio"])
+            used_index = np.where(np.array(inputs["data:geometry:propulsion:y_ratio"]) >= 0.0)[0]
+            y_ratio_array = np.array(inputs["data:geometry:propulsion:y_ratio"])[used_index]
 
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
@@ -1462,9 +1467,13 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         ################################################################################################################
 
         parser = InputFileGenerator()
-        # template_file = pth.split(input_file_list[1])[1]
-        template_file = "wing_" + str(eng_per_wing) + "_rotor_openvsp_DegenGeom.vspaero"
-        with path(local_resources, template_file) as input_template_path:
+
+        if engine_config == 1.0:
+            rotor_template_file_name = generate_wing_rotor_file(int(engine_count / 2.0))
+        else:
+            rotor_template_file_name = generate_wing_rotor_file(int(1))
+
+        with path(local_resources, rotor_template_file_name) as input_template_path:
             parser.set_template_file(str(input_template_path))
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
@@ -1510,6 +1519,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                 parser.mark_anchor("Disc_" + str(i) + "_CP")
                 parser.transfer_var(power_coefficient, 0, 1)
             parser.generate()
+
+        os.remove(pth.join(local_resources.__path__[0], rotor_template_file_name))
 
         # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ########################################
         ################################################################################################################
@@ -1569,3 +1580,61 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             "ct": thrust_coefficient,
         }
         return wing_rotor
+
+
+def generate_wing_rotor_file(engine_count: int):
+
+    """
+    Uses the base VSPAERO template file to generate a file with all the line required to launch OpenVSP with n rotors
+    in the run
+
+    :param engine_count: the number of engine in the run
+
+    return the path to the new template file for the n rotor run
+    """
+
+    rotor_template_file_name = "wing_" + str(engine_count) + "_rotor_openvsp_DegenGeom.vspaero"
+    original_template = pth.join(local_resources.__path__[0], "wing_openvsp_DegenGeom.vspaero")
+    new_template = pth.join(local_resources.__path__[0], rotor_template_file_name)
+
+    file_to_copy = open(original_template, "r").readlines()
+    file = open(new_template, "w")
+
+    for i in range(len(file_to_copy)):
+        if "NumberOfRotors" in file_to_copy[i]:
+            new_line = list(file_to_copy[i][:])
+            new_line[-2] = str(engine_count)
+            file.write("".join(new_line))
+            for j in range(engine_count):
+                engine_number = str(int(j + 1))
+                file.write("Prop_" + engine_number + "_name\n")
+                file.write("Disc_" + engine_number + "_ID\n")
+                file.write(
+                    "Disc_"
+                    + engine_number
+                    + "_x Disc_"
+                    + engine_number
+                    + "_y Disc_"
+                    + engine_number
+                    + "_z\n"
+                )
+                file.write(
+                    "Disc_"
+                    + engine_number
+                    + "_nx Disc_"
+                    + engine_number
+                    + "_ny Disc_"
+                    + engine_number
+                    + "_nz\n"
+                )
+                file.write("Disc_" + engine_number + "_radius\n")
+                file.write("Disc_" + engine_number + "_hub_radius\n")
+                file.write("Disc_" + engine_number + "_rpm\n")
+                file.write("Disc_" + engine_number + "_CT\n")
+                file.write("Disc_" + engine_number + "_CP\n")
+        else:
+            file.write(file_to_copy[i])
+
+    file.close()
+
+    return rotor_template_file_name

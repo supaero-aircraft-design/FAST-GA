@@ -21,7 +21,6 @@ from scipy.constants import g
 from fastoad.model_base import Atmosphere
 
 FUSELAGE_MESH_POINT = 100
-DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 
 class ComputeBendingMoment(ExplicitComponent):
@@ -66,10 +65,10 @@ class ComputeBendingMoment(ExplicitComponent):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:flight_domain:velocity", val=np.nan, units="m/s", shape=DOMAIN_PTS_NB)
-        self.add_input("data:weight:fuselage:tail_cone_mass", val=np.nan, units="kg")
-        self.add_input("data:weight:fuselage:nose_mass", val=np.nan, units="kg")
-        self.add_input("data:weight:fuselage:shell_mass", val=np.nan, units="kg")
+        self.add_input("data:flight_domain:diving_speed", val=np.nan, units="m/s")
+        self.add_input("data:weight:airframe:fuselage:tail_cone_mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:fuselage:nose_mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:fuselage:shell_mass", val=np.nan, units="kg")
         self.add_input("data:loads:fuselage:inertia", val=np.nan, units="m**4")
         self.add_input("data:loads:fuselage:sigmaMh", val=np.nan, units="N/m**2")
         self.add_input(
@@ -125,10 +124,10 @@ class ComputeBendingMoment(ExplicitComponent):
         engine_mass = inputs["data:weight:propulsion:engine:mass"]
         engine_cg_x = inputs["data:weight:propulsion:engine:CG:x"]
         engine_layout = inputs["data:geometry:propulsion:layout"]
-        v_d = inputs["data:flight_domain:velocity"][9]
-        cone_mass = inputs["data:weight:fuselage:tail_cone_mass"]
-        nose_mass = inputs["data:weight:fuselage:nose_mass"]
-        fuselage_shell_mass = inputs["data:weight:fuselage:shell_mass"]
+        v_d = inputs["data:flight_domain:diving_speed"]
+        cone_mass = inputs["data:weight:airframe:fuselage:tail_cone_mass"]
+        nose_mass = inputs["data:weight:airframe:fuselage:nose_mass"]
+        fuselage_shell_mass = inputs["data:weight:airframe:fuselage:shell_mass"]
         bending_inertia = inputs["data:loads:fuselage:inertia"]
         sigma_mh = inputs["data:loads:fuselage:sigmaMh"]
         airframe_add_mass = inputs["data:weight:airframe:fuselage:total_additional_mass"]
@@ -160,8 +159,8 @@ class ComputeBendingMoment(ExplicitComponent):
         tail_x_cg = (
             htp_cg * htp_mass
             + vtp_cg * vtp_mass
-            + 0.5 * (l_front + l_cabin + l_fuselage) * w_cone / g
-        ) / (htp_mass + vtp_mass + w_cone / g)
+            + 0.5 * (l_front + l_cabin + l_fuselage) * cone_mass
+        ) / (htp_mass + vtp_mass + cone_mass)
 
         # Tail Aero Loads
         rmh = 0.4
@@ -182,7 +181,7 @@ class ComputeBendingMoment(ExplicitComponent):
         x_vector_plot = np.append(x_vector_front, x_vector_rear)
         horizontal_bending_vector_plot = np.array([])
 
-        # Definition of the use cases fot he horizontal bending moment:
+        # Definition of the use cases for the horizontal bending moment:
         # 1. Emergency Landing
         # 2. Cruise flight conditions with impulsive activation of the elevator
         # The associated load factors come from the CS23 norm.
@@ -290,7 +289,7 @@ class ComputeBendingMoment(ExplicitComponent):
                 * (wing_centroid - l_front) ** 2
             )
             if engine_layout == 3:
-                max_moment_front += n * engine_mass * (wing_centroid - engine_cg_x)
+                max_moment_front += n * w_engine * (wing_centroid - engine_cg_x)
             moment_to_compensate_with_lift = horizontal_bending_vector_rear[0] - max_moment_front
             for x in x_vector_front:
                 if engine_layout == 3:
@@ -303,12 +302,12 @@ class ComputeBendingMoment(ExplicitComponent):
                         bending = (
                             n * w_nose / l_front * x ** 2
                             + moment_to_compensate_with_lift / wing_centroid * x
-                            + n * engine_mass * (x - engine_cg_x)
+                            + n * w_engine * (x - engine_cg_x)
                         )
                     else:
                         bending = (
                             n * w_nose * x
-                            + n * engine_mass * (x - engine_cg_x)
+                            + n * w_engine * (x - engine_cg_x)
                             + n
                             * x_ratio_centroid_to_cabin_front
                             / l_cabin

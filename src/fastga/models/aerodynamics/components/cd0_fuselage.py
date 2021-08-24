@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the fuselage profile drag
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -22,6 +22,13 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class Cd0Fuselage(ExplicitComponent):
+    """
+    Profile drag estimation for the fuselage
+
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
+    Butterworth-Heinemann, 2013.
+    """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
@@ -58,13 +65,13 @@ class Cd0Fuselage(ExplicitComponent):
         # 5% NLF
         x_trans = 0.05
         # Roots
-        x0_turb = 36.9 * x_trans ** 0.625 * (1.0 / reynolds) ** 0.375
-        cf_fus = 0.074 / reynolds ** 0.2 * (1.0 - (x_trans - x0_turb)) ** 0.8
+        x0_turbulent = 36.9 * x_trans ** 0.625 * (1.0 / reynolds) ** 0.375
+        cf_fus = 0.074 / reynolds ** 0.2 * (1.0 - (x_trans - x0_turbulent)) ** 0.8
         f = length / math.sqrt(4 * height * width / math.pi)
         ff_fus = 1.0 + 60.0 / (f ** 3.0) + f / 400.0
         # Fuselage
         cd0_fuselage = cf_fus * ff_fus * wet_area_fus / wing_area
-        # Cockpit window (Gudmunsson p727)
+        # Cockpit window (Gudmundsson p727)
         cd0_window = 0.002 * (height * width) / wing_area
 
         if self.options["low_speed_aero"]:

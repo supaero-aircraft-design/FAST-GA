@@ -16,8 +16,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 import warnings
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+from .....aerodynamics.constants import ENGINE_COUNT
 
 
 class ComputeEngineCG(ExplicitComponent):
@@ -27,6 +30,7 @@ class ComputeEngineCG(ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -36,7 +40,12 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:nacelle:y", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
+        self.add_input(
+            "data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m"
+        )
         self.add_input("data:geometry:propulsion:propeller:depth", val=np.nan, units="m")
 
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
@@ -62,6 +71,7 @@ class ComputeEngineCG(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         prop_layout = inputs["data:geometry:propulsion:layout"]
+        engine_count_pre_wing = inputs["data:geometry:propulsion:count"] / 2.0
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         y2_wing = inputs["data:geometry:wing:root:y"]
@@ -71,50 +81,40 @@ class ComputeEngineCG(ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
-        y_nacell = inputs["data:geometry:propulsion:nacelle:y"]
+        y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
+        x_nacelle_array = inputs["data:geometry:propulsion:nacelle:x"]
         prop_depth = inputs["data:geometry:propulsion:propeller:depth"]
 
         x_cg_in_nacelle = 0.6 * nacelle_length
         # From the beginning of the nacelle wrt to the nose, the CG is at x_cg_in_nacelle
 
         if prop_layout == 1.0:
-            if y_nacell > y2_wing:  # Nacelle in the tapered part of the wing
-                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (
-                    y4_wing - y2_wing
-                )
-                delta_x_nacell = 0.05 * l_wing_nac
-                x_nacell_cg = (
-                    x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
-                    - delta_x_nacell
-                    - (1.0 - x_cg_in_nacelle)
-                )
-                x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
-            else:  # Nacelle in the straight part of the wing
-                l_wing_nac = l2_wing
-                delta_x_nacell = 0.05 * l_wing_nac
-                x_nacell_cg = -delta_x_nacell - (1.0 - x_cg_in_nacelle)
-                x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
+
+            x_cg_b1 = 0
+            used_index = np.where(y_nacelle_array >= 0.0)[0]
+
+            for index in used_index:
+                y_nacelle = y_nacelle_array[index]
+                x_nacelle = x_nacelle_array[index]  # back of the nacelle = leading edge of the wing
+                if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
+                    l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacelle) / (
+                        y4_wing - y2_wing
+                    )
+                    delta_x_nacelle = 0.05 * l_wing_nac
+                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (1.0 - x_cg_in_nacelle)
+                else:  # Nacelle in the straight part of the wing
+                    l_wing_nac = l2_wing
+                    delta_x_nacelle = 0.05 * l_wing_nac
+                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (1.0 - x_cg_in_nacelle)
+                x_cg_b1 += x_nacelle_cg / engine_count_pre_wing
+        elif prop_layout == 2.0:
+            x_cg_b1 = x_nacelle_array[0] - (1.0 - x_cg_in_nacelle)
         elif prop_layout == 3.0:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
-        else:  # FIXME: no equation for configuration 2.0
-            if y_nacell > y2_wing:  # Nacelle in the tapered part of the wing
-                l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacell) / (
-                    y4_wing - y2_wing
-                )
-                delta_x_nacell = 0.05 * l_wing_nac
-                x_nacell_cg = (
-                    x4_wing * (y_nacell - y2_wing) / (y4_wing - y2_wing)
-                    - delta_x_nacell
-                    - 0.2 * nacelle_length
-                )
-                x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
-            else:  # Nacelle in the straight part of the wing
-                l_wing_nac = l2_wing
-                delta_x_nacell = 0.05 * l_wing_nac
-                x_nacell_cg = -delta_x_nacell - 0.2 * nacelle_length
-                x_cg_b1 = fa_length - 0.25 * l0_wing - (x0_wing - x_nacell_cg)
+        else:
+            x_cg_b1 = x_cg_in_nacelle + prop_depth
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 1!".format(
+                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
                     prop_layout
                 )
             )

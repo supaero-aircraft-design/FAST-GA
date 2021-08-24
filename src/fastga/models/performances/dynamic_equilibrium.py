@@ -266,10 +266,16 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
     @staticmethod
     def found_cl_repartition(
-        inputs, load_factor: float, mass: float, q: float, delta_cm: float, low_speed: bool = False
+        inputs,
+        load_factor: float,
+        mass: float,
+        q: float,
+        delta_cm: float,
+        low_speed: bool = False,
+        x_cg=-1.0,
     ):
         """
-        Method that founds the lift equilibrium with regard to the global moment
+        Method that finds the lift equilibrium with regard to the global moment
 
         :param inputs: inputs derived from aero and mass models
         :param load_factor: load factor applied to the aircraft expressed as a ratio of g
@@ -277,6 +283,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param q: dynamic pressure q=1/2*rho*V²
         :param delta_cm: DP induced cm to be added to the moment equilibrium
         :param low_speed: define which aerodynamic models should be used (either low speed or high speed)
+        :param x_cg: float defining the x_cg ratio of the aircraft (useful for polar computation)
         """
 
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
@@ -297,11 +304,14 @@ class DynamicEquilibrium(om.ExplicitComponent):
             cm0_wing = inputs["data:aerodynamics:wing:cruise:CM0_clean"]
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
 
-        c1 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"]
-        cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
-        c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
-        fuel_mass = mass - c3
-        x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
+        if x_cg < 0.0:
+            c1 = inputs[
+                "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
+            ]
+            cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
+            c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
+            fuel_mass = mass - c3
+            x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
 
         # Calculate cm_alpha_fus from Raymer equations (figure 16.14, eqn 16.22)
         x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing

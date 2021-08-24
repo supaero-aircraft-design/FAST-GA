@@ -30,6 +30,10 @@
 				<span_ratio>0.53</span_ratio>
 			</flap>
 			<flap_type>1.0</flap_type>
+			<aileron>
+				<chord_ratio is_input="True">0.3</chord_ratio>
+				<span_ratio is_input="True">0.17</span_ratio>
+			</aileron>
 			<cabin>
 				<aisle_width units="m">0.0</aisle_width>
 				<seats>
@@ -45,7 +49,9 @@
 					</passenger>
 				</seats>
 				<luggage>
-						<mass_max units="kg">60.</mass_max>
+					<mass_max_front units="kg">50.<!--maximum luggage weight in the unpressurized front luggage compartment--></mass_max_front>
+					<mass_max_rear units="kg">100.<!--maximum luggage weight in the permanent rear luggage compartment--></mass_max_rear>
+					<front_compartment_first> 0.0 <!-- 1 front luggage compartment filled at max capacity first then the rear one / 0 = rear luggage compartment filled at max capacity first then the front one --></front_compartment_first>
 				</luggage>
 			</cabin>
 			<has_T_tail>0.0</has_T_tail>
@@ -81,6 +87,10 @@
 				<layout>3.0</layout>
 				<count>1.0</count>
 				<y_ratio>[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
+				<y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+				<y_ratio_tank_end>0.62<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+				<LE_chord_percentage>0.1</LE_chord_percentage>
+				<TE_chord_percentage>0.1</TE_chord_percentage>
 			</propulsion>
 			<vertical_tail>
 				<MAC>
@@ -197,6 +207,11 @@
 		</weight>
 	</data>
 	<settings>
+		<geometry>
+			<fuel_tanks>
+				<depth>0.5</depth>
+			</fuel_tanks>
+		</geometry>
 		<weight>
 			<aircraft>
 				<CG>

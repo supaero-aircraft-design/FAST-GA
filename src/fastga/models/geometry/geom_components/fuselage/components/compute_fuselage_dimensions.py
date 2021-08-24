@@ -77,7 +77,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
         self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_front", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_rear", val=np.nan, units="kg")
         self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -102,7 +103,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_output("data:geometry:fuselage:rear_length", units="m")
         self.add_output("data:geometry:fuselage:PAX_length", units="m")
         self.add_output("data:geometry:cabin:length", units="m")
-        self.add_output("data:geometry:fuselage:luggage_length", units="m")
+        self.add_output("data:geometry:fuselage:luggage_length_front", units="m")
+        self.add_output("data:geometry:fuselage:luggage_length_rear", units="m")
 
         self.declare_partials(
             "*", "*", method="fd"
@@ -118,7 +120,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
-        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
+        luggage_mass_max_front = inputs["data:geometry:cabin:luggage:mass_max_front"]
+        luggage_mass_max_rear = inputs["data:geometry:cabin:luggage:mass_max_rear"]
         prop_layout = inputs["data:geometry:propulsion:layout"]
         spinner_length = inputs["data:geometry:propeller:depth"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -147,15 +150,16 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug_front = (luggage_mass_max_front / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug_rear = (luggage_mass_max_rear / luggage_density) / (0.8 * math.pi * r_i ** 2)
         # Cabin total length
-        cabin_length = l_instr + l_pax + l_lug
+        cabin_length = l_instr + l_pax + l_lug_rear
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
             _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length + spinner_length
+            lav = propulsion_length + spinner_length + l_lug_front
         else:
-            lav = 1.40 * h_f
+            lav = 1.40 * h_f + l_lug_front
             # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76 tend to say it is
             # around 1.40, though it varies a lot depending on the airplane and its use
         # Calculate fuselage length
@@ -175,7 +179,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         outputs["data:geometry:fuselage:rear_length"] = lar
         outputs["data:geometry:fuselage:PAX_length"] = l_pax
         outputs["data:geometry:cabin:length"] = cabin_length
-        outputs["data:geometry:fuselage:luggage_length"] = l_lug
+        outputs["data:geometry:fuselage:luggage_length_front"] = l_lug_front
+        outputs["data:geometry:fuselage:luggage_length_rear"] = l_lug_rear
 
 
 class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
@@ -202,7 +207,8 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
         self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_front", val=np.nan, units="kg")
+        self.add_input("data:geometry:cabin:luggage:mass_max_rear", val=np.nan, units="kg")
         self.add_input("data:geometry:fuselage:rear_length", units="m")
 
         self.add_output("data:geometry:cabin:NPAX")
@@ -212,7 +218,8 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.add_output("data:geometry:fuselage:front_length", units="m")
         self.add_output("data:geometry:fuselage:PAX_length", units="m")
         self.add_output("data:geometry:cabin:length", units="m")
-        self.add_output("data:geometry:fuselage:luggage_length", units="m")
+        self.add_output("data:geometry:fuselage:luggage_length_front", units="m")
+        self.add_output("data:geometry:fuselage:luggage_length_rear", units="m")
 
         self.declare_partials(
             "*", "*", method="fd"
@@ -228,7 +235,8 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
-        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
+        luggage_mass_max_front = inputs["data:geometry:cabin:luggage:mass_max_front"]
+        luggage_mass_max_rear = inputs["data:geometry:cabin:luggage:mass_max_rear"]
         prop_layout = inputs["data:geometry:propulsion:layout"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
@@ -249,15 +257,16 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug_front = (luggage_mass_max_front / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug_rear = (luggage_mass_max_rear / luggage_density) / (0.8 * math.pi * r_i ** 2)
         # Cabin total length
-        cabin_length = l_instr + l_pax + l_lug
+        cabin_length = l_instr + l_pax + l_lug_rear
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
             _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length
+            lav = propulsion_length + l_lug_front
         else:
-            lav = 1.7 * h_f
+            lav = 1.7 * h_f + l_lug_front
             # Calculate fuselage length
         fus_length = lav + cabin_length + lar
 
@@ -268,4 +277,5 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         outputs["data:geometry:fuselage:front_length"] = lav
         outputs["data:geometry:fuselage:PAX_length"] = l_pax
         outputs["data:geometry:cabin:length"] = cabin_length
-        outputs["data:geometry:fuselage:luggage_length"] = l_lug
+        outputs["data:geometry:fuselage:luggage_length_front"] = l_lug_front
+        outputs["data:geometry:fuselage:luggage_length_rear"] = l_lug_rear

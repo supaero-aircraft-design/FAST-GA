@@ -1,0 +1,65 @@
+LIST OF THE NOTEBOOKS AND THEIR FEATURES
+
+- MDA (adapted for analysis mode)
+Performs MultiDisciplinary Analysis on one of the reference aircrafts (beechcraft 76, cirrus sr22 or tbm930).
+A special yml configuration file stored in the data folder is used for the analysis.
+After the MDA convergence complementary classes are executed with generate_block_analysis (payload range, load analysis,...).
+This allows to use the postprocessing tools on the reference aircrafts.
+The outputs (converged reference aircrafts) are saved in the data folder to be processed by the analysis mode.
+
+- Wing Stretch Use Case
+Single use case of the wing span increase.
+The user chooses a converged reference aircraft, defines the wing modification parameters.
+The FAST-OAD-GA modules are then executed with generate_block_analysis and the output modified aircraft is saved in the output folder.
+This notebook currently does not perform postprocessing.
+
+- Fuselage Stretch Use Case
+Same discourse as the Wing Stretch use case.
+
+- Post Processing
+Notebook gathering all the visualization tools.
+The user can freely use and superpose all the xml files from the data, work and output folders.
+
+- Global Analysis
+It firstly adds a row of seats to a reference aircraft with the same approach as the fuselage stretch use case.
+Then the impact of a wing span or position modification on the fuselage stretched aircraft is analyzed.
+Some postprocessing tools are used to visualize the consequences of the modifications.
+The last section finds with fsolve the optimal wing position to reach the reference aircraft fixed stick static margin.
+
+- TBM Convergence and Models Analysis (not open-source)
+Displays tables and figures to compare the output of the MDA of the TBM 930 with data from DAHER or internet.
+The other half of the notebook compares the weight models used in the code with data from the PIM and with other models of the literature.
+
+
+WIDGETS
+
+Widgets have been integrated in the above-mentioned notebooks. They consist of the assembly of several components :
+1. the definition of the widget and the specification of its parameters (visuals, widget type, initial value,...)
+2. the definition of the eventhandler : what happens when a change is observed in the widget value.
+3. The observation and the display of the widget.
+
+Once the widget cell is executed it is permanently observed and its value can permanently change.
+
+List of the widgets :
+
+- Choice of the reference aircraft widget
+- Choice of the propulsive system widget
+These two widgets are similar. They are simple dropdown lists that display the available choices that the user can make.
+Once the user has chosen his reference aircraft and the engine id the code will automatically handles these choices.
+In that way the user does not have to care about manually changing these parameters in the notebook cells.
+Please note that some analysis parameters still have to be manually taken care of by the user, like the engine id in the yml configuration files.
+
+- Equilibrated Polar widget
+This postprocessing widget takes the form of a slider that goes from the fwd to the aft CG positions of the analyzed aircraft.
+When the user chooses a CG value the eventhandler calls an external function defined in the notebook.
+This function executes with generate_block_analysis the classes that generate the points of the aircraft equilibrated drag polar.
+Then it calls the function from analysis_and_plots that plots the polars.
+
+
+
+
+
+
+
+
+

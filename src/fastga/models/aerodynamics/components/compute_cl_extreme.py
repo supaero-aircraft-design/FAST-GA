@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    Estimation of the 3D maximum lift coefficients for wing and tail
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -27,7 +27,8 @@ class ComputeExtremeCL(Group):
     """
     Computes maximum CL of the aircraft in landing/take-off conditions.
 
-    3D CL is deduced from 2D CL asymptote.
+    3D CL is deduced from 2D CL asymptote and the hypothesis that the max 3D lift corresponds to the lift at which one
+    section of the wing goes out of the linear range in its lift curve slope. Same hypothesis for the HTP
     Contribution of high-lift devices is done apart and added.
 
     """
@@ -223,15 +224,17 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
 
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vect = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(
+            max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
+        )
         cl_xfoil_max = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
         cl_xfoil_min = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
         )
         cl_curve = np.maximum(
-            np.interp(y_vect, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vect))
+            np.interp(y_vector, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vector))
         )  # avoid divide by 0
         cl_max_clean = cl0 * np.min(cl_xfoil_max / cl_curve)
         cl_min_clean = cl0 * np.max(cl_xfoil_min / cl_curve)
@@ -293,11 +296,20 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         y_tip = float(inputs["data:geometry:horizontal_tail:span"]) / 2.0
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]
+        area_ratio = float(htp_area / wing_area)
 
-        cl_max_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"])
-        cl_max_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"])
-        cl_min_2d_root = float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"])
-        cl_min_2d_tip = float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"])
+        cl_max_2d_root = (
+            float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D"]) * area_ratio
+        )
+        cl_max_2d_tip = (
+            float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D"]) * area_ratio
+        )
+        cl_min_2d_root = (
+            float(inputs["data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D"]) * area_ratio
+        )
+        cl_min_2d_tip = (
+            float(inputs["data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D"]) * area_ratio
+        )
         cl_alpha_htp = float(inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"])
         cl_ref = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"]
@@ -307,17 +319,19 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         # HTP stall but we already do something similar by taking as the highest value, the first value having an error
         # of 10% from linear behavior
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
-        y_vect = np.linspace(max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT)
+        y_vector = np.linspace(
+            max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
+        )
         cl_xfoil_max = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
         )
         cl_xfoil_min = np.interp(
-            y_vect, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
+            y_vector, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
         )
         cl_curve = np.array(
             max(
-                np.interp(y_vect, y_interp, cl_interp).tolist(),
-                (1e-12 * np.ones(np.size(y_vect))).tolist(),
+                np.interp(y_vector, y_interp, cl_interp).tolist(),
+                (1e-12 * np.ones(np.size(y_vector))).tolist(),
             )
         )  # avoid divide by 0
         cl_max_clean = cl_ref * np.min(cl_xfoil_max / cl_curve)
@@ -326,8 +340,8 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         outputs["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"] = cl_max_clean
         outputs["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"] = cl_min_clean
 
-        clean_alpha_max_htp = cl_max_clean / (cl_alpha_htp * wing_area / htp_area) * 180.0 / np.pi
-        clean_alpha_min_htp = cl_min_clean / (cl_alpha_htp * wing_area / htp_area) * 180.0 / np.pi
+        clean_alpha_max_htp = cl_max_clean / cl_alpha_htp * 180.0 / np.pi
+        clean_alpha_min_htp = cl_min_clean / cl_alpha_htp * 180.0 / np.pi
 
         outputs[
             "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"
