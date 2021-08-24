@@ -20,13 +20,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import g
 from fastoad.model_base import Atmosphere
 
-FUSELAGE_MESH_POINT = 100
-
 
 class ComputeTorsionMoment(ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
-         TASOPT
+         TASOPT 2.0 (2010).
     """
 
     def setup(self):
@@ -47,7 +44,7 @@ class ComputeTorsionMoment(ExplicitComponent):
 
         # Tail Aero Loads TODO replace Clmax with xml data and compute qNE
         rmv = 0.7
-        cl_v_max = 0.2
+        cl_v_max = 0.55
         density = Atmosphere(0, altitude_in_feet=False).density
         q_never_exceed = 0.5 * density * max_speed ** 2
         lift_max_v = q_never_exceed * vtp_area * cl_v_max

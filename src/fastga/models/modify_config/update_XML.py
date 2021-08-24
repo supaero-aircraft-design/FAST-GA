@@ -1,5 +1,5 @@
 """
-    Estimation of total aircraft wet area
+    FAST - Copyright (c) 2016 ONERA ISAE
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -20,6 +20,10 @@ import openmdao.api as om
 
 
 class UpdateXML(om.Group):
+    """
+        The if loops defined in setup must require the same conditions as in compute_config_mod in order for the changes
+        to be correctly implemented.
+    """
 
     def initialize(self):
         self.options.declare("span_mod", types=list, default=[1.0, True, True])
@@ -33,7 +37,6 @@ class UpdateXML(om.Group):
 
 
 class _UpdateSpan(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data_mod:geometry:wing:aspect_ratio", val=np.nan)
@@ -63,19 +66,30 @@ class _UpdateSpan(om.ExplicitComponent):
         outputs["data:geometry:wing:taper_ratio"] = inputs["data_mod:geometry:wing:taper_ratio"]
         outputs["data:geometry:wing:area"] = inputs["data_mod:geometry:wing:area"]
         outputs["data:geometry:propulsion:y_ratio"] = inputs["data_mod:geometry:propulsion:y_ratio"]
-        outputs["data:geometry:propulsion:y_ratio_tank_beginning"] = inputs["data_mod:geometry:propulsion:y_ratio_tank_beginning"]
-        outputs["data:geometry:propulsion:y_ratio_tank_end"] = inputs["data_mod:geometry:propulsion:y_ratio_tank_end"]
+        outputs["data:geometry:propulsion:y_ratio_tank_beginning"] = inputs[
+            "data_mod:geometry:propulsion:y_ratio_tank_beginning"
+        ]
+        outputs["data:geometry:propulsion:y_ratio_tank_end"] = inputs[
+            "data_mod:geometry:propulsion:y_ratio_tank_end"
+        ]
         outputs["data:geometry:flap:span_ratio"] = inputs["data_mod:geometry:flap:span_ratio"]
-        outputs["data:geometry:wing:aileron:span_ratio"] = inputs["data_mod:geometry:wing:aileron:span_ratio"]
-        outputs["settings:span_mod:span_multiplier"] = inputs["data_mod:settings:span_mod:span_multiplier"]
+        outputs["data:geometry:wing:aileron:span_ratio"] = inputs[
+            "data_mod:geometry:wing:aileron:span_ratio"
+        ]
+        outputs["settings:span_mod:span_multiplier"] = inputs[
+            "data_mod:settings:span_mod:span_multiplier"
+        ]
 
 
 class _UpdateFuselage(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data_mod:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
-        self.add_input("data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            val=np.nan,
+            units="m",
+        )
         self.add_input("data_mod:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data_mod:TLAR:NPAX_design", val=np.nan)
         self.add_input("data_mod:TLAR:luggage_mass_design", val=np.nan, units="kg")
@@ -89,8 +103,14 @@ class _UpdateFuselage(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs["data:geometry:cabin:seats:passenger:NPAX_max"] = inputs["data_mod:geometry:cabin:seats:passenger:NPAX_max"]
-        outputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] = inputs["data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        outputs["data:geometry:wing:MAC:at25percent:x"] = inputs["data_mod:geometry:wing:MAC:at25percent:x"]
+        outputs["data:geometry:cabin:seats:passenger:NPAX_max"] = inputs[
+            "data_mod:geometry:cabin:seats:passenger:NPAX_max"
+        ]
+        outputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] = inputs[
+            "data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
+        ]
+        outputs["data:geometry:wing:MAC:at25percent:x"] = inputs[
+            "data_mod:geometry:wing:MAC:at25percent:x"
+        ]
         outputs["data:TLAR:NPAX_design"] = inputs["data_mod:TLAR:NPAX_design"]
         outputs["data:TLAR:luggage_mass_design"] = inputs["data_mod:TLAR:luggage_mass_design"]

@@ -1,5 +1,5 @@
 """
-    Estimation of total aircraft wet area
+    Computation of the fuselage modifications
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -20,11 +20,6 @@ import openmdao.api as om
 
 
 class ComputeFuselageMod(om.ExplicitComponent):
-
-    """
-    yo
-    """
-
     def initialize(self):
         self.options.declare("fuselage_mod", types=list, default=[0, 0, 0, 0, 0])
 
@@ -32,13 +27,17 @@ class ComputeFuselageMod(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
 
         self.add_output("data_mod:geometry:cabin:seats:passenger:NPAX_max")
-        self.add_output("data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m")
+        self.add_output(
+            "data_mod:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
+        )
         self.add_output("data_mod:geometry:wing:MAC:at25percent:x", units="m")
         self.add_output("data_mod:TLAR:NPAX_design")
         self.add_output("data_mod:TLAR:luggage_mass_design", units="kg")

@@ -1,5 +1,5 @@
 """
-Computes the aerostructural loads on the wing of the aircraft
+Computes the global wing loading.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -21,7 +21,6 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeWingLoading(ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
@@ -33,6 +32,6 @@ class ComputeWingLoading(ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         wing_outer_area = inputs["data:geometry:wing:outer_area"]
 
-        wing_loading = mtow/wing_outer_area
+        wing_loading = mtow / wing_outer_area
 
         outputs["data:loads:wing_loading"] = wing_loading

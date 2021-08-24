@@ -1,5 +1,5 @@
 """
-    Estimation of nacelle and pylon geometry
+    Estimation of landing gears geometry
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Landing gears geometry estimation """
+    """ Landing gears geometry estimation. Position along the span is based on aircraft pictures anlysis """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -34,7 +34,7 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
         self.add_output("data:geometry:landing_gear:height", units="m")
         self.add_output("data:geometry:landing_gear:y", units="m")
-        
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
