@@ -1,5 +1,5 @@
 """
-Test module for geometry functions of cg components
+    Test module for geometry functions of cg components
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -14,14 +14,15 @@ Test module for geometry functions of cg components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from typing import Union
+
 import pandas as pd
 from openmdao.core.component import Component
-from typing import Union
 import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.model_base import FlightPoint, Atmosphere
+from fastoad.model_base import FlightPoint
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
@@ -67,7 +68,9 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float, float, float):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(
+        self, mach: Union[float, np.array], unit_reynolds: Union[float, np.array], wing_mac: float,
+    ) -> Union[float, np.array]:
         return 0.0
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
@@ -138,7 +141,9 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float, float, float):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(
+        self, mach: Union[float, np.array], unit_reynolds: Union[float, np.array], wing_mac: float,
+    ) -> Union[float, np.array]:
         return 0.0
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:

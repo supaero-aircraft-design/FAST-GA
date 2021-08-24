@@ -12,4 +12,3 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_aero import ComputeAEROvlm
-from .compute_vn import ComputeVNvlmNoVH, ComputeVNvlm

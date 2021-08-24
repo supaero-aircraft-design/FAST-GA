@@ -1,0 +1,37 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+
+data:weight:aircraft:CG:aft:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord
+data:weight:aircraft:CG:fwd:MAC_position || most fwd X-position of center of gravity as ratio of mean aerodynamic chord
+data:weight:aircraft:CG:ground_condition:max:MAC_position || most aft X-position of center of gravity as ratio of mean aerodynamic chord for ground conditions
+data:weight:aircraft:CG:ground_condition:min:MAC_position || most fwd X-position of center of gravity as ratio of mean aerodynamic chord for ground conditions
+data:weight:aircraft:empty:CG:MAC_position || X-position of center of gravity as ratio of mean aerodynamic chord for empty aircraft
+data:weight:aircraft_empty:CG:x || X-position center of gravity of empty aircraft
+data:weight:aircraft_empty:CG:z || Z-position center of gravity of empty aircraft
+data:weight:aircraft_empty:mass || mass of empty aircraft
+data:weight:airframe:flight_controls:CG:x || X-position of center of gravity of the flight controls
+data:weight:airframe:fuselage:CG:x || X-position of center of gravity of the fuselage
+data:weight:airframe:horizontal_tail:CG:x || X-position of center of gravity of the horizontal tail
+data:weight:airframe:landing_gear:front:CG:x || X-position of center of gravity of the front landing gear
+data:weight:airframe:landing_gear:main:CG:x || X-position of center of gravity of the main landing gear
+data:weight:airframe:vertical_tail:CG:x || X-position of center of gravity of the vertical tail
+data:weight:airframe:wing:CG:x || X-position of center of gravity of the wing
+data:weight:furniture:passenger_seats:CG:x || X-position of center of gravity of the passenger/pilot seats
+data:weight:payload:front_fret:CG:x || X-position of center of gravity of the front fret
+data:weight:payload:PAX:CG:x || X-position of center of gravity of the passengers/pilots
+data:weight:payload:rear_fret:CG:x || X-position of center of gravity of the rear fret
+data:weight:propulsion:engine:CG:x || X-position of center of gravity of the engine(s)
+data:weight:propulsion:engine:CG:z || Z-position of center of gravity of the engine(s)
+data:weight:propulsion:fuel_lines:CG:x || X-position of center of gravity of the fuel lines
+data:weight:propulsion:tank:CG:x || X-position of center of gravity of the tank
+data:weight:systems:life_support:air_conditioning:CG:x || X-position of center of gravity of the air conditioning
+data:weight:systems:navigation:CG:x || X-position of center of gravity of the navigation system
+data:weight:systems:power:electric_systems:CG:x || X-position of center of gravity of the electric power unit
+data:weight:systems:power:hydraulic_systems:CG:x || X-position of center of gravity of the hydraulic power unit
+
+data:weight:aircraft:CG:aft:x || most aft X-position of aircraft center of gravity
+data:weight:aircraft:CG:flight_condition:max:MAC_position || most aft position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
+data:weight:aircraft:CG:flight_condition:min:MAC_position || most fwd position of the CG with respect to the mean aerodynamic chord based on all possible flight loading case
+data:weight:aircraft:CG:fwd:x || most fwd X-position of center of gravity

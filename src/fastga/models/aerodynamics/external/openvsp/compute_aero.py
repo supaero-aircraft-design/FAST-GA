@@ -15,12 +15,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import logging
+
 import numpy as np
 from openmdao.core.group import Group
 
 from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 from ...components.compute_reynolds import ComputeUnitReynolds
+
+_LOGGER = logging.getLogger(__name__)
 
 INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
@@ -127,6 +131,8 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         pass
 
     def compute(self, inputs, outputs):
+
+        _LOGGER.debug("Entering aerodynamic computation")
 
         # Check AOA input is float
         if not (type(INPUT_AOA) == float):

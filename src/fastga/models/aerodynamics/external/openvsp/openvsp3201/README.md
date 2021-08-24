@@ -1,6 +1,5 @@
 # Build and Installation Instructions for OpenVSP
 
-
 ### INTRODUCTION
 
   OpenVSP is a parametric aircraft geometry tool.  OpenVSP allows the
@@ -41,128 +40,127 @@
   needed by the GUI program and graphics-enabled API are marked
   GRAPHICS_ONLY.
 
-##### Assumed provided by the operating system.
+#### Assumed provided by the operating system
   
-   - [OpenGL](http://www.opengl.org) - 3D graphics library. OpenGL should be
-   available on any platform capable of displaying 3D graphics. GRAPHICS_ONLY
+- [OpenGL](http://www.opengl.org) - 3D graphics library. OpenGL should be 
+  available on any platform capable of displaying 3D graphics. GRAPHICS_ONLY
 
-##### Installed by the developer.
+#### Installed by the developer
 
-   - C++ Compiler -  OpenVSP requires a modern C++ compiler that supports
-   some C++11 features.  We try to support popular free compilers on the
-   main platforms.  For Windows, we require Visual Studio 2010 Express
-   or newer.  For Mac OSX or Linux/BSD, we support LLVM and GCC.
-
-   - [CMake 2.8](http://www.cmake.org) - Cross-platform build system.  CMake
-   generates platform-native build files which control compilation of
-   OpenVSP.  CMake is available as a standard package on most Linux
-   systems and binary installers are available for many other platforms
-   including Windows and Mac OS X.
-
-   - [SWIG](http://www.swig.org) - Simplified Wrapper and Interface Generator.
-   Optional dependency used to build interface to API for Python
-   and other scripting languages.
-
-   - [Python](http://www.python.org) - Scripting language.  Optional dependency
-   required if building Python API module.
-
-   - [Doxygen](http://www.doxygen.org) - Documentation generator.  Optional
-   dependency used for generating documentation from the source.  Can
-   also utilize graphviz dot to generate improved figures in the
-   documentation. (http://www.graphviz.org)
-
-##### Bundled with OpenVSP, but system libraries may substitute.
-
-   - [Code-Eli](http://github.com/ddmarshall/Code-Eli) - Curve & surface library.
-   Code-Eli was developed by David Marshall to meet OpenVSP's needs.
-   It is a header-only library that must be available to build.  It is
-   not likely to be packaged on any system.
-
-   - [Eigen3](http://eigen.tuxfamily.org) - Template library for linear algebra.
-   This header-only library is required by Code-Eli.  Eigen3 is likely
-   to be available as a standard package on Linux.
-
-   - [CppTest](http://cpptest.sourceforge.net) - C++ Unit testing framework.
-
-   - [Libxml2](http://www.xmlsoft.org) - XML parser and toolkit.  Libxml2 most
-   likely comes pre-installed with most Linux distributions and 
-   Mac OS X systems.  Windows users must download the source and
-   build this library following the Libxml2 instructions.
-
-   - [CMinpack](http://devernay.free.fr/hacks/cminpack/) - C/C++ port of
-   standard Fortran Levenberg-Marquardt implementation.
-
-   - [FLTK](http://www.fltk.org) - Cross-platform windowing library.  FLTK should
-   be available as a standard package on most Linux systems and can
-   be installed from source on Windows and Mac OS X according to the
-   FLTK instructions.  GRAPHICS_ONLY
-
-   - [GLM](http://glm.g-truc.net) - OpenGL math library.  GRAPHICS_ONLY
-
-   - [GLEW](http://glew.sourceforge.net) - OpenGL Extension Wrangler Library.  This
-   library is used to access any modern OpenGL features.  GRAPHICS_ONLY
-
-   - [libIGES](http://github.com/cbernardo/libIGES) - Library for working with
-   IGES files.  This is a very new library and is not likely to be packaged on
-   any system.
-
-   - [STEPcode](http://stepcode.org) - Library for working with STEP standard
-   files.  Based on an old library developed by NIST.  This is a
-   relatively new library, in constant development.  Not likely
-   to be packaged on any system.
-
-   - [exprparse](http://github.com/amgary/exprparse) - A simple c++ library to
-    compute values from simple math expressions stored as strings.
-
-##### Bundled with OpenVSP.
-
-   - [AngelScript](http://www.angelcode.com/angelscript) - Embedded scripting
-   language for C++.  Used for user-defined components.
-
-   - [nanoflann](http://code.google.com/p/nanoflann) - Fast nearest neighbors
-   library.
-
-   - sixseries - NASA 6-Series airfoil generation Fortran code released
-   to the public domain from NASA TM X 3069 September, 1974.
-   Converted to C using F2C.
-   
-   - [Triangle by Jonathan Shewchuk](http://www.cs.cmu.edu/~quake/triangle.html)
-   2D Delaunay triangulator.  This routine has been included in
-   this distribution.
-   
-   - [triInt by Tomas Möller (was: jgt.akpeters.com/papers/Moller97)](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97) - Fast triangle-triangle intersection test.
-   This code comes from two sources previously available online.
-   When JGT was taken over by Taylor and Francis, the source
-   accompanying the articles became unavailable.  The routines are
-   included in this distribution.
-     - Old URL:
-        -[jgt.akpeters.com/papers/Moller97/tritri.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97/tritri.html)
-        -[jgt.akpeters.com/papers/MollerTrumbore97/code.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/MollerTrumbore97/code.html)
+- C++ Compiler -  OpenVSP requires a modern C++ compiler that supports 
+  some C++11 features.  We try to support popular free compilers on the
+  main platforms.  For Windows, we require Visual Studio 2010 Express
+  or newer.  For Mac OSX or Linux/BSD, we support LLVM and GCC.
     
-      - Tomas Möller, Ben Trumbore, "Fast, Minimum Storage Ray-Triangle
-      Intersection", Journal of Graphics Tools, Vol. 2, Iss. 1, 1997.
+- [CMake 2.8](http://www.cmake.org) - Cross-platform build system.  CMake
+  generates platform-native build files which control compilation of
+  OpenVSP.  CMake is available as a standard package on most Linux
+  systems and binary installers are available for many other platforms
+  including Windows and Mac OS X.
+    
+- [SWIG](http://www.swig.org) - Simplified Wrapper and Interface Generator. 
+  Optional dependency used to build interface to API for Python
+  and other scripting languages.
+    
+- [Python](http://www.python.org) - Scripting language.  Optional dependency
+  required if building Python API module.
+    
+- [Doxygen](http://www.doxygen.org) - Documentation generator.  Optional
+  dependency used for generating documentation from the source.  Can
+  also utilize graphviz dot to generate improved figures in the
+  documentation. (http://www.graphviz.org)
 
-      - Tomas Möller, "A Fast Triangle-Triangle Intersection Test", Journal
-      of Graphics Tools, Vol. 2, Iss. 2, 1997.
+#### Bundled with OpenVSP, but system libraries may substitute
+
+- [Code-Eli](http://github.com/ddmarshall/Code-Eli) - Curve & surface library.
+  Code-Eli was developed by David Marshall to meet OpenVSP's needs.
+  It is a header-only library that must be available to build.  It is
+  not likely to be packaged on any system.
+    
+- [Eigen3](http://eigen.tuxfamily.org) - Template library for linear algebra.
+  This header-only library is required by Code-Eli.  Eigen3 is likely
+  to be available as a standard package on Linux.
+    
+- [CppTest](http://cpptest.sourceforge.net) - C++ Unit testing framework.
+    
+- [Libxml2](http://www.xmlsoft.org) - XML parser and toolkit.  Libxml2 most 
+  likely comes pre-installed with most Linux distributions and 
+  Mac OS X systems.  Windows users must download the source and
+  build this library following the Libxml2 instructions.
+    
+- [CMinpack](http://devernay.free.fr/hacks/cminpack/) - C/C++ port of
+  standard Fortran Levenberg-Marquardt implementation.
+    
+- [FLTK](http://www.fltk.org) - Cross-platform windowing library.  FLTK should
+  be available as a standard package on most Linux systems and can
+  be installed from source on Windows and Mac OS X according to the
+  FLTK instructions.  GRAPHICS_ONLY
+    
+- [GLM](http://glm.g-truc.net) - OpenGL math library.  GRAPHICS_ONLY
+    
+- [GLEW](http://glew.sourceforge.net) - OpenGL Extension Wrangler Library.  This
+  library is used to access any modern OpenGL features.  GRAPHICS_ONLY
+    
+- [libIGES](http://github.com/cbernardo/libIGES) - Library for working with
+  IGES files.  This is a very new library and is not likely to be packaged on
+  any system.
+    
+- [STEPcode](http://stepcode.org) - Library for working with STEP standard
+  files.  Based on an old library developed by NIST.  This is a
+  relatively new library, in constant development.  Not likely
+  to be packaged on any system.
+    
+- [exprparse](http://github.com/amgary/exprparse) - A simple c++ library to
+  compute values from simple math expressions stored as strings.
+
+#### Bundled with OpenVSP
+
+- [AngelScript](http://www.angelcode.com/angelscript) - Embedded scripting
+  language for C++.  Used for user-defined components.
+    
+- [nanoflann](http://code.google.com/p/nanoflann) - Fast nearest neighbors
+  library.
+    
+- sixseries - NASA 6-Series airfoil generation Fortran code released
+  to the public domain from NASA TM X 3069 September, 1974.
+  Converted to C using F2C.
+    
+- [Triangle by Jonathan Shewchuk](http://www.cs.cmu.edu/~quake/triangle.html)
+  2D Delaunay triangulator.  This routine has been included in
+  this distribution.
   
-   - [glFont2 by Brad Fish (was: students.cs.byu.edu/~bfish/glfont2.php)](http://web.archive.org/web/*/https://students.cs.byu.edu/~bfish/glfont2.php) - 
-   2D OpenGL font tool.  glFont2 has been included in this source
-   distribution.  GRAPHICS_ONLY
+- [triInt by Tomas Möller (was: jgt.akpeters.com/papers/Moller97)](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97) - Fast triangle-triangle intersection test.
+  This code comes from two sources previously available online.
+  When JGT was taken over by Taylor and Francis, the source
+  accompanying the articles became unavailable.  The routines are
+  included in this distribution.
+  
+    - Old URL:
+        - [jgt.akpeters.com/papers/Moller97/tritri.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/Moller97/tritri.html)
+        - [jgt.akpeters.com/papers/MollerTrumbore97/code.html](http://web.archive.org/web/*/http://jgt.akpeters.com/papers/MollerTrumbore97/code.html)
+    - Tomas Möller, Ben Trumbore, "Fast, Minimum Storage Ray-Triangle
+      Intersection", Journal of Graphics Tools, Vol. 2, Iss. 1, 1997.
+    - Tomas Möller, "A Fast Triangle-Triangle Intersection Test", Journal
+      of Graphics Tools, Vol. 2, Iss. 2, 1997.
 
-   - [cartesian](https://sourceforge.net/p/rfltk/code/HEAD/tree/cartesian/) -
-   Simple 2D plotting library for FLTK.  GRAPHICS_ONLY
-
-   - [clipper](http://www.angusj.com/delphi/clipper.php) - An open source
-   freeware library for clipping and offsetting lines and polygons.
-
-   - [Pinocchio](https://github.com/elrond79/Pinocchio) - The pinocchio
-   auto-rigging / weighting tool.
-
-   - [stb](https://github.com/nothings/stb) - Single-file libraries for
-   C/C++ for reading and writing image files.  GRAPHICS_ONLY
-
-   - wavedragEL -  Standalone version of the Eminton-Lord procedure for
-   obtaining the zero-lift wavedrag D/Q written by Sriram Rallabhandi
+- [glFont2 by Brad Fish (was: students.cs.byu.edu/~bfish/glfont2.php)](http://web.archive.org/web/*/https://students.cs.byu.edu/~bfish/glfont2.php) -
+  2D OpenGL font tool.  glFont2 has been included in this source
+  distribution.  GRAPHICS_ONLY
+      
+- [cartesian](https://sourceforge.net/p/rfltk/code/HEAD/tree/cartesian/) - 
+  Simple 2D plotting library for FLTK.  GRAPHICS_ONLY
+    
+- [clipper](http://www.angusj.com/delphi/clipper.php) - An open source 
+  freeware library for clipping and offsetting lines and polygons.
+    
+- [Pinocchio](https://github.com/elrond79/Pinocchio) - The pinocchio
+  auto-rigging / weighting tool.
+    
+- [stb](https://github.com/nothings/stb) - Single-file libraries for
+  C/C++ for reading and writing image files.  GRAPHICS_ONLY
+    
+- wavedragEL -  Standalone version of the Eminton-Lord procedure for
+  obtaining the zero-lift wavedrag D/Q written by Sriram Rallabhandi
 
 ### BUILD INSTRUCTIONS
 
@@ -213,66 +211,64 @@
    handful of variables.  These variables may be relevant to some
    or all of the projects.
 
-##### All project variables:
+#### All project variables:
 
-   - `VSP_NO_GRAPHICS` -- Set this variable to disable everything
-     to do with graphics.  The build system will not search for
-     or build any graphics libraries.  It will only build the
-     headless batch-mode VSP, API, and bindings.  This is ideal
-     for building VSP on a HPC machine with limited access.
+  - `VSP_NO_GRAPHICS` -- Set this variable to disable everything
+  to do with graphics.  The build system will not search for
+  or build any graphics libraries.  It will only build the
+  headless batch-mode VSP, API, and bindings.  This is ideal
+  for building VSP on a HPC machine with limited access.
+    
+  - `XXX_OMP_COMPILER` -- Set these variables to point at secondary
+  compilers to use when the primary compiler does not support
+  OpenMP.  This will allow the VSPAERO solver to be built as
+  a multithreaded program.  Expected versions of this variable
+  are:
+    - `C_OMP_COMPILER`
+    - `CXX_OMP_COMPILER`
+    - `VSP_INSTALL_API_TEST` -- Set to include the `apitest` executable 
+    in the installation package.
 
-   - `XXX_OMP_COMPILER` -- Set these variables to point at secondary
-     compilers to use when the primary compiler does not support
-     OpenMP.  This will allow the VSPAERO solver to be built as
-     a multithreaded program.  Expected versions of this variable
-     are:
+#### OpenVSP project variables:
 
-      - `C_OMP_COMPILER`
-      - `CXX_OMP_COMPILER`
+  - `VSP_LIBRARY_PATH` -- Set this variable to point at the
+  directory where the Libraries project was built.  The
+  SuperProject sets this path automatically.  The Libraries
+  project writes a file `VSP_Libraries_Config.cmake`
+  containing numerous settings to this path.
+    
+  - `XXXX_INSTALL_DIR` -- Set this variable to point to a
+  directory where a library has been installed.  This provides
+  a suggestion to a corresponding `FIND_PACKAGE( XXXX )`.  Do
+  not use these variables with `VSP_LIBRARY_PATH`, it will
+  overwrite them.  Acceptable versions of this variable are:
 
-   - `VSP_INSTALL_API_TEST` -- Set to include the `apitest` executable
-     in the installation package.
+    - `FLTK_INSTALL_DIR`
+    - `CPPTEST_INSTALL_DIR`
+    - `LIBXML2_INSTALL_DIR`
+    - `GLM_INSTALL_DIR`
+    - `GLEW_INSTALL_DIR`
+    - `EIGEN_INSTALL_DIR`
+    - `CODEELI_INSTALL_DIR`
+    - `CMINPACK_INSTALL_DIR`
+    - `LIBIGES_INSTALL_DIR`
+    - `STEPCODE_INSTALL_DIR`
+    - `EXPRPARSE_INSTALL_DIR`
 
-##### OpenVSP project variables:
+#### Libraries & SuperProject project variables:
 
-   - `VSP_LIBRARY_PATH` -- Set this variable to point at the
-     directory where the Libraries project was built.  The
-     SuperProject sets this path automatically.  The Libraries
-     project writes a file `VSP_Libraries_Config.cmake`
-     containing numerous settings to this path.
+  - `VSP_USE_SYSTEM_XXXX` -- Set this variable to search for the
+  particular library rather than use the bundled versions.
+  Acceptable versions of this variable are:
 
-   - `XXXX_INSTALL_DIR` -- Set this variable to point to a
-     directory where a library has been installed.  This provides
-     a suggestion to a corresponding `FIND_PACKAGE( XXXX )`.  Do
-     not use these variables with `VSP_LIBRARY_PATH`, it will
-     overwrite them.  Acceptable versions of this variable are:
-
-      - `FLTK_INSTALL_DIR`
-      - `CPPTEST_INSTALL_DIR`
-      - `LIBXML2_INSTALL_DIR`
-      - `GLM_INSTALL_DIR`
-      - `GLEW_INSTALL_DIR`
-      - `EIGEN_INSTALL_DIR`
-      - `CODEELI_INSTALL_DIR`
-      - `CMINPACK_INSTALL_DIR`
-      - `LIBIGES_INSTALL_DIR`
-      - `STEPCODE_INSTALL_DIR`
-      - `EXPRPARSE_INSTALL_DIR`
-
-##### Libraries & SuperProject project variables:
-
-   - `VSP_USE_SYSTEM_XXXX` -- Set this variable to search for the
-     particular library rather than use the bundled versions.
-     Acceptable versions of this variable are:
-
-      - `VSP_USE_SYSTEM_CPPTEST`
-      - `VSP_USE_SYSTEM_LIBXML2`
-      - `VSP_USE_SYSTEM_EIGEN`
-      - `VSP_USE_SYSTEM_CODEELI`
-      - `VSP_USE_SYSTEM_FLTK`
-      - `VSP_USE_SYSTEM_GLM`
-      - `VSP_USE_SYSTEM_GLEW`
-      - `VSP_USE_SYSTEM_CMINPACK`
-      - `VSP_USE_SYSTEM_LIBIGES`
-      - `VSP_USE_SYSTEM_STEPCODE`
-      - `VSP_USE_SYSTEM_EXPRPARSE`
+    - `VSP_USE_SYSTEM_CPPTEST`
+    - `VSP_USE_SYSTEM_LIBXML2`
+    - `VSP_USE_SYSTEM_EIGEN`
+    - `VSP_USE_SYSTEM_CODEELI`
+    - `VSP_USE_SYSTEM_FLTK`
+    - `VSP_USE_SYSTEM_GLM`
+    - `VSP_USE_SYSTEM_GLEW`
+    - `VSP_USE_SYSTEM_CMINPACK`
+    - `VSP_USE_SYSTEM_LIBIGES`
+    - `VSP_USE_SYSTEM_STEPCODE`
+    - `VSP_USE_SYSTEM_EXPRPARSE`

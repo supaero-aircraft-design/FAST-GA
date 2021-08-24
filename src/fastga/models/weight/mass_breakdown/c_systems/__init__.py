@@ -13,4 +13,7 @@
 
 from .c1_power_systems_weight import ComputePowerSystemsWeight
 from .c2_life_support_systems_weight import ComputeLifeSupportSystemsWeight
-from .c3_navigation_systems_weight import ComputeNavigationSystemsWeight
+from .c3_navigation_systems_weight import (
+    ComputeNavigationSystemsWeight,
+    ComputeNavigationSystemsWeightFLOPS,
+)

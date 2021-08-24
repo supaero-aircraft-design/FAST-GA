@@ -30,7 +30,7 @@ class ComputeWingY(ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:kink:span_ratio", val=0.5)
 
         self.add_output("data:geometry:wing:span", units="m")
         self.add_output("data:geometry:wing:root:y", units="m")

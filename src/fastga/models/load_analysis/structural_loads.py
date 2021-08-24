@@ -1,5 +1,6 @@
 """
-Computes the structural loads on the wing of the aircraft in the most stringent case according to aerostructural loads
+Computes the structural loads on the wing of the aircraft in the most stringent case according
+to aero-structural loads
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -19,7 +20,7 @@ import numpy as np
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class StructuralLoads(AerostructuralLoad):
@@ -55,7 +56,7 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")

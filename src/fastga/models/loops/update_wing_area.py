@@ -16,11 +16,14 @@ Computation of wing area
 
 import numpy as np
 import openmdao.api as om
+import logging
 from scipy.constants import g
 import warnings
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+
+_LOGGER = logging.getLogger(__name__)
 
 
 @RegisterOpenMDAOSystem("fastga.loop.wing_area", domain=ModelDomain.OTHER)
@@ -96,6 +99,12 @@ class _UpdateWingArea(om.ExplicitComponent):
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
 
+        _LOGGER.info(
+            "Looping on wing area with new value equal to {}".format(
+                max(wing_area_mission, wing_area_approach)
+            )
+        )
+
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
 
 
@@ -109,16 +118,16 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_output("data:weight:aircraft:additional_fuel_capacity", units="kg")
-        self.add_output("data:aerodynamics:aircraft:landing:additional_CL_capacity")
+        self.add_output("data:constraints:wing:additional_fuel_capacity", units="kg")
+        self.add_output("data:constraints:wing:additional_CL_capacity")
 
         self.declare_partials(
-            "data:weight:aircraft:additional_fuel_capacity",
+            "data:constraints:wing:additional_fuel_capacity",
             ["data:weight:aircraft:MFW", "data:mission:sizing:fuel"],
             method="fd",
         )
         self.declare_partials(
-            "data:aerodynamics:aircraft:landing:additional_CL_capacity",
+            "data:constraints:wing:additional_CL_capacity",
             [
                 "data:TLAR:v_approach",
                 "data:weight:aircraft:MLW",
@@ -137,7 +146,7 @@ class _ComputeWingAreaConstraints(om.ExplicitComponent):
         mlw = inputs["data:weight:aircraft:MLW"]
         wing_area = inputs["data:geometry:wing:area"]
 
-        outputs["data:weight:aircraft:additional_fuel_capacity"] = mfw - mission_fuel
-        outputs["data:aerodynamics:aircraft:landing:additional_CL_capacity"] = cl_max - mlw * g / (
+        outputs["data:constraints:wing:additional_fuel_capacity"] = mfw - mission_fuel
+        outputs["data:constraints:wing:additional_CL_capacity"] = cl_max - mlw * g / (
             0.5 * 1.225 * v_stall ** 2 * wing_area
         )

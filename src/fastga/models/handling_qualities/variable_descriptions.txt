@@ -1,0 +1,19 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+
+data:handling_qualities:stick_fixed_static_margin || stick fixed static margin
+data:handling_qualities:stick_free_static_margin || stick free static margin
+
+data:constraints:horizontal_tail:takeoff_rotation || margin on the horizontal tail area with respect to the takeoff rotation constraint
+data:constraints:horizontal_tail:landing || margin on the horizontal tail area with respect to the landing constraint
+data:geometry:horizontal_tail:area || horizontal tail area
+
+data:constraints:vertical_tail:target_cruise_stability || margin on the vertical tail area with respect to the cruise stability constraint
+data:constraints:vertical_tail:crosswind_landing || margin on the vertical tail area with respect to the constraint due to crosswind landing
+data:constraints:vertical_tail:engine_out_climb || margin on the vertical tail area with respect to the climb with one engine out condition
+data:constraints:vertical_tail:engine_out_takeoff || margin on the vertical tail area with respect to the takeoff with one engine out condition
+data:constraints:vertical_tail:engine_out_landing || margin on the vertical tail area with respect to the landing with one engine out condition
+
+data:geometry:vertical_tail:area || vertical tail area

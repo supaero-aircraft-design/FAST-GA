@@ -1,0 +1,27 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+
+data:loads:max_shear:mass || mass of the aircraft that leads to the highest shear
+data:loads:max_shear:load_factor || load factor that leads to the highest shear
+data:loads:max_shear:lift_shear || shear due to the lift in the condition of highest shear
+data:loads:max_shear:weight_shear || shear due to the structure in the condition of highest shear
+data:loads:max_rbm:mass || mass of the aircraft that leads to the highest root bending moment
+data:loads:max_rbm:load_factor || load factor that leads to the highest root bending moment
+data:loads:max_rbm:lift_rbm || root bending moment due to the lift in the condition of highest root bending moment
+data:loads:max_rbm:weight_rbm || root bending moment due to the structure in the condition of highest root bending moment
+data:loads:y_vector || position along the wing span where efforts are sampled
+data:loads:aerodynamic:ultimate:force_distribution || lift force distribution for the highest load factor between max shear and max bending moment condition
+data:loads:structure:ultimate:force_distribution:fuel || fuel weight distribution for the highest load factor between max shear and max bending moment condition
+data:loads:structure:ultimate:force_distribution:point_mass || point mass distribution for the highest load factor between max shear and max bending moment condition
+data:loads:structure:ultimate:force_distribution:wing || wing weight distribution for the highest load factor between max shear and max bending moment condition
+data:loads:structure:ultimate:root_bending:fuel || fuel weight distribution for the highest max bending moment condition
+data:loads:structure:ultimate:root_bending:point_mass || point mass distribution for the highest bending moment condition
+data:loads:structure:ultimate:root_bending:wing || wing weight distribution for the max bending moment condition
+data:loads:structure:ultimate:shear:fuel || fuel weight distribution for the max shear condition
+data:loads:structure:ultimate:shear:point_mass || point mass distribution for the max shear condition
+data:loads:structure:ultimate:shear:wing || wing weight distribution for the max shear condition
+
+data:flight_domain:velocity || velocity used to scale aero-propulsive effect
+data:flight_domain:load_factor || maximum load factor in the flight domain

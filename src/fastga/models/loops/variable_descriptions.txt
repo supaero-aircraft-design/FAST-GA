@@ -1,0 +1,10 @@
+# Documentation of variables used in FAST-GA models
+# Each line should be like:
+# my:variable||The description of my:variable, as long as needed, but on one line.
+# The separator "||" can be surrounded with spaces (that will be ignored)
+
+data:constraints:wing:additional_CL_capacity || margin with respect to the conditions of maximum lift required
+data:constraints:wing:additional_fuel_capacity || margin with respect to the conditions of maximum fuel stored in the wing required
+
+data:geometry:wing:area || wing area
+data:geometry:wing:MAC:at25percent:x || X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)

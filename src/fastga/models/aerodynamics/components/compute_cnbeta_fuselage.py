@@ -56,7 +56,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         l_f = math.sqrt(width_max * height_max)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = math.pi * l_f ** 2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = math.pi * l_f ** 2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
         # equation from raymer book eqn. 16.47
         cn_beta = -1.3 * volume_fus / wing_area / span * (l_f / width_max)
 
