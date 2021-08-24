@@ -849,7 +849,7 @@ def test_cy_delta_r():
 
 def test_cm_alpha_fus():
     """Tests cy delta of the rudder"""
-    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.4685)
+    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.2018)
 
 
 @pytest.mark.skipif(
