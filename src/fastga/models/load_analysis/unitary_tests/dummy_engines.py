@@ -1,6 +1,4 @@
-"""
-Test module for geometry functions of cg components
-"""
+"""Dummy engines declaration for load analysis module!"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +19,7 @@ import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint
-from fastoad.constants import EngineSetting
+from fastoad.model_base.atmosphere import Atmosphere
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
@@ -31,13 +29,20 @@ ENGINE_WRAPPER_BE76 = "test.wrapper.load_analysis.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.load_analysis.cirrus.dummy_engine"
 
 
-########################################################################################################################
-########################### Beechcraft BE76 dummy engine ###############################################################
-########################################################################################################################
+# Beechcraft BE76 dummy engine ###############################################################
+##############################################################################################
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
-    def __init__(self):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
@@ -81,6 +86,9 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 5800.0
 
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+        return 0.0
+
 
 @RegisterPropulsion(ENGINE_WRAPPER_BE76)
 class DummyEngineWrapperBE76(IOMPropulsionWrapper):
@@ -106,13 +114,20 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         return DummyEngineBE76(**engine_params)
 
 
-########################################################################################################################
-########################### Cirrus SR22 dummy engine ###################################################################
-########################################################################################################################
+# Cirrus SR22 dummy engine ###################################################################
+##############################################################################################
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-    def __init__(self):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
@@ -139,8 +154,8 @@ class DummyEngineSR22(AbstractFuelPropulsion):
             flight_points.thrust_rate = float(thrust) / max_thrust
         else:
             flight_points.thrust = max_thrust * np.array(flight_points.thrust_rate)
-        sfc_pmax = 8.5080e-08  # fixed whatever the thrust ratio, sfc for ONE 130kW engine !
-        sfc = sfc_pmax * flight_points.thrust_rate * mach * Atmosphere(altitude).speed_of_sound
+        sfc_p_max = 8.5080e-08  # fixed whatever the thrust ratio, sfc for ONE 130kW engine !
+        sfc = sfc_p_max * flight_points.thrust_rate * mach * Atmosphere(altitude).speed_of_sound
         flight_points.sfc = sfc
 
     def compute_weight(self) -> float:
@@ -155,6 +170,9 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     # noinspection PyMethodMayBeStatic
     def compute_sl_thrust(self) -> float:
         return 5417.0
+
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+        return 0.0
 
 
 @RegisterPropulsion(ENGINE_WRAPPER_SR22)

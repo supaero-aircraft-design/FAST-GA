@@ -181,7 +181,7 @@ def test_compute_climb():
     v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
     assert v_cas == pytest.approx(87.7, abs=1)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:climb:fuel", units="kg")
-    assert fuel_mass == pytest.approx(4.23, abs=1e-2)
+    assert fuel_mass == pytest.approx(4.21, abs=1e-2)
     distance = (
         problem.get_val("data:mission:sizing:main_route:climb:distance", units="m") / 1000.0
     )  # conversion to km

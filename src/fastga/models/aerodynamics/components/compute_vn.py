@@ -374,10 +374,10 @@ class ComputeVN(om.ExplicitComponent):
         if n_ma_ps > n_lim_ps:
             # In case the gust line load factor is above the maneuvering load factor, we need to solve the difference
             # between both curve to be 0.0 to find intersect
-            def delta(x):
+            def delta_maneuver_pos(x):
                 return load_factor_gust_p(u_de_vc, x) - load_factor_stall_p(x)
 
-            vma_ps = max(optimize.fsolve(delta, np.array(1000.0)))
+            vma_ps = max(optimize.fsolve(delta_maneuver_pos, np.array(1000.0)))
             n_ma_ps = load_factor_gust_p(u_de_vc, vma_ps)  # [-]
             velocity_array.append(float(vma_ps))
             load_factor_array.append(float(n_ma_ps))
@@ -392,10 +392,10 @@ class ComputeVN(om.ExplicitComponent):
         if n_ma_ng < n_lim_ng:
             # In case the gust line load factor is above the maneuvering load factor, we need to solve the difference
             # between both curve to be 0.0 to find intersect
-            def delta(x):
+            def delta_maneuver_neg(x):
                 return load_factor_gust_n(u_de_vc, x) - load_factor_stall_n(x)
 
-            vma_ng = max(optimize.fsolve(delta, np.array(1000.0)))
+            vma_ng = max(optimize.fsolve(delta_maneuver_neg, np.array(1000.0)))
             n_ma_ng = load_factor_gust_n(u_de_vc, vma_ng)  # [-]
             velocity_array.append(float(vma_ng))
             load_factor_array.append(float(n_ma_ng))
@@ -573,10 +573,10 @@ class ComputeVN(om.ExplicitComponent):
             # We first need to compute the intersection of the stall line with the gust line given by the
             # gust of maximum intensity. Similar calculation were already done in case the maneuvering speed
             # is dictated by the Vc gust line so the computation will be very similar
-            def delta(x):
+            def delta_max_gust_pos(x):
                 return load_factor_gust_p(u_de_vmg, x) - load_factor_stall_p(x)
 
-            vmg_min_1 = max(optimize.fsolve(delta, np.array(1000.0)))
+            vmg_min_1 = max(optimize.fsolve(delta_max_gust_pos, np.array(1000.0)))
 
             # The second candidate for the Vmg is given by the stall speed and the load factor at the cruise
             # speed

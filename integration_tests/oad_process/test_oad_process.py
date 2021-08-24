@@ -34,7 +34,7 @@ for folder in PATH[1 : len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = ["be76"]  # , "sr22"]
+AIRCRAFT_ID = ["sr22", "be76"]
 
 
 @pytest.fixture(scope="module")
@@ -80,28 +80,26 @@ def test_oad_process_vlm(cleanup):
 
         if aircraft_id == "sr22":
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 263.0, atol=1)
-            assert_allclose(
-                problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2
-            )
-            # noinspection PyTypeChecker
-            assert_allclose(
-                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1627.0, atol=1
-            )
-            # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1008.0, atol=1)
-        else:
-            # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 244.0, atol=1)
+            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 255.0, atol=1)
             assert_allclose(
                 problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2
             )
             # noinspection PyTypeChecker
+            assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1614, atol=1)
+            # noinspection PyTypeChecker
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 999.0, atol=1)
+        else:
+            # noinspection PyTypeChecker
+            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 237.0, atol=1)
             assert_allclose(
-                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1749.0, atol=1
+                problem["data:handling_qualities:stick_fixed_static_margin"], 0.25, atol=1e-2
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1115.0, atol=1)
+            assert_allclose(
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1732.0, atol=1
+            )
+            # noinspection PyTypeChecker
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1105.0, atol=1)
 
 
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
@@ -141,12 +139,12 @@ def test_oad_process_openvsp():
 
     # Check values
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 252.0, atol=1)
-    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.10, atol=1e-2)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 242.0, atol=1)
+    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1613.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1595.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1006.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 993.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):

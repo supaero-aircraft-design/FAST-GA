@@ -49,6 +49,7 @@ from fastga.models.aerodynamics.components import (
     ComputeClAlphaVT,
     ComputeAirfoilLiftCurveSlope,
     ComputeVNAndVH,
+    ComputeFuselagePitchingMoment,
 )
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
@@ -884,6 +885,18 @@ def cy_delta_r(XML_FILE: str, cy_delta_r_: float):
     assert problem.get_val(
         "data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1"
     ) == pytest.approx(cy_delta_r_, abs=1e-4)
+
+
+def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
+    """Tests cm alpha of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFuselagePitchingMoment()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFuselagePitchingMoment(), ivc)
+    assert problem.get_val("data:aerodynamics:fuselage:cm_alpha", units="rad**-1") == pytest.approx(
+        cm_alpha_fus_, abs=1e-4
+    )
 
 
 def high_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):

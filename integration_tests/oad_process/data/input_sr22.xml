@@ -17,7 +17,7 @@
 	<data>
 		<TLAR>
 			<NPAX_design>2.0</NPAX_design>
-			<luggage_mass_design units="kg">35.</luggage_mass_design>
+			<luggage_mass_design units="kg">40.</luggage_mass_design>
 			<range units="NM">1000.0</range>
 			<v_approach units="kn">79.0</v_approach>
 			<v_cruise units="kn">160.0</v_cruise>
@@ -123,7 +123,7 @@
 		</geometry>
 		<handling_qualities>
 				<static_margin>
-					<target>0.10</target>
+					<target>0.15</target>
 				</static_margin>
 		</handling_qualities>
 		<propulsion>
@@ -206,7 +206,7 @@
 			<airframe>
 				<landing_gear>
 					<front>
-						<weight_ratio>0.075</weight_ratio>
+						<weight_ratio>0.10</weight_ratio>
 					</front>
 				</landing_gear>
 		  	</airframe>

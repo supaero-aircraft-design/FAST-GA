@@ -26,6 +26,7 @@ from fastga.models.aerodynamics.components.hinge_moments_elevator import (
     Compute3DHingeMomentsTail,
 )
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
+from fastga.models.aerodynamics.components import ComputeFuselagePitchingMoment
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
@@ -134,6 +135,7 @@ class AerodynamicsHighSpeed(Group):
         )
         self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
         self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
+        self.add_subsystem("cmAlpha_fuse", ComputeFuselagePitchingMoment(), promotes=["*"])
         self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(), promotes=["*"])
         self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
         self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])

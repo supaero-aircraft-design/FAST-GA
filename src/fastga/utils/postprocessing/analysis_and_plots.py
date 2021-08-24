@@ -19,11 +19,11 @@ import plotly.graph_objects as go
 import matplotlib.colors as colour
 
 import plotly
-import random
 
 from plotly.subplots import make_subplots
 
 from typing import Dict
+from random import SystemRandom
 from openmdao.utils.units import convert_units
 
 from fastoad.io import VariableIO
@@ -189,7 +189,8 @@ def aircraft_geometry_plot(
         if prop_layout == 1.0:
 
             all_colour = colour.CSS4_COLORS.keys()
-            trace_colour = random.choice(list(all_colour))
+            random_generator = SystemRandom()
+            trace_colour = list(all_colour)[random_generator.randrange(0, len(list(all_colour)))]
             used_index = np.where(pos_y_nacelle >= 0.0)[0]
             show_legend = True
 
@@ -381,7 +382,7 @@ def cl_wing_diagram(
     name_ref=None,
     name_mod=None,
     file_formatter=None,
-) -> go.FigureWidget:
+) -> [go.FigureWidget, go.FigureWidget]:
     """
     Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL before the added part of
     the wing or before the reduced part of the wing.
@@ -487,7 +488,7 @@ def cl_wing_diagram(
     if longer_wing:
         y_scatter = y - cl_array_ref
     else:
-        y_scatter = cl_array_mod - y
+        y_scatter = list(np.array(cl_array_mod) - y)
 
     scatter = go.Scatter(x=span_array_short, y=y_scatter, name="Delta_CL")
     fig1.add_trace(scatter)
@@ -1014,7 +1015,7 @@ def payload_range(
 
 
 def drag_breakdown_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None,
+    aircraft_file_path: str, fig=None, file_formatter=None,
 ) -> go.FigureWidget:
     """
 

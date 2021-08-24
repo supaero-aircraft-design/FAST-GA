@@ -27,13 +27,7 @@ class ComputeAeroCenter(ExplicitComponent):
     """ Aerodynamic center estimation """
 
     def setup(self):
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
@@ -43,6 +37,7 @@ class ComputeAeroCenter(ExplicitComponent):
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
             val=np.nan,
@@ -65,13 +60,7 @@ class ComputeAeroCenter(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        fus_length = inputs["data:geometry:fuselage:length"]
-        wing_area = inputs["data:geometry:wing:area"]
         aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
@@ -79,18 +68,13 @@ class ComputeAeroCenter(ExplicitComponent):
         cl_delta_ht = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
         ch_alpha_3d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha"]
         ch_delta_3d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta"]
+        cm_alpha_fus = inputs["data:aerodynamics:fuselage:cm_alpha"]
         tail_efficiency = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         v_cruise = inputs["data:TLAR:v_cruise"]
         alt_cruise = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
         # TODO: make variable name in computation sequence more english
-        x0_25 = fa_length - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
-        ratio_x025 = x0_25 / fus_length
-        # fitting result of Raymer book, figure 16.14
-        k_h = 0.01222 - 7.40541e-4 * ratio_x025 * 100 + 2.1956e-5 * (ratio_x025 * 100) ** 2
-        # equation from Raymer book, eqn 16.22
         # FIXME: introduce cm_alpha_wing to the equation (non-symmetrical profile)
-        cm_alpha_fus = k_h * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
         x_ca_plane = (tail_efficiency * cl_alpha_ht * lp_ht - cm_alpha_fus * l0_wing) / (
             cl_alpha_wing + tail_efficiency * cl_alpha_ht
         )
