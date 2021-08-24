@@ -23,6 +23,7 @@ import time
 
 from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
@@ -55,19 +56,29 @@ class Mission(om.Group):
 
     def setup(self):
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
-        self.add_subsystem("taxi_out", _compute_taxi(
-            propulsion_id=self.options["propulsion_id"],
-            taxi_out=True,
-        ), promotes=["*"])
-        self.add_subsystem("takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("climb", _compute_climb(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("cruise", _compute_cruise(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "taxi_out",
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=True,),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "climb", _compute_climb(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cruise", _compute_cruise(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
         self.add_subsystem("reserve", _compute_reserve(), promotes=["*"])
-        self.add_subsystem("descent", _compute_descent(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
-        self.add_subsystem("taxi_in", _compute_taxi(
-            propulsion_id=self.options["propulsion_id"],
-            taxi_out=False,
-        ), promotes=["*"])
+        self.add_subsystem(
+            "descent", _compute_descent(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem(
+            "taxi_in",
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
+            promotes=["*"],
+        )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
 
         # Solvers setup
@@ -87,7 +98,6 @@ class Mission(om.Group):
 
 
 class _compute_reserve(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
@@ -101,15 +111,16 @@ class _compute_reserve(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         m_reserve = (
-                inputs["data:mission:sizing:main_route:cruise:fuel"]
-                * inputs["data:mission:sizing:main_route:reserve:duration"]
-                / max(1e-6, inputs["data:mission:sizing:main_route:cruise:duration"])  # avoid 0 division
+            inputs["data:mission:sizing:main_route:cruise:fuel"]
+            * inputs["data:mission:sizing:main_route:reserve:duration"]
+            / max(
+                1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]
+            )  # avoid 0 division
         )
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
 
 
 class UpdateFW(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
@@ -172,14 +183,14 @@ class _compute_taxi(om.ExplicitComponent):
             self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
             self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
-            self.add_output("data:mission:sizing:taxi_out:fuel", units='kg')
+            self.add_output("data:mission:sizing:taxi_out:fuel", units="kg")
         else:
             self.add_input("data:mission:sizing:taxi_in:thrust_rate", np.nan)
             self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
             self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
-            self.add_output("data:mission:sizing:taxi_in:fuel", units='kg')
+            self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
 
-        self.declare_partials("*", "*", method="fd") 
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -189,7 +200,7 @@ class _compute_taxi(om.ExplicitComponent):
         if self.options["taxi_out"]:
             thrust_rate = inputs["data:mission:sizing:taxi_out:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_out:duration"]
-            mach = inputs["data:mission:sizing:taxi_out:speed"]/Atmosphere(0.0).speed_of_sound
+            mach = inputs["data:mission:sizing:taxi_out:speed"] / Atmosphere(0.0).speed_of_sound
         else:
             thrust_rate = inputs["data:mission:sizing:taxi_in:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_in:duration"]
@@ -197,8 +208,7 @@ class _compute_taxi(om.ExplicitComponent):
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
         flight_point = FlightPoint(
-            mach=mach, altitude=0.0, engine_setting=EngineSetting.TAKEOFF,
-            thrust_rate=thrust_rate
+            mach=mach, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=thrust_rate
         )
         propulsion_model.compute_flight_points(flight_point)
         fuel_mass = propulsion_model.get_consumed_mass(flight_point, duration)
@@ -258,7 +268,7 @@ class _compute_climb(AircraftEquilibrium):
             ],
             method="fd",
         )
-        
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = FuelEngineSet(
@@ -286,30 +296,43 @@ class _compute_climb(AircraftEquilibrium):
         atm_0 = Atmosphere(0.0)
 
         # FIXME: VCAS strategy is specific to ICE-propeller configuration, should be an input
-        cl = math.sqrt(3*cd0/coef_k_wing)
+        cl = math.sqrt(3 * cd0 / coef_k_wing)
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
         v_cas = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl))
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
 
         mach = math.sqrt(
-            5 * ((atm_0.pressure / atm.pressure * (
-                    (1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1
-            ) + 1) ** (1 / 3.5) - 1)
+            5
+            * (
+                (
+                    atm_0.pressure
+                    / atm.pressure
+                    * ((1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1)
+                    + 1
+                )
+                ** (1 / 3.5)
+                - 1
+            )
         )
-        v_tas = max(mach * atm.speed_of_sound, 1.3*vs1)
-        mach = v_tas/atm.speed_of_sound
+        v_tas = max(mach * atm.speed_of_sound, 1.3 * vs1)
+        mach = v_tas / atm.speed_of_sound
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
-        cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(inputs, 1.0, mass_t,
-                                                                         (0.5 * atm.density * v_tas ** 2), False)
+        cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(
+            inputs, 1.0, mass_t, (0.5 * atm.density * v_tas ** 2), False
+        )
         cd = cd0 + coef_k_wing * cl_wing ** 2 + coef_k_htp * (cl_htp_only + cl_elevator) ** 2
         flight_point = FlightPoint(
-            mach=mach, altitude=SAFETY_HEIGHT, engine_setting=EngineSetting.CLIMB,
-            thrust_rate=thrust_rate
+            mach=mach,
+            altitude=SAFETY_HEIGHT,
+            engine_setting=EngineSetting.CLIMB,
+            thrust_rate=thrust_rate,
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)
         climb_rate = thrust / (mass_t * g) - cd / (cl_wing + cl_htp_only + cl_elevator)
-        time_step = ((cruise_altitude - SAFETY_HEIGHT) / (v_tas * math.sin(climb_rate))) / float(POINTS_NB_CLIMB)
+        time_step = ((cruise_altitude - SAFETY_HEIGHT) / (v_tas * math.sin(climb_rate))) / float(
+            POINTS_NB_CLIMB
+        )
 
         while altitude_t < cruise_altitude:
 
@@ -318,22 +341,33 @@ class _compute_climb(AircraftEquilibrium):
             vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
             # Evaluate thrust and sfc
             mach = math.sqrt(
-                5 * ((atm_0.pressure / atm.pressure * (
-                        (1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1
-                ) + 1) ** (1 / 3.5) - 1)
+                5
+                * (
+                    (
+                        atm_0.pressure
+                        / atm.pressure
+                        * ((1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1)
+                        + 1
+                    )
+                    ** (1 / 3.5)
+                    - 1
+                )
             )
-            v_tas = max(mach * atm.speed_of_sound, 1.3*vs1)
-            mach = v_tas/atm.speed_of_sound
+            v_tas = max(mach * atm.speed_of_sound, 1.3 * vs1)
+            mach = v_tas / atm.speed_of_sound
             flight_point = FlightPoint(
-                mach=mach, altitude=altitude_t, engine_setting=EngineSetting.CLIMB,
-                thrust_rate=thrust_rate
+                mach=mach,
+                altitude=altitude_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_rate=thrust_rate,
             )  # with engine_setting as EngineSetting
             propulsion_model.compute_flight_points(flight_point)
             thrust = float(flight_point.thrust)
 
             # Calculate equilibrium and induced drag
-            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(inputs, 1.0, mass_t,
-                                                                             (0.5 * atm.density * v_tas ** 2), False)
+            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(
+                inputs, 1.0, mass_t, (0.5 * atm.density * v_tas ** 2), False
+            )
             cd = cd0 + coef_k_wing * cl_wing ** 2 + coef_k_htp * (cl_htp_only + cl_elevator) ** 2
 
             # Calculate climb rate and height increase
@@ -351,8 +385,11 @@ class _compute_climb(AircraftEquilibrium):
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for climb phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for climb phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
@@ -426,7 +463,7 @@ class _compute_cruise(AircraftEquilibrium):
                 inputs["data:TLAR:range"]
                 - inputs["data:mission:sizing:main_route:climb:distance"]
                 - inputs["data:mission:sizing:main_route:descent:distance"]
-            )
+            ),
         )
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
@@ -453,16 +490,20 @@ class _compute_cruise(AircraftEquilibrium):
         while distance_t < cruise_distance:
 
             # Calculate equilibrium and induced drag
-            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(inputs, 1.0, mass_t,
-                                                                             (0.5 * atm.density * v_tas ** 2), False)
+            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(
+                inputs, 1.0, mass_t, (0.5 * atm.density * v_tas ** 2), False
+            )
             cd = cd0 + coef_k_wing * cl_wing ** 2 + coef_k_htp * (cl_htp_only + cl_elevator) ** 2
             drag = 0.5 * atm.density * wing_area * cd * v_tas ** 2
 
             # Evaluate sfc
             mach = v_tas / atm.speed_of_sound
             flight_point = FlightPoint(
-                mach=mach, altitude=cruise_altitude, engine_setting=EngineSetting.CRUISE,
-                thrust_is_regulated=True, thrust=drag,
+                mach=mach,
+                altitude=cruise_altitude,
+                engine_setting=EngineSetting.CRUISE,
+                thrust_is_regulated=True,
+                thrust=drag,
             )
             propulsion_model.compute_flight_points(flight_point)
             # If thrust exceed max thrust exit cruise calculation
@@ -477,19 +518,20 @@ class _compute_cruise(AircraftEquilibrium):
 
             # Estimate mass evolution and update time
             mass_fuel_t += propulsion_model.get_consumed_mass(
-                flight_point,
-                min(time_step, (cruise_distance - distance_t) / v_tas)
+                flight_point, min(time_step, (cruise_distance - distance_t) / v_tas)
             )
             mass_t = mass_t - propulsion_model.get_consumed_mass(
-                flight_point,
-                min(time_step, (cruise_distance - distance_t) / v_tas)
+                flight_point, min(time_step, (cruise_distance - distance_t) / v_tas)
             )
             time_t += min(time_step, (cruise_distance - distance_t) / v_tas)
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for cruise phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for cruise phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:distance"] = distance_t
@@ -551,7 +593,7 @@ class _compute_descent(AircraftEquilibrium):
                 "data:mission:sizing:main_route:cruise:fuel",
             ],
             method="fd",
-            )
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(
@@ -583,7 +625,9 @@ class _compute_descent(AircraftEquilibrium):
         atm_0 = Atmosphere(0.0)
         warning = False
         # Calculate defined VCAS at the beginning of descent (cos(gamma)~1)
-        v_cas = math.sqrt((mass_t * g) * math.cos(descent_rate) / (0.5 * atm_0.density * wing_area * cl))
+        v_cas = math.sqrt(
+            (mass_t * g) * math.cos(descent_rate) / (0.5 * atm_0.density * wing_area * cl)
+        )
 
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = (-cruise_altitude / (v_cas * math.sin(descent_rate))) / float(POINTS_NB_DESCENT)
@@ -593,34 +637,51 @@ class _compute_descent(AircraftEquilibrium):
             # Define air properties and calculate VTAS
             atm = Atmosphere(altitude_t, altitude_in_feet=False)
             mach = math.sqrt(
-                5 * ((atm_0.pressure / atm.pressure * (
-                        (1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1
-                ) + 1) ** (1 / 3.5) - 1)
+                5
+                * (
+                    (
+                        atm_0.pressure
+                        / atm.pressure
+                        * ((1 + 0.2 * (v_cas / atm_0.speed_of_sound) ** 2) ** 3.5 - 1)
+                        + 1
+                    )
+                    ** (1 / 3.5)
+                    - 1
+                )
             )
             v_tas = mach * atm.speed_of_sound
             # Calculate equilibrium and induced drag
-            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(inputs, 1.0, mass_t,
-                                                                             (0.5 * atm.density * v_tas ** 2), False)
+            cl_wing, cl_htp_only, cl_elevator, _ = self.found_cl_repartition(
+                inputs, 1.0, mass_t, (0.5 * atm.density * v_tas ** 2), False
+            )
             cd = cd0 + coef_k_wing * cl_wing ** 2 + coef_k_htp * (cl_htp_only + cl_elevator) ** 2
-            cl = ((mass_t * g) * math.cos(descent_rate) / (0.5 * atm.density * wing_area * v_tas**2))
-            cl_cd = cl/cd
-            drag = 0.5 * atm.density * wing_area * cd * v_tas**2
+            cl = (
+                (mass_t * g) * math.cos(descent_rate) / (0.5 * atm.density * wing_area * v_tas ** 2)
+            )
+            cl_cd = cl / cd
+            drag = 0.5 * atm.density * wing_area * cd * v_tas ** 2
 
             # Calculate necessary Thrust to maintain VCAS and descent rate
             # if T<0N, VCAS is maintained reducing gamma/descent rate and engine in IDLE condition
             thrust = drag + (mass_t * g) * math.sin(gamma)
             if thrust <= 0.0:
                 flight_point = FlightPoint(
-                    mach=mach, altitude=altitude_t, engine_setting=EngineSetting.IDLE,
-                    thrust_rate=0.2)  # FIXME: define IDLE maybe?
-                descent_rate = -1/cl_cd
+                    mach=mach,
+                    altitude=altitude_t,
+                    engine_setting=EngineSetting.IDLE,
+                    thrust_rate=0.2,
+                )  # FIXME: define IDLE maybe?
+                descent_rate = -1 / cl_cd
                 gamma = math.asin(descent_rate)
                 warning = True
             else:
                 # FIXME: DESCENT setting on engine does not exist, replaced by CRUISE for test
                 flight_point = FlightPoint(
-                    mach=mach, altitude=altitude_t, engine_setting=EngineSetting.CRUISE,
-                    thrust_is_regulated=True, thrust=thrust,
+                    mach=mach,
+                    altitude=altitude_t,
+                    engine_setting=EngineSetting.CRUISE,
+                    thrust_is_regulated=True,
+                    thrust=thrust,
                 )
             propulsion_model.compute_flight_points(flight_point)
 
@@ -638,8 +699,11 @@ class _compute_descent(AircraftEquilibrium):
 
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
-                raise Exception("Time calculation duration for descent phase [{}s] exceeded!".format(
-                    MAX_CALCULATION_TIME))
+                raise Exception(
+                    "Time calculation duration for descent phase [{}s] exceeded!".format(
+                        MAX_CALCULATION_TIME
+                    )
+                )
 
         if warning:
             warnings.warn("Descent rate has been reduced!")

@@ -50,7 +50,9 @@ class ComputePayload(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax_design = inputs["data:TLAR:NPAX_design"] + 2.0  # addition of 2 pilots
-        npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0  # addition of 2 pilots
+        npax_max = (
+            inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
+        )  # addition of 2 pilots
         mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
         max_mass_per_pax = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
         luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]
@@ -77,4 +79,6 @@ class ComputePayload(om.ExplicitComponent):
         outputs["data:weight:payload:front_fret:mass"] = luggage_mass_front
         outputs["data:weight:payload:rear_fret:mass"] = luggage_mass_rear
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
-        outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max_front + luggage_mass_max_rear
+        outputs["data:weight:aircraft:max_payload"] = (
+            npax_max * max_mass_per_pax + luggage_mass_max_front + luggage_mass_max_rear
+        )

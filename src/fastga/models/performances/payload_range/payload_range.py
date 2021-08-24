@@ -1,5 +1,5 @@
 """
-    Estimation of fuselage aiframe mass
+    Estimation of payload range diagram points.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -26,16 +26,17 @@ from scipy.optimize import fsolve
 
 from fastga.models.performances.mission import Mission
 from fastoad.io import VariableIO
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.baseò import FuelEngineSet
 
 current_path: str = r"/src/fastga/models/performances/payload_range"
-XML_FILE = pth.join(current_path, 'blank.xml')
+XML_FILE = pth.join(current_path, "blank.xml")
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class ComputePayloadRange(om.ExplicitComponent):
     """
-        Payload Range.
+        Payload Range. The minimal payload which defines point E is taken as two pilots.
     """
 
     def initialize(self):
@@ -47,7 +48,9 @@ class ComputePayloadRange(om.ExplicitComponent):
         inputs_mission = [var for var in variables if var.is_input]
 
         for input in inputs_mission:
-            self.add_input(input.name, val=np.nan, units=input.metadata["units"], shape=input.metadata["shape"])
+            self.add_input(
+                input.name, val=np.nan, units=input.metadata["units"], shape=input.metadata["shape"]
+            )
         self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
@@ -55,8 +58,8 @@ class ComputePayloadRange(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
 
         self.add_output("data:payload_range:payload_array", units="kg", shape=5)
-        self.add_output("data:payload_range:range_array", units="m", shape=5)
-        self.add_output("data:payload_range:specific_range_array", units="m/kg", shape=5)
+        self.add_output("data:payload_range:range_array", units="NM", shape=5)
+        self.add_output("data:payload_range:specific_range_array", units="NM/kg", shape=5)
 
         self.declare_partials("*", "*", method="fd")
 
@@ -82,7 +85,13 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         # Point B : max payload, enough fuel to have mass = MTOW
         fuel_target_b = mtow - mzfw
-        range_b, dic, _, _ = fsolve(self.fuel_function, range_mission / 2, args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]), xtol=1, full_output= True)
+        range_b, dic, _, _ = fsolve(
+            self.fuel_function,
+            range_mission / 2,
+            args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]),
+            xtol=1,
+            full_output=True,
+        )
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
@@ -101,21 +110,35 @@ class ComputePayloadRange(om.ExplicitComponent):
         payload_d = max_payload - (mfw - fuel_target_b)
 
         if payload_d > 2 * mass_pilot:
-            range_d, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]), xtol=1, full_output=True)
+            range_d, dic, _, _ = fsolve(
+                self.fuel_function,
+                range_mission,
+                args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]),
+                xtol=1,
+                full_output=True,
+            )
             _LOGGER.warning("Number of fsolve iterations for point D :")
             _LOGGER.warning(dic["nfev"])
         else:
             range_d = 0
-            _LOGGER.warning("Point D not computed, payload for this point lower than minimal payload")
+            _LOGGER.warning(
+                "Point D not computed, payload for this point lower than minimal payload"
+            )
         payload_array.append(payload_d)
         range_array.append(range_d[0])
         sr_array.append(range_d[0] / fuel_target_d)
 
-        # Point E : max fuel (MFW), min payload (2 pilots) and the aircraft resulting mass
+        # Point E : max fuel (MFW), min payload and the aircraft resulting mass
         fuel_target_e = mfw
         payload_e = 2 * mass_pilot
         mass_aircraft = owe + mfw + payload_e
-        range_e, dic, _, _ = fsolve(self.fuel_function, range_mission, args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]), xtol=1, full_output=True)
+        range_e, dic, _, _ = fsolve(
+            self.fuel_function,
+            range_mission,
+            args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]),
+            xtol=1,
+            full_output=True,
+        )
 
         _LOGGER.warning("Number of fsolve iterations for point E :")
         _LOGGER.warning(dic["nfev"])
@@ -141,7 +164,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             inputs_mission[i].value = inputs[inputs_mission[i].name]
 
         var_names = np.array([var.name for var in inputs_mission])
-        var_value = np.array([var.value.tolist() for var in inputs_mission], dtype='object')
+        var_value = np.array([var.value.tolist() for var in inputs_mission], dtype="object")
         var_units = np.array([var.units for var in inputs_mission])
 
         index_range = np.where(var_names == "data:TLAR:range")
@@ -151,10 +174,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         var_value[index_mtow[0]] = mass
 
         compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id=prop_id),
-            var_names.tolist(),
-            XML_FILE,
-            True,
+            Mission(propulsion_id=prop_id), var_names.tolist(), XML_FILE, True,
         )
 
         inputs_dict = {}

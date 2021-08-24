@@ -67,20 +67,44 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:layout", np.nan)
-        component.add_input("data:aerodynamics:propeller:sea_level:speed", np.full(SPEED_PTS_NB, np.nan), units="m/s")
-        component.add_input("data:aerodynamics:propeller:sea_level:thrust", np.full(THRUST_PTS_NB, np.nan), units="N")
-        component.add_input("data:aerodynamics:propeller:sea_level:thrust_limit", np.full(SPEED_PTS_NB, np.nan),
-                            units="N")
-        component.add_input("data:aerodynamics:propeller:sea_level:efficiency",
-                            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan))
-        component.add_input("data:aerodynamics:propeller:cruise_level:speed", np.full(SPEED_PTS_NB, np.nan),
-                            units="m/s")
-        component.add_input("data:aerodynamics:propeller:cruise_level:thrust", np.full(THRUST_PTS_NB, np.nan),
-                            units="N")
-        component.add_input("data:aerodynamics:propeller:cruise_level:thrust_limit", np.full(SPEED_PTS_NB, np.nan),
-                            units="N")
-        component.add_input("data:aerodynamics:propeller:cruise_level:efficiency",
-                            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan))
+        component.add_input(
+            "data:aerodynamics:propeller:sea_level:speed",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="m/s",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:sea_level:thrust",
+            np.full(THRUST_PTS_NB, np.nan),
+            units="N",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:sea_level:thrust_limit",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="N",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:sea_level:efficiency",
+            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:cruise_level:speed",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="m/s",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:cruise_level:thrust",
+            np.full(THRUST_PTS_NB, np.nan),
+            units="N",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:cruise_level:thrust_limit",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="N",
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:cruise_level:efficiency",
+            np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
+        )
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -110,8 +134,8 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
 
 @ValidityDomainChecker(
     {
-        "data:propulsion:IC_engine:max_power": (50000, 250000),  # power range validity
-        "data:propulsion:IC_engine:fuel_type": [1.0, 2.0],  # fuel list
+        "data:propulsion:IC_engine:max_power": (50000, 700000),  # power range validity
+        "data:propulsion:IC_engine:fuel_type": [1.0, 3.0],  # fuel list
         "data:propulsion:IC_engine:strokes_nb": [2.0, 4.0],  # architecture list
         "data:geometry:propulsion:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
     }

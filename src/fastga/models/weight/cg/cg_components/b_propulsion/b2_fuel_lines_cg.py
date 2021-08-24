@@ -33,10 +33,10 @@ class ComputeFuelLinesCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         cg_b1 = inputs["data:weight:propulsion:engine:CG:x"]
         cg_b3 = inputs["data:weight:propulsion:tank:CG:x"]
 
-        cg_b2 = (cg_b1 + cg_b3) / 2.
+        cg_b2 = (cg_b1 + cg_b3) / 2.0
 
         outputs["data:weight:propulsion:fuel_lines:CG:x"] = cg_b2

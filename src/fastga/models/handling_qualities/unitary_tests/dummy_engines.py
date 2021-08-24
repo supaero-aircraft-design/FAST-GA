@@ -36,15 +36,15 @@ ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -102,10 +102,11 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineBE76(**engine_params)
+
 
 ########################################################################################################################
 ########################### Cirrus SR22 dummy engine ###################################################################
@@ -113,15 +114,15 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-
-    def __init__(self,
-                 max_power: float,
-                 design_altitude: float,
-                 design_speed: float,
-                 fuel_type: float,
-                 strokes_nb: float,
-                 prop_layout: float,
-                 ):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude: float,
+        design_speed: float,
+        fuel_type: float,
+        strokes_nb: float,
+        prop_layout: float,
+    ):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -177,7 +178,7 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"]
+            "prop_layout": inputs["data:geometry:propulsion:layout"],
         }
 
         return DummyEngineSR22(**engine_params)

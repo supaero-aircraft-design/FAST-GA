@@ -30,7 +30,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
     """
 
     def setup(self):
-        
+
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -44,7 +44,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]

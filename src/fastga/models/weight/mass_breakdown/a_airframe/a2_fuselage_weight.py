@@ -25,8 +25,12 @@ DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 
 class ComputeFuselageWeight(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
+        The geometry of the aircraft fuselage is inspired by the one proposed in the TASOPT 2.0 (2010). In the FASTGA
+        model the cabin is delimited by two flat bulkheads, which separate the cabin from the non pressurized nose and
+        tail cone.
+        The mass models of the fuselage extra components (windows, doors,...) are extracted from the Torenbeek weight
+        penalty method presented page 457 of his book "Synthesis of Subsonic Aircraft Design".
         Through all this model the hypothesis is made that the thickness of the fuselage skin is far inferior to the
         fuselage radius.
     """
@@ -45,7 +49,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="Pa")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)
@@ -88,7 +94,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         l_cabin = inputs["data:geometry:cabin:length"]
         delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"]
         fuselage_wet_area = inputs["data:geometry:fuselage:wet_area"]
-        htp_mac_25_from_wing_mac_25 = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        htp_mac_25_from_wing_mac_25 = inputs[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
+        ]
         htp_root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         lg_height = inputs["data:geometry:landing_gear:height"]
         engine_layout = inputs["data:geometry:propulsion:layout"]
@@ -114,24 +122,36 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         fuselage_skin_thickness = max(thickness_limit, thickness_ultimate, min_skin_thickness)
 
         # Volume of fuselage skin components
-        volume_nose_skin = 2 * np.pi * fuselage_radius ** 2 * (1/3 + 2/3 * (l_front/fuselage_radius) ** (8/5)) ** (5/8)\
-                           * fuselage_skin_thickness
+        volume_nose_skin = (
+            2
+            * np.pi
+            * fuselage_radius ** 2
+            * (1 / 3 + 2 / 3 * (l_front / fuselage_radius) ** (8 / 5)) ** (5 / 8)
+            * fuselage_skin_thickness
+        )
         volume_cabin_skin_cyl = 2 * np.pi * fuselage_radius * fuselage_skin_thickness * l_cabin
         volume_cabin_skin_bulk = 2 * np.pi * fuselage_radius ** 2 * fuselage_skin_thickness
         volume_cabin_skin = volume_cabin_skin_cyl + volume_cabin_skin_bulk
-        volume_cabin_inside = np.pi * fuselage_radius ** 2 * l_cabin + 2/3 * np.pi * fuselage_radius ** 3
+        volume_cabin_inside = (
+            np.pi * fuselage_radius ** 2 * l_cabin + 2 / 3 * np.pi * fuselage_radius ** 3
+        )
         taper_cone = 0.2
-        volume_cone_skin = np.pi * fuselage_radius * fuselage_skin_thickness * l_rear * (1 + taper_cone ** 2)
+        volume_cone_skin = (
+            np.pi * fuselage_radius * fuselage_skin_thickness * l_rear * (1 + taper_cone ** 2)
+        )
 
         # Mass of fuselage airframe skin
         volume_fuse_airframe = volume_nose_skin + volume_cabin_skin + volume_cone_skin
         mass_skin = rho_skin * volume_fuse_airframe
 
         # Mass of stringers (Torenbeek p459 formula D-6)
-        # Factor which takes in account fuselage slenderness
+        # k_lambda is the factor which takes in account fuselage slenderness
         htp_root_from_wing_mac_25 = htp_mac_25_from_wing_mac_25 - 0.25 * htp_root_chord
         if (htp_root_from_wing_mac_25 / (fuselage_max_height + fuselage_max_width)) <= 2.61:
-            k_lambda = 0.56 * (htp_root_from_wing_mac_25 / (fuselage_max_height + fuselage_max_width)) ** 0.75
+            k_lambda = (
+                0.56
+                * (htp_root_from_wing_mac_25 / (fuselage_max_height + fuselage_max_width)) ** 0.75
+            )
         else:
             k_lambda = 1.15
         mass_stringer = 0.0117 * k_lambda * fuselage_wet_area ** 1.45 * v_d ** 0.39 * n_ult ** 0.316
@@ -149,17 +169,17 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         shell_mass_area_density = fuselage_shell_mass / fuselage_wet_area
 
         # Equivalent thickness of shell, with the assumption that only the skin and the stringers contribute to bending.
-
-        thick_shell = fuselage_skin_thickness * (1 + mass_stringer / mass_skin * rho_skin / rho_stringer * ratio_e)
+        thick_shell = fuselage_skin_thickness * (
+            1 + mass_stringer / mass_skin * rho_skin / rho_stringer * ratio_e
+        )
 
         # Moment of inertia bending (about y and z axis)
         i_shell = np.pi * fuselage_radius ** 3 * thick_shell
 
-        # Sigma Mh for added horizontal material. TODO ne pas mettre le delta_p max mais celui associé au load case ?
-        #  TODO et mettre le sigma max du stringer
+        # Sigma Mh for added horizontal material.
         sigma_mh = sigma_max_skin - ratio_e * delta_p_max * fuselage_radius / thick_shell / 2
 
-        pressurized = (delta_p_max != 0)
+        pressurized = delta_p_max != 0
 
         # Mass of one cabin window
         window_width = 0.5
@@ -174,7 +194,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         # Mass of one crew/passenger door
         delta_p_max = 0.4359
-        door_width = 0.61   # defined by cs23 norm for commuters
+        door_width = 0.61  # defined by cs23 norm for commuters
         door_height = 0.8 * fuselage_max_height
         if pressurized:
             mass_door_component = 44.2 * delta_p_max ** 0.5 * door_height * door_width
@@ -189,7 +209,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         # Mass of the nose landing gears door
         door_height = 1.1 * lg_height
         door_width = 0.3
-        if pressurized :
+        if pressurized:
             mass_door_component = 22 * door_height * door_width
         else:
             mass_door_component = 16.1 * door_height * door_width
@@ -202,7 +222,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         window_height = 0.5 * fuselage_max_height
         window_thickness = 0.0056
         window_mass_density = 1180
-        mass_window_component = window_height * window_width * window_thickness * window_mass_density
+        mass_window_component = (
+            window_height * window_width * window_thickness * window_mass_density
+        )
         mass_surrounds = 2.98 * (window_width * window_height) ** 0.5
         mass_removed = window_width * window_height * shell_mass_area_density
         mass_cockpit_window = mass_window_component + mass_surrounds - mass_removed
@@ -239,8 +261,16 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         else:
             mass_support_engine = 0
 
-        fuselage_additional_mass = mass_windows + mass_doors + mass_nlg_door + mass_cockpit_window \
-                                   + mass_wing_fuselage + mass_floor + mass_bulkheads + mass_support_engine
+        fuselage_additional_mass = (
+            mass_windows
+            + mass_doors
+            + mass_nlg_door
+            + mass_cockpit_window
+            + mass_wing_fuselage
+            + mass_floor
+            + mass_bulkheads
+            + mass_support_engine
+        )
 
         outputs["data:geometry:fuselage:skin_thickness"] = fuselage_skin_thickness
         outputs["data:weight:fuselage:shell_mass"] = fuselage_shell_mass
@@ -254,7 +284,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         outputs["data:weight:fuselage:engine_support_mass"] = mass_support_engine
         outputs["data:weight:fuselage:floor_mass"] = mass_floor
         outputs["data:weight:fuselage:bulkheads_mass"] = mass_bulkheads
-        outputs["data:weight:airframe:fuselage:mass"] = fuselage_shell_mass + fuselage_additional_mass
+        outputs["data:weight:airframe:fuselage:mass"] = (
+            fuselage_shell_mass + fuselage_additional_mass
+        )
         outputs["data:weight:airframe:fuselage:total_additional_mass"] = fuselage_additional_mass
         outputs["data:loads:fuselage:inertia"] = i_shell
         outputs["data:loads:fuselage:sigmaMh"] = sigma_mh

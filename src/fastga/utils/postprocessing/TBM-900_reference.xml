@@ -16,9 +16,9 @@
 <FASTOAD_model>
 	<data>
 		<geometry>
-			<fuselage>
+			<plane>
 				<length units="m">10.736<!--TBM900 2016 specifications document--></length>
-			</fuselage>
+			</plane>
 			<cabin>
 				<length units="m">4.05<!--TBM900 2016 specifications document--></length>
 			</cabin>
@@ -34,7 +34,7 @@
 			</wing>
 			<horizontal_tail>
 				<span units="m">4.988<!--TBM900 2016 specifications document--></span>
-				<area units="m**2">4.76<!--TBM900 excel file--></area>
+				<area units="m**2">4.83<!--TBM900 excel file--></area>
 				<MAC>
 					<at25percent>
 						<x>

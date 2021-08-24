@@ -23,7 +23,6 @@ from fastoad.module_management.constants import ModelDomain
 
 @RegisterOpenMDAOSystem("fastga.loop.wing_position", domain=ModelDomain.OTHER)
 class UpdateWingPosition(om.ExplicitComponent):
-
     def setup(self):
         self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
         self.add_input("data:handling_qualities:static_margin:target", val=np.nan)

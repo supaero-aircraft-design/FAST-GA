@@ -23,7 +23,6 @@ from openmdao.api import Group
 
 
 class Aerodynamics(Group):
-
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("use_openvsp", default=False, types=bool)
@@ -31,33 +30,39 @@ class Aerodynamics(Group):
         self.options.declare("compute_slipstream_low_speed", default=False, types=bool)
         self.options.declare("compute_slipstream_cruise", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
-        self.options.declare('wing_airfoil', default="naca23012.af", types=str, allow_none=True)
-        self.options.declare('htp_airfoil', default="naca0012.af", types=str, allow_none=True)
-        self.options.declare('vtp_airfoil', default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
+        self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
         # Compute the low speed aero (landing/takeoff)
-        self.add_subsystem("aero_low",
-                           AerodynamicsLowSpeed(
-                               propulsion_id=self.options["propulsion_id"],
-                               use_openvsp=self.options["use_openvsp"],
-                               compute_slipstream=self.options["compute_slipstream_low_speed"],
-                               result_folder_path=self.options["result_folder_path"],
-                               wing_airfoil=self.options["wing_airfoil"],
-                               htp_airfoil=self.options["htp_airfoil"],
-                               vtp_airfoil=self.options["vtp_airfoil"],
-                           ), promotes=["*"])
+        self.add_subsystem(
+            "aero_low",
+            AerodynamicsLowSpeed(
+                propulsion_id=self.options["propulsion_id"],
+                use_openvsp=self.options["use_openvsp"],
+                compute_slipstream=self.options["compute_slipstream_low_speed"],
+                result_folder_path=self.options["result_folder_path"],
+                wing_airfoil=self.options["wing_airfoil"],
+                htp_airfoil=self.options["htp_airfoil"],
+                vtp_airfoil=self.options["vtp_airfoil"],
+            ),
+            promotes=["*"],
+        )
 
         # Compute cruise characteristics
-        self.add_subsystem("aero_high",
-                           AerodynamicsHighSpeed(
-                               propulsion_id=self.options["propulsion_id"],
-                               use_openvsp=self.options["use_openvsp"],
-                               compute_mach_interpolation=self.options["compute_mach_interpolation"],
-                               compute_slipstream=self.options["compute_slipstream_cruise"],
-                               result_folder_path=self.options["result_folder_path"],
-                               wing_airfoil=self.options["wing_airfoil"],
-                               htp_airfoil=self.options["htp_airfoil"],
-                               vtp_airfoil=self.options["vtp_airfoil"],
-                           ), promotes=["*"])
+        self.add_subsystem(
+            "aero_high",
+            AerodynamicsHighSpeed(
+                propulsion_id=self.options["propulsion_id"],
+                use_openvsp=self.options["use_openvsp"],
+                compute_mach_interpolation=self.options["compute_mach_interpolation"],
+                compute_slipstream=self.options["compute_slipstream_cruise"],
+                result_folder_path=self.options["result_folder_path"],
+                wing_airfoil=self.options["wing_airfoil"],
+                htp_airfoil=self.options["htp_airfoil"],
+                vtp_airfoil=self.options["vtp_airfoil"],
+            ),
+            promotes=["*"],
+        )
         # self.add_subsystem("compute_vn", ComputeVNopenvsp(), promotes=["*"])

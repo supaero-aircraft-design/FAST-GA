@@ -25,7 +25,6 @@ from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 
 
 class AerodynamicLoads(AerostructuralLoad):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -41,23 +40,44 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:loads:max_rbm:load_factor", val=np.nan)
         self.add_input("data:loads:max_rbm:mass", val=np.nan, units="kg")
 
-        self.add_input("data:aerodynamics:wing:low_speed:Y_vector", val=nans_array_ov, shape=SPAN_MESH_POINT,
-                       units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:chord_vector", val=nans_array_ov, shape=SPAN_MESH_POINT,
-                       units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL_vector", val=nans_array_ov, shape=SPAN_MESH_POINT)
-        self.add_input("data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", val=nans_array_ov,
-                       shape=SPAN_MESH_POINT)
-        self.add_input("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", val=nans_array_ov,
-                       shape=SPAN_MESH_POINT, units="m")
-        self.add_input("data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s")
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:Y_vector",
+            val=nans_array_ov,
+            shape=SPAN_MESH_POINT,
+            units="m",
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:chord_vector",
+            val=nans_array_ov,
+            shape=SPAN_MESH_POINT,
+            units="m",
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_vector", val=nans_array_ov, shape=SPAN_MESH_POINT
+        )
+        self.add_input(
+            "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
+            val=nans_array_ov,
+            shape=SPAN_MESH_POINT,
+        )
+        self.add_input(
+            "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
+            val=nans_array_ov,
+            shape=SPAN_MESH_POINT,
+            units="m",
+        )
+        self.add_input(
+            "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
+        )
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
+        )
 
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
@@ -69,7 +89,9 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
@@ -84,7 +106,11 @@ class AerodynamicLoads(AerostructuralLoad):
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
-        self.add_output("data:loads:aerodynamic:ultimate:force_distribution", units="N/m", shape=SPAN_MESH_POINT_LOADS)
+        self.add_output(
+            "data:loads:aerodynamic:ultimate:force_distribution",
+            units="N/m",
+            shape=SPAN_MESH_POINT_LOADS,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -99,7 +125,7 @@ class AerodynamicLoads(AerostructuralLoad):
         cl_0 = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
         v_ref = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"]
 
-        semi_span = float(inputs["data:geometry:wing:span"])/2.0
+        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
         root_chord = float(inputs["data:geometry:wing:root:chord"])
         tip_chord = float(inputs["data:geometry:wing:tip:chord"])
         wing_area = float(inputs["data:geometry:wing:area"])
@@ -121,20 +147,22 @@ class AerodynamicLoads(AerostructuralLoad):
         cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector)
         cl_vector_slip = AerostructuralLoad.delete_additional_zeros(cl_vector_slip)
         chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector)
-        y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.)
-        y_vector_slip, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, 0.)
+        y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)
+        y_vector_slip, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, 0.0)
         cl_vector = np.insert(cl_vector, 0, cl_vector[0])
         cl_vector_slip = np.insert(cl_vector_slip, 0, cl_vector_slip[0])
         chord_vector = np.insert(chord_vector, 0, root_chord)
         y_vector_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, semi_span)
         y_vector_slip_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, semi_span)
-        cl_vector = np.append(cl_vector, 0.)
-        cl_vector_slip = np.append(cl_vector_slip, 0.)
+        cl_vector = np.append(cl_vector, 0.0)
+        cl_vector_slip = np.append(cl_vector_slip, 0.0)
         chord_vector = np.append(chord_vector, tip_chord)
 
         # To get the same y_vector array as in the aerostructural computation, the only important part here is the
         # location of the y samples so we don't need to register the structural mass array
-        y_vector, _ = self.compute_relief_force(inputs, y_vector_orig, chord_vector, 0., 0., False)
+        y_vector, _ = self.compute_relief_force(
+            inputs, y_vector_orig, chord_vector, 0.0, 0.0, False
+        )
 
         # STEP 3/XX - WE COMPUTE THE BASELINE LIFT AND SCALE IT UP ACCORDING TO THE MOST CONSTRAINING CASE IDENTIFIED IN
         # THE AEROSTRUCTURAL ANALYSIS ##################################################################################
@@ -150,14 +178,16 @@ class AerodynamicLoads(AerostructuralLoad):
             load_factor = load_factor_rbm
 
         atm = Atmosphere(cruise_alt)
-        dynamic_pressure = 1. / 2. * atm.density * cruise_v_tas ** 2.0
+        dynamic_pressure = 1.0 / 2.0 * atm.density * cruise_v_tas ** 2.0
 
         cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
         cl_s = self.compute_cl_s(y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector)
-        cl_s_slip = self.compute_cl_s(y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector)
+        cl_s_slip = self.compute_cl_s(
+            y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector
+        )
         cl_s_actual = cl_s * cl_wing / cl_0
         cl_s_slip_actual = cl_s_slip * (v_ref / cruise_v_tas) ** 2.0
-        lift_distribution = (cl_s_actual+cl_s_slip_actual) * dynamic_pressure
+        lift_distribution = (cl_s_actual + cl_s_slip_actual) * dynamic_pressure
 
         # STEP 4/XX - WE ADD ZEROS AT THE END OF THE RESULT LIFT DISTRIBUTION TO FIT THE FORMAT IMPOSED BY OPENMDAO ####
         ################################################################################################################
@@ -166,4 +196,3 @@ class AerodynamicLoads(AerostructuralLoad):
         lift_distribution_outputs = np.concatenate([lift_distribution, additional_zeros])
 
         outputs["data:loads:aerodynamic:ultimate:force_distribution"] = lift_distribution_outputs
-

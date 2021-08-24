@@ -46,8 +46,8 @@ def test_geometry(cleanup):
     """
 
     # Define used files
-    xml_file_name = 'input_sr22.xml'
-    process_file_name = 'geometry.yml'
+    xml_file_name = "input_sr22.xml"
+    process_file_name = "geometry.yml"
 
     configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 

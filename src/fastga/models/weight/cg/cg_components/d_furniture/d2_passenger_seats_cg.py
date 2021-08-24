@@ -32,7 +32,7 @@ class ComputePassengerSeatsCG(ExplicitComponent):
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
 
         self.add_output("data:weight:furniture:passenger_seats:CG:x", units="m")
-        
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -46,11 +46,11 @@ class ComputePassengerSeatsCG(ExplicitComponent):
         # Instruments length
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
-        nrows = math.ceil(npax_max/count_by_row)
-        x_cg_d2 = lav + l_instr + l_pilot_seat * 2./(npax_max + 2.)
+        nrows = math.ceil(npax_max / count_by_row)
+        x_cg_d2 = lav + l_instr + l_pilot_seat * 2.0 / (npax_max + 2.0)
         for idx in range(nrows):
-            length = l_pilot_seat + (idx + 0.5)*l_pass_seat
-            nb_pers = min(count_by_row, npax_max-idx*count_by_row)
-            x_cg_d2 = x_cg_d2 + length*nb_pers/(npax_max + 2.)
+            length = l_pilot_seat + (idx + 0.5) * l_pass_seat
+            nb_pers = min(count_by_row, npax_max - idx * count_by_row)
+            x_cg_d2 = x_cg_d2 + length * nb_pers / (npax_max + 2.0)
 
         outputs["data:weight:furniture:passenger_seats:CG:x"] = x_cg_d2

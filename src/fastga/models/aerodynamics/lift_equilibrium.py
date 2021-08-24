@@ -32,7 +32,9 @@ class AircraftEquilibrium(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:at25percent:x", np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", np.nan, units="m")
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", np.nan, units="m"
+        )
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:cruise:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", np.nan)
@@ -41,13 +43,19 @@ class AircraftEquilibrium(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_alpha", np.nan, units="rad**-1")
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", np.nan, units="rad**-1"
+        )
         self.add_input("data:weight:aircraft:CG:aft:x", np.nan, units="m")
-        self.add_input("data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment", np.nan,
-                       units="kg*m")
+        self.add_input(
+            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment",
+            np.nan,
+            units="kg*m",
+        )
         self.add_input("data:weight:propulsion:tank:CG:x", np.nan, units="m")
-        self.add_input("data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", np.nan, units="kg")
-
+        self.add_input(
+            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", np.nan, units="kg"
+        )
 
     @staticmethod
     def found_cl_repartition(inputs, load_factor, mass, dynamic_pressure, low_speed, x_cg=-1.0):
@@ -73,7 +81,9 @@ class AircraftEquilibrium(om.ExplicitComponent):
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
 
         if x_cg < 0.0:
-            c1 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"]
+            c1 = inputs[
+                "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
+            ]
             cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
             c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
             fuel_mass = mass - c3
@@ -83,14 +93,14 @@ class AircraftEquilibrium(om.ExplicitComponent):
         x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
         ratio_x025 = x0_25 / fus_length
         k_h = 0.01222 - 7.40541e-4 * ratio_x025 * 100 + 2.1956e-5 * (ratio_x025 * 100) ** 2
-        cm_alpha_fus = - k_h * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
+        cm_alpha_fus = -k_h * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
 
         # Define matrix equilibrium (applying load and moment equilibrium)
         a11 = 1
         a12 = 1
         b1 = mass * g * load_factor / (dynamic_pressure * wing_area)
         a21 = (x_wing - x_cg) - (cm_alpha_fus / cl_alpha_wing) * l0_wing
-        a22 = (x_htp - x_cg)
+        a22 = x_htp - x_cg
         b2 = (cm0_wing + (cm_alpha_fus / cl_alpha_wing) * cl0_wing) * l0_wing
 
         a = np.array([[a11, a12], [float(a21), float(a22)]])
@@ -110,4 +120,9 @@ class AircraftEquilibrium(om.ExplicitComponent):
         if CL[0] < cl_max_clean:
             return float(CL_wing), float(cl_htp_only), cl_elevator, False
         else:
-            return 1.05*float(mass * g * load_factor / (dynamic_pressure * wing_area)), 0.0, 0.0, True
+            return (
+                1.05 * float(mass * g * load_factor / (dynamic_pressure * wing_area)),
+                0.0,
+                0.0,
+                True,
+            )

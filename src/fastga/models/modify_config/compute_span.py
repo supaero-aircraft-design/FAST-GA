@@ -1,5 +1,5 @@
 """
-    Estimation of total aircraft wet area
+    COmputation of the wing span modifications.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -20,11 +20,6 @@ import openmdao.api as om
 
 
 class ComputeSpan(om.ExplicitComponent):
-
-    """
-    yo
-    """
-
     def initialize(self):
         self.options.declare("span_mod", types=list, default=[1.0, True, True])
 
@@ -80,18 +75,21 @@ class ComputeSpan(om.ExplicitComponent):
 
         # Compute the quantities that define the modified geometry in the initial .xml file
         taper_ratio_mod = multiplier * taper_ratio_ref + (1 - multiplier)
-        area_mod = (2 * y_root_ref + (multiplier * y_tip_ref - y_root_ref) * (1 + taper_ratio_mod)) / \
-                   (2 * y_root_ref + (y_tip_ref - y_root_ref) * (1 + taper_ratio_ref)) * area_ref
+        area_mod = (
+            (2 * y_root_ref + (multiplier * y_tip_ref - y_root_ref) * (1 + taper_ratio_mod))
+            / (2 * y_root_ref + (y_tip_ref - y_root_ref) * (1 + taper_ratio_ref))
+            * area_ref
+        )
         aspect_ratio_mod = (span_ref * multiplier) ** 2 / area_mod
 
         # Modify the y-ratio of the engine if its position is fixed along the span
         if self.options["span_mod"][1]:
             y_ratio = y_ratio / multiplier
 
-        # Modify the y-ratio defining the beginning of the wing fuel tanks to take in account the span increase
+        # Compute new y-ratio defining the beginning of the wing fuel tanks to take in account the span increase
         y_ratio_tank_beginning = y_ratio_tank_beginning / multiplier
 
-        # Modify the y-ratio defining the end of the wing fuel tanks if the wing added section does not stock fuel
+        # Compute new y-ratio defining the end of the wing fuel tanks.
         if y_ratio_tank_end < 1.0 or not self.options["span_mod"][2]:
             y_ratio_tank_end = y_ratio_tank_end / multiplier
 

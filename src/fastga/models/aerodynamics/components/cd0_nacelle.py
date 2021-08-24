@@ -26,7 +26,6 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
 class Cd0Nacelle(ExplicitComponent):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
@@ -34,7 +33,7 @@ class Cd0Nacelle(ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
-        
+
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -75,7 +74,11 @@ class Cd0Nacelle(ExplicitComponent):
             cd0 = 0.0
         else:
             cd0 = 0.0
-            warnings.warn('Propulsion layout {} not implemented in model, replaced by layout 1!'.format(prop_layout))
+            warnings.warn(
+                "Propulsion layout {} not implemented in model, replaced by layout 1!".format(
+                    prop_layout
+                )
+            )
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:nacelles:low_speed:CD0"] = cd0

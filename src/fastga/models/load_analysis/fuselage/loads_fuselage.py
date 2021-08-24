@@ -18,7 +18,6 @@ from .compute_torsion_moment import ComputeTorsionMoment
 
 
 class LoadsFuselage(om.Group):
-
     def setup(self):
         self.add_subsystem("fuselage_torsion_moment", ComputeTorsionMoment(), promotes=["*"])
         self.add_subsystem("fuselage_bending_moment", ComputeBendingMoment(), promotes=["*"])

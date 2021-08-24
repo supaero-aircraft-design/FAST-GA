@@ -44,11 +44,7 @@ class ComputeTotalArea(ExplicitComponent):
         nacelle_nb = inputs["data:geometry:propulsion:count"]
 
         wet_area_total = (
-            wet_area_wing
-            + wet_area_fus
-            + wet_area_ht
-            + wet_area_vt
-            + nacelle_nb * wet_area_nac
+            wet_area_wing + wet_area_fus + wet_area_ht + wet_area_vt + nacelle_nb * wet_area_nac
         )
 
         outputs["data:geometry:aircraft:wet_area"] = wet_area_total

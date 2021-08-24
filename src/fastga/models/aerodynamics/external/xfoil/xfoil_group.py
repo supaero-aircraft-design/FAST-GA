@@ -25,21 +25,26 @@ from fastoad.model_base.atmosphere import Atmosphere
 
 
 class XfoilGroup(Group):
-
     def initialize(self):
 
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
         self.options.declare("compute_negative_air_angle", default=False, types=bool)
 
     def setup(self):
-        self.add_subsystem("pre_xfoil_group_prep", _XfoilGroupPrep(), promotes=["data:TLAR:v_approach",
-                                                                                "data:Xfoil_pre_processing:reynolds"])
-        self.add_subsystem("pre_xfoil_polar",
-                           XfoilPolar(
-                               airfoil_file=self.options["airfoil_file"],
-                               alpha_end=20.0,
-                               activate_negative_angle=True,
-                           ), promotes=[])
+        self.add_subsystem(
+            "pre_xfoil_group_prep",
+            _XfoilGroupPrep(),
+            promotes=["data:TLAR:v_approach", "data:Xfoil_pre_processing:reynolds"],
+        )
+        self.add_subsystem(
+            "pre_xfoil_polar",
+            XfoilPolar(
+                airfoil_file=self.options["airfoil_file"],
+                alpha_end=20.0,
+                activate_negative_angle=True,
+            ),
+            promotes=[],
+        )
 
         self.connect("pre_xfoil_group_prep.xfoil_group:mach", "pre_xfoil_polar.xfoil:mach")
         self.connect("pre_xfoil_group_prep.xfoil_group:reynolds", "pre_xfoil_polar.xfoil:reynolds")

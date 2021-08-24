@@ -28,7 +28,7 @@ model:
             result_folder_path : ./workdir
             use_openvsp : True
             compute_mach_interpolation : True
-            compute_slipstream : False
+            compute_slipstream : True
 #            wing_arfoil_file : "naca43013.af"
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy

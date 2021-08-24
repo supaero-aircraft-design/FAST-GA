@@ -17,14 +17,20 @@
 
 import openmdao.api as om
 
-from .components import ComputeVTChords, ComputeVTmacFD, ComputeVTmacFL, ComputeVTSweep, ComputeVTWetArea
+from .components import (
+    ComputeVTChords,
+    ComputeVTmacFD,
+    ComputeVTmacFL,
+    ComputeVTSweep,
+    ComputeVTWetArea,
+)
 
 
 class ComputeVerticalTailGeometryFD(om.Group):
     """ Vertical tail geometry estimation based on fixed HTP/VTP distance """
 
     def setup(self):
-        
+
         self.add_subsystem("vt_chords", ComputeVTChords(), promotes=["*"])
         self.add_subsystem("vt_mac", ComputeVTmacFD(), promotes=["*"])
         self.add_subsystem("vt_sweep", ComputeVTSweep(), promotes=["*"])

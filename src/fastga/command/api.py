@@ -69,7 +69,7 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
 
 def write_needed_inputs(
-        problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
+    problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
 ):
     variables = DataFile(xml_file_path)
     variables.update(
@@ -84,9 +84,7 @@ def write_needed_inputs(
     variables.save()
 
 
-def list_ivc_outputs_name(
-        system: Union[ExplicitComponent, ImplicitComponent, Group],
-):
+def list_ivc_outputs_name(system: Union[ExplicitComponent, ImplicitComponent, Group],):
     # List all "root" components in the systems, meaning the components that don't have any subcomponents
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", system, promotes=["*"])
@@ -110,10 +108,10 @@ def list_ivc_outputs_name(
 
 
 def generate_block_analysis(
-        system: Union[ExplicitComponent, ImplicitComponent, Group],
-        var_inputs: List,
-        xml_file_path: str,
-        overwrite: bool = False,
+    system: Union[ExplicitComponent, ImplicitComponent, Group],
+    var_inputs: List,
+    xml_file_path: str,
+    overwrite: bool = False,
 ):
     # Search what are the component/group outputs
     variables = list_variables(system)
@@ -152,7 +150,10 @@ def generate_block_analysis(
             ignore=(var_inputs + outputs_names + ivc_outputs_names)
         )
         xml_inputs = reader.names()
-        if not (set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names)) == set(inputs_names)):
+        if not (
+            set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
+            == set(inputs_names)
+        ):
             # If some inputs are missing write an error message and add them to the problem if authorized
             missing_inputs = list(
                 set(inputs_names).difference(
@@ -221,8 +222,9 @@ def list_all_subsystem(model, model_address, dict_subsystems):
     try:
         subsystem_list = model._proc_info.keys()
         for subsystem in subsystem_list:
-            dict_subsystems = list_all_subsystem(getattr(model, subsystem), model_address + '.' + subsystem,
-                                                 dict_subsystems)
+            dict_subsystems = list_all_subsystem(
+                getattr(model, subsystem), model_address + "." + subsystem, dict_subsystems
+            )
     except:
         dict_subsystems[model_address] = get_type(model)
 
@@ -230,8 +232,8 @@ def list_all_subsystem(model, model_address, dict_subsystems):
 
 
 def get_type(model):
-    raw_type = model.msginfo.split('<')[-1]
-    type_alone = raw_type.split(' ')[-1]
+    raw_type = model.msginfo.split("<")[-1]
+    type_alone = raw_type.split(" ")[-1]
     model_type = type_alone[:-1]
 
     return model_type

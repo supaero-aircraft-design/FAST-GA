@@ -24,7 +24,9 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
 
 
-@RegisterOpenMDAOSystem("fastga.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES)
+@RegisterOpenMDAOSystem(
+    "fastga.handling_qualities.static_margin", domain=ModelDomain.HANDLING_QUALITIES
+)
 class ComputeStaticMargin(om.Group):
     """
     Calculate aero-center and global static margin
