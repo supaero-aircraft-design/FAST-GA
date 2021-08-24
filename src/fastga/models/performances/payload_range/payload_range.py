@@ -26,7 +26,7 @@ from scipy.optimize import fsolve
 
 from fastga.models.performances.mission import Mission
 from fastoad.io import VariableIO
-from fastga.models.propulsion.fuel_propulsion.baseò import FuelEngineSet
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 current_path: str = r"/src/fastga/models/performances/payload_range"
 XML_FILE = pth.join(current_path, "blank.xml")

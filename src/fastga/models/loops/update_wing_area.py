@@ -85,6 +85,7 @@ class _UpdateWingArea(om.ExplicitComponent):
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
+        # TODO : Take into account the variables that describe the start and the end of the tank inside the wing
         ave_thickness = (
             0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
         )
