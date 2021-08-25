@@ -30,8 +30,7 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
     """
     Weight estimation for motor oil
 
-    Based on : Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights
-    Estimation Method." (2017). Equation 121
+    Based on a statistical analysis. See :cite:`wells:2017`.
     """
 
     def __init__(self, **kwargs):

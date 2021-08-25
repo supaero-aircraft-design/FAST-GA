@@ -23,13 +23,13 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     """
     Weight estimation for life support systems
 
-    This includes only air conditioning / pressurization.
+    This includes only air conditioning / pressurization. Anti-icing is bundled up with the air-conditioning weight
     
-    Insulation, de-icing, internal lighting system, fixed oxygen, permanent security kits are neglected.
+    Insulation, internal lighting system, fixed oxygen, permanent security kits are neglected.
     Seats and installation of crew are already evaluated within d2_passenger_seats_weight
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-40)
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013` for the
+    air conditioning and de-icing and :cite:`roskampart5:1985` for the fixed oxygen weight
     """
 
     def setup(self):

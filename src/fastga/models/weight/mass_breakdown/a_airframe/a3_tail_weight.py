@@ -25,11 +25,7 @@ class ComputeTailWeight(om.ExplicitComponent):
     """
     Weight estimation for tail weight
 
-    Based on : Raymer Daniel. Aircraft Design: A Conceptual Approach. AIAA
-    Education Series 1996.
-
-    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-20) and (6-22)
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013`
     """
 
     def setup(self):
@@ -80,7 +76,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             (sizing_factor_ultimate * mtow) ** 0.414
             * dynamic_pressure ** 0.168
             * area_ht ** 0.896
-            * (100 * t_c_ht / math.cos(sweep_25_ht * math.pi / 180.0)) ** -0.12
+            * (100.0 * t_c_ht / math.cos(sweep_25_ht * math.pi / 180.0)) ** -0.12
             * (ar_ht / (math.cos(sweep_25_ht * math.pi / 180.0)) ** 2.0) ** 0.043
             * taper_ht ** -0.02
         )
@@ -104,7 +100,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 (sizing_factor_ultimate * mtow) ** 0.376
                 * dynamic_pressure ** 0.122
                 * area_vt ** 0.873
-                * (100 * t_c_vt / math.cos(sweep_25_vt * math.pi / 180.0)) ** -0.49
+                * (100.0 * t_c_vt / math.cos(sweep_25_vt * math.pi / 180.0)) ** -0.49
                 * (ar_vt / (math.cos(sweep_25_vt * math.pi / 180.0)) ** 2.0) ** 0.357
                 * taper_vt ** 0.039
             )
