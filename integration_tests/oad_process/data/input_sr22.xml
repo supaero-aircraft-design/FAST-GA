@@ -34,13 +34,13 @@
 				<aisle_width units="m">0.0</aisle_width>
 				<seats>
 					<pilot>
-						<length units="m">0.85</length>
+						<length units="m">0.95</length>
 						<width units="m">0.565</width>
 					</pilot>
 					<passenger>
 						<NPAX_max>2.0</NPAX_max>
 						<count_by_row>3.0</count_by_row>
-						<length units="m">0.9</length>
+						<length units="m">1.0</length>
 						<width units="m">0.40</width>
 					</passenger>
 				</seats>

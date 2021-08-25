@@ -30,11 +30,11 @@ class ComputeTailCG(om.Group):
 
 class ComputeHTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail center of gravity estimation
+    """
+    Horizontal tail center of gravity estimation
 
-        Can also be found in : Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation. DARcorporation, 1985.
-        Table 8.1 Center of Gravity Location of Structural Components
-        """
+    Based on a statistical analysis. See :cite:`roskampart5:1985`
+    """
 
     def setup(self):
 
@@ -66,7 +66,7 @@ class ComputeHTcg(ExplicitComponent):
         mac_ht = inputs["data:geometry:horizontal_tail:MAC:length"]
         x0_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
 
-        l_cg = 0.62 * (root_chord - tip_chord) + tip_chord
+        l_cg = (1.0 - 0.38) * (root_chord - tip_chord) + tip_chord
         x_cg_ht = 0.38 * b_h * math.tan(sweep_25_ht / 180.0 * math.pi) + 0.42 * l_cg
         x_cg_31 = lp_ht + fa_length - 0.25 * mac_ht + (x_cg_ht - x0_ht)
 
@@ -103,14 +103,14 @@ class ComputeVTcg(ExplicitComponent):
         x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
-        has_T_tail = inputs["data:geometry:has_T_tail"]
+        has_t_tail = inputs["data:geometry:has_T_tail"]
 
-        l_cg_vt = (1 - 0.55) * (root_chord - tip_chord) + tip_chord
-
-        if has_T_tail:
+        if has_t_tail:
+            l_cg_vt = (1.0 - 0.55) * (root_chord - tip_chord) + tip_chord
             x_cg_vt = 0.55 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
 
         else:
+            l_cg_vt = (1.0 - 0.38) * (root_chord - tip_chord) + tip_chord
             x_cg_vt = 0.38 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
 
         x_cg_32 = lp_vt + fa_length - 0.25 * mac_vt + (x_cg_vt - x0_vt)

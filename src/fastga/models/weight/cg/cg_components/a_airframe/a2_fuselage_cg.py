@@ -16,16 +16,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import warnings
+import logging
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class ComputeFuselageCG(ExplicitComponent):
     """
     Wing center of gravity estimation
 
-    Based on : Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation. DARcorporation, 1985.
-    Table 8.1 Center of Gravity Location of Structural Components
+    Based on a statistical analysis. See :cite:`roskampart5:1985`
     """
 
     def setup(self):
@@ -47,12 +48,16 @@ class ComputeFuselageCG(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
 
         # Fuselage gravity center
-        if prop_layout == 1.0:
+        if prop_layout == 1.0:  # Wing mounted
             x_cg_a2 = 0.39 * fus_length
+        elif prop_layout == 2.0:  # Rear fuselage mounted
+            x_cg_a2 = lav + 0.485 * (fus_length - lav)
         elif prop_layout == 3.0:  # nose mount
-            # x_cg_a2 = lav + 0.35 * (fus_length - lav)
-            x_cg_a2 = lav + 0.45 * (fus_length - lav)
+            x_cg_a2 = lav + 0.35 * (fus_length - lav)
         else:
-            x_cg_a2 = lav + 0.47 * (fus_length - lav)
+            _LOGGER.warning(
+                "Propulsion layout {} does not exist, replaced by layout 1!".format(prop_layout)
+            )
+            x_cg_a2 = 0.39 * fus_length
 
         outputs["data:weight:airframe:fuselage:CG:x"] = x_cg_a2
