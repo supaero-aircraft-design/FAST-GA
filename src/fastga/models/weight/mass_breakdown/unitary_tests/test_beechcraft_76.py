@@ -283,7 +283,7 @@ def test_evaluate_owe():
     mass_computation = run_system(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER), ivc)
 
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
-    assert oew == pytest.approx(1124.21, abs=1)
+    assert oew == pytest.approx(1124, abs=1)
 
 
 def test_loop_compute_owe():
@@ -301,4 +301,4 @@ def test_loop_compute_owe():
         MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
-    assert oew == pytest.approx(1124.23, abs=1)
+    assert oew == pytest.approx(1124, abs=1)
