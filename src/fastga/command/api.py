@@ -42,6 +42,7 @@ from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.io import VariableIO
 from fastoad.io.configuration.configuration import AutoUnitsDefaultGroup
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 # noinspection PyProtectedMember
 from fastoad.cmd.api import _get_simple_system_list
@@ -453,11 +454,17 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
 
 
 def generate_block_analysis(
-    local_system: Union[ExplicitComponent, ImplicitComponent, Group],
+    local_system: Union[ExplicitComponent, ImplicitComponent, Group, str],
     var_inputs: List,
     xml_file_path: str,
+    options: dict = None,
     overwrite: bool = False,
 ):
+
+    # If a valid ID is provided, build a system based on that ID
+    if type(local_system) == str:
+        local_system = RegisterOpenMDAOSystem.get_system(local_system, options=options)
+
     # Search what are the component/group outputs
     variables = list_variables(local_system)
     inputs_names = [var.name for var in variables if var.is_input]

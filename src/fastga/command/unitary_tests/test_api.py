@@ -20,7 +20,7 @@ import pytest
 import warnings
 
 from fastga.command import api
-from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2
+from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
 from fastga import models
 from fastga.models import (
     aerodynamics,
@@ -31,8 +31,10 @@ from fastga.models import (
     performances,
 )
 from fastga.models.weight import cg, mass_breakdown
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
+DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 def test_simple_working():
@@ -41,12 +43,41 @@ def test_simple_working():
     var_inputs = []
 
     test_generate_block_analysis = api.generate_block_analysis(
-        Disc1(), var_inputs, complete_xml_file, False
+        Disc1(), var_inputs, complete_xml_file, overwrite=False
     )
     input_dict = {}
     output_dict = test_generate_block_analysis(input_dict)
     value = output_dict.get("data:geometry:variable_4")[0]
     assert value == pytest.approx(14.0, abs=1e-3)
+
+
+def test_id_working():
+
+    complete_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
+    var_inputs = ["data:geometry:variable_2"]
+
+    # Create a temporary configurator so the modules are registered and their ID are available
+    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
+
+    test_generate_block_analysis_id = api.generate_block_analysis(
+        Disc3(ivc_value=3.0), var_inputs, complete_xml_file, overwrite=False
+    )
+    input_dict = {"data:geometry:variable_2": ([-5.0, 2.0], "m**2")}
+    output_dict = test_generate_block_analysis_id(input_dict)
+    value_direct = output_dict.get("data:geometry:variable_4")[0]
+
+    test_generate_block_analysis_id = api.generate_block_analysis(
+        "test.dummy_module.disc3",
+        var_inputs,
+        complete_xml_file,
+        overwrite=False,
+        options={"ivc_value": 3.0},
+    )
+    input_dict = {"data:geometry:variable_2": ([-5.0, 2.0], "m**2")}
+    output_dict = test_generate_block_analysis_id(input_dict)
+    value_id = output_dict.get("data:geometry:variable_4")[0]
+
+    assert value_id == pytest.approx(value_direct, abs=1e-3)
 
 
 def test_input_vars_working():
@@ -55,7 +86,7 @@ def test_input_vars_working():
     var_inputs = ["data:geometry:variable_1"]
 
     test_generate_block_analysis = api.generate_block_analysis(
-        Disc1(), var_inputs, missing_input_xml_file, False
+        Disc1(), var_inputs, missing_input_xml_file, overwrite=False
     )
     input_dict = {"data:geometry:variable_1": (4.0, None)}
     output_dict = test_generate_block_analysis(input_dict)
@@ -69,7 +100,7 @@ def test_ivc_working():
     var_inputs = []
 
     test_generate_block_analysis = api.generate_block_analysis(
-        Disc2(), var_inputs, missing_input_xml_file, False
+        Disc2(), var_inputs, missing_input_xml_file, overwrite=False
     )
     input_dict = {}
     output_dict = test_generate_block_analysis(input_dict)
@@ -88,7 +119,7 @@ def test_supernumerary_inputs():
     try:
         # noinspection PyUnusedLocal
         test_generate_block_analysis = api.generate_block_analysis(
-            Disc1(), var_inputs, xml_file, False
+            Disc1(), var_inputs, xml_file, overwrite=False
         )
         function_generated = True
         right_error = False
@@ -118,7 +149,7 @@ def test_empty_xml():
     try:
         # noinspection PyUnusedLocal
         test_generate_block_analysis = api.generate_block_analysis(
-            Disc1(), var_inputs, missing_xml, False
+            Disc1(), var_inputs, missing_xml, overwrite=False
         )
         function_generated = True
         right_error = False
@@ -154,7 +185,7 @@ def test_empty_xml():
     # noinspection PyUnusedLocal
     try:
         test_generate_block_analysis = api.generate_block_analysis(
-            Disc1(), var_inputs, missing_xml, False
+            Disc1(), var_inputs, missing_xml, overwrite=False
         )
         function_generated = True
         input_dict = {
@@ -186,7 +217,7 @@ def test_missing_inputs_in_xml():
     try:
         # noinspection PyUnusedLocal
         test_generate_block_analysis = api.generate_block_analysis(
-            Disc1(), var_inputs, missing_inputs_xml_file, False
+            Disc1(), var_inputs, missing_inputs_xml_file, overwrite=False
         )
         function_generated = True
         right_error = False

@@ -1,6 +1,9 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
+
 
 class Disc1(om.ExplicitComponent):
     """ An OpenMDAO component to encapsulate Disc1 discipline and test """
@@ -35,5 +38,19 @@ class Disc2(om.Group):
     def setup(self):
         ivc = om.IndepVarComp()
         ivc.add_output("data:geometry:variable_1", val=6.0)
+        self.add_subsystem("ivc1", ivc, promotes=["*"])
+        self.add_subsystem("disc1", Disc1(), promotes=["*"])
+
+
+@RegisterOpenMDAOSystem("test.dummy_module.disc3", domain=ModelDomain.OTHER)
+class Disc3(om.Group):
+    """ An OpenMDAO component to encapsulate Disc1, an IVC and option """
+
+    def initialize(self):
+        self.options.declare("ivc_value", types=float, default=6.0)
+
+    def setup(self):
+        ivc = om.IndepVarComp()
+        ivc.add_output("data:geometry:variable_1", val=self.options["ivc_value"])
         self.add_subsystem("ivc1", ivc, promotes=["*"])
         self.add_subsystem("disc1", Disc1(), promotes=["*"])
