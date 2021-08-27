@@ -52,6 +52,7 @@ from . import resources
 _LOGGER = logging.getLogger(__name__)
 
 SAMPLE_FILENAME = "fastga.yml"
+SAMPLE_XML_NAME = "fastga.xml"
 BOOLEAN_OPTIONS = [
     "use_openvsp",
     "compute_mach_interpolation",
@@ -405,6 +406,28 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     _LOGGER.info("Sample configuration written in %s", configuration_file_path)
 
 
+def generate_xml_file(xml_file_path: str, overwrite: bool = False):
+    """
+    Generates a sample XML file.
+
+    :param xml_file_path: the path of the file to be written
+    :param overwrite: if True, the file will be written, even if it already exists
+    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    """
+    if not overwrite and pth.exists(xml_file_path):
+        raise FastFileExistsError(
+            "Configuration file is not written because it already exists. "
+            "Use overwrite=True to bypass." % xml_file_path,
+            xml_file_path,
+        )
+
+    if not pth.exists(pth.split(xml_file_path)[0]):
+        os.mkdir(pth.split(xml_file_path)[0])
+    shutil.copy(pth.join(resources.__path__[0], SAMPLE_XML_NAME), xml_file_path)
+
+    _LOGGER.info("Sample configuration written in %s", xml_file_path)
+
+
 def write_needed_inputs(
     problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
 ):
@@ -639,3 +662,19 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
     variables = VariableListLocal.from_system(component)
 
     return variables
+
+
+def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
+    """ Reads all variables from a component/problem and returns inputs as a list """
+    variables = list_variables(component)
+    input_names = [var.name for var in variables if var.is_input]
+
+    return input_names
+
+
+def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
+    """ Reads all variables from a component/problem and returns outputs as a list """
+    variables = list_variables(component)
+    output_names = [var.name for var in variables if not var.is_input]
+
+    return output_names
