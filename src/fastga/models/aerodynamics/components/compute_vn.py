@@ -128,10 +128,10 @@ class ComputeVN(om.ExplicitComponent):
     """
     Computes the load diagram of the aircraft.
 
-    Based on the methodology presented in Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation.
-    DARcorporation, 1985. adapted with the certifications of CS-23 Amendment 4 and ASTM F1336:
-    https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
-    https://www.astm.org/Standards/F3116.htm
+    Based on the methodology presented in :cite:`roskampart5:1985` adapted with the certifications of :cite:`EASA:cs23`
+    and :cite:`ASTM:F3116`, available at :
+    - https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
+    - https://www.astm.org/Standards/F3116.htm
     """
 
     def __init__(self, **kwargs):
@@ -184,13 +184,7 @@ class ComputeVN(om.ExplicitComponent):
         atm.true_airspeed = v_tas
         design_vc = atm.equivalent_airspeed
         velocity_array, load_factor_array, _ = self.flight_domain(
-            inputs,
-            outputs,
-            design_mass,
-            cruise_altitude,
-            design_vc,
-            design_n_ps=0.0,
-            design_n_ng=0.0,
+            inputs, design_mass, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
         )
 
         if DOMAIN_PTS_NB < len(velocity_array):
@@ -208,9 +202,28 @@ class ComputeVN(om.ExplicitComponent):
         outputs["data:flight_domain:load_factor"] = np.array(load_factor_array)
 
     # noinspection PyUnusedLocal
-    def flight_domain(
-        self, inputs, outputs, mass, altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0
-    ):
+    def flight_domain(self, inputs, mass, altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0):
+        """
+        Function that computes the flight domain of the aircraft represented in the inputs for a given mass, altitude,
+        cruise equivalent airspeed and design load factors
+
+        @param inputs: a dictionary containing the properties of the aircraft
+        @param mass: the mass for which we want to compute the flight domain
+        @param altitude: the altitude at which we want to compute the flight domain
+        @param design_vc: the cruise equivalent airspeed
+        @param design_n_ps: the positive design load factor, will replace the maneuver load factor if higher than it
+        @param design_n_ng: the negative design load factor, will replace the maneuver load factor if lower than it
+        @return velocity_array: an array containing the characteristic speeds necessary to draw the flight domain stored
+        as [Vs_1g_ps, Vs_1g_ng, V_a_ps (maneuver diagram), V_a_ng (maneuver diagram), V_a_ps (gust, 0 if same as
+        maneuver), V_a_ng (gust, 0 if same as maneuver), V_c, V_c, V_c, V_d, V_d, V_d, V_d, V_ne, V_no, V_mg (for
+        commuter), Vs_1g_fe, V_a_fe, V_fe]
+        @return load_factor_array: an array containing the load factors necessary to draw the flight domain stored as
+        [1.0, -1.0, n_lim_ps (maneuver diagram), n_lim_ng (maneuver diagram), n_a_ps (gust, 0 if same as maneuver),
+        n_a_ng (gust, 0 if same as maneuver), n_lim_ng, n_c_ps (maneuver or gust, whichever is greatest), n_c_ng (
+        maneuver or gust, whichever is greatest), n_lim_ps, 0.0, n_d_ps (maneuver or gust, whichever is greatest),
+        n_d_ng (maneuver or gust, whichever is greatest), 0.0, 0.0, n_v_mg, 1.0, n_fe, n_fe]
+        @return conditions: an array containing the conditions at which the diagram was computed
+        """
 
         # Get necessary inputs
         wing_area = inputs["data:geometry:wing:area"]

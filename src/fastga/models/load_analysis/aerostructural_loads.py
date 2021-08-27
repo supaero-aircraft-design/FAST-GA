@@ -244,7 +244,7 @@ class AerostructuralLoad(ComputeVN):
             cruise_v_keas = atm.equivalent_airspeed
 
             velocity_array, load_factor_array, _ = self.flight_domain(
-                inputs, outputs, mass, cruise_alt, cruise_v_keas
+                inputs, mass, cruise_alt, cruise_v_keas
             )
             v_c = float(velocity_array[6])
 
