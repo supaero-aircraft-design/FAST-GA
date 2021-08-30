@@ -22,11 +22,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
     """
     Flight controls weight estimation
 
-    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-    Astronautics, Inc., 2012. Equation 15.54
-
-    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-33)
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013`
     """
 
     def setup(self):

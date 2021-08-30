@@ -40,6 +40,7 @@ from .test_functions import (
     compute_mach_interpolation_roskam,
     cl_alpha_vt,
     cy_delta_r,
+    cm_alpha_fus,
     high_speed_connection,
     low_speed_connection,
     v_n_diagram,
@@ -843,6 +844,11 @@ def test_cl_alpha_vt():
 def test_cy_delta_r():
     """Tests cy delta of the rudder"""
     cy_delta_r(XML_FILE, cy_delta_r_=1.8858)
+
+
+def test_cm_alpha_fus():
+    """Tests cy delta of the rudder"""
+    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.2895)
 
 
 @pytest.mark.skipif(

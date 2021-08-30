@@ -16,6 +16,7 @@
 
 import os
 import math
+import logging
 import numpy as np
 import openmdao.api as om
 from scipy.constants import g
@@ -42,6 +43,8 @@ CSV_DATA_LABELS = [
     "tsfc (kg/s/N)",
     "name",
 ]
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class DynamicEquilibrium(om.ExplicitComponent):
@@ -70,6 +73,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
@@ -279,14 +283,11 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param low_speed: define which aerodynamic models should be used (either low speed or high speed)
         """
 
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
-        fus_length = inputs["data:geometry:fuselage:length"]
         wing_area = inputs["data:geometry:wing:area"]
         x_htp = x_wing + inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        cm_alpha_fus = inputs["data:aerodynamics:fuselage:cm_alpha"]
         if low_speed:
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
             cl0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -302,12 +303,6 @@ class DynamicEquilibrium(om.ExplicitComponent):
         c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
         fuel_mass = mass - c3
         x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
-
-        # Calculate cm_alpha_fus from Raymer equations (figure 16.14, eqn 16.22)
-        x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
-        ratio_x025 = x0_25 / fus_length
-        k_h = 0.01222 - 7.40541e-4 * ratio_x025 * 100 + 2.1956e-5 * (ratio_x025 * 100) ** 2
-        cm_alpha_fus = -k_h * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
 
         # Define matrix equilibrium (applying load and moment equilibrium)
         a11 = 1

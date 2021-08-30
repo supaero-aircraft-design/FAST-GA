@@ -22,7 +22,7 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
     """
     Weight estimation for passenger seats
 
-    # TODO: Based on :????????????
+    Based on a statistical analysis. See :cite:`roskampart5:1985` Cessna method
     """
 
     def setup(self):

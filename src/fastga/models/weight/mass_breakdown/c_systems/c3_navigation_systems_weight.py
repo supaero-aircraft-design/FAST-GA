@@ -24,8 +24,7 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
     """
     Weight estimation for navigation systems
 
-    Based on : Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation. DARcorporation, 1985.
-    Equation (7.21) and (7.22)
+    Based on a statistical analysis. See :cite:`roskampart5:1985` Torenbeek method
     """
 
     def setup(self):
@@ -60,8 +59,7 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
     """
     Weight estimation for navigation systems (includes avionics and instruments)
 
-    Based on : Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights
-    Estimation Method." (2017). Equation 102 for instruments and 108 for avionics
+    Based on a statistical analysis. See :cite:`wells:2017`
     """
 
     def setup(self):

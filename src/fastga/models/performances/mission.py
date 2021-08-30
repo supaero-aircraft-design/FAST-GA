@@ -25,7 +25,6 @@ from scipy.interpolate import interp1d
 import time
 
 from fastoad.model_base import Atmosphere, FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
@@ -39,9 +38,9 @@ from fastga.models.performances.dynamic_equilibrium import DynamicEquilibrium
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
-POINTS_NB_CLIMB = 50
-POINTS_NB_CRUISE = 50
-POINTS_NB_DESCENT = 20
+POINTS_NB_CLIMB = 100
+POINTS_NB_CRUISE = 100
+POINTS_NB_DESCENT = 50
 MAX_CALCULATION_TIME = 15  # time in seconds
 
 _LOGGER = logging.getLogger(__name__)

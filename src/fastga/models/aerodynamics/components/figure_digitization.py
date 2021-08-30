@@ -44,6 +44,8 @@ CH_ALPHA_TH = "ch_alpha_th.csv"
 K_CH_DELTA = "k_ch_delta.csv"
 CH_DELTA_TH = "ch_delta_th.csv"
 
+K_FUS = "k_fus.csv"
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -1062,3 +1064,35 @@ class FigureDigitization(om.ExplicitComponent):
         ch_delta_th = interpolate.interp1d([0.1, 0.4], [ch_delta_min, ch_delta_max])(chord_ratio)
 
         return ch_delta_th
+
+    @staticmethod
+    def k_fus(root_quarter_chord_position_ratio) -> float:
+        """
+        Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14)
+
+        :param root_quarter_chord_position_ratio: the position of the root quarter chord of the wing from the nose
+        divided by the total length of the fuselage
+        :return k_fus: the empirical pitching moment factor
+        """
+
+        file = pth.join(resources.__path__[0], K_FUS)
+        db = read_csv(file)
+
+        x = db["X_0_25_RATIO"]
+        y = db["K_FUS"]
+        errors = np.logical_or(np.isnan(x), np.isnan(y))
+        x = x[np.logical_not(errors)].tolist()
+        y = y[np.logical_not(errors)].tolist()
+
+        if float(root_quarter_chord_position_ratio) != np.clip(
+            float(root_quarter_chord_position_ratio), min(x), max(x)
+        ):
+            _LOGGER.warning(
+                "Position of the root quarter-chord as percent of fuselage length is outside of the range in Roskam's book, value clipped"
+            )
+
+        k_fus = interpolate.interp1d(x, y)(
+            np.clip(float(root_quarter_chord_position_ratio), min(x), max(x))
+        )
+
+        return k_fus

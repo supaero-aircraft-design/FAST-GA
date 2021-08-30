@@ -109,7 +109,7 @@ def test_compute_cg_engine():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEngineCG(), ivc)
     x_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:x", units="m")
-    assert x_cg_b1 == pytest.approx(3.00, abs=1e-2)
+    assert x_cg_b1 == pytest.approx(2.35946, abs=1e-2)
 
 
 def test_compute_cg_fuel_lines():
@@ -269,9 +269,9 @@ def test_complete_cg():
     # noinspection PyTypeChecker
     problem = run_system(CG(propulsion_id=ENGINE_WRAPPER), ivc, check=True)
     cg_global = problem.get_val("data:weight:aircraft:CG:aft:x", units="m")
-    assert cg_global == pytest.approx(3.629, abs=1e-3)
+    assert cg_global == pytest.approx(3.508, abs=1e-3)
     cg_ratio = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
-    assert cg_ratio == pytest.approx(0.370, abs=1e-3)
+    assert cg_ratio == pytest.approx(0.286, abs=1e-3)
     z_cg_empty_ac = problem.get_val("data:weight:aircraft_empty:CG:z", units="m")
     assert z_cg_empty_ac == pytest.approx(1.050, abs=1e-3)
     z_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:z", units="m")

@@ -119,7 +119,7 @@
 		</geometry>
 		<handling_qualities>
 				<static_margin>
-					<target>0.15</target>
+					<target>0.25</target>
 				</static_margin>
 		</handling_qualities>
 		<propulsion>
@@ -137,7 +137,7 @@
 				</cs23>
 				<fuel units="kg">0.0</fuel>
 				<landing>
-					<elevator_angle units="deg">-25.0</elevator_angle>
+					<elevator_angle units="deg">-20.0</elevator_angle>
 					<target_sideslip units="deg">12.0</target_sideslip>
 				</landing>
 				<main_route>
@@ -158,7 +158,7 @@
 					</reserve>
 				</main_route>
 				<takeoff>
-					<elevator_angle units="deg">-25.0</elevator_angle>
+					<elevator_angle units="deg">-20.0</elevator_angle>
 					<flap_angle units="deg">10.0</flap_angle>
 					<friction_coefficient_no_brake>0.03</friction_coefficient_no_brake>
 					<thrust_rate>1.0</thrust_rate>
@@ -178,16 +178,16 @@
 		<weight>
 			<airframe>
 				<wing>
-				  <k_factor_a1>1.0</k_factor_a1>
+				  <k_factor>1.0</k_factor>
 				</wing>
 				<fuselage>
-				  <k_factor_a2>1.0</k_factor_a2>
+				  <k_factor>1.0</k_factor>
 				</fuselage>
 				<horizontal_tail>
-				  <k_factor_a31>1.0</k_factor_a31>
+				  <k_factor>1.0</k_factor>
 				</horizontal_tail>
 				<vertical_tail>
-				  <k_factor_a32>1.0</k_factor_a32>
+				  <k_factor>1.0</k_factor>
 				</vertical_tail>
 		  	</airframe>
 		</weight>

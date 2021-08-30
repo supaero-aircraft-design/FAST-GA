@@ -34,12 +34,8 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", np.nan, units="m")
-        self.add_input("data:geometry:wing:root:virtual_chord", np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", np.nan, units="m")
-        self.add_input("data:geometry:fuselage:length", np.nan, units="m")
         self.add_input("data:geometry:wing:area", np.nan, units="m**2")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
@@ -49,6 +45,7 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
+        self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", np.nan, units="rad**-1"
@@ -76,18 +73,15 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
     @staticmethod
     def found_cl_repartition(inputs, load_factor, mass, dynamic_pressure, x_cg):
 
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
-        fus_length = inputs["data:geometry:fuselage:length"]
         wing_area = inputs["data:geometry:wing:area"]
         x_htp = x_wing + inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
 
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
         cl_delta_htp = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
+        cm_alpha_fus = inputs["data:aerodynamics:fuselage:cm_alpha"]
         cm_flaps = inputs["data:aerodynamics:flaps:landing:CM"]
         cl_flaps = inputs["data:aerodynamics:flaps:landing:CL"]
         cl_max_flaps = inputs["data:aerodynamics:flaps:landing:CL_max"]
@@ -103,12 +97,6 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         ]
 
         max_elevator_deflection = inputs["data:mission:sizing:takeoff:elevator_angle"]
-
-        # Calculate cm_alpha_fus from Raymer equations (figure 16.14, eqn 16.22)
-        x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
-        ratio_x025 = x0_25 / fus_length
-        k_h = 0.01222 - 7.40541e-4 * ratio_x025 * 100 + 2.1956e-5 * (ratio_x025 * 100) ** 2
-        cm_alpha_fus = k_h * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
 
         cm_wing = cm0_wing + cm_flaps
         cl_max_landing = cl_max_clean + cl_max_flaps

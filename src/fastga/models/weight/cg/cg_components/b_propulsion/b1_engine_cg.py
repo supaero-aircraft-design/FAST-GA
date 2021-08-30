@@ -31,14 +31,10 @@ class ComputeEngineCG(ExplicitComponent):
 
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input(
             "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
@@ -53,14 +49,10 @@ class ComputeEngineCG(ExplicitComponent):
         self.declare_partials(
             "data:weight:propulsion:engine:CG:x",
             [
-                "data:geometry:wing:MAC:leading_edge:x:local",
-                "data:geometry:wing:MAC:length",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:root:chord",
-                "data:geometry:wing:tip:leading_edge:x:local",
                 "data:geometry:wing:tip:y",
                 "data:geometry:wing:tip:chord",
-                "data:geometry:wing:MAC:at25percent:x",
                 "data:geometry:propulsion:nacelle:length",
                 "data:geometry:propulsion:nacelle:y",
                 "data:geometry:propulsion:propeller:depth",
@@ -72,14 +64,10 @@ class ComputeEngineCG(ExplicitComponent):
 
         prop_layout = inputs["data:geometry:propulsion:layout"]
         engine_count_pre_wing = inputs["data:geometry:propulsion:count"] / 2.0
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
         x_nacelle_array = inputs["data:geometry:propulsion:nacelle:x"]
@@ -101,14 +89,14 @@ class ComputeEngineCG(ExplicitComponent):
                         y4_wing - y2_wing
                     )
                     delta_x_nacelle = 0.05 * l_wing_nac
-                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (1.0 - x_cg_in_nacelle)
+                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (nacelle_length - x_cg_in_nacelle)
                 else:  # Nacelle in the straight part of the wing
                     l_wing_nac = l2_wing
                     delta_x_nacelle = 0.05 * l_wing_nac
-                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (1.0 - x_cg_in_nacelle)
+                    x_nacelle_cg = x_nacelle - delta_x_nacelle - (nacelle_length - x_cg_in_nacelle)
                 x_cg_b1 += x_nacelle_cg / engine_count_pre_wing
         elif prop_layout == 2.0:
-            x_cg_b1 = x_nacelle_array[0] - (1.0 - x_cg_in_nacelle)
+            x_cg_b1 = x_nacelle_array[0] - (nacelle_length - x_cg_in_nacelle)
         elif prop_layout == 3.0:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
         else:

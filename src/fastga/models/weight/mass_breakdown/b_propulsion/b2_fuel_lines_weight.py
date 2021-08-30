@@ -23,11 +23,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
     """
     Weight estimation for fuel lines
 
-    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-    Astronautics, Inc., 2012.
-
-    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-33)
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013`
     """
 
     def setup(self):
@@ -50,7 +46,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
 
         # The 0.5**0.3 refers to the ratio between the total fuel quantity and the total fuel quantity plus the
-        # quantity in integral tanks. We will assume that we only have intergral tank hence the 0.5
+        # quantity in integral tanks. We will assume that we only have integral tank hence the 0.5
 
         if fuel_type == 1.0:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
@@ -67,7 +63,10 @@ class ComputeFuelLinesWeight(ExplicitComponent):
 
         b2 = (
             2.49
-            * ((fuel_mass / k_fsp) ** 0.6 * 0.5 ** 0.3 * tank_nb ** 0.2 * engine_nb ** 0.13) ** 1.21
+            * (fuel_mass / k_fsp) ** 0.726
+            * 0.5 ** 0.363
+            * tank_nb ** 0.242
+            * engine_nb ** 0.157
         )  # mass formula in lb
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2

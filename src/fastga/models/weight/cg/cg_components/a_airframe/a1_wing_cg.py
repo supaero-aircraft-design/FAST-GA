@@ -24,8 +24,7 @@ class ComputeWingCG(ExplicitComponent):
     """
     Wing center of gravity estimation
 
-    Based on : Roskam, Jan. Airplane Design: Part 5-Component Weight Estimation. DARcorporation, 1985.
-    Table 8.1 Center of Gravity Location of Structural Components
+    Based on a statistical analysis. See :cite:`roskampart5:1985`
     """
 
     def setup(self):
@@ -52,7 +51,6 @@ class ComputeWingCG(ExplicitComponent):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         span = inputs["data:geometry:wing:span"]
-        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         l2_wing = inputs["data:geometry:wing:root:virtual_chord"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
@@ -81,12 +79,12 @@ class ComputeWingCG(ExplicitComponent):
 
             chord_at_cg_pos = l2_wing - chord_reduction
             # In the computation of the mfw, we assume that there is 30% of the chord between front and rear spar,
-            # we will do the same assumption here
+            # we will do the same assumption here. It was also assumed that the front spar is at 30 % of the chord
             distance_between_spars = 0.30 * chord_at_cg_pos
 
             x_cg_wing_rel = (
                 y_cg * math.tan(sweep_25 * math.pi / 180.0)
-                + flap_chord_ratio * chord_at_cg_pos
+                + 0.30 * chord_at_cg_pos
                 + 0.70 * distance_between_spars
             )
 

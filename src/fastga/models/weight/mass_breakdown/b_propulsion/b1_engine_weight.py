@@ -27,9 +27,7 @@ class ComputeEngineWeight(ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
-    Based on : Raymer Daniel. Aircraft Design: A Conceptual Approach. AIAA
-    Education Series 1996 for installed engine weight, table 15.2
-
+    Based on a statistical analysis. See :cite:`raymer:2012`
     """
 
     def __init__(self, **kwargs):

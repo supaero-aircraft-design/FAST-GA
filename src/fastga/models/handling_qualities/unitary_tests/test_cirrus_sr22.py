@@ -89,11 +89,11 @@ def test_compute_static_margin():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeStaticMargin(), ivc)
     stick_fixed_static_margin = problem["data:handling_qualities:stick_fixed_static_margin"]
-    assert stick_fixed_static_margin == pytest.approx(0.10, abs=1e-2)
+    assert stick_fixed_static_margin == pytest.approx(0.34, abs=1e-2)
     free_elevator_factor = problem["data:aerodynamics:cruise:neutral_point:free_elevator_factor"]
     assert free_elevator_factor == pytest.approx(0.74, abs=1e-2)
     stick_free_static_margin = problem["data:handling_qualities:stick_free_static_margin"]
-    assert stick_free_static_margin == pytest.approx(0.03, abs=1e-2)
+    assert stick_free_static_margin == pytest.approx(0.27, abs=1e-2)
 
 
 def test_compute_to_rotation_limit():
@@ -125,8 +125,8 @@ def test_compute_balked_landing():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBalkedLandingLimit(propulsion_id=ENGINE_WRAPPER), ivc)
     x_cg_balked_landing_limit = problem["data:handling_qualities:balked_landing_limit:x"]
-    assert x_cg_balked_landing_limit == pytest.approx(2.35, abs=1e-2)
+    assert x_cg_balked_landing_limit == pytest.approx(2.67, abs=1e-2)
     x_cg_ratio_balked_landing_limit = problem[
         "data:handling_qualities:balked_landing_limit:MAC_position"
     ]
-    assert x_cg_ratio_balked_landing_limit == pytest.approx(-0.16, abs=1e-2)
+    assert x_cg_ratio_balked_landing_limit == pytest.approx(0.11, abs=1e-2)

@@ -22,14 +22,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
     """
     Weight estimation for landing gears
 
-    Based on : Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights
-    Estimation Method." (2017). Equation 63 and 64
-
-    and
-
-    Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-    Astronautics, Inc., 2012. Commentary on table 15.2
-
+    Based on a statistical analysis. See :cite:`wells:2017` for the formula and :cite:`raymer:2012` for the weight
+    reduction factor for non retractable landing gears
     """
 
     def setup(self):

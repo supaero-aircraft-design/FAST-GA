@@ -67,3 +67,6 @@ venv*/
 
 # External tools
 /XFOIL
+
+# Private files
+*/private/*
