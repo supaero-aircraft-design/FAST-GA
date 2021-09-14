@@ -51,7 +51,7 @@ data:propulsion:IC_engine:strokes_nb || number of strokes on the engine
 data:TLAR:category || aircraft certification category
 data:TLAR:level || aircraft certification level
 data:TLAR:luggage_mass_design || luggage design mass
-data:TLAR:NPAX_design || design number of passengers (w.o. including pilots)
+data:TLAR:NPAX_design || design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)
 data:TLAR:range || design range
 data:TLAR:v_approach || approach speed
 data:TLAR:v_cruise || cruise speed

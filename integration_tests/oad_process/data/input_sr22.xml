@@ -16,7 +16,7 @@
 <FASTOAD_model>
 	<data>
 		<TLAR>
-			<NPAX_design>2.0</NPAX_design>
+			<NPAX_design>2.0 <!-- design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0) --> </NPAX_design>
 			<luggage_mass_design units="kg">40.</luggage_mass_design>
 			<range units="NM">1000.0</range>
 			<v_approach units="kn">79.0</v_approach>

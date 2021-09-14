@@ -114,8 +114,8 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         """
         engine_params = {
             "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
+            "cruise_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
+            "cruise_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:layout"],

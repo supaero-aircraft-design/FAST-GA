@@ -57,6 +57,7 @@ def test_id_working():
     var_inputs = ["data:geometry:variable_2"]
 
     # Create a temporary configurator so the modules are registered and their ID are available
+    # noinspection PyUnusedLocal
     configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
 
     test_generate_block_analysis_id = api.generate_block_analysis(

@@ -32,7 +32,7 @@ class ComputeHTDistance(om.ExplicitComponent):
 
         self.declare_partials(
             "data:geometry:horizontal_tail:z:from_wingMAC25",
-            ["data:geometry:vertical_tail:span",],
+            ["data:geometry:vertical_tail:span"],
             method="fd",
         )
 
