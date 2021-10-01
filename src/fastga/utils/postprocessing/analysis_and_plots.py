@@ -18,8 +18,6 @@ import numpy as np
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from fastga.command import api as api_cs23
-from scipy.constants import g
 
 from typing import Dict
 from openmdao.utils.units import convert_units
@@ -1002,29 +1000,15 @@ def payload_range(
     range_array = list(variables["data:payload_range:range_array"].value)
     sr_array = list(variables["data:payload_range:specific_range_array"].value)
 
-    # If point D does not exist, remove it
-    if range_array[3] == 0:
-        range_array = range_array[0:3] + [range_array[4]]
-        payload_array = payload_array[0:3] + [payload_array[4]]
-        sr_array = sr_array[0:3] + [sr_array[4]]
-        text_plot = [
-            "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
-            "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
-            "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
-            "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
-        ]
-        ax = [0, 0, 0, 0]
-        ay = [0, 0, 0, 0]
-    else:
-        text_plot = [
-            "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
-            "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
-            "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
-            "  <b>D<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
-            "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[4], 1)) + " nm/kg",
-        ]
-        ax = [0, 0, 50, 50, 75]
-        ay = [0, 0, 0, 0, 0]
+    text_plot = [
+        "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
+        "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
+        "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
+        "  <b>D<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
+        "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[4], 1)) + " nm/kg",
+    ]
+    ax = [0, 0, 50, 50, 75]
+    ay = [0, 0, 0, 0, 0]
 
     # Plotting of the diagram
     if fig is None:

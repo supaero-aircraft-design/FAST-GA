@@ -85,12 +85,8 @@ class FigureDigitization(om.ExplicitComponent):
             chord_ratio, min(min(x_15), min(x_60)), max(max(x_15), max(x_60))
         ):
             _LOGGER.warning(
-                "Chord ratio outside of the range in Roskam's book delta_cd_plain_flap, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio outside of the range in Roskam's book delta_cd_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(min(x_15), min(x_60))))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(max(x_15), max(x_60))))
 
         x_value_00 = 0.0
         x_value_15 = interpolate.interp1d(x_15, y_15)(
@@ -102,12 +98,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if control_deflection != np.clip(control_deflection, 0.0, 60.0):
             _LOGGER.warning(
-                "Control surface deflection outside of the range in Roskam's book delta_cd_plain_flap, value clipped{}".format(
-                    control_deflection
-                )
+                "Control surface deflection outside of the range in Roskam's book delta_cd_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(60.0))
 
         delta_cd_flap = interpolate.interp1d(
             [0.0, 15.0, 60.0], [x_value_00, x_value_15, x_value_60], kind="quadratic"
@@ -190,12 +182,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.5):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book k_prime_plain_flap, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book k_prime_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.1))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.5))
 
         k_prime = float(
             interpolate.interp1d([0.1, 0.15, 0.25, 0.3, 0.4, 0.5], k_chord)(
@@ -250,9 +238,7 @@ class FigureDigitization(om.ExplicitComponent):
             or (chord_ratio != np.clip(chord_ratio, min(x_15), max(x_15)))
         ):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book cl_delta_theory_plain_flap, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book cl_delta_theory_plain_flap, value clipped"
             )
 
         cld_t = [
@@ -264,12 +250,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if thickness != np.clip(thickness, 0.0, 0.15):
             _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book cl_delta_theory_plain_flap, value clipped{}".format(
-                    thickness
-                )
+                "Thickness ratio value outside of the range in Roskam's book cl_delta_theory_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.15))
 
         cl_delta_th = interpolate.interp1d([0.0, 0.04, 0.1, 0.15], cld_t)(
             np.clip(thickness, 0.0, 0.15)
@@ -311,12 +293,8 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         ):
             _LOGGER.warning(
-                "Airfoil lift slope ratio value outside of the range in Roskam's book k_cl_delta_plain_flap, value clipped{}".format(
-                    float(airfoil_lift_coefficient / cl_alpha_th)
-                )
+                "Airfoil lift slope ratio value outside of the range in Roskam's book k_cl_delta_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(k_cl_alpha_data)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(k_cl_alpha_data)))
 
         k_cl_alpha = np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -329,12 +307,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.05, 0.5):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book k_cl_delta_plain_flap, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book k_cl_delta_plain_flap, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.05))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.5))
 
         chord_ratio = np.clip(chord_ratio, 0.05, 0.5)
         k_cl_delta = interpolate.interp1d([0.05, 0.5], [k_cl_delta_min, k_cl_delta_max])(
@@ -400,9 +374,7 @@ class FigureDigitization(om.ExplicitComponent):
             or (float(flap_angle) != np.clip(float(flap_angle), min(x_40), max(x_40)))
         ):
             _LOGGER.warning(
-                "Flap angle value outside of the range in Roskam's book k_prime_single_slotted, value clipped{}".format(
-                    float(flap_angle)
-                )
+                "Flap angle value outside of the range in Roskam's book k_prime_single_slotted, value clipped"
             )
 
         k_chord = [
@@ -415,12 +387,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if float(chord_ratio) != np.clip(float(chord_ratio), 0.15, 0.4):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book k_prime_single_slotted, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book k_prime_single_slotted, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.15))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.4))
 
         k_prime = float(
             interpolate.interp1d([0.15, 0.20, 0.25, 0.3, 0.4], k_chord)(
@@ -459,23 +427,17 @@ class FigureDigitization(om.ExplicitComponent):
             base_increment = interpolate.interp1d(x_plain, y_plain)
             if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
-                    "Thickness ratio value outside of the range in Roskam's book basemaxliftincrement, value clipped{}".format(
-                        thickness_ratio
-                    )
+                    "Thickness ratio value outside of the range in Roskam's book basemaxliftincrement, value clipped"
                 )
-                _LOGGER.warning("min value of Roskam's book is {}".format(min(x_plain)))
-                _LOGGER.warning("max value of Roskam's book is {}".format(max(x_plain)))
+
             delta_cl_max_base = base_increment(np.clip(thickness_ratio, min(x_plain), max(x_plain)))
         elif flap_type == 1.0:
             base_increment = interpolate.interp1d(x_single_slot, y_single_slot)
             if thickness_ratio != np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot)):
                 _LOGGER.warning(
-                    "Thickness ratio value outside of the range in Roskam's book basemaxliftincrement, value clipped{}".format(
-                        thickness_ratio
-                    )
+                    "Thickness ratio value outside of the range in Roskam's book basemaxliftincrement, value clipped"
                 )
-                _LOGGER.warning("min value of Roskam's book is {}".format(min(x_single_slot)))
-                _LOGGER.warning("max value of Roskam's book is {}".format(max(x_single_slot)))
+
             delta_cl_max_base = base_increment(
                 np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot))
             )
@@ -520,12 +482,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if float(chord_ratio) != np.clip(float(chord_ratio), min(x), max(x)):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book k1_max_lift, value clipped{}".format(
-                    float(chord_ratio)
-                )
+                "Chord ratio value outside of the range in Roskam's book k1_max_lift, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(x)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(x)))
 
         k1 = interpolate.interp1d(x, y)(np.clip(float(chord_ratio), min(x), max(x)))
 
@@ -610,7 +568,7 @@ class FigureDigitization(om.ExplicitComponent):
             ):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
-                    "value clipped, reference value is {}".format(reference_angle)
+                    "value clipped, reference value is"
                 )
             k3 = interpolate.interp1d(x, y)(np.clip(float(angle / reference_angle), min(x), max(x)))
         else:
@@ -636,12 +594,8 @@ class FigureDigitization(om.ExplicitComponent):
         eta_out = float(eta_out)
         if taper_ratio != np.clip(taper_ratio, 0.0, 1.0):
             _LOGGER.warning(
-                "Taper ratio value outside of the range in Roskam's book k_b_flaps, value clipped{}".format(
-                    taper_ratio
-                )
+                "Taper ratio value outside of the range in Roskam's book k_b_flaps, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(1.0))
 
         taper_ratio = np.clip(taper_ratio, 0.0, 1.0)
         file = pth.join(resources.__path__[0], KB_FLAPS)
@@ -722,12 +676,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.0, 1.0):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book, value clipped a_delta_airfoil{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book, value clipped a_delta_airfoil"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(1.0))
 
         a_delta = interpolate.interp1d(x, y)(np.clip(float(chord_ratio), 0.0, 1.0))
 
@@ -749,12 +699,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if float(aspect_ratio) != np.clip(float(aspect_ratio), 0.0, 10.0):
             _LOGGER.warning(
-                "Aspect ratio value outside of the range in Roskam's book k_a_delta, value clipped{}".format(
-                    aspect_ratio
-                )
+                "Aspect ratio value outside of the range in Roskam's book k_a_delta, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(10.0))
 
         x_01 = db["X_01"]
         y_01 = db["Y_01"]
@@ -831,10 +777,8 @@ class FigureDigitization(om.ExplicitComponent):
         if float(a_delta_airfoil) != np.clip(float(a_delta_airfoil), 0.0, 1.0):
             _LOGGER.warning(
                 "Control surface effectiveness ratio value outside of the range in "
-                "Roskam's book, value clipped k_a_delta{}".format(float(a_delta_airfoil))
+                "Roskam's book, value clipped k_a_delta"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(1.0))
 
         k_a_delta = interpolate.interp1d(x, y)(np.clip(float(a_delta_airfoil), 0.1, 1.0))
 
@@ -870,24 +814,16 @@ class FigureDigitization(om.ExplicitComponent):
 
         if x_value != np.clip(x_value, min(min(x_06), min(x_10)), max(max(x_06), max(x_10))):
             _LOGGER.warning(
-                "Ratio of span on fuselage depth outside of the range in Roskam's book k_ar_fuselage, value clipped{}".format(
-                    x_value
-                )
+                "Ratio of span on fuselage depth outside of the range in Roskam's book k_ar_fuselage, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(min(x_06), min(x_10))))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(max(x_06), max(x_10))))
 
         y_value_06 = interpolate.interp1d(x_06, y_06)(np.clip(x_value, min(x_06), max(x_06)))
         y_value_10 = interpolate.interp1d(x_10, y_10)(np.clip(x_value, min(x_10), max(x_10)))
 
         if taper_ratio != np.clip(taper_ratio, 0.6, 1.0):
             _LOGGER.warning(
-                "Taper ratio outside of the range in Roskam's book k_ar_fuselage, value clipped{}".format(
-                    taper_ratio
-                )
+                "Taper ratio outside of the range in Roskam's book k_ar_fuselage, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.6))
-            _LOGGER.warning("max value of Roskam's book is {}".format(1.0))
 
         k_ar_fuselage = interpolate.interp1d([0.6, 1.0], [float(y_value_06), float(y_value_10)])(
             np.clip(taper_ratio, 0.6, 1.0)
@@ -915,12 +851,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if float(area_ratio) != np.clip(float(area_ratio), min(x), max(x)):
             _LOGGER.warning(
-                "Area ratio value outside of the range in Roskam's book k_vh, value clipped{}".format(
-                    area_ratio
-                )
+                "Area ratio value outside of the range in Roskam's book k_vh, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(x)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(x)))
 
         k_vh = interpolate.interp1d(x, y)(np.clip(float(area_ratio), min(x), max(x)))
 
@@ -944,12 +876,9 @@ class FigureDigitization(om.ExplicitComponent):
         # Figure 10.64 b
         if thickness_ratio != np.clip(thickness_ratio, 0.0, 0.2):
             _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book k_ch_alpha, value clipped{}".format(
-                    thickness_ratio
-                )
+                "Thickness ratio value outside of the range in Roskam's book k_ch_alpha, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.2))
+
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
         k_cl_alpha_data = db["K_CL_ALPHA"]
@@ -969,12 +898,8 @@ class FigureDigitization(om.ExplicitComponent):
         ):
             _LOGGER.warning(
                 "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of the range "
-                "in Roskam's book, value clipped k_ch_alpha{}".format(
-                    float(airfoil_lift_coefficient)
-                )
+                "in Roskam's book, value clipped k_ch_alpha"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(k_cl_alpha_data)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(k_cl_alpha_data)))
 
         k_cl_alpha = np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -1017,12 +942,8 @@ class FigureDigitization(om.ExplicitComponent):
             float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
         ):
             _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book, value clipped ch_alpha_th{}".format(
-                    float(thickness_ratio)
-                )
+                "Thickness ratio value outside of the range in Roskam's book, value clipped ch_alpha_th"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(thickness_ratio_data)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(thickness_ratio_data)))
 
         ch_alpha_min = interpolate.interp1d(thickness_ratio_data, ch_alpha_min_data)(
             np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
@@ -1033,12 +954,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book, value clipped ch_alpha_th{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book, value clipped ch_alpha_th"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.1))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.4))
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
         ch_alpha_th = interpolate.interp1d([0.1, 0.4], [ch_alpha_min, ch_alpha_max])(chord_ratio)
@@ -1063,12 +980,8 @@ class FigureDigitization(om.ExplicitComponent):
         # Figure 10.64 b
         if thickness_ratio != np.clip(thickness_ratio, 0.0, 0.2):
             _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book k_ch_delta, value clipped{}".format(
-                    thickness_ratio
-                )
+                "Thickness ratio value outside of the range in Roskam's book k_ch_delta, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.0))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.2))
 
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
@@ -1092,12 +1005,8 @@ class FigureDigitization(om.ExplicitComponent):
         ):
             _LOGGER.warning(
                 "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of the range "
-                "in Roskam's book k_ch_delta, value clipped{}".format(
-                    float(airfoil_lift_coefficient / cl_alpha_th)
-                )
+                "in Roskam's book k_ch_delta, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(k_cl_alpha_data)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(k_cl_alpha_data)))
 
         k_cl_alpha = np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -1111,12 +1020,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book k_ch_delta, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book k_ch_delta, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.1))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.4))
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
         k_ch_delta = interpolate.interp1d(
@@ -1153,12 +1058,8 @@ class FigureDigitization(om.ExplicitComponent):
             float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
         ):
             _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book ch_delta_th, value clipped{}".format(
-                    float(thickness_ratio)
-                )
+                "Thickness ratio value outside of the range in Roskam's book ch_delta_th, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(min(thickness_ratio_data)))
-            _LOGGER.warning("max value of Roskam's book is {}".format(max(thickness_ratio_data)))
 
         ch_delta_min = interpolate.interp1d(thickness_ratio_data, ch_delta_min_data)(
             np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
@@ -1169,12 +1070,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book ch delta th, value clipped{}".format(
-                    chord_ratio
-                )
+                "Chord ratio value outside of the range in Roskam's book ch delta th, value clipped"
             )
-            _LOGGER.warning("min value of Roskam's book is {}".format(0.1))
-            _LOGGER.warning("max value of Roskam's book is {}".format(0.4))
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
         ch_delta_th = interpolate.interp1d([0.1, 0.4], [ch_delta_min, ch_delta_max])(chord_ratio)

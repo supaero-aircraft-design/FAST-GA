@@ -21,6 +21,10 @@ from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 
 class ComputeSpan(om.ExplicitComponent):
+    """
+    Please refer to the notebooks for the class parameters definition.
+    """
+
     def initialize(self):
         self.options.declare("span_mod", types=list, default=[1.0, True, True])
 

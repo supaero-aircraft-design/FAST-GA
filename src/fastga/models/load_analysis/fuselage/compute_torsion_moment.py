@@ -24,6 +24,7 @@ from fastoad.model_base import Atmosphere
 class ComputeTorsionMoment(ExplicitComponent):
     """
          TASOPT 2.0 (2010).
+         This quantity is not used in any other parts of the code.
     """
 
     def setup(self):

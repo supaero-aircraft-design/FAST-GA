@@ -882,18 +882,18 @@
         </power>
       </systems>
       <payload>
-        <front_fret>
-          <mass units="kg" is_input="True">50.0<!--mass of the design mission front fret payload--></mass>
+        <front_freight>
+          <mass units="kg" is_input="True">50.0</mass>
           <CG>
-            <x units="m" is_input="True">2.025060480972263<!--front fret: X-position of center of gravity--></x>
+            <x units="m" is_input="True">2.025060480972263</x>
           </CG>
-        </front_fret>
-        <rear_fret>
-          <mass units="kg" is_input="True">100.0<!--mass of the design mission rear fret payload--></mass>
+        </front_freight>
+        <rear_freight>
+          <mass units="kg" is_input="True">100.0</mass>
           <CG>
-            <x units="m" is_input="True">6.03145008168481<!--rear fret: X-position of center of gravity--></x>
+            <x units="m" is_input="True">6.03145008168481</x>
           </CG>
-        </rear_fret>
+        </rear_freight>
         <PAX>
           <CG>
             <x units="m" is_input="True">4.360523681209779<!--passengers: X-position of center of gravity--></x>

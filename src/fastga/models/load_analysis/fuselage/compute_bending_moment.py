@@ -29,11 +29,13 @@ class ComputeBendingMoment(ExplicitComponent):
         the wing mass centroid to the tail (rear distribution). Then the distribution from the nose to the wing mass
         centroid is computed (front distribution). The two distributions match at the wing centroid by taking in account
         the lift and assuming the equilibrium.
-        Like in the paper, the code computes extra material mass and adds it to the fuselahe shell mass if it detects
-        that the fuselage cannot resist the bending moments of the defined load cases.
+        Like in the paper, the code computes extra material mass and adds it to the fuselage shell mass if it detects
+        that the fuselage cannot resist the bending moments of the defined load cases. This last section does not have
+        currently any impact on the rest of the code and is purely indicative.
     """
 
     def setup(self):
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
@@ -101,6 +103,7 @@ class ComputeBendingMoment(ExplicitComponent):
         self.declare_partials("data:loads:fuselage:x_vector", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         l_cabin = inputs["data:geometry:cabin:length"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_radius = fuselage_max_width / 2
@@ -162,19 +165,23 @@ class ComputeBendingMoment(ExplicitComponent):
             + 0.5 * (l_front + l_cabin + l_fuselage) * cone_mass
         ) / (htp_mass + vtp_mass + cone_mass)
 
-        # Tail Aero Loads
+        # Tail Aero Loads (at sea level since we want the maximum value reachable)
         rmh = 0.4
         rmv = 0.7
         cl_h_max = 1.2
         cl_v_max = 0.55
-        density = Atmosphere(0, altitude_in_feet=False).density
+        density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
         q_never_exceed = 0.5 * density * v_d ** 2
         lift_max_h = q_never_exceed * htp_area * cl_h_max
         lift_max_v = q_never_exceed * vtp_area * cl_v_max
 
+        # TASOPT assumes that the wing centroid is at the middle of the cabin length.
+        # We prefer to use the right geometry. This will affect the weight distribution of the cabin in the rear and
+        # front distributions.
         x_ratio_centroid_to_cabin_front = (wing_centroid - l_front) / l_cabin
         x_ratio_centroid_to_cabin_rear = 1 - x_ratio_centroid_to_cabin_front
 
+        # The fuselage length is roughly discretized with a fixed length step.
         nb_points_front = int(FUSELAGE_MESH_POINT * wing_centroid / tail_x_cg)
         x_vector_front = np.linspace(0, wing_centroid, nb_points_front)
         x_vector_rear = np.linspace(wing_centroid, tail_x_cg, FUSELAGE_MESH_POINT - nb_points_front)
@@ -279,7 +286,8 @@ class ComputeBendingMoment(ExplicitComponent):
             horizontal_bending_vector_front = np.array([])
 
             # The same expression as in the bending moment expression for the front of the fuselage is needed here,
-            # applied at x = wing_centroid. And without the lift.
+            # applied at x = wing_centroid. And without the lift. This is to calculate the lift needed to match the
+            # front and the rear distributions.
             max_moment_front = (
                 n * w_nose * wing_centroid
                 + n
@@ -433,7 +441,7 @@ class ComputeBendingMoment(ExplicitComponent):
                     horizontal_bending_vector_front, horizontal_bending_vector_rear
                 )
 
-        # Computation of the vertical additional mass. The only load case is the impulsive activation of the rudder in
+        # Computation of the vertical bending moment. The only load case is the impulsive activation of the rudder in
         # cruise conditions.
         vertical_bending_vector = np.array([])
         for x in x_vector_rear:
@@ -466,7 +474,7 @@ class ComputeBendingMoment(ExplicitComponent):
             + additional_mass_vertical
         )
 
-        # Arrays to plot
+        # Arrays to plot with postprocessing function
         vertical_bending_vector_plot = np.append(
             np.zeros(len(x_vector_front)), vertical_bending_vector
         )

@@ -69,10 +69,9 @@ class BasicTurboPropEngine(AbstractFuelPropulsion):
         # propeller_diameter: float
     ):
         """
-        Parametric Internal Combustion engine.
-
-        It computes engine characteristics using fuel type, motor architecture
-        and constant propeller efficiency using analytical model from following sources:
+        Basic Turboprop Model. It is based on the file "turboprop_simple.py" that is in the same folder.
+        The max power computation has been however adapted to match the data from the PIM.
+        There might be in this file some unused functions or quantities from the basic IC engine.
 
         :param max_power: maximum delivered mechanical power of engine (units=W)
         :param design_altitude: design altitude for cruise (units=m)

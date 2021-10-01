@@ -28,7 +28,13 @@ class ComputeMFW(ExplicitComponent):
 
     """
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering Students' p.65.
+    Discretizes the fuel tank in the wings along the span.
     Only works for linear chord and thickness profiles.
+    The xml quantities "data:geometry:propulsion:LE_chord_percentage", "data:geometry:propulsion:TE_chord_percentage",
+    "data:geometry:propulsion:y_ratio_tank_beginning" and "data:geometry:propulsion:y_ratio_tank_end" have to be
+    determined as close to possible as the real aircraft quantities. The quantity "settings:geometry:fuel_tanks:depth"
+    allows to calibrate the model for each aircraft.
+    WARNING : If this class is updated, update_wing_area wil have to be updated as well as it uses the same approach.
     """
 
     def setup(self):
@@ -118,6 +124,7 @@ class ComputeMFW(ExplicitComponent):
         # The k factor stating the depth of the fuel tanks is included here.
         thickness_array = k * chord_array * thickness_ratio_array
 
+        # Distributed propulsion / single engine on the wing / nose or rear mounted engine
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
@@ -134,6 +141,9 @@ class ComputeMFW(ExplicitComponent):
         where_engine = np.where(in_eng_nacelle)
 
         # Computation of the fuel distribution along the span, taking in account the elements restricting it.
+        # The fuel tanks go from the leading edge with a chord percentage offset to the nearest control surface
+        # with another chord percentage offset.
+        # This distribution has to be identical to the one of compute_relief_forces in aerostructural_loads.
         width_array = np.zeros((len(y_array), 1))
         for i in range(len(width_array)):
             if y_array[i] > y_flap_end:

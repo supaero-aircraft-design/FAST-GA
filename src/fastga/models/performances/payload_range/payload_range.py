@@ -36,7 +36,9 @@ _LOGGER = logging.getLogger(__name__)
 
 class ComputePayloadRange(om.ExplicitComponent):
     """
-        Payload Range. The minimal payload which defines point E is taken as two pilots.
+        Payload Range. The minimal payload which defines point E is taken as two pilots. This class uses a blank xml file
+        for the execution of the mission class. All the input quantities of the mission are created in a dict.
+        generate_block_analysis still needs a xml file to be processed.
     """
 
     def initialize(self):
@@ -117,10 +119,9 @@ class ComputePayloadRange(om.ExplicitComponent):
                 xtol=0.01,
                 full_output=True,
             )
-            _LOGGER.info("Number of fsolve iterations for point D :")
-            _LOGGER.info(dic["nfev"])
+            _LOGGER.warning("Number of fsolve iterations for point D :")
+            _LOGGER.warning(dic["nfev"])
         else:
-            range_d = 0
             _LOGGER.warning(
                 "Point D not computed, payload for this point lower than minimal payload"
             )

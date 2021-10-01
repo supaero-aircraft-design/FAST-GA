@@ -20,6 +20,10 @@ import openmdao.api as om
 
 
 class ComputeFuselageMod(om.ExplicitComponent):
+    """
+    Please refer to the notebooks for the class parameters definition.
+    """
+
     def initialize(self):
         self.options.declare("fuselage_mod", types=list, default=[0, 0, 0, 0, 0])
 
@@ -59,6 +63,7 @@ class ComputeFuselageMod(om.ExplicitComponent):
         ht_lp_mod = ht_lp
         fa_length_mod = fa_length
 
+        # If the row of seats is added then the maximum number of passengers is increased
         if self.options["fuselage_mod"][0] == 0:
             npax_max_mod = npax_max + seats_p_row
             added_length = l_pass_seats

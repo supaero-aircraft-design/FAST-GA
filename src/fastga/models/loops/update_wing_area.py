@@ -45,7 +45,8 @@ class UpdateWingArea(om.Group):
 
 
 class _UpdateWingArea(om.ExplicitComponent):
-    """ Computation of wing area from needed approach speed and mission fuel """
+    """ Computation of wing area from needed approach speed and mission fuel. For the mission wing area the code uses
+     the fsolve algorithm on a function that computes the wing area following the same approach as in compute_mfw."""
 
     def setup(self):
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
@@ -109,8 +110,8 @@ class _UpdateWingArea(om.ExplicitComponent):
             m_vol_fuel = 730
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
 
-        # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
-        # Initial guess of the wing area value
+        # Initial guess of the wing area value. For this guess the fuel tanks are assumed to be between 1st (30% MAC)
+        # and 3rd (60% MAC) longeron: 30% of the wing.
         ave_thickness = (
             0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
         )
@@ -203,6 +204,8 @@ class _UpdateWingArea(om.ExplicitComponent):
         where_engine = np.where(in_eng_nacelle)
 
         # Computation of the fuel distribution along the span, taking in account the elements restricting it.
+        # The fuel tanks go from the leading edge with a chord percentage offset to the nearest control surface
+        # with another chord percentage offset.
         width_array = np.zeros((len(y_array), 1))
         for i in range(len(width_array)):
             if y_array[i] > y_flap_end:

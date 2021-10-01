@@ -83,10 +83,10 @@ class ComputeFuselageWeightAlternate(om.ExplicitComponent):
     tail cone.
     The mass models of the fuselage extra components (windows, doors,...) are extracted from the Torenbeek weight
     penalty method presented page 457 of his book "Synthesis of Subsonic Aircraft Design".
-    Through all this model the hypothesis is made that the thickness of the fuselage skin is far inferior to the
-    fuselage radius.
-    For the moment no k factor has been considered to correct the value of the output mass. TODO ? Apply this factor
-    on all the output components or only on the final airframe mass ?
+    Through all this model the hypothesis is made that the thickness of the fuselage skin is constant and far inferior
+    to the fuselage radius.
+    For the moment no k factor has been considered to correct the value of the output mass.
+    TODO ? Apply this factor on all the output components or only on the final airframe mass ?
     """
 
     def __init__(self, **kwargs):
@@ -173,13 +173,14 @@ class ComputeFuselageWeightAlternate(om.ExplicitComponent):
 
         ratio_e = e_stringer / e_skin
 
-        # Load cases (factor of safety = 1.5)
+        # Sizing of thickness based on hoop stress and norm constraints (limit load factor : 1.3, safety factor = 1.5)
+        # Takes in account the minimum achievable industrial thickness
         thickness_limit = 1.33 * delta_p_max * fuselage_radius / sigma_02_skin
         thickness_ultimate = 1.5 * thickness_limit
 
-        fuselage_skin_thickness = max(thickness_limit, thickness_ultimate, min_skin_thickness)
+        fuselage_skin_thickness = max(thickness_ultimate, min_skin_thickness)
 
-        # Volume of fuselage skin components
+        # Volume of fuselage skin components (TASOPT)
         volume_nose_skin = (
             2
             * np.pi
@@ -188,9 +189,7 @@ class ComputeFuselageWeightAlternate(om.ExplicitComponent):
             * fuselage_skin_thickness
         )
         volume_cabin_skin = 2 * np.pi * fuselage_radius * fuselage_skin_thickness * l_cabin
-        volume_cabin_inside = (
-            np.pi * fuselage_radius ** 2 * l_cabin + 2 / 3 * np.pi * fuselage_radius ** 3
-        )
+        # Taper parameter validated graphically and by computing the area function of TASOPT
         taper_cone = 0.2
         volume_cone_skin = (
             np.pi * fuselage_radius * fuselage_skin_thickness * l_rear * (1 + taper_cone ** 2)
