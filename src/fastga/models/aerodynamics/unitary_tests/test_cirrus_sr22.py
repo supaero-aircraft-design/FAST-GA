@@ -935,4 +935,4 @@ def test_v_n_diagram():
 
 def test_load_factor():
     # load all inputs
-    load_factor(XML_FILE, ENGINE_WRAPPER, load_factor_ultimate=5.9, vh=88.71)
+    load_factor(XML_FILE, ENGINE_WRAPPER, load_factor_ultimate=5.7, vh=88.71)
