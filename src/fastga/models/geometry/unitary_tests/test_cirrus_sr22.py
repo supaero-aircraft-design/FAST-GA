@@ -25,7 +25,6 @@ from ..geom_components.fuselage.components import (
 )
 from ..geom_components.fuselage.components.compute_fuselage_wet_area import ComputeFuselageWetArea
 from ..geom_components.wing.components import (
-    ComputeMFW,
     ComputeWingB50,
     ComputeWingL1AndL4,
     ComputeWingL2AndL3,
@@ -51,6 +50,7 @@ from ..geom_components.vt.components import (
 )
 from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
 from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
+from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
@@ -436,16 +436,28 @@ def test_geometry_wing_wet_area():
     assert wet_area == pytest.approx(24.436, abs=1e-3)
 
 
-def test_geometry_wing_mfw():
+def test_geometry_wing_mfw_simple():
     """ Tests computation of the wing max fuel weight """
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeMFW()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeMFWSimple()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMFW(), ivc)
+    problem = run_system(ComputeMFWSimple(), ivc)
     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
     assert mfw == pytest.approx(296.517, abs=1e-2)
+
+
+def test_geometry_wing_mfw_advanced():
+    """ Tests computation of the wing max fuel weight """
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeMFWAdvanced()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMFWAdvanced(), ivc)
+    mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
+    assert mfw == pytest.approx(231.26, abs=1e-2)
 
 
 def test_geometry_nacelle():

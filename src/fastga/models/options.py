@@ -19,6 +19,7 @@ import openmdao.api as om
 CABIN_SIZING_OPTION = "cabin_sizing"
 FUSELAGE_WET_AREA_OPTION = "fuselage_wet_area"
 PAYLOAD_FROM_NPAX = "payload_from_npax"
+MFW_COMPUTATION = "max_fuel_weight_computation"
 
 
 class OpenMdaoOptionDispatcherGroup(om.Group):
