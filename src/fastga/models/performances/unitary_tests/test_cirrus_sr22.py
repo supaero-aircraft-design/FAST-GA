@@ -280,5 +280,5 @@ def test_payload_range():
     # assert np.max(np.abs(range_array - range_result)) <= 1e-1
     specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
     specific_range_result = np.array([0, 6.27, 3.96, 6.63, 7.05])
-    print("specific range array", specific_range_array)
+    print("specific range array.", specific_range_array)
     # assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
