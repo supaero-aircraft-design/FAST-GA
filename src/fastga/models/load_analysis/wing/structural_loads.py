@@ -53,6 +53,7 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
 
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")

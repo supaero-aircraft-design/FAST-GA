@@ -82,6 +82,7 @@
       </horizontal_tail>
       <landing_gear>
         <height units="m" is_input="False">0.7912999999999999<!--height of landing gear--></height>
+        <y units="m" is_input="False">0.7913<!--height of landing gear--></y>
         <type is_input="True">1.0</type>
       </landing_gear>
       <plane>

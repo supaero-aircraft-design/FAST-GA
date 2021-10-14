@@ -34,13 +34,13 @@
 				<aisle_width units="m">0.0</aisle_width>
 				<seats>
 					<pilot>
-						<length units="m">0.95</length>
+						<length units="m">1.05</length>
 						<width units="m">0.565</width>
 					</pilot>
 					<passenger>
 						<NPAX_max>2.0</NPAX_max>
 						<count_by_row>3.0</count_by_row>
-						<length units="m">1.0</length>
+						<length units="m">1.10</length>
 						<width units="m">0.40</width>
 					</passenger>
 				</seats>
@@ -53,7 +53,7 @@
 				<MAC>
 					<at25percent>
 						<x>
-							<from_wingMAC25 units="m">4.0</from_wingMAC25>
+							<from_wingMAC25 units="m">4.1</from_wingMAC25>
 						</x>
 					</at25percent>
 				</MAC>

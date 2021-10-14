@@ -17,9 +17,9 @@ Test load_analysis module
 import numpy as np
 import pytest
 
-from ..aerostructural_loads import AerostructuralLoad
-from ..structural_loads import StructuralLoads
-from ..aerodynamic_loads import AerodynamicLoads
+from ..wing.aerostructural_loads import AerostructuralLoad
+from ..wing.structural_loads import StructuralLoads
+from ..wing.aerodynamic_loads import AerodynamicLoads
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 

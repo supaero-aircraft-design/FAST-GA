@@ -137,7 +137,7 @@ class ComputeZCG(om.ExplicitComponent):
             self.add_input(mass_name, val=np.nan, units="kg")
 
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
@@ -150,7 +150,7 @@ class ComputeZCG(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
         height_max = inputs["data:geometry:fuselage:maximum_height"][0]
-        prop_dia = inputs["data:geometry:propulsion:propeller:diameter"][0]
+        prop_dia = inputs["data:geometry:propeller:diameter"][0]
         lg_height = inputs["data:geometry:landing_gear:height"][0]
         ht_height = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"][0]
         vt_span = inputs["data:geometry:vertical_tail:span"][0]

@@ -1204,7 +1204,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         nan_array = np.full(ENGINE_COUNT, np.nan)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
-        self.add_input("data:geometry:propulsion:propeller:diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=nan_array)
@@ -1244,7 +1244,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         span_wing = inputs["data:geometry:wing:span"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         engine_rpm = inputs["data:propulsion:IC_engine:max_rpm"]
-        propeller_diameter = float(inputs["data:geometry:propulsion:propeller:diameter"])
+        propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         engine_config = inputs["data:geometry:propulsion:layout"]
         engine_count = int(float(inputs["data:geometry:propulsion:count"]))

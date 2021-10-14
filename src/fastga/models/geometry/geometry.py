@@ -25,6 +25,7 @@ from fastga.models.geometry.geom_components import (
     ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
     ComputeNacelleGeometry,
+    ComputeLGGeometry,
     ComputeVerticalTailGeometryFD,
     ComputeVerticalTailGeometryFL,
     ComputeWingGeometry,
@@ -74,6 +75,7 @@ class GeometryFixedFuselage(om.Group):
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
 
 
@@ -113,4 +115,5 @@ class GeometryFixedTailDistance(om.Group):
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])

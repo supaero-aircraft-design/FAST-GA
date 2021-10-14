@@ -90,7 +90,6 @@ data:geometry:propulsion:nacelle:width || width of the nacelle
 data:geometry:propulsion:nacelle:y || position of the nacelles along the wing
 data:geometry:propulsion:nacelle:x || position, with respect to the aircraft nose, of the furthest point of the nacelle from the nose
 
-data:geometry:propulsion:propeller:depth || depth of the propeller
 data:geometry:propulsion:propeller:diameter || diameter of the propeller
 data:geometry:propulsion:count || number of engine
 data:geometry:propulsion:layout || position of engines (1=under the wing / 2=rear fuselage / 3=nose)

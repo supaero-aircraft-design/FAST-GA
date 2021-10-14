@@ -126,6 +126,7 @@ class AerostructuralLoad(ComputeVN):
         )
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
@@ -428,6 +429,7 @@ class AerostructuralLoad(ComputeVN):
         engine_count = inputs["data:geometry:propulsion:count"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
+        y_lg = inputs["data:geometry:landing_gear:y"]
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
@@ -461,13 +463,6 @@ class AerostructuralLoad(ComputeVN):
                 )
 
         y_eng_array = semi_span * np.array(y_ratio)
-
-        # Computing and adding the lg weight
-        # Overturn angle set as a fixed value, it is recommended to take over 25° and check that we can fit both LG in
-        # the fuselage
-        phi_ot = 35.0 * np.pi / 180.0
-        y_lg_1 = math.tan(phi_ot) * z_cg
-        y_lg = max(y_lg_1, lg_height)
 
         y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
             y_vector, chord_vector, point_mass_array, y_lg, single_lg_mass, inputs
