@@ -47,10 +47,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:flap:span_ratio", val=np.nan)
         self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:aileron:span_ratio", val=np.nan)
-        self.add_input("data:geometry:fuselage:maximum_width", units="m")
         self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
@@ -77,20 +74,17 @@ class ComputeMFWAdvanced(ExplicitComponent):
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
-        flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
         aileron_chord_ratio = inputs["data:geometry:aileron:chord_ratio"]
-        fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
         engine_config = inputs["data:geometry:propulsion:layout"]
         le_chord_percentage = inputs["data:geometry:propulsion:LE_chord_percentage"]
         te_chord_percentage = inputs["data:geometry:propulsion:TE_chord_percentage"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
+        span = inputs["data:geometry:wing:span"]
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
         k = inputs["settings:geometry:fuel_tanks:depth"]
-
-        span = inputs["data:geometry:wing:span"]
 
         if fuel_type == 1.0:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
@@ -106,15 +100,14 @@ class ComputeMFWAdvanced(ExplicitComponent):
         y_tank_beginning = semi_span * y_ratio_tank_beginning
         y_tank_end = semi_span * y_ratio_tank_end
         length_tank = y_tank_end - y_tank_beginning
-        y_flap_end = fuselage_max_width / 2 + flap_span_ratio * semi_span
         y_array = np.linspace(y_tank_beginning, y_tank_end, POINTS_NB_WING)
 
         # Computation of the chord profile along the span, as chord = slope * y + chord_fuselage_center.
         # TODO : The chord variation starts at the break/fuselage not at the centerline
         slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
-        fuselage_center_virtual_chord = 0.5 * (
-            root_chord + tip_chord - slope_chord * (root_y + tip_y)
-        )
+        # fuselage_center_virtual_chord = 0.5 * (
+        #     root_chord + tip_chord - slope_chord * (root_y + tip_y)
+        # )
         chord_array = np.zeros_like(y_array)
         for y in y_array:
             idx = np.where(y_array == y)[0]
@@ -126,7 +119,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
 
         # Computation of the thickness ratio profile along the span, as tc = slope * y + tc_fuselage_center.
         slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
-        fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
+        # fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
         thickness_ratio_array = np.zeros_like(y_array)
         for y in y_array:
             idx = np.where(y_array == y)[0]
@@ -160,16 +153,6 @@ class ComputeMFWAdvanced(ExplicitComponent):
         # with another chord percentage offset. We assume that the tank has a rectangular shape if located near meaning
         # the width is dictated by the most constraining case
         # This distribution has to be identical to the one of compute_relief_forces in aerostructural_loads.
-        # width_array = np.zeros_like((len(y_array), 1))
-        # for i in range(len(width_array)):
-        #     if y_array[i] > y_flap_end:
-        #         width_array[i] = (
-        #             1 - le_chord_percentage - te_chord_percentage - aileron_chord_ratio
-        #         ) * chord_array[i]
-        #     else:
-        #         width_array[i] = (
-        #             1 - le_chord_percentage - te_chord_percentage - flap_chord_ratio
-        #         ) * chord_array[i]
         width_array = (
             1.0
             - le_chord_percentage

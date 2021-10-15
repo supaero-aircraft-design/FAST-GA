@@ -79,7 +79,7 @@ class GeometryFixedFuselage(om.Group):
             promotes=["*"],
         )
         self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
-        if self.options[MFW_COMPUTATION]:
+        if self.options[MFW_COMPUTATION] == 0.0:
             self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
         else:
             self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])
@@ -101,6 +101,7 @@ class GeometryFixedTailDistance(om.Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
+        self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -123,7 +124,7 @@ class GeometryFixedTailDistance(om.Group):
             promotes=["*"],
         )
         self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
-        if self.options[MFW_COMPUTATION]:
+        if self.options[MFW_COMPUTATION] == 0.0:
             self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
         else:
             self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])

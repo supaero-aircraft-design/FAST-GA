@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @RegisterOpenMDAOSystem("fastga.loop.wing_area", domain=ModelDomain.OTHER)
-class UpdateWingArea(om.Group):
+class UpdateWingAreaSimple(om.Group):
     """
     Computes needed wing area to:
       - have enough lift at required approach speed
@@ -35,11 +35,11 @@ class UpdateWingArea(om.Group):
     """
 
     def setup(self):
-        self.add_subsystem("wing_area", _UpdateWingArea(), promotes=["*"])
+        self.add_subsystem("wing_area", _UpdateWingAreaSimple(), promotes=["*"])
         self.add_subsystem("constraints", _ComputeWingAreaConstraints(), promotes=["*"])
 
 
-class _UpdateWingArea(om.ExplicitComponent):
+class _UpdateWingAreaSimple(om.ExplicitComponent):
     """ Computation of wing area from needed approach speed and mission fuel """
 
     def setup(self):
