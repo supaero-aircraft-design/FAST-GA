@@ -15,9 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
 import warnings
+import numpy as np
+
+from scipy.integrate import trapz
+
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
@@ -25,10 +28,9 @@ POINTS_NB_WING = 50
 
 
 class ComputeMFWAdvanced(ExplicitComponent):
-
     """
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering Students' p.65.
-    Discretizes the fuel tank in the wings along the span.
+    discretize the fuel tank in the wings along the span.
     Only works for linear chord and thickness profiles.
     The xml quantities "data:geometry:propulsion:LE_chord_percentage", "data:geometry:propulsion:TE_chord_percentage",
     "data:geometry:propulsion:y_ratio_tank_beginning" and "data:geometry:propulsion:y_ratio_tank_end" have to be
@@ -67,24 +69,9 @@ class ComputeMFWAdvanced(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
-        root_chord = inputs["data:geometry:wing:root:chord"]
-        tip_chord = inputs["data:geometry:wing:tip:chord"]
-        root_y = inputs["data:geometry:wing:root:y"]
-        tip_y = inputs["data:geometry:wing:tip:y"]
-        root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
-        tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
-        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
-        aileron_chord_ratio = inputs["data:geometry:aileron:chord_ratio"]
         y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
-        engine_config = inputs["data:geometry:propulsion:layout"]
-        le_chord_percentage = inputs["data:geometry:propulsion:LE_chord_percentage"]
-        te_chord_percentage = inputs["data:geometry:propulsion:TE_chord_percentage"]
-        nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         span = inputs["data:geometry:wing:span"]
-        lg_type = inputs["data:geometry:landing_gear:type"]
-        y_lg = inputs["data:geometry:landing_gear:y"]
-        k = inputs["settings:geometry:fuel_tanks:depth"]
 
         if fuel_type == 1.0:
             m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
@@ -99,89 +86,108 @@ class ComputeMFWAdvanced(ExplicitComponent):
         semi_span = span / 2
         y_tank_beginning = semi_span * y_ratio_tank_beginning
         y_tank_end = semi_span * y_ratio_tank_end
-        length_tank = y_tank_end - y_tank_beginning
         y_array = np.linspace(y_tank_beginning, y_tank_end, POINTS_NB_WING)
 
-        # Computation of the chord profile along the span, as chord = slope * y + chord_fuselage_center.
-        # TODO : The chord variation starts at the break/fuselage not at the centerline
-        slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
-        # fuselage_center_virtual_chord = 0.5 * (
-        #     root_chord + tip_chord - slope_chord * (root_y + tip_y)
-        # )
-        chord_array = np.zeros_like(y_array)
-        for y in y_array:
-            idx = np.where(y_array == y)[0]
-            if y < root_y:
-                chord_array[idx] = root_chord
-            else:
-                chord_array[idx] = slope_chord * y + root_chord
-        # chord_array = slope_chord * y_array + fuselage_center_virtual_chord
-
-        # Computation of the thickness ratio profile along the span, as tc = slope * y + tc_fuselage_center.
-        slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
-        # fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
-        thickness_ratio_array = np.zeros_like(y_array)
-        for y in y_array:
-            idx = np.where(y_array == y)[0]
-            if y < root_y:
-                thickness_ratio_array[idx] = root_tc
-            else:
-                thickness_ratio_array[idx] = slope_tc * y + root_tc
-        # thickness_ratio_array = slope_tc * y_array + fuselage_center_virtual_tc
-
-        # The k factor stating the depth of the fuel tanks is included here.
-        thickness_array = k * chord_array * thickness_ratio_array
-
-        # Distributed propulsion / single engine on the wing / nose or rear mounted engine
-        if engine_config != 1.0:
-            y_ratio = 0.0
-        else:
-            y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
-            used_index = np.where(y_ratio_data >= 0.0)[0]
-            y_ratio = y_ratio_data[used_index]
-
-        y_eng_array = semi_span * np.array(y_ratio)
-
-        in_eng_nacelle = np.full(len(y_array), False)
-        for y_eng in y_eng_array:
-            for i in np.where(abs(y_array - y_eng) <= nacelle_width / 2.0):
-                in_eng_nacelle[i] = True
-        where_engine = np.where(in_eng_nacelle)
-
-        # Computation of the fuel distribution along the span, taking in account the elements restricting it.
-        # The fuel tanks go from the leading edge with a chord percentage offset to the nearest control surface
-        # with another chord percentage offset. We assume that the tank has a rectangular shape if located near meaning
-        # the width is dictated by the most constraining case
-        # This distribution has to be identical to the one of compute_relief_forces in aerostructural_loads.
-        width_array = (
-            1.0
-            - le_chord_percentage
-            - te_chord_percentage
-            - max(flap_chord_ratio, aileron_chord_ratio)
-        ) * chord_array
-        if engine_config == 1.0:
-            for i in where_engine:
-                # For now 50% size reduction in the fuel tank capacity due to the engine
-                width_array[i] = width_array[i] * 0.5
-        if lg_type == 1.0:
-            for i in np.where(y_array < y_lg):
-                # For now 80% size reduction in the fuel tank capacity due to the landing gear
-                width_array[i] = width_array[i] * 0.2
-
-        area_array = thickness_array * width_array
-
         # Computation of the fuel volume available in one wing. The 0.85 coefficient represents the internal
-        # obstructions caused by the structural and system components within the tank, typical of integral tankage.
+        # obstructions caused by the structural and system components within the tank, typical of integral tanks.
 
-        tank_volume_one_wing = (
-            0.85
-            * length_tank
-            / (2 * (POINTS_NB_WING - 1))
-            * (area_array[0] + 2 * np.sum(area_array[1:-1]) + area_array[-1])
-        )
+        area_array = tank_volume_distribution(inputs, y_array)
+
+        tank_volume_one_wing = trapz(area_array, y_array.flatten())
 
         tank_volume = tank_volume_one_wing * 2
 
         maximum_fuel_weight = tank_volume * m_vol_fuel
 
         outputs["data:weight:aircraft:MFW"] = maximum_fuel_weight
+
+
+def tank_volume_distribution(inputs, y_array_orig):
+
+    root_chord = inputs["data:geometry:wing:root:chord"]
+    tip_chord = inputs["data:geometry:wing:tip:chord"]
+    root_y = inputs["data:geometry:wing:root:y"]
+    tip_y = inputs["data:geometry:wing:tip:y"]
+    root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
+    tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
+    flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
+    aileron_chord_ratio = inputs["data:geometry:aileron:chord_ratio"]
+    y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
+    y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
+    engine_config = inputs["data:geometry:propulsion:layout"]
+    le_chord_percentage = inputs["data:geometry:propulsion:LE_chord_percentage"]
+    te_chord_percentage = inputs["data:geometry:propulsion:TE_chord_percentage"]
+    nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
+    span = inputs["data:geometry:wing:span"]
+    lg_type = inputs["data:geometry:landing_gear:type"]
+    y_lg = inputs["data:geometry:landing_gear:y"]
+    k = inputs["settings:geometry:fuel_tanks:depth"]
+
+    # Create the array which will contain the tank cross section area at each section
+
+    y_array = y_array_orig.flatten()
+    tank_cross_section = np.zeros_like(y_array)
+
+    semi_span = span / 2
+    y_tank_beginning = semi_span * y_ratio_tank_beginning
+    y_tank_end = semi_span * y_ratio_tank_end
+
+    y_in_tank_index = np.where((y_array >= y_tank_beginning) & (y_array <= y_tank_end))[0]
+    y_in_tank_array = y_array[y_in_tank_index]
+
+    slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
+
+    chord_array = np.zeros_like(y_array)
+    for y in y_in_tank_array:
+        idx = np.where(y_array == y)[0]
+        if y < root_y:
+            chord_array[idx] = root_chord
+        else:
+            chord_array[idx] = slope_chord * y + root_chord
+
+    # Computation of the thickness ratio profile along the span, as tc = slope * y + tc_fuselage_center.
+    slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
+    # fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
+    thickness_ratio_array = np.zeros_like(y_array)
+    for y in y_in_tank_array:
+        idx = np.where(y_array == y)[0]
+        if y < root_y:
+            thickness_ratio_array[idx] = root_tc
+        else:
+            thickness_ratio_array[idx] = slope_tc * y + root_tc
+    # thickness_ratio_array = slope_tc * y_array + fuselage_center_virtual_tc
+
+    # The k factor stating the depth of the fuel tanks is included here.
+    thickness_array = k * chord_array * thickness_ratio_array
+
+    # Distributed propulsion / single engine on the wing / nose or rear mounted engine
+    if engine_config != 1.0:
+        y_ratio = 0.0
+    else:
+        y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
+        used_index = np.where(y_ratio_data >= 0.0)[0]
+        y_ratio = y_ratio_data[used_index]
+
+    y_eng_array = semi_span * np.array(y_ratio)
+
+    in_eng_nacelle = np.full(len(y_in_tank_array), False)
+    for y_eng in y_eng_array:
+        for i in np.where(abs(y_in_tank_array - y_eng) <= nacelle_width / 2.0):
+            in_eng_nacelle[i] = True
+    where_engine = np.where(in_eng_nacelle)
+
+    width_array = (
+        1.0 - le_chord_percentage - te_chord_percentage - max(flap_chord_ratio, aileron_chord_ratio)
+    ) * chord_array
+    if engine_config == 1.0:
+        for i in where_engine:
+            # For now 50% size reduction in the fuel tank capacity due to the engine
+            width_array[i] *= 0.5
+    if lg_type == 1.0:
+        for i in np.where(y_array < y_lg):
+            # For now 80% size reduction in the fuel tank capacity due to the landing gear
+            width_array[i] *= 0.2
+
+    tank_cross_section = thickness_array * width_array * 0.85
+
+    return tank_cross_section

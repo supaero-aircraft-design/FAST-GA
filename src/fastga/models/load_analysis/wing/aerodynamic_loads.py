@@ -82,6 +82,10 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
@@ -92,6 +96,8 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
@@ -99,12 +105,18 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
+
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
         self.add_output(
             "data:loads:aerodynamic:ultimate:force_distribution",

@@ -54,3 +54,5 @@ model:
             id: fastga.loop.wing_position
         wing_area:
             id: fastga.loop.wing_area_advanced
+    loads:
+        id: fastga.loads.wing

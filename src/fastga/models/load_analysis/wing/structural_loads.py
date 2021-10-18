@@ -57,13 +57,25 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
+
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
         self.add_output(
             "data:loads:structure:ultimate:force_distribution:wing",
