@@ -746,18 +746,18 @@
             <x units="m" is_input="False">3.4729200000000002<!--passengers: X-position of center of gravity--></x>
           </CG>
         </PAX>
-        <front_fret>
-          <mass units="kg" is_input="True">0.0<!--mass of the design mission front fret payload--></mass>
+        <front_freight>
+          <mass units="kg" is_input="True">0.0<!--mass of the design mission front freight payload--></mass>
           <CG>
-            <x units="m" is_input="False">0.0<!--front fret: X-position of center of gravity--></x>
+            <x units="m" is_input="False">0.0<!--front freight: X-position of center of gravity--></x>
           </CG>
-        </front_fret>
-        <rear_fret>
-          <mass units="kg" is_input="True">70.0<!--mass of the design mission rear fret payload--></mass>
+        </front_freight>
+        <rear_freight>
+          <mass units="kg" is_input="True">70.0<!--mass of the design mission rear freight payload--></mass>
           <CG>
-            <x units="m" is_input="False">4.421297326839959<!--rear fret: X-position of center of gravity--></x>
+            <x units="m" is_input="False">4.421297326839959<!--rear freight: X-position of center of gravity--></x>
           </CG>
-        </rear_fret>
+        </rear_freight>
       </payload>
     </weight>
   </data>
