@@ -199,6 +199,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         dict_to_be_saved = {}
         for root, dirs, files in os.walk(subpackage_path, topdown=False):
             for name in files:
+                if name == "update_wing_area_advanced.py":
+                    test = 1
                 if name[-3:] == ".py":
                     spec = importlib.util.spec_from_file_location(
                         name.replace(".py", ""), pth.join(root, name)
@@ -220,7 +222,17 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         if "RegisterOpenMDAOSystem" in dir(module):
                             tmp_folder = file_temporary_transfer(pth.join(root, name))
                         spec.loader.exec_module(module)
-                        class_list = [x for x in dir(module) if inspect.isclass(getattr(module, x))]
+                        total_class_list = [
+                            x for x in dir(module) if inspect.isclass(getattr(module, x))
+                        ]
+                        class_list = []
+                        for class_name in total_class_list:
+                            address = getattr(module, class_name).__module__
+                            if len(address.split(".")) <= 2:
+                                class_list.append(class_name)
+                            else:
+                                if pth.split(subpackage_path)[-1] == address.split(".")[2]:
+                                    class_list.append(class_name)
                         # noinspection PyUnboundLocalVariable
                         retrieve_original_file(tmp_folder, pth.join(root, name))
                         if system() != "Windows":

@@ -273,6 +273,6 @@ def test_complete_cg():
     cg_ratio = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
     assert cg_ratio == pytest.approx(0.286, abs=1e-3)
     z_cg_empty_ac = problem.get_val("data:weight:aircraft_empty:CG:z", units="m")
-    assert z_cg_empty_ac == pytest.approx(1.050, abs=1e-3)
+    assert z_cg_empty_ac == pytest.approx(1.21, abs=1e-3)
     z_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:z", units="m")
-    assert z_cg_b1 == pytest.approx(0.73, abs=1e-2)
+    assert z_cg_b1 == pytest.approx(1.195, abs=1e-2)

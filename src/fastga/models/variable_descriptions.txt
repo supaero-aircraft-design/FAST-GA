@@ -74,3 +74,11 @@ settings:weight:aircraft:CG:range || distance between front position and aft pos
 settings:weight:aircraft:payload:design_mass_per_passenger || design payload mass carried by passenger
 settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
 settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
+
+data:geometry:aileron:chord_ratio || aileron chord as a percentage of the wing chord
+data:geometry:propulsion:LE_chord_percentage || distance between the leading edge and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:TE_chord_percentage || distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:y_ratio_tank_beginning || start of the tank as a percentage of the wing span
+data:geometry:propulsion:y_ratio_tank_end || end of the tank as a percentage of the wing span
+
+settings:geometry:fuel_tanks:depth || ratio of the tank depth as a percentage of the wing depth

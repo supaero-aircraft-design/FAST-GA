@@ -80,14 +80,14 @@ def _test_oad_process_vlm(cleanup):
 
         if aircraft_id == "sr22":
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 258.0, atol=1)
+            assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 259.0, atol=1)
             assert_allclose(
                 problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2
             )
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1620, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1002.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1000.0, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 238.0, atol=1)
@@ -96,10 +96,10 @@ def _test_oad_process_vlm(cleanup):
             )
             # noinspection PyTypeChecker
             assert_allclose(
-                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1738.0, atol=1
+                problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1740.0, atol=1
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1110.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1112.0, atol=1)
 
 
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
@@ -142,9 +142,9 @@ def test_oad_process_openvsp(cleanup):
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 244.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1599.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1595.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 995.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 990.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):

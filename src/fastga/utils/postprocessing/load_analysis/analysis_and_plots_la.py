@@ -19,8 +19,8 @@ import plotly
 import plotly.graph_objects as go
 
 from scipy.integrate import trapz
-from fastga.models.load_analysis.aerostructural_loads import AerostructuralLoad
-from fastga.models.load_analysis.aerostructural_loads import (
+from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
+from fastga.models.load_analysis.wing.aerostructural_loads import (
     POINT_MASS_SPAN_RATIO,
     NB_POINTS_POINT_MASS,
 )

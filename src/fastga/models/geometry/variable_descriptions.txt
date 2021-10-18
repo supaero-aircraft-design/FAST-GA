@@ -3,8 +3,6 @@
 # my:variable||The description of my:variable, as long as needed, but on one line.
 # The separator "||" can be surrounded with spaces (that will be ignored)
 
-data:weight:aircraft:MFW || maximum fuel weight
-
 data:geometry:aircraft:wet_area || aircraft total wet area
 data:geometry:aircraft:length || total length of the aircraft
 
@@ -66,7 +64,6 @@ data:geometry:wing:MAC:leading_edge:x:local || X-position of leading edge of mea
 data:geometry:wing:MAC:length || length of mean aerodynamic chord of wing
 data:geometry:wing:MAC:y || Y-position of mean aerodynamic chord of wing
 data:geometry:wing:outer_area || wing area outside of fuselage
-data:geometry:wing:root:chord || chord length at wing root
 data:geometry:wing:root:thickness_ratio || thickness ratio at wing root
 data:geometry:wing:root:virtual_chord || virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)
 data:geometry:wing:root:y || Y-position of wing root
@@ -101,3 +98,9 @@ data:geometry:flap:chord_ratio || flap chord as a percentage of the wing chord
 data:geometry:flap:span_ratio || flap span as a percentage of the wing span
 data:geometry:flap_type || flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)
 data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
+
+data:geometry:landing_gear:y || landing gear position along the wing
+
+data:geometry:wing:root:chord || chord length at wing root
+
+data:weight:aircraft:MFW || maximum fuel weight
