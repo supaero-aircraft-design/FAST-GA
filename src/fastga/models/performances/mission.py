@@ -857,4 +857,3 @@ class _compute_descent(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:distance"] = distance_t
         outputs["data:mission:sizing:main_route:descent:duration"] = time_t
-
