@@ -105,7 +105,7 @@ def test_update_wing_area_advanced():
     ivc.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
 
     problem = run_system(UpdateWingAreaAdvanced(), ivc)
-    assert_allclose(problem["data:geometry:wing:area"], 21.77, atol=1e-2)
+    assert_allclose(problem["data:geometry:wing:area"], 21.72, atol=1e-2)
     assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.721, atol=1e-2)
     assert_allclose(
         problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 0.0, atol=1
