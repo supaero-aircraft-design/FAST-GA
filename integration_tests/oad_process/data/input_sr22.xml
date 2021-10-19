@@ -199,6 +199,9 @@
 	<settings>
 		<weight>
 			<aircraft>
+				<payload>
+					<design_mass_per_passenger units="kg">80.0</design_mass_per_passenger>
+				</payload>
 				<CG>
 					<range>0.217</range>
 				</CG>

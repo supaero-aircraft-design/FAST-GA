@@ -17,23 +17,18 @@
 
 import numpy as np
 import openmdao.api as om
-from fastoad.module_management._bundle_loader import BundleLoader
 from fastga.command import api as api_cs23
-import os.path as pth
-import os
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
 import logging
 from scipy.optimize import fsolve
 
 from fastga.models.performances.mission import Mission
-from fastoad.io import VariableIO
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
-current_path: str = r"/src/fastga/models/performances/payload_range"
-XML_FILE = pth.join(current_path, "blank.xml")
 
 _LOGGER = logging.getLogger(__name__)
 
 
+@RegisterOpenMDAOSystem("fastga.performances.payload_range", domain=ModelDomain.PERFORMANCE)
 class ComputePayloadRange(om.ExplicitComponent):
     """
         Payload Range. The minimal payload which defines point E is taken as two pilots. This class uses a blank xml file

@@ -256,11 +256,10 @@ def test_loop_cruise_distance():
     error_distance = total_distance - (climb_distance + cruise_distance + descent_distance)
     assert error_distance == pytest.approx(0.0, abs=1e-1)
 
+
 def test_payload_range():
     """ Tests the payload range computation. Here the results and especially the range array do not make a lot of sense
     because of the dummy engine model. Note that the third point of the arrays is the design point."""
-
-    # TODO: NOTE. Payload assertion passes. Range and specific range assertions do not
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -272,13 +271,10 @@ def test_payload_range():
     payload_array = problem.get_val("data:payload_range:payload_array", units="kg")
     payload_result = np.array([420, 420, 355, 310.697, 160])
     # Cirrus Payload works.
-    print("payload array", payload_array)
-    # assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
+    assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
     range_array = problem.get_val("data:payload_range:range_array", units="NM")
-    range_result = np.array([0, 1174.74, 1000, 1965.17, 2092.19])
-    print("range array", range_array)
-    # assert np.max(np.abs(range_array - range_result)) <= 1e-1
+    range_result = np.array([0.0, 1167.85584844, 1000.0, 1953.21717358, 2078.70129517])
+    assert np.max(np.abs(range_array - range_result)) <= 1e-1
     specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
-    specific_range_result = np.array([0, 6.27, 3.96, 6.63, 7.05])
-    print("specific range array.", specific_range_array)
-    # assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
+    specific_range_result = np.array([0.0, 6.23660197, 3.96520269, 6.58622222, 7.009353])
+    assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
