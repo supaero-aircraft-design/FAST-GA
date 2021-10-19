@@ -175,7 +175,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         var_value[index_mtow[0]] = mass
 
         compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id=prop_id), var_names.tolist(), XML_FILE, True,
+            Mission(propulsion_id=prop_id), var_names.tolist(), "", True,
         )
 
         inputs_dict = {}
@@ -184,8 +184,6 @@ class ComputePayloadRange(om.ExplicitComponent):
             inputs_dict.update({var_names[i]: (var_value[i], var_units[i])})
 
         output = compute_fuel(inputs_dict)
-
-        variables = VariableIO(XML_FILE).read()
-        fuel = variables["data:mission:sizing:fuel"].value
+        fuel = output.get("data:mission:sizing:fuel")[0]
 
         return fuel - fuel_target
