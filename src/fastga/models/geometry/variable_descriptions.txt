@@ -67,6 +67,7 @@ data:geometry:wing:outer_area || wing area outside of fuselage
 data:geometry:wing:root:thickness_ratio || thickness ratio at wing root
 data:geometry:wing:root:virtual_chord || virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)
 data:geometry:wing:root:y || Y-position of wing root
+data:geometry:wing:root:chord || chord length at wing root
 data:geometry:wing:span || wing span
 data:geometry:wing:sweep_0 || sweep angle at leading edge of wing
 data:geometry:wing:sweep_100_inner || sweep angle at trailing edge of wing (inner side of the kink)
@@ -79,6 +80,7 @@ data:geometry:wing:wet_area || wet area of wing
 
 data:geometry:landing_gear:height || height of the landing gear
 data:geometry:landing_gear:type || 0=non-retractable / 1=retractable
+data:geometry:landing_gear:y || landing gear position along the wing
 
 data:geometry:propulsion:nacelle:height || height of the nacelle
 data:geometry:propulsion:nacelle:length || length of the nacelle
@@ -98,9 +100,5 @@ data:geometry:flap:chord_ratio || flap chord as a percentage of the wing chord
 data:geometry:flap:span_ratio || flap span as a percentage of the wing span
 data:geometry:flap_type || flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)
 data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
-
-data:geometry:landing_gear:y || landing gear position along the wing
-
-data:geometry:wing:root:chord || chord length at wing root
 
 data:weight:aircraft:MFW || maximum fuel weight

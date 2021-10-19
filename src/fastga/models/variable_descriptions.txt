@@ -11,6 +11,10 @@ data:geometry:propeller:depth || depth of the propeller
 data:geometry:propeller:radius_ratio_vect || blade station at which blade geometric properties are sampled, as a percent of blade radius
 data:geometry:propeller:sweep_vect || blade sweep at the station along the radius stored in radius_ratio_vect
 data:geometry:propeller:twist_vect || blade twist at the station along the radius stored in radius_ratio_vect
+data:geometry:propulsion:LE_chord_percentage || distance between the leading edge and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:TE_chord_percentage || distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:y_ratio_tank_beginning || start of the tank as a percentage of the wing span
+data:geometry:propulsion:y_ratio_tank_end || end of the tank as a percentage of the wing span
 data:geometry:vertical_tail:rudder:chord_ratio || flap rudder as a percentage of the wing chord
 data:geometry:vertical_tail:rudder:max_deflection || rudder maximum deflection
 data:geometry:vertical_tail:aspect_ratio || vertical tail aspect ratio
@@ -23,6 +27,7 @@ data:geometry:wing:kink:span_ratio || ratio (Y-position of kink)/(semi-span)
 data:geometry:wing:sweep_25 || sweep angle at 25% chord of wing
 data:geometry:wing:taper_ratio || taper ratio of wing
 data:geometry:wing:thickness_ratio || mean thickness ratio of wing
+data:geometry:aileron:chord_ratio || aileron chord as a percentage of the wing chord
 
 data:mission:sizing:cs23:sizing_factor_ultimate || ultimate load factor that the aircraft will experience (default value is 5.7)
 data:mission:sizing:takeoff:elevator_angle || position of the elevator during takeoff
@@ -74,11 +79,5 @@ settings:weight:aircraft:CG:range || distance between front position and aft pos
 settings:weight:aircraft:payload:design_mass_per_passenger || design payload mass carried by passenger
 settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
 settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
-
-data:geometry:aileron:chord_ratio || aileron chord as a percentage of the wing chord
-data:geometry:propulsion:LE_chord_percentage || distance between the leading edge and the start of the wing tank as a percentage of the wing chord
-data:geometry:propulsion:TE_chord_percentage || distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord
-data:geometry:propulsion:y_ratio_tank_beginning || start of the tank as a percentage of the wing span
-data:geometry:propulsion:y_ratio_tank_end || end of the tank as a percentage of the wing span
 
 settings:geometry:fuel_tanks:depth || ratio of the tank depth as a percentage of the wing depth

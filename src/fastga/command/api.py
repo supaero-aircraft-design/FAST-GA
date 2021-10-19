@@ -199,8 +199,6 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
         dict_to_be_saved = {}
         for root, dirs, files in os.walk(subpackage_path, topdown=False):
             for name in files:
-                if name == "update_wing_area_advanced.py":
-                    test = 1
                 if name[-3:] == ".py":
                     spec = importlib.util.spec_from_file_location(
                         name.replace(".py", ""), pth.join(root, name)
