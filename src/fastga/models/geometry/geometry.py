@@ -25,16 +25,19 @@ from fastga.models.geometry.geom_components import (
     ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
     ComputeNacelleGeometry,
+    ComputeLGGeometry,
     ComputeVerticalTailGeometryFD,
     ComputeVerticalTailGeometryFL,
     ComputeWingGeometry,
+    ComputeMFWSimple,
+    ComputeMFWAdvanced,
 )
 from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )
 
-from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION
+from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION, MFW_COMPUTATION
 
 
 @RegisterOpenMDAOSystem("fastga.geometry.alternate", domain=ModelDomain.GEOMETRY)
@@ -53,6 +56,7 @@ class GeometryFixedFuselage(om.Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
+        self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -74,6 +78,11 @@ class GeometryFixedFuselage(om.Group):
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
+        if self.options[MFW_COMPUTATION] == 0.0:
+            self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
+        else:
+            self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
 
 
@@ -92,6 +101,7 @@ class GeometryFixedTailDistance(om.Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
+        self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -113,4 +123,9 @@ class GeometryFixedTailDistance(om.Group):
             ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
+        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
+        if self.options[MFW_COMPUTATION] == 0.0:
+            self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
+        else:
+            self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])
         self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])

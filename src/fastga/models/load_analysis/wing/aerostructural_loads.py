@@ -15,7 +15,6 @@ Computes the aerostructural loads on the wing of the aircraft
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 import numpy as np
 from scipy.integrate import trapz
 from scipy.interpolate import interp1d
@@ -24,6 +23,9 @@ from fastoad.model_base.atmosphere import Atmosphere
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
 from fastga.models.aerodynamics.components import ComputeVN
+from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
+    tank_volume_distribution,
+)
 
 NB_POINTS_POINT_MASS = 5
 # MUST BE AN EVEN NUMBER
@@ -109,13 +111,16 @@ class AerostructuralLoad(ComputeVN):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:wing:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:fwd:x", val=np.nan, units="m")
 
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
@@ -124,17 +129,25 @@ class AerostructuralLoad(ComputeVN):
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
+        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:count", val=np.nan)
         self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
+
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
         self.add_output("data:loads:max_shear:mass", units="kg")
         self.add_output("data:loads:max_shear:load_factor")
@@ -420,14 +433,12 @@ class AerostructuralLoad(ComputeVN):
             tot_engine_mass = 0.0
             tot_lg_mass = 0.0
 
-        z_cg = inputs["data:weight:aircraft_empty:CG:z"]
-
-        lg_height = inputs["data:geometry:landing_gear:height"]
         lg_type = inputs["data:geometry:landing_gear:type"]
         engine_config = inputs["data:geometry:propulsion:layout"]
         engine_count = inputs["data:geometry:propulsion:count"]
         nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
+        y_lg = inputs["data:geometry:landing_gear:y"]
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
@@ -436,6 +447,11 @@ class AerostructuralLoad(ComputeVN):
             y_ratio = y_ratio_data[used_index]
 
         g = 9.81
+
+        y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
+        y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
+        y_tank_end = semi_span * y_ratio_tank_end
+        y_tank_beginning = semi_span * y_ratio_tank_beginning
 
         # STEP 2/XX - REARRANGE THE DATA TO FIT ON ONE WING AS WE ASSUME SYMMETRICAL LOADING ###########################
         ################################################################################################################
@@ -452,7 +468,6 @@ class AerostructuralLoad(ComputeVN):
         point_mass_array = np.zeros(len(y_vector))
 
         # Adding the motor weight
-        # TODO : MODIFY THIS PART TO ACCOUNT FOR MULTIPLE MOTORS, SEE THE X-57 VERSION OF THIS FILE FOR AN EXAMPLE
         if engine_config == 1.0:
             for y_ratio_mot in y_ratio:
                 y_eng = y_ratio_mot * semi_span
@@ -462,13 +477,7 @@ class AerostructuralLoad(ComputeVN):
 
         y_eng_array = semi_span * np.array(y_ratio)
 
-        # Computing and adding the lg weight
-        # Overturn angle set as a fixed value, it is recommended to take over 25° and check that we can fit both LG in
-        # the fuselage
-        phi_ot = 35.0 * np.pi / 180.0
-        y_lg_1 = math.tan(phi_ot) * z_cg
-        y_lg = max(y_lg_1, lg_height)
-
+        # Adding the LG weight
         y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
             y_vector, chord_vector, point_mass_array, y_lg, single_lg_mass, inputs
         )
@@ -488,26 +497,7 @@ class AerostructuralLoad(ComputeVN):
 
         readjust_struct = trapz(struct_weight_distribution, y_vector)
 
-        in_eng_nacelle = np.full(len(y_vector), False)
-        for y_eng in y_eng_array:
-            for i in np.where(abs(y_vector - y_eng) <= nacelle_width / 2.0):
-                in_eng_nacelle[i] = True
-        where_engine = np.where(in_eng_nacelle)
-
-        if distribution_type == 1.0:
-            y_ratio = y_vector / semi_span
-            fuel_weight_distribution = 4.0 / np.pi * np.sqrt(1.0 - y_ratio ** 2.0)
-        else:
-            fuel_weight_distribution = chord_vector / max(chord_vector)
-            if lg_type == 1.0:
-                for i in np.where(y_vector < y_lg):
-                    # For now 80% size reduction in the fuel tank capacity due to the landing gear
-                    fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.2
-            if engine_config == 1.0:
-                y_eng = y_ratio * semi_span
-                for i in where_engine:
-                    # For now 50% size reduction in the fuel tank capacity due to the engine
-                    fuel_weight_distribution[i] = fuel_weight_distribution[i] * 0.5
+        fuel_weight_distribution = tank_volume_distribution(inputs, y_vector)
 
         readjust_fuel = trapz(fuel_weight_distribution, y_vector)
 

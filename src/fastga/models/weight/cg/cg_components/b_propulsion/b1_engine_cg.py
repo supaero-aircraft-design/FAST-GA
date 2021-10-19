@@ -42,7 +42,7 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m"
         )
-        self.add_input("data:geometry:propulsion:propeller:depth", val=np.nan, units="m")
+        self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
 
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
 
@@ -55,7 +55,7 @@ class ComputeEngineCG(ExplicitComponent):
                 "data:geometry:wing:tip:chord",
                 "data:geometry:propulsion:nacelle:length",
                 "data:geometry:propulsion:nacelle:y",
-                "data:geometry:propulsion:propeller:depth",
+                "data:geometry:propeller:depth",
             ],
             method="fd",
         )
@@ -71,7 +71,7 @@ class ComputeEngineCG(ExplicitComponent):
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
         x_nacelle_array = inputs["data:geometry:propulsion:nacelle:x"]
-        prop_depth = inputs["data:geometry:propulsion:propeller:depth"]
+        prop_depth = inputs["data:geometry:propeller:depth"]
 
         x_cg_in_nacelle = 0.6 * nacelle_length
         # From the beginning of the nacelle wrt to the nose, the CG is at x_cg_in_nacelle

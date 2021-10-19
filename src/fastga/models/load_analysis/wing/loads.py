@@ -13,16 +13,16 @@
 
 import openmdao.api as om
 
-from fastga.models.load_analysis.aerostructural_loads import AerostructuralLoad
-from fastga.models.load_analysis.structural_loads import StructuralLoads
-from fastga.models.load_analysis.aerodynamic_loads import AerodynamicLoads
+from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
+from fastga.models.load_analysis.wing.structural_loads import StructuralLoads
+from fastga.models.load_analysis.wing.aerodynamic_loads import AerodynamicLoads
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
 
-@RegisterOpenMDAOSystem("fastga.loads.legacy", domain=ModelDomain.OTHER)
-class Loads(om.Group):
+@RegisterOpenMDAOSystem("fastga.loads.wing", domain=ModelDomain.OTHER)
+class WingLoads(om.Group):
     def setup(self):
         self.add_subsystem(
             "aerostructural_loads", AerostructuralLoad(), promotes=["*"],

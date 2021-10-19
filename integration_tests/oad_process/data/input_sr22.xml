@@ -29,18 +29,22 @@
 				<chord_ratio>0.25</chord_ratio>
 				<span_ratio>0.53</span_ratio>
 			</flap>
+			<aileron>
+        		<chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        		<span_ratio is_input="True">0.17<!--ratio (width of flaps)/(total span)--></span_ratio>
+      		</aileron>
 			<flap_type>1.0</flap_type>
 			<cabin>
 				<aisle_width units="m">0.0</aisle_width>
 				<seats>
 					<pilot>
-						<length units="m">0.95</length>
+						<length units="m">1.05</length>
 						<width units="m">0.565</width>
 					</pilot>
 					<passenger>
 						<NPAX_max>2.0</NPAX_max>
 						<count_by_row>3.0</count_by_row>
-						<length units="m">1.0</length>
+						<length units="m">1.10</length>
 						<width units="m">0.40</width>
 					</passenger>
 				</seats>
@@ -53,7 +57,7 @@
 				<MAC>
 					<at25percent>
 						<x>
-							<from_wingMAC25 units="m">4.0</from_wingMAC25>
+							<from_wingMAC25 units="m">4.1</from_wingMAC25>
 						</x>
 					</at25percent>
 				</MAC>
@@ -81,6 +85,10 @@
 				<layout>3.0</layout>
 				<count>1.0</count>
 				<y_ratio>[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
+				<y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+        		<y_ratio_tank_end>0.90<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+        		<LE_chord_percentage>0.08</LE_chord_percentage>
+        		<TE_chord_percentage>0.08</TE_chord_percentage>
 			</propulsion>
 			<vertical_tail>
 				<MAC>
@@ -197,6 +205,11 @@
 		</weight>
 	</data>
 	<settings>
+		<geometry>
+			<fuel_tanks>
+            	<depth>0.6<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+        	</fuel_tanks>
+		</geometry>
 		<weight>
 			<aircraft>
 				<CG>

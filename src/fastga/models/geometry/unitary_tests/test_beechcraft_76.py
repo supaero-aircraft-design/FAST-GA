@@ -25,7 +25,6 @@ from ..geom_components.fuselage.components import (
 )
 from ..geom_components.fuselage.components.compute_fuselage_wet_area import ComputeFuselageWetArea
 from ..geom_components.wing.components import (
-    ComputeMFW,
     ComputeWingB50,
     ComputeWingL1AndL4,
     ComputeWingL2AndL3,
@@ -50,6 +49,8 @@ from ..geom_components.vt.components import (
     ComputeVTWetArea,
 )
 from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
+from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
+from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
@@ -433,16 +434,28 @@ def test_geometry_wing_wet_area():
     assert wet_area == pytest.approx(32.411, abs=1e-3)
 
 
-def test_geometry_wing_mfw():
+def test_geometry_wing_mfw_simple():
     """ Tests computation of the wing max fuel weight """
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeMFW()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeMFWSimple()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMFW(), ivc)
+    problem = run_system(ComputeMFWSimple(), ivc)
     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
     assert mfw == pytest.approx(583.897, abs=1e-2)
+
+
+def test_geometry_wing_mfw_advanced():
+    """ Tests computation of the wing max fuel weight """
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeMFWAdvanced()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMFWAdvanced(), ivc)
+    mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
+    assert mfw == pytest.approx(304.73, abs=1e-2)
 
 
 def test_geometry_nacelle():
@@ -463,14 +476,26 @@ def test_geometry_nacelle():
     assert nacelle_width == pytest.approx(0.929, abs=1e-3)
     nacelle_wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units="m**2")
     assert nacelle_wet_area == pytest.approx(3.841, abs=1e-3)
-    lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
-    assert lg_height == pytest.approx(0.791, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
     y_nacelle_result = [1.972, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     assert np.max(abs(y_nacelle - y_nacelle_result)) < 1e-3
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
     x_nacelle_result = [3.092, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     assert np.max(abs(x_nacelle - x_nacelle_result)) < 1e-3
+
+
+def test_landing_gear_geometry():
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeLGGeometry()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeLGGeometry(), ivc)
+
+    lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
+    assert lg_height == pytest.approx(0.791, abs=1e-3)
+    lg_position = problem.get_val("data:geometry:landing_gear:y", units="m")
+    assert lg_position == pytest.approx(1.548, abs=1e-3)
 
 
 def test_geometry_total_area():

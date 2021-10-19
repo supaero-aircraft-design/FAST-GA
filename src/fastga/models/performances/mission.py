@@ -750,7 +750,7 @@ class _compute_descent(DynamicEquilibrium):
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
         v_tas = atm.true_airspeed
-        gamma = math.asin(descent_rate / v_cas)
+        gamma = math.asin(descent_rate / v_tas)
 
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = abs((altitude_t / descent_rate)) / float(POINTS_NB_DESCENT)
@@ -762,6 +762,7 @@ class _compute_descent(DynamicEquilibrium):
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
             mach = v_tas / atm.speed_of_sound
+            gamma = math.asin(descent_rate / v_tas)
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas

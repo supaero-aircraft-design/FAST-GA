@@ -20,7 +20,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 import warnings
 
 
-class ComputeMFW(ExplicitComponent):
+class ComputeMFWSimple(ExplicitComponent):
 
     """ Max fuel weight estimation based o RAYMER table 10.5 p269"""
 

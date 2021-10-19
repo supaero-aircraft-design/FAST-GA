@@ -153,7 +153,7 @@ def aircraft_geometry_plot(
     prop_layout = variables["data:geometry:propulsion:layout"].value[0]
     nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
     nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
-    prop_diam = variables["data:geometry:propulsion:propeller:diameter"].value[0]
+    prop_diam = variables["data:geometry:propeller:diameter"].value[0]
     pos_y_nacelle = np.array(variables["data:geometry:propulsion:nacelle:y"].value)
     pos_x_nacelle = np.array(variables["data:geometry:propulsion:nacelle:x"].value)
 
