@@ -1147,3 +1147,78 @@ def drag_breakdown_diagram(
     fig = go.FigureWidget(fig)
 
     return fig
+
+
+def payload_range(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the payload range diagram of the plane.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
+    :return: payload range figure
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    payload_array = list(variables["data:payload_range:payload_array"].value)
+    range_array = list(variables["data:payload_range:range_array"].value)
+    sr_array = list(variables["data:payload_range:specific_range_array"].value)
+
+    text_plot = [
+        "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
+        "<br>" + "<b>B<b>" + "<br>" + "SR = " + str(round(sr_array[1], 1)) + " nm/kg",
+        "<b>C<b>" + "<br>" + "SR = " + str(round(sr_array[2], 1)) + " nm/kg" + "<br>",
+        "  <b>D<b>" + "<br>" + "  SR = " + str(round(sr_array[3], 1)) + " nm/kg",
+        "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[4], 1)) + " nm/kg",
+    ]
+    ax = [0, 0, 50, 50, 75]
+    ay = [0, 0, 0, 0, 0]
+
+    # Plotting of the diagram
+    if fig is None:
+        fig = go.Figure()
+    scatter = go.Scatter(
+        x=range_array[0:2] + range_array[3:],
+        y=payload_array[0:2] + payload_array[3:],
+        mode="lines+markers",
+        name=name + " Computed Points",
+    )
+    fig.add_trace(scatter)
+    scatter = go.Scatter(
+        x=[range_array[2]], y=[payload_array[2]], mode="lines+markers", name=name + " Design Point",
+    )
+    fig.add_trace(scatter)
+
+    for i in range(len(text_plot)):
+        fig.add_annotation(
+            x=range_array[i],
+            y=payload_array[i],
+            text=text_plot[i],
+            font=dict(size=14,),
+            align="center",
+            bordercolor="Black",
+            borderpad=4,
+            ax=ax[i],
+        )
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(
+        title_text="Payload Range Diagram",
+        title_x=0.5,
+        xaxis_title="Range [nm]",
+        yaxis_title="Payload [kg]",
+        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+    )
+
+    fig.update_xaxes(
+        range=[-100, range_array[-1] * 1.15], title_font=dict(size=18), tickfont=dict(size=14)
+    )
+    fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=14))
+
+    return fig

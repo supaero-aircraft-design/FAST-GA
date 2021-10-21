@@ -269,12 +269,12 @@ def test_payload_range():
     # noinspection PyTypeChecker
     problem = run_system(ComputePayloadRange(propulsion_id=ENGINE_WRAPPER), ivc)
     payload_array = problem.get_val("data:payload_range:payload_array", units="kg")
-    payload_result = np.array([420, 420, 355, 310.697, 160])
+    payload_result = np.array([420, 420, 355, 310.697, 0])
     # Cirrus Payload works.
     assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
     range_array = problem.get_val("data:payload_range:range_array", units="NM")
-    range_result = np.array([0.0, 1167.85584844, 1000.0, 1953.21717358, 2078.70129517])
+    range_result = np.array([0.0, 1167.85584844, 1630.50, 1953.21717358, 2209.09])
     assert np.max(np.abs(range_array - range_result)) <= 1e-1
     specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
-    specific_range_result = np.array([0.0, 6.23660197, 3.96520269, 6.58622222, 7.009353])
+    specific_range_result = np.array([0.0, 6.23660197, 6.4652, 6.58622222, 7.4490])
     assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
