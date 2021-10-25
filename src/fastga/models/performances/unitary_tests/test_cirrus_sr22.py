@@ -270,11 +270,10 @@ def test_payload_range():
     problem = run_system(ComputePayloadRange(propulsion_id=ENGINE_WRAPPER), ivc)
     payload_array = problem.get_val("data:payload_range:payload_array", units="kg")
     payload_result = np.array([420, 420, 355, 310.697, 0])
-    # Cirrus Payload works.
     assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
     range_array = problem.get_val("data:payload_range:range_array", units="NM")
-    range_result = np.array([0.0, 1167.85584844, 1630.50, 1953.21717358, 2209.09])
+    range_result = np.array([0.0, 1169.73, 1632.40, 1955.12, 2210.96])
     assert np.max(np.abs(range_array - range_result)) <= 1e-1
     specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
-    specific_range_result = np.array([0.0, 6.23660197, 6.4652, 6.58622222, 7.4490])
+    specific_range_result = np.array([0.0, 6.24, 6.47, 6.58, 7.45])
     assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
