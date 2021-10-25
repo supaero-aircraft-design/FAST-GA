@@ -33,3 +33,7 @@ data:mission:sizing:taxi_out:fuel || fuel consumed during the taxi out segment
 
 data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment || quantity used to compute the change in CG position during flight
 data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass || quantity used to compute the change in CG position during flight
+
+data:payload_range:payload_array || payload values at the points A, B, C, D and E of the payload-range diagram
+data:payload_range:range_array || range values at the points A, B, C, D and E of the payload-range diagram
+data:payload_range:specific_range_array || specific range values at the points A, B, C, D and E of the payload-range diagram

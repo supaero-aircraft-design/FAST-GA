@@ -56,11 +56,11 @@ class ComputeFuselageWetArea(ExplicitComponent):
         lar = inputs["data:geometry:fuselage:rear_length"]
 
         if self.options[FUSELAGE_WET_AREA_OPTION] == 1.0:
-            """ Using the formula from The Flight Optimization System Weights Estimation Method """
+            # Using the formula from The Flight Optimization System Weights Estimation Method
             fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
             wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
         else:
-            """ Using the simple geometric description """
+            # Using the simple geometric description
             fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
             cyl_length = fus_length - lav - lar
             wet_area_nose = 2.45 * fus_dia * lav

@@ -66,7 +66,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float):
         return [0.62306289, 0.92912887, 1.23718229, 3.84068832]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
@@ -137,7 +137,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float):
         return [0.75466, 1.1253, 1.1488, 4.319]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
     def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:

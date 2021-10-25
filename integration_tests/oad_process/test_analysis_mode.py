@@ -45,7 +45,7 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def test_analysis_mode(cleanup):
+def test_analysis_mode():
     """
     Test the analysis mode is still working.
     """
@@ -93,4 +93,5 @@ def test_analysis_mode(cleanup):
         str(pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml")),
         True,
     )
+
     compute_aero({})

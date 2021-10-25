@@ -16,10 +16,12 @@ Test takeoff module
 
 from openmdao.core.group import Group
 import pytest
+import numpy as np
 
 from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
 from ..mission import Mission
+from ..payload_range.payload_range import ComputePayloadRange, TestComponent
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -28,9 +30,10 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 XML_FILE = "beechcraft_76.xml"
+SKIP_STEPS = False
 
 
-def test_v2():
+def _test_v2():
     """ Tests safety speed """
 
     # Research independent input value in .xml file
@@ -46,7 +49,7 @@ def test_v2():
     assert climb_gradient == pytest.approx(0.22, abs=1e-2)
 
 
-def test_vloff():
+def _test_vloff():
     """ Tests lift-off speed """
 
     # Research independent input value in .xml file
@@ -64,7 +67,7 @@ def test_vloff():
     assert alpha == pytest.approx(8.23, abs=1e-2)
 
 
-def test_vr():
+def _test_vr():
     """ Tests rotation speed """
 
     # Research independent input value in .xml file
@@ -80,7 +83,7 @@ def test_vr():
     assert vr == pytest.approx(29.91, abs=1e-2)
 
 
-def test_simulate_takeoff():
+def _test_simulate_takeoff():
     """ Tests simulate takeoff """
 
     # Research independent input value in .xml file
@@ -110,7 +113,7 @@ def test_simulate_takeoff():
     assert fuel2 == pytest.approx(0.06, abs=1e-2)
 
 
-def test_takeoff_phase_connections():
+def _test_takeoff_phase_connections():
     """ Tests complete take-off phase connection with speeds """
 
     # Research independent input value in .xml file
@@ -139,7 +142,7 @@ def test_takeoff_phase_connections():
     assert fuel2 == pytest.approx(0.06, abs=1e-2)
 
 
-def test_compute_taxi():
+def _test_compute_taxi():
     """ Tests taxi in/out phase """
 
     # Research independent input value in .xml file
@@ -167,7 +170,7 @@ def test_compute_taxi():
     )  # result strongly dependent on the defined Thrust limit
 
 
-def test_compute_climb():
+def _test_compute_climb():
     """ Tests climb phase """
 
     # Research independent input value in .xml file
@@ -190,7 +193,7 @@ def test_compute_climb():
     assert duration == pytest.approx(8.56, abs=1e-2)
 
 
-def test_compute_cruise():
+def _test_compute_cruise():
     """ Tests cruise phase """
 
     # Research independent input value in .xml file
@@ -207,7 +210,7 @@ def test_compute_cruise():
     assert duration == pytest.approx(4.85, abs=1e-2)
 
 
-def test_compute_descent():
+def _test_compute_descent():
     """ Tests descent phase """
 
     # Research independent input value in .xml file
@@ -228,7 +231,7 @@ def test_compute_descent():
     assert duration == pytest.approx(27, abs=1)
 
 
-def test_loop_cruise_distance():
+def _test_loop_cruise_distance():
     """ Tests a distance computation loop matching the descent value/TLAR total range. """
 
     # Research independent input value in .xml file
@@ -247,3 +250,26 @@ def test_loop_cruise_distance():
     total_distance = problem.get_val("data:TLAR:range", units="NM")
     error_distance = total_distance - (climb_distance + cruise_distance + descent_distance)
     assert error_distance == pytest.approx(0.0, abs=1e-1)
+
+
+@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+def test_payload_range():
+    """ Tests the payload range computation. Here the results and especially the range array do not make a lot of sense
+    because of the dummy engine model. Note that the third point of the arrays is the design point."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputePayloadRange(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputePayloadRange(propulsion_id=ENGINE_WRAPPER), ivc)
+    payload_array = problem.get_val("data:payload_range:payload_array", units="kg")
+    payload_result = np.array([450.0, 450.0, 390.0, 328.89583692, 0.0])
+    assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
+    range_array = problem.get_val("data:payload_range:range_array", units="NM")
+    range_result = np.array([0.0, 1109.84944385, 1536.63, 1982.15554691, 2272.40])
+    assert np.max(np.abs(range_array - range_result)) <= 1e-1
+    specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
+    specific_range_result = np.array([0.0, 6.20388637, 6.4327354, 6.60718516, 7.57468024])
+    assert np.max(np.abs(specific_range_array - specific_range_result)) <= 1e-1
