@@ -49,10 +49,10 @@ class Profile:
         """
 
         self.chord_length: float = chord_length
-        """ in meters """
+        # in meters
 
         self._max_relative_thickness: float = 0.0
-        """ max thickness / chord length"""
+        # max thickness / chord length
 
     @property
     def thickness_ratio(self) -> float:
