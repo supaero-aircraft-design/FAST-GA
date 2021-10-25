@@ -136,8 +136,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         # Choose local aero-coefficients
         if low_speed:
-            coef_k_wing = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
-            coef_k_htp = inputs[
+            coeff_k_wing = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
+            coeff_k_htp = inputs[
                 "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"
             ]
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
@@ -149,8 +149,10 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"
             ]
         else:
-            coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-            coef_k_htp = inputs["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"]
+            coeff_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
+            coeff_k_htp = inputs[
+                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
+            ]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
             cl0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
@@ -205,8 +207,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
             cd = (
                 cd0
                 + cd0_flaps
-                + coef_k_wing * cl_wing ** 2
-                + coef_k_htp * cl_htp ** 2
+                + coeff_k_wing * cl_wing ** 2
+                + coeff_k_htp * cl_htp ** 2
                 + (cd_elevator_delta * delta_e ** 2.0)
             )
             drag = q * cd * wing_area
@@ -270,17 +272,26 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
     @staticmethod
     def found_cl_repartition(
-        inputs, load_factor: float, mass: float, q: float, delta_cm: float, low_speed: bool = False
+        inputs,
+        load_factor: float,
+        mass: float,
+        q: float,
+        delta_cm: float,
+        low_speed: bool = False,
+        x_cg: float = None,
     ):
         """
         Method that founds the lift equilibrium with regard to the global moment
 
         :param inputs: inputs derived from aero and mass models
-        :param load_factor: load factor applied to the aircraft expressed as a ratio of g
+        :param load_factor: load factor applied to the
+        aircraft expressed as a ratio of g
         :param mass: current aircraft mass
         :param q: dynamic pressure q=1/2*rho*V²
         :param delta_cm: DP induced cm to be added to the moment equilibrium
         :param low_speed: define which aerodynamic models should be used (either low speed or high speed)
+        :param x_cg: x_cg position of the aircraft, can be specified. If not specified, computed based on current fuel
+        in the aircraft
         """
 
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -298,11 +309,14 @@ class DynamicEquilibrium(om.ExplicitComponent):
             cm0_wing = inputs["data:aerodynamics:wing:cruise:CM0_clean"]
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
 
-        c1 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"]
-        cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
-        c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
-        fuel_mass = mass - c3
-        x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
+        if x_cg is None:
+            c1 = inputs[
+                "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
+            ]
+            cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
+            c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
+            fuel_mass = mass - c3
+            x_cg = (c1 + cg_tank * fuel_mass) / (c3 + fuel_mass)
 
         # Define matrix equilibrium (applying load and moment equilibrium)
         a11 = 1
@@ -315,12 +329,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
         a = np.array([[a11, a12], [float(a21), float(a22)]])
         b = np.array([b1, b2])
         inv_a = np.linalg.inv(a)
-        CL = np.dot(inv_a, b)
+        cl_array = np.dot(inv_a, b)
 
         # Return equilibrated lift coefficients if low speed maximum clean Cl not exceeded otherwise only cl_wing, 3rd
         # term is an error flag returned by the function
-        if CL[0] < cl_max_clean:
-            return float(CL[0]), float(CL[1]), False
+        if cl_array[0] < cl_max_clean:
+            return float(cl_array[0]), float(cl_array[1]), False
         else:
             return float(mass * g * load_factor / (q * wing_area)), 0.0, True
 
