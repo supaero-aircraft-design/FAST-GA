@@ -41,6 +41,8 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:weight:aircraft:CG:aft:x", np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:fwd:x", np.nan, units="m")
+        self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
+        self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
         self.add_input(
             "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment",
             np.nan,
@@ -51,6 +53,28 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             "data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", np.nan, units="kg"
         )
         self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated",
+            val=np.nan,
+            units="rad**-1",
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated",
+            val=np.nan,
+            units="rad**-1",
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
+        self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
@@ -102,25 +126,14 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
 
         if self.options["low_speed_aero"]:
-            coeff_k_wing = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
-            coeff_k_htp = inputs[
-                "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"
-            ]
-            cd0 = inputs["data:aerodynamics:aircraft:low_speed:CD0"]
             altitude = 0
             v_tas = inputs["data:TLAR:v_approach"]
         else:
-            coeff_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-            coeff_k_htp = inputs[
-                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
-            ]
-            cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
             altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
             v_tas = inputs["data:TLAR:v_cruise"]
 
-        cl_wing_array = np.array([])
-        cl_tail_array = np.array([])
         cl_array = np.array([])
+        cd_array = np.array([])
 
         atm = Atmosphere(altitude, altitude_in_feet=False)
 
@@ -134,15 +147,19 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         x_cg = x_cg_aft + cg_ratio * (x_cg_fwd - x_cg_aft)
 
         for mass in mass_array_initial:
-            cl_wing, cl_tail, flag = self.found_cl_repartition(
+            previous_step = self.dynamic_equilibrium(
                 inputs,
-                1.0,
-                mass,
+                0.0,
                 (0.5 * atm.density * v_tas ** 2),
-                0,
-                self.options["low_speed_aero"],
-                x_cg,
+                0.0,
+                0.0,
+                mass,
+                "none",
+                (),
+                low_speed=self.options["low_speed_aero"],
+                x_cg=x_cg,
             )
+            flag = previous_step[6]
             if flag:
                 break
             else:
@@ -150,20 +167,25 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
 
         mass_array = np.linspace(0.1 * mtow, mass_max, POLAR_POINT_COUNT)
         for mass in mass_array:
-            cl_wing, cl_tail, _ = self.found_cl_repartition(
+            previous_step = self.dynamic_equilibrium(
                 inputs,
-                1.0,
-                mass,
+                0.0,
                 (0.5 * atm.density * v_tas ** 2),
-                0,
-                self.options["low_speed_aero"],
-                x_cg,
+                0.0,
+                0.0,
+                mass,
+                "none",
+                (),
+                low_speed=self.options["low_speed_aero"],
+                x_cg=x_cg,
             )
-            cl_wing_array = np.append(cl_wing_array, cl_wing)
-            cl_tail_array = np.append(cl_tail_array, cl_tail)
+            cl_wing = float(previous_step[2])
+            cl_tail = float(previous_step[3])
+            thrust = float(previous_step[1])
             cl_array = np.append(cl_array, cl_wing + cl_tail)
 
-        cd_array = cd0 + coeff_k_wing * cl_wing_array ** 2 + coeff_k_htp * cl_tail_array ** 2
+            cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
+            cd_array = np.append(cd_array, cd)
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:equilibrated:CD"] = cd_array

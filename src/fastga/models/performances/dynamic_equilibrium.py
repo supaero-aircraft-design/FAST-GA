@@ -119,6 +119,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         flap_condition: str,
         previous_step: tuple,
         low_speed: bool = False,
+        x_cg=None,
     ):
         """
         Method that finds the regulated thrust and aircraft to air angle to obtain dynamic equilibrium
@@ -132,6 +133,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param flap_condition: can refer either to "takeoff" or "landing" if high-lift contribution should be considered
         :param previous_step: give previous step equilibrium if known to accelerate the calculation
         :param low_speed: define which aerodynamic models should be used (either low speed or high speed)
+        :param x_cg: x position of the center of gravity of the aircraft
         """
 
         # Choose local aero-coefficients
@@ -185,7 +187,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             delta_cl = 0.0
             delta_cm = z_eng * thrust * math.cos(alpha - alpha_eng) / (wing_mac * q * wing_area)
             cl_wing_blown, cl_htp, _ = self.found_cl_repartition(
-                inputs, load_factor, mass, q, delta_cm, low_speed
+                inputs, load_factor, mass, q, delta_cm, low_speed, x_cg
             )
             if low_speed:
                 if flap_condition == "takeoff":

@@ -155,3 +155,12 @@ data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector || lift coefficien
 data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref || thrust coefficient of the propeller used in the computation of the slipstream effect
 data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity || velocity at which the slipstream effect were computed in low speed conditions
 data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector || station along the wing span at which lift is sampled
+
+data:aerodynamics:aircraft:cruise:CD || array containing the drag coefficient for the non-equilibrated polar in cruise conditions
+data:aerodynamics:aircraft:cruise:CL || array containing the lift coefficient for the non-equilibrated polar in cruise conditions
+data:aerodynamics:aircraft:cruise:equilibrated:CD || array containing the drag coefficient for the equilibrated polar in cruise conditions
+data:aerodynamics:aircraft:cruise:equilibrated:CL || array containing the lift coefficient for the equilibrated polar in cruise conditions
+data:aerodynamics:aircraft:low_speed:CD || array containing the drag coefficient for the non-equilibrated polar in low-speed conditions
+data:aerodynamics:aircraft:low_speed:CL || array containing the lift coefficient for the non-equilibrated polar in low-speed conditions
+data:aerodynamics:aircraft:low_speed:equilibrated:CD || array containing the drag coefficient for the equilibrated polar in low-speed conditions
+data:aerodynamics:aircraft:low_speed:equilibrated:CL || array containing the lift coefficient for the equilibrated polar in low-speed conditions
