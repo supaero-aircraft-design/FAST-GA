@@ -1,3 +1,6 @@
+"""
+    Computation of the aircraft polars
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,18 +14,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_cl_extreme import ComputeExtremeCL
-from .compute_reynolds import ComputeUnitReynolds
-from .compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from .compute_L_D_max import ComputeLDMax
-from .high_lift_aero import ComputeDeltaHighLift
-from .hinge_moments_elevator import Compute2DHingeMomentsTail, Compute3DHingeMomentsTail
-from .mach_interpolation import ComputeMachInterpolation
-from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
-from .compute_cy_rudder import ComputeCyDeltaRudder
-from .clalpha_vt import ComputeClAlphaVT
-from .compute_vn import ComputeVNAndVH, ComputeVN
-from .compute_cm_alpha_fus import ComputeFuselagePitchingMoment
+from openmdao.api import Group
 from .compute_equilibrated_polar import ComputeEquilibratedPolar
 from .compute_non_equilibrated_polar import ComputeNonEquilibratedPolar
-from .compute_polar import ComputePolar
+
+
+class ComputePolar(Group):
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+        self.add_subsystem(
+            "non_equilibrated_polar_cruise",
+            ComputeEquilibratedPolar(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "equilibrated_polar_cruise",
+            ComputeNonEquilibratedPolar(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["*"],
+        )

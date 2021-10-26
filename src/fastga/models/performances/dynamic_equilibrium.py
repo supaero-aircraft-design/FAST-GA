@@ -121,7 +121,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         low_speed: bool = False,
     ):
         """
-        Method that founds the regulated thrust and aircraft to air angle to obtain dynamic equilibrium
+        Method that finds the regulated thrust and aircraft to air angle to obtain dynamic equilibrium
 
         :param inputs: inputs derived from aero and mass models
         :param gamma: path angle (in rad.) equal to climb rate c=dh/dt over air speed V, sin(gamma)=c/V

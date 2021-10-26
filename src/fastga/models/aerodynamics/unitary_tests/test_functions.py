@@ -50,6 +50,8 @@ from fastga.models.aerodynamics.components import (
     ComputeAirfoilLiftCurveSlope,
     ComputeVNAndVH,
     ComputeFuselagePitchingMoment,
+    ComputeEquilibratedPolar,
+    ComputeNonEquilibratedPolar,
 )
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
@@ -1075,3 +1077,77 @@ def propeller(
         )
         < 1e-5
     )
+
+
+def non_equilibrated_cl_cd_polar(
+    XML_FILE: str,
+    cl_polar_ls_: np.ndarray,
+    cd_polar_ls_: np.ndarray,
+    cl_polar_cruise_: np.ndarray,
+    cd_polar_cruise_: np.ndarray,
+):
+    """Tests non-equilibrated cl/cd polar of the aircraft"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNonEquilibratedPolar(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CD")[::10] == pytest.approx(
+        cd_polar_ls_, abs=1e-4
+    )
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL")[::10] == pytest.approx(
+        cl_polar_ls_, abs=1e-2
+    )
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeNonEquilibratedPolar(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNonEquilibratedPolar(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CD")[::10] == pytest.approx(
+        cd_polar_cruise_, abs=1e-4
+    )
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CL")[::10] == pytest.approx(
+        cl_polar_cruise_, abs=1e-2
+    )
+
+
+def equilibrated_cl_cd_polar(
+    XML_FILE: str,
+    cl_polar_ls_: np.ndarray,
+    cd_polar_ls_: np.ndarray,
+    cl_polar_cruise_: np.ndarray,
+    cd_polar_cruise_: np.ndarray,
+):
+    """Tests equilibrated cl/cd polar of the aircraft"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CD")[
+        ::10
+    ] == pytest.approx(cd_polar_ls_, abs=1e-4)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CL")[
+        ::10
+    ] == pytest.approx(cl_polar_ls_, abs=1e-2)
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5)),
+        __file__,
+        XML_FILE,
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CD")[
+        ::10
+    ] == pytest.approx(cd_polar_cruise_, abs=1e-4)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL")[
+        ::10
+    ] == pytest.approx(cl_polar_cruise_, abs=1e-2)
