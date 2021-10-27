@@ -140,32 +140,11 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         # Computation of the maximum aircraft mass that can be used before exceeding
         # the CL0 clean of the wing in found_cl_repartition
         init_mass_guess = (0.5 * atm.density * v_tas ** 2 * wing_area * cl_max_clean) / 9.81
-        mass_array_initial = np.linspace(0.8 * init_mass_guess, 1.5 * init_mass_guess, 50)
-        mass_max = 0
 
         cg_ratio = self.options["cg_ratio"]
         x_cg = x_cg_aft + cg_ratio * (x_cg_fwd - x_cg_aft)
 
-        for mass in mass_array_initial:
-            previous_step = self.dynamic_equilibrium(
-                inputs,
-                0.0,
-                (0.5 * atm.density * v_tas ** 2),
-                0.0,
-                0.0,
-                mass,
-                "none",
-                (),
-                low_speed=self.options["low_speed_aero"],
-                x_cg=x_cg,
-            )
-            flag = previous_step[6]
-            if flag:
-                break
-            else:
-                mass_max = mass
-
-        mass_array = np.linspace(0.1 * mtow, mass_max, POLAR_POINT_COUNT)
+        mass_array = np.linspace(0.1 * mtow, 1.15 * init_mass_guess, POLAR_POINT_COUNT)
         previous_step = ()
         for mass in mass_array:
             previous_step = self.dynamic_equilibrium(
@@ -180,13 +159,20 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 low_speed=self.options["low_speed_aero"],
                 x_cg=x_cg,
             )
-            cl_wing = float(previous_step[2])
-            cl_tail = float(previous_step[3])
-            thrust = float(previous_step[1])
-            cl_array = np.append(cl_array, cl_wing + cl_tail)
+            if previous_step[-1]:
+                break
+            else:
+                cl_wing = float(previous_step[2])
+                cl_tail = float(previous_step[3])
+                thrust = float(previous_step[1])
+                cl_array = np.append(cl_array, cl_wing + cl_tail)
 
-            cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
-            cd_array = np.append(cd_array, cd)
+                cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
+                cd_array = np.append(cd_array, cd)
+
+        additional_zeros = np.zeros(POLAR_POINT_COUNT - len(cd_array))
+        cd_array = np.append(cd_array, additional_zeros)
+        cl_array = np.append(cl_array, additional_zeros)
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:equilibrated:CD"] = cd_array

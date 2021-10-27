@@ -1172,18 +1172,26 @@ def aircraft_polar(
 
     if equilibrated:
         cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CL"].value)
+        cl_array_cruise = [e for i, e in enumerate(cl_array_cruise) if e != 0]
         cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CD"].value)
+        cd_array_cruise = [e for i, e in enumerate(cd_array_cruise) if e != 0]
         cl_array_low_speed = list(
             variables["data:aerodynamics:aircraft:low_speed:equilibrated:CL"].value
         )
+        cl_array_low_speed = [e for i, e in enumerate(cl_array_low_speed) if e != 0]
         cd_array_low_speed = list(
             variables["data:aerodynamics:aircraft:low_speed:equilibrated:CD"].value
         )
+        cd_array_low_speed = [e for i, e in enumerate(cd_array_low_speed) if e != 0]
     else:
         cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CL"].value)
+        cl_array_cruise = [e for i, e in enumerate(cl_array_cruise) if e != 0]
         cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CD"].value)
+        cd_array_cruise = [e for i, e in enumerate(cd_array_cruise) if e != 0]
         cl_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CL"].value)
+        cl_array_low_speed = [e for i, e in enumerate(cl_array_low_speed) if e != 0]
         cd_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CD"].value)
+        cd_array_low_speed = [e for i, e in enumerate(cd_array_low_speed) if e != 0]
 
     # Computation of the highest CL/CD ratio which gives the L/D max.
     l_d_max_cruise = max(np.asarray(cl_array_cruise) / np.asarray(cd_array_cruise))
