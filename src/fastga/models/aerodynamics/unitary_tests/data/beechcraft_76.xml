@@ -367,6 +367,7 @@
         <low_speed>
           <CD0 is_input="False">0.005435236272330077<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
         </low_speed>
+        <cm_alpha units="rad**-1">-0.2018</cm_alpha>
       </fuselage>
       <landing_gear>
         <cruise>

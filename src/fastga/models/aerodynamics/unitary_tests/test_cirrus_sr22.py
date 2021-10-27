@@ -45,6 +45,8 @@ from .test_functions import (
     low_speed_connection,
     v_n_diagram,
     load_factor,
+    equilibrated_cl_cd_polar,
+    non_equilibrated_cl_cd_polar,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -833,6 +835,108 @@ def test_compute_mach_interpolation_roskam():
         XML_FILE,
         cl_alpha_vector=np.array([5.48, 5.51, 5.58, 5.72, 5.91, 6.18]),
         mach_vector=np.array([0.0, 0.07, 0.15, 0.23, 0.30, 0.38]),
+    )
+
+
+def test_non_equilibrated_cl_cd_polar():
+    """Tests computation of the non equilibrated cl/cd polar computation"""
+    non_equilibrated_cl_cd_polar(
+        XML_FILE,
+        cl_polar_ls_=np.array(
+            [0.12, 0.21, 0.3, 0.39, 0.48, 0.56, 0.65, 0.74, 0.83, 0.92, 1.0, 1.09, 1.18, 1.27, 1.35]
+        ),
+        cd_polar_ls_=np.array(
+            [
+                0.0279,
+                0.029,
+                0.0308,
+                0.0331,
+                0.036,
+                0.0396,
+                0.0437,
+                0.0484,
+                0.0537,
+                0.0596,
+                0.0661,
+                0.0732,
+                0.0809,
+                0.0892,
+                0.098,
+            ]
+        ),
+        cl_polar_cruise_=np.array(
+            [0.13, 0.22, 0.31, 0.4, 0.49, 0.58, 0.67, 0.75, 0.84, 0.93, 1.02, 1.11, 1.2, 1.29, 1.38]
+        ),
+        cd_polar_cruise_=np.array(
+            [
+                0.0264,
+                0.0276,
+                0.0294,
+                0.0318,
+                0.0348,
+                0.0385,
+                0.0428,
+                0.0477,
+                0.0532,
+                0.0594,
+                0.0662,
+                0.0735,
+                0.0815,
+                0.0902,
+                0.0994,
+            ]
+        ),
+    )
+
+
+def test_equilibrated_cl_cd_polar():
+    """Tests computation of the non equilibrated cl/cd polar computation"""
+    equilibrated_cl_cd_polar(
+        XML_FILE,
+        cl_polar_ls_=np.array(
+            [0.12, 0.23, 0.34, 0.45, 0.57, 0.68, 0.79, 0.9, 1.01, 1.12, 1.23, 1.33, 1.44, 0.0, 0.0]
+        ),
+        cd_polar_ls_=np.array(
+            [
+                0.028,
+                0.0298,
+                0.0329,
+                0.0372,
+                0.0426,
+                0.0493,
+                0.0572,
+                0.0662,
+                0.0764,
+                0.0878,
+                0.1004,
+                0.1142,
+                0.1291,
+                0.0,
+                0.0,
+            ]
+        ),
+        cl_polar_cruise_=np.array(
+            [0.04, 0.15, 0.27, 0.39, 0.51, 0.62, 0.74, 0.86, 0.97, 1.09, 1.2, 1.31, 1.43, 0.0, 0.0]
+        ),
+        cd_polar_cruise_=np.array(
+            [
+                0.0258,
+                0.0269,
+                0.0293,
+                0.033,
+                0.0381,
+                0.0444,
+                0.0521,
+                0.061,
+                0.0713,
+                0.0828,
+                0.0956,
+                0.1097,
+                0.1251,
+                0.0,
+                0.0,
+            ]
+        ),
     )
 
 

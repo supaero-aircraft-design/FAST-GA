@@ -46,6 +46,8 @@ from .test_functions import (
     v_n_diagram,
     load_factor,
     propeller,
+    non_equilibrated_cl_cd_polar,
+    equilibrated_cl_cd_polar,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -834,6 +836,124 @@ def test_compute_mach_interpolation_roskam():
         XML_FILE,
         cl_alpha_vector=np.array([5.33, 5.35, 5.42, 5.54, 5.72, 5.96]),
         mach_vector=np.array([0.0, 0.08, 0.15, 0.23, 0.31, 0.39]),
+    )
+
+
+def test_non_equilibrated_cl_cd_polar():
+    """Tests computation of the non equilibrated cl/cd polar computation"""
+    non_equilibrated_cl_cd_polar(
+        XML_FILE,
+        cl_polar_ls_=np.array(
+            [0.25, 0.33, 0.4, 0.48, 0.56, 0.64, 0.72, 0.8, 0.88, 0.96, 1.04, 1.12, 1.2, 1.28, 1.36]
+        ),
+        cd_polar_ls_=np.array(
+            [
+                0.044,
+                0.0463,
+                0.0492,
+                0.0528,
+                0.057,
+                0.0618,
+                0.0673,
+                0.0734,
+                0.0801,
+                0.0875,
+                0.0955,
+                0.1041,
+                0.1134,
+                0.1233,
+                0.1339,
+            ]
+        ),
+        cl_polar_cruise_=np.array(
+            [
+                0.25,
+                0.33,
+                0.41,
+                0.49,
+                0.57,
+                0.66,
+                0.74,
+                0.82,
+                0.9,
+                0.98,
+                1.06,
+                1.14,
+                1.22,
+                1.31,
+                1.39,
+            ]
+        ),
+        cd_polar_cruise_=np.array(
+            [
+                0.0241,
+                0.0265,
+                0.0295,
+                0.0332,
+                0.0375,
+                0.0425,
+                0.0482,
+                0.0545,
+                0.0615,
+                0.0691,
+                0.0774,
+                0.0864,
+                0.096,
+                0.1063,
+                0.1172,
+            ]
+        ),
+    )
+
+
+def test_equilibrated_cl_cd_polar():
+    """Tests computation of the non equilibrated cl/cd polar computation"""
+    equilibrated_cl_cd_polar(
+        XML_FILE,
+        cl_polar_ls_=np.array(
+            [0.1, 0.2, 0.3, 0.4, 0.5, 0.59, 0.69, 0.79, 0.88, 0.98, 1.08, 1.17, 1.26, 0.0, 0.0]
+        ),
+        cd_polar_ls_=np.array(
+            [
+                0.042,
+                0.0439,
+                0.0469,
+                0.0509,
+                0.056,
+                0.0622,
+                0.0695,
+                0.0778,
+                0.0872,
+                0.0976,
+                0.1091,
+                0.1216,
+                0.1352,
+                0.0,
+                0.0,
+            ]
+        ),
+        cl_polar_cruise_=np.array(
+            [0.03, 0.14, 0.24, 0.34, 0.45, 0.55, 0.65, 0.75, 0.86, 0.96, 1.06, 1.16, 1.26, 0.0, 0.0]
+        ),
+        cd_polar_cruise_=np.array(
+            [
+                0.0214,
+                0.0225,
+                0.0249,
+                0.0285,
+                0.0333,
+                0.0392,
+                0.0464,
+                0.0547,
+                0.0641,
+                0.0747,
+                0.0865,
+                0.0994,
+                0.1134,
+                0.0,
+                0.0,
+            ]
+        ),
     )
 
 

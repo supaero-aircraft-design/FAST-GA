@@ -23,3 +23,5 @@ from .compute_cy_rudder import ComputeCyDeltaRudder
 from .clalpha_vt import ComputeClAlphaVT
 from .compute_vn import ComputeVNAndVH, ComputeVN
 from .compute_cm_alpha_fus import ComputeFuselagePitchingMoment
+from .compute_equilibrated_polar import ComputeEquilibratedPolar
+from .compute_non_equilibrated_polar import ComputeNonEquilibratedPolar
