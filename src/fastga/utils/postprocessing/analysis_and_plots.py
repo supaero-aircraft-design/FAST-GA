@@ -942,78 +942,6 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     return fig
 
 
-def payload_range(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
-) -> go.FigureWidget:
-    """
-    Returns a figure plot of the top view of the plane.
-    Different designs can be superposed by providing an existing fig.
-    Each design can be provided a name.
-
-    :param aircraft_file_path: path of data file
-    :param name: name to give to the trace added to the figure
-    :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
-    :return: wing plot figure
-    """
-    variables = VariableIO(aircraft_file_path, file_formatter).read()
-
-    payload_array = list(variables["data:payload_range:payload_array"].value)
-    range_array = list(variables["data:payload_range:range_array"].value)
-    sr_array = list(variables["data:payload_range:specific_range_array"].value)
-
-    # If point D does not not exist, remove it
-    if range_array[3] == 0:
-        range_array = range_array[0:3] + [range_array[4]]
-        payload_array = payload_array[0:3] + [payload_array[4]]
-        sr_array = sr_array[0:3] + [sr_array[4]]
-        text_plot = ["A" + "<br>" + "SR = " + str(round(sr_array[0], 1)), "B", "E"]
-    else:
-        text_plot = [
-            "A" + "<br>" + "SR = " + str(round(sr_array[0], 1)),
-            "B" + "<br>" + "SR = " + str(round(sr_array[1], 1)),
-            "D" + "<br>" + "SR = " + str(round(sr_array[3], 1)),
-            "E" + "<br>" + "SR = " + str(round(sr_array[4], 1)),
-        ]
-
-    # Plotting of the diagram
-    if fig is None:
-        fig = go.Figure()
-    scatter = go.Scatter(
-        x=range_array[0:2] + range_array[3:],
-        y=payload_array[0:2] + payload_array[3:],
-        mode="lines+markers+text",
-        name=name + " Computed Points",
-        text=text_plot,
-        textposition="bottom right",
-        textfont=dict(size=14),
-    )
-    fig.add_trace(scatter)
-    scatter = go.Scatter(
-        x=[range_array[2]],
-        y=[payload_array[2]],
-        mode="lines+markers+text",
-        name=name + " Design Point",
-        text=["C" + "<br>" + "SR = " + str(round(sr_array[2], 1))],
-        textposition="bottom left",
-        textfont=dict(size=14),
-    )
-    fig.add_trace(scatter)
-
-    fig = go.FigureWidget(fig)
-
-    fig.update_layout(
-        title_text="Payload Range",
-        title_x=0.5,
-        xaxis_title="Range [NM]",
-        yaxis_title="Payload [kg]",
-        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
-    )
-
-    return fig
-
-
 def drag_breakdown_diagram(
     aircraft_file_path: str, fig=None, file_formatter=None,
 ) -> go.FigureWidget:
@@ -1177,7 +1105,6 @@ def payload_range(
         "  <b>E<b>" + "<br>" + "  SR = " + str(round(sr_array[4], 1)) + " nm/kg",
     ]
     ax = [0, 0, 50, 50, 75]
-    ay = [0, 0, 0, 0, 0]
 
     # Plotting of the diagram
     if fig is None:
@@ -1220,5 +1147,126 @@ def payload_range(
         range=[-100, range_array[-1] * 1.15], title_font=dict(size=18), tickfont=dict(size=14)
     )
     fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=14))
+
+    return fig
+
+
+def aircraft_polar(
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None, equilibrated=False
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the polar of the plane.
+    Different designs can be superposed by providing an existing fig.
+    Each design can be provided a name.
+    The value obtained for the finesse for the equilibrated drag polar is quite low.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
+                           be assumed.
+    :param equilibrated: boolean stating if the polar plotted is the equilibrated one or not
+    :return: plane polar figure
+    """
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    if equilibrated:
+        cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CL"].value)
+        cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CD"].value)
+        cl_array_low_speed = list(
+            variables["data:aerodynamics:aircraft:low_speed:equilibrated:CL"].value
+        )
+        cd_array_low_speed = list(
+            variables["data:aerodynamics:aircraft:low_speed:equilibrated:CD"].value
+        )
+    else:
+        cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CL"].value)
+        cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CD"].value)
+        cl_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CL"].value)
+        cd_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CD"].value)
+
+    # Computation of the highest CL/CD ratio which gives the L/D max.
+    l_d_max_cruise = max(np.asarray(cl_array_cruise) / np.asarray(cd_array_cruise))
+    l_d_max_low_speed = max(np.asarray(cl_array_low_speed) / np.asarray(cd_array_low_speed))
+    l_d_max_cruise_index = np.where(
+        np.asarray(cl_array_cruise) / np.asarray(cd_array_cruise) == l_d_max_cruise
+    )[0]
+    l_d_max_low_speed_index = np.where(
+        np.asarray(cl_array_low_speed) / np.asarray(cd_array_low_speed) == l_d_max_low_speed
+    )[0]
+
+    text_cruise = []
+    text_low_speed = []
+    for i in range(len(cl_array_cruise)):
+        if i == l_d_max_cruise_index:
+            text_cruise.append("max L/D = " + "<br>" + str(round(l_d_max_cruise, 3)))
+        else:
+            text_cruise.append("")
+        if i == l_d_max_low_speed_index:
+            text_low_speed.append("max L/D = " + "<br>" + str(round(l_d_max_low_speed, 3)))
+        else:
+            text_low_speed.append("")
+
+    # Plotting of the diagram
+    if fig is None:
+        fig = make_subplots(rows=1, cols=2, subplot_titles=("Cruise", "Low Speed"))
+
+    scatter = go.Scatter(
+        x=cd_array_cruise,
+        y=cl_array_cruise,
+        mode="lines+markers+text",
+        name=name,
+        text=text_cruise,
+        textposition="top left",
+    )
+    fig.add_trace(scatter, 1, 1)
+
+    scatter = go.Scatter(
+        x=cd_array_cruise,
+        y=cl_array_cruise[int(l_d_max_cruise_index)]
+        / cd_array_cruise[int(l_d_max_cruise_index)]
+        * np.asarray(cd_array_cruise),
+        mode="lines",
+        line=dict(width=2, dash="dot"),
+        showlegend=False,
+    )
+    fig.add_trace(scatter, 1, 1)
+
+    scatter = go.Scatter(
+        x=cd_array_low_speed,
+        y=cl_array_low_speed,
+        mode="lines+markers+text",
+        name=name,
+        text=text_low_speed,
+        textposition="top left",
+    )
+    fig.add_trace(scatter, 1, 2)
+
+    scatter = go.Scatter(
+        x=cd_array_low_speed,
+        y=cl_array_low_speed[int(l_d_max_low_speed_index)]
+        / cd_array_low_speed[int(l_d_max_low_speed_index)]
+        * np.asarray(cd_array_low_speed),
+        mode="lines",
+        line=dict(width=2, dash="dot"),
+        showlegend=False,
+    )
+    fig.add_trace(scatter, 1, 2)
+
+    fig = go.FigureWidget(fig)
+
+    fig.update_xaxes(title_text="CD", row=1, col=1)
+    fig.update_xaxes(title_text="CD", row=1, col=2)
+    fig.update_yaxes(title_text="CL", row=1, col=1)
+    fig.update_yaxes(title_text="CL", row=1, col=2)
+
+    if equilibrated:
+        title = "Equilibrated Aircraft Polar"
+    else:
+        title = "Non Equilibrated Aircraft Polar"
+
+    fig.update_layout(
+        title_text=title, title_x=0.5, legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+    )
 
     return fig

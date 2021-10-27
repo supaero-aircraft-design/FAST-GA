@@ -166,6 +166,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 mass_max = mass
 
         mass_array = np.linspace(0.1 * mtow, mass_max, POLAR_POINT_COUNT)
+        previous_step = ()
         for mass in mass_array:
             previous_step = self.dynamic_equilibrium(
                 inputs,
@@ -175,7 +176,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 0.0,
                 mass,
                 "none",
-                (),
+                previous_step,
                 low_speed=self.options["low_speed_aero"],
                 x_cg=x_cg,
             )

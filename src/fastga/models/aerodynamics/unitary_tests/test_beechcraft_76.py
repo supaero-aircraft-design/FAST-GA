@@ -54,7 +54,7 @@ XML_FILE = "beechcraft_76.xml"
 SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
-def _test_compute_reynolds():
+def test_compute_reynolds():
     """Tests high and low speed reynolds calculation"""
     compute_reynolds(
         XML_FILE,
@@ -65,7 +65,7 @@ def _test_compute_reynolds():
     )
 
 
-def _test_cd0_high_speed():
+def test_cd0_high_speed():
     """Tests drag coefficient @ high speed"""
     cd0_high_speed(
         XML_FILE,
@@ -81,7 +81,7 @@ def _test_cd0_high_speed():
     )
 
 
-def _test_cd0_low_speed():
+def test_cd0_low_speed():
     """Tests drag coefficient @ low speed"""
     cd0_low_speed(
         XML_FILE,
@@ -101,7 +101,7 @@ def _test_cd0_low_speed():
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available",
 )
-def _test_polar():
+def test_polar():
     """Tests polar execution (XFOIL) @ high and low speed"""
     polar(
         XML_FILE,
@@ -119,7 +119,7 @@ def _test_polar():
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
-def _test_airfoil_slope():
+def test_airfoil_slope():
     """Tests polar execution (XFOIL) @ low speed"""
     airfoil_slope_xfoil(
         XML_FILE,
@@ -132,7 +132,7 @@ def _test_airfoil_slope():
     )
 
 
-def _test_airfoil_slope_wt_xfoil():
+def test_airfoil_slope_wt_xfoil():
     """Tests polar reading @ low speed"""
     airfoil_slope_wt_xfoil(
         XML_FILE,
@@ -147,7 +147,7 @@ def _test_airfoil_slope_wt_xfoil():
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
-def _test_vlm_comp_high_speed():
+def test_vlm_comp_high_speed():
     """Tests vlm components @ high speed"""
     comp_high_speed(
         XML_FILE,
@@ -170,7 +170,7 @@ def _test_vlm_comp_high_speed():
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
-def _test_vlm_comp_low_speed():
+def test_vlm_comp_low_speed():
     """Tests vlm components @ low speed"""
     y_vector_wing = np.array(
         [
@@ -300,7 +300,7 @@ def _test_vlm_comp_low_speed():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_openvsp_comp_high_speed():
+def test_openvsp_comp_high_speed():
     """Tests openvsp components @ high speed"""
     comp_high_speed(
         XML_FILE,
@@ -321,7 +321,7 @@ def _test_openvsp_comp_high_speed():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_openvsp_comp_low_speed():
+def test_openvsp_comp_low_speed():
     """Tests openvsp components @ low speed"""
     y_vector_wing = np.array(
         [
@@ -528,17 +528,17 @@ def _test_openvsp_comp_low_speed():
     )
 
 
-def _test_2d_hinge_moment():
+def test_2d_hinge_moment():
     """Tests tail hinge-moments"""
     hinge_moment_2d(XML_FILE, ch_alpha_2d=-0.3998, ch_delta_2d=-0.6146)
 
 
-def _test_3d_hinge_moment():
+def test_3d_hinge_moment():
     """Tests tail hinge-moments"""
     hinge_moment_3d(XML_FILE, ch_alpha=-0.2625, ch_delta=-0.6822)
 
 
-def _test_high_lift():
+def test_high_lift():
     """Tests high-lift contribution"""
     high_lift(
         XML_FILE,
@@ -559,7 +559,7 @@ def _test_high_lift():
     system() != "Windows",
     reason="No XFOIL executable available: not computed with empty result folder",
 )
-def _test_extreme_cl():
+def test_extreme_cl():
     """Tests maximum/minimum cl component with default result cl=f(y) curve"""
     extreme_cl(
         XML_FILE,
@@ -574,12 +574,12 @@ def _test_extreme_cl():
     )
 
 
-def _test_l_d_max():
+def test_l_d_max():
     """Tests best lift/drag component"""
     l_d_max(XML_FILE, l_d_max_=15.422, optimal_cl=0.6475, optimal_cd=0.0419, optimal_alpha=4.92)
 
 
-def _test_cnbeta():
+def test_cnbeta():
     """Tests cn beta fuselage"""
     cnbeta(XML_FILE, cn_beta_fus=-0.0557)
 
@@ -587,7 +587,7 @@ def _test_cnbeta():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_slipstream_openvsp_cruise():
+def test_slipstream_openvsp_cruise():
     """Compute slipstream @ high speed"""
     y_vector_prop_on = np.array(
         [
@@ -710,7 +710,7 @@ def _test_slipstream_openvsp_cruise():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_slipstream_openvsp_low_speed():
+def test_slipstream_openvsp_low_speed():
     """Compute slipstream @ low speed"""
     y_vector_prop_on = np.array(
         [
@@ -830,7 +830,7 @@ def _test_slipstream_openvsp_low_speed():
     )
 
 
-def _test_compute_mach_interpolation_roskam():
+def test_compute_mach_interpolation_roskam():
     """Tests computation of the mach interpolation vector using Roskam's approach"""
     compute_mach_interpolation_roskam(
         XML_FILE,
@@ -973,17 +973,17 @@ def test_equilibrated_cl_cd_polar():
     )
 
 
-def _test_cl_alpha_vt():
+def test_cl_alpha_vt():
     """Tests Cl alpha vt"""
     cl_alpha_vt(XML_FILE, cl_alpha_vt_ls=2.6812, k_ar_effective=1.8630, cl_alpha_vt_cruise=2.7321)
 
 
-def _test_cy_delta_r():
+def test_cy_delta_r():
     """Tests cy delta of the rudder"""
     cy_delta_r(XML_FILE, cy_delta_r_=1.8882)
 
 
-def _test_cm_alpha_fus():
+def test_cm_alpha_fus():
     """Tests cy delta of the rudder"""
     cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.2018)
 
@@ -991,13 +991,13 @@ def _test_cm_alpha_fus():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_high_speed_connection_openvsp():
+def test_high_speed_connection_openvsp():
     """Tests high speed components connection"""
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
 
 
 @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
-def _test_high_speed_connection_vlm():
+def test_high_speed_connection_vlm():
     """Tests high speed components connection"""
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
 
@@ -1005,19 +1005,19 @@ def _test_high_speed_connection_vlm():
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
-def _test_low_speed_connection_openvsp():
+def test_low_speed_connection_openvsp():
     """Tests low speed components connection"""
     low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
 
 
 @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
-def _test_low_speed_connection_vlm():
+def test_low_speed_connection_vlm():
     """Tests low speed components connection"""
     low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
 
 
 @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
-def _test_v_n_diagram():
+def test_v_n_diagram():
     # load all inputs
     velocity_vect = np.array(
         [
@@ -1070,7 +1070,7 @@ def _test_v_n_diagram():
     )
 
 
-def _test_load_factor():
+def test_load_factor():
     # load all inputs
     load_factor(XML_FILE, ENGINE_WRAPPER, load_factor_ultimate=5.7, vh=102.09)
 
@@ -1078,7 +1078,7 @@ def _test_load_factor():
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
 )
-def _test_propeller():
+def test_propeller():
     thrust_SL = np.array(
         [
             118.28404737,
