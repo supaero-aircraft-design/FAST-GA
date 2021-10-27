@@ -72,6 +72,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             units="rad**-1",
         )
         self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_min_clean", val=np.nan)
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
@@ -145,7 +146,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         x_cg = x_cg_aft + cg_ratio * (x_cg_fwd - x_cg_aft)
 
         mass_array = np.linspace(0.1 * mtow, 1.15 * init_mass_guess, POLAR_POINT_COUNT)
-        previous_step = ()
+        # previous_step = ()
         for mass in mass_array:
             previous_step = self.dynamic_equilibrium(
                 inputs,
@@ -155,7 +156,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 0.0,
                 mass,
                 "none",
-                previous_step,
+                (),
                 low_speed=self.options["low_speed_aero"],
                 x_cg=x_cg,
             )
@@ -166,7 +167,6 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 cl_tail = float(previous_step[3])
                 thrust = float(previous_step[1])
                 cl_array = np.append(cl_array, cl_wing + cl_tail)
-
                 cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
                 cd_array = np.append(cd_array, cd)
 
