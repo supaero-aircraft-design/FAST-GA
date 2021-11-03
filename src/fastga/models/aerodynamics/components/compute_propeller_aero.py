@@ -128,6 +128,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.add_output(
             "data:aerodynamics:propeller:cruise_level:speed", shape=SPEED_PTS_NB, units="m/s"
         )
+        self.add_output("data:aerodynamics:propeller:cruise_level:altitude", units="m")
 
         self.declare_partials(of="*", wrt="*", method="fd")
 
@@ -180,6 +181,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         outputs["data:aerodynamics:propeller:cruise_level:thrust"] = thrust_interp
         outputs["data:aerodynamics:propeller:cruise_level:thrust_limit"] = thrust_limit
         outputs["data:aerodynamics:propeller:cruise_level:speed"] = speed_interp
+        outputs["data:aerodynamics:propeller:cruise_level:altitude"] = inputs[
+            "data:mission:sizing:main_route:cruise:altitude"
+        ]
 
     def compute_extreme_pitch(self, inputs, v_inf):
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]

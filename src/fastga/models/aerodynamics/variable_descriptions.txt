@@ -164,3 +164,5 @@ data:aerodynamics:aircraft:low_speed:CD || array containing the drag coefficient
 data:aerodynamics:aircraft:low_speed:CL || array containing the lift coefficient for the non-equilibrated polar in low-speed conditions
 data:aerodynamics:aircraft:low_speed:equilibrated:CD || array containing the drag coefficient for the equilibrated polar in low-speed conditions
 data:aerodynamics:aircraft:low_speed:equilibrated:CL || array containing the lift coefficient for the equilibrated polar in low-speed conditions
+
+data:aerodynamics:propeller:cruise_level:altitude || altitude at which the cruise level propeller efficiency map was computed

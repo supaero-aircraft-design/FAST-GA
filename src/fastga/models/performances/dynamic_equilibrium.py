@@ -115,6 +115,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         )
         self.add_input("data:weight:aircraft_empty:CG:z", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:engine:CG:z", val=np.nan, units="m")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
     def dynamic_equilibrium(
         self,

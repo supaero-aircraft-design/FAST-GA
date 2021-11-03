@@ -806,7 +806,7 @@ def test_OMBasicICEngineComponent():
     ivc.add_output("data:propulsion:IC_engine:fuel_type", 1)
     ivc.add_output("data:propulsion:IC_engine:strokes_nb", 4)
     ivc.add_output("data:TLAR:v_cruise", 158.0, units="kn")
-    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 8000.0, units="ft")
+    ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 8000.0, units="ft")
     ivc.add_output("data:geometry:propulsion:layout", 1.0)
     ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")

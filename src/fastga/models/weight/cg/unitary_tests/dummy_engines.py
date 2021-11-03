@@ -40,20 +40,20 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def __init__(
         self,
         max_power: float,
-        design_altitude: float,
+        design_altitude_propeller: float,
         design_speed: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
     ):
         """
-        Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
+        Dummy engine model returning nacelle aerodynamic drag force.
 
         """
         super().__init__()
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.design_altitude = design_altitude
+        self.design_altitude_propeller = design_altitude_propeller
         self.design_speed = design_speed
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
@@ -87,14 +87,16 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:layout", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         engine_params = {
             "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
+            "design_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
@@ -113,20 +115,20 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def __init__(
         self,
         max_power: float,
-        design_altitude: float,
+        design_altitude_propeller: float,
         design_speed: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
     ):
         """
-        Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
+        Dummy engine model returning nacelle aerodynamic drag force.
 
         """
         super().__init__()
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.design_altitude = design_altitude
+        self.design_altitude_propeller = design_altitude_propeller
         self.design_speed = design_speed
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
@@ -160,14 +162,16 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:layout", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         engine_params = {
             "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
+            "design_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
             "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],

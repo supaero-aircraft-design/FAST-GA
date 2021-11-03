@@ -502,6 +502,7 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 
         self.add_input("data:mission:sizing:landing:target_sideslip", val=11.5, units="deg")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
@@ -629,6 +630,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 
         self.add_input("data:mission:sizing:landing:target_sideslip", val=11.5, units="deg")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
