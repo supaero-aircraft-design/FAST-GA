@@ -79,7 +79,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float):
         return [0.0, 0.0, 0.0, 0.0]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
     # noinspection PyMethodMayBeStatic
@@ -166,7 +166,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_dimensions(self) -> (float, float, float, float):
         return [0.0, 0.0, 0.0, 0.0]
 
-    def compute_drag(self, mach, unit_reynolds, l0_wing):
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
     # noinspection PyMethodMayBeStatic

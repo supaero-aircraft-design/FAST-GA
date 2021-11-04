@@ -125,7 +125,7 @@ def test_supernumerary_inputs():
         function_generated = True
         right_error = False
 
-    except Exception as error:
+    except BaseException as error:
 
         function_generated = False
 

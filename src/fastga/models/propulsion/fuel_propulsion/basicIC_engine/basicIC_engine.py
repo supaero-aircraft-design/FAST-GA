@@ -247,17 +247,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
-        """
-        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
-        
-        :param flight_points.mach: Mach number
-        :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
-        :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
-        :param flight_points.thrust_rate: thrust rate (unit=none)
-        :param flight_points.thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
 
         # Treat inputs (with check on thrust rate <=1.0)
         if thrust_is_regulated is not None:

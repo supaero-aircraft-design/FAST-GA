@@ -1126,7 +1126,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                                     )
                                     saved_area_ratio = data.loc["area_ratio", 0]
                                     return result_file_path, saved_area_ratio
-                        except:
+                        except Exception:
                             break
                     idx += 1
 
