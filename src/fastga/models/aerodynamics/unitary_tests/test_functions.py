@@ -127,8 +127,17 @@ def polar_result_retrieve(tmp_folder):
             # noinspection PyBroadException
             try:
                 shutil.copy(file, resources.__path__[0])
-            except:
-                _LOGGER.info("Cannot copy {} file to {}!".format(file, tmp_folder.name))
+            except (OSError, shutil.SameFileError) as e:
+                if isinstance(e, OSError):
+                    _LOGGER.info(
+                        "Cannot copy %s file to %s! Likely due to permission error"
+                        % (file, tmp_folder.name)
+                    )
+                else:
+                    _LOGGER.info(
+                        "Cannot copy %s file to %s! Likely because the file already exists in the target directory"
+                        % (file, tmp_folder.name)
+                    )
 
     tmp_folder.cleanup()
 

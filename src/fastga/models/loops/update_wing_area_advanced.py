@@ -103,7 +103,7 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
 
         wing_area_mission_initial = 16.8871
 
-        wing_area_mission, dic, _, _ = fsolve(
+        wing_area_mission, _, ier, _ = fsolve(
             self.compute_wing_area_new,
             wing_area_mission_initial,
             args=(inputs, mfw_mission),
@@ -111,11 +111,17 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
             full_output=True,
         )
 
-        _LOGGER.info(
-            "Looping on wing area with new value equal to {}".format(
-                max(wing_area_mission, wing_area_approach)
+        if ier != 1:
+            _LOGGER.warning(
+                "Could not find a wing area that suits the requirement for fuel inside the wing, using the "
+                "other constraints instead. New value is equal to %f"
+                % max(wing_area_mission, wing_area_approach)
             )
-        )
+        else:
+            _LOGGER.info(
+                "Looping on wing area with new value equal to %f"
+                % max(wing_area_mission, wing_area_approach)
+            )
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
 

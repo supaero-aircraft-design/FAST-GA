@@ -24,12 +24,6 @@ from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class StructuralLoads(AerostructuralLoad):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
         nans_array_orig_vector = np.full(SPAN_MESH_POINT, np.nan)
         self.add_input("data:loads:max_shear:load_factor", val=np.nan)

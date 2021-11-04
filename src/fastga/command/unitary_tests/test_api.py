@@ -223,7 +223,7 @@ def test_missing_inputs_in_xml():
         function_generated = True
         right_error = False
 
-    except Exception as error:
+    except BaseException as error:
 
         function_generated = False
 

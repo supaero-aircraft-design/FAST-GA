@@ -25,12 +25,6 @@ from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class AerodynamicLoads(AerostructuralLoad):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
