@@ -1,0 +1,26 @@
+title: Mission Run
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: ../results/oad_process_inputs_mission_builder.xml
+output_file: ../results/oad_process_outputs_mission_builder.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+model:
+    polar:
+        id: fastga.aerodynamics.cl_cd_polar
+        cg_ratio: 0.5
+    performance:
+        id: fastoad.performances.mission
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        mission_file_path: "sizing_breguet.yml"
+        out_file: "../results/mission_builder.csv"
+        use_initializer_iteration: False
+        adjust_fuel: True
+        compute_TOW: True
+        is_sizing: True
+        add_solver: True
