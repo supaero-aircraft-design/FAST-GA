@@ -99,23 +99,6 @@
         <sweep_vect units="deg" is_input="True">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--blade sweep at the station along the radius stored in radius_ratio_vect--></sweep_vect>
         <twist_vect units="deg" is_input="True">[59.9549991, 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]<!--blade twist at the station along the radius stored in radius_ratio_vect--></twist_vect>
       </propeller>
-      <propulsion>
-        <LE_chord_percentage is_input="True">0.08<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
-        <TE_chord_percentage is_input="True">0.08<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
-        <count is_input="True">1.0<!--number of engine--></count>
-        <layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
-        <y_ratio is_input="True">[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position along wing span (if layout=1-2)--></y_ratio>
-        <y_ratio_tank_beginning is_input="True">0.1<!--start of the tank as a percentage of the wing span--></y_ratio_tank_beginning>
-        <y_ratio_tank_end is_input="True">0.9<!--end of the tank as a percentage of the wing span--></y_ratio_tank_end>
-        <nacelle>
-          <height units="m" is_input="False">0.7546659597502833<!--height of the nacelle--></height>
-          <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
-          <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
-          <width units="m" is_input="False">1.1253790627855103<!--width of the nacelle--></width>
-          <x units="m" is_input="False">[1.148849535217935, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--position, with respect to the aircraft nose, of the furthest point of the nacelle from the nose--></x>
-          <y units="m" is_input="False">[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--Y-position of nacelle center--></y>
-        </nacelle>
-      </propulsion>
       <vertical_tail>
         <area units="m**2" is_input="False">1.4038946965339596<!--vertical tail area--></area>
         <aspect_ratio is_input="True">2.0<!--aspect ratio of vertical tail--></aspect_ratio>
@@ -203,6 +186,27 @@
           </leading_edge>
         </tip>
       </wing>
+      <propulsion>
+        <engine>
+          <count is_input="True">1.0<!--number of engine--></count>
+          <layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
+          <y_ratio is_input="True">[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position along wing span (if layout=1-2)--></y_ratio>
+        </engine>
+        <nacelle>
+          <height units="m" is_input="False">0.7546659597502833<!--height of the nacelle--></height>
+          <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
+          <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
+          <width units="m" is_input="False">1.1253790627855103<!--width of the nacelle--></width>
+          <x units="m" is_input="False">[1.148849535217935, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--position, with respect to the aircraft nose, of the furthest point of the nacelle from the nose--></x>
+          <y units="m" is_input="False">[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--Y-position of nacelle center--></y>
+        </nacelle>
+        <tank>
+          <LE_chord_percentage is_input="True">0.08<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage is_input="True">0.08<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
+          <y_ratio_tank_beginning is_input="True">0.1<!--start of the tank as a percentage of the wing span--></y_ratio_tank_beginning>
+          <y_ratio_tank_end is_input="True">0.9<!--end of the tank as a percentage of the wing span--></y_ratio_tank_end>
+        </tank>
+      </propulsion>
     </geometry>
     <handling_qualities>
       <stick_fixed_static_margin is_input="False">0.1503882143433054<!--stick fixed static margin--></stick_fixed_static_margin>
@@ -509,6 +513,7 @@
           <V2 units="m/s" is_input="False">43.59478760215655<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <VLOF units="m/s" is_input="False">41.06575382593192<!--lift-off speed in sizing mission--></VLOF>
           <VR units="m/s" is_input="False">35.20584780204445<!--rotation speed in sizing mission--></VR>
+          <altitude units="m">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <climb_gradient is_input="False">0.15466246344918244<!--maximum climb gradient possible at V2--></climb_gradient>
           <duration units="s" is_input="False">23.700000000000067<!--duration of takeoff phase in sizing mission--></duration>
           <elevator_angle units="deg" is_input="True">-25.0<!--position of the elevator during takeoff--></elevator_angle>
@@ -517,7 +522,6 @@
           <fuel units="kg" is_input="False">0.405432268004668<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
           <ground_roll units="m" is_input="False">411.2538419784915<!--ground roll--></ground_roll>
           <thrust_rate is_input="True">1.0<!--thrust rate during takeoff phase--></thrust_rate>
-          <altitude units="m">0.0</altitude>
         </takeoff>
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi-in phase in sizing mission--></duration>

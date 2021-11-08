@@ -150,7 +150,7 @@ def aircraft_geometry_plot(
     fig.add_trace(scatter)
 
     # Nacelle + propeller
-    prop_layout = variables["data:geometry:propulsion:layout"].value[0]
+    prop_layout = variables["data:geometry:propulsion:engine:layout"].value[0]
     nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
     nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
     prop_diam = variables["data:geometry:propeller:diameter"].value[0]

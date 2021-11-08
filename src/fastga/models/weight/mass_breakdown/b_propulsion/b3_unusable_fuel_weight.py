@@ -44,7 +44,7 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
 
@@ -52,7 +52,7 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        n_eng = inputs["data:geometry:propulsion:count"]
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
         wing_area = inputs["data:geometry:wing:area"]
         mfw = inputs["data:weight:aircraft:MFW"]
         n_tank = 2.0

@@ -32,8 +32,8 @@ class ComputeMFWAdvanced(ExplicitComponent):
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering Students' p.65.
     discretize the fuel tank in the wings along the span.
     Only works for linear chord and thickness profiles.
-    The xml quantities "data:geometry:propulsion:LE_chord_percentage", "data:geometry:propulsion:TE_chord_percentage",
-    "data:geometry:propulsion:y_ratio_tank_beginning" and "data:geometry:propulsion:y_ratio_tank_end" have to be
+    The xml quantities "data:geometry:propulsion:tank:LE_chord_percentage", "data:geometry:propulsion:tank:TE_chord_percentage",
+    "data:geometry:propulsion:tank:y_ratio_tank_beginning" and "data:geometry:propulsion:tank:y_ratio_tank_end" have to be
     determined as close to possible as the real aircraft quantities. The quantity "settings:geometry:fuel_tanks:depth"
     allows to calibrate the model for each aircraft.
     WARNING : If this class is updated, update_wing_area wil have to be updated as well as it uses the same approach.
@@ -50,12 +50,12 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
-        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
@@ -69,8 +69,8 @@ class ComputeMFWAdvanced(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
-        y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
-        y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
+        y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
+        y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
         span = inputs["data:geometry:wing:span"]
 
         if fuel_type == 1.0:
@@ -112,11 +112,11 @@ def tank_volume_distribution(inputs, y_array_orig):
     tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
     flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
     aileron_chord_ratio = inputs["data:geometry:aileron:chord_ratio"]
-    y_ratio_tank_beginning = inputs["data:geometry:propulsion:y_ratio_tank_beginning"]
-    y_ratio_tank_end = inputs["data:geometry:propulsion:y_ratio_tank_end"]
-    engine_config = inputs["data:geometry:propulsion:layout"]
-    le_chord_percentage = inputs["data:geometry:propulsion:LE_chord_percentage"]
-    te_chord_percentage = inputs["data:geometry:propulsion:TE_chord_percentage"]
+    y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
+    y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
+    engine_config = inputs["data:geometry:propulsion:engine:layout"]
+    le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
+    te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
     nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
     span = inputs["data:geometry:wing:span"]
     lg_type = inputs["data:geometry:landing_gear:type"]
@@ -164,7 +164,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     if engine_config != 1.0:
         y_ratio = 0.0
     else:
-        y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
+        y_ratio_data = inputs["data:geometry:propulsion:engine:y_ratio"]
         used_index = np.where(y_ratio_data >= 0.0)[0]
         y_ratio = y_ratio_data[used_index]
 

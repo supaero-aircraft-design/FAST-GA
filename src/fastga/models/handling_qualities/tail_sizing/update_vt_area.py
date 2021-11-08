@@ -226,11 +226,11 @@ class VTPConstraints(om.ExplicitComponent):
 
     def engine_out_climb(self, inputs):
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
-        engine_number = inputs["data:geometry:propulsion:count"]
+        engine_number = inputs["data:geometry:propulsion:engine:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -295,11 +295,11 @@ class VTPConstraints(om.ExplicitComponent):
 
     def engine_out_takeoff(self, inputs):
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
-        engine_number = inputs["data:geometry:propulsion:count"]
+        engine_number = inputs["data:geometry:propulsion:engine:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -371,7 +371,7 @@ class VTPConstraints(om.ExplicitComponent):
 
     def engine_out_landing(self, inputs):
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
-        engine_number = inputs["data:geometry:propulsion:count"]
+        engine_number = inputs["data:geometry:propulsion:engine:count"]
 
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -397,7 +397,7 @@ class VTPConstraints(om.ExplicitComponent):
         distance_to_cg = wing_vtp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         failure_altitude_ldg = 0.0  # CS23 for Twin engine - at 0ft
@@ -466,7 +466,7 @@ class _UpdateVTArea(VTPConstraints):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -523,7 +523,7 @@ class _UpdateVTArea(VTPConstraints):
         # compensation of engine failure induced torque at approach speed/altitude.
         # Returns maximum area.
 
-        engine_number = inputs["data:geometry:propulsion:count"]
+        engine_number = inputs["data:geometry:propulsion:engine:count"]
 
         mtow = inputs["data:weight:aircraft:MTOW"]
 
@@ -593,7 +593,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -650,7 +650,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 
         area_vtp = inputs["data:geometry:vertical_tail:area"]
 
-        engine_number = inputs["data:geometry:propulsion:count"]
+        engine_number = inputs["data:geometry:propulsion:engine:count"]
 
         mtow = inputs["data:weight:aircraft:MTOW"]
 

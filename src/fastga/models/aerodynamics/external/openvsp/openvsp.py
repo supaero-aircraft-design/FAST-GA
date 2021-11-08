@@ -1206,8 +1206,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=nan_array)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=nan_array)
 
     def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust_rate):
         """
@@ -1246,15 +1246,15 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         engine_rpm = inputs["data:propulsion:IC_engine:max_rpm"]
         propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
-        engine_config = inputs["data:geometry:propulsion:layout"]
-        engine_count = int(float(inputs["data:geometry:propulsion:count"]))
+        engine_config = inputs["data:geometry:propulsion:engine:layout"]
+        engine_count = int(float(inputs["data:geometry:propulsion:engine:count"]))
         semi_span = span_wing / 2.0
 
         if engine_config != 1.0:
             y_ratio_array = 0.0
         else:
-            used_index = np.where(np.array(inputs["data:geometry:propulsion:y_ratio"]) >= 0.0)[0]
-            y_ratio_array = np.array(inputs["data:geometry:propulsion:y_ratio"])[used_index]
+            used_index = np.where(np.array(inputs["data:geometry:propulsion:engine:y_ratio"]) >= 0.0)[0]
+            y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])[used_index]
 
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
@@ -1269,7 +1269,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         ################################################################################################################
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         flight_point = FlightPoint(
             mach=mach,

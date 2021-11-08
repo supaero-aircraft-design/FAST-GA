@@ -44,13 +44,13 @@ class ComputeOilWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
 
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        n_eng = inputs["data:geometry:propulsion:count"]
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
 
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), n_eng)
 

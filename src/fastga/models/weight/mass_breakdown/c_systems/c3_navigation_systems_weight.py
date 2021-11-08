@@ -30,7 +30,7 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
     def setup(self):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
 
         self.add_output("data:weight:systems:navigation:mass", units="lb")
@@ -40,7 +40,7 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         mtow = inputs["data:weight:aircraft:MTOW"]
-        n_eng = inputs["data:geometry:propulsion:count"]
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
 
         n_occ = n_pax + 2.0
@@ -69,8 +69,8 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
 
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
@@ -87,8 +87,8 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
 
         fus_width = inputs["data:geometry:fuselage:maximum_width"]
         fus_length = inputs["data:geometry:fuselage:length"]
-        prop_layout = inputs["data:geometry:propulsion:layout"]
-        prop_count = inputs["data:geometry:propulsion:count"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        prop_count = inputs["data:geometry:propulsion:engine:count"]
 
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
