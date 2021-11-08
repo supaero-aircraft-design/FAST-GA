@@ -1,4 +1,0 @@
-# Enabling custom fastga source package installation in Binder, from https://ericmjl.github.io/blog/2021/7/10/how-to-enable-custom-source-package-installation-in-binder/
-set -e  # don't allow errors to fail silently
-echo `which pip`  # in case the wrong `pip` is used, this will let us debug
-pip install -e src/  # install the custom library
