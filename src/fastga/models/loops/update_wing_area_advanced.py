@@ -137,7 +137,9 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
         tip_tc = float(inputs["data:geometry:wing:tip:thickness_ratio"])
         flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
         aileron_chord_ratio = float(inputs["data:geometry:aileron:chord_ratio"])
-        y_ratio_tank_beginning = float(inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"])
+        y_ratio_tank_beginning = float(
+            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
+        )
         y_ratio_tank_end = float(inputs["data:geometry:propulsion:tank:y_ratio_tank_end"])
         engine_config = float(inputs["data:geometry:propulsion:engine:layout"])
         y_ratio_tank = inputs["data:geometry:propulsion:engine:y_ratio"]

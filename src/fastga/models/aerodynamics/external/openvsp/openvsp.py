@@ -1253,7 +1253,9 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         if engine_config != 1.0:
             y_ratio_array = 0.0
         else:
-            used_index = np.where(np.array(inputs["data:geometry:propulsion:engine:y_ratio"]) >= 0.0)[0]
+            used_index = np.where(
+                np.array(inputs["data:geometry:propulsion:engine:y_ratio"]) >= 0.0
+            )[0]
             y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])[used_index]
 
         # Compute remaining inputs
