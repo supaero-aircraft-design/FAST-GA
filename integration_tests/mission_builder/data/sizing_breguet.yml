@@ -14,7 +14,7 @@ phases:
       - segment: transition
         target:
           altitude: 0.
-          mach: 0.
+          mach: data:aerodynamics:low_speed:mach
           ground_distance:
             value: 75.0
             unit: km
@@ -24,11 +24,7 @@ phases:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
         target:
-#          time: data:mission:sizing:main_route:reserve:duration
-#          mach: 0.15
-          time:
-            value: 45
-            unit: min
+          time: data:mission:sizing:main_route:reserve:duration
 
 
 routes:

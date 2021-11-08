@@ -17,7 +17,7 @@ model:
     performance:
         id: fastoad.performances.mission
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        mission_file_path: "sizing_breguet.yml"
+        mission_file_path: "sizing_mission_fastga.yml"
         out_file: "../results/mission_builder.csv"
         use_initializer_iteration: False
         adjust_fuel: True
