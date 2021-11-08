@@ -69,4 +69,4 @@ venv*/
 /XFOIL
 
 # Private files
-*/private/*
+**/private/**
