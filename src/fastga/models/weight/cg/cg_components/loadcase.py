@@ -117,7 +117,7 @@ class ComputeFlightCGCase(ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
@@ -227,7 +227,7 @@ class ComputeFlightCGCase(ExplicitComponent):
     def min_in_flight_fuel(self, inputs):
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         # noinspection PyTypeChecker
@@ -259,7 +259,7 @@ class ComputeFlightCGCase(ExplicitComponent):
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]

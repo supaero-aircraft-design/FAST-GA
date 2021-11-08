@@ -32,7 +32,7 @@ class Cd0Other(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
@@ -44,7 +44,7 @@ class Cd0Other(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        prop_layout = inputs["data:geometry:propulsion:layout"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]
 
         # COWLING (only if engine in fuselage): cx_cowl*wing_area assumed typical (Gudmundsson p739)

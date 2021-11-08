@@ -89,16 +89,16 @@ def test_update_wing_area_advanced():
     ivc.add_output("data:geometry:flap:chord_ratio", val=0.15)
     ivc.add_output("data:geometry:aileron:chord_ratio", val=0.2)
     ivc.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
-    ivc.add_output("data:geometry:propulsion:y_ratio_tank_beginning", val=0.2)
-    ivc.add_output("data:geometry:propulsion:y_ratio_tank_end", val=0.8)
-    ivc.add_output("data:geometry:propulsion:layout", val=1.0)
+    ivc.add_output("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2)
+    ivc.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8)
+    ivc.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc.add_output(
-        "data:geometry:propulsion:y_ratio",
+        "data:geometry:propulsion:engine:y_ratio",
         shape=10,
         val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
     )
-    ivc.add_output("data:geometry:propulsion:LE_chord_percentage", val=0.05)
-    ivc.add_output("data:geometry:propulsion:TE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
     ivc.add_output("data:geometry:landing_gear:type", val=1.0)
     ivc.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
     ivc.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
@@ -128,16 +128,16 @@ def test_update_wing_area_advanced():
     ivc.add_output("data:geometry:flap:chord_ratio", val=0.15)
     ivc.add_output("data:geometry:aileron:chord_ratio", val=0.2)
     ivc.add_output("data:geometry:fuselage:maximum_width", val=1.5, units="m")
-    ivc.add_output("data:geometry:propulsion:y_ratio_tank_beginning", val=0.2)
-    ivc.add_output("data:geometry:propulsion:y_ratio_tank_end", val=0.8)
-    ivc.add_output("data:geometry:propulsion:layout", val=1.0)
+    ivc.add_output("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=0.2)
+    ivc.add_output("data:geometry:propulsion:tank:y_ratio_tank_end", val=0.8)
+    ivc.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc.add_output(
-        "data:geometry:propulsion:y_ratio",
+        "data:geometry:propulsion:engine:y_ratio",
         shape=10,
         val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
     )
-    ivc.add_output("data:geometry:propulsion:LE_chord_percentage", val=0.05)
-    ivc.add_output("data:geometry:propulsion:TE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
+    ivc.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
     ivc.add_output("data:geometry:landing_gear:type", val=1.0)
     ivc.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
     ivc.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")

@@ -131,7 +131,7 @@ class _v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
@@ -150,7 +150,7 @@ class _v2(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -227,7 +227,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
@@ -250,7 +250,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -404,7 +404,7 @@ class _vr_from_v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
@@ -426,7 +426,7 @@ class _vr_from_v2(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -499,7 +499,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
@@ -531,7 +531,7 @@ class _simulate_takeoff(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0 = (
@@ -562,7 +562,7 @@ class _simulate_takeoff(om.ExplicitComponent):
 
         # Determine rotation speed from regulation CS23.51
         vs1 = math.sqrt((mtow * g) / (0.5 * Atmosphere(0).density * wing_area * cl_max_clean))
-        if inputs["data:geometry:propulsion:count"] == 1.0:
+        if inputs["data:geometry:propulsion:engine:count"] == 1.0:
             k = 1.0
         else:
             k = 1.1

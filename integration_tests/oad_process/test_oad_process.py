@@ -43,7 +43,7 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def test_oad_process_vlm(cleanup):
+def _test_oad_process_vlm(cleanup):
     """
     Test the overall aircraft design process with wing positioning under VLM method.
     """

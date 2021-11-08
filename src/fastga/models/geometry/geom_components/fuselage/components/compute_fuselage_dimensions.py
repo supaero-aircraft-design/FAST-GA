@@ -119,7 +119,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
-        prop_layout = inputs["data:geometry:propulsion:layout"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         spinner_length = inputs["data:geometry:propeller:depth"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -229,7 +229,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
-        prop_layout = inputs["data:geometry:propulsion:layout"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
         # Length of instrument panel

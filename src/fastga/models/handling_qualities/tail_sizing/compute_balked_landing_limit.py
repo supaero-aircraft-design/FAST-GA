@@ -199,7 +199,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient", val=np.nan
@@ -225,7 +225,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         v_ref = 1.3 * v_s0
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         x_cg = float(fa_length)

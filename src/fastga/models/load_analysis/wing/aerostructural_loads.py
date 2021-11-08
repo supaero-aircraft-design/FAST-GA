@@ -129,14 +129,14 @@ class AerostructuralLoad(ComputeVN):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -427,14 +427,14 @@ class AerostructuralLoad(ComputeVN):
             tot_engine_mass = 0.0
             tot_lg_mass = 0.0
 
-        engine_config = inputs["data:geometry:propulsion:layout"]
-        engine_count = inputs["data:geometry:propulsion:count"]
+        engine_config = inputs["data:geometry:propulsion:engine:layout"]
+        engine_count = inputs["data:geometry:propulsion:engine:count"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
         y_lg = inputs["data:geometry:landing_gear:y"]
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
-            y_ratio_data = inputs["data:geometry:propulsion:y_ratio"]
+            y_ratio_data = inputs["data:geometry:propulsion:engine:y_ratio"]
             used_index = np.where(y_ratio_data >= 0.0)[0]
             y_ratio = y_ratio_data[used_index]
 
