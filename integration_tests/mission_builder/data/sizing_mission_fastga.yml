@@ -12,27 +12,56 @@ phases:
       - segment: speed_change
         target:
           mach: data:aerodynamics:cruise:mach
+  holding_climb:
+    engine_setting: CLIMB
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.90
+    time_step: 5.0
+    parts:
       - segment: altitude_change
         target:
+          altitude:
+            value: 1500.0
+            unit: ft
           equivalent_airspeed: constant
-          mach: data:aerodynamics:cruise:mach
+      - segment: speed_change
+        target:
+          true_airspeed: data:TLAR:v_cruise
   descent:
     engine_setting: IDLE
     polar: data:aerodynamics:aircraft:cruise
     thrust_rate: 0.10
     time_step: 5.0
     parts:
+      - segment: speed_change
+        target:
+          equivalent_airspeed: data:TLAR:v_approach
       - segment: altitude_change
         target:
           altitude:
             value: 50.
             unit: ft
           equivalent_airspeed: constant
-          mach: 0.15
+  holding_descent:
+    engine_setting: IDLE
+    polar: data:aerodynamics:aircraft:cruise
+    thrust_rate: 0.10
+    time_step: 5.0
+    parts:
+      - segment: speed_change
+        target:
+          equivalent_airspeed: data:TLAR:v_approach
+      - segment: altitude_change
+        target:
+          altitude:
+            value: 50.
+            unit: ft
+          equivalent_airspeed: constant
   holding:
     parts:
       - segment: holding
         polar: data:aerodynamics:aircraft:cruise
+        engine_setting: CRUISE
         target:
           time: data:mission:sizing:main_route:reserve:duration
   taxi_in:
@@ -50,10 +79,8 @@ routes:
       - phase: climb
     cruise_part:
       segment: cruise
-      engine_setting: cruise
+      engine_setting: CRUISE
       polar: data:aerodynamics:aircraft:cruise
-      target:
-        altitude: data:mission:sizing:main_route:cruise:altitude
     descent_parts:
       - phase: descent
 
@@ -61,5 +88,7 @@ missions:
   sizing:
     parts:
       - route: main_route
+      - phase: holding_climb
       - phase: holding
+      - phase: holding_descent
       - phase: taxi_in

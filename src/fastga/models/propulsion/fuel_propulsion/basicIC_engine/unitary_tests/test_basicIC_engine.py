@@ -785,11 +785,10 @@ EFFICIENCY_CL = np.array(
 
 
 def test_compute_flight_points():
-    # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
+    # BasicICEngine(max_power(W), design_altitude(m), fuel_type, strokes_nb, prop_layout)
     engine = BasicICEngine(
         130000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,
@@ -855,7 +854,6 @@ def test_engine_weight():
     _50kw_engine = BasicICEngine(
         50000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,
@@ -873,7 +871,6 @@ def test_engine_weight():
     _250kw_engine = BasicICEngine(
         250000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,
@@ -891,7 +888,6 @@ def test_engine_weight():
     _130kw_engine = BasicICEngine(
         130000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,
@@ -912,7 +908,6 @@ def test_engine_dim():
     _50kw_engine = BasicICEngine(
         50000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,
@@ -932,7 +927,6 @@ def test_engine_dim():
     _250kw_engine = BasicICEngine(
         250000.0,
         2400.0,
-        81.0,
         1.0,
         4.0,
         1.0,

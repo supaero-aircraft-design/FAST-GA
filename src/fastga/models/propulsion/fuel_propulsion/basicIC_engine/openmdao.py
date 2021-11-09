@@ -64,7 +64,6 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -119,7 +118,6 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "cruise_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
             ],
-            "cruise_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],

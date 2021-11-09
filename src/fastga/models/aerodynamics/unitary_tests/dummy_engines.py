@@ -37,7 +37,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self,
         max_power: float,
         design_altitude_propeller: float,
-        design_speed: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
@@ -50,7 +49,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.prop_layout = prop_layout
         self.max_power = max_power
         self.design_altitude_propeller = design_altitude_propeller
-        self.design_speed = design_speed
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
@@ -83,7 +81,6 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
 
@@ -94,7 +91,6 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "design_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
             ],
-            "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
@@ -112,7 +108,6 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self,
         max_power: float,
         design_altitude_propeller: float,
-        design_speed: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
@@ -125,7 +120,6 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.prop_layout = prop_layout
         self.max_power = max_power
         self.design_altitude_propeller = design_altitude_propeller
-        self.design_speed = design_speed
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
@@ -158,7 +152,6 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
 
@@ -169,7 +162,6 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
             "design_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
             ],
-            "design_speed": inputs["data:TLAR:v_cruise"],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],

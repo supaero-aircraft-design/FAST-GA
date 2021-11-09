@@ -541,6 +541,7 @@ class _compute_cruise(DynamicEquilibrium):
 
         self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)

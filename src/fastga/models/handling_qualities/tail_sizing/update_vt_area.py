@@ -466,6 +466,7 @@ class _UpdateVTArea(VTPConstraints):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -593,6 +594,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")

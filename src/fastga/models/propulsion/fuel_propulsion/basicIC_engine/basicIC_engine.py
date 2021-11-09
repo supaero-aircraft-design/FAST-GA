@@ -58,7 +58,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         self,
         max_power: float,
         cruise_altitude_propeller: float,
-        cruise_speed: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
@@ -106,7 +105,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.prop_layout = prop_layout
         self.max_power = max_power
         self.cruise_altitude_propeller = cruise_altitude_propeller
-        self.cruise_speed = cruise_speed
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01

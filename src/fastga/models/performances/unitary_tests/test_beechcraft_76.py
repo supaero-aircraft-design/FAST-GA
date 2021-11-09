@@ -21,7 +21,7 @@ import numpy as np
 from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
 from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
 from ..mission import Mission
-from ..payload_range.payload_range import ComputePayloadRange, TestComponent
+from ..payload_range.payload_range import ComputePayloadRange
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -30,7 +30,7 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 XML_FILE = "beechcraft_76.xml"
-SKIP_STEPS = False
+SKIP_STEPS = True
 
 
 def test_v2():
