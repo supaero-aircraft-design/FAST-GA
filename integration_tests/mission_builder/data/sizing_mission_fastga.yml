@@ -50,7 +50,7 @@ routes:
       - phase: climb
     cruise_part:
       segment: cruise
-      engine_setting: descent
+      engine_setting: cruise
       polar: data:aerodynamics:aircraft:cruise
       target:
         altitude: data:mission:sizing:main_route:cruise:altitude
