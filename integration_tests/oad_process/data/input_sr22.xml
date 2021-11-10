@@ -134,6 +134,7 @@
           <target_sideslip units="deg">15.0</target_sideslip>
         </landing>
         <takeoff>
+          <altitude units="m">0.0</altitude>
           <elevator_angle units="deg">-25.0<!--position of the elevator during takeoff--></elevator_angle>
           <flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
           <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>

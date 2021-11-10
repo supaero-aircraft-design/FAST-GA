@@ -25,6 +25,8 @@ from fastoad.model_base import Atmosphere, FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.constants import ModelDomain
 from fastoad.constants import EngineSetting
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet

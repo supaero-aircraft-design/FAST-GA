@@ -19,9 +19,24 @@ from fastoad.model_base import Atmosphere
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
+from fastga.models.performances.mission.takeoff import TakeOffPhase
+from fastga.models.weight.cg.cg_variation import InFlightCGVariation
+
 
 @RegisterOpenMDAOSystem("fastga.performances.mission_builder_prep", domain=ModelDomain.PERFORMANCE)
-class PrepareMissionBuilder(om.ExplicitComponent):
+class PrepareMissionBuilder(om.Group):
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self.add_subsystem(
+            "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+        )
+        self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
+        self.add_subsystem("mission_builder_preparation", _PrepareMissionBuilder(), promotes=["*"])
+
+
+class _PrepareMissionBuilder(om.ExplicitComponent):
     """
     Make some simple computation in order to enable the use of the mission builder in FAST-OAD-GA with relevant
     physic properties
