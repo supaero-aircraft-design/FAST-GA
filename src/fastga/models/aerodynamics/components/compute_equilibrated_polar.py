@@ -14,12 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastga.models.performances.dynamic_equilibrium import DynamicEquilibrium
+from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
 from fastoad.model_base.atmosphere import Atmosphere
 from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 
 import numpy as np
+
+FIRST_INVALID_COEFF = 100.0
 
 
 class ComputeEquilibratedPolar(DynamicEquilibrium):
@@ -170,7 +172,9 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
                 cd_array = np.append(cd_array, cd)
 
-        additional_zeros = np.zeros(POLAR_POINT_COUNT - len(cd_array))
+        additional_zeros = np.linspace(
+            FIRST_INVALID_COEFF, 2 * FIRST_INVALID_COEFF, POLAR_POINT_COUNT - len(cd_array)
+        )
         cd_array = np.append(cd_array, additional_zeros)
         cl_array = np.append(cl_array, additional_zeros)
 

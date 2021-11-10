@@ -32,8 +32,8 @@ from fastoad.constants import EngineSetting
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.performances.takeoff import SAFETY_HEIGHT, TakeOffPhase
-from fastga.models.performances.dynamic_equilibrium import DynamicEquilibrium
+from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT, TakeOffPhase
+from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation

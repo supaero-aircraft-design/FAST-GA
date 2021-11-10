@@ -18,9 +18,21 @@ from openmdao.core.group import Group
 import pytest
 import numpy as np
 
-from ..takeoff import TakeOffPhase, _v2, _vr_from_v2, _v_lift_off_from_v2, _simulate_takeoff
-from ..mission import _compute_taxi, _compute_climb, _compute_cruise, _compute_descent
-from ..mission import Mission
+from fastga.models.performances.mission.takeoff import (
+    TakeOffPhase,
+    _v2,
+    _vr_from_v2,
+    _v_lift_off_from_v2,
+    _simulate_takeoff,
+)
+from fastga.models.performances.mission.mission import (
+    _compute_taxi,
+    _compute_climb,
+    _compute_cruise,
+    _compute_descent,
+)
+from fastga.models.performances.mission.mission import Mission
+from fastga.models.performances.mission.mission_builder_prep import PrepareMissionBuilder
 from ..payload_range.payload_range import ComputePayloadRange
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -168,6 +180,20 @@ def test_compute_taxi():
     assert fuel_mass == pytest.approx(
         0.23, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
+
+
+def test_min_climb_speed():
+    """ Tests min climb speed computation """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(PrepareMissionBuilder()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(PrepareMissionBuilder(), ivc)
+    v_climb_min = problem.get_val("data:mission:sizing:cs23:min_climb_speed", units="m/s")
+    assert v_climb_min == pytest.approx(45.102, abs=1e-2)
+    v_holding = problem.get_val("data:mission:sizing:holding:v_holding", units="m/s")
+    assert v_holding == pytest.approx(61.73, abs=1e-2)
 
 
 def test_compute_climb():

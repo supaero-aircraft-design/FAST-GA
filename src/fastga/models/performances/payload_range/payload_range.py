@@ -23,7 +23,7 @@ from fastoad.module_management.constants import ModelDomain
 import logging
 from scipy.optimize import fsolve
 
-from fastga.models.performances.mission import Mission
+from fastga.models.performances.mission.mission import Mission
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -5,6 +5,9 @@ phases:
     thrust_rate: 0.90
     time_step: 5.0
     parts:
+      - segment: speed_change
+        target:
+          true_airspeed: data:mission:sizing:cs23:min_climb_speed
       - segment: altitude_change
         target:
           altitude: data:mission:sizing:main_route:cruise:altitude
@@ -14,7 +17,7 @@ phases:
           mach: data:aerodynamics:cruise:mach
   holding_climb:
     engine_setting: CLIMB
-    polar: data:aerodynamics:aircraft:cruise
+    polar: data:aerodynamics:aircraft:cruise:equilibrated
     thrust_rate: 0.90
     time_step: 5.0
     parts:
@@ -26,16 +29,16 @@ phases:
           equivalent_airspeed: constant
       - segment: speed_change
         target:
-          true_airspeed: data:TLAR:v_cruise
+          true_airspeed: data:mission:sizing:holding:v_holding
   descent:
     engine_setting: IDLE
-    polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: 0.10
+    polar: data:aerodynamics:aircraft:cruise:equilibrated
+    thrust_rate: 0.15
     time_step: 5.0
     parts:
       - segment: speed_change
         target:
-          equivalent_airspeed: data:TLAR:v_approach
+          equivalent_airspeed: data:mission:sizing:cs23:min_climb_speed
       - segment: altitude_change
         target:
           altitude:
@@ -44,13 +47,13 @@ phases:
           equivalent_airspeed: constant
   holding_descent:
     engine_setting: IDLE
-    polar: data:aerodynamics:aircraft:cruise
-    thrust_rate: 0.10
+    polar: data:aerodynamics:aircraft:cruise:equilibrated
+    thrust_rate: 0.15
     time_step: 5.0
     parts:
       - segment: speed_change
         target:
-          equivalent_airspeed: data:TLAR:v_approach
+          equivalent_airspeed: data:mission:sizing:cs23:min_climb_speed
       - segment: altitude_change
         target:
           altitude:
@@ -60,11 +63,18 @@ phases:
   holding:
     parts:
       - segment: holding
-        polar: data:aerodynamics:aircraft:cruise
+        polar: data:aerodynamics:aircraft:cruise:equilibrated
         engine_setting: CRUISE
         target:
           time: data:mission:sizing:main_route:reserve:duration
   taxi_in:
+    parts:
+      - segment: taxi
+        thrust_rate: data:mission:sizing:taxi_in:thrust_rate
+        true_airspeed: data:mission:sizing:taxi_in:speed
+        target:
+          time: data:mission:sizing:taxi_in:duration
+  taxi_out_ersatz:
     parts:
       - segment: taxi
         thrust_rate: data:mission:sizing:taxi_in:thrust_rate
@@ -80,7 +90,7 @@ routes:
     cruise_part:
       segment: cruise
       engine_setting: CRUISE
-      polar: data:aerodynamics:aircraft:cruise
+      polar: data:aerodynamics:aircraft:cruise:equilibrated
     descent_parts:
       - phase: descent
 
@@ -92,3 +102,4 @@ missions:
       - phase: holding
       - phase: holding_descent
       - phase: taxi_in
+      - phase: taxi_out_ersatz

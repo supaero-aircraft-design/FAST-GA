@@ -14,6 +14,8 @@ model:
     polar:
         id: fastga.aerodynamics.cl_cd_polar
         cg_ratio: 0.5
+    pre_mission_builder:
+        id: fastga.performances.mission_builder_prep
     performance:
         id: fastoad.performances.mission
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine

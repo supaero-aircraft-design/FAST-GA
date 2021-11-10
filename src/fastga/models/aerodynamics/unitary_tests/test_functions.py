@@ -53,6 +53,7 @@ from fastga.models.aerodynamics.components import (
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
 )
+from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.load_factor import LoadFactor
@@ -1139,12 +1140,12 @@ def equilibrated_cl_cd_polar(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5), ivc)
-    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CD")[
-        ::10
-    ] == pytest.approx(cd_polar_ls_, abs=1e-4)
-    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CL")[
-        ::10
-    ] == pytest.approx(cl_polar_ls_, abs=1e-2)
+    polar_cd = np.array(problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CD"))
+    valid_polar_cd = polar_cd[np.where(polar_cd < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cd)[::10] == pytest.approx(cd_polar_ls_, abs=1e-4)
+    polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CL"))
+    valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_ls_, abs=1e-2)
 
     ivc = get_indep_var_comp(
         list_inputs(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5)),
@@ -1154,9 +1155,9 @@ def equilibrated_cl_cd_polar(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5), ivc)
-    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CD")[
-        ::10
-    ] == pytest.approx(cd_polar_cruise_, abs=1e-4)
-    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL")[
-        ::10
-    ] == pytest.approx(cl_polar_cruise_, abs=1e-2)
+    polar_cd = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CD"))
+    valid_polar_cd = polar_cd[np.where(polar_cd < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cd)[::10] == pytest.approx(cd_polar_cruise_, abs=1e-4)
+    polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL"))
+    valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_cruise_, abs=1e-2)
