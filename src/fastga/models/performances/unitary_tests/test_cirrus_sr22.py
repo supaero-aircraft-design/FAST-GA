@@ -183,14 +183,16 @@ def test_compute_taxi():
     )  # result strongly dependent on the defined Thrust limit
 
 
-def test_min_climb_speed():
+def test_mission_builder_prep():
     """Tests min climb speed computation"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(PrepareMissionBuilder()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(PrepareMissionBuilder(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(PrepareMissionBuilder(), ivc)
+    problem = run_system(PrepareMissionBuilder(propulsion_id=ENGINE_WRAPPER), ivc)
     v_climb_min = problem.get_val("data:mission:sizing:cs23:min_climb_speed", units="m/s")
     assert v_climb_min == pytest.approx(45.758, abs=1e-2)
     v_holding = problem.get_val("data:mission:sizing:holding:v_holding", units="m/s")
