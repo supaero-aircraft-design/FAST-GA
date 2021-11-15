@@ -2,6 +2,19 @@
 Changelog
 =========
 
+Version 0.1.4-beta
+==================
+
+- Changed the variables that define nacelle position, they are now arrays
+- When reading the .csv polar Mach number within a given precision are now read
+- Variable descriptions were added
+- Minor model error corrections
+- Like the **generate_xml_file** was added which creates a default input file that matches what is need in **generate_configuration_file**
+- Added polar computation
+- Added payload-range diagram computation
+- Use of the mission builder feature in FAST-OAD-GA is now possible
+- Changed the name of some variables to make the use of the mission builder possible namely: data:geometry:propulsion:count, data:geometry:propulsion:layout, data:geometry:propulsion:y_ratio
+
 Version 0.1.3-beta
 ==================
 
