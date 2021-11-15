@@ -110,7 +110,7 @@ def test_ivc_working():
 
 
 def test_supernumerary_inputs():
-    """ Tests if the various errors implemented in the function handling are caught """
+    """Tests if the various errors implemented in the function handling are caught"""
 
     xml_file = pth.join(pth.dirname(__file__), "data/supernumerary_inputs.xml")
 
@@ -139,7 +139,7 @@ def test_supernumerary_inputs():
 
 
 def test_empty_xml():
-    """ Tests if the various errors implemented in the function handling are caught """
+    """Tests if the various errors implemented in the function handling are caught"""
 
     missing_xml = pth.join(pth.dirname(__file__), "data/missing.xml")
 

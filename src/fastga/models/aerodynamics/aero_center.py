@@ -24,7 +24,7 @@ from fastoad.model_base import Atmosphere
 
 class ComputeAeroCenter(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Aerodynamic center estimation """
+    """Aerodynamic center estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")

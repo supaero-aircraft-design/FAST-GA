@@ -23,7 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail sweeps and aspect ratio estimation """
+    """Horizontal tail sweeps and aspect ratio estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")

@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeVTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail wet area estimation """
+    """Vertical tail wet area estimation"""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")

@@ -32,7 +32,7 @@ class OpenMdaoOptionDispatcherGroup(om.Group):
     """
 
     def configure(self):
-        """ Update options for all subsystems """
+        """Update options for all subsystems"""
         for key in self.options:
             value = self.options[key]
             for subsystem in self.system_iter(recurse=False):

@@ -664,7 +664,7 @@ class VariableListLocal(VariableList):
 
 
 def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """ Reads all variables from a component/problem and return as a list """
+    """Reads all variables from a component/problem and return as a list"""
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
         new_component.add_subsystem("system", component, promotes=["*"])
@@ -675,7 +675,7 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
 
 
 def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """ Reads all variables from a component/problem and returns inputs as a list """
+    """Reads all variables from a component/problem and returns inputs as a list"""
     variables = list_variables(component)
     input_names = [var.name for var in variables if var.is_input]
 
@@ -683,7 +683,7 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
 
 
 def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """ Reads all variables from a component/problem and returns outputs as a list """
+    """Reads all variables from a component/problem and returns outputs as a list"""
     variables = list_variables(component)
     output_names = [var.name for var in variables if not var.is_input]
 

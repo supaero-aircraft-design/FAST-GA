@@ -24,7 +24,7 @@ from openmdao.api import Group
 
 class ComputeGlobalCG(Group):
     # TODO: Document equations. Cite sources
-    """ Global center of gravity estimation """
+    """Global center of gravity estimation"""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

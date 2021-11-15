@@ -143,7 +143,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
 
 class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
-    """ Lift curve slope coefficient from Xfoil polars """
+    """Lift curve slope coefficient from Xfoil polars"""
 
     def setup(self):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)

@@ -50,7 +50,8 @@ class TakeOffPhase(om.Group):
             "compute_v2",
             _v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
-                _v2(propulsion_id=self.options["propulsion_id"]), iotypes="inputs",
+                _v2(propulsion_id=self.options["propulsion_id"]),
+                iotypes="inputs",
             ),
         )
         self.add_subsystem(
@@ -58,7 +59,10 @@ class TakeOffPhase(om.Group):
             _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _v_lift_off_from_v2(propulsion_id=self.options["propulsion_id"]),
-                excludes=["v2:speed", "v2:angle",],
+                excludes=[
+                    "v2:speed",
+                    "v2:angle",
+                ],
                 iotypes="inputs",
             ),
         )
@@ -67,7 +71,10 @@ class TakeOffPhase(om.Group):
             _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _vr_from_v2(propulsion_id=self.options["propulsion_id"]),
-                excludes=["v_lift_off:speed", "v_lift_off:angle",],
+                excludes=[
+                    "v_lift_off:speed",
+                    "v_lift_off:angle",
+                ],
                 iotypes="inputs",
             ),
         )
@@ -76,7 +83,10 @@ class TakeOffPhase(om.Group):
             _simulate_takeoff(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _simulate_takeoff(propulsion_id=self.options["propulsion_id"]),
-                excludes=["vr:speed", "v2:angle",],
+                excludes=[
+                    "vr:speed",
+                    "v2:angle",
+                ],
             ),
         )
         self.connect("compute_v2.v2:speed", "compute_v_lift_off.v2:speed")

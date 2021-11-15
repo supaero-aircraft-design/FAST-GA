@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeLifeSupportCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Life support systems center of gravity estimation """
+    """Life support systems center of gravity estimation"""
 
     def setup(self):
 

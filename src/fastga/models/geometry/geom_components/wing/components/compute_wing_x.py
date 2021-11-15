@@ -22,7 +22,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingX(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing Xs estimation """
+    """Wing Xs estimation"""
 
     def setup(self):
 

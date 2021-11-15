@@ -23,10 +23,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeCnBetaFuselage(ExplicitComponent):
     """
-        Yawing moment due to side-slip estimation
+    Yawing moment due to side-slip estimation
 
-        Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-        Astronautics, Inc., 2012. Sixth Edition, equation 16.50
+    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
+    Astronautics, Inc., 2012. Sixth Edition, equation 16.50
     """
 
     def setup(self):

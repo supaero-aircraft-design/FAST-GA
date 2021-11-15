@@ -51,7 +51,7 @@ class XfoilGroup(Group):
 
 
 class _XfoilGroupPrep(ExplicitComponent):
-    """ Compute the correct mach number for the Xfoil preprocessing"""
+    """Compute the correct mach number for the Xfoil preprocessing"""
 
     def setup(self):
 

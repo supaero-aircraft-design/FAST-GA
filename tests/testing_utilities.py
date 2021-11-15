@@ -40,7 +40,7 @@ def run_system(
     add_solvers=False,
     check=False,
 ):
-    """ Runs and returns an OpenMDAO problem with provided component and data"""
+    """Runs and returns an OpenMDAO problem with provided component and data"""
     problem = om.Problem()
     model = problem.model
     model.add_subsystem("inputs", input_vars, promotes=["*"])
@@ -64,7 +64,7 @@ def run_system(
 
 # FIXME: problem to be solved on the register
 def register_wrappers():
-    """ Register all the wrappers from models """
+    """Register all the wrappers from models"""
     path, folder_name = pth.dirname(__file__), None
     unsplit_path = path
     while folder_name != "models":
@@ -74,7 +74,7 @@ def register_wrappers():
 
 
 def get_indep_var_comp(var_names: List[str], test_file: str, xml_file_name: str) -> om.IndepVarComp:
-    """ Reads required input data from xml file and returns an IndepVarcomp() instance"""
+    """Reads required input data from xml file and returns an IndepVarcomp() instance"""
     reader = VariableIO(pth.join(pth.dirname(test_file), "data", xml_file_name))
     reader.path_separator = ":"
     ivc = reader.read(only=var_names).to_ivc()
@@ -110,7 +110,7 @@ class VariableListLocal(VariableList):
 
 
 def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """ Reads input variables from a component/problem and return as a list """
+    """Reads input variables from a component/problem and return as a list"""
     # register_wrappers()
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
@@ -132,5 +132,7 @@ class Timer(object):
     def __exit__(self, type, value, traceback):
         print("\n")
         if self.name:
-            print("[%s]" % self.name,)
+            print(
+                "[%s]" % self.name,
+            )
         print("Elapsed: %s" % (time.time() - self.tstart))

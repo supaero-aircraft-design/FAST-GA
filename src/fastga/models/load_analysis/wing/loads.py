@@ -25,7 +25,9 @@ from fastoad.module_management.constants import ModelDomain
 class WingLoads(om.Group):
     def setup(self):
         self.add_subsystem(
-            "aerostructural_loads", AerostructuralLoad(), promotes=["*"],
+            "aerostructural_loads",
+            AerostructuralLoad(),
+            promotes=["*"],
         )
         self.add_subsystem("structural_loads", StructuralLoads(), promotes=["*"])
         self.add_subsystem("aerodynamic_loads", AerodynamicLoads(), promotes=["*"])

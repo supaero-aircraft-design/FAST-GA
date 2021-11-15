@@ -22,7 +22,7 @@ import warnings
 
 class ComputeMFWSimple(ExplicitComponent):
 
-    """ Max fuel weight estimation based o RAYMER table 10.5 p269"""
+    """Max fuel weight estimation based o RAYMER table 10.5 p269"""
 
     def setup(self):
 

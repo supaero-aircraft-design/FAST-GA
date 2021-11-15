@@ -27,7 +27,7 @@ XML_FILE = "beechcraft_76.xml"
 
 
 def test_update_vt_area():
-    """ Tests computation of the vertical tail area """
+    """Tests computation of the vertical tail area"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -65,7 +65,7 @@ def test_update_vt_area():
 
 
 def test_update_ht_area():
-    """ Tests computation of the horizontal tail area """
+    """Tests computation of the horizontal tail area"""
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -90,7 +90,7 @@ def test_update_ht_area():
 
 
 def test_compute_static_margin():
-    """ Tests computation of static margin """
+    """Tests computation of static margin"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeStaticMargin()), __file__, XML_FILE)
@@ -104,7 +104,7 @@ def test_compute_static_margin():
 
 
 def test_compute_to_rotation_limit():
-    """ Tests the computation of the forward most possible CG location for the TO rotation in case HTP area is fixed"""
+    """Tests the computation of the forward most possible CG location for the TO rotation in case HTP area is fixed"""
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
@@ -122,7 +122,7 @@ def test_compute_to_rotation_limit():
 
 
 def test_balked_landing_limit():
-    """ Tests the computation of the forward most possible CG location for a balked landing in case HTP area is fixed"""
+    """Tests the computation of the forward most possible CG location for a balked landing in case HTP area is fixed"""
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker

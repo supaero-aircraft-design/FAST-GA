@@ -322,7 +322,10 @@ def polar(
 
 
 def airfoil_slope_wt_xfoil(
-    XML_FILE: str, wing_airfoil_file: str, htp_airfoil_file: str, vtp_airfoil_file: str,
+    XML_FILE: str,
+    wing_airfoil_file: str,
+    htp_airfoil_file: str,
+    vtp_airfoil_file: str,
 ):
     """Tests polar execution (XFOIL) @ high speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
@@ -366,7 +369,10 @@ def airfoil_slope_xfoil(
     tmp_folder = polar_result_transfer()
 
     problem = airfoil_slope_wt_xfoil(
-        XML_FILE, wing_airfoil_file, htp_airfoil_file, vtp_airfoil_file,
+        XML_FILE,
+        wing_airfoil_file,
+        htp_airfoil_file,
+        vtp_airfoil_file,
     )
 
     # Retrieve polar results from temporary folder
@@ -385,7 +391,10 @@ def airfoil_slope_xfoil(
 
 
 def compute_aero(
-    XML_FILE: str, use_openvsp: bool, mach_interpolation: bool, low_speed_aero: bool,
+    XML_FILE: str,
+    use_openvsp: bool,
+    mach_interpolation: bool,
+    low_speed_aero: bool,
 ):
     """Compute aero components!"""
     # Create result temporary directory
@@ -755,7 +764,9 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
 
 def slipstream_openvsp(
-    XML_FILE: str, ENGINE_WRAPPER: str, low_speed_aero: bool,
+    XML_FILE: str,
+    ENGINE_WRAPPER: str,
+    low_speed_aero: bool,
 ):
     # Create result temporary directory
     results_folder = _create_tmp_directory()

@@ -21,7 +21,7 @@ import numpy as np
 
 class ComputeHTEfficiency(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail dynamic pressure reduction due to geometric positioning """
+    """Horizontal tail dynamic pressure reduction due to geometric positioning"""
 
     def setup(self):
         self.add_input("data:geometry:has_T_tail", val=np.nan)

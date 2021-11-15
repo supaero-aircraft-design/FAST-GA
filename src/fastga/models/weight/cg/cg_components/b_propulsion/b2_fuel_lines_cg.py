@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeFuelLinesCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Fuel lines center of gravity estimation """
+    """Fuel lines center of gravity estimation"""
 
     def setup(self):
 

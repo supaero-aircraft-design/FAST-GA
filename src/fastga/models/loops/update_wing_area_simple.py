@@ -40,7 +40,7 @@ class UpdateWingAreaSimple(om.Group):
 
 
 class _UpdateWingAreaSimple(om.ExplicitComponent):
-    """ Computation of wing area from needed approach speed and mission fuel """
+    """Computation of wing area from needed approach speed and mission fuel"""
 
     def setup(self):
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")

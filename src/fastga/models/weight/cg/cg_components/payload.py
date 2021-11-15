@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputePayloadCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Payload center(s) of gravity estimation """
+    """Payload center(s) of gravity estimation"""
 
     def setup(self):
 

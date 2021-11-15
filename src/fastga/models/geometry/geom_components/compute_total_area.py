@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Total aircraft wet area estimation """
+    """Total aircraft wet area estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:wet_area", val=np.nan, units="m**2")

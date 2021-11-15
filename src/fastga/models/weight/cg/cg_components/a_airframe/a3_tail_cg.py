@@ -75,7 +75,7 @@ class ComputeHTcg(ExplicitComponent):
 
 class ComputeVTcg(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Vertical tail center of gravity estimation """
+    """Vertical tail center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")

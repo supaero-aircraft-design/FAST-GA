@@ -45,7 +45,7 @@ XML_FILE = "cirrus_sr22.xml"
 
 
 def test_v2():
-    """ Tests safety speed """
+    """Tests safety speed"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(_v2(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
@@ -61,7 +61,7 @@ def test_v2():
 
 
 def test_vloff():
-    """ Tests lift-off speed """
+    """Tests lift-off speed"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -79,7 +79,7 @@ def test_vloff():
 
 
 def test_vr():
-    """ Tests rotation speed """
+    """Tests rotation speed"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -97,7 +97,7 @@ def test_vr():
 
 
 def test_simulate_takeoff():
-    """ Tests simulate takeoff """
+    """Tests simulate takeoff"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -127,7 +127,7 @@ def test_simulate_takeoff():
 
 
 def test_takeoff_phase_connections():
-    """ Tests complete take-off phase connection with speeds """
+    """Tests complete take-off phase connection with speeds"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -156,7 +156,7 @@ def test_takeoff_phase_connections():
 
 
 def test_compute_taxi():
-    """ Tests taxi in/out phase """
+    """Tests taxi in/out phase"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -184,7 +184,7 @@ def test_compute_taxi():
 
 
 def test_min_climb_speed():
-    """ Tests min climb speed computation """
+    """Tests min climb speed computation"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(PrepareMissionBuilder()), __file__, XML_FILE)
@@ -198,7 +198,7 @@ def test_min_climb_speed():
 
 
 def test_compute_climb():
-    """ Tests climb phase """
+    """Tests climb phase"""
 
     # Research independent input value in .xml file
     group = Group()
@@ -221,7 +221,7 @@ def test_compute_climb():
 
 
 def test_compute_cruise():
-    """ Tests cruise phase """
+    """Tests cruise phase"""
 
     # Research independent input value in .xml file
     group = Group()
@@ -242,7 +242,7 @@ def test_compute_cruise():
 
 
 def test_compute_descent():
-    """ Tests descent phase """
+    """Tests descent phase"""
 
     # Research independent input value in .xml file
     group = Group()
@@ -263,7 +263,7 @@ def test_compute_descent():
 
 
 def test_loop_cruise_distance():
-    """ Tests a distance computation loop matching the descent value/TLAR total range. """
+    """Tests a distance computation loop matching the descent value/TLAR total range."""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(Mission(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
@@ -284,7 +284,7 @@ def test_loop_cruise_distance():
 
 
 def test_payload_range():
-    """ Tests the payload range computation. Here the results and especially the range array do not make a lot of sense
+    """Tests the payload range computation. Here the results and especially the range array do not make a lot of sense
     because of the dummy engine model. Note that the third point of the arrays is the design point."""
 
     # Research independent input value in .xml file

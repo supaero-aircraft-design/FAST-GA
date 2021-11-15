@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingL1AndL4(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing chords (l1 and l4) estimation """
+    """Wing chords (l1 and l4) estimation"""
 
     def setup(self):
 

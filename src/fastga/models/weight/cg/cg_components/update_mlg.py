@@ -20,7 +20,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class UpdateMLG(ExplicitComponent):
-    """ Main landing gear center of gravity estimation """
+    """Main landing gear center of gravity estimation"""
 
     def setup(self):
 

@@ -244,7 +244,7 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
 
     @staticmethod
     def _reshape_curve(y: np.ndarray, cl: np.ndarray):
-        """ Reshape data from openvsp/vlm lift curve """
+        """Reshape data from openvsp/vlm lift curve"""
 
         for idx in range(len(y)):
             if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
@@ -257,7 +257,7 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
 
 class ComputeHtp3DExtremeCL(ExplicitComponent):
     """
-        Computes HTP 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition
+    Computes HTP 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition
     """
 
     def setup(self):
@@ -352,7 +352,7 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
 
     @staticmethod
     def _reshape_curve(y: np.ndarray, cl: np.ndarray):
-        """ Reshape data from openvsp/vlm lift curve """
+        """Reshape data from openvsp/vlm lift curve"""
 
         for idx in range(len(y)):
             if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):

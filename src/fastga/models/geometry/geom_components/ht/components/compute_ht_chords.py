@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTChord(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail chords and span estimation """
+    """Horizontal tail chords and span estimation"""
 
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")

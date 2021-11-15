@@ -59,7 +59,7 @@ def test_compute_payload():
 
 
 def test_compute_wing_weight():
-    """ Tests wing weight computation from sample XML data """
+    """Tests wing weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWingWeight()), __file__, XML_FILE)
@@ -73,7 +73,7 @@ def test_compute_wing_weight():
 
 
 def test_compute_fuselage_weight():
-    """ Tests fuselage weight computation from sample XML data """
+    """Tests fuselage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeight()), __file__, XML_FILE)
@@ -85,7 +85,7 @@ def test_compute_fuselage_weight():
 
 
 def test_compute_fuselage_weight_raymer():
-    """ Tests fuselage weight computation from sample XML data """
+    """Tests fuselage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeightRaymer()), __file__, XML_FILE)
@@ -97,7 +97,7 @@ def test_compute_fuselage_weight_raymer():
 
 
 def test_compute_empennage_weight():
-    """ Tests empennage weight computation from sample XML data """
+    """Tests empennage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeTailWeight()), __file__, XML_FILE)
@@ -111,7 +111,7 @@ def test_compute_empennage_weight():
 
 
 def test_compute_flight_controls_weight():
-    """ Tests flight controls weight computation from sample XML data """
+    """Tests flight controls weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFlightControlsWeight()), __file__, XML_FILE)
@@ -123,7 +123,7 @@ def test_compute_flight_controls_weight():
 
 
 def test_compute_landing_gear_weight():
-    """ Tests landing gear weight computation from sample XML data """
+    """Tests landing gear weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLandingGearWeight()), __file__, XML_FILE)
@@ -137,7 +137,7 @@ def test_compute_landing_gear_weight():
 
 
 def test_compute_oil_weight():
-    """ Tests engine weight computation from sample XML data """
+    """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -151,7 +151,7 @@ def test_compute_oil_weight():
 
 
 def test_compute_engine_weight():
-    """ Tests engine weight computation from sample XML data """
+    """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -165,7 +165,7 @@ def test_compute_engine_weight():
 
 
 def test_compute_fuel_lines_weight():
-    """ Tests fuel lines weight computation from sample XML data """
+    """Tests fuel lines weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuelLinesWeight()), __file__, XML_FILE)
@@ -177,7 +177,7 @@ def test_compute_fuel_lines_weight():
 
 
 def test_compute_unusable_fuel_weight():
-    """ Tests engine weight computation from sample XML data """
+    """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -191,7 +191,7 @@ def test_compute_unusable_fuel_weight():
 
 
 def test_compute_navigation_systems_weight():
-    """ Tests navigation systems weight computation from sample XML data """
+    """Tests navigation systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeNavigationSystemsWeight()), __file__, XML_FILE)
@@ -215,7 +215,7 @@ def test_compute_navigation_systems_weight():
 
 
 def test_compute_power_systems_weight():
-    """ Tests power systems weight computation from sample XML data """
+    """Tests power systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePowerSystemsWeight()), __file__, XML_FILE)
@@ -229,7 +229,7 @@ def test_compute_power_systems_weight():
 
 
 def test_compute_life_support_systems_weight():
-    """ Tests life support systems weight computation from sample XML data """
+    """Tests life support systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLifeSupportSystemsWeight()), __file__, XML_FILE)
@@ -259,7 +259,7 @@ def test_compute_life_support_systems_weight():
 
 
 def test_compute_passenger_seats_weight():
-    """ Tests passenger seats weight computation from sample XML data """
+    """Tests passenger seats weight computation from sample XML data"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePassengerSeatsWeight()), __file__, XML_FILE)
@@ -273,7 +273,7 @@ def test_compute_passenger_seats_weight():
 
 
 def test_evaluate_owe():
-    """ Tests a simple evaluation of Operating Weight Empty from sample XML data. """
+    """Tests a simple evaluation of Operating Weight Empty from sample XML data."""
 
     ivc = get_indep_var_comp(
         list_inputs(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -287,7 +287,7 @@ def test_evaluate_owe():
 
 
 def test_loop_compute_owe():
-    """ Tests a weight computation loop matching the max payload criterion. """
+    """Tests a weight computation loop matching the max payload criterion."""
 
     # Payload is computed from NPAX_design
     ivc = get_indep_var_comp(
@@ -298,7 +298,9 @@ def test_loop_compute_owe():
 
     # noinspection PyTypeChecker
     mass_computation = run_system(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
+        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True),
+        ivc,
+        check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1124, abs=1)

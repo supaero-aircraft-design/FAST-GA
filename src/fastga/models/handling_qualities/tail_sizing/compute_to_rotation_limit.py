@@ -49,7 +49,11 @@ class ComputeTORotationLimitGroup(om.Group):
             ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 ComputeTORotationLimit(propulsion_id=self.options["propulsion_id"]),
-                excludes=["takeoff:cl_htp", "takeoff:cm_wing", "low_speed:cl_alpha_htp",],
+                excludes=[
+                    "takeoff:cl_htp",
+                    "takeoff:cm_wing",
+                    "low_speed:cl_alpha_htp",
+                ],
             ),
         )
         self.connect("aero_coeff_to.cl_htp", "to_rotation_limit.takeoff:cl_htp")

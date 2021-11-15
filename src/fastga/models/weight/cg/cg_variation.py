@@ -20,7 +20,7 @@ import openmdao.api as om
 
 
 class InFlightCGVariation(om.ExplicitComponent):
-    """ Computes the coefficient necessary to the calculation of the cg position at any point of the DESIGN flight """
+    """Computes the coefficient necessary to the calculation of the cg position at any point of the DESIGN flight"""
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)

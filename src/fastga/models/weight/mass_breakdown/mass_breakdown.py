@@ -86,7 +86,7 @@ class MassBreakdown(om.Group):
 
 
 class ComputeOperatingWeightEmpty(om.Group):
-    """ Operating Empty Weight (OEW) estimation
+    """Operating Empty Weight (OEW) estimation
 
     This group aggregates weight from all components of the aircraft.
     """
@@ -138,18 +138,25 @@ class ComputeOperatingWeightEmpty(om.Group):
             desc="Mass of airframe",
         )
         self.add_subsystem(
-            "airframe_weight_sum", airframe_sum, promotes=["*"],
+            "airframe_weight_sum",
+            airframe_sum,
+            promotes=["*"],
         )
 
         propulsion_sum = om.AddSubtractComp()
         propulsion_sum.add_equation(
             "data:weight:propulsion:mass",
-            ["data:weight:propulsion:engine:mass", "data:weight:propulsion:fuel_lines:mass",],
+            [
+                "data:weight:propulsion:engine:mass",
+                "data:weight:propulsion:fuel_lines:mass",
+            ],
             units="kg",
             desc="Mass of the propulsion system",
         )
         self.add_subsystem(
-            "propulsion_weight_sum", propulsion_sum, promotes=["*"],
+            "propulsion_weight_sum",
+            propulsion_sum,
+            promotes=["*"],
         )
 
         systems_sum = om.AddSubtractComp()
@@ -171,7 +178,9 @@ class ComputeOperatingWeightEmpty(om.Group):
             desc="Mass of aircraft systems",
         )
         self.add_subsystem(
-            "systems_weight_sum", systems_sum, promotes=["*"],
+            "systems_weight_sum",
+            systems_sum,
+            promotes=["*"],
         )
 
         furniture_sum = om.AddSubtractComp()
@@ -186,7 +195,9 @@ class ComputeOperatingWeightEmpty(om.Group):
             desc="Mass of aircraft furniture",
         )
         self.add_subsystem(
-            "furniture_weight_sum", furniture_sum, promotes=["*"],
+            "furniture_weight_sum",
+            furniture_sum,
+            promotes=["*"],
         )
 
         owe_sum = om.AddSubtractComp()
@@ -202,5 +213,7 @@ class ComputeOperatingWeightEmpty(om.Group):
             desc="Mass of aircraft",
         )
         self.add_subsystem(
-            "OWE_sum", owe_sum, promotes=["*"],
+            "OWE_sum",
+            owe_sum,
+            promotes=["*"],
         )

@@ -23,7 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingY(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing Ys estimation """
+    """Wing Ys estimation"""
 
     def setup(self):
 
@@ -56,7 +56,10 @@ class ComputeWingY(ExplicitComponent):
         )
         self.declare_partials(
             "data:geometry:wing:tip:y",
-            ["data:geometry:wing:area", "data:geometry:wing:aspect_ratio",],
+            [
+                "data:geometry:wing:area",
+                "data:geometry:wing:aspect_ratio",
+            ],
             method="fd",
         )
 

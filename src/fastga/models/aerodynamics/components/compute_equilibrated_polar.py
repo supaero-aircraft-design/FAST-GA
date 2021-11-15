@@ -92,10 +92,12 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             self.add_input("data:TLAR:v_approach", np.nan, units="m/s")
 
             self.add_output(
-                "data:aerodynamics:aircraft:low_speed:equilibrated:CD", shape=POLAR_POINT_COUNT,
+                "data:aerodynamics:aircraft:low_speed:equilibrated:CD",
+                shape=POLAR_POINT_COUNT,
             )
             self.add_output(
-                "data:aerodynamics:aircraft:low_speed:equilibrated:CL", shape=POLAR_POINT_COUNT,
+                "data:aerodynamics:aircraft:low_speed:equilibrated:CL",
+                shape=POLAR_POINT_COUNT,
             )
 
         else:

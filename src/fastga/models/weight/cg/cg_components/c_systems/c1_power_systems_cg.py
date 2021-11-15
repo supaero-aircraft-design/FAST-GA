@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputePowerSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Power systems center(s) of gravity estimation """
+    """Power systems center(s) of gravity estimation"""
 
     def setup(self):
 

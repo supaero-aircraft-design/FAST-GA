@@ -25,7 +25,7 @@ from .....aerodynamics.constants import ENGINE_COUNT
 
 class ComputeEngineCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Engine(s) center of gravity estimation """
+    """Engine(s) center of gravity estimation"""
 
     def setup(self):
 

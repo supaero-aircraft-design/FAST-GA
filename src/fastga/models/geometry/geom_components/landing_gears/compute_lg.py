@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Landing gears geometry estimation. Position along the span is based on aircraft pictures analysis """
+    """Landing gears geometry estimation. Position along the span is based on aircraft pictures analysis"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

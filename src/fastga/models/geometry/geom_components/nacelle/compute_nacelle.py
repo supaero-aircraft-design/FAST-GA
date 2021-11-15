@@ -29,7 +29,7 @@ from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 class ComputeNacelleGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Nacelle and pylon geometry estimation """
+    """Nacelle and pylon geometry estimation"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

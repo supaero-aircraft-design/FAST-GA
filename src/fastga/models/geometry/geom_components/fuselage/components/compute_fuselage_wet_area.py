@@ -26,7 +26,7 @@ from fastga.models.options import FUSELAGE_WET_AREA_OPTION
 
 class ComputeFuselageWetArea(ExplicitComponent):
 
-    """ Fuselage wet area estimation, based on the option it can either be determined based on :
+    """Fuselage wet area estimation, based on the option it can either be determined based on :
     - a simple geometric description of the fuselage one cone at the front a cylinder in the middle and a cone at the
     back
     - Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights Estimation
