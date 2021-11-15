@@ -57,7 +57,11 @@ class UpdateHTArea(om.Group):
             _UpdateArea(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _UpdateArea(propulsion_id=self.options["propulsion_id"]),
-                excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
+                excludes=[
+                    "landing:cl_htp",
+                    "takeoff:cl_htp",
+                    "low_speed:cl_alpha_htp_isolated",
+                ],
             ),
         )
         self.add_subsystem(
@@ -65,7 +69,11 @@ class UpdateHTArea(om.Group):
             _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
-                excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
+                excludes=[
+                    "landing:cl_htp",
+                    "takeoff:cl_htp",
+                    "low_speed:cl_alpha_htp_isolated",
+                ],
             ),
         )
 
@@ -121,7 +129,7 @@ class HTPConstraints(om.ExplicitComponent):
 
     def takeoff_rotation(self, inputs):
 
-        n_engines = inputs["data:geometry:propulsion:count"]
+        n_engines = inputs["data:geometry:propulsion:engine:count"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_mac = inputs["data:geometry:wing:MAC:length"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -157,7 +165,7 @@ class HTPConstraints(om.ExplicitComponent):
         rho = atm.density
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         # Calculation of take-off minimum speed
@@ -208,7 +216,7 @@ class HTPConstraints(om.ExplicitComponent):
     def landing(self, inputs):
 
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
 
         wing_area = inputs["data:geometry:wing:area"]
@@ -299,7 +307,7 @@ class _UpdateArea(HTPConstraints):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("settings:weight:aircraft:CG:range", val=0.3)
         self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -375,7 +383,7 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("settings:weight:aircraft:CG:range", val=0.3)
         self.add_input("data:mission:sizing:takeoff:thrust_rate", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")

@@ -24,12 +24,6 @@ from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class StructuralLoads(AerostructuralLoad):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
         nans_array_orig_vector = np.full(SPAN_MESH_POINT, np.nan)
         self.add_input("data:loads:max_shear:load_factor", val=np.nan)
@@ -62,14 +56,14 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
 

@@ -911,7 +911,7 @@ def test_equilibrated_cl_cd_polar():
     equilibrated_cl_cd_polar(
         XML_FILE,
         cl_polar_ls_=np.array(
-            [0.1, 0.2, 0.3, 0.4, 0.5, 0.59, 0.69, 0.79, 0.88, 0.98, 1.08, 1.17, 1.26, 0.0, 0.0]
+            [0.1, 0.2, 0.3, 0.4, 0.5, 0.59, 0.69, 0.79, 0.88, 0.98, 1.08, 1.17, 1.26]
         ),
         cd_polar_ls_=np.array(
             [
@@ -928,12 +928,10 @@ def test_equilibrated_cl_cd_polar():
                 0.1091,
                 0.1216,
                 0.1352,
-                0.0,
-                0.0,
             ]
         ),
         cl_polar_cruise_=np.array(
-            [0.03, 0.14, 0.24, 0.34, 0.45, 0.55, 0.65, 0.75, 0.86, 0.96, 1.06, 1.16, 1.26, 0.0, 0.0]
+            [0.03, 0.14, 0.24, 0.34, 0.45, 0.55, 0.65, 0.75, 0.86, 0.96, 1.06, 1.16, 1.26]
         ),
         cd_polar_cruise_=np.array(
             [
@@ -950,8 +948,6 @@ def test_equilibrated_cl_cd_polar():
                 0.0865,
                 0.0994,
                 0.1134,
-                0.0,
-                0.0,
             ]
         ),
     )
@@ -1060,7 +1056,8 @@ def test_load_factor():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
+    system() != "Windows" and xfoil_path is None,
+    reason="No XFOIL executable available",
 )
 def test_propeller():
     thrust_SL = np.array(

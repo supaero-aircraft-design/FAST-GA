@@ -41,7 +41,15 @@ def run_apidoc(_):
     output_dir = os.path.join(cur_dir, "api")
     module = os.path.join(cur_dir, "..", "src", "fastga")
     apidoc.main(
-        ["-d", "1", "-e", "-o", output_dir, module, "--force",]
+        [
+            "-d",
+            "1",
+            "-e",
+            "-o",
+            output_dir,
+            module,
+            "--force",
+        ]
     )
 
 

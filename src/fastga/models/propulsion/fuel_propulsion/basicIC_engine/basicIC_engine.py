@@ -57,8 +57,7 @@ class BasicICEngine(AbstractFuelPropulsion):
     def __init__(
         self,
         max_power: float,
-        cruise_altitude: float,
-        cruise_speed: float,
+        cruise_altitude_propeller: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
@@ -78,7 +77,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         and constant propeller efficiency using analytical model from following sources:
 
         :param max_power: maximum delivered mechanical power of engine (units=W)
-        :param cruise_altitude: design altitude for cruise (units=m)
+        :param cruise_altitude_propeller: design altitude for cruise (units=m)
         :param cruise_speed: design altitude for cruise (units=m/s)
         :param fuel_type: 1.0 for gasoline and 2.0 for diesel engine and 3.0 for Jet Fuel
         :param strokes_nb: can be either 2-strokes (=2.0) or 4-strokes (=4.0)
@@ -105,8 +104,7 @@ class BasicICEngine(AbstractFuelPropulsion):
             self.map_file_path = pth.join(resources.__path__[0], "FourCylindersAtmospheric.csv")
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.cruise_altitude = cruise_altitude
-        self.cruise_speed = cruise_speed
+        self.cruise_altitude_propeller = cruise_altitude_propeller
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01
@@ -213,7 +211,12 @@ class BasicICEngine(AbstractFuelPropulsion):
                 thrust = np.asarray(flight_points.thrust).flatten()
             self.specific_shape = np.shape(mach)
             sfc, thrust_rate, thrust = self._compute_flight_points(
-                mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust,
+                mach.flatten(),
+                altitude,
+                engine_setting,
+                thrust_is_regulated,
+                thrust_rate,
+                thrust,
             )
             if len(self.specific_shape) != 1:  # reshape data that is not array form
                 # noinspection PyUnresolvedReferences
@@ -245,17 +248,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
-        """
-        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
-        
-        :param flight_points.mach: Mach number
-        :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
-        :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
-        :param flight_points.thrust_rate: thrust rate (unit=none)
-        :param flight_points.thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
 
@@ -422,7 +414,7 @@ class BasicICEngine(AbstractFuelPropulsion):
             upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, atmosphere.true_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
-                altitude, [0, self.cruise_altitude], [lower_bound, upper_bound]
+                altitude, [0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
             )
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))
@@ -437,8 +429,8 @@ class BasicICEngine(AbstractFuelPropulsion):
                 propeller_efficiency[idx] = (
                     lower_bound
                     + (upper_bound - lower_bound)
-                    * np.minimum(altitude, self.cruise_altitude)
-                    / self.cruise_altitude
+                    * np.minimum(altitude, self.cruise_altitude_propeller)
+                    / self.cruise_altitude_propeller
                 )
 
         return propeller_efficiency
@@ -515,7 +507,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         return sfc, real_power
 
     def max_thrust(
-        self, engine_setting: Union[float, Sequence[float]], atmosphere: Atmosphere,
+        self,
+        engine_setting: Union[float, Sequence[float]],
+        atmosphere: Atmosphere,
     ) -> np.ndarray:
         """
         Computation of maximum thrust either due to propeller thrust limit or ICE max power.
@@ -540,8 +534,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         thrust_max_propeller = (
             lower_bound
             + (upper_bound - lower_bound)
-            * np.minimum(altitude, self.cruise_altitude)
-            / self.cruise_altitude
+            * np.minimum(altitude, self.cruise_altitude_propeller)
+            / self.cruise_altitude_propeller
         )
 
         # Calculate engine max power @ given RPM & altitude
@@ -667,7 +661,9 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Compute nacelle dimensions
         self.nacelle = Nacelle(
-            height=self.engine.height * 1.1, width=self.engine.width * 1.1, length=nacelle_length,
+            height=self.engine.height * 1.1,
+            width=self.engine.width * 1.1,
+            length=nacelle_length,
         )
         self.nacelle.wet_area = 2 * (self.nacelle.height + self.nacelle.width) * self.nacelle.length
 

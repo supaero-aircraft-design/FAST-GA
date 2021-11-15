@@ -19,7 +19,7 @@ from openmdao import api as om
 
 
 class ComputePayload(om.ExplicitComponent):
-    """ Computes payload from NPAX """
+    """Computes payload from NPAX"""
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)

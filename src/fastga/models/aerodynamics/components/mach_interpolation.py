@@ -72,7 +72,7 @@ class ComputeMachInterpolation(om.Group):
 
 class _ComputeMachInterpolation(om.ExplicitComponent):
     # Based on the equation of Roskam Part VI
-    """ Lift curve slope coefficient as a function of Mach number """
+    """Lift curve slope coefficient as a function of Mach number"""
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -212,7 +212,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
     @staticmethod
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
-        """ Delete ending 0.0 values """
+        """Delete ending 0.0 values"""
         for idx in range(len(x)):
             if np.sum(x[idx : len(x)] == 0.0) == (len(x) - idx):
                 y = y[0:idx]

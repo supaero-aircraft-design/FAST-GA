@@ -67,6 +67,7 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
             self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="deg**-1")
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
             self.add_output(

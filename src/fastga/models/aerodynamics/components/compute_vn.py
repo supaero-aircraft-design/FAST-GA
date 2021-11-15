@@ -49,7 +49,9 @@ class ComputeVNAndVH(om.Group):
             "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
         self.add_subsystem(
-            "compute_vn_diagram", ComputeVN(), promotes=["*"],
+            "compute_vn_diagram",
+            ComputeVN(),
+            promotes=["*"],
         )
 
 
@@ -70,7 +72,7 @@ class ComputeVh(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:count", np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
@@ -99,7 +101,7 @@ class ComputeVh(om.ExplicitComponent):
 
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
         propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:count"]
+            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
         )
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
@@ -184,7 +186,12 @@ class ComputeVN(om.ExplicitComponent):
         atm.true_airspeed = v_tas
         design_vc = atm.equivalent_airspeed
         velocity_array, load_factor_array, _ = self.flight_domain(
-            inputs, design_mass, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
+            inputs,
+            design_mass,
+            cruise_altitude,
+            design_vc,
+            design_n_ps=0.0,
+            design_n_ng=0.0,
         )
 
         if DOMAIN_PTS_NB < len(velocity_array):

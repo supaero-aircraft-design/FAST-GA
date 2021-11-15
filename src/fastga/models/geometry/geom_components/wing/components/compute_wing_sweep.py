@@ -23,7 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing sweeps estimation """
+    """Wing sweeps estimation"""
 
     def setup(self):
 

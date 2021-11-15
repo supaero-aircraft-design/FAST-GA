@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeHTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail wet area estimation """
+    """Horizontal tail wet area estimation"""
 
     def setup(self):
 

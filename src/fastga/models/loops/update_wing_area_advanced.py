@@ -60,8 +60,8 @@ class UpdateWingAreaAdvanced(om.Group):
 
 
 class _UpdateWingAreaAdvanced(om.ExplicitComponent):
-    """ Computation of wing area from needed approach speed and mission fuel. For the mission wing area the code uses
-     the fsolve algorithm on a function that computes the wing area following the same approach as in compute_mfw."""
+    """Computation of wing area from needed approach speed and mission fuel. For the mission wing area the code uses
+    the fsolve algorithm on a function that computes the wing area following the same approach as in compute_mfw."""
 
     def setup(self):
 
@@ -77,14 +77,14 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
-        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
@@ -103,7 +103,7 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
 
         wing_area_mission_initial = 16.8871
 
-        wing_area_mission, dic, _, _ = fsolve(
+        wing_area_mission, _, ier, _ = fsolve(
             self.compute_wing_area_new,
             wing_area_mission_initial,
             args=(inputs, mfw_mission),
@@ -111,11 +111,17 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
             full_output=True,
         )
 
-        _LOGGER.info(
-            "Looping on wing area with new value equal to {}".format(
-                max(wing_area_mission, wing_area_approach)
+        if ier != 1:
+            _LOGGER.warning(
+                "Could not find a wing area that suits the requirement for fuel inside the wing, using the "
+                "other constraints instead. New value is equal to %f"
+                % max(wing_area_mission, wing_area_approach)
             )
-        )
+        else:
+            _LOGGER.info(
+                "Looping on wing area with new value equal to %f"
+                % max(wing_area_mission, wing_area_approach)
+            )
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
 
@@ -131,12 +137,14 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
         tip_tc = float(inputs["data:geometry:wing:tip:thickness_ratio"])
         flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
         aileron_chord_ratio = float(inputs["data:geometry:aileron:chord_ratio"])
-        y_ratio_tank_beginning = float(inputs["data:geometry:propulsion:y_ratio_tank_beginning"])
-        y_ratio_tank_end = float(inputs["data:geometry:propulsion:y_ratio_tank_end"])
-        engine_config = float(inputs["data:geometry:propulsion:layout"])
-        y_ratio_tank = inputs["data:geometry:propulsion:y_ratio"]
-        le_chord_percentage = float(inputs["data:geometry:propulsion:LE_chord_percentage"])
-        te_chord_percentage = float(inputs["data:geometry:propulsion:TE_chord_percentage"])
+        y_ratio_tank_beginning = float(
+            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
+        )
+        y_ratio_tank_end = float(inputs["data:geometry:propulsion:tank:y_ratio_tank_end"])
+        engine_config = float(inputs["data:geometry:propulsion:engine:layout"])
+        y_ratio_tank = inputs["data:geometry:propulsion:engine:y_ratio"]
+        le_chord_percentage = float(inputs["data:geometry:propulsion:tank:LE_chord_percentage"])
+        te_chord_percentage = float(inputs["data:geometry:propulsion:tank:TE_chord_percentage"])
         nacelle_width = float(inputs["data:geometry:propulsion:nacelle:width"])
         lg_type = float(inputs["data:geometry:landing_gear:type"])
         y_lg = float(inputs["data:geometry:landing_gear:y"])
@@ -244,12 +252,12 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
             "data:geometry:wing:tip:thickness_ratio",
             "data:geometry:flap:chord_ratio",
             "data:geometry:aileron:chord_ratio",
-            "data:geometry:propulsion:y_ratio_tank_beginning",
-            "data:geometry:propulsion:y_ratio_tank_end",
-            "data:geometry:propulsion:layout",
-            "data:geometry:propulsion:y_ratio",
-            "data:geometry:propulsion:LE_chord_percentage",
-            "data:geometry:propulsion:TE_chord_percentage",
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning",
+            "data:geometry:propulsion:tank:y_ratio_tank_end",
+            "data:geometry:propulsion:engine:layout",
+            "data:geometry:propulsion:engine:y_ratio",
+            "data:geometry:propulsion:tank:LE_chord_percentage",
+            "data:geometry:propulsion:tank:TE_chord_percentage",
             "data:geometry:propulsion:nacelle:width",
             "data:geometry:wing:span",
             "data:geometry:landing_gear:type",
@@ -271,12 +279,12 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
             "data:geometry:wing:tip:thickness_ratio": (tip_tc, None),
             "data:geometry:flap:chord_ratio": (flap_chord_ratio, None),
             "data:geometry:aileron:chord_ratio": (aileron_chord_ratio, None),
-            "data:geometry:propulsion:y_ratio_tank_beginning": (y_ratio_tank_beginning, None),
-            "data:geometry:propulsion:y_ratio_tank_end": (y_ratio_tank_end, None),
-            "data:geometry:propulsion:layout": (engine_config, None),
-            "data:geometry:propulsion:y_ratio": (y_ratio_tank, None),
-            "data:geometry:propulsion:LE_chord_percentage": (le_chord_percentage, None),
-            "data:geometry:propulsion:TE_chord_percentage": (te_chord_percentage, None),
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning": (y_ratio_tank_beginning, None),
+            "data:geometry:propulsion:tank:y_ratio_tank_end": (y_ratio_tank_end, None),
+            "data:geometry:propulsion:engine:layout": (engine_config, None),
+            "data:geometry:propulsion:engine:y_ratio": (y_ratio_tank, None),
+            "data:geometry:propulsion:tank:LE_chord_percentage": (le_chord_percentage, None),
+            "data:geometry:propulsion:tank:TE_chord_percentage": (te_chord_percentage, None),
             "data:geometry:propulsion:nacelle:width": (nacelle_width, None),
             "data:geometry:wing:span": (wing_span, None),
             "data:geometry:landing_gear:type": (lg_type, None),

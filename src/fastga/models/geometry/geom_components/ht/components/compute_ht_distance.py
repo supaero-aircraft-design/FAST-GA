@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeHTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Horizontal tail distance estimation """
+    """Horizontal tail distance estimation"""
 
     def setup(self):
 

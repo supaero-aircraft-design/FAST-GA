@@ -45,7 +45,7 @@ from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
 
 @RegisterOpenMDAOSystem("fastga.weight.cg", domain=ModelDomain.WEIGHT)
 class CG(om.Group):
-    """ Model that computes the global center of gravity """
+    """Model that computes the global center of gravity"""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -90,7 +90,7 @@ class CG(om.Group):
 
 
 class ComputeAircraftCG(om.ExplicitComponent):
-    """ Compute position of aircraft CG from CG ratio """
+    """Compute position of aircraft CG from CG ratio"""
 
     def setup(self):
 

@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeLandingGearCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Landing gear center of gravity estimation """
+    """Landing gear center of gravity estimation"""
 
     def setup(self):
 

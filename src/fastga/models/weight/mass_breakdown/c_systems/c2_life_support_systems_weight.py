@@ -24,7 +24,7 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     Weight estimation for life support systems
 
     This includes only air conditioning / pressurization. Anti-icing is bundled up with the air-conditioning weight
-    
+
     Insulation, internal lighting system, fixed oxygen, permanent security kits are neglected.
     Seats and installation of crew are already evaluated within d2_passenger_seats_weight
 

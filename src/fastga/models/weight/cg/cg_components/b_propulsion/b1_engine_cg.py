@@ -25,12 +25,12 @@ from .....aerodynamics.constants import ENGINE_COUNT
 
 class ComputeEngineCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Engine(s) center of gravity estimation """
+    """Engine(s) center of gravity estimation"""
 
     def setup(self):
 
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -62,8 +62,8 @@ class ComputeEngineCG(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        prop_layout = inputs["data:geometry:propulsion:layout"]
-        engine_count_pre_wing = inputs["data:geometry:propulsion:count"] / 2.0
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        engine_count_pre_wing = inputs["data:geometry:propulsion:engine:count"] / 2.0
         y2_wing = inputs["data:geometry:wing:root:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         y4_wing = inputs["data:geometry:wing:tip:y"]

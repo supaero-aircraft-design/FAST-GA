@@ -62,7 +62,9 @@ class ComputeVTmacFD(ExplicitComponent):
         )
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",],
+            [
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            ],
             method="fd",
         )
 

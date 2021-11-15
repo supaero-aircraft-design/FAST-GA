@@ -150,7 +150,7 @@ def aircraft_geometry_plot(
     fig.add_trace(scatter)
 
     # Nacelle + propeller
-    prop_layout = variables["data:geometry:propulsion:layout"].value[0]
+    prop_layout = variables["data:geometry:propulsion:engine:layout"].value[0]
     nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
     nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
     prop_diam = variables["data:geometry:propeller:diameter"].value[0]
@@ -725,7 +725,11 @@ def _get_variable_values_with_new_units(
     new_values = []
     for variable_name, unit in var_names_and_new_units.items():
         new_values.append(
-            convert_units(variables[variable_name].value[0], variables[variable_name].units, unit,)
+            convert_units(
+                variables[variable_name].value[0],
+                variables[variable_name].units,
+                unit,
+            )
         )
 
     return new_values
@@ -860,7 +864,11 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     if round(mtow, 0) == round(owe + payload + onboard_fuel_at_takeoff, 0):
         mtow = owe + payload + onboard_fuel_at_takeoff
 
-    fig = make_subplots(1, 2, specs=[[{"type": "domain"}, {"type": "domain"}]],)
+    fig = make_subplots(
+        1,
+        2,
+        specs=[[{"type": "domain"}, {"type": "domain"}]],
+    )
 
     fig.add_trace(
         go.Sunburst(
@@ -943,11 +951,11 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
 
 
 def drag_breakdown_diagram(
-    aircraft_file_path: str, fig=None, file_formatter=None,
+    aircraft_file_path: str,
+    fig=None,
+    file_formatter=None,
 ) -> go.FigureWidget:
-    """
-
-    """
+    """ """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     parasite_drag_cruise = variables["data:aerodynamics:aircraft:cruise:CD0"].value[0]
@@ -1070,7 +1078,9 @@ def drag_breakdown_diagram(
         2,
     )
 
-    fig.update_layout(margin=dict(t=0, l=0, r=0, b=0),)
+    fig.update_layout(
+        margin=dict(t=0, l=0, r=0, b=0),
+    )
 
     fig = go.FigureWidget(fig)
 
@@ -1117,7 +1127,10 @@ def payload_range(
     )
     fig.add_trace(scatter)
     scatter = go.Scatter(
-        x=[range_array[2]], y=[payload_array[2]], mode="lines+markers", name=name + " Design Point",
+        x=[range_array[2]],
+        y=[payload_array[2]],
+        mode="lines+markers",
+        name=name + " Design Point",
     )
     fig.add_trace(scatter)
 
@@ -1126,7 +1139,9 @@ def payload_range(
             x=range_array[i],
             y=payload_array[i],
             text=text_plot[i],
-            font=dict(size=14,),
+            font=dict(
+                size=14,
+            ),
             align="center",
             bordercolor="Black",
             borderpad=4,
@@ -1274,7 +1289,9 @@ def aircraft_polar(
         title = "Non Equilibrated Aircraft Polar"
 
     fig.update_layout(
-        title_text=title, title_x=0.5, legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+        title_text=title,
+        title_x=0.5,
+        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
     )
 
     return fig

@@ -32,8 +32,7 @@ THICKNESS = "thickness"
 
 
 class Profile:
-    """Class for managing 2D wing profiles
-    """
+    """Class for managing 2D wing profiles"""
 
     # pylint: disable=invalid-name  # X and Z are valid names in this context
 
@@ -56,7 +55,7 @@ class Profile:
 
     @property
     def thickness_ratio(self) -> float:
-        """ thickness-to-chord ratio """
+        """thickness-to-chord ratio"""
         return self._max_relative_thickness
 
     @thickness_ratio.setter
@@ -192,7 +191,7 @@ class Profile:
 
     @staticmethod
     def _create_upper_lower_sides(x: Sequence, z: Sequence) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """ returns upper side points and lower side points using provided x and z """
+        """returns upper side points and lower side points using provided x and z"""
 
         # Find middle point (inversion of delta_x locally for 1-0-1 (or 0-1-0) chord struct. or
         # permanently for 0-1/0-1 (or 1-0/1-0) chord struct.)

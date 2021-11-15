@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeTankCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Fuel tank center of gravity estimation """
+    """Fuel tank center of gravity estimation"""
 
     def setup(self):
 

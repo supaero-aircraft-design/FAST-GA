@@ -11,10 +11,10 @@ data:geometry:propeller:depth || depth of the propeller
 data:geometry:propeller:radius_ratio_vect || blade station at which blade geometric properties are sampled, as a percent of blade radius
 data:geometry:propeller:sweep_vect || blade sweep at the station along the radius stored in radius_ratio_vect
 data:geometry:propeller:twist_vect || blade twist at the station along the radius stored in radius_ratio_vect
-data:geometry:propulsion:LE_chord_percentage || distance between the leading edge and the start of the wing tank as a percentage of the wing chord
-data:geometry:propulsion:TE_chord_percentage || distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord
-data:geometry:propulsion:y_ratio_tank_beginning || start of the tank as a percentage of the wing span
-data:geometry:propulsion:y_ratio_tank_end || end of the tank as a percentage of the wing span
+data:geometry:propulsion:tank:LE_chord_percentage || distance between the leading edge and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:tank:TE_chord_percentage || distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord
+data:geometry:propulsion:tank:y_ratio_tank_beginning || start of the tank as a percentage of the wing span
+data:geometry:propulsion:tank:y_ratio_tank_end || end of the tank as a percentage of the wing span
 data:geometry:vertical_tail:rudder:chord_ratio || flap rudder as a percentage of the wing chord
 data:geometry:vertical_tail:rudder:max_deflection || rudder maximum deflection
 data:geometry:vertical_tail:aspect_ratio || vertical tail aspect ratio

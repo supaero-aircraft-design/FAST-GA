@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing wet area estimation """
+    """Wing wet area estimation"""
 
     def setup(self):
 

@@ -62,7 +62,7 @@ XML_FILE = "cirrus_sr22.xml"
 
 
 def test_compute_vt_chords():
-    """ Tests computation of the vertical tail chords """
+    """Tests computation of the vertical tail chords"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeVTChords()), __file__, XML_FILE)
@@ -78,7 +78,7 @@ def test_compute_vt_chords():
 
 
 def test_compute_vt_mac():
-    """ Tests computation of the vertical tail mac """
+    """Tests computation of the vertical tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTmacFD()), __file__, XML_FILE)
@@ -98,7 +98,7 @@ def test_compute_vt_mac():
 
 
 def test_compute_vt_sweep():
-    """ Tests computation of the vertical tail sweep """
+    """Tests computation of the vertical tail sweep"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTSweep()), __file__, XML_FILE)
@@ -112,7 +112,7 @@ def test_compute_vt_sweep():
 
 
 def test_compute_vt_wet_area():
-    """ Tests computation of the vertical wet area """
+    """Tests computation of the vertical wet area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTWetArea()), __file__, XML_FILE)
@@ -124,7 +124,7 @@ def test_compute_vt_wet_area():
 
 
 def test_compute_ht_distance():
-    """ Tests computation of the horizontal tail distance """
+    """Tests computation of the horizontal tail distance"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTDistance()), __file__, XML_FILE)
@@ -136,7 +136,7 @@ def test_compute_ht_distance():
 
 
 def test_compute_ht_chord():
-    """ Tests computation of the horizontal tail chords """
+    """Tests computation of the horizontal tail chords"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeHTChord()), __file__, XML_FILE)
@@ -154,7 +154,7 @@ def test_compute_ht_chord():
 
 
 def test_compute_ht_mac():
-    """ Tests computation of the horizontal tail mac """
+    """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTmacFD()), __file__, XML_FILE)
@@ -170,7 +170,7 @@ def test_compute_ht_mac():
 
 
 def test_compute_ht_sweep():
-    """ Tests computation of the horizontal tail sweep """
+    """Tests computation of the horizontal tail sweep"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTSweep()), __file__, XML_FILE)
@@ -184,7 +184,7 @@ def test_compute_ht_sweep():
 
 
 def test_compute_ht_wet_area():
-    """ Tests computation of the horizontal tail wet area """
+    """Tests computation of the horizontal tail wet area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTWetArea()), __file__, XML_FILE)
@@ -196,7 +196,7 @@ def test_compute_ht_wet_area():
 
 
 def test_compute_fuselage_cabin_sizing_fd():
-    """ Tests computation of the fuselage with cabin sizing """
+    """Tests computation of the fuselage with cabin sizing"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
@@ -228,7 +228,7 @@ def test_compute_fuselage_cabin_sizing_fd():
 
 
 def test_compute_fuselage_basic():
-    """ Tests computation of the fuselage with no cabin sizing """
+    """Tests computation of the fuselage with no cabin sizing"""
 
     # Define the independent input values that should be filled if basic function is chosen
     ivc = om.IndepVarComp()
@@ -245,7 +245,7 @@ def test_compute_fuselage_basic():
 
 
 def test_compute_fuselage_cabin_sizing_fl():
-    """ Tests computation of the fuselage with cabin sizing """
+    """Tests computation of the fuselage with cabin sizing"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
@@ -277,7 +277,9 @@ def test_compute_fuselage_cabin_sizing_fl():
 def test_fuselage_wet_area():
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)), __file__, XML_FILE,
+        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
+        __file__,
+        XML_FILE,
     )
 
     problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)
@@ -290,7 +292,7 @@ def test_fuselage_wet_area():
 
 
 def test_geometry_wing_toc():
-    """ Tests computation of the wing ToC (Thickness of Chord) """
+    """Tests computation of the wing ToC (Thickness of Chord)"""
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWingToc()), __file__, XML_FILE)
@@ -306,7 +308,7 @@ def test_geometry_wing_toc():
 
 
 def test_geometry_wing_y():
-    """ Tests computation of the wing Ys """
+    """Tests computation of the wing Ys"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingY()), __file__, XML_FILE)
@@ -324,7 +326,7 @@ def test_geometry_wing_y():
 
 
 def test_geometry_wing_l1_l4():
-    """ Tests computation of the wing chords (l1 and l4) """
+    """Tests computation of the wing chords (l1 and l4)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingL1AndL4()), __file__, XML_FILE)
@@ -338,7 +340,7 @@ def test_geometry_wing_l1_l4():
 
 
 def test_geometry_wing_l2_l3():
-    """ Tests computation of the wing chords (l2 and l3) """
+    """Tests computation of the wing chords (l2 and l3)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingL2AndL3()), __file__, XML_FILE)
@@ -354,7 +356,7 @@ def test_geometry_wing_l2_l3():
 
 
 def test_geometry_wing_x():
-    """ Tests computation of the wing Xs """
+    """Tests computation of the wing Xs"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingX()), __file__, XML_FILE)
@@ -368,7 +370,7 @@ def test_geometry_wing_x():
 
 
 def test_geometry_wing_b50():
-    """ Tests computation of the wing B50 """
+    """Tests computation of the wing B50"""
 
     # Define input values calculated from other modules
     ivc = om.IndepVarComp()
@@ -386,7 +388,7 @@ def test_geometry_wing_b50():
 
 
 def test_geometry_wing_mac():
-    """ Tests computation of the wing mean aerodynamic chord """
+    """Tests computation of the wing mean aerodynamic chord"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingMAC()), __file__, XML_FILE)
@@ -402,7 +404,7 @@ def test_geometry_wing_mac():
 
 
 def test_geometry_wing_sweep():
-    """ Tests computation of the wing sweeps """
+    """Tests computation of the wing sweeps"""
 
     # Define input values calculated from other modules
     ivc = om.IndepVarComp()
@@ -423,7 +425,7 @@ def test_geometry_wing_sweep():
 
 
 def test_geometry_wing_wet_area():
-    """ Tests computation of the wing wet area """
+    """Tests computation of the wing wet area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingWetArea()), __file__, XML_FILE)
@@ -437,7 +439,7 @@ def test_geometry_wing_wet_area():
 
 
 def test_geometry_wing_mfw_simple():
-    """ Tests computation of the wing max fuel weight """
+    """Tests computation of the wing max fuel weight"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeMFWSimple()), __file__, XML_FILE)
@@ -449,7 +451,7 @@ def test_geometry_wing_mfw_simple():
 
 
 def test_geometry_wing_mfw_advanced():
-    """ Tests computation of the wing max fuel weight """
+    """Tests computation of the wing max fuel weight"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeMFWAdvanced()), __file__, XML_FILE)
@@ -461,7 +463,7 @@ def test_geometry_wing_mfw_advanced():
 
 
 def test_geometry_nacelle():
-    """ Tests computation of the nacelle and pylons component """
+    """Tests computation of the nacelle and pylons component"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
@@ -501,7 +503,7 @@ def test_landing_gear_geometry():
 
 
 def test_geometry_total_area():
-    """ Tests computation of the total area """
+    """Tests computation of the total area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeTotalArea()), __file__, XML_FILE)
@@ -513,7 +515,7 @@ def test_geometry_total_area():
 
 
 def test_complete_geometry_FD():
-    """ Run computation of all models for fixed distance hypothesis """
+    """Run computation of all models for fixed distance hypothesis"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     # noinspection PyTypeChecker
@@ -527,7 +529,7 @@ def test_complete_geometry_FD():
 
 
 def test_complete_geometry_FL():
-    """ Run computation of all models for fixed length hypothesis """
+    """Run computation of all models for fixed length hypothesis"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     # noinspection PyTypeChecker

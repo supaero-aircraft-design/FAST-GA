@@ -23,7 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class ComputePassengerSeatsCG(ExplicitComponent):
 
     # TODO: Document equations. Cite sources
-    """ Passenger seats center of gravity estimation """
+    """Passenger seats center of gravity estimation"""
 
     def setup(self):
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)

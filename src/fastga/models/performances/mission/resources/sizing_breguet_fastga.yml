@@ -1,0 +1,48 @@
+phases:
+  climb:
+    parts:
+      - segment: transition
+        target:
+          altitude: data:mission:sizing:main_route:cruise:altitude
+          mach: data:aerodynamics:cruise:mach
+          ground_distance:
+            value: 25.0
+            unit: km
+        mass_ratio: 0.995
+  descent:
+    parts:
+      - segment: transition
+        target:
+          altitude: 0.
+          mach: data:aerodynamics:low_speed:mach
+          ground_distance:
+            value: 75.0
+            unit: km
+        mass_ratio: 0.996
+  holding:
+    parts:
+      - segment: holding
+        polar: data:aerodynamics:aircraft:cruise
+        target:
+          time: data:mission:sizing:main_route:reserve:duration
+
+
+routes:
+  main_route:
+    range: data:TLAR:range
+    climb_parts:
+      - phase: climb
+    cruise_part:
+      segment: breguet
+      engine_setting: cruise
+      polar: data:aerodynamics:aircraft:cruise
+    descent_parts:
+      - phase: descent
+
+
+missions:
+  sizing:
+    parts:
+      - route: main_route
+      - phase: holding
+

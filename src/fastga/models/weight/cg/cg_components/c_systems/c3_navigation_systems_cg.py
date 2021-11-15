@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeNavigationSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Navigation systems center of gravity estimation """
+    """Navigation systems center of gravity estimation"""
 
     def setup(self):
 

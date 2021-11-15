@@ -34,10 +34,12 @@ class ComputeNonEquilibratedPolar(ExplicitComponent):
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
 
             self.add_output(
-                "data:aerodynamics:aircraft:low_speed:CD", shape=POLAR_POINT_COUNT,
+                "data:aerodynamics:aircraft:low_speed:CD",
+                shape=POLAR_POINT_COUNT,
             )
             self.add_output(
-                "data:aerodynamics:aircraft:low_speed:CL", shape=POLAR_POINT_COUNT,
+                "data:aerodynamics:aircraft:low_speed:CL",
+                shape=POLAR_POINT_COUNT,
             )
 
         else:

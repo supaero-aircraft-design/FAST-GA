@@ -53,6 +53,7 @@ from fastga.models.aerodynamics.components import (
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
 )
+from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.load_factor import LoadFactor
@@ -127,8 +128,17 @@ def polar_result_retrieve(tmp_folder):
             # noinspection PyBroadException
             try:
                 shutil.copy(file, resources.__path__[0])
-            except:
-                _LOGGER.info("Cannot copy {} file to {}!".format(file, tmp_folder.name))
+            except (OSError, shutil.SameFileError) as e:
+                if isinstance(e, OSError):
+                    _LOGGER.info(
+                        "Cannot copy %s file to %s! Likely due to permission error"
+                        % (file, tmp_folder.name)
+                    )
+                else:
+                    _LOGGER.info(
+                        "Cannot copy %s file to %s! Likely because the file already exists in the target directory"
+                        % (file, tmp_folder.name)
+                    )
 
     tmp_folder.cleanup()
 
@@ -312,7 +322,10 @@ def polar(
 
 
 def airfoil_slope_wt_xfoil(
-    XML_FILE: str, wing_airfoil_file: str, htp_airfoil_file: str, vtp_airfoil_file: str,
+    XML_FILE: str,
+    wing_airfoil_file: str,
+    htp_airfoil_file: str,
+    vtp_airfoil_file: str,
 ):
     """Tests polar execution (XFOIL) @ high speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
@@ -356,7 +369,10 @@ def airfoil_slope_xfoil(
     tmp_folder = polar_result_transfer()
 
     problem = airfoil_slope_wt_xfoil(
-        XML_FILE, wing_airfoil_file, htp_airfoil_file, vtp_airfoil_file,
+        XML_FILE,
+        wing_airfoil_file,
+        htp_airfoil_file,
+        vtp_airfoil_file,
     )
 
     # Retrieve polar results from temporary folder
@@ -375,7 +391,10 @@ def airfoil_slope_xfoil(
 
 
 def compute_aero(
-    XML_FILE: str, use_openvsp: bool, mach_interpolation: bool, low_speed_aero: bool,
+    XML_FILE: str,
+    use_openvsp: bool,
+    mach_interpolation: bool,
+    low_speed_aero: bool,
 ):
     """Compute aero components!"""
     # Create result temporary directory
@@ -745,7 +764,9 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
 
 def slipstream_openvsp(
-    XML_FILE: str, ENGINE_WRAPPER: str, low_speed_aero: bool,
+    XML_FILE: str,
+    ENGINE_WRAPPER: str,
+    low_speed_aero: bool,
 ):
     # Create result temporary directory
     results_folder = _create_tmp_directory()
@@ -1130,12 +1151,12 @@ def equilibrated_cl_cd_polar(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=0.5), ivc)
-    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CD")[
-        ::10
-    ] == pytest.approx(cd_polar_ls_, abs=1e-4)
-    assert problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CL")[
-        ::10
-    ] == pytest.approx(cl_polar_ls_, abs=1e-2)
+    polar_cd = np.array(problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CD"))
+    valid_polar_cd = polar_cd[np.where(polar_cd < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cd)[::10] == pytest.approx(cd_polar_ls_, abs=1e-4)
+    polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:low_speed:equilibrated:CL"))
+    valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_ls_, abs=1e-2)
 
     ivc = get_indep_var_comp(
         list_inputs(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5)),
@@ -1145,9 +1166,9 @@ def equilibrated_cl_cd_polar(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=0.5), ivc)
-    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CD")[
-        ::10
-    ] == pytest.approx(cd_polar_cruise_, abs=1e-4)
-    assert problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL")[
-        ::10
-    ] == pytest.approx(cl_polar_cruise_, abs=1e-2)
+    polar_cd = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CD"))
+    valid_polar_cd = polar_cd[np.where(polar_cd < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cd)[::10] == pytest.approx(cd_polar_cruise_, abs=1e-4)
+    polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL"))
+    valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
+    assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_cruise_, abs=1e-2)

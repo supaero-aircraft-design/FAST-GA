@@ -22,7 +22,7 @@ import openmdao.api as om
 # TODO: computes relative thickness and generates profiles --> decompose
 class ComputeWingToc(om.ExplicitComponent):
     # TODO: Document hypothesis. Cite sources
-    """ Wing ToC estimation """
+    """Wing ToC estimation"""
 
     def setup(self):
 

@@ -29,7 +29,7 @@ from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 class ComputeNacelleGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Nacelle and pylon geometry estimation """
+    """Nacelle and pylon geometry estimation"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -49,8 +49,8 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
@@ -67,10 +67,10 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
-        prop_layout = inputs["data:geometry:propulsion:layout"]
-        prop_count = inputs["data:geometry:propulsion:count"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        prop_count = inputs["data:geometry:propulsion:engine:count"]
         span = inputs["data:geometry:wing:span"]
-        y_ratio = np.array(inputs["data:geometry:propulsion:y_ratio"])
+        y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         fus_length = inputs["data:geometry:fuselage:length"]
         rear_length = inputs["data:geometry:fuselage:rear_length"]

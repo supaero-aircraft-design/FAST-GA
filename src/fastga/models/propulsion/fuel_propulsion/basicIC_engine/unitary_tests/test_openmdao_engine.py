@@ -784,7 +784,7 @@ EFFICIENCY_CL = np.array(
 
 
 def test_OMBasicICEngineComponent():
-    """ Tests ManualBasicICEngine component """
+    """Tests ManualBasicICEngine component"""
     # Same test as in test_basicIC_engine.test_compute_flight_points
     engine = OMBasicICEngineComponent(flight_point_count=(2, 5))
 
@@ -806,8 +806,8 @@ def test_OMBasicICEngineComponent():
     ivc.add_output("data:propulsion:IC_engine:fuel_type", 1)
     ivc.add_output("data:propulsion:IC_engine:strokes_nb", 4)
     ivc.add_output("data:TLAR:v_cruise", 158.0, units="kn")
-    ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 8000.0, units="ft")
-    ivc.add_output("data:geometry:propulsion:layout", 1.0)
+    ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 8000.0, units="ft")
+    ivc.add_output("data:geometry:propulsion:engine:layout", 1.0)
     ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust_limit", THRUST_SL_LIMIT, units="N")

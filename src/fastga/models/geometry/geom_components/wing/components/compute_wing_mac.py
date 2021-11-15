@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Wing mean aerodynamic chord estimation """
+    """Wing mean aerodynamic chord estimation"""
 
     def setup(self):
 

@@ -51,7 +51,7 @@ wheel = "*"
 pytest = "^5.2"
 pytest-cov = "*"
 pre-commit = "*"
-black = { version = "19.10b0", allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
+black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
 pylint = "*"
 nbval = "*"
 sphinx = "*"

@@ -6,7 +6,7 @@ from fastoad.module_management.constants import ModelDomain
 
 
 class Disc1(om.ExplicitComponent):
-    """ An OpenMDAO component to encapsulate Disc1 discipline and test """
+    """An OpenMDAO component to encapsulate Disc1 discipline and test"""
 
     def setup(self):
         self.add_input(
@@ -33,7 +33,7 @@ class Disc1(om.ExplicitComponent):
 
 
 class Disc2(om.Group):
-    """ An OpenMDAO component to encapsulate Disc1 and an IVC """
+    """An OpenMDAO component to encapsulate Disc1 and an IVC"""
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -44,7 +44,7 @@ class Disc2(om.Group):
 
 @RegisterOpenMDAOSystem("test.dummy_module.disc3", domain=ModelDomain.OTHER)
 class Disc3(om.Group):
-    """ An OpenMDAO component to encapsulate Disc1, an IVC and option """
+    """An OpenMDAO component to encapsulate Disc1, an IVC and option"""
 
     def initialize(self):
         self.options.declare("ivc_value", types=float, default=6.0)

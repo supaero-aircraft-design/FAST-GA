@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """ Total aircraft wet area estimation """
+    """Total aircraft wet area estimation"""
 
     def setup(self):
         self.add_input("data:geometry:wing:wet_area", val=np.nan, units="m**2")
@@ -29,7 +29,7 @@ class ComputeTotalArea(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:nacelle:wet_area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
 
         self.add_output("data:geometry:aircraft:wet_area", units="m**2")
 
@@ -41,7 +41,7 @@ class ComputeTotalArea(ExplicitComponent):
         wet_area_ht = inputs["data:geometry:horizontal_tail:wet_area"]
         wet_area_vt = inputs["data:geometry:vertical_tail:wet_area"]
         wet_area_nac = inputs["data:geometry:propulsion:nacelle:wet_area"]
-        nacelle_nb = inputs["data:geometry:propulsion:count"]
+        nacelle_nb = inputs["data:geometry:propulsion:engine:count"]
 
         wet_area_total = (
             wet_area_wing + wet_area_fus + wet_area_ht + wet_area_vt + nacelle_nb * wet_area_nac

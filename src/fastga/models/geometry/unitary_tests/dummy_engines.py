@@ -38,21 +38,19 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def __init__(
         self,
         max_power: float,
-        design_altitude: float,
-        design_speed: float,
+        design_altitude_propeller: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
     ):
         """
-        Dummy engine model returning nacelle dimensions height-width-length-wet_area.
+        Dummy engine model returning nacelle aerodynamic drag force.
 
         """
         super().__init__()
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
+        self.design_altitude_propeller = design_altitude_propeller
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
@@ -82,19 +80,19 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         engine_params = {
             "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
+            "design_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
         }
 
         return DummyEngineBE76(**engine_params)
@@ -109,21 +107,19 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def __init__(
         self,
         max_power: float,
-        design_altitude: float,
-        design_speed: float,
+        design_altitude_propeller: float,
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
     ):
         """
-        Dummy engine model returning nacelle dimensions height-width-length-wet_area.
+        Dummy engine model returning nacelle aerodynamic drag force.
 
         """
         super().__init__()
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.design_altitude = design_altitude
-        self.design_speed = design_speed
+        self.design_altitude_propeller = design_altitude_propeller
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
@@ -153,19 +149,19 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         engine_params = {
             "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "design_speed": inputs["data:TLAR:v_cruise"],
+            "design_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
         }
 
         return DummyEngineSR22(**engine_params)

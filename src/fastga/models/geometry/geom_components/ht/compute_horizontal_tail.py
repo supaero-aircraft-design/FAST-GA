@@ -28,7 +28,7 @@ from .components import (
 
 
 class ComputeHorizontalTailGeometryFD(om.Group):
-    """ Horizontal tail geometry estimation based on fixed HTP/VTP distance """
+    """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
 
     def setup(self):
         self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])
@@ -40,7 +40,7 @@ class ComputeHorizontalTailGeometryFD(om.Group):
 
 
 class ComputeHorizontalTailGeometryFL(om.Group):
-    """ Horizontal tail geometry estimation based on fixed fuselage length """
+    """Horizontal tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
         self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])

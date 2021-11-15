@@ -27,7 +27,7 @@ from .components import (
 
 
 class ComputeVerticalTailGeometryFD(om.Group):
-    """ Vertical tail geometry estimation based on fixed HTP/VTP distance """
+    """Vertical tail geometry estimation based on fixed HTP/VTP distance"""
 
     def setup(self):
 
@@ -38,7 +38,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
 
 
 class ComputeVerticalTailGeometryFL(om.Group):
-    """ Vertical tail geometry estimation based on fixed fuselage length """
+    """Vertical tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
         self.add_subsystem("vt_chords", ComputeVTChords(), promotes=["*"])

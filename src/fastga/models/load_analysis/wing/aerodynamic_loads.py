@@ -25,12 +25,6 @@ from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
 class AerodynamicLoads(AerostructuralLoad):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -101,14 +95,14 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:propulsion:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:TE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
+        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
