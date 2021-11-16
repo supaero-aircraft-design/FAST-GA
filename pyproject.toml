@@ -41,26 +41,22 @@ classifiers = [
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
 python = "^3.7"
-fast-oad = { git = "https://github.com/fast-aircraft-design/FAST-OAD.git" }
-
+fast-oad = "^1.0.5"
 
 [tool.poetry.plugins."fastoad_model"]
 "internal_models" = "fastga.models"
 
 [tool.poetry.dev-dependencies]
 wheel = "*"
-pytest = "^6.2"
-pytest-cov = "^3.0"
-coverage = { extras = ["toml"], version = "^5.5" }
-pre-commit = "^2.14.1"
+pytest = "^5.2"
+pytest-cov = "*"
+pre-commit = "*"
 black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
-pylint = "^2.10.2"
-nbval = "^0.9.6"
-sphinx = "^4.1.2"
-sphinx-rtd-theme = "^1.0"
-sphinxcontrib-bibtex = "^2.3.0"
-flake8 = "^4.0.1"
-matplotlib = "^3.1.2"
+pylint = "*"
+nbval = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+sphinxcontrib-bibtex = "*"
 
 [build-system]
 requires = ["poetry>=0.12"]
