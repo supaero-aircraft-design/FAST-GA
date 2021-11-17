@@ -1,1 +1,2 @@
+jupyterlab==2.3.2
 fastga @ file://..
