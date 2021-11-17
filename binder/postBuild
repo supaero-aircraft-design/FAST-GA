@@ -1,3 +1,0 @@
-jupyter labextension install jupyterlab-plotly --no-build
-jupyter labextension install plotlywidget --no-build
-jupyter lab build --dev-build=False --minimize=False
