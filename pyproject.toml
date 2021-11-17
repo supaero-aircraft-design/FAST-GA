@@ -44,6 +44,9 @@ python = "^3.7"
 fast-oad = "^1.1.2"
 jupyterlab = {version = "^2", optional = true}
 
+[tool.poetry.extras]
+jupyterlab = ["jupyterlab"]
+
 [tool.poetry.plugins."fastoad_model"]
 "internal_models" = "fastga.models"
 
