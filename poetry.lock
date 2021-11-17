@@ -575,7 +575,7 @@ name = "json5"
 version = "0.9.6"
 description = "A Python implementation of the JSON5 data format."
 category = "main"
-optional = true
+optional = false
 python-versions = "*"
 
 [package.extras]
@@ -645,7 +645,7 @@ name = "jupyterlab"
 version = "2.3.2"
 description = "The JupyterLab notebook server extension."
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.5"
 
 [package.dependencies]
@@ -674,7 +674,7 @@ name = "jupyterlab-server"
 version = "1.2.0"
 description = "JupyterLab Server"
 category = "main"
-optional = true
+optional = false
 python-versions = ">=3.5"
 
 [package.dependencies]
@@ -1805,10 +1805,13 @@ python-versions = ">=3.6"
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
+[extras]
+jupyterlab = ["jupyterlab"]
+
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "3fdcb5e30b4664df0a527830f648a810a06673d9367e6d3d7024ea2f43e13c35"
+content-hash = "c8d08194633b8b8c3633de831c36568c0d74a64e58e5109d49a522a65c8dfc1a"
 
 [metadata.files]
 aenum = [
