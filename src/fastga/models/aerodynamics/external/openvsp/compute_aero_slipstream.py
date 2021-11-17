@@ -44,6 +44,7 @@ class ComputeSlipstreamOpenvsp(Group):
             _ComputeSlipstreamOpenvsp(
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
+                openvsp_exe_path=self.options["openvsp_exe_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 low_speed_aero=self.options["low_speed_aero"],
             ),
