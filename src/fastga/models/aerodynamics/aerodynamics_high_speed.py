@@ -51,6 +51,7 @@ class AerodynamicsHighSpeed(Group):
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
@@ -98,6 +99,7 @@ class AerodynamicsHighSpeed(Group):
                         low_speed_aero=False,
                         compute_mach_interpolation=True,
                         result_folder_path=self.options["result_folder_path"],
+                        openvsp_exe_path=self.options["openvsp_exe_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
@@ -110,6 +112,7 @@ class AerodynamicsHighSpeed(Group):
                         low_speed_aero=False,
                         compute_mach_interpolation=False,
                         result_folder_path=self.options["result_folder_path"],
+                        openvsp_exe_path=self.options["openvsp_exe_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
@@ -145,6 +148,7 @@ class AerodynamicsHighSpeed(Group):
                 _ComputeSlipstreamOpenvsp(
                     propulsion_id=self.options["propulsion_id"],
                     result_folder_path=self.options["result_folder_path"],
+                    openvsp_exe_path=self.options["openvsp_exe_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     low_speed_aero=False,
                 ),
