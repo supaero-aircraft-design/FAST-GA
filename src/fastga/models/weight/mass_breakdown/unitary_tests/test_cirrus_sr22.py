@@ -1,5 +1,5 @@
 """
-Test module for mass breakdown functions
+Test module for mass breakdown functions.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -298,9 +298,7 @@ def test_loop_compute_owe():
 
     # noinspection PyTypeChecker
     mass_computation = run_system(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True),
-        ivc,
-        check=True,
+        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1004, abs=1)

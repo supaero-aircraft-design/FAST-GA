@@ -1,5 +1,5 @@
 """
-Computes the aerostructural loads on the wing of the aircraft
+Computes the aerostructural loads on the wing of the aircraft.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

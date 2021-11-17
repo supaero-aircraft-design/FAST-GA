@@ -1,5 +1,5 @@
 """
-Airfoil reshape function
+Airfoil reshape function.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -27,11 +27,7 @@ from fastga.models.aerodynamics import resources
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_profile(
-    file_name: str = None,
-    thickness_ratio=None,
-    chord_length=None,
-) -> Profile:
+def get_profile(file_name: str = None, thickness_ratio=None, chord_length=None,) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 

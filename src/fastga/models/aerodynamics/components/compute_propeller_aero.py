@@ -1,5 +1,5 @@
 """
-Computation of propeller aero properties
+Computation of propeller aero properties.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -60,9 +60,7 @@ class ComputePropellerPerformance(om.Group):
             self.add_subsystem(
                 profile + "_polar",
                 XfoilPolar(
-                    airfoil_file=profile + ".af",
-                    alpha_end=30.0,
-                    activate_negative_angle=True,
+                    airfoil_file=profile + ".af", alpha_end=30.0, activate_negative_angle=True,
                 ),
                 promotes=[],
             )

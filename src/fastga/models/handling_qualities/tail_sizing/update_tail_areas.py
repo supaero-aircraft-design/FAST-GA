@@ -1,5 +1,5 @@
 """
-Computation of tail areas w.r.t. HQ criteria
+Computation of tail areas w.r.t. HQ criteria.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

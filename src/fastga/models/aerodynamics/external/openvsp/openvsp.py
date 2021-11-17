@@ -1,5 +1,5 @@
 """
-    Estimation of cl/cm/oswald aero coefficients using OPENVSP
+    Estimation of cl/cm/oswald aero coefficients using OPENVSP.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

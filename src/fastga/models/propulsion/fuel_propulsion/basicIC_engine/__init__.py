@@ -2,7 +2,7 @@
 Provides a parametric model for turbofan:
 
 - as a pure Python
-- as OpenMDAO modules
+- as OpenMDAO modules.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

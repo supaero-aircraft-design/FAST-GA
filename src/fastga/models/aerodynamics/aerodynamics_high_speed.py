@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    FAST - Copyright (c) 2016 ONERA ISAE.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -42,7 +42,7 @@ from fastoad.module_management.constants import ModelDomain
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsHighSpeed(Group):
     """
-    Models for high speed aerodynamics
+    Models for high speed aerodynamics.
     """
 
     def initialize(self):

@@ -1,5 +1,5 @@
 """
-    Estimation of the slope of the airfoil of the different lifting surface using the results of xfoil runs
+    Estimation of the slope of the airfoil of the different lifting surface using the results of xfoil runs.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

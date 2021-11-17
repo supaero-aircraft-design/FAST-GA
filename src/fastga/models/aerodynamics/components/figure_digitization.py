@@ -1,5 +1,5 @@
 """
-Generic class containing all the digitization needed to compute the aerodynamic coefficient of the aircraft
+Generic class containing all the digitization needed to compute the aerodynamic coefficient of the aircraft.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

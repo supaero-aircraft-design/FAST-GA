@@ -1,5 +1,5 @@
 """
-    Test module for geometry functions of cg components
+    Test module for geometry functions of cg components.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -67,10 +67,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def compute_drag(
-        self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
-        wing_mac: float,
+        self, mach: Union[float, np.array], unit_reynolds: Union[float, np.array], wing_mac: float,
     ) -> Union[float, np.array]:
         return 0.0
 
@@ -141,10 +138,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
     def compute_drag(
-        self,
-        mach: Union[float, np.array],
-        unit_reynolds: Union[float, np.array],
-        wing_mac: float,
+        self, mach: Union[float, np.array], unit_reynolds: Union[float, np.array], wing_mac: float,
     ) -> Union[float, np.array]:
         return 0.0
 

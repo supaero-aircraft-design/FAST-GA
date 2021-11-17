@@ -1,5 +1,5 @@
 """
-    Estimation of geometry of fuselage part A - Cabin (Commercial)
+    Estimation of geometry of fuselage part A - Cabin (Commercial).
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

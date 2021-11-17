@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail geometry (components)
+Estimation of horizontal tail geometry (components).
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

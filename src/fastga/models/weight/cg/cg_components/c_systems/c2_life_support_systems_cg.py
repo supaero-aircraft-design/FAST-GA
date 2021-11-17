@@ -1,5 +1,5 @@
 """
-    Estimation of life support systems center of gravities
+    Estimation of life support systems center of gravities.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

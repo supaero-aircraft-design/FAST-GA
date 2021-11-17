@@ -1,5 +1,5 @@
 """
-    Estimation of the profile drag of miscellaneous items
+    Estimation of the profile drag of miscellaneous items.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

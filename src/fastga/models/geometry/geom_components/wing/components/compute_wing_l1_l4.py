@@ -1,5 +1,5 @@
 """
-    Estimation of wing chords (l1 and l4)
+    Estimation of wing chords (l1 and l4).
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

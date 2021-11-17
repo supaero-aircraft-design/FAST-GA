@@ -1,5 +1,5 @@
 """
-    Estimation of yawing moment due to side-slip
+    Estimation of yawing moment due to side-slip.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

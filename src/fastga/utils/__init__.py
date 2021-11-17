@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-This package contains various utilities
+This package contains various utilities.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

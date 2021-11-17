@@ -1,5 +1,5 @@
 """
-    Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach number
+    Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach number.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

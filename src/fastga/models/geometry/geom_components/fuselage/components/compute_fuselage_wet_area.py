@@ -1,5 +1,5 @@
 """
-    Estimation of fuselage wet area
+    Estimation of fuselage wet area.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

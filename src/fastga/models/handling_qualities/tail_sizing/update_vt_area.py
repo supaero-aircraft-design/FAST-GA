@@ -1,5 +1,5 @@
 """
-Estimation of vertical tail area
+Estimation of vertical tail area.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -515,9 +515,7 @@ class _UpdateVTArea(VTPConstraints):
         self.add_output("data:geometry:vertical_tail:area", val=2.5, units="m**2")
 
         self.declare_partials(
-            "*",
-            "*",
-            method="fd",
+            "*", "*", method="fd",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

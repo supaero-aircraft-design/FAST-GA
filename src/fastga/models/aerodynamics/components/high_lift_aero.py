@@ -1,5 +1,5 @@
 """
-Computation of lift and drag increment due to high-lift devices
+Computation of lift and drag increment due to high-lift devices.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -85,15 +85,9 @@ class ComputeDeltaHighLift(FigureDigitization):
                 (
                     outputs["data:aerodynamics:flaps:landing:CL"],
                     outputs["data:aerodynamics:flaps:landing:CL_max"],
-                ) = self._get_flaps_delta_cl(
-                    inputs,
-                    flap_angle,
-                    mach_ls,
-                )
+                ) = self._get_flaps_delta_cl(inputs, flap_angle, mach_ls,)
                 outputs["data:aerodynamics:flaps:landing:CM"] = self._get_flaps_delta_cm(
-                    inputs,
-                    flap_angle,
-                    mach_ls,
+                    inputs, flap_angle, mach_ls,
                 )
                 outputs["data:aerodynamics:flaps:landing:CD"] = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
@@ -107,15 +101,9 @@ class ComputeDeltaHighLift(FigureDigitization):
                 (
                     outputs["data:aerodynamics:flaps:takeoff:CL"],
                     outputs["data:aerodynamics:flaps:takeoff:CL_max"],
-                ) = self._get_flaps_delta_cl(
-                    inputs,
-                    flap_angle,
-                    mach_ls,
-                )
+                ) = self._get_flaps_delta_cl(inputs, flap_angle, mach_ls,)
                 outputs["data:aerodynamics:flaps:takeoff:CM"] = self._get_flaps_delta_cm(
-                    inputs,
-                    flap_angle,
-                    mach_ls,
+                    inputs, flap_angle, mach_ls,
                 )
                 outputs["data:aerodynamics:flaps:takeoff:CD"] = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
@@ -127,8 +115,7 @@ class ComputeDeltaHighLift(FigureDigitization):
 
         # Computes elevator contribution during low speed operations (for different deflection angle)
         outputs["data:aerodynamics:elevator:low_speed:CL_delta"] = self._get_elevator_delta_cl(
-            inputs,
-            25.0,
+            inputs, 25.0,
         )  # get derivative for 25° angle assuming it is linear when <= to 25 degree,
         # derivative wrt to the wing, multiplies the deflection angle squared
         outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (

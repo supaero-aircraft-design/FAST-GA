@@ -1,5 +1,5 @@
 """
-    Estimation of tail center(s) of gravity
+    Estimation of tail center(s) of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

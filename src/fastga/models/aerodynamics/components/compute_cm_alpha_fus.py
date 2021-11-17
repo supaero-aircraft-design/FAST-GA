@@ -1,5 +1,5 @@
 """
-    Estimation of fuselage pitching moment
+    Estimation of fuselage pitching moment.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

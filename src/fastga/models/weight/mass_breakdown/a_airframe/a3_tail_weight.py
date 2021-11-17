@@ -1,5 +1,5 @@
 """
-Estimation of tail weight
+Estimation of tail weight.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

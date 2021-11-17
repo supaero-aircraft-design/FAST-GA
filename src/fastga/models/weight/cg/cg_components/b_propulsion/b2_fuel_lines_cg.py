@@ -1,5 +1,5 @@
 """
-    Estimation of fuel lines center of gravity
+    Estimation of fuel lines center of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

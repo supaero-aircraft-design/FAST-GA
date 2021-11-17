@@ -1,5 +1,5 @@
 """
-    Estimation of speed/load factors for aircraft design
+    Estimation of speed/load factors for aircraft design.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -49,9 +49,7 @@ class ComputeVNAndVH(om.Group):
             "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
         self.add_subsystem(
-            "compute_vn_diagram",
-            ComputeVN(),
-            promotes=["*"],
+            "compute_vn_diagram", ComputeVN(), promotes=["*"],
         )
 
 
@@ -186,12 +184,7 @@ class ComputeVN(om.ExplicitComponent):
         atm.true_airspeed = v_tas
         design_vc = atm.equivalent_airspeed
         velocity_array, load_factor_array, _ = self.flight_domain(
-            inputs,
-            design_mass,
-            cruise_altitude,
-            design_vc,
-            design_n_ps=0.0,
-            design_n_ng=0.0,
+            inputs, design_mass, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
         )
 
         if DOMAIN_PTS_NB < len(velocity_array):

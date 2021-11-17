@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail area
+Estimation of horizontal tail area.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -57,11 +57,7 @@ class UpdateHTArea(om.Group):
             _UpdateArea(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _UpdateArea(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "landing:cl_htp",
-                    "takeoff:cl_htp",
-                    "low_speed:cl_alpha_htp_isolated",
-                ],
+                excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
             ),
         )
         self.add_subsystem(
@@ -69,11 +65,7 @@ class UpdateHTArea(om.Group):
             _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
             promotes=self.get_io_names(
                 _ComputeHTPAreaConstraints(propulsion_id=self.options["propulsion_id"]),
-                excludes=[
-                    "landing:cl_htp",
-                    "takeoff:cl_htp",
-                    "low_speed:cl_alpha_htp_isolated",
-                ],
+                excludes=["landing:cl_htp", "takeoff:cl_htp", "low_speed:cl_alpha_htp_isolated",],
             ),
         )
 

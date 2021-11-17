@@ -1,5 +1,5 @@
 """
-    Computes Mach number and unitary Reynolds
+    Computes Mach number and unitary Reynolds.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

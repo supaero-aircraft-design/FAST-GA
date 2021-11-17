@@ -1,5 +1,5 @@
 """
-Test module for geometry functions of cg components
+Test module for geometry functions of cg components.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -275,9 +275,7 @@ def test_compute_fuselage_basic():
 def test_fuselage_wet_area():
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
-        __file__,
-        XML_FILE,
+        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)), __file__, XML_FILE,
     )
 
     problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)
