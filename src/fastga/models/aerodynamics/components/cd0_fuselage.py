@@ -1,5 +1,5 @@
 """
-    Estimation of the fuselage profile drag
+    Estimation of the fuselage profile drag.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

@@ -1,5 +1,5 @@
 """
-Estimation of the position of the CG that limits balked landing, adaptation of the method proposed by Gudmundsson
+Estimation of the position of the CG that limits balked landing, adaptation of the method proposed by Gudmundsson.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

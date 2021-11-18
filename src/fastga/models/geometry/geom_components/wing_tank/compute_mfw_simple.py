@@ -1,5 +1,5 @@
 """
-    Estimation of max fuel weight
+    Estimation of max fuel weight.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

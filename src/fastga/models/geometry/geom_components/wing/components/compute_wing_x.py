@@ -1,5 +1,5 @@
 """
-    Estimation of wing Xs
+    Estimation of wing Xs.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

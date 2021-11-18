@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail distance
+    Estimation of horizontal tail distance.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

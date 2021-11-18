@@ -1,5 +1,5 @@
 """
-    Estimation of passenger seats center of gravity
+    Estimation of passenger seats center of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

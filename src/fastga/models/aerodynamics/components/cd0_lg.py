@@ -1,5 +1,5 @@
 """
-    Estimation of the landing gear profile drag
+    Estimation of the landing gear profile drag.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

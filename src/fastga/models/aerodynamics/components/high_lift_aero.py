@@ -1,5 +1,5 @@
 """
-Computation of lift and drag increment due to high-lift devices
+Computation of lift and drag increment due to high-lift devices.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

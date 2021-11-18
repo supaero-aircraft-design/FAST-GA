@@ -1,5 +1,5 @@
 """
-    Estimation of maximum center of gravity ratio
+    Estimation of maximum center of gravity ratio.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

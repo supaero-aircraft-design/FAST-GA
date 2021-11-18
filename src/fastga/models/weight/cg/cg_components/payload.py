@@ -1,5 +1,5 @@
 """
-    Estimation of payload center(s) of gravity
+    Estimation of payload center(s) of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

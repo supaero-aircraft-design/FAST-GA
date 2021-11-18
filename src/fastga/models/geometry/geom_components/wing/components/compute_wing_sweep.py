@@ -1,5 +1,5 @@
 """
-    Estimation of wing sweeps
+    Estimation of wing sweeps.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

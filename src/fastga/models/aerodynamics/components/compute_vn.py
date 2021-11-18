@@ -1,5 +1,5 @@
 """
-    Estimation of speed/load factors for aircraft design
+    Estimation of speed/load factors for aircraft design.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

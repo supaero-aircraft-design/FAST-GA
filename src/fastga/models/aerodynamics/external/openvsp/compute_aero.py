@@ -1,5 +1,5 @@
 """
-    Estimation of aero coefficients using OPENVSP
+    Estimation of aero coefficients using OPENVSP.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -54,6 +54,7 @@ class ComputeAEROopenvsp(Group):
                 low_speed_aero=self.options["low_speed_aero"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 result_folder_path=self.options["result_folder_path"],
+                openvsp_exe_path=self.options["openvsp_exe_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
             ),

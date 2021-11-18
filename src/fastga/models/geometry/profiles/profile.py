@@ -1,5 +1,5 @@
 """
-Management of 2D wing profiles
+Management of 2D wing profiles.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

@@ -1,5 +1,5 @@
 """
-Computes the aerodynamic loads on the wing of the aircraft in the most stringent case according to aerostructural loads
+Computes the aerodynamic loads on the wing of the aircraft in the most stringent case according to aerostructural loads.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

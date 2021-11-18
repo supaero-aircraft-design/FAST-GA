@@ -1,5 +1,5 @@
 """
-Main component for mass breakdown
+Main component for mass breakdown.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

@@ -1,5 +1,5 @@
 """
-    New estimation method of center of gravity for all load cases
+    New estimation method of center of gravity for all load cases.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

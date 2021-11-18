@@ -1,5 +1,5 @@
 """
-Test module for the generate_block_analysis function
+Test module for the generate_block_analysis function.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

@@ -1,5 +1,5 @@
 """
-Defines the analysis and plotting functions for postprocessing of load analysis
+Defines the analysis and plotting functions for postprocessing of load analysis.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

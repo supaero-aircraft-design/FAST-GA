@@ -1,5 +1,5 @@
 """
-    Estimation of yawing moment du to the rudder
+    Estimation of yawing moment du to the rudder.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

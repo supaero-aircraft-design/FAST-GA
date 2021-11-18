@@ -1,5 +1,5 @@
 """
-    Estimation of global center of gravity
+    Estimation of global center of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

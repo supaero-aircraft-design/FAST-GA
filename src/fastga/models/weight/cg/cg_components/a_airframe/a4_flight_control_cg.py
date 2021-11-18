@@ -1,5 +1,5 @@
 """
-    Estimation of flight control center of gravity
+    Estimation of flight control center of gravity.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
