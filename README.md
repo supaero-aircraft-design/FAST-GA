@@ -7,7 +7,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD?labpath=tree%2Fsrc%2Ffastga%2Fnotebooks)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD)
 
 FAST-(OAD)-GA: Future Aircraft Sizing Tool - Overall Aircraft Design (General Aviation extension)
 ===============================================================================================
@@ -30,7 +30,7 @@ documentation](https://fast-ga.readthedocs.io/).
 Want to try quickly ?
 -------
 
-You can run FAST-OAD-GA notebooks number 1, 2 and 3 using our [Binder-hosted Jupyter notebooks](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD?labpath=tree%2Fsrc%2Ffastga%2Fnotebooks).
+You can run FAST-OAD-GA notebooks number 1, 2 and 3 using our [Binder-hosted Jupyter notebooks](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD).
 
 As these Binder-hosted notebooks are not setup to work in a Windows environment, external applications such as OpenVSP and Xfoil can't be run. Therefore, notebook number 4 will not fully work.
 
