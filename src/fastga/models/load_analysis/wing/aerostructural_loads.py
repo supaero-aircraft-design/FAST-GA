@@ -124,7 +124,7 @@ class AerostructuralLoad(ComputeVN):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")

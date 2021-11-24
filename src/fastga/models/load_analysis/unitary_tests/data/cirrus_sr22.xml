@@ -12,10 +12,6 @@
     <geometry>
       <flap_type is_input="True">1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
-      <aileron>
-        <chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
-        <span_ratio is_input="True">0.17<!--ratio (width of flaps)/(total span)--></span_ratio>
-      </aileron>
       <aircraft>
         <wet_area units="m**2" is_input="False">59.300124140468796<!--aircraft total wet area--></wet_area>
       </aircraft>
@@ -161,6 +157,10 @@
             </x>
           </leading_edge>
         </MAC>
+        <aileron>
+          <chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+          <span_ratio is_input="True">0.17<!--ratio (width of flaps)/(total span)--></span_ratio>
+        </aileron>
         <kink>
           <chord units="m" is_input="False">1.4744312836772349<!--chord length at wing kink--></chord>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
@@ -207,8 +207,8 @@
           <diameter units="m" is_input="False">1.0<!--diameter of the propeller--></diameter>
         </propeller>
         <tank>
-          <LE_chord_percentage>0.1</LE_chord_percentage>
-          <TE_chord_percentage>0.1</TE_chord_percentage>
+          <LE_chord_percentage>0.1<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage>0.1<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
           <y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
           <y_ratio_tank_end>0.9<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
         </tank>

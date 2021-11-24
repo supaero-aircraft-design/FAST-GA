@@ -83,7 +83,7 @@
         <taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>
         <aileron>
-          <chord_ratio is_input="True">0.26</chord_ratio>
+          <chord_ratio is_input="True">0.26<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="rad" is_input="True">40.0</max_deflection>
           <span_ratio is_input="True">0.32</span_ratio>
         </aileron>
@@ -99,7 +99,7 @@
       <propulsion>
         <engine>
           <count>2.0<!--number of engines--></count>
-          <layout>1.0</layout>
+          <layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
           <y_ratio>[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position with respect to total span--></y_ratio>
         </engine>
       </propulsion>

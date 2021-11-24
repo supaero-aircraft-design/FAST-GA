@@ -12,10 +12,6 @@
     <geometry>
       <flap_type is_input="True">1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail is_input="True">1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
-      <aileron>
-        <chord_ratio is_input="True">0.26<!--mean value of (aileron chord)/(section chord)--></chord_ratio>
-        <span_ratio is_input="True">0.32<!--ratio (width of ailerons)/(total span)--></span_ratio>
-      </aileron>
       <aircraft>
         <wet_area units="m**2" is_input="False">82.21685637423752<!--aircraft total wet area--></wet_area>
       </aircraft>
@@ -164,6 +160,10 @@
             </x>
           </leading_edge>
         </MAC>
+        <aileron>
+          <chord_ratio is_input="True">0.26<!--mean value of (aileron chord)/(section chord)--></chord_ratio>
+          <span_ratio is_input="True">0.32<!--ratio (width of ailerons)/(total span)--></span_ratio>
+        </aileron>
         <kink>
           <chord units="m" is_input="False">1.4541595355959134<!--chord length at wing kink--></chord>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
@@ -206,8 +206,8 @@
           <y units="m" is_input="False">1.9729600331104677<!--Y-position of nacelle center--></y>
         </nacelle>
         <tank>
-          <LE_chord_percentage>0.04</LE_chord_percentage>
-          <TE_chord_percentage>0.1</TE_chord_percentage>
+          <LE_chord_percentage>0.04<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage>0.1<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
           <y_ratio_tank_beginning>0.42<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
           <y_ratio_tank_end>0.92<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
         </tank>

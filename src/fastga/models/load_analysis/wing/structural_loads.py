@@ -65,7 +65,7 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
 
