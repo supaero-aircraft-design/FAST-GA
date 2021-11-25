@@ -506,6 +506,7 @@
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
+          <safety_factor>1.5</safety_factor>
           <characteristic_speed>
             <vd units="knot" is_input="True">194.0<!--limit speed--></vd>
           </characteristic_speed>

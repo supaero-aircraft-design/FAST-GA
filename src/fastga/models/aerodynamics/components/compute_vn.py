@@ -30,11 +30,10 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import Atmosphere, FlightPoint
 from fastoad.constants import EngineSetting
 
-from ..constants import MACH_NB_PTS
+from fastga.models.aerodynamics.constants import MACH_NB_PTS
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
-INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,9 +48,7 @@ class ComputeVNAndVH(om.Group):
             "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
         self.add_subsystem(
-            "compute_vn_diagram",
-            ComputeVN(),
-            promotes=["*"],
+            "compute_vn_diagram", ComputeVN(), promotes=["*"],
         )
 
 
@@ -150,6 +147,7 @@ class ComputeVN(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:MZFW", val=np.nan, units="kg")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
@@ -168,8 +166,19 @@ class ComputeVN(om.ExplicitComponent):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        self.add_output("data:flight_domain:velocity", units="m/s", shape=DOMAIN_PTS_NB)
-        self.add_output("data:flight_domain:load_factor", shape=DOMAIN_PTS_NB)
+        self.add_output(
+            "data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s", shape=DOMAIN_PTS_NB
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:flight_domain:mtow:load_factor", shape=DOMAIN_PTS_NB
+        )
+
+        self.add_output(
+            "data:mission:sizing:cs23:flight_domain:mzfw:velocity", units="m/s", shape=DOMAIN_PTS_NB
+        )
+        self.add_output(
+            "data:mission:sizing:cs23:flight_domain:mzfw:load_factor", shape=DOMAIN_PTS_NB
+        )
 
         self.declare_partials("*", "*", method="fd")
 
@@ -180,33 +189,56 @@ class ComputeVN(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        design_mass = inputs["data:weight:aircraft:MTOW"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        mzfw = inputs["data:weight:aircraft:MTOW"]
 
         atm = Atmosphere(cruise_altitude, altitude_in_feet=False)
         atm.true_airspeed = v_tas
         design_vc = atm.equivalent_airspeed
-        velocity_array, load_factor_array, _ = self.flight_domain(
-            inputs,
-            design_mass,
-            cruise_altitude,
-            design_vc,
-            design_n_ps=0.0,
-            design_n_ng=0.0,
+
+        velocity_array_mtow, load_factor_array_mtow, _ = self.flight_domain(
+            inputs, mtow, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
         )
 
-        if DOMAIN_PTS_NB < len(velocity_array):
-            velocity_array = velocity_array[0 : DOMAIN_PTS_NB - 1]
-            load_factor_array = load_factor_array[0 : DOMAIN_PTS_NB - 1]
+        if DOMAIN_PTS_NB < len(velocity_array_mtow):
+            velocity_array_mtow = velocity_array_mtow[0 : DOMAIN_PTS_NB - 1]
+            load_factor_array_mtow = load_factor_array_mtow[0 : DOMAIN_PTS_NB - 1]
             warnings.warn(
                 "Defined maximum stored domain points at the beginning of the file exceeded!"
             )
         else:
-            additional_zeros = list(np.zeros(DOMAIN_PTS_NB - len(velocity_array)))
-            velocity_array.extend(additional_zeros)
-            load_factor_array.extend(additional_zeros)
+            additional_zeros = list(np.zeros(DOMAIN_PTS_NB - len(velocity_array_mtow)))
+            velocity_array_mtow.extend(additional_zeros)
+            load_factor_array_mtow.extend(additional_zeros)
 
-        outputs["data:flight_domain:velocity"] = np.array(velocity_array)
-        outputs["data:flight_domain:load_factor"] = np.array(load_factor_array)
+        outputs["data:mission:sizing:cs23:flight_domain:mtow:velocity"] = np.array(
+            velocity_array_mtow
+        )
+        outputs["data:mission:sizing:cs23:flight_domain:mtow:load_factor"] = np.array(
+            load_factor_array_mtow
+        )
+
+        velocity_array_mzfw, load_factor_array_mzfw, _ = self.flight_domain(
+            inputs, mzfw, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
+        )
+
+        if DOMAIN_PTS_NB < len(velocity_array_mzfw):
+            velocity_array_mzfw = velocity_array_mzfw[0 : DOMAIN_PTS_NB - 1]
+            load_factor_array_mzfw = load_factor_array_mzfw[0 : DOMAIN_PTS_NB - 1]
+            warnings.warn(
+                "Defined maximum stored domain points at the beginning of the file exceeded!"
+            )
+        else:
+            additional_zeros = list(np.zeros(DOMAIN_PTS_NB - len(velocity_array_mzfw)))
+            velocity_array_mzfw.extend(additional_zeros)
+            load_factor_array_mzfw.extend(additional_zeros)
+
+        outputs["data:mission:sizing:cs23:flight_domain:mzfw:velocity"] = np.array(
+            velocity_array_mzfw
+        )
+        outputs["data:mission:sizing:cs23:flight_domain:mzfw:load_factor"] = np.array(
+            load_factor_array_mzfw
+        )
 
     # noinspection PyUnusedLocal
     def flight_domain(self, inputs, mass, altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0):

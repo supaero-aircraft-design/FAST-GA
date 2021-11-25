@@ -322,10 +322,7 @@ def polar(
 
 
 def airfoil_slope_wt_xfoil(
-    XML_FILE: str,
-    wing_airfoil_file: str,
-    htp_airfoil_file: str,
-    vtp_airfoil_file: str,
+    XML_FILE: str, wing_airfoil_file: str, htp_airfoil_file: str, vtp_airfoil_file: str,
 ):
     """Tests polar execution (XFOIL) @ high speed!"""
     # Define high-speed parameters (with .xml file and additional inputs)
@@ -369,10 +366,7 @@ def airfoil_slope_xfoil(
     tmp_folder = polar_result_transfer()
 
     problem = airfoil_slope_wt_xfoil(
-        XML_FILE,
-        wing_airfoil_file,
-        htp_airfoil_file,
-        vtp_airfoil_file,
+        XML_FILE, wing_airfoil_file, htp_airfoil_file, vtp_airfoil_file,
     )
 
     # Retrieve polar results from temporary folder
@@ -391,10 +385,7 @@ def airfoil_slope_xfoil(
 
 
 def compute_aero(
-    XML_FILE: str,
-    use_openvsp: bool,
-    mach_interpolation: bool,
-    low_speed_aero: bool,
+    XML_FILE: str, use_openvsp: bool, mach_interpolation: bool, low_speed_aero: bool,
 ):
     """Compute aero components!"""
     # Create result temporary directory
@@ -764,9 +755,7 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
 
 def slipstream_openvsp(
-    XML_FILE: str,
-    ENGINE_WRAPPER: str,
-    low_speed_aero: bool,
+    XML_FILE: str, ENGINE_WRAPPER: str, low_speed_aero: bool,
 ):
     # Create result temporary directory
     results_folder = _create_tmp_directory()
@@ -977,7 +966,17 @@ def v_n_diagram(
     assert np.max(np.abs(load_factor_vect - problem["data:flight_domain:load_factor"])) <= 1e-3
 
 
-def load_factor(XML_FILE: str, ENGINE_WRAPPER: str, load_factor_ultimate: float, vh: float):
+def load_factor(
+    XML_FILE: str,
+    ENGINE_WRAPPER: str,
+    load_factor_ultimate: float,
+    load_factor_ultimate_mtow: float,
+    load_factor_ultimate_mzfw: float,
+    vh: float,
+    va: float,
+    vc: float,
+    vd: float,
+):
     # load all inputs
     ivc = get_indep_var_comp(
         list_inputs(LoadFactor(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -985,10 +984,27 @@ def load_factor(XML_FILE: str, ENGINE_WRAPPER: str, load_factor_ultimate: float,
 
     problem = run_system(LoadFactor(propulsion_id=ENGINE_WRAPPER), ivc)
 
-    assert problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft") == pytest.approx(
-        load_factor_ultimate, abs=1e-1
-    )
+    assert problem.get_val(
+        "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"
+    ) == pytest.approx(load_factor_ultimate, abs=1e-1)
+    assert max(
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"),
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"),
+    ) == pytest.approx(load_factor_ultimate_mtow, abs=1e-1)
+    assert max(
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"),
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"),
+    ) == pytest.approx(load_factor_ultimate_mzfw, abs=1e-1)
     assert problem.get_val("data:TLAR:v_max_sl", units="m/s") == pytest.approx(vh, abs=1e-2)
+    assert problem.get_val(
+        "data:mission:sizing:cs23:characteristic_speed:va", units="m/s"
+    ) == pytest.approx(va, abs=1e-2)
+    assert problem.get_val(
+        "data:mission:sizing:cs23:characteristic_speed:vc", units="m/s"
+    ) == pytest.approx(vc, abs=1e-2)
+    assert problem.get_val(
+        "data:mission:sizing:cs23:characteristic_speed:vd", units="m/s"
+    ) == pytest.approx(vd, abs=1e-2)
 
 
 def propeller(
