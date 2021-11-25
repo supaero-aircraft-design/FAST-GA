@@ -1066,7 +1066,8 @@ def test_load_factor():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
+    system() != "Windows" and xfoil_path is None,
+    reason="No XFOIL executable available",
 )
 def test_propeller():
     thrust_SL = np.array(

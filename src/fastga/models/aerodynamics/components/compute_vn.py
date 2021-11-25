@@ -48,7 +48,9 @@ class ComputeVNAndVH(om.Group):
             "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )
         self.add_subsystem(
-            "compute_vn_diagram", ComputeVN(), promotes=["*"],
+            "compute_vn_diagram",
+            ComputeVN(),
+            promotes=["*"],
         )
 
 
@@ -197,7 +199,12 @@ class ComputeVN(om.ExplicitComponent):
         design_vc = atm.equivalent_airspeed
 
         velocity_array_mtow, load_factor_array_mtow, _ = self.flight_domain(
-            inputs, mtow, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
+            inputs,
+            mtow,
+            cruise_altitude,
+            design_vc,
+            design_n_ps=0.0,
+            design_n_ng=0.0,
         )
 
         if DOMAIN_PTS_NB < len(velocity_array_mtow):
@@ -219,7 +226,12 @@ class ComputeVN(om.ExplicitComponent):
         )
 
         velocity_array_mzfw, load_factor_array_mzfw, _ = self.flight_domain(
-            inputs, mzfw, cruise_altitude, design_vc, design_n_ps=0.0, design_n_ng=0.0,
+            inputs,
+            mzfw,
+            cruise_altitude,
+            design_vc,
+            design_n_ps=0.0,
+            design_n_ng=0.0,
         )
 
         if DOMAIN_PTS_NB < len(velocity_array_mzfw):
