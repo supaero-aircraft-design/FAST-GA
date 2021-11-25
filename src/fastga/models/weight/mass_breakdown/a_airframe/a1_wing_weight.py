@@ -28,7 +28,7 @@ class ComputeWingWeight(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
@@ -44,7 +44,7 @@ class ComputeWingWeight(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         wing_area = inputs["data:geometry:wing:area"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]

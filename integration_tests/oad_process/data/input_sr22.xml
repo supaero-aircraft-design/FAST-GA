@@ -6,7 +6,6 @@
       <range units="NM">1000.0<!--top-level requirement: design range--></range>
       <v_approach units="kn">79.0<!--approach speed--></v_approach>
       <v_cruise units="kn">160.0<!--cruise speed--></v_cruise>
-      <v_limit units="kn">202.6<!--limit speed--></v_limit>
       <v_max_sl units="kn" is_input="True">186.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -122,9 +121,6 @@
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
-        <cs23>
-          <sizing_factor_ultimate>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></sizing_factor_ultimate>
-        </cs23>
         <landing>
           <elevator_angle units="deg">-25.0<!--position of the elevator during landing--></elevator_angle>
           <target_sideslip units="deg">15.0</target_sideslip>
@@ -146,6 +142,14 @@
           <speed units="kn">30.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
+        <cs23>
+          <characteristic_speed>
+            <vd units="kn">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
         <main_route>
           <cruise>
             <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
@@ -185,11 +189,11 @@
           <k_factor>0.925<!--proportional corrective factor for vertical tail mass--></k_factor>
         </vertical_tail>
         <wing>
-          <punctual_mass>
-            <y_ratio>[-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
-            <mass>[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</mass>
-          </punctual_mass>
           <k_factor>0.925<!--proportional corrective factor for wing mass--></k_factor>
+          <punctual_mass>
+            <mass>[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--mass of the punctual masses on the wing used for wing load computation--></mass>
+            <y_ratio>[-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--position (as a percent of wing semi-span) of the punctual masses on the wing used for wing load computation, only positive ratio will be considered--></y_ratio>
+          </punctual_mass>
         </wing>
       </airframe>
     </weight>

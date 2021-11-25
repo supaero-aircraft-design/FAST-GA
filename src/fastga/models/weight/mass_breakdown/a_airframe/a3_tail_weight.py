@@ -30,7 +30,7 @@ class ComputeTailWeight(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
         self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
@@ -57,7 +57,7 @@ class ComputeTailWeight(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         v_cruise_ktas = inputs["data:TLAR:v_cruise"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]

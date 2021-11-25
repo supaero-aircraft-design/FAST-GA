@@ -50,12 +50,12 @@ class _LoadFactorIdentification(ExplicitComponent):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
         self.add_input("data:flight_domain:load_factor", val=nan_array, shape=DOMAIN_PTS_NB)
 
-        self.add_output("data:mission:sizing:cs23:sizing_factor_ultimate")
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         load_factor_array = inputs["data:flight_domain:load_factor"]
-        outputs["data:mission:sizing:cs23:sizing_factor_ultimate"] = 1.5 * max(
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"] = 1.5 * max(
             abs(max(load_factor_array)), abs(min(load_factor_array))
         )

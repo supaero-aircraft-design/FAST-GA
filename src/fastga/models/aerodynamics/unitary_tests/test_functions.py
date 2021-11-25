@@ -985,7 +985,7 @@ def load_factor(XML_FILE: str, ENGINE_WRAPPER: str, load_factor_ultimate: float,
 
     problem = run_system(LoadFactor(propulsion_id=ENGINE_WRAPPER), ivc)
 
-    assert problem.get_val("data:mission:sizing:cs23:sizing_factor_ultimate") == pytest.approx(
+    assert problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft") == pytest.approx(
         load_factor_ultimate, abs=1e-1
     )
     assert problem.get_val("data:TLAR:v_max_sl", units="m/s") == pytest.approx(vh, abs=1e-2)

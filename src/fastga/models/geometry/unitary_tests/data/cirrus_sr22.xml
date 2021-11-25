@@ -6,7 +6,6 @@
       <range units="nmi" is_input="True">1000.0<!--top-level requirement: design range--></range>
       <v_approach units="knot" is_input="True">79.0<!--approach speed--></v_approach>
       <v_cruise units="knot" is_input="True">160.0<!--cruise speed--></v_cruise>
-      <v_limit units="knot" is_input="True">202.6<!--limit speed--></v_limit>
       <v_max_sl units="knot" is_input="True">186.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -480,9 +479,6 @@
     <mission>
       <sizing>
         <fuel units="kg" is_input="False">252.19391779967108<!--consumed fuel mass during whole mission--></fuel>
-        <cs23>
-          <sizing_factor_ultimate is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></sizing_factor_ultimate>
-        </cs23>
         <holding>
           <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
         </holding>
@@ -520,6 +516,14 @@
           <speed units="knot" is_input="True">30.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
+        <cs23>
+          <characteristic_speed>
+            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
         <main_route>
           <climb>
             <distance units="m" is_input="False">24114.427039885122<!--covered ground distance during climb phase--></distance>

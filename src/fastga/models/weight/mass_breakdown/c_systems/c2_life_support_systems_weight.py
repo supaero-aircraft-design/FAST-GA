@@ -37,7 +37,7 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:weight:systems:navigation:mass", val=np.nan, units="lb")
-        self.add_input("data:TLAR:v_limit", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_output("data:weight:systems:life_support:insulation:mass", units="lb")
@@ -55,7 +55,7 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         m_iae = inputs["data:weight:systems:navigation:mass"]
-        limit_speed = inputs["data:TLAR:v_limit"]
+        limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
         n_occ = n_pax + 2.0
