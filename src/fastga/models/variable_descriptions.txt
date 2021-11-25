@@ -81,3 +81,6 @@ settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass 
 settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
 
 settings:geometry:fuel_tanks:depth || ratio of the tank depth as a percentage of the wing depth
+
+data:weight:airframe:wing:punctual_mass:mass || mass of the punctual masses on the wing used for wing load computation
+data:weight:airframe:wing:punctual_mass:y_ratio || position (as a percent of wing semi-span) of the punctual masses on the wing used for wing load computation, only positive ratio will be considered

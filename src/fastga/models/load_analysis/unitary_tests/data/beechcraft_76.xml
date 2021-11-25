@@ -643,6 +643,10 @@
           </CG>
         </vertical_tail>
         <wing>
+          <punctual_mass>
+            <y_ratio>[-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
+            <mass>[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</mass>
+          </punctual_mass>
           <k_factor_a1 is_input="True">1.0</k_factor_a1>
           <mass units="lbm" is_input="False">386.41841945727515<!--wing (A1): total mass--></mass>
           <CG>
