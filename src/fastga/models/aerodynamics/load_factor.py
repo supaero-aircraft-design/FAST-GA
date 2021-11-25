@@ -48,7 +48,7 @@ class LoadFactor(Group):
 class _LoadFactorIdentification(ExplicitComponent):
     def setup(self):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
-        self.add_input("data:flight_domain:load_factor", val=nan_array, shape=DOMAIN_PTS_NB)
+        self.add_input(
             "data:mission:sizing:cs23:flight_domain:mtow:velocity",
             val=nan_array,
             units="m/s",
