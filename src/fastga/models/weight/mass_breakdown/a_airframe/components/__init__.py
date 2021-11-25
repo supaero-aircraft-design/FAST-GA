@@ -10,11 +10,3 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-from .a1_wing_weight import ComputeWingWeight
-from .a1_wing_weight_analytical import ComputeWingMassAnalytical
-from .a2_fuselage_weight import ComputeFuselageWeight
-from .a2_fuselage_weight import ComputeFuselageWeightRaymer
-from .a3_tail_weight import ComputeTailWeight
-from .a4_flight_control_weight import ComputeFlightControlsWeight
-from .a5_landing_gear_weight import ComputeLandingGearWeight

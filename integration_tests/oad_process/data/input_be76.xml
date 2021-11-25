@@ -101,6 +101,12 @@
           <layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
           <y_ratio>[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position with respect to total span--></y_ratio>
         </engine>
+        <tank>
+          <LE_chord_percentage>0.1</LE_chord_percentage>
+          <TE_chord_percentage>0.1</TE_chord_percentage>
+          <y_ratio_tank_end>1.0</y_ratio_tank_end>
+          <y_ratio_tank_beginning>0.0</y_ratio_tank_beginning>
+        </tank>
       </propulsion>
     </geometry>
     <handling_qualities>
@@ -132,6 +138,7 @@
           <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
+          <safety_factor>1.5</safety_factor>
           <characteristic_speed>
             <vd units="kn">194.0<!--limit speed--></vd>
           </characteristic_speed>
@@ -188,6 +195,11 @@
     </weight>
   </data>
   <settings>
+    <geometry>
+      <fuel_tanks>
+        <depth>0.4</depth>
+      </fuel_tanks>
+    </geometry>
     <weight>
       <aircraft>
         <CG>

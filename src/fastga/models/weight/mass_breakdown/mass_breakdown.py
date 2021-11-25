@@ -22,6 +22,7 @@ from fastga.models.weight.mass_breakdown.a_airframe import (
     ComputeTailWeight,
     ComputeFlightControlsWeight,
     ComputeLandingGearWeight,
+    ComputeWingMassAnalytical,
 )
 from fastga.models.weight.mass_breakdown.b_propulsion import (
     ComputeEngineWeight,
@@ -58,13 +59,17 @@ class MassBreakdown(om.Group):
     def initialize(self):
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
         self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("analytical_wing_mass", default=False, types=bool)
 
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
             self.add_subsystem("payload", ComputePayload(), promotes=["*"])
         self.add_subsystem(
             "owe",
-            ComputeOperatingWeightEmpty(propulsion_id=self.options["propulsion_id"]),
+            ComputeOperatingWeightEmpty(
+                propulsion_id=self.options["propulsion_id"],
+                analytical_wing_mass=self.options["analytical_wing_mass"],
+            ),
             promotes=["*"],
         )
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
@@ -93,10 +98,16 @@ class ComputeOperatingWeightEmpty(om.Group):
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("analytical_wing_mass", default=False, types=bool)
 
     def setup(self):
         # Airframe
-        self.add_subsystem("wing_weight", ComputeWingWeight(), promotes=["*"])
+        if self.options["analytical_wing_mass"]:
+            self.add_subsystem(
+                "wing_weight_analytical", ComputeWingMassAnalytical(), promotes=["*"]
+            )
+        else:
+            self.add_subsystem("wing_weight", ComputeWingWeight(), promotes=["*"])
         self.add_subsystem("fuselage_weight", ComputeFuselageWeight(), promotes=["*"])
         self.add_subsystem("empennage_weight", ComputeTailWeight(), promotes=["*"])
         self.add_subsystem("flight_controls_weight", ComputeFlightControlsWeight(), promotes=["*"])
