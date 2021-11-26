@@ -240,7 +240,9 @@ class XfoilPolar(ExternalCodeComp):
 
             # profile file
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            profile = get_profile(file_name=self.options["airfoil_file"],).get_sides()
+            profile = get_profile(
+                file_name=self.options["airfoil_file"],
+            ).get_sides()
             # noinspection PyTypeChecker
             np.savetxt(
                 tmp_profile_file_path,

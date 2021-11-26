@@ -21,7 +21,7 @@ import numpy as np
 
 
 class ComputeMiscMass(om.ExplicitComponent):
-    """ Computes the misc mass based on the model developed in FLOPS. """
+    """Computes the misc mass based on the model developed in FLOPS."""
 
     def setup(self):
 

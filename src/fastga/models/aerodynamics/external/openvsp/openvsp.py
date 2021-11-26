@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from importlib.resources import path
-import numpy as np
 import warnings
 import math
 import pandas as pd
@@ -27,6 +26,8 @@ from pathlib import Path
 import tempfile
 from tempfile import TemporaryDirectory
 
+import numpy as np
+
 from fastoad.model_base import Atmosphere, FlightPoint
 
 # noinspection PyProtectedMember
@@ -36,7 +37,6 @@ from fastoad._utils.resource_management.copy import copy_resource, copy_resource
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
-from ... import resources
 from . import resources as local_resources
 from . import openvsp3201
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
@@ -45,6 +45,8 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
     PROPELLER_EFFICIENCY,
 )
+
+from ... import resources
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"

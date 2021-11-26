@@ -56,7 +56,10 @@ class ComputeWingY(ExplicitComponent):
         )
         self.declare_partials(
             "data:geometry:wing:tip:y",
-            ["data:geometry:wing:area", "data:geometry:wing:aspect_ratio",],
+            [
+                "data:geometry:wing:area",
+                "data:geometry:wing:aspect_ratio",
+            ],
             method="fd",
         )
 
