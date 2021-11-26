@@ -1,6 +1,5 @@
-"""
-    Estimation of the slope of the airfoil of the different lifting surface using the results of xfoil runs.
-"""
+"""Estimation of the slope of the airfoil of the different lifting surface using the results of
+xfoil runs."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -210,13 +209,12 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
     @staticmethod
     def delete_additional_zeros(array_alpha, array_cl):
         """
-        Function that delete the additional zeros we had to add to fit the format imposed by OpenMDAO in both the alpha
-        and CL array simultaneously
+        Function that delete the additional zeros we had to add to fit the format imposed by
+        OpenMDAO in both the alpha and CL array simultaneously
 
-        @param array_alpha: an array with the alpha values and the additional zeros we want to delete
-        @param array_cl: the corresponding Cl array
-        @return: final_array_alpha an array containing the same alphas of the initial array but with the additional
-        zeros deleted
+        @param array_alpha: an array with the alpha values and the additional zeros we want to
+        delete @param array_cl: the corresponding Cl array @return: final_array_alpha an array
+        containing the same alphas of the initial array but with the additional zeros deleted
         @return: final_array_CL an array containing the corresponding CL
         """
 

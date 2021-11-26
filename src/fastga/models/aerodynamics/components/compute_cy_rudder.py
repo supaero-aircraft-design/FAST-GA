@@ -22,12 +22,13 @@ from .figure_digitization import FigureDigitization
 
 class ComputeCyDeltaRudder(FigureDigitization):
     """
-    Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam without the surface ratio
-    to keep the coefficient relative to the VT area and dividing by the theoretical airfoil lift coefficient as
-    suggested by the formulae giving the wing lift increment due to flap deployment which can be considered similar
+    Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam
+    without the surface ratio to keep the coefficient relative to the VT area and dividing by the
+    theoretical airfoil lift coefficient as suggested by the formulae giving the wing lift
+    increment due to flap deployment which can be considered similar
 
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
-    Characteristics. DARcorporation, 1985.
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DARcorporation, 1985.
     """
 
     def setup(self):
@@ -59,8 +60,8 @@ class ComputeCyDeltaRudder(FigureDigitization):
         cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
         cl_alpha_vt_airfoil = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"]
 
-        # Assumed that the rudder covers more or less all of the vertical tail while leaving a small gap at the bottom
-        # and at the top
+        # Assumed that the rudder covers more or less all of the vertical tail while leaving a
+        # small gap at the bottom and at the top
         eta_in = 0.05
         eta_out = 0.95
         kb = self.k_b_flaps(eta_in, eta_out, taper_ratio_vt)
