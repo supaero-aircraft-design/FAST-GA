@@ -1,5 +1,5 @@
 """
-    Estimation of wing mean aerodynamic chord
+Estimation of wing mean aerodynamic chord.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -21,7 +21,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeWingMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing mean aerodynamic chord estimation"""
+    """Wing mean aerodynamic chord estimation."""
 
     def setup(self):
 

@@ -5,7 +5,6 @@
       <luggage_mass_design units="kg">0.0<!--top-level requirement: luggage mass per passenger for the design mission--></luggage_mass_design>
       <range units="NM">0.0<!--top-level requirement: design range--></range>
       <v_cruise units="kn">0.0<!--top-level requirement: cruise speed--></v_cruise>
-      <v_limit units="kn">0.0<!--top-level requirement: limit speed--></v_limit>
       <v_max_sl units="kn">0.0<!--top-level requirement: max level velocity--></v_max_sl>
     </TLAR>
     <geometry>
@@ -99,9 +98,6 @@
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
-        <cs23>
-          <sizing_factor_ultimate>0.0<!--over-sizing coefficient--></sizing_factor_ultimate>
-        </cs23>
         <landing>
           <elevator_angle units="deg">0.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
         </landing>
@@ -121,6 +117,14 @@
           <speed units="kn">0.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate>0.0<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
+        <cs23>
+          <characteristic_speed>
+            <vd units="kn">0.0<!--top-level requirement: limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft>0.0<!--over-sizing coefficient--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
         <main_route>
           <climb>
             <thrust_rate>0.0</thrust_rate>

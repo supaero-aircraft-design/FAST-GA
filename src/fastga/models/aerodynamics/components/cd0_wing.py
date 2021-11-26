@@ -1,5 +1,5 @@
 """
-    Estimation of the wing profile drag.
+Estimation of the wing profile drag.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

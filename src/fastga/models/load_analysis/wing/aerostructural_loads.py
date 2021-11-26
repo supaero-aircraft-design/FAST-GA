@@ -124,7 +124,7 @@ class AerostructuralLoad(ComputeVN):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
@@ -137,6 +137,13 @@ class AerostructuralLoad(ComputeVN):
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
+
+        self.add_input(
+            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+        )
+        self.add_input(
+            "data:weight:airframe:wing:punctual_mass:mass", shape=ENGINE_COUNT, val=np.nan
+        )
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
@@ -438,6 +445,13 @@ class AerostructuralLoad(ComputeVN):
             used_index = np.where(y_ratio_data >= 0.0)[0]
             y_ratio = y_ratio_data[used_index]
 
+        y_ratio_pun_mass_data = inputs["data:weight:airframe:wing:punctual_mass:y_ratio"]
+        used_index_pun_mass = np.where(y_ratio_pun_mass_data >= 0.0)[0]
+        y_ratio_punctual_mass = y_ratio_pun_mass_data[used_index_pun_mass]
+        punctual_mass_array = inputs["data:weight:airframe:wing:punctual_mass:mass"][
+            used_index_pun_mass
+        ]
+
         g = 9.81
 
         # STEP 2/XX - REARRANGE THE DATA TO FIT ON ONE WING AS WE ASSUME SYMMETRICAL LOADING ###########################
@@ -460,6 +474,16 @@ class AerostructuralLoad(ComputeVN):
                 y_eng = y_ratio_mot * semi_span
                 y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
                     y_vector, chord_vector, point_mass_array, y_eng, single_engine_mass, inputs
+                )
+
+        if len(y_ratio_punctual_mass) >= 1.0:
+            for y_ratio_punctual in y_ratio_punctual_mass:
+                y_punctual_mass = y_ratio_punctual * semi_span
+                punctual_mass = punctual_mass_array[
+                    np.where(y_ratio_punctual_mass == y_ratio_punctual)[0]
+                ]
+                y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
+                    y_vector, chord_vector, point_mass_array, y_punctual_mass, punctual_mass, inputs
                 )
 
         # Adding the LG weight

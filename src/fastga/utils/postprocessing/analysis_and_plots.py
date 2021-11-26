@@ -46,7 +46,7 @@ def aircraft_geometry_plot(
     :param plot_nacelle: boolean to turn on or off the plotting of the nacelles
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: wing plot figure
+    :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -270,7 +270,7 @@ def evolution_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: V-N plot figure
+    :return: V-N plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -394,7 +394,7 @@ def cl_wing_diagram(
     :param name_mod: name to give to the trace of the modified aircraft
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: Cl distribution figure along the span
+    :return: Cl distribution figure along the span.
     """
 
     variables_ref = VariableIO(aircraft_ref_file_path, file_formatter).read()
@@ -520,7 +520,7 @@ def cg_lateral_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: wing plot figure
+    :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -720,7 +720,7 @@ def _get_variable_values_with_new_units(
 
     :param variables: instance containing variables information
     :param var_names_and_new_units: dictionary of the variable names as keys and units as value
-    :return: values of the requested variables with respect to their new units
+    :return: values of the requested variables with respect to their new units.
     """
     new_values = []
     for variable_name, unit in var_names_and_new_units.items():
@@ -742,7 +742,7 @@ def _data_weight_decomposition(variables: VariableList, owe=None):
 
     :param variables: instance containing variables information
     :param owe: value of OWE, if provided names of owe subcategories will be provided
-    :return: variable values, names and optionally owe subcategories names
+    :return: variable values, names and optionally owe subcategories names.
     """
     category_values = []
     category_names = []
@@ -787,7 +787,7 @@ def mass_breakdown_bar_plot(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
-    :return: bar plot figure
+    :return: bar plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -844,7 +844,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     :param aircraft_file_path: path of data file
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
-    :return: sunburst plot figure
+    :return: sunburst plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -955,7 +955,7 @@ def drag_breakdown_diagram(
     fig=None,
     file_formatter=None,
 ) -> go.FigureWidget:
-    """ """
+    """Return a plot of the drag breakdown of the wing in cruise conditions."""
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     parasite_drag_cruise = variables["data:aerodynamics:aircraft:cruise:CD0"].value[0]
@@ -1099,7 +1099,7 @@ def payload_range(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: payload range figure
+    :return: payload range figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -1181,7 +1181,7 @@ def aircraft_polar(
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
     :param equilibrated: boolean stating if the polar plotted is the equilibrated one or not
-    :return: plane polar figure
+    :return: plane polar figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 

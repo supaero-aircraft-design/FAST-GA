@@ -27,7 +27,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
 
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
 
@@ -37,7 +37,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
-        n_ult = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         span = inputs["data:geometry:wing:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
 

@@ -38,7 +38,7 @@ def get_profile(
     :param file_name: name of resource (ex: "naca23012.af")
     :param thickness_ratio:
     :param chord_length:
-    :return: Profile object
+    :return: Profile object.
     """
 
     profile = Profile()

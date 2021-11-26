@@ -1,5 +1,6 @@
 """
-Generic class containing all the digitization needed to compute the aerodynamic coefficient of the aircraft.
+Generic class containing all the digitization needed to compute the aerodynamic
+coefficient of the aircraft.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -61,7 +62,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def delta_cd_plain_flap(chord_ratio, control_deflection) -> float:
         """
-        Roskam data to account for the profile drag increment due to the deployment of plain flap (figure 4.44)
+        Roskam data to account for the profile drag increment due to the deployment of plain flap
+        (figure 4.44)
 
         :param chord_ratio: control surface over lifting surface ratio
         :param control_deflection: control surface deflection, in deg
@@ -110,7 +112,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_prime_plain_flap(flap_angle, chord_ratio):
         """
-        Roskam data to estimate the correction factor to estimate non linear lift behaviour of plain flap (figure 8.13)
+        Roskam data to estimate the correction factor to estimate non linear lift behaviour of
+        plain flap (figure 8.13)
 
         :param flap_angle: the flap angle (in °)
         :param chord_ratio: flap chord over wing chord ratio
@@ -192,7 +195,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_delta_theory_plain_flap(thickness, chord_ratio):
         """
-        Roskam data to estimate the theoretical airfoil lift effectiveness of a plain flap (figure 8.14)
+        Roskam data to estimate the theoretical airfoil lift effectiveness of a plain flap (
+        figure 8.14)
 
         :param thickness: the airfoil thickness
         :param chord_ratio: flap chord over wing chord ratio
@@ -258,13 +262,14 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_cl_delta_plain_flap(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Roskam data to estimate the correction factor to estimate difference from theoretical plain flap lift
-        (figure 8.15)
+        Roskam data to estimate the correction factor to estimate difference from theoretical
+        plain flap lift (figure 8.15)
 
         :param thickness_ratio: airfoil thickness ratio
         :param airfoil_lift_coefficient: the lift coefficient of the airfoil, in rad**-1
         :param chord_ratio: flap chord over wing chord ratio
-        :return k_cl_delta: correction factor to account for difference from theoretical plain flap lift
+        :return k_cl_delta: correction factor to account for difference from theoretical plain
+        flap lift
         """
 
         file = pth.join(resources.__path__[0], K_CL_DELTA_PLAIN_FLAP)
@@ -289,7 +294,8 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         ):
             _LOGGER.warning(
-                "Airfoil lift slope ratio value outside of the range in Roskam's book, value clipped"
+                "Airfoil lift slope ratio value outside of the range in Roskam's book, "
+                "value clipped"
             )
 
         k_cl_alpha = np.clip(
@@ -316,8 +322,9 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_prime_single_slotted(flap_angle, chord_ratio):
         """
-        Roskam data to estimate the lift effectiveness of a single slotted flap (figure 8.17), noted here k_prime to
-        match the notation of the plain flap but is written alpha_delta in the book
+        Roskam data to estimate the lift effectiveness of a single slotted flap (figure 8.17),
+        noted here k_prime to match the notation of the plain flap but is written alpha_delta in
+        the book
 
         :param flap_angle: the control surface deflection angle angle (in °)
         :param chord_ratio: control surface chord over lifting surface chord ratio
@@ -395,10 +402,12 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def base_max_lift_increment(thickness_ratio: float, flap_type: float) -> float:
         """
-        Roskam data to estimate base lift increment used in the computation of flap delta_cl_max (figure 8.31)
+        Roskam data to estimate base lift increment used in the computation of flap delta_cl_max
+        (figure 8.31)
 
         :param thickness_ratio: thickness ratio f the lifting surface, in %
-        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain, 1.0 for single_slot
+        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain,
+        1.0 for single_slot
         :return: delta_cl_base
         """
 
@@ -447,12 +456,16 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k1_max_lift(chord_ratio, flap_type) -> float:
         """
-        Roskam data to correct the base lift increment to account for chord ratio difference wrt to the reference flap
-        configuration (figure 8.32)
+        Roskam data to correct the base lift increment to account for chord ratio difference wrt
+        to the reference flap configuration (figure 8.32)
 
-        :param chord_ratio: ration of the chord of the control surface over that of the whole surface, in %
-        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain, 1.0 for single_slot
-        :return k1: correction factor to account for chord ratio difference wrt the reference configuration
+        :param chord_ratio: ration of the chord of the control surface over that of the whole
+        surface, in %
+        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain,
+        1.0 for single_slot
+
+        :return k1: correction factor to account for chord ratio difference wrt the reference
+        configuration
         """
 
         file = pth.join(resources.__path__[0], K1)
@@ -484,12 +497,14 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k2_max_lift(angle, flap_type) -> float:
         """
-        Roskam data to correct the base lift increment to account for the control surface deflection angle difference
-        wrt to the reference flap configuration (figure 8.33)
+        Roskam data to correct the base lift increment to account for the control surface
+        deflection angle difference wrt to the reference flap configuration (figure 8.33)
 
         :param angle: control surface deflection angle, in °
-        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain, 1.0 for single_slot
-        :return k2: correction factor to account for the control surface deflection angle wrt the reference
+        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain,
+        1.0 for single_slot
+        :return k2: correction factor to account for the control surface deflection angle wrt the
+        reference
         configuration
         """
 
@@ -512,14 +527,16 @@ class FigureDigitization(om.ExplicitComponent):
             k2_interp = interpolate.interp1d(x_plain, y_plain)
             if angle != np.clip(angle, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
-                    "Control surface deflection value outside of the range in Roskam's book, value clipped"
+                    "Control surface deflection value outside of the range in Roskam's book, "
+                    "value clipped"
                 )
             k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
         elif flap_type == 1.0:
             k2_interp = interpolate.interp1d(x_single_slot, y_single_slot)
             if angle != np.clip(angle, min(x_single_slot), max(x_single_slot)):
                 _LOGGER.warning(
-                    "Control surface deflection value outside of the range in Roskam's book, value clipped"
+                    "Control surface deflection value outside of the range in Roskam's book, "
+                    "value clipped"
                 )
             k2 = k2_interp(np.clip(angle, min(x_single_slot), max(x_single_slot)))
         else:
@@ -527,7 +544,8 @@ class FigureDigitization(om.ExplicitComponent):
             k2_interp = interpolate.interp1d(x_plain, y_plain)
             if angle != np.clip(angle, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
-                    "Control surface deflection value outside of the range in Roskam's book, value clipped"
+                    "Control surface deflection value outside of the range in Roskam's book, "
+                    "value clipped"
                 )
             k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
 
@@ -539,7 +557,8 @@ class FigureDigitization(om.ExplicitComponent):
         Roskam data for flap motion correction factor (figure 8.34)
 
         :param angle: control surface deflection angle, in °
-        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain, 1.0 for single_slot
+        :param flap_type: type of flap used as described in Roskam, for now can be 0.0 for plain,
+        1.0 for single_slot
         :return k3: correction factor to account flap motion correction
         """
 
@@ -572,9 +591,9 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_b_flaps(eta_in: float, eta_out: float, taper_ratio: float) -> float:
         """
-        Roskam data to estimate the flap span factor Kb (figure 8.52)
-        This factor accounts for a finite flap contribution to the 3D lift increase, depending on its position and size
-        and the taper ratio of the wing.
+        Roskam data to estimate the flap span factor Kb (figure 8.52) This factor accounts for a
+        finite flap contribution to the 3D lift increase, depending on its position and size and
+        the taper ratio of the wing.
 
         :param eta_in: position along the wing span of the start of the flaps divided by span
         :param eta_out: position along the wing span of the end of the flaps divided by span
@@ -618,7 +637,8 @@ class FigureDigitization(om.ExplicitComponent):
             or (eta_in != np.clip(eta_in, min(x_1), max(x_1)))
         ):
             _LOGGER.warning(
-                "Flap inward position ratio value outside of the range in Roskam's book, value clipped"
+                "Flap inward position ratio value outside of the range in Roskam's book, "
+                "value clipped"
             )
 
         k_eta = [
@@ -634,7 +654,8 @@ class FigureDigitization(om.ExplicitComponent):
             or (eta_out != np.clip(eta_out, min(x_1), max(x_1)))
         ):
             _LOGGER.warning(
-                "Flap inward position ratio value outside of the range in Roskam's book, value clipped"
+                "Flap inward position ratio value outside of the range in Roskam's book, "
+                "value clipped"
             )
 
         k_eta = [
@@ -649,11 +670,12 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def a_delta_airfoil(chord_ratio) -> float:
         """
-        Roskam data to estimate the two-dimensional flap effectiveness factor (figure 8.53a)
-        This factor can be then used in the computation of the 3D flap effectiveness factor which is often the
-        coefficient of interest
+        Roskam data to estimate the two-dimensional flap effectiveness factor (figure 8.53a) This
+        factor can be then used in the computation of the 3D flap effectiveness factor which is
+        often the coefficient of interest
 
-        :param chord_ratio: ration of the chord of the control surface over that of the whole surface
+        :param chord_ratio: ration of the chord of the control surface over that of the whole
+        surface
         :return: kb factor contribution to 3D lift
         """
 
@@ -678,12 +700,14 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_a_delta(a_delta_airfoil, aspect_ratio) -> float:
         """
-        Roskam data to estimate the two dimensional to three dimensional control surface lift effectiveness parameter
+        Roskam data to estimate the two dimensional to three dimensional control surface lift
+        effectiveness parameter
         (figure 8.53b)
 
         :param a_delta_airfoil: control surface two-dimensional flap effectiveness factor
         :param aspect_ratio: aspect ratio of the fixed surface
-        :return k_a_delta: two dimensional to three dimensional control surface lift effectiveness parameter
+        :return k_a_delta: two dimensional to three dimensional control surface lift effectiveness
+        parameter
         """
 
         file = pth.join(resources.__path__[0], K_A_DELTA)
@@ -779,12 +803,15 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_ar_fuselage(taper_ratio, span, avg_fuselage_depth) -> float:
         """
-        Roskam data to account for the effect of the fuselage on the VTP effective aspect ratio (figure  10.14)
+        Roskam data to account for the effect of the fuselage on the VTP effective aspect ratio (
+        figure  10.14)
 
         :param taper_ratio: lifting surface taper ratio
         :param span: lifting surface span, in m
-        :param avg_fuselage_depth: average fuselage depth (diameter if fuselage considered circular), in m
-        :return k_ar_fuselage: correction factor to account for the end plate effect of the fuselage on effective VTP AR
+        :param avg_fuselage_depth: average fuselage depth (diameter if fuselage considered
+        circular), in m
+        :return k_ar_fuselage: correction factor to account for the end plate effect of the fuselage
+         on effective VTP AR
         """
 
         file = pth.join(resources.__path__[0], K_AR_FUSELAGE)
@@ -806,7 +833,8 @@ class FigureDigitization(om.ExplicitComponent):
 
         if x_value != np.clip(x_value, min(min(x_06), min(x_10)), max(max(x_06), max(x_10))):
             _LOGGER.warning(
-                "Ratio of span on fuselage depth outside of the range in Roskam's book, value clipped"
+                "Ratio of span on fuselage depth outside of the range in Roskam's book, "
+                "value clipped"
             )
 
         y_value_06 = interpolate.interp1d(x_06, y_06)(np.clip(x_value, min(x_06), max(x_06)))
@@ -824,7 +852,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_vh(area_ratio) -> float:
         """
-        Roskam data to estimate the impact of relative area ratio on the effective aspect ratio (figure 10.16)
+        Roskam data to estimate the impact of relative area ratio on the effective aspect ratio (
+        figure 10.16)
 
         :param area_ratio: ratio of the horizontal tail area over the vertical tail area
         :return k_vh: impact of area ratio on effective aspect ratio
@@ -849,13 +878,15 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_ch_alpha(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Roskam data to compute the correction factor to differentiate the 2D control surface hinge moment derivative
+        Roskam data to compute the correction factor to differentiate the 2D control surface hinge
+        moment derivative
         due to AOA from the reference (figure 10.63)
 
         :param thickness_ratio: airfoil thickness ratio
         :param airfoil_lift_coefficient: the lift coefficient of the airfoil, in rad**-1
         :param chord_ratio: flap chord over wing chord ratio
-        :return k_ch_alpha: correction factor for 2D control surface hinge moment derivative due to AOA
+        :return k_ch_alpha: correction factor for 2D control surface hinge moment derivative due to
+        AOA
         """
 
         file = pth.join(resources.__path__[0], K_CH_ALPHA)
@@ -884,8 +915,8 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         ):
             _LOGGER.warning(
-                "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of the range "
-                "in Roskam's book, value clipped"
+                "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of "
+                "the range in Roskam's book, value clipped"
             )
 
         k_cl_alpha = np.clip(
@@ -905,7 +936,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def ch_alpha_th(thickness_ratio, chord_ratio):
         """
-        Roskam data to compute the theoretical 2D control surface hinge moment derivative due to AOA (figure 10.63)
+        Roskam data to compute the theoretical 2D control surface hinge moment derivative due to
+        AOA (figure 10.63)
 
         :param thickness_ratio: airfoil thickness ratio
         :param chord_ratio: flap chord over wing chord ratio
@@ -952,13 +984,15 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_ch_delta(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Roskam data to compute the correction factor to differentiate the 2D control surface hinge moment derivative
-        due to control surface deflection from the reference (figure 10.69 a)
+        Roskam data to compute the correction factor to differentiate the 2D control surface
+        hinge moment derivative due to control surface deflection from the reference (figure
+        10.69 a)
 
         :param thickness_ratio: airfoil thickness ratio
         :param airfoil_lift_coefficient: the lift coefficient of the airfoil, in rad**-1
         :param chord_ratio: control surface chord over lifting surface chord ratio
-        :return k_ch_delta: hinge moment derivative due to control surface deflection correction factor
+        :return k_ch_delta: hinge moment derivative due to control surface deflection correction
+        factor
         """
 
         file = pth.join(resources.__path__[0], K_CH_DELTA)
@@ -991,8 +1025,8 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         ):
             _LOGGER.warning(
-                "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of the range "
-                "in Roskam's book, value clipped"
+                "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of "
+                "the range in Roskam's book, value clipped"
             )
 
         k_cl_alpha = np.clip(
@@ -1020,8 +1054,8 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def ch_delta_th(thickness_ratio, chord_ratio):
         """
-        Roskam data to compute the theoretical 2D control surface hinge moment derivative due to control surface
-        deflection (figure 10.69 b)
+        Roskam data to compute the theoretical 2D control surface hinge moment derivative due to
+        control surface deflection (figure 10.69 b)
 
         :param thickness_ratio: airfoil thickness ratio
         :param chord_ratio: flap chord over wing chord ratio
@@ -1070,7 +1104,8 @@ class FigureDigitization(om.ExplicitComponent):
         """
         Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14)
 
-        :param root_quarter_chord_position_ratio: the position of the root quarter chord of the wing from the nose
+        :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
+        wing from the nose
         divided by the total length of the fuselage
         :return k_fus: the empirical pitching moment factor
         """
@@ -1088,7 +1123,8 @@ class FigureDigitization(om.ExplicitComponent):
             float(root_quarter_chord_position_ratio), min(x), max(x)
         ):
             _LOGGER.warning(
-                "Position of the root quarter-chord as percent of fuselage length is outside of the range in Roskam's book, value clipped"
+                "Position of the root quarter-chord as percent of fuselage length is outside of "
+                "the range in Roskam's book, value clipped"
             )
 
         k_fus = interpolate.interp1d(x, y)(

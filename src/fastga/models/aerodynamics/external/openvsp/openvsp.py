@@ -15,7 +15,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from importlib.resources import path
-import numpy as np
 import warnings
 import math
 import pandas as pd
@@ -27,6 +26,8 @@ from pathlib import Path
 import tempfile
 from tempfile import TemporaryDirectory
 
+import numpy as np
+
 from fastoad.model_base import Atmosphere, FlightPoint
 
 # noinspection PyProtectedMember
@@ -36,7 +37,6 @@ from fastoad._utils.resource_management.copy import copy_resource, copy_resource
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
-from ... import resources
 from . import resources as local_resources
 from . import openvsp3201
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
@@ -45,6 +45,8 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
     PROPELLER_EFFICIENCY,
 )
+
+from ... import resources
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
@@ -413,8 +415,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO WORKDIR ##############
-        ################################################################################################################
+        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
+        # WORKDIR #################################################################################
 
         output_file_list = [
             pth.join(target_directory, INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv"))
@@ -451,14 +453,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
             parser.generate()
 
-        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #########################################################
-        ################################################################################################################
+        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
+        ############################################################################################
 
         self.options["external_output_files"] = output_file_list
         super().compute(inputs, outputs)
 
-        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ##########################
-        ################################################################################################################
+        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
+        ############################################################################################
 
         input_file_list = output_file_list
         input_file_list.append(input_file_list[0].replace(".csv", ".vspaero"))
@@ -480,8 +482,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #####################
-        ################################################################################################################
+        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
+        ############################################################################################
 
         parser = InputFileGenerator()
         template_file = pth.split(input_file_list[1])[1]
@@ -509,13 +511,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(reynolds), 0, 3)
             parser.generate()
 
-        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ########################################
-        ################################################################################################################
+        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
+        ############################################################################################
 
         super().compute(inputs, outputs)
 
-        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #########################################
-        ################################################################################################################
+        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
+        ############################################################################################
 
         # Open .lod file and extract data
         wing_y_vect = []
@@ -580,8 +582,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cdi, cm, coef_e
         """
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ########################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
+        ############################################################################################
 
         # Get inputs (and calculate missing ones)
         sref_htp = float(inputs["data:geometry:horizontal_tail:area"])
@@ -603,11 +605,11 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
         reynolds = v_inf * l0_htp / atm.kinematic_viscosity
 
-        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###################################
-        ################################################################################################################
+        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
+        ############################################################################################
 
-        # If a folder path is specified for openvsp .exe, it becomes working directory (target), if not temporary folder
-        # is created
+        # If a folder path is specified for openvsp .exe, it becomes working directory (target),
+        # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
@@ -639,8 +641,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO WORKDIR ##############
-        ################################################################################################################
+        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
+        # WORKDIR ##################################################################################
 
         output_file_list = [
             pth.join(target_directory, INPUT_HTP_SCRIPT.replace(".vspscript", "_DegenGeom.csv"))
@@ -671,14 +673,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
             parser.generate()
 
-        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #########################################################
-        ################################################################################################################
+        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
+        ############################################################################################
 
         self.options["external_output_files"] = output_file_list
         super().compute(inputs, outputs)
 
-        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ##########################
-        ################################################################################################################
+        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
+        ############################################################################################
 
         input_file_list = output_file_list
         input_file_list.append(input_file_list[0].replace(".csv", ".vspaero"))
@@ -700,8 +702,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #####################
-        ################################################################################################################
+        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
+        ############################################################################################
 
         parser = InputFileGenerator()
         template_file = pth.split(input_file_list[1])[1]
@@ -729,13 +731,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(reynolds), 0, 3)
             parser.generate()
 
-        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ########################################
-        ################################################################################################################
+        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
+        ############################################################################################
 
         super().compute(inputs, outputs)
 
-        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #########################################
-        ################################################################################################################
+        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
+        ############################################################################################
 
         # Open .lod file and extract data
         htp_y_vect = []

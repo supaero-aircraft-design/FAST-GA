@@ -96,7 +96,7 @@ class VariableListLocal(VariableList):
         will be used. Otherwise, the absolute name will be used.
 
         :param system: OpenMDAO Component instance to inspect
-        :return: VariableList instance
+        :return: VariableList instance.
         """
 
         problem = om.Problem()

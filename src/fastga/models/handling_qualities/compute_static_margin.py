@@ -27,7 +27,7 @@ from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
 )
 class ComputeStaticMargin(om.Group):
     """
-    Calculate aero-center and global static margin
+    Calculate aero-center and global static margin.
     """
 
     def setup(self):

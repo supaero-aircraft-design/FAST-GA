@@ -91,7 +91,7 @@ class ComputeTORotationLimitGroup(om.Group):
 
 class ComputeTORotationLimit(om.ExplicitComponent):
     """
-    Computes area of horizontal tail plane (internal function)
+    Computes area of horizontal tail plane (internal function).
     """
 
     def __init__(self, **kwargs):
@@ -226,7 +226,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
 
 class _ComputeAeroCoeffTO(om.ExplicitComponent):
     """
-    Adapts aero-coefficients (reference surface is tail area for cl_ht)
+    Adapts aero-coefficients (reference surface is tail area for cl_ht).
     """
 
     def initialize(self):
@@ -284,7 +284,7 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
     @staticmethod
     def _extrapolate(x, xp, yp) -> float:
         """
-        Extrapolate linearly out of range x-value
+        Extrapolate linearly out of range x-value.
         """
         if (x >= xp[0]) and (x <= xp[-1]):
             result = float(np.interp(x, xp, yp))

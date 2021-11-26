@@ -1,6 +1,4 @@
-"""
-Computation of propeller aero properties.
-"""
+"""Computation of propeller aero properties. """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -278,7 +276,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             # plt.xlabel("0.75R pitch angle [°]")
             # plt.ylabel("Torque [-]")
             # plt.plot(local_theta_vect,
-            #          v_inf * np.array(local_thrust_vect) / (np.array(local_eta_vect) * omega * math.pi / 30.0))
+            #          v_inf * np.array(local_thrust_vect)
+            #          /
+            #          (np.array(local_eta_vect) * omega * math.pi / 30.0))
 
         return thrust_vect, theta_vect, eta_vect
 
@@ -307,8 +307,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         """
 
-        This function calculates the thrust, efficiency and power at a given flight speed, altitude h and propeller
-        angular speed.
+        This function calculates the thrust, efficiency and power at a given flight speed,
+        altitude h and propeller angular speed.
 
         :param inputs: structure of data relative to the blade geometry available from setup
         :param theta_75: pitch defined at r = 0.75*R radial position [deg.]
@@ -407,12 +407,16 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                 cd_element,
                 atm,
             )
-            # results = self.disk_theory(speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf)
+            # results = self.disk_theory(
+            #     speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf
+            # )
             out_of_polars = results[3]
             if out_of_polars:
                 dT_vect[i] = 0.0
                 dQ_vect[i] = 0.0
-                # warnings.warn("Propeller element out of calculated polars: contribution canceled!")
+                # warnings.warn(
+                #   "Propeller element out of calculated polars: contribution canceled!"
+                # )
             else:
                 dT_vect[i] = results[0] * dr * atm.density
                 dQ_vect[i] = results[1] * dr * atm.density
@@ -444,9 +448,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         atm: Atmosphere,
     ):
         """
-        The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
-        conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
-        momentum with BEM theory.
+        The core of the Propeller code. Given the geometry of a propeller element,
+        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
+        thrust and the torque produced using force and momentum with BEM theory.
 
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
@@ -489,7 +493,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         if mach_local < 1:
             beta = math.sqrt(1 - mach_local ** 2.0)
             # cl = cl / (beta + (1 - beta) * cl / 2)
-            # Prandtl-Glauert correction as Karman-Tsien and Laitone only apply to the pressure coefficient distribution
+            # Prandtl-Glauert correction as Karman-Tsien
+            # and Laitone only apply to the pressure coefficient distribution
             cl = cl / beta
         else:
             beta = math.sqrt(mach_local ** 2.0 - 1)
@@ -529,9 +534,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         v_inf: float,
     ):
         """
-        The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
-        conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
-        momentum with disk theory.
+        The core of the Propeller code. Given the geometry of a propeller element,
+        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
+        thrust and the torque produced using force and momentum with disk theory.
 
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]
@@ -576,11 +581,14 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         # f_hub is the hub loose factor FIXME: to be activated in future versions
         # if phi > 0.0:
-        #     f_hub = min(1.0, 2 / math.pi \
+        #     f_hub = min(
+        #         1.0,
+        #         2
+        #         / math.pi
         #         * math.acos(
-        #             math.exp(
-        #                     -blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi))))
-        #                 )
+        #             math.exp(-blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi)))
+        #         ),
+        #     )
         # else:
         #     f_hub = 1.0
         f_hub = 1.0
@@ -614,9 +622,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         atm: Atmosphere,
     ):
         """
-        The core of the Propeller code. Given the geometry of a propeller element, its aerodynamic polars, flight
-        conditions and axial/tangential velocities it computes the thrust and the torque produced using force and
-        momentum with disk theory.
+        The core of the Propeller code. Given the geometry of a propeller element,
+        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
+        thrust and the torque produced using force and momentum with disk theory.
 
         :param speed_vect: the vector of axial and tangential induced speed in m/s
         :param radius: radius position of the element center  [m]

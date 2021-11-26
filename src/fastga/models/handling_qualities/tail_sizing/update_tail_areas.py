@@ -33,7 +33,7 @@ class UpdateTailAreas(om.Group):
     - Horizontal tail area is computed so it can balance pitching moment of
       aircraft at rotation speed.
     - Vertical tail area is computed so aircraft can have the Cnbeta in cruise
-      conditions and (for bi-motor) maintain trajectory with failed engine @ 5000ft
+      conditions and (for bi-motor) maintain trajectory with failed engine @ 5000ft.
     """
 
     def initialize(self):

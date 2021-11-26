@@ -25,7 +25,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class ComputeVTmacFD(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Vertical tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance
+    Vertical tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
     """
 
     def setup(self):
@@ -102,7 +102,7 @@ class ComputeVTmacFD(ExplicitComponent):
 class ComputeVTmacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Vertical tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (VTP distance computed)
+    Vertical tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (VTP distance computed).
     """
 
     def setup(self):

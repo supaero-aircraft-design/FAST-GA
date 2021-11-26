@@ -1,5 +1,5 @@
 """
-    FAST - Copyright (c) 2016 ONERA ISAE
+    FAST - Copyright (c) 2016 ONERA ISAE.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -16,15 +16,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from .components.compute_vn import DOMAIN_PTS_NB
 
 from openmdao.core.group import Group
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .components.compute_vn import ComputeVNAndVH
-
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+
+from .components.compute_vn import ComputeVNAndVH, DOMAIN_PTS_NB
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
@@ -48,14 +47,72 @@ class LoadFactor(Group):
 class _LoadFactorIdentification(ExplicitComponent):
     def setup(self):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
-        self.add_input("data:flight_domain:load_factor", val=nan_array, shape=DOMAIN_PTS_NB)
+        self.add_input(
+            "data:mission:sizing:cs23:flight_domain:mtow:velocity",
+            val=nan_array,
+            units="m/s",
+            shape=DOMAIN_PTS_NB,
+        )
+        self.add_input(
+            "data:mission:sizing:cs23:flight_domain:mtow:load_factor",
+            val=nan_array,
+            shape=DOMAIN_PTS_NB,
+        )
 
-        self.add_output("data:mission:sizing:cs23:sizing_factor_ultimate")
+        self.add_input(
+            "data:mission:sizing:cs23:flight_domain:mzfw:load_factor",
+            val=nan_array,
+            shape=DOMAIN_PTS_NB,
+        )
+
+        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
+
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft")
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive")
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative")
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive")
+        self.add_output("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative")
+
+        self.add_output("data:mission:sizing:cs23:characteristic_speed:va", units="m/s")
+        self.add_output("data:mission:sizing:cs23:characteristic_speed:vc", units="m/s")
+        self.add_output("data:mission:sizing:cs23:characteristic_speed:vd", units="m/s")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        load_factor_array = inputs["data:flight_domain:load_factor"]
-        outputs["data:mission:sizing:cs23:sizing_factor_ultimate"] = 1.5 * max(
-            abs(max(load_factor_array)), abs(min(load_factor_array))
+
+        safety_factor = inputs["data:mission:sizing:cs23:safety_factor"]
+
+        load_factor_array_mtow = inputs["data:mission:sizing:cs23:flight_domain:mtow:load_factor"]
+        load_factor_array_mzfw = inputs["data:mission:sizing:cs23:flight_domain:mzfw:load_factor"]
+        velocity_array_mtow = inputs["data:mission:sizing:cs23:flight_domain:mtow:velocity"]
+
+        ultimate_load_factor_mtow_pos = safety_factor * max(load_factor_array_mtow)
+        ultimate_load_factor_mtow_neg = safety_factor * min(load_factor_array_mtow)
+        ultimate_load_factor_mzfw_pos = safety_factor * max(load_factor_array_mzfw)
+        ultimate_load_factor_mzfw_neg = safety_factor * min(load_factor_array_mzfw)
+
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"] = max(
+            ultimate_load_factor_mtow_pos,
+            ultimate_load_factor_mzfw_pos,
+            abs(ultimate_load_factor_mtow_neg),
+            abs(ultimate_load_factor_mzfw_neg),
         )
+        outputs[
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"
+        ] = ultimate_load_factor_mtow_pos
+        outputs[
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"
+        ] = ultimate_load_factor_mtow_neg
+        outputs[
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"
+        ] = ultimate_load_factor_mzfw_pos
+        outputs[
+            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"
+        ] = ultimate_load_factor_mzfw_neg
+
+        outputs["data:mission:sizing:cs23:characteristic_speed:va"] = max(
+            velocity_array_mtow[2], velocity_array_mtow[4]
+        )
+        outputs["data:mission:sizing:cs23:characteristic_speed:vc"] = velocity_array_mtow[6]
+        outputs["data:mission:sizing:cs23:characteristic_speed:vd"] = velocity_array_mtow[9]

@@ -64,7 +64,7 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:TLAR:v_limit", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
         self.add_input("data:TLAR:range", val=np.nan, units="nm")
 
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
@@ -82,7 +82,7 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        v_limit = inputs["data:TLAR:v_limit"]
+        v_limit = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         design_range = inputs["data:TLAR:range"]
 
         fus_width = inputs["data:geometry:fuselage:maximum_width"]

@@ -45,7 +45,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     ):
         """
         Dummy engine model returning nacelle aerodynamic drag force.
-
         """
         super().__init__()
         self.prop_layout = prop_layout
@@ -114,7 +113,6 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     ):
         """
         Dummy engine model returning nacelle aerodynamic drag force.
-
         """
         super().__init__()
         self.prop_layout = prop_layout

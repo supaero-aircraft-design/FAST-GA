@@ -25,11 +25,11 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation
 
-    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`
+    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`.
     """
 
     def setup(self):
-        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -43,7 +43,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         maximum_width = inputs["data:geometry:fuselage:maximum_width"]
         maximum_height = inputs["data:geometry:fuselage:maximum_height"]
@@ -76,7 +76,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     Astronautics, Inc., 2012.
 
     Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-25)
+    Butterworth-Heinemann, 2013. Equation (6-25).
     """
 
     def setup(self):
@@ -87,7 +87,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="ft**2")
-        self.add_input("data:mission:sizing:cs23:sizing_factor_ultimate", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:fuselage:k_factor", val=1.0)
         self.add_input(
@@ -108,7 +108,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         maximum_width = inputs["data:geometry:fuselage:maximum_width"]
         maximum_height = inputs["data:geometry:fuselage:maximum_height"]
         wet_area_fus = inputs["data:geometry:fuselage:wet_area"]
-        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor_ultimate"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]

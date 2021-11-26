@@ -1,5 +1,5 @@
 """
-    Estimation of aerodynamic center
+    Estimation of aerodynamic center.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

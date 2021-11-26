@@ -1052,7 +1052,17 @@ def test_v_n_diagram():
 
 def test_load_factor():
     # load all inputs
-    load_factor(XML_FILE, ENGINE_WRAPPER, load_factor_ultimate=5.7, vh=102.09)
+    load_factor(
+        XML_FILE,
+        ENGINE_WRAPPER,
+        load_factor_ultimate=5.7,
+        load_factor_ultimate_mtow=5.7,
+        load_factor_ultimate_mzfw=5.7,
+        vh=102.09,
+        va=67.62,
+        vc=77.998,
+        vd=109.139,
+    )
 
 
 @pytest.mark.skipif(

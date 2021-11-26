@@ -1,5 +1,5 @@
 """
-    Computes Mach number and unitary Reynolds.
+Computes Mach number and unitary Reynolds.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -23,8 +23,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 class ComputeUnitReynolds(ExplicitComponent):
     """
-    Computes the mach number and reynolds number based on inputs and the ISA model
-
+    Computes the mach number and reynolds number based on inputs and the ISA model.
     """
 
     def initialize(self):

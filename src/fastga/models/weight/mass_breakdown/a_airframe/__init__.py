@@ -1,3 +1,5 @@
+"""Package containing the subcomponents necessary for the airframe mass estimation."""
+
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,6 +14,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .a1_wing_weight import ComputeWingWeight
+from .a1_wing_weight_analytical import ComputeWingMassAnalytical
 from .a2_fuselage_weight import ComputeFuselageWeight
 from .a2_fuselage_weight import ComputeFuselageWeightRaymer
 from .a3_tail_weight import ComputeTailWeight

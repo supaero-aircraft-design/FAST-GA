@@ -30,7 +30,7 @@ from fastoad.constants import EngineSetting
 
 class aircraft_equilibrium_limit(om.ExplicitComponent):
     """
-    Compute the mass-lift equilibrium
+    Compute the mass-lift equilibrium.
     """
 
     def setup(self):

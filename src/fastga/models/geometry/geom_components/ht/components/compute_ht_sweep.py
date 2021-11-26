@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail sweeps and aspect ratio 
+    Estimation of horizontal tail sweeps and aspect ratio.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

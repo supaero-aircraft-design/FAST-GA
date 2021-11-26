@@ -1,5 +1,5 @@
 """
-    Estimation of wing Ys (sections span)
+    Estimation of wing Ys (sections span).
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

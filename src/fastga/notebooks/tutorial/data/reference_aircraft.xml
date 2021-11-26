@@ -8,7 +8,6 @@
       <range units="NM">840.0<!--top-level requirement: design range--></range>
       <v_approach units="kn">78.0<!--approach speed--></v_approach>
       <v_cruise units="kn">160.0<!--cruise speed--></v_cruise>
-      <v_limit units="kn">194.0<!--limit speed--></v_limit>
       <v_max_sl units="kn">171.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -88,7 +87,7 @@
         <taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>
         <aileron>
-          <chord_ratio is_input="True">0.26</chord_ratio>
+          <chord_ratio is_input="True">0.26<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="rad" is_input="True">40.0</max_deflection>
           <span_ratio is_input="True">0.32</span_ratio>
         </aileron>
@@ -104,7 +103,7 @@
       <propulsion>
         <engine>
           <count>2.0<!--number of engines--></count>
-          <layout>1.0</layout>
+          <layout>1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
           <y_ratio>[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position with respect to total span--></y_ratio>
         </engine>
       </propulsion>
@@ -136,9 +135,6 @@
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
-        <cs23>
-          <sizing_factor_ultimate>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></sizing_factor_ultimate>
-        </cs23>
         <landing>
           <elevator_angle units="deg">-25.0<!--position of the elevator during landing--></elevator_angle>
           <flap_angle units="deg">30.0<!--flap angle during landing phase in sizing mission--></flap_angle>
@@ -160,6 +156,14 @@
           <speed units="kn">30.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
+        <cs23>
+          <characteristic_speed>
+            <vd units="kn">194.0<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
         <main_route>
           <cruise>
             <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>

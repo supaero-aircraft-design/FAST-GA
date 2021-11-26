@@ -49,7 +49,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:aileron:chord_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
@@ -111,7 +111,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
     tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
     flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
-    aileron_chord_ratio = inputs["data:geometry:aileron:chord_ratio"]
+    aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
     y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
     y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
     engine_config = inputs["data:geometry:propulsion:engine:layout"]

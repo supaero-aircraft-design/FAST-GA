@@ -1,5 +1,5 @@
 """
-Test module for basicIC_engine.py
+Test module for basicIC_engine.py.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

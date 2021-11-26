@@ -36,7 +36,7 @@ from fastoad.module_management.constants import ModelDomain
 )
 class ComputeHandlingQualities(om.Group):
     """
-    Calculate static margins and maneuver limits
+    Calculate static margins and maneuver limits.
     """
 
     def initialize(self):

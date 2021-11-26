@@ -24,7 +24,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 class ComputeHTmacFD(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance
+    Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
     """
 
     def setup(self):
@@ -89,7 +89,7 @@ class ComputeHTmacFD(ExplicitComponent):
 class ComputeHTmacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP distance computed)
+    Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP distance computed).
     """
 
     def setup(self):

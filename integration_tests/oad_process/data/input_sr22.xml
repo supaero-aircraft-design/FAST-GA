@@ -6,16 +6,11 @@
       <range units="NM">1000.0<!--top-level requirement: design range--></range>
       <v_approach units="kn">79.0<!--approach speed--></v_approach>
       <v_cruise units="kn">160.0<!--cruise speed--></v_cruise>
-      <v_limit units="kn">202.6<!--limit speed--></v_limit>
       <v_max_sl units="kn" is_input="True">186.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
       <flap_type>1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail>0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
-      <aileron>
-        <chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
-        <span_ratio is_input="True">0.17<!--ratio (width of flaps)/(total span)--></span_ratio>
-      </aileron>
       <cabin>
         <aisle_width units="m">0.0<!--width of aisles--></aisle_width>
         <luggage>
@@ -91,7 +86,7 @@
         <taper_ratio>0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.12<!--mean thickness ratio of wing--></thickness_ratio>
         <aileron>
-          <chord_ratio>0.25</chord_ratio>
+          <chord_ratio>0.25<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="deg">30.0</max_deflection>
           <span_ratio>0.24</span_ratio>
         </aileron>
@@ -107,12 +102,12 @@
       <propulsion>
         <engine>
           <count>1.0<!--number of engines--></count>
-          <layout>3.0</layout>
+          <layout>3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
           <y_ratio>[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position with respect to total span--></y_ratio>
         </engine>
         <tank>
-          <LE_chord_percentage>0.08</LE_chord_percentage>
-          <TE_chord_percentage>0.08</TE_chord_percentage>
+          <LE_chord_percentage>0.08<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage>0.08<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
           <y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
           <y_ratio_tank_end>0.9<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
         </tank>
@@ -126,15 +121,12 @@
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
-        <cs23>
-          <sizing_factor_ultimate>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></sizing_factor_ultimate>
-        </cs23>
         <landing>
           <elevator_angle units="deg">-25.0<!--position of the elevator during landing--></elevator_angle>
           <target_sideslip units="deg">15.0</target_sideslip>
         </landing>
         <takeoff>
-          <altitude units="m">0.0</altitude>
+          <altitude units="m">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <elevator_angle units="deg">-25.0<!--position of the elevator during takeoff--></elevator_angle>
           <flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
           <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
@@ -150,6 +142,14 @@
           <speed units="kn">30.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
+        <cs23>
+          <characteristic_speed>
+            <vd units="kn">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft>5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
         <main_route>
           <cruise>
             <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
@@ -190,6 +190,10 @@
         </vertical_tail>
         <wing>
           <k_factor>0.925<!--proportional corrective factor for wing mass--></k_factor>
+          <punctual_mass>
+            <mass>[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--mass of the punctual masses on the wing used for wing load computation--></mass>
+            <y_ratio>[-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--position (as a percent of wing semi-span) of the punctual masses on the wing used for wing load computation, only positive ratio will be considered--></y_ratio>
+          </punctual_mass>
         </wing>
       </airframe>
     </weight>
