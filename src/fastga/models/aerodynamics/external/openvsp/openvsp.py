@@ -60,6 +60,10 @@ VSPAERO_EXE_NAME = "vspaero.exe"
 
 
 class OPENVSPSimpleGeometry(ExternalCodeComp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.stderr = None
+
     def initialize(self):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)

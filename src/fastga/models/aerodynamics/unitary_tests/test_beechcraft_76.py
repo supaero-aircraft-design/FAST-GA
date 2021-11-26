@@ -1,4 +1,4 @@
-"""Test module for aerodynamics groups"""
+"""Test module for aerodynamics groups."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -1066,8 +1066,7 @@ def test_load_factor():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None,
-    reason="No XFOIL executable available",
+    system() != "Windows" and xfoil_path is None, reason="No XFOIL executable available",
 )
 def test_propeller():
     thrust_SL = np.array(

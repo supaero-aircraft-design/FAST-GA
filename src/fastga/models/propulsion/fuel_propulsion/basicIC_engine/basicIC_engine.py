@@ -127,7 +127,14 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Declare sub-components attribute
         self.engine = Engine(power_SL=max_power)
-        self.nacelle = None
+        self.engine.mass = None
+        self.engine.length = None
+        self.engine.width = None
+        self.engine.height = None
+
+        self.nacelle = Nacelle()
+        self.nacelle.wet_area = None
+
         self.propeller = None
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
@@ -211,12 +218,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                 thrust = np.asarray(flight_points.thrust).flatten()
             self.specific_shape = np.shape(mach)
             sfc, thrust_rate, thrust = self._compute_flight_points(
-                mach.flatten(),
-                altitude,
-                engine_setting,
-                thrust_is_regulated,
-                thrust_rate,
-                thrust,
+                mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust,
             )
             if len(self.specific_shape) != 1:  # reshape data that is not array form
                 # noinspection PyUnresolvedReferences
@@ -507,9 +509,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         return sfc, real_power
 
     def max_thrust(
-        self,
-        engine_setting: Union[float, Sequence[float]],
-        atmosphere: Atmosphere,
+        self, engine_setting: Union[float, Sequence[float]], atmosphere: Atmosphere,
     ) -> np.ndarray:
         """
         Computation of maximum thrust either due to propeller thrust limit or ICE max power.
@@ -661,9 +661,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Compute nacelle dimensions
         self.nacelle = Nacelle(
-            height=self.engine.height * 1.1,
-            width=self.engine.width * 1.1,
-            length=nacelle_length,
+            height=self.engine.height * 1.1, width=self.engine.width * 1.1, length=nacelle_length,
         )
         self.nacelle.wet_area = 2 * (self.nacelle.height + self.nacelle.width) * self.nacelle.length
 

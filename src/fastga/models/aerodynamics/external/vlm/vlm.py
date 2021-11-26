@@ -40,6 +40,15 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.WING = None
+        self.nx = None
+        self.ny1 = None
+        self.ny2 = None
+        self.ny3 = None
+        self.ny = None
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)

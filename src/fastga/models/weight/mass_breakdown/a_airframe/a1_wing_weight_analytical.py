@@ -1,4 +1,5 @@
-"""Computes the mass of the wing based on the model presented by Raquel ALONSO in her MAE research project report."""
+"""Computes the mass of the wing based on the model presented by Raquel ALONSO in her MAE
+research project report."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -28,10 +29,10 @@ from .components.update_wing_mass import UpdateWingMass
 
 class ComputeWingMassAnalytical(om.Group):
     """
-    Computes analytically the  mass of each component of the wing and add them to get total wing mass
+    Computes analytically the  mass of each component of the wing and add them to get total wing
+    mass
 
-    Loop on the wing mass cause its both a relief force and the result
-
+    Loop on the wing mass cause its both a relief force and the result.
     """
 
     def __init__(self, **kwargs):
