@@ -1,6 +1,4 @@
-"""
-Computes the mass of the wing based on the model presented by Raquel ALONSO in her MAE research project report.
-"""
+"""Computes the mass of the wing based on the model presented by Raquel ALONSO in her MAE research project report."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -16,7 +14,6 @@ Computes the mass of the wing based on the model presented by Raquel ALONSO in h
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-import numpy as np
 
 from .components.compute_web_mass import ComputeWebMass
 from .components.compute_upper_flange import ComputeUpperFlange
@@ -36,6 +33,13 @@ class ComputeWingMassAnalytical(om.Group):
     Loop on the wing mass cause its both a relief force and the result
 
     """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
 
     def setup(self):
         self.add_subsystem("compute_web_mass_max_fuel", ComputeWebMass(), promotes=["*"])
@@ -61,8 +65,7 @@ class ComputeWingMassAnalytical(om.Group):
         self.add_subsystem("compute_secondary_structure", ComputeSecondaryMass(), promotes=["*"])
         self.add_subsystem("update_wing_mass", UpdateWingMass(), promotes=["*"])
 
-        # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
+        # Solver configuration
         self.nonlinear_solver.options["debug_print"] = True
         # self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
@@ -70,7 +73,6 @@ class ComputeWingMassAnalytical(om.Group):
         # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
         self.nonlinear_solver.options["rtol"] = 1e-4
 
-        self.linear_solver = om.LinearBlockGS()
         # self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10

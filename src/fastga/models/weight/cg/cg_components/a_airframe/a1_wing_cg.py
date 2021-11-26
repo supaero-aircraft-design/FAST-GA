@@ -24,7 +24,7 @@ class ComputeWingCG(ExplicitComponent):
     """
     Wing center of gravity estimation
 
-    Based on a statistical analysis. See :cite:`roskampart5:1985`
+    Based on a statistical analysis. See :cite:`roskampart5:1985`.
     """
 
     def setup(self):

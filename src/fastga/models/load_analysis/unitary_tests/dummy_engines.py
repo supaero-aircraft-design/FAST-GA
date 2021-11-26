@@ -1,4 +1,4 @@
-"""Dummy engines declaration for load analysis module!"""
+"""Dummy engines declaration for load analysis module."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -44,7 +44,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
-
         """
         super().__init__()
         self.max_power = 130000.0

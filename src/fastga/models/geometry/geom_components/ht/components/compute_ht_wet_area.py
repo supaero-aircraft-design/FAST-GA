@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail wet area
+    Estimation of horizontal tail wet area.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

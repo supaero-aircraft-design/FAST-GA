@@ -23,7 +23,7 @@ class ComputeWingWeight(om.ExplicitComponent):
     """
     Wing weight estimation
 
-    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`
+    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`.
     """
 
     def setup(self):

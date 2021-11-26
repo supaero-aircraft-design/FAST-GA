@@ -96,7 +96,7 @@ class VariableListLocal(VariableList):
         will be used. Otherwise, the absolute name will be used.
 
         :param system: OpenMDAO Component instance to inspect
-        :return: VariableList instance
+        :return: VariableList instance.
         """
 
         problem = om.Problem()
@@ -132,7 +132,5 @@ class Timer(object):
     def __exit__(self, type, value, traceback):
         print("\n")
         if self.name:
-            print(
-                "[%s]" % self.name,
-            )
+            print("[%s]" % self.name,)
         print("Elapsed: %s" % (time.time() - self.tstart))

@@ -1,5 +1,6 @@
 """
-Computes the mass of the wing spar web based on the model presented by Raquel ALONSO in her MAE research project report
+Computes the mass of the wing spar cap/flange based on the model presented by Raquel ALONSO
+in her MAE research project report.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -161,8 +162,8 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the wing web mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla
+        Component that computes the wing web mass necessary to react to the given linear force vector,
+        according to the methodology developed by Raquel Alonso Castilla.
         """
 
         wing_mass = inputs["data:weight:airframe:wing:mass"]
@@ -214,8 +215,9 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
         safety_factor = inputs["data:mission:sizing:cs23:safety_factor"]
 
-        # STEP 1 - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT THE ROOT (Y=0) AND AT
-        # THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN THE INTERPOLATION WE WILL DO LATER ##############
+        # STEP 1 - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT
+        # THE ROOT (Y=0) AND AT THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN
+        # THE INTERPOLATION WE WILL DO LATER ##############
 
         semi_span = wing_span / 2.0
 
@@ -269,8 +271,8 @@ class ComputeLowerFlange(om.ExplicitComponent):
         )
         chord_vector_inter = interp1d(y_vector_orig, chord_vector_orig)
         chord_vector = chord_vector_inter(y_vector)
-        upper_flange_area_pos = np.zeros_like(y_vector)
-        upper_flange_area_neg = np.zeros_like(y_vector)
+        lower_flange_area_pos = np.zeros_like(y_vector)
+        lower_flange_area_neg = np.zeros_like(y_vector)
 
         for load_factor in [load_factor_pos, load_factor_neg]:
 

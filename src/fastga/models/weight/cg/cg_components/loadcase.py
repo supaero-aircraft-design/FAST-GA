@@ -30,7 +30,7 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 class ComputeGroundCGCase(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Center of gravity estimation for all load cases on ground"""
+    """Center of gravity estimation for all load cases on ground."""
 
     def setup(self):
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")

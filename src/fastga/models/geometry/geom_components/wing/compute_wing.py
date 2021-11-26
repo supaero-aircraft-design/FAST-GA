@@ -1,5 +1,5 @@
 """
-    Estimation of wing geometry
+Estimation of wing geometry.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -30,7 +30,7 @@ from openmdao.api import Group
 
 class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
-    """Wing geometry estimation"""
+    """Wing geometry estimation."""
 
     def setup(self):
         self.add_subsystem("wing_toc", ComputeWingToc(), promotes=["*"])

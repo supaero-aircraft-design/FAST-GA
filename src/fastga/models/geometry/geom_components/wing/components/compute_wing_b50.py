@@ -1,5 +1,5 @@
 """
-    Estimation of wing B50
+    Estimation of wing B50.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

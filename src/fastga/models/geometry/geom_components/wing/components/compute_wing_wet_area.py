@@ -1,5 +1,5 @@
 """
-    Estimation of wing wet area
+    Estimation of wing wet area.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

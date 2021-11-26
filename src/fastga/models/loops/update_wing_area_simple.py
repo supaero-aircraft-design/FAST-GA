@@ -31,7 +31,7 @@ class UpdateWingAreaSimple(om.Group):
     """
     Computes needed wing area to:
       - have enough lift at required approach speed
-      - be able to load enough fuel to achieve the sizing mission
+      - be able to load enough fuel to achieve the sizing mission.
     """
 
     def setup(self):

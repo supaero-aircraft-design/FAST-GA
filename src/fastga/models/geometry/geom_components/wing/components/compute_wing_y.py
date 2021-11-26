@@ -1,5 +1,5 @@
 """
-    Estimation of wing Ys (sections span)
+    Estimation of wing Ys (sections span).
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -56,10 +56,7 @@ class ComputeWingY(ExplicitComponent):
         )
         self.declare_partials(
             "data:geometry:wing:tip:y",
-            [
-                "data:geometry:wing:area",
-                "data:geometry:wing:aspect_ratio",
-            ],
+            ["data:geometry:wing:area", "data:geometry:wing:aspect_ratio",],
             method="fd",
         )
 

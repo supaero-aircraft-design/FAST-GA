@@ -43,7 +43,7 @@ def force_repartition_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: force repartition diagram
+    :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -125,7 +125,7 @@ def shear_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: force repartition diagram
+    :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -198,7 +198,7 @@ def rbm_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
                            be assumed.
-    :return: force repartition diagram
+    :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 

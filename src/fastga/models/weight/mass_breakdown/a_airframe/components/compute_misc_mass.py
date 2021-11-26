@@ -1,5 +1,6 @@
 """
-Computes the mass of the wing spar web based on the model presented by Raquel ALONSO in her MAE research project report
+Computes the mass of the wing spar web based on the model presented by Raquel ALONSO
+in her MAE research project report.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -20,6 +21,8 @@ import numpy as np
 
 
 class ComputeMiscMass(om.ExplicitComponent):
+    """ Computes the misc mass based on the model developed in FLOPS. """
+
     def setup(self):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -28,7 +31,8 @@ class ComputeMiscMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:structure:F_COMP",
             val=0.0,
-            desc="Composite utilisation factor; 1.0 for max composite utilisation, 0.0 for min utilisation",
+            desc="Composite utilisation factor; 1.0 for max composite utilisation, "
+            "0.0 for min utilisation",
         )
 
         self.add_output("data:weight:airframe:wing:misc:mass", units="kg")

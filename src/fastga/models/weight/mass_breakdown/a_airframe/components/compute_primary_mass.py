@@ -1,6 +1,6 @@
 """
-Computes the mass of the primary structure based on the model presented by Raquel ALONSO in her MAE research project
-report.
+Computes the mass of the primary structure based on the model presented by Raquel ALONSO
+in her MAE research project report.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -21,6 +21,8 @@ import numpy as np
 
 
 class ComputePrimaryMass(om.ExplicitComponent):
+    """ Computes the primary mass by summing all sub components in the most contraining case """
+
     def setup(self):
         self.add_input(
             "data:weight:airframe:wing:web:mass:max_fuel_in_wing", val=np.nan, units="kg"

@@ -1,5 +1,5 @@
 """
-    Vortex Lattice Method implementation
+    Vortex Lattice Method implementation.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

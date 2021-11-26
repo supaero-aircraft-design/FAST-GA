@@ -1,6 +1,6 @@
 """
-Computes the mass of the secondary structure based on the model presented by Raquel ALONSO in her MAE research project
-report.
+Computes the mass of the secondary structure based on the model presented by Raquel ALONSO
+in her MAE research project report.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design

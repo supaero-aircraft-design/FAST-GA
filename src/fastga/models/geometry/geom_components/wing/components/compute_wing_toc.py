@@ -1,5 +1,5 @@
 """
-    Estimation of wing ToC
+Estimation of wing ToC.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -22,7 +22,7 @@ import openmdao.api as om
 # TODO: computes relative thickness and generates profiles --> decompose
 class ComputeWingToc(om.ExplicitComponent):
     # TODO: Document hypothesis. Cite sources
-    """Wing ToC estimation"""
+    """Wing ToC estimation."""
 
     def setup(self):
 

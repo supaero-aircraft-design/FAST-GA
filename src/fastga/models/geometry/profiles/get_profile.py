@@ -27,18 +27,14 @@ from fastga.models.aerodynamics import resources
 _LOGGER = logging.getLogger(__name__)
 
 
-def get_profile(
-    file_name: str = None,
-    thickness_ratio=None,
-    chord_length=None,
-) -> Profile:
+def get_profile(file_name: str = None, thickness_ratio=None, chord_length=None,) -> Profile:
     """
     Reads profile from indicated resource file and returns it after resize
 
     :param file_name: name of resource (ex: "naca23012.af")
     :param thickness_ratio:
     :param chord_length:
-    :return: Profile object
+    :return: Profile object.
     """
 
     profile = Profile()

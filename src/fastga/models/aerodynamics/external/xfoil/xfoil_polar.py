@@ -1,5 +1,5 @@
 """
-This module launches XFOIL computations
+This module launches XFOIL computations.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -240,9 +240,7 @@ class XfoilPolar(ExternalCodeComp):
 
             # profile file
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            profile = get_profile(
-                file_name=self.options["airfoil_file"],
-            ).get_sides()
+            profile = get_profile(file_name=self.options["airfoil_file"],).get_sides()
             # noinspection PyTypeChecker
             np.savetxt(
                 tmp_profile_file_path,

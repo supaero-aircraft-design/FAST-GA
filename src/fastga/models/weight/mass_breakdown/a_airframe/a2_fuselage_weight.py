@@ -25,7 +25,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation
 
-    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`
+    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`.
     """
 
     def setup(self):
@@ -76,7 +76,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     Astronautics, Inc., 2012.
 
     Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-25)
+    Butterworth-Heinemann, 2013. Equation (6-25).
     """
 
     def setup(self):
