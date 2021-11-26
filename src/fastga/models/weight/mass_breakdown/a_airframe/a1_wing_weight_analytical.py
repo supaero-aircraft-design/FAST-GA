@@ -1,5 +1,8 @@
-"""Computes the mass of the wing based on the model presented by Raquel ALONSO in her MAE
-research project report."""
+"""
+Computes the mass of the wing
+
+Based on the model presented by Raquel ALONSO in her MAE research project report.
+"""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

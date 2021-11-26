@@ -41,6 +41,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class VLMSimpleGeometry(om.ExplicitComponent):
     def __init__(self, **kwargs):
+        """Initializing parameters used in VLM computation."""
         super().__init__(**kwargs)
         self.WING = None
         self.nx = None
