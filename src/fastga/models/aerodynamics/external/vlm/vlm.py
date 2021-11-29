@@ -913,7 +913,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cdp = drag_coeff[-1] + (ojective - lift_coeff[-1]) * (
                 drag_coeff[-1] - drag_coeff[-2]
             ) / (lift_coeff[-1] - lift_coeff[-2])
-        _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f" % cdp)
+        _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
     @staticmethod
