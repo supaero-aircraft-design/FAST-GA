@@ -63,10 +63,7 @@ class Mission(om.Group):
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
         self.add_subsystem(
             "taxi_out",
-            _compute_taxi(
-                propulsion_id=self.options["propulsion_id"],
-                taxi_out=True,
-            ),
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=True,),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -75,16 +72,14 @@ class Mission(om.Group):
         self.add_subsystem(
             "climb",
             _compute_climb(
-                propulsion_id=self.options["propulsion_id"],
-                out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "cruise",
             _compute_cruise(
-                propulsion_id=self.options["propulsion_id"],
-                out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
@@ -92,17 +87,13 @@ class Mission(om.Group):
         self.add_subsystem(
             "descent",
             _compute_descent(
-                propulsion_id=self.options["propulsion_id"],
-                out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "taxi_in",
-            _compute_taxi(
-                propulsion_id=self.options["propulsion_id"],
-                taxi_out=False,
-            ),
+            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
             promotes=["*"],
         )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
@@ -391,7 +382,7 @@ class _compute_climb(DynamicEquilibrium):
             try:
                 os.remove(self.options["out_file"])
             except:
-                _LOGGER.info("Failed to remove %s file!" % self.options["out_file"])
+                _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
@@ -501,9 +492,8 @@ class _compute_climb(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for climb phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for climb phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results
@@ -657,9 +647,8 @@ class _compute_cruise(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for cruise phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for cruise phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results
@@ -838,9 +827,8 @@ class _compute_descent(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for descent phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for descent phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results
