@@ -56,7 +56,7 @@ class ComputeFuselageCG(ExplicitComponent):
             x_cg_a2 = lav + 0.35 * (fus_length - lav)
         else:
             _LOGGER.warning(
-                "Propulsion layout {} does not exist, replaced by layout 1!".format(prop_layout)
+                "Propulsion layout %f does not exist, replaced by layout 1!" % prop_layout
             )
             x_cg_a2 = 0.39 * fus_length
 

@@ -188,9 +188,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         file.close()
                 if vd_file_empty_description:
                     warnings.warn(
-                        "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
-                            pth.split(root)[-1]
-                        )
+                        "file variable_descriptions.txt from %s subpackage contains empty"
+                        " descriptions! \n" % pth.split(root)[-1]
                         + "\tFollowing variables have empty descriptions : "
                         + ", ".join(empty_description_variables)
                     )
@@ -213,9 +212,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                             spec.loader.exec_module(module)
                         except:
                             _LOGGER.info(
-                                "Trying to load {}, but it is not a module!".format(
-                                    pth.join(root, name)
-                                )
+                                "Trying to load %s, but it is not a module!" % pth.join(root, name)
                             )
                         if "RegisterOpenMDAOSystem" in dir(module):
                             tmp_folder = file_temporary_transfer(pth.join(root, name))
