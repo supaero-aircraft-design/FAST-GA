@@ -1,7 +1,6 @@
 """
-    Vortex Lattice Method implementation.
+Vortex Lattice Method implementation.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -43,12 +42,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
         super().__init__(**kwargs)
-        self.WING = None
-        self.nx = None
+        self.wing = None
+        self.n_x = None
         self.ny1 = None
         self.ny2 = None
         self.ny3 = None
-        self.ny = None
+        self.n_y = None
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -392,15 +391,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         meanchord = inputs["data:geometry:wing:MAC:length"]
 
         # Initialization
-        xc = self.WING["xc"]
-        panelchord = self.WING["panel_chord"]
-        panelsurf = self.WING["panel_surf"]
+        xc = self.wing["xc"]
+        panelchord = self.wing["panel_chord"]
+        panelsurf = self.wing["panel_surf"]
         if use_airfoil:
-            self.generate_curvature(self.WING, self.options["wing_airfoil_file"])
-        panelangle_vect = self.WING["panel_angle_vect"]
-        AIC = self.WING["AIC"]
+            self.generate_curvature(self.wing, self.options["wing_airfoil_file"])
+        panelangle_vect = self.wing["panel_angle_vect"]
+        AIC = self.wing["AIC"]
         AIC_inv = np.linalg.inv(AIC)
-        AIC_wake = self.WING["AIC_wake"]
+        AIC_wake = self.wing["AIC_wake"]
         self.apply_deflection(inputs, flaps_angle)
 
         # Compute air speed
@@ -413,8 +412,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(AIC_inv, alpha) * v_inf
         cp = -2 / v_inf * np.divide(gamma, panelchord)
-        for i in range(self.nx):
-            cp[i * self.ny] = cp[i * self.ny] * 1
+        for i in range(self.n_x):
+            cp[i * self.n_y] = cp[i * self.n_y] * 1
         cl_wing = -np.sum(cp * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(AIC_wake, gamma) / v_inf
         cdind_panel = cp * alphaind
@@ -422,21 +421,21 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         wing_e = (
             cl_wing ** 2 / (math.pi * aspect_ratio * cdi_wing) * 0.955
         )  # !!!: manual correction?
-        cmpanel = np.multiply(cp, (xc[: self.nx * self.ny] - meanchord / 4))
+        cmpanel = np.multiply(cp, (xc[: self.n_x * self.n_y] - meanchord / 4))
         cm_wing = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
         # Calculate curves
         wing_cl_vect = []
         wing_y_vect = []
         wing_chord_vect = []
-        yc_wing = self.WING["yc"]
-        chord_wing = self.WING["chord"]
-        for j in range(self.ny):
+        yc_wing = self.wing["yc"]
+        chord_wing = self.wing["chord"]
+        for j in range(self.n_y):
             cl_span = 0.0
             y = yc_wing[j]
             chord = (chord_wing[j] + chord_wing[j + 1]) / 2.0
-            for i in range(self.nx):
-                cl_span += -cp[i * self.ny + j] * panelchord[i * self.ny + j] / chord
+            for i in range(self.n_x):
+                cl_span += -cp[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
             wing_cl_vect.append(cl_span)
             wing_y_vect.append(y)
             wing_chord_vect.append(chord)
@@ -503,14 +502,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(AIC_inv, alpha) * v_inf
         cp = -2 / v_inf * np.divide(gamma, panelchord)
-        for i in range(self.nx):
-            cp[i * self.ny] = cp[i * self.ny] * 1
+        for i in range(self.n_x):
+            cp[i * self.n_y] = cp[i * self.n_y] * 1
         cl_htp = -np.sum(cp * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(AIC_wake, gamma) / v_inf
         cdind_panel = cp * alphaind
         cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
         htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avod 0.0 division
-        cmpanel = np.multiply(cp, (xc[: self.nx * self.ny] - meanchord / 4))
+        cmpanel = np.multiply(cp, (xc[: self.n_x * self.n_y] - meanchord / 4))
         cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
         # Calculate curves
@@ -518,12 +517,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         htp_y_vect = []
         yc_htp = self.HTP["yc"]
         chord_htp = self.HTP["chord"]
-        for j in range(self.ny):
+        for j in range(self.n_y):
             cl_span = 0.0
             y = yc_htp[j]
             chord = (chord_htp[j] + chord_htp[j + 1]) / 2.0
-            for i in range(self.nx):
-                cl_span += -cp[i * self.ny + j] * panelchord[i * self.ny + j] / chord
+            for i in range(self.n_x):
+                cl_span += -cp[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
             htp_cl_vect.append(cl_span)
             htp_y_vect.append(y)
 
@@ -588,7 +587,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
 
         # Define mesh size
-        self.nx = int(DEFAULT_NX)
+        self.n_x = int(DEFAULT_NX)
         if wing_break > 0.0:
             self.ny1 = int(DEFAULT_NY1 + 5)  # n° of panels in the straight section of the wing
             self.ny2 = int(
@@ -599,30 +598,30 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             self.ny2 = int(DEFAULT_NY2 / 2)  # n° of panels in in the flapped portion of the wing
         self.ny3 = self.ny2  # n° of panels in the un-flapped exterior portion of the wing
 
-        self.ny = int(self.ny1 + self.ny2 + self.ny3)
+        self.n_y = int(self.ny1 + self.ny2 + self.ny3)
         # Define elements
-        self.WING = {
-            "x_panel": np.zeros((self.nx + 1, 2 * self.ny + 1)),
-            "y_panel": np.zeros(2 * self.ny + 1),
-            "z": np.zeros(self.nx + 1),
-            "x_LE": np.zeros(2 * self.ny + 1),
-            "chord": np.zeros(2 * self.ny + 1),
-            "panel_span": np.zeros(2 * self.ny),
-            "panel_chord": np.zeros(self.nx * self.ny),
-            "panel_surf": np.zeros(self.nx * self.ny),
-            "xc": np.zeros(self.nx * 2 * self.ny),
-            "yc": np.zeros(self.nx * 2 * self.ny),
-            "x1": np.zeros(self.nx * 2 * self.ny),
-            "x2": np.zeros(self.nx * 2 * self.ny),
-            "y1": np.zeros(self.nx * 2 * self.ny),
-            "y2": np.zeros(self.nx * 2 * self.ny),
-            "panel_angle": np.zeros(self.nx),
-            "panel_angle_vect": np.zeros(self.nx * self.ny),
-            "AIC": np.zeros((self.nx * self.ny, self.nx * self.ny)),
-            "AIC_wake": np.zeros((self.nx * self.ny, self.nx * self.ny)),
+        self.wing = {
+            "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
+            "y_panel": np.zeros(2 * self.n_y + 1),
+            "z": np.zeros(self.n_x + 1),
+            "x_LE": np.zeros(2 * self.n_y + 1),
+            "chord": np.zeros(2 * self.n_y + 1),
+            "panel_span": np.zeros(2 * self.n_y),
+            "panel_chord": np.zeros(self.n_x * self.n_y),
+            "panel_surf": np.zeros(self.n_x * self.n_y),
+            "xc": np.zeros(self.n_x * 2 * self.n_y),
+            "yc": np.zeros(self.n_x * 2 * self.n_y),
+            "x1": np.zeros(self.n_x * 2 * self.n_y),
+            "x2": np.zeros(self.n_x * 2 * self.n_y),
+            "y1": np.zeros(self.n_x * 2 * self.n_y),
+            "y2": np.zeros(self.n_x * 2 * self.n_y),
+            "panel_angle": np.zeros(self.n_x),
+            "panel_angle_vect": np.zeros(self.n_x * self.n_y),
+            "AIC": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+            "AIC_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
         }
         # Duplicate for HTP
-        self.HTP = copy.deepcopy(self.WING)
+        self.HTP = copy.deepcopy(self.wing)
 
         # Generate WING
         self._generate_wing(inputs)
@@ -640,12 +639,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
 
         # Initial data (zero matrix/array)
-        y_panel = self.WING["y_panel"]
-        chord = self.WING["chord"]
-        x_LE = self.WING["x_LE"]
+        y_panel = self.wing["y_panel"]
+        chord = self.wing["chord"]
+        x_LE = self.wing["x_LE"]
         y_endflaps = y2_wing + flap_span_ratio * (semi_span - y2_wing)
         # Definition of x_panel, y_panel, x_LE and chord (Right side)
-        for j in range(self.ny + 1):
+        for j in range(self.n_y + 1):
             if j < self.ny1:
                 y_panel[j] = y2_wing * j / self.ny1
                 chord[j] = root_chord
@@ -666,16 +665,16 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 )
                 x_LE[j] = y_tapered_section * (root_chord - tip_chord) / (4 * (semi_span - y2_wing))
         # Definition of Left side (symmetry)
-        for j in range(1, self.ny + 1):
-            y_panel[self.ny + j] = -y_panel[j]
-            chord[self.ny + j] = chord[j]
-            x_LE[self.ny + j] = x_LE[j]
+        for j in range(1, self.n_y + 1):
+            y_panel[self.n_y + j] = -y_panel[j]
+            chord[self.n_y + j] = chord[j]
+            x_LE[self.n_y + j] = x_LE[j]
         # Save data
-        self.WING["y_panel"] = y_panel
-        self.WING["chord"] = chord
-        self.WING["x_LE"] = x_LE
+        self.wing["y_panel"] = y_panel
+        self.wing["chord"] = chord
+        self.wing["x_LE"] = x_LE
         # Launch common code
-        self._generate_common(self.WING)
+        self._generate_common(self.wing)
 
     def _generate_htp(self, inputs):
         """Generates the coordinates for VLM calculations and AIC matrix of the htp"""
@@ -689,15 +688,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord = self.HTP["chord"]
         x_LE = self.HTP["x_LE"]
         # Definition of x_panel, y_panel, x_LE and chord (Right side)
-        for j in range(self.ny + 1):
-            y_panel[j] = semi_span * j / self.ny
+        for j in range(self.n_y + 1):
+            y_panel[j] = semi_span * j / self.n_y
             chord[j] = root_chord + (tip_chord - root_chord) * y_panel[j] / semi_span
             x_LE[j] = y_panel[j] * (root_chord - tip_chord) / (4 * semi_span)
         # Definition of Left side (symmetry)
-        for j in range(1, self.ny + 1):
-            y_panel[self.ny + j] = -y_panel[j]
-            chord[self.ny + j] = chord[j]
-            x_LE[self.ny + j] = x_LE[j]
+        for j in range(1, self.n_y + 1):
+            y_panel[self.n_y + j] = -y_panel[j]
+            chord[self.n_y + j] = chord[j]
+            x_LE[self.n_y + j] = x_LE[j]
         # Save data
         self.HTP["y_panel"] = y_panel
         self.HTP["chord"] = chord
@@ -725,53 +724,53 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         AIC = dictionary["AIC"]
         AIC_wake = dictionary["AIC_wake"]
         # Calculate panel corners x-coordinate
-        for i in range(self.nx + 1):
-            for j in range(2 * self.ny + 1):
-                x_panel[i, j] = x_LE[j] + chord[j] * i / self.nx
+        for i in range(self.n_x + 1):
+            for j in range(2 * self.n_y + 1):
+                x_panel[i, j] = x_LE[j] + chord[j] * i / self.n_x
         # Calculate panel span with symmetry
-        for j in range(self.ny):
+        for j in range(self.n_y):
             panelspan[j] = y_panel[j + 1] - y_panel[j]
-            panelspan[self.ny + j] = panelspan[j]
+            panelspan[self.n_y + j] = panelspan[j]
         # Calculate characteristic points (Right side)
-        for i in range(self.nx):
-            for j in range(self.ny):
-                panelchord[i * self.ny + j] = 0.5 * (
+        for i in range(self.n_x):
+            for j in range(self.n_y):
+                panelchord[i * self.n_y + j] = 0.5 * (
                     (x_panel[i + 1, j] - x_panel[i, j])
                     + (x_panel[i + 1, j + 1] - x_panel[i, j + 1])
                 )
-                panelsurf[i * self.ny + j] = panelspan[j] * panelchord[i * self.ny + j]
-                xc[i * self.ny + j] = (x_panel[i, j] + x_panel[i, j + 1]) * 0.5 + 0.75 * panelchord[
-                    i * self.ny + j
-                ]
-                yc[i * self.ny + j] = (y_panel[j] + y_panel[j + 1]) * 0.5
-                x1[i * self.ny + j] = x_panel[i, j] + 0.25 * (x_panel[i + 1, j] - x_panel[i, j])
-                y1[i * self.ny + j] = y_panel[j]
-                x2[i * self.ny + j] = x_panel[i, j + 1] + 0.25 * (
+                panelsurf[i * self.n_y + j] = panelspan[j] * panelchord[i * self.n_y + j]
+                xc[i * self.n_y + j] = (
+                    x_panel[i, j] + x_panel[i, j + 1]
+                ) * 0.5 + 0.75 * panelchord[i * self.n_y + j]
+                yc[i * self.n_y + j] = (y_panel[j] + y_panel[j + 1]) * 0.5
+                x1[i * self.n_y + j] = x_panel[i, j] + 0.25 * (x_panel[i + 1, j] - x_panel[i, j])
+                y1[i * self.n_y + j] = y_panel[j]
+                x2[i * self.n_y + j] = x_panel[i, j + 1] + 0.25 * (
                     x_panel[i + 1, j + 1] - x_panel[i, j + 1]
                 )
-                y2[i * self.ny + j] = y_panel[j + 1]
+                y2[i * self.n_y + j] = y_panel[j + 1]
         # Calculate characteristic points (Left side)
-        for i in range(self.nx):
-            for j in range(self.ny):
-                xc[self.nx * self.ny + (i * self.ny + j)] = xc[i * self.ny + j]
-                yc[self.nx * self.ny + (i * self.ny + j)] = -yc[i * self.ny + j]
-                x1[self.nx * self.ny + (i * self.ny + j)] = x_panel[i, self.ny + j + 1] + 0.25 * (
-                    x_panel[i + 1, self.ny + j + 1] - x_panel[i, self.ny + j + 1]
-                )
-                y1[self.nx * self.ny + (i * self.ny + j)] = y_panel[self.ny + j + 1]
+        for i in range(self.n_x):
+            for j in range(self.n_y):
+                xc[self.n_x * self.n_y + (i * self.n_y + j)] = xc[i * self.n_y + j]
+                yc[self.n_x * self.n_y + (i * self.n_y + j)] = -yc[i * self.n_y + j]
+                x1[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
+                    i, self.n_y + j + 1
+                ] + 0.25 * (x_panel[i + 1, self.n_y + j + 1] - x_panel[i, self.n_y + j + 1])
+                y1[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j + 1]
                 if j == 0:
-                    y2[self.nx * self.ny + (i * self.ny + j)] = 0
-                    x2[self.nx * self.ny + (i * self.ny + j)] = x_panel[i, 0] + 0.25 * (
+                    y2[self.n_x * self.n_y + (i * self.n_y + j)] = 0
+                    x2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[i, 0] + 0.25 * (
                         x_panel[i + 1, 0] - x_panel[i, 0]
                     )
                 else:
-                    x2[self.nx * self.ny + (i * self.ny + j)] = x_panel[i, self.ny + j] + 0.25 * (
-                        x_panel[i + 1, self.ny + j] - x_panel[i, self.ny + j]
-                    )
-                    y2[self.nx * self.ny + (i * self.ny + j)] = y_panel[self.ny + j]
+                    x2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
+                        i, self.n_y + j
+                    ] + 0.25 * (x_panel[i + 1, self.n_y + j] - x_panel[i, self.n_y + j])
+                    y2[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j]
         # Aerodynamic coefficients computation (Right side)
-        for i in range(self.nx * self.ny):
-            for j in range(self.nx * self.ny):
+        for i in range(self.n_x * self.n_y):
+            for j in range(self.n_x * self.n_y):
                 # Right wing
                 a = xc[i] - x1[j]
                 b = yc[i] - y1[j]
@@ -788,17 +787,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 AIC_wake[i, j] = m / (4 * math.pi)
                 AIC[i, j] = AIC[i, j] + m / (4 * math.pi)
         # Aerodynamic coefficients computation (Left side)
-        for i in range(self.nx * self.ny):
-            for j in range(self.nx * self.ny):
+        for i in range(self.n_x * self.n_y):
+            for j in range(self.n_x * self.n_y):
                 # Left wing
-                a = xc[i] - x1[self.nx * self.ny + j]
-                b = yc[i] - y1[self.nx * self.ny + j]
-                c = xc[i] - x2[self.nx * self.ny + j]
-                d = yc[i] - y2[self.nx * self.ny + j]
+                a = xc[i] - x1[self.n_x * self.n_y + j]
+                b = yc[i] - y1[self.n_x * self.n_y + j]
+                c = xc[i] - x2[self.n_x * self.n_y + j]
+                d = yc[i] - y2[self.n_x * self.n_y + j]
                 e = math.sqrt(a ** 2 + b ** 2)
                 f = math.sqrt(c ** 2 + d ** 2)
-                g = x2[self.nx * self.ny + j] - x1[self.nx * self.ny + j]
-                h = y2[self.nx * self.ny + j] - y1[self.nx * self.ny + j]
+                g = x2[self.n_x * self.n_y + j] - x1[self.n_x * self.n_y + j]
+                h = y2[self.n_x * self.n_y + j] - y1[self.n_x * self.n_y + j]
                 k = (g * a + h * b) / e - (g * c + h * d) / f
                 m = (1 + c / f) / d - (1 + a / e) / b
                 if a * d - b * c != 0:
@@ -827,12 +826,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panelangle = dictionary["panel_angle"]
 
         # Initialization
-        z = np.zeros(self.nx + 1)
-        rootchord = x_panel[self.nx, 0] - x_panel[0, 0]
+        z = np.zeros(self.n_x + 1)
+        rootchord = x_panel[self.n_x, 0] - x_panel[0, 0]
         # Calculation of panelangle_vect
         profile = get_profile(file_name=file_name)
         mean_line = profile.get_mean_line()
-        for i in range(self.nx + 1):
+        for i in range(self.n_x + 1):
             xred = (x_panel[i, 0] - x_panel[0, 0]) / rootchord
             z[i] = np.interp(
                 min(max(xred, min(mean_line["x"])), max(mean_line["x"])),
@@ -840,12 +839,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 mean_line["z"],
             )
         z = z * rootchord
-        for i in range(self.nx):
+        for i in range(self.n_x):
             panelangle[i] = (z[i] - z[i + 1]) / (x_panel[i + 1, 0] - x_panel[i, 0])
 
-        for i in range(self.nx):
-            for j in range(self.ny):
-                panelangle_vect[i * self.ny + j] = panelangle[i]
+        for i in range(self.n_x):
+            for j in range(self.n_y):
+                panelangle_vect[i * self.n_y + j] = panelangle[i]
 
         # Save results
         dictionary["panel_angle_vect"] = panelangle_vect
@@ -860,31 +859,31 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
 
         deflection_angle *= math.pi / 180  # converted to radian
-        # z_ = self.WING["z"]
-        x_panel = self.WING["x_panel"]
-        y_panel = self.WING["y_panel"]
-        panelangle = self.WING["panel_angle"]
-        panelangle_vect = self.WING["panel_angle_vect"]
+        # z_ = self.wing["z"]
+        x_panel = self.wing["x_panel"]
+        y_panel = self.wing["y_panel"]
+        panelangle = self.wing["panel_angle"]
+        panelangle_vect = self.wing["panel_angle_vect"]
 
-        z = np.zeros(self.nx + 1)
-        z_ = np.zeros(self.nx + 1)
-        for i in range(self.nx + 1):
+        z = np.zeros(self.n_x + 1)
+        z_ = np.zeros(self.n_x + 1)
+        for i in range(self.n_x + 1):
             if x_panel[i, 0] > x_start:
                 z[i] = z_[i] - math.sin(deflection_angle) * (x_panel[i, 0] - x_start)
-        for i in range(self.nx):
+        for i in range(self.n_x):
             panelangle[i] = (z[i] - z[i + 1]) / (x_panel[i + 1, 0] - x_panel[i, 0])
         for j in range(self.ny1):
             if y_panel[j] > y1_wing:
-                for i in range(self.nx):
-                    panelangle_vect[i * self.ny + j] += panelangle[i]
+                for i in range(self.n_x):
+                    panelangle_vect[i * self.n_y + j] += panelangle[i]
         for j in range(self.ny1, self.ny1 + self.ny2):
-            for i in range(self.nx):
-                panelangle_vect[i * self.ny + j] += panelangle[i]
+            for i in range(self.n_x):
+                panelangle_vect[i * self.n_y + j] += panelangle[i]
 
         # Save results
-        self.WING["panel_angle_vect"] = panelangle_vect
-        self.WING["panel_angle"] = panelangle
-        self.WING["z"] = z
+        self.wing["panel_angle_vect"] = panelangle_vect
+        self.wing["panel_angle"] = panelangle
+        self.wing["z"] = z
 
     @staticmethod
     def _interpolate_cdp(lift_coeff: np.ndarray, drag_coeff: np.ndarray, ojective: float) -> float:
