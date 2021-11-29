@@ -63,7 +63,10 @@ class Mission(om.Group):
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
         self.add_subsystem(
             "taxi_out",
-            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=True,),
+            _compute_taxi(
+                propulsion_id=self.options["propulsion_id"],
+                taxi_out=True,
+            ),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -72,14 +75,16 @@ class Mission(om.Group):
         self.add_subsystem(
             "climb",
             _compute_climb(
-                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"],
+                out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "cruise",
             _compute_cruise(
-                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"],
+                out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
@@ -87,13 +92,17 @@ class Mission(om.Group):
         self.add_subsystem(
             "descent",
             _compute_descent(
-                propulsion_id=self.options["propulsion_id"], out_file=self.options["out_file"],
+                propulsion_id=self.options["propulsion_id"],
+                out_file=self.options["out_file"],
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "taxi_in",
-            _compute_taxi(propulsion_id=self.options["propulsion_id"], taxi_out=False,),
+            _compute_taxi(
+                propulsion_id=self.options["propulsion_id"],
+                taxi_out=False,
+            ),
             promotes=["*"],
         )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
