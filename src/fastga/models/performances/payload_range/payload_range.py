@@ -85,26 +85,31 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         # Point B : max payload, enough fuel to have mass = MTOW
         fuel_target_b = mtow - mzfw
-        range_b, dic, _, _ = fsolve(
+        range_b, _, ier, message = fsolve(
             self.fuel_function,
             range_mission / 2,
             args=(fuel_target_b, mtow, inputs, self.options["propulsion_id"]),
             xtol=0.01,
             full_output=True,
         )
+        if ier != 1:
+            _LOGGER.warning("Computation of point B failed", message)
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
         sr_array.append(range_b[0] / fuel_target_b)
 
         fuel_target_c = fuel_mission
-        range_c, dic, _, _ = fsolve(
+        range_c, _, ier, message = fsolve(
             self.fuel_function,
             range_mission / 2,
             args=(fuel_target_c, mtow, inputs, self.options["propulsion_id"]),
             xtol=0.01,
             full_output=True,
         )
+        if ier != 1:
+            _LOGGER.warning("Computation of point C failed", message)
+
         payload_array.append(payload_mission)
         range_array.append(range_c)
         sr_array.append(range_c / fuel_target_c)
@@ -113,17 +118,20 @@ class ComputePayloadRange(om.ExplicitComponent):
         fuel_target_d = mfw
         payload_d = max_payload - (mfw - fuel_target_b)
 
-        range_d, dic, _, _ = fsolve(
+        range_d, _, ier, message = fsolve(
             self.fuel_function,
             range_mission,
             args=(fuel_target_d, mtow, inputs, self.options["propulsion_id"]),
             xtol=0.01,
             full_output=True,
         )
+        if ier != 1:
+            _LOGGER.warning("Computation of point D failed", message)
 
         if payload_d < 2 * mass_pilot:
             _LOGGER.warning(
-                "Point D computed but the payload for this point is lower than minimal payload (2 pilots)"
+                "Point D computed but the payload for this point is lower than minimal payload (2 "
+                "pilots) "
             )
         payload_array.append(payload_d)
         range_array.append(range_d[0])
@@ -133,13 +141,15 @@ class ComputePayloadRange(om.ExplicitComponent):
         fuel_target_e = mfw
         payload_e = 0.0
         mass_aircraft = owe + mfw + payload_e
-        range_e, dic, _, _ = fsolve(
+        range_e, _, ier, message = fsolve(
             self.fuel_function,
             range_mission,
             args=(fuel_target_e, mass_aircraft, inputs, self.options["propulsion_id"]),
             xtol=0.01,
             full_output=True,
         )
+        if ier != 1:
+            _LOGGER.warning("Computation of point E failed", message)
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])

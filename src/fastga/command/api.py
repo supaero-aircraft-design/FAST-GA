@@ -150,7 +150,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 
         # If path point to ./models directory list output variables described in the different models
         if pth.split(subpackage_path)[-1] == "models":
-            for root, dirs, files in os.walk(subpackage_path, topdown=False):
+            for root, _, files in os.walk(subpackage_path, topdown=False):
                 vd_file_empty_description = False
                 empty_description_variables = []
                 for name in files:
@@ -196,7 +196,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 
         # Explore subpackage models and find the output variables and store them in a dictionary
         dict_to_be_saved = {}
-        for root, dirs, files in os.walk(subpackage_path, topdown=False):
+        for root, _, files in os.walk(subpackage_path, topdown=False):
             for name in files:
                 if name[-3:] == ".py":
                     spec = importlib.util.spec_from_file_location(
