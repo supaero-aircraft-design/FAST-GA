@@ -1,6 +1,4 @@
-"""
-Estimation of wing weight.
-"""
+"""Statistical estimation of wing weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,12 +16,21 @@ import numpy as np
 import openmdao.api as om
 import math
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SUBMODEL_WING_MASS
 
+RegisterSubmodel.active_models[
+    SUBMODEL_WING_MASS
+] = "fastga.submodel.weight.mass.airframe.wing.legacy"
+
+
+@RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.legacy")
 class ComputeWingWeight(om.ExplicitComponent):
     """
     Wing weight estimation
 
-    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`.
+    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in
+    :cite:`gudmundsson:2013`.
     """
 
     def setup(self):

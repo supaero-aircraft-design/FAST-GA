@@ -1,6 +1,4 @@
-"""
-Estimation of flight controls weight.
-"""
+"""Estimation of flight controls weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,12 +15,24 @@ Estimation of flight controls weight.
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from .constants import SUBMODEL_FLIGHT_CONTROLS_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_FLIGHT_CONTROLS_MASS
+] = "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
+
+
+@RegisterSubmodel(
+    SUBMODEL_FLIGHT_CONTROLS_MASS, "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
+)
 class ComputeFlightControlsWeight(om.ExplicitComponent):
     """
     Flight controls weight estimation
 
-    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013`
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in
+    :cite:`gudmundsson:2013`
     """
 
     def setup(self):

@@ -19,13 +19,22 @@ import openmdao.api as om
 import math
 
 from fastoad.model_base import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_TAIL_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_TAIL_MASS
+] = "fastga.submodel.weight.mass.airframe.tail.legacy"
 
 
+@RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
 class ComputeTailWeight(om.ExplicitComponent):
     """
     Weight estimation for tail weight
 
-    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in :cite:`gudmundsson:2013`
+    Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in
+    :cite:`gudmundsson:2013`
     """
 
     def setup(self):

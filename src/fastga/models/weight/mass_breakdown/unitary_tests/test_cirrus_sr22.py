@@ -24,6 +24,7 @@ from ..a_airframe import (
     ComputeWingWeight,
     ComputeLandingGearWeight,
 )
+from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
@@ -134,6 +135,18 @@ def test_compute_landing_gear_weight():
     assert weight_a51 == pytest.approx(39.68, abs=1e-2)
     weight_a52 = problem.get_val("data:weight:airframe:landing_gear:front:mass", units="kg")
     assert weight_a52 == pytest.approx(16.49, abs=1e-2)
+
+
+def test_compute_airframe_weight():
+    """Tests airframe weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(AirframeWeight(), ivc)
+    weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
+    assert weight_a == pytest.approx(382.17, abs=1e-2)
 
 
 def test_compute_oil_weight():

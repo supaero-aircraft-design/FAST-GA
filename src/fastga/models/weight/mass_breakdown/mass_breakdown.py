@@ -16,14 +16,10 @@ Main components for mass breakdown.
 
 import openmdao.api as om
 
-from fastga.models.weight.mass_breakdown.a_airframe import (
-    ComputeWingWeight,
-    ComputeFuselageWeight,
-    ComputeTailWeight,
-    ComputeFlightControlsWeight,
-    ComputeLandingGearWeight,
-    ComputeWingMassAnalytical,
-)
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_AIRFRAME_MASS
+
 from fastga.models.weight.mass_breakdown.b_propulsion import (
     ComputeEngineWeight,
     ComputeFuelLinesWeight,
@@ -102,16 +98,9 @@ class ComputeOperatingWeightEmpty(om.Group):
 
     def setup(self):
         # Airframe
-        if self.options["analytical_wing_mass"]:
-            self.add_subsystem(
-                "wing_weight_analytical", ComputeWingMassAnalytical(), promotes=["*"]
-            )
-        else:
-            self.add_subsystem("wing_weight", ComputeWingWeight(), promotes=["*"])
-        self.add_subsystem("fuselage_weight", ComputeFuselageWeight(), promotes=["*"])
-        self.add_subsystem("empennage_weight", ComputeTailWeight(), promotes=["*"])
-        self.add_subsystem("flight_controls_weight", ComputeFlightControlsWeight(), promotes=["*"])
-        self.add_subsystem("landing_gear_weight", ComputeLandingGearWeight(), promotes=["*"])
+        self.add_subsystem(
+            "airframe_weight", RegisterSubmodel.get_submodel(SUBMODEL_AIRFRAME_MASS), promotes=["*"]
+        )
         self.add_subsystem(
             "engine_weight",
             ComputeEngineWeight(propulsion_id=self.options["propulsion_id"]),
@@ -131,28 +120,6 @@ class ComputeOperatingWeightEmpty(om.Group):
             "life_support_systems_weight", ComputeLifeSupportSystemsWeight(), promotes=["*"]
         )
         self.add_subsystem("passenger_seats_weight", ComputePassengerSeatsWeight(), promotes=["*"])
-
-        # Make additions
-        airframe_sum = om.AddSubtractComp()
-        airframe_sum.add_equation(
-            "data:weight:airframe:mass",
-            [
-                "data:weight:airframe:wing:mass",
-                "data:weight:airframe:fuselage:mass",
-                "data:weight:airframe:horizontal_tail:mass",
-                "data:weight:airframe:vertical_tail:mass",
-                "data:weight:airframe:flight_controls:mass",
-                "data:weight:airframe:landing_gear:main:mass",
-                "data:weight:airframe:landing_gear:front:mass",
-            ],
-            units="kg",
-            desc="Mass of airframe",
-        )
-        self.add_subsystem(
-            "airframe_weight_sum",
-            airframe_sum,
-            promotes=["*"],
-        )
 
         propulsion_sum = om.AddSubtractComp()
         propulsion_sum.add_equation(

@@ -16,6 +16,8 @@ Test module for mass breakdown functions.
 
 import pytest
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from ..a_airframe import (
     ComputeTailWeight,
     ComputeFlightControlsWeight,
@@ -34,6 +36,7 @@ from ..a_airframe.components.compute_primary_mass import ComputePrimaryMass
 from ..a_airframe.components.compute_secondary_mass import ComputeSecondaryMass
 from ..a_airframe.components.update_wing_mass import UpdateWingMass
 from ..a_airframe.a1_wing_weight_analytical import ComputeWingMassAnalytical
+from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
@@ -144,6 +147,18 @@ def test_compute_landing_gear_weight():
     assert weight_a51 == pytest.approx(59.34, abs=1e-2)
     weight_a52 = problem.get_val("data:weight:airframe:landing_gear:front:mass", units="kg")
     assert weight_a52 == pytest.approx(24.12, abs=1e-2)
+
+
+def test_compute_airframe_weight():
+    """Tests airframe weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(AirframeWeight(), ivc)
+    weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
+    assert weight_a == pytest.approx(478.16, abs=1e-2)
 
 
 def test_compute_oil_weight():
@@ -308,9 +323,7 @@ def test_loop_compute_owe():
 
     # noinspection PyTypeChecker
     mass_computation = run_system(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True),
-        ivc,
-        check=True,
+        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1126, abs=1)
