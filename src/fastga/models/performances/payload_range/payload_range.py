@@ -93,7 +93,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point B failed. Error message :" + message)
+            _LOGGER.warning("Computation of point B failed. Error message : %s", message)
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
@@ -108,7 +108,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point C failed. Error message :" + message)
+            _LOGGER.warning("Computation of point C failed. Error message : %s", message)
 
         payload_array.append(payload_mission)
         range_array.append(range_c)
@@ -126,7 +126,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point D failed. Error message :" + message)
+            _LOGGER.warning("Computation of point D failed. Error message : %s", message)
 
         if payload_d < 2 * mass_pilot:
             _LOGGER.warning(
@@ -149,7 +149,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point E failed. Error message :" + message)
+            _LOGGER.warning("Computation of point E failed. Error message : %s", message)
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])
@@ -182,10 +182,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         var_value[index_mtow[0]] = mass
 
         compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id=prop_id),
-            var_names.tolist(),
-            "",
-            overwrite=True,
+            Mission(propulsion_id=prop_id), var_names.tolist(), "", overwrite=True,
         )
 
         inputs_dict = {}
