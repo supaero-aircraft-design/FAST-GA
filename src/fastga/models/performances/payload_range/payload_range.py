@@ -93,7 +93,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point B failed", message)
+            _LOGGER.warning("Computation of point B failed. Error message :" + message)
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
@@ -108,7 +108,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point C failed", message)
+            _LOGGER.warning("Computation of point C failed. Error message :" + message)
 
         payload_array.append(payload_mission)
         range_array.append(range_c)
@@ -126,7 +126,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point D failed", message)
+            _LOGGER.warning("Computation of point D failed. Error message :" + message)
 
         if payload_d < 2 * mass_pilot:
             _LOGGER.warning(
@@ -149,7 +149,7 @@ class ComputePayloadRange(om.ExplicitComponent):
             full_output=True,
         )
         if ier != 1:
-            _LOGGER.warning("Computation of point E failed", message)
+            _LOGGER.warning("Computation of point E failed. Error message :" + message)
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])
