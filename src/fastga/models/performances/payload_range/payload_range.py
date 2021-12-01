@@ -182,7 +182,10 @@ class ComputePayloadRange(om.ExplicitComponent):
         var_value[index_mtow[0]] = mass
 
         compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id=prop_id), var_names.tolist(), "", overwrite=True,
+            Mission(propulsion_id=prop_id),
+            var_names.tolist(),
+            "",
+            overwrite=True,
         )
 
         inputs_dict = {}
