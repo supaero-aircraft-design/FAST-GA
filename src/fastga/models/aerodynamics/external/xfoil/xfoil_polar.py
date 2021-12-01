@@ -1,4 +1,4 @@
-"""This module launches XFOIL computations."""
+"""Computation of the airfoil aerodynamic properties using Xfoil."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -418,13 +418,13 @@ class XfoilPolar(ExternalCodeComp):
                             file = os.open(file_path, os.O_WRONLY)
                             os.close(file)
                         except:
-                            _LOGGER.info("Error while trying to close %s file!" % file_path)
+                            _LOGGER.info("Error while trying to close %s file!", file_path)
                 # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
                 except:
                     _LOGGER.info(
-                        "Error while trying to erase %s temporary directory!" % tmp_directory.name
+                        "Error while trying to erase %s temporary directory!", tmp_directory.name
                     )
 
         else:
@@ -546,8 +546,8 @@ class XfoilPolar(ExternalCodeComp):
                 return max(lift_coeff[delta <= 0.3]), False
 
         _LOGGER.warning(
-            "2D CL max not found, less than 40%% of angle range computed: using default value %f"
-            % DEFAULT_2D_CL_MAX
+            "2D CL max not found, less than 40%% of angle range computed: using default value %f",
+            DEFAULT_2D_CL_MAX,
         )
         return DEFAULT_2D_CL_MAX, True
 
