@@ -631,8 +631,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_htp(inputs)
 
     def _generate_wing(self, inputs):
-        """Generates the coordinates for VLM calculations and aic matrix of the wing"""
-
+        """Generates the coordinates for VLM calculations and aic matrix of the wing."""
         y2_wing = inputs["data:geometry:wing:root:y"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
         root_chord = inputs["data:geometry:wing:root:chord"]
