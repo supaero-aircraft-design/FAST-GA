@@ -208,9 +208,8 @@ class _v2(om.ExplicitComponent):
                 factor += 0.01
             else:
                 _LOGGER.critical(
-                    "Climb rate is less than {}, adjust weight, propulsion or takeoff configuration".format(
-                        CLIMB_GRAD_AEO
-                    )
+                    "Climb rate is less than %f, adjust weight, propulsion or takeoff "
+                    "configuration" % CLIMB_GRAD_AEO
                 )
                 raise RuntimeError()
 

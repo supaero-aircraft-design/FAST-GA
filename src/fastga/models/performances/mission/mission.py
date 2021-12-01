@@ -391,7 +391,7 @@ class _compute_climb(DynamicEquilibrium):
             try:
                 os.remove(self.options["out_file"])
             except:
-                _LOGGER.info("Failed to remove {} file!".format(self.options["out_file"]))
+                _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
@@ -501,9 +501,8 @@ class _compute_climb(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for climb phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for climb phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results
@@ -657,9 +656,8 @@ class _compute_cruise(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for cruise phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for cruise phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results
@@ -838,9 +836,8 @@ class _compute_descent(DynamicEquilibrium):
             # Check calculation duration
             if (time.time() - t_start) > MAX_CALCULATION_TIME:
                 raise Exception(
-                    "Time calculation duration for descent phase [{}s] exceeded!".format(
-                        MAX_CALCULATION_TIME
-                    )
+                    "Time calculation duration for descent phase [%f s] exceeded!"
+                    % MAX_CALCULATION_TIME
                 )
 
         # Save results

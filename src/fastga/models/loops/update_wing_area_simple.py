@@ -83,7 +83,7 @@ class _UpdateWingAreaSimple(om.ExplicitComponent):
             m_vol_fuel = 860  # gasoil volume-mass [kg/m**3], cold worst case
         else:
             m_vol_fuel = 730
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn("Fuel type %f does not exist, replaced by type 1!" % fuel_type)
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
         ave_thickness = (
@@ -97,9 +97,8 @@ class _UpdateWingAreaSimple(om.ExplicitComponent):
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
 
         _LOGGER.info(
-            "Looping on wing area with new value equal to {}".format(
-                max(wing_area_mission, wing_area_approach)
-            )
+            "Looping on wing area with new value equal to %f"
+            % max(wing_area_mission, wing_area_approach)
         )
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)

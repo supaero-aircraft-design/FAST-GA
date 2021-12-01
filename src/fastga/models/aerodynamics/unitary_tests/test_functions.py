@@ -113,7 +113,7 @@ def polar_result_transfer():
             try:
                 os.remove(file)
             except:
-                _LOGGER.info("Cannot remove {} file!".format(file))
+                _LOGGER.info("Cannot remove %s file!" % file)
 
     return tmp_folder
 

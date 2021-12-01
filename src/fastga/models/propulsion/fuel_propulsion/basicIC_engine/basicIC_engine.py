@@ -127,7 +127,14 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         # Declare sub-components attribute
         self.engine = Engine(power_SL=max_power)
-        self.nacelle = None
+        self.engine.mass = None
+        self.engine.length = None
+        self.engine.width = None
+        self.engine.height = None
+
+        self.nacelle = Nacelle()
+        self.nacelle.wet_area = None
+
         self.propeller = None
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values

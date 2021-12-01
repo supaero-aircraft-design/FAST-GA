@@ -57,8 +57,10 @@ def test_id_working():
     var_inputs = ["data:geometry:variable_2"]
 
     # Create a temporary configurator so the modules are registered and their ID are available
-    # noinspection PyUnusedLocal
     configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
+
+    # Test if there were no issues with the configurator
+    assert configurator is not None
 
     test_generate_block_analysis_id = api.generate_block_analysis(
         Disc3(ivc_value=3.0), var_inputs, complete_xml_file, overwrite=False
@@ -118,10 +120,11 @@ def test_supernumerary_inputs():
 
     # noinspection PyBroadException
     try:
-        # noinspection PyUnusedLocal
+
         test_generate_block_analysis = api.generate_block_analysis(
             Disc1(), var_inputs, xml_file, overwrite=False
         )
+        assert test_generate_block_analysis is not None
         function_generated = True
         right_error = False
 

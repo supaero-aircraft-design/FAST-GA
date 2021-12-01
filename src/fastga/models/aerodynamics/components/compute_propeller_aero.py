@@ -1,4 +1,4 @@
-"""Computation of propeller aero properties. """
+"""Computation of propeller aero properties."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -144,9 +144,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         # Construct table for init of climb
         altitude = 0.0
-        thrust_vect, theta_vect, eta_vect = self.construct_table(
-            inputs, speed_interp, altitude, omega
-        )
+        thrust_vect, _, eta_vect = self.construct_table(inputs, speed_interp, altitude, omega)
         # plt.show()
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
@@ -556,7 +554,8 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
-        phi = math.atan(v_ax / (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0))
+        # Needed for the computation of the hub lost factor
+        # phi = math.atan(v_ax / (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0))
 
         # f_tip is the tip loose factor
         f_tip = (

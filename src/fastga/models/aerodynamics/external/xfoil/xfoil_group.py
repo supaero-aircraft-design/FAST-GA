@@ -1,7 +1,7 @@
 """
-    Creation of a group to ease the use of the Xfoil Polar ExternalCodeComp in the block analysis function
+Creation of a group to ease the use of the Xfoil Polar ExternalCodeComp in the block analysis
+function.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
