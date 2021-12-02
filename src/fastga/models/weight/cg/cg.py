@@ -21,23 +21,9 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
 from .cg_components.constants import (
-    SUBMODEL_WING_CG,
-    SUBMODEL_FUSELAGE_CG,
-    SUBMODEL_TAIL_CG,
-    SUBMODEL_FLIGHT_CONTROLS_CG,
-    SUBMODEL_LANDING_GEAR_CG,
-    SUBMODEL_PROPULSION_CG,
-    SUBMODEL_POWER_SYSTEMS_CG,
-    SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
-    SUBMODEL_NAVIGATION_SYSTEMS_CG,
-    SUBMODEL_SEATS_CG,
     SUBMODEL_PAYLOAD_CG,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
-)
-from fastga.models.weight.cg.cg_components.b_propulsion import (
-    ComputeEngineCG,
-    ComputeFuelLinesCG,
-    ComputeTankCG,
+    SUBMODEL_TANK_CG,
 )
 
 
@@ -50,44 +36,7 @@ class CG(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "wing_cg", RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
-        )
-        self.add_subsystem(
-            "fuselage_cg", RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
-        )
-        self.add_subsystem(
-            "tail_cg", RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
-        )
-        self.add_subsystem(
-            "flight_control_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "landing_gear_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "propulsion_cg", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_CG), promotes=["*"],
-        )
-        self.add_subsystem(
-            "power_systems_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "life_support_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "navigation_systems_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEMS_CG),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "passenger_seats_cg", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG), promotes=["*"]
+            "tank_cg", RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
         )
         self.add_subsystem(
             "payload_cg", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]

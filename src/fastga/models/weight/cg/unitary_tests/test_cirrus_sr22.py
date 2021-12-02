@@ -222,9 +222,9 @@ def test_compute_cg_ratio_aft():
     empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
     assert empty_mass == pytest.approx(996.95, abs=1e-2)
     cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
-    assert cg_x == pytest.approx(2.387, abs=1e-2)
+    assert cg_x == pytest.approx(2.31, abs=1e-2)
     cg_mac_pos = problem["data:weight:aircraft:empty:CG:MAC_position"]
-    assert cg_mac_pos == pytest.approx(-0.127, abs=1e-2)
+    assert cg_mac_pos == pytest.approx(-0.193, abs=1e-2)
 
 
 def test_compute_cg_load_case():

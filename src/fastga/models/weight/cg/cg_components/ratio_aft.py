@@ -21,6 +21,19 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_AIRCRAFT_X_CG, SUBMODEL_AIRCRAFT_X_CG_RATIO, SUBMODEL_AIRCRAFT_Z_CG
 
+from ..cg_components.constants import (
+    SUBMODEL_WING_CG,
+    SUBMODEL_FUSELAGE_CG,
+    SUBMODEL_TAIL_CG,
+    SUBMODEL_FLIGHT_CONTROLS_CG,
+    SUBMODEL_LANDING_GEAR_CG,
+    SUBMODEL_PROPULSION_CG,
+    SUBMODEL_POWER_SYSTEMS_CG,
+    SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
+    SUBMODEL_NAVIGATION_SYSTEMS_CG,
+    SUBMODEL_SEATS_CG,
+)
+
 
 @RegisterSubmodel(
     SUBMODEL_AIRCRAFT_X_CG_RATIO, "fastga.submodel.weight.cg.aircraft_empty.x_ratio.legacy"
@@ -28,12 +41,69 @@ from .constants import SUBMODEL_AIRCRAFT_X_CG, SUBMODEL_AIRCRAFT_X_CG_RATIO, SUB
 class ComputeCGRatioAircraftEmpty(om.Group):
     def setup(self):
         self.add_subsystem(
+            "wing_cg", RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "fuselage_cg", RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "tail_cg", RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "flight_control_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "landing_gear_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "propulsion_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "power_systems_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "life_support_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "navigation_systems_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "passenger_seats_cg", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG), promotes=["*"]
+        )
+        self.add_subsystem(
             "x_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG), promotes=["*"]
         )
         self.add_subsystem(
             "z_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
         )
         self.add_subsystem("cg_ratio", CGRatio(), promotes=["*"])
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.nonlinear_solver.options["debug_print"] = True
+        self.nonlinear_solver.options["err_on_non_converge"] = True
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 50
+        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
+        # self.nonlinear_solver.options["rtol"] = 1e-5
+
+        self.linear_solver = om.LinearBlockGS()
+        self.linear_solver.options["err_on_non_converge"] = True
+        self.linear_solver.options["iprint"] = 0
+        self.linear_solver.options["maxiter"] = 10
+        # self.linear_solver.options["rtol"] = 1e-5
 
 
 @RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")

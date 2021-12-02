@@ -28,7 +28,6 @@ from ..constants import SUBMODEL_PROPULSION_CG
 class FuelPropulsionCG(om.Group):
     def setup(self):
         self.add_subsystem("engine_cg", ComputeEngineCG(), promotes=["*"])
-        self.add_subsystem("tank_cg", ComputeTankCG(), promotes=["*"])
         self.add_subsystem("fuel_lines_cg", ComputeFuelLinesCG(), promotes=["*"])
         self.add_subsystem("propulsion_cg", ComputeFuelPropulsionCG(), promotes=["*"])
 
