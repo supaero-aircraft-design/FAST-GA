@@ -99,7 +99,6 @@ class CG(om.Group):
             RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_CG_EXTREME, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()
