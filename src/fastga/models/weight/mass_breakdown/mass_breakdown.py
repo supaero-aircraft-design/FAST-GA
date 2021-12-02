@@ -18,15 +18,22 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .constants import SUBMODEL_AIRFRAME_MASS, SUBMODEL_PROPULSION_MASS, SUBMODEL_SYSTEMS_MASS
+from .constants import (
+    SUBMODEL_AIRFRAME_MASS,
+    SUBMODEL_PROPULSION_MASS,
+    SUBMODEL_SYSTEMS_MASS,
+    SUBMODEL_FURNITURE_MASS,
+    SUBMODEL_OWE,
+    SUBMODEL_PAYLOAD_MASS,
+)
+from ..constants import SUBMODEL_MASS_BREAKDOWN
 
-from fastga.models.weight.mass_breakdown.d_furniture import ComputePassengerSeatsWeight
-from fastga.models.weight.mass_breakdown.payload import ComputePayload
 from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 from fastga.models.options import PAYLOAD_FROM_NPAX
 
 
+@RegisterSubmodel(SUBMODEL_MASS_BREAKDOWN, "fastga.submodel.weight.mass_breakdown.legacy")
 class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
@@ -45,17 +52,16 @@ class MassBreakdown(om.Group):
     def initialize(self):
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
         self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("analytical_wing_mass", default=False, types=bool)
 
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
-            self.add_subsystem("payload", ComputePayload(), promotes=["*"])
+            self.add_subsystem(
+                "payload", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_MASS), promotes=["*"]
+            )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "owe",
-            ComputeOperatingWeightEmpty(
-                propulsion_id=self.options["propulsion_id"],
-                analytical_wing_mass=self.options["analytical_wing_mass"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_OWE, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
@@ -76,6 +82,7 @@ class MassBreakdown(om.Group):
         # self.linear_solver.options["rtol"] = 1e-3
 
 
+@RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
 class ComputeOperatingWeightEmpty(om.Group):
     """Operating Empty Weight (OEW) estimation
 
@@ -84,7 +91,6 @@ class ComputeOperatingWeightEmpty(om.Group):
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("analytical_wing_mass", default=False, types=bool)
 
     def setup(self):
         # Airframe
@@ -100,22 +106,9 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "systems_weight", RegisterSubmodel.get_submodel(SUBMODEL_SYSTEMS_MASS), promotes=["*"]
         )
-        self.add_subsystem("passenger_seats_weight", ComputePassengerSeatsWeight(), promotes=["*"])
-
-        furniture_sum = om.AddSubtractComp()
-        furniture_sum.add_equation(
-            "data:weight:furniture:mass",
-            [
-                "data:weight:furniture:passenger_seats:mass",
-                "data:weight:furniture:passenger_seats:mass",
-            ],
-            scaling_factors=[0.5, 0.5],
-            units="kg",
-            desc="Mass of aircraft furniture",
-        )
         self.add_subsystem(
-            "furniture_weight_sum",
-            furniture_sum,
+            "furniture_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_FURNITURE_MASS),
             promotes=["*"],
         )
 
@@ -132,7 +125,5 @@ class ComputeOperatingWeightEmpty(om.Group):
             desc="Mass of aircraft",
         )
         self.add_subsystem(
-            "OWE_sum",
-            owe_sum,
-            promotes=["*"],
+            "OWE_sum", owe_sum, promotes=["*"],
         )

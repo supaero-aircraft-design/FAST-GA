@@ -1,4 +1,4 @@
-"""Computation of the airframe mass."""
+"""Constants for airframe mass submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,9 +12,4 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_AIRFRAME_MASS = "submodel.weight.mass.airframe"
-SUBMODEL_PROPULSION_MASS = "submodel.weight.mass.propulsion"
-SUBMODEL_SYSTEMS_MASS = "submodel.weight.mass.systems"
-SUBMODEL_FURNITURE_MASS = "submodel.weight.furniture.systems"
-SUBMODEL_OWE = "submodel.weight.mass.owe"
-SUBMODEL_PAYLOAD_MASS = "submodel.weight.mass.payload"
+SUBMODEL_SEATS_MASS = "submodel.weight.mass.furniture.seats"

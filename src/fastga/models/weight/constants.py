@@ -12,9 +12,4 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_AIRFRAME_MASS = "submodel.weight.mass.airframe"
-SUBMODEL_PROPULSION_MASS = "submodel.weight.mass.propulsion"
-SUBMODEL_SYSTEMS_MASS = "submodel.weight.mass.systems"
-SUBMODEL_FURNITURE_MASS = "submodel.weight.furniture.systems"
-SUBMODEL_OWE = "submodel.weight.mass.owe"
-SUBMODEL_PAYLOAD_MASS = "submodel.weight.mass.payload"
+SUBMODEL_MASS_BREAKDOWN = "submodel.weight.mass_breakdown"

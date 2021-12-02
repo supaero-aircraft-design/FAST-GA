@@ -40,6 +40,7 @@ from ..c_systems import (
 )
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
+from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
 from ..payload import ComputePayload
 
@@ -313,6 +314,18 @@ def test_compute_passenger_seats_weight():
     )  # additional 2 pilots seats (differs from old version)
 
 
+def test_compute_furniture_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(FurnitureWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(FurnitureWeight(), ivc)
+    weight_b = problem.get_val("data:weight:furniture:mass", units="kg")
+    assert weight_b == pytest.approx(49.82, abs=1e-2)
+
+
 def test_evaluate_owe():
     """Tests a simple evaluation of Operating Weight Empty from sample XML data."""
 
@@ -339,9 +352,7 @@ def test_loop_compute_owe():
 
     # noinspection PyTypeChecker
     mass_computation = run_system(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True),
-        ivc,
-        check=True,
+        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1004, abs=1)

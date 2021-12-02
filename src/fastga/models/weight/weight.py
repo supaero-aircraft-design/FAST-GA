@@ -16,11 +16,13 @@ Weight computation (mass and CG).
 
 import openmdao.api as om
 
-from fastga.models.weight.cg.cg import CG
-from fastga.models.weight.mass_breakdown.mass_breakdown import MassBreakdown
-
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from fastga.models.weight.cg.cg import CG
+
+from .constants import SUBMODEL_MASS_BREAKDOWN
 
 
 @RegisterOpenMDAOSystem("fastga.weight.legacy", domain=ModelDomain.WEIGHT)
@@ -39,15 +41,12 @@ class Weight(om.Group):
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
-        self.options.declare("analytical_wing_mass", default=False, types=bool)
 
     def setup(self):
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "mass_breakdown",
-            MassBreakdown(
-                propulsion_id=self.options["propulsion_id"],
-                analytical_wing_mass=self.options["analytical_wing_mass"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_MASS_BREAKDOWN, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem("cg", CG(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
