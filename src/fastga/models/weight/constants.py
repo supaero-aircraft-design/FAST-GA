@@ -13,3 +13,4 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_MASS_BREAKDOWN = "submodel.weight.mass_breakdown"
+SUBMODEL_CENTER_OF_GRAVITY = "submodel.weight.cg"

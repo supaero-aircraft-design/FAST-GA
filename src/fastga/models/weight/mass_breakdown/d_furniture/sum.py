@@ -29,7 +29,9 @@ class FurnitureWeight(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "seats_weight", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_MASS), promotes=["*"],
+            "seats_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_SEATS_MASS),
+            promotes=["*"],
         )
 
         weight_sum = om.AddSubtractComp()

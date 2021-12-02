@@ -352,7 +352,9 @@ def test_loop_compute_owe():
 
     # noinspection PyTypeChecker
     mass_computation = run_system(
-        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True), ivc, check=True,
+        MassBreakdown(propulsion_id=ENGINE_WRAPPER, payload_from_npax=True),
+        ivc,
+        check=True,
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1004, abs=1)
