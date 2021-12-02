@@ -18,13 +18,8 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .constants import SUBMODEL_AIRFRAME_MASS
+from .constants import SUBMODEL_AIRFRAME_MASS, SUBMODEL_PROPULSION_MASS
 
-from fastga.models.weight.mass_breakdown.b_propulsion import (
-    ComputeEngineWeight,
-    ComputeFuelLinesWeight,
-    ComputeUnusableFuelWeight,
-)
 from fastga.models.weight.mass_breakdown.c_systems import (
     ComputePowerSystemsWeight,
     ComputeLifeSupportSystemsWeight,
@@ -101,17 +96,12 @@ class ComputeOperatingWeightEmpty(om.Group):
         self.add_subsystem(
             "airframe_weight", RegisterSubmodel.get_submodel(SUBMODEL_AIRFRAME_MASS), promotes=["*"]
         )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
-            "engine_weight",
-            ComputeEngineWeight(propulsion_id=self.options["propulsion_id"]),
+            "propulsion_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_MASS, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem(
-            "unusable_fuel",
-            ComputeUnusableFuelWeight(propulsion_id=self.options["propulsion_id"]),
-            promotes=["*"],
-        )
-        self.add_subsystem("fuel_lines_weight", ComputeFuelLinesWeight(), promotes=["*"])
         self.add_subsystem(
             "navigation_systems_weight", ComputeNavigationSystemsWeight(), promotes=["*"]
         )
@@ -120,22 +110,6 @@ class ComputeOperatingWeightEmpty(om.Group):
             "life_support_systems_weight", ComputeLifeSupportSystemsWeight(), promotes=["*"]
         )
         self.add_subsystem("passenger_seats_weight", ComputePassengerSeatsWeight(), promotes=["*"])
-
-        propulsion_sum = om.AddSubtractComp()
-        propulsion_sum.add_equation(
-            "data:weight:propulsion:mass",
-            [
-                "data:weight:propulsion:engine:mass",
-                "data:weight:propulsion:fuel_lines:mass",
-            ],
-            units="kg",
-            desc="Mass of the propulsion system",
-        )
-        self.add_subsystem(
-            "propulsion_weight_sum",
-            propulsion_sum,
-            promotes=["*"],
-        )
 
         systems_sum = om.AddSubtractComp()
         systems_sum.add_equation(

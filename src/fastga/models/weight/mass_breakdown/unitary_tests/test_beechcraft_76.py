@@ -23,17 +23,19 @@ from ..a_airframe import (
     ComputeFuselageWeightRaymer,
     ComputeWingWeight,
     ComputeLandingGearWeight,
+    ComputeWingMassAnalytical,
 )
-from ..a_airframe.components.compute_web_mass import ComputeWebMass
-from ..a_airframe.components.compute_upper_flange import ComputeUpperFlange
-from ..a_airframe.components.compute_lower_flange import ComputeLowerFlange
-from ..a_airframe.components.compute_skin_mass import ComputeSkinMass
-from ..a_airframe.components.compute_ribs_mass import ComputeRibsMass
-from ..a_airframe.components.compute_misc_mass import ComputeMiscMass
-from ..a_airframe.components.compute_primary_mass import ComputePrimaryMass
-from ..a_airframe.components.compute_secondary_mass import ComputeSecondaryMass
-from ..a_airframe.components.update_wing_mass import UpdateWingMass
-from ..a_airframe.a1_wing_weight_analytical import ComputeWingMassAnalytical
+from ..a_airframe.components import (
+    ComputeWebMass,
+    ComputeLowerFlange,
+    ComputeUpperFlange,
+    ComputeSkinMass,
+    ComputeMiscMass,
+    ComputeRibsMass,
+    ComputePrimaryMass,
+    ComputeSecondaryMass,
+    UpdateWingMass,
+)
 from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
@@ -41,6 +43,7 @@ from ..b_propulsion import (
     ComputeEngineWeight,
     ComputeUnusableFuelWeight,
 )
+from ..b_propulsion import PropulsionWeight
 from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
@@ -211,6 +214,20 @@ def test_compute_unusable_fuel_weight():
     problem = run_system(ComputeUnusableFuelWeight(propulsion_id=ENGINE_WRAPPER), ivc)
     weight_b3 = problem.get_val("data:weight:propulsion:unusable_fuel:mass", units="kg")
     assert weight_b3 == pytest.approx(56.10, abs=1e-2)
+
+
+def test_compute_propulsion_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(PropulsionWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(PropulsionWeight(propulsion_id=ENGINE_WRAPPER), ivc)
+    weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
+    assert weight_b == pytest.approx(414.46, abs=1e-2)
 
 
 def test_compute_navigation_systems_weight():

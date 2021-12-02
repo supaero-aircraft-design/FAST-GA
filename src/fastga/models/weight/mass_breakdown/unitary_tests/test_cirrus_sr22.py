@@ -31,6 +31,7 @@ from ..b_propulsion import (
     ComputeEngineWeight,
     ComputeUnusableFuelWeight,
 )
+from ..b_propulsion import PropulsionWeight
 from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
@@ -187,6 +188,20 @@ def test_compute_fuel_lines_weight():
     problem = run_system(ComputeFuelLinesWeight(), ivc)
     weight_b2 = problem.get_val("data:weight:propulsion:fuel_lines:mass", units="kg")
     assert weight_b2 == pytest.approx(31.30, abs=1e-2)
+
+
+def test_compute_propulsion_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(PropulsionWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(PropulsionWeight(propulsion_id=ENGINE_WRAPPER), ivc)
+    weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
+    assert weight_b == pytest.approx(361.51, abs=1e-2)
 
 
 def test_compute_unusable_fuel_weight():

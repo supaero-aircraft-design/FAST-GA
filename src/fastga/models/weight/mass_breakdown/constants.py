@@ -13,3 +13,4 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_AIRFRAME_MASS = "submodel.weight.mass.airframe"
+SUBMODEL_PROPULSION_MASS = "submodel.weight.mass.propulsion"

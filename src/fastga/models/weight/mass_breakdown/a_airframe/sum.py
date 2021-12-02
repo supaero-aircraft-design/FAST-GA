@@ -69,6 +69,7 @@ class AirframeWeight(om.Group):
                 "data:weight:airframe:landing_gear:front:mass",
             ],
             units="kg",
+            desc="Mass of the airframe",
         )
 
         self.add_subsystem("airframe_weight_sum", weight_sum, promotes=["*"])
