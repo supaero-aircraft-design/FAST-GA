@@ -18,13 +18,8 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .constants import SUBMODEL_AIRFRAME_MASS, SUBMODEL_PROPULSION_MASS
+from .constants import SUBMODEL_AIRFRAME_MASS, SUBMODEL_PROPULSION_MASS, SUBMODEL_SYSTEMS_MASS
 
-from fastga.models.weight.mass_breakdown.c_systems import (
-    ComputePowerSystemsWeight,
-    ComputeLifeSupportSystemsWeight,
-    ComputeNavigationSystemsWeight,
-)
 from fastga.models.weight.mass_breakdown.d_furniture import ComputePassengerSeatsWeight
 from fastga.models.weight.mass_breakdown.payload import ComputePayload
 from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
@@ -103,37 +98,9 @@ class ComputeOperatingWeightEmpty(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "navigation_systems_weight", ComputeNavigationSystemsWeight(), promotes=["*"]
-        )
-        self.add_subsystem("power_systems_weight", ComputePowerSystemsWeight(), promotes=["*"])
-        self.add_subsystem(
-            "life_support_systems_weight", ComputeLifeSupportSystemsWeight(), promotes=["*"]
+            "systems_weight", RegisterSubmodel.get_submodel(SUBMODEL_SYSTEMS_MASS), promotes=["*"]
         )
         self.add_subsystem("passenger_seats_weight", ComputePassengerSeatsWeight(), promotes=["*"])
-
-        systems_sum = om.AddSubtractComp()
-        systems_sum.add_equation(
-            "data:weight:systems:mass",
-            [
-                "data:weight:systems:power:electric_systems:mass",
-                "data:weight:systems:power:hydraulic_systems:mass",
-                "data:weight:systems:life_support:air_conditioning:mass",
-                "data:weight:systems:life_support:insulation:mass",
-                "data:weight:systems:life_support:de_icing:mass",
-                "data:weight:systems:life_support:internal_lighting:mass",
-                "data:weight:systems:life_support:seat_installation:mass",
-                "data:weight:systems:life_support:fixed_oxygen:mass",
-                "data:weight:systems:life_support:security_kits:mass",
-                "data:weight:systems:navigation:mass",
-            ],
-            units="kg",
-            desc="Mass of aircraft systems",
-        )
-        self.add_subsystem(
-            "systems_weight_sum",
-            systems_sum,
-            promotes=["*"],
-        )
 
         furniture_sum = om.AddSubtractComp()
         furniture_sum.add_equation(

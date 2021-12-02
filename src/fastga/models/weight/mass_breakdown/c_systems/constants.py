@@ -1,3 +1,4 @@
+"""Constants for airframe mass submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .b1_2_oil_weight import ComputeOilWeight
-from .b1_engine_weight import ComputeEngineWeight
-from .b2_fuel_lines_weight import ComputeFuelLinesWeight
-from .b3_unusable_fuel_weight import ComputeUnusableFuelWeight
+SUBMODEL_POWER_SYSTEM_MASS = "submodel.weight.mass.system.power_system"
+SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS = "submodel.weight.mass.system.life_support_system"
+SUBMODEL_NAVIGATION_SYSTEM_MASS = "submodel.weight.mass.system.navigation_system"

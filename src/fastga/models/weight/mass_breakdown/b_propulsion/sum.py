@@ -52,4 +52,4 @@ class PropulsionWeight(om.Group):
             desc="Mass of the propulsion system",
         )
 
-        self.add_subsystem("airframe_weight_sum", weight_sum, promotes=["*"])
+        self.add_subsystem("propulsion_weight_sum", weight_sum, promotes=["*"])

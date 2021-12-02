@@ -14,3 +14,4 @@
 
 SUBMODEL_AIRFRAME_MASS = "submodel.weight.mass.airframe"
 SUBMODEL_PROPULSION_MASS = "submodel.weight.mass.propulsion"
+SUBMODEL_SYSTEMS_MASS = "submodel.weight.mass.systems"

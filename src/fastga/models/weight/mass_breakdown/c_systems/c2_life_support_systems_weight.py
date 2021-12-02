@@ -15,10 +15,19 @@ Estimation of life support systems weight.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+
 from fastoad.model_base import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
 
 
+@RegisterSubmodel(
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
+    "fastga.submodel.weight.mass.system.life_support_system.legacy",
+)
 class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     """
     Weight estimation for life support systems
