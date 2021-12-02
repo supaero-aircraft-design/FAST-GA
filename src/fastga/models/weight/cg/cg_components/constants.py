@@ -1,4 +1,4 @@
-"""Constants for the mass breakdown submodels."""
+"""Constants for the CoG submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,9 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_AIRFRAME_MASS = "submodel.weight.mass.airframe"
-SUBMODEL_PROPULSION_MASS = "submodel.weight.mass.propulsion"
-SUBMODEL_SYSTEMS_MASS = "submodel.weight.mass.systems"
-SUBMODEL_FURNITURE_MASS = "submodel.weight.mass.furniture"
-SUBMODEL_OWE = "submodel.weight.mass.owe"
-SUBMODEL_PAYLOAD_MASS = "submodel.weight.mass.payload"
+SUBMODEL_WING_CG = "submodel.weight.cg.airframe.wing"
+SUBMODEL_FUSELAGE_CG = "submodel.weight.cg.airframe.fuselage"
+SUBMODEL_TAIL_CG = "submodel.weight.cg.airframe.tail"
+SUBMODEL_FLIGHT_CONTROLS_CG = "submodel.weight.cg.airframe.flight_controls"
+SUBMODEL_LANDING_GEAR_CG = "submodel.weight.cg.airframe.landing_gear"
+# SUBMODEL_PROPULSION_CG = "submodel.weight.cg.propulsion"
+SUBMODEL_POWER_SYSTEMS_CG = "submodel.weight.cg.system.power_system"
+SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG = "submodel.weight.cg.system.life_support_system"
+SUBMODEL_NAVIGATION_SYSTEMS_CG = "submodel.weight.cg.system.navigation_system"
+SUBMODEL_SEATS_CG = "submodel.weight.cg.furniture.seats"
+SUBMODEL_PAYLOAD_CG = "submodel.weight.cg.payload"

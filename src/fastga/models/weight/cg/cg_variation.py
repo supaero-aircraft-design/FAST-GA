@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
+"""FAST - Copyright (c) 2016 ONERA ISAE. """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,7 +18,10 @@ import openmdao.api as om
 
 
 class InFlightCGVariation(om.ExplicitComponent):
-    """Computes the coefficient necessary to the calculation of the cg position at any point of the DESIGN flight"""
+    """
+    Computes the coefficient necessary to the calculation of the cg position at any point of
+    the DESIGN flight.
+    """
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)

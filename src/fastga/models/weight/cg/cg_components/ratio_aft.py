@@ -18,7 +18,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeCGRatioAft(om.Group):
+class ComputeCGRatioAircraftEmpty(om.Group):
     def setup(self):
         self.add_subsystem("cg_all", ComputeCG(), promotes=["*"])
         self.add_subsystem("z_cg", ComputeZCG(), promotes=["*"])
@@ -164,8 +164,8 @@ class ComputeZCG(om.ExplicitComponent):
         cg_vertical_tail = cg_fuselage + vt_span / 2.0
         # TODO : To be changed depending we want or not the case where LG are retractable
         cg_landing_gear = lg_height / 2.0
-        # CS 23 gives a minimum ground clearance of 18 cm for nose wheel landing gear, but TB20, SR22, BE76 all use a
-        # 23 cm clearance as recommended for tail wheel landing gear
+        # CS 23 gives a minimum ground clearance of 18 cm for nose wheel landing gear, but TB20,
+        # SR22, BE76 all use a 23 cm clearance as recommended for tail wheel landing gear
         cg_engine = 0.23 + prop_dia / 2.0
         cg_fuel_lines = (cg_engine + cg_wing) / 2.0
         cgs = np.array(

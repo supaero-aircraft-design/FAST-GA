@@ -20,9 +20,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.weight.cg.cg import CG
-
-from .constants import SUBMODEL_MASS_BREAKDOWN
+from .constants import SUBMODEL_MASS_BREAKDOWN, SUBMODEL_CENTER_OF_GRAVITY
 
 
 @RegisterOpenMDAOSystem("fastga.weight.legacy", domain=ModelDomain.WEIGHT)
@@ -49,4 +47,8 @@ class Weight(om.Group):
             RegisterSubmodel.get_submodel(SUBMODEL_MASS_BREAKDOWN, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("cg", CG(propulsion_id=self.options["propulsion_id"]), promotes=["*"])
+        self.add_subsystem(
+            "cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_CENTER_OF_GRAVITY, options=propulsion_option),
+            promotes=["*"],
+        )

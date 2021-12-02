@@ -19,31 +19,33 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.weight.cg.cg_components.a_airframe import (
-    ComputeWingCG,
-    ComputeFuselageCG,
-    ComputeTailCG,
-    ComputeFlightControlCG,
-    ComputeLandingGearCG,
-)
 from fastga.models.weight.cg.cg_components.b_propulsion import (
     ComputeEngineCG,
     ComputeFuelLinesCG,
     ComputeTankCG,
 )
-from fastga.models.weight.cg.cg_components.c_systems import (
-    ComputePowerSystemsCG,
-    ComputeLifeSupportCG,
-    ComputeNavigationSystemsCG,
-)
-from fastga.models.weight.cg.cg_components.d_furniture import ComputePassengerSeatsCG
 from fastga.models.weight.cg.cg_components.payload import ComputePayloadCG
 from fastga.models.weight.cg.cg_components.global_cg import ComputeGlobalCG
 from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
 
+from .cg_components.constants import (
+    SUBMODEL_WING_CG,
+    SUBMODEL_FUSELAGE_CG,
+    SUBMODEL_TAIL_CG,
+    SUBMODEL_FLIGHT_CONTROLS_CG,
+    SUBMODEL_LANDING_GEAR_CG,
+    SUBMODEL_POWER_SYSTEMS_CG,
+    SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
+    SUBMODEL_NAVIGATION_SYSTEMS_CG,
+    SUBMODEL_SEATS_CG,
+    SUBMODEL_PAYLOAD_CG,
+)
+from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
-@RegisterOpenMDAOSystem("fastga.weight.cg", domain=ModelDomain.WEIGHT)
+
+@RegisterSubmodel(SUBMODEL_CENTER_OF_GRAVITY, "fastga.submodel.weight.cg.legacy")
 class CG(om.Group):
     """Model that computes the global center of gravity."""
 
@@ -52,19 +54,49 @@ class CG(om.Group):
 
     def setup(self):
 
-        self.add_subsystem("wing_cg", ComputeWingCG(), promotes=["*"])
-        self.add_subsystem("fuselage_cg", ComputeFuselageCG(), promotes=["*"])
-        self.add_subsystem("tail_cg", ComputeTailCG(), promotes=["*"])
-        self.add_subsystem("flight_control_cg", ComputeFlightControlCG(), promotes=["*"])
-        self.add_subsystem("landing_gear_cg", ComputeLandingGearCG(), promotes=["*"])
+        self.add_subsystem(
+            "wing_cg", RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "fuselage_cg", RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "tail_cg", RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "flight_control_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "landing_gear_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
+            promotes=["*"],
+        )
         self.add_subsystem("engine_cg", ComputeEngineCG(), promotes=["*"])
         self.add_subsystem("fuel_lines_cg", ComputeTankCG(), promotes=["*"])
         self.add_subsystem("tank_cg", ComputeFuelLinesCG(), promotes=["*"])
-        self.add_subsystem("power_systems_cg", ComputePowerSystemsCG(), promotes=["*"])
-        self.add_subsystem("life_support_cg", ComputeLifeSupportCG(), promotes=["*"])
-        self.add_subsystem("navigation_systems_cg", ComputeNavigationSystemsCG(), promotes=["*"])
-        self.add_subsystem("passenger_seats_cg", ComputePassengerSeatsCG(), promotes=["*"])
-        self.add_subsystem("payload_cg", ComputePayloadCG(), promotes=["*"])
+        self.add_subsystem(
+            "power_systems_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "life_support_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "navigation_systems_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "passenger_seats_cg", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "payload_cg", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
+        )
         self.add_subsystem(
             "compute_cg",
             ComputeGlobalCG(propulsion_id=self.options["propulsion_id"]),

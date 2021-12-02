@@ -18,7 +18,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from .constants import SUBMODEL_PAYLOAD_CG
+
+
+@RegisterSubmodel(SUBMODEL_PAYLOAD_CG, "fastga.submodel.weight.cg.payload.legacy")
 class ComputePayloadCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Payload center(s) of gravity estimation"""

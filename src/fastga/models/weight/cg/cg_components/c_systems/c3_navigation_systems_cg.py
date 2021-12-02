@@ -18,7 +18,14 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
+
+
+@RegisterSubmodel(
+    SUBMODEL_NAVIGATION_SYSTEMS_CG, "fastga.submodel.weight.cg.system.navigation_system.legacy"
+)
 class ComputeNavigationSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Navigation systems center of gravity estimation"""

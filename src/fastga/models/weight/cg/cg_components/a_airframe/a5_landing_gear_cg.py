@@ -18,7 +18,14 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_LANDING_GEAR_CG
+
+
+@RegisterSubmodel(
+    SUBMODEL_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
+)
 class ComputeLandingGearCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Landing gear center of gravity estimation"""

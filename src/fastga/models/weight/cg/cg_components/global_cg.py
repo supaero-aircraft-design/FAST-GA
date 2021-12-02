@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
-from ..cg_components.ratio_aft import ComputeCGRatioAft
+from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
 from ..cg_components.max_cg_ratio import ComputeMaxMinCGratio
 
 from openmdao.api import Group
@@ -30,7 +30,7 @@ class ComputeGlobalCG(Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self.add_subsystem("cg_ratio_aft", ComputeCGRatioAft(), promotes=["*"])
+        self.add_subsystem("cg_ratio_aft", ComputeCGRatioAircraftEmpty(), promotes=["*"])
         self.add_subsystem("cg_ratio_lc_ground", ComputeGroundCGCase(), promotes=["*"])
         self.add_subsystem(
             "cg_ratio_lc_flight",

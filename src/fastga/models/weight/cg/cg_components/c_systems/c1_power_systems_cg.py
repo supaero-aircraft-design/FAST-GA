@@ -18,7 +18,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_POWER_SYSTEMS_CG
+
+
+@RegisterSubmodel(SUBMODEL_POWER_SYSTEMS_CG, "fastga.submodel.weight.cg.system.power_system.legacy")
 class ComputePowerSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Power systems center(s) of gravity estimation"""

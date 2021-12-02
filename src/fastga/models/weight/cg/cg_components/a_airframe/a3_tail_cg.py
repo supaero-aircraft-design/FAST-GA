@@ -18,17 +18,21 @@
 import math
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_TAIL_CG
+
+
+@RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
 class ComputeTailCG(om.Group):
     def setup(self):
         self.add_subsystem("compute_ht", ComputeHTcg(), promotes=["*"])
         self.add_subsystem("compute_vt", ComputeVTcg(), promotes=["*"])
 
 
-class ComputeHTcg(ExplicitComponent):
+class ComputeHTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail center of gravity estimation
@@ -73,7 +77,7 @@ class ComputeHTcg(ExplicitComponent):
         outputs["data:weight:airframe:horizontal_tail:CG:x"] = x_cg_31
 
 
-class ComputeVTcg(ExplicitComponent):
+class ComputeVTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail center of gravity estimation."""
 
