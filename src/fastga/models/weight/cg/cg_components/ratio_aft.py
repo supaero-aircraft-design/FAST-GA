@@ -17,14 +17,26 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from .constants import SUBMODEL_AIRCRAFT_X_CG, SUBMODEL_AIRCRAFT_X_CG_RATIO, SUBMODEL_AIRCRAFT_Z_CG
+
+
+@RegisterSubmodel(
+    SUBMODEL_AIRCRAFT_X_CG_RATIO, "fastga.submodel.weight.cg.aircraft_empty.x_ratio.legacy"
+)
 class ComputeCGRatioAircraftEmpty(om.Group):
     def setup(self):
-        self.add_subsystem("cg_all", ComputeCG(), promotes=["*"])
-        self.add_subsystem("z_cg", ComputeZCG(), promotes=["*"])
+        self.add_subsystem(
+            "x_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "z_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
+        )
         self.add_subsystem("cg_ratio", CGRatio(), promotes=["*"])
 
 
+@RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")
 class ComputeCG(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(
@@ -110,6 +122,7 @@ class CGRatio(om.ExplicitComponent):
         ) / mac
 
 
+@RegisterSubmodel(SUBMODEL_AIRCRAFT_Z_CG, "fastga.submodel.weight.cg.aircraft_empty.z.legacy")
 class ComputeZCG(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(

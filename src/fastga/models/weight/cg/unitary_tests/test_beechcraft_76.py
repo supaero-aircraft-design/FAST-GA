@@ -35,8 +35,8 @@ from ..cg_components.c_systems import (
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
 from ..cg_components.payload import ComputePayloadCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
-from ..cg_components.ratio_aft import ComputeCGRatioAft
-from ..cg_components.max_cg_ratio import ComputeMaxMinCGratio
+from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
+from ..cg_components.max_cg_ratio import ComputeMaxMinCGRatio
 from ..cg_components.update_mlg import UpdateMLG
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
@@ -199,10 +199,10 @@ def test_compute_cg_payload():
 def test_compute_cg_ratio_aft():
     """Tests computation of center of gravity with aft estimation"""
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeCGRatioAft()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCGRatioAircraftEmpty()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeCGRatioAft(), ivc)
+    problem = run_system(ComputeCGRatioAircraftEmpty(), ivc)
     empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
     assert empty_mass == pytest.approx(1109.06, abs=1e-2)
     cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
@@ -239,10 +239,10 @@ def test_compute_cg_load_case():
 def test_compute_max_cg_ratio():
     """Tests computation of maximum center of gravity ratio"""
     # Define the independent input values that should be filled if basic function is chosen
-    ivc = get_indep_var_comp(list_inputs(ComputeMaxMinCGratio()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeMaxMinCGRatio()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMaxMinCGratio(), ivc)
+    problem = run_system(ComputeMaxMinCGRatio(), ivc)
     cg_ratio_aft = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
     assert cg_ratio_aft == pytest.approx(0.369, abs=1e-3)
     cg_ratio_fwd = problem.get_val("data:weight:aircraft:CG:fwd:MAC_position")
