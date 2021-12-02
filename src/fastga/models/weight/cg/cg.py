@@ -18,8 +18,6 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
-
 from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
 from .cg_components.constants import (
@@ -28,6 +26,7 @@ from .cg_components.constants import (
     SUBMODEL_TAIL_CG,
     SUBMODEL_FLIGHT_CONTROLS_CG,
     SUBMODEL_LANDING_GEAR_CG,
+    SUBMODEL_PROPULSION_CG,
     SUBMODEL_POWER_SYSTEMS_CG,
     SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
     SUBMODEL_NAVIGATION_SYSTEMS_CG,
@@ -69,9 +68,9 @@ class CG(om.Group):
             RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
             promotes=["*"],
         )
-        self.add_subsystem("engine_cg", ComputeEngineCG(), promotes=["*"])
-        self.add_subsystem("fuel_lines_cg", ComputeTankCG(), promotes=["*"])
-        self.add_subsystem("tank_cg", ComputeFuelLinesCG(), promotes=["*"])
+        self.add_subsystem(
+            "propulsion_cg", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_CG), promotes=["*"],
+        )
         self.add_subsystem(
             "power_systems_cg",
             RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),

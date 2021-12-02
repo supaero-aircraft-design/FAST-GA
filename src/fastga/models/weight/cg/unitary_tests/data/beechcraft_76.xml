@@ -667,18 +667,21 @@
         </passenger_seats>
       </furniture>
       <propulsion>
-        <mass units="kg" is_input="False">409.9042623567821<!--Mass of the propulsion system--></mass>
+        <mass units="kg" is_input="False">408.9042623567821<!--Mass of the propulsion system--></mass>
+        <CG>
+          <x units="m">2.46</x>
+        </CG>
         <engine>
           <mass units="lbm" is_input="False">775.6880445165762<!--engine (B1): mass--></mass>
           <CG>
-            <x units="m" is_input="False">3.011048860691374<!--engine (B1): X-position of center of gravity--></x>
+            <x units="m" is_input="False">2.35946<!--engine (B1): X-position of center of gravity--></x>
             <z units="m" is_input="False">0.73<!--Z-position of center of gravity of the engine(s)--></z>
           </CG>
         </engine>
         <fuel_lines>
           <mass units="lbm" is_input="False">125.79154244557245<!--fuel lines (B2): mass--></mass>
           <CG>
-            <x units="m" is_input="False">3.416069815638548<!--fuel lines (B2): X-position of center of gravity--></x>
+            <x units="m" is_input="False">3.09027539<!--fuel lines (B2): X-position of center of gravity--></x>
           </CG>
         </fuel_lines>
         <tank>

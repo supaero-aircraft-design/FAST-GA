@@ -96,9 +96,6 @@ class ComputeCG(om.ExplicitComponent):
         masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
 
         weight_moment = np.dot(cgs, masses)
-        test = []
-        for i in range(len(cgs)):
-            test.append(cgs[i] * masses[i] / np.sum(masses))
         outputs["data:weight:aircraft_empty:mass"] = np.sum(masses)
         x_cg_empty_aircraft = weight_moment / outputs["data:weight:aircraft_empty:mass"]
         outputs["data:weight:aircraft_empty:CG:x"] = x_cg_empty_aircraft
