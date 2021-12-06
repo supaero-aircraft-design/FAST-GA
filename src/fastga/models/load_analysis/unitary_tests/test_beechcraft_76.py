@@ -21,6 +21,7 @@ import pytest
 from ..wing.aerostructural_loads import AerostructuralLoad
 from ..wing.structural_loads import StructuralLoads
 from ..wing.aerodynamic_loads import AerodynamicLoads
+from ..wing.loads import WingLoads
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -1262,3 +1263,126 @@ def test_compute_lift_distribution():
         ]
     )
     assert np.max(np.abs(lift_array - lift_result)) <= 1e-1
+
+
+def test_load_group():
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(WingLoads()), __file__, XML_FILE)
+    cl_vector_only_prop = [
+        0.04,
+        0.13,
+        0.21,
+        0.3,
+        0.39,
+        0.47,
+        0.56,
+        0.68,
+        0.84,
+        1.01,
+        1.17,
+        1.34,
+        1.51,
+        1.67,
+        1.84,
+        2.01,
+        2.18,
+        2.35,
+        2.51,
+        2.68,
+        2.85,
+        3.02,
+        3.19,
+        3.35,
+        3.52,
+        3.68,
+        3.85,
+        4.01,
+        4.18,
+        4.34,
+        4.5,
+        4.66,
+        4.81,
+        4.97,
+        5.13,
+        5.28,
+        5.43,
+        5.58,
+        5.73,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+    y_vector = [
+        1.43,
+        1.42,
+        1.42,
+        1.42,
+        1.42,
+        1.41,
+        1.42,
+        1.41,
+        1.4,
+        1.4,
+        1.41,
+        1.4,
+        1.4,
+        1.46,
+        1.5,
+        1.38,
+        1.35,
+        1.36,
+        1.35,
+        1.34,
+        1.33,
+        1.32,
+        1.31,
+        1.3,
+        1.28,
+        1.26,
+        1.24,
+        1.21,
+        1.19,
+        1.16,
+        1.13,
+        1.09,
+        1.05,
+        1.01,
+        0.95,
+        0.88,
+        0.79,
+        0.67,
+        0.63,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+    ivc.add_output(
+        "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector", cl_vector_only_prop
+    )
+    ivc.add_output("data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector", y_vector, units="m")
+    ivc.add_output(
+        "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", 82.3111, units="m/s"
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(WingLoads(), ivc)
+
+    lift_shear_diagram = problem.get_val("data:loads:max_shear:lift_shear", units="N")
+    lift_root_shear = lift_shear_diagram[0]
+    assert lift_root_shear == pytest.approx(147551.45, abs=1)

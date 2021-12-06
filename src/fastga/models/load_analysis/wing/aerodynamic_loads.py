@@ -18,12 +18,15 @@ Computes the aerodynamic loads on the wing of the aircraft in the most stringent
 import numpy as np
 
 from fastoad.model_base.atmosphere import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
+from .constants import SUBMODEL_AERODYNAMIC_LOADS
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
+@RegisterSubmodel(SUBMODEL_AERODYNAMIC_LOADS, "fastga.submodel.loads.wings.aerodynamic.legacy")
 class AerodynamicLoads(AerostructuralLoad):
     def setup(self):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
