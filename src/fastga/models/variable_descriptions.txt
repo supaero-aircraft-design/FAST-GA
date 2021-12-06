@@ -22,6 +22,7 @@ data:geometry:vertical_tail:max_thickness:x_ratio || position of the point of ma
 data:geometry:vertical_tail:sweep_25 || sweep angle at 25% chord of vertical tail
 data:geometry:vertical_tail:taper_ratio || taper ratio of vertical tail
 data:geometry:vertical_tail:thickness_ratio || thickness ratio of vertical tail
+data:geometry:horizontal_tail:MAC:at25percent:x:absolute || distance between the nose and the aerodynamic center of the horizontal tail
 data:geometry:wing:aspect_ratio || wing aspect ratio
 data:geometry:wing:kink:span_ratio || ratio (Y-position of kink)/(semi-span)
 data:geometry:wing:sweep_25 || sweep angle at 25% chord of wing
