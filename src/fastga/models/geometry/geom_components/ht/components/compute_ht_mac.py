@@ -15,13 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import math
-
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-# TODO: it would be good to have a function to compute MAC for HT, VT and WING
-class ComputeHTmacFD(ExplicitComponent):
+class ComputeHTMacFD(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
@@ -86,7 +85,7 @@ class ComputeHTmacFD(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
 
 
-class ComputeHTmacFL(ExplicitComponent):
+class ComputeHTMacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP distance computed).
@@ -99,7 +98,9 @@ class ComputeHTmacFL(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:tip:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
+        )
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
         self.add_output("data:geometry:horizontal_tail:MAC:length", units="m")
@@ -116,7 +117,7 @@ class ComputeHTmacFL(ExplicitComponent):
         b_h = inputs["data:geometry:horizontal_tail:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
         tail_type = inputs["data:geometry:has_T_tail"]
-        x_vt_tip = inputs["data:geometry:vertical_tail:tip:x"]
+        x_vt_tip = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:absolute"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         tmp = (

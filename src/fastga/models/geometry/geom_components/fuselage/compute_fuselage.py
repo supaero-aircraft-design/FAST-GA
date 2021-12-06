@@ -16,20 +16,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from openmdao.core.group import Group
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .components import (
-    ComputeFuselageWetArea,
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
 )
-
+from .constants import SUBMODEL_FUSELAGE_WET_AREA
 from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION
 
 
 class ComputeFuselageAlternate(Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -45,7 +46,7 @@ class ComputeFuselageAlternate(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            ComputeFuselageWetArea(fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
+            RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
             promotes=["*"],
         )
 
@@ -53,7 +54,6 @@ class ComputeFuselageAlternate(Group):
 class ComputeFuselageLegacy(Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -69,6 +69,6 @@ class ComputeFuselageLegacy(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            ComputeFuselageWetArea(fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION]),
+            RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
             promotes=["*"],
         )

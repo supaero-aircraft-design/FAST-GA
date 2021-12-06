@@ -23,7 +23,10 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
 )
-from ..geom_components.fuselage.components.compute_fuselage_wet_area import ComputeFuselageWetArea
+from ..geom_components.fuselage.components.compute_fuselage_wet_area import (
+    ComputeFuselageWetArea,
+    ComputeFuselageWetAreaFLOPS,
+)
 from ..geom_components.wing.components import (
     ComputeWingB50,
     ComputeWingL1AndL4,
@@ -37,7 +40,8 @@ from ..geom_components.wing.components import (
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
-    ComputeHTmacFD,
+    ComputeHTMacFD,
+    ComputeHTMacFL,
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
@@ -155,16 +159,36 @@ def test_compute_ht_mac():
     """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTmacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFD()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTmacFD(), ivc)
+    problem = run_system(ComputeHTMacFD(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
     ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
     assert ht_x0 == pytest.approx(0.065, abs=1e-3)
     ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
     assert ht_y0 == pytest.approx(0.943, abs=1e-3)
+
+
+def test_compute_ht_mac_fl():
+    """Tests computation of the horizontal tail mac"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFL()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTMacFL(), ivc)
+    length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
+    assert length == pytest.approx(0.983, abs=1e-3)
+    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
+    assert ht_x0 == pytest.approx(0.065, abs=1e-3)
+    ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
+    assert ht_y0 == pytest.approx(0.943, abs=1e-3)
+    lp_ht = problem.get_val(
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
+    )
+    assert lp_ht == pytest.approx(4.93, abs=1e-3)
 
 
 def test_compute_ht_sweep():
@@ -275,16 +299,25 @@ def test_compute_fuselage_basic():
 def test_fuselage_wet_area():
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea(fuselage_wet_area=0.0)),
+        list_inputs(ComputeFuselageWetArea()),
         __file__,
         XML_FILE,
     )
 
-    problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=0.0), ivc)
+    problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(29.630, abs=1e-3)
 
-    problem = run_system(ComputeFuselageWetArea(fuselage_wet_area=1.0), ivc)
+
+def test_fuselage_wet_area_flops():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageWetAreaFLOPS()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(27.213, abs=1e-3)
 

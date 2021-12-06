@@ -1,7 +1,6 @@
 """
-    Estimation of fuselage wet area.
+Estimation of fuselage wet area.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,20 +19,22 @@ import math
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.options import FUSELAGE_WET_AREA_OPTION
+from ..constants import SUBMODEL_FUSELAGE_WET_AREA
+
+RegisterSubmodel.active_models[
+    SUBMODEL_FUSELAGE_WET_AREA
+] = "fastga.submodel.geometry.fuselage.wet_area.legacy"
 
 
+@RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy")
 class ComputeFuselageWetArea(ExplicitComponent):
 
-    """Fuselage wet area estimation, based on the option it can either be determined based on :
-    - a simple geometric description of the fuselage one cone at the front a cylinder in the middle and a cone at the
-    back
-    - Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization System Weights Estimation
-    Method." (2017). Equation 61"""
-
-    def initialize(self):
-        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
+    """Fuselage wet area estimation, based on :
+    - a simple geometric description of the fuselage one cone at the front a cylinder in the middle
+    and a cone at the back.
+    """
 
     def setup(self):
 
@@ -55,17 +56,43 @@ class ComputeFuselageWetArea(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
-        if self.options[FUSELAGE_WET_AREA_OPTION] == 1.0:
-            # Using the formula from The Flight Optimization System Weights Estimation Method
-            fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-            wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
-        else:
-            # Using the simple geometric description
-            fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-            cyl_length = fus_length - lav - lar
-            wet_area_nose = 2.45 * fus_dia * lav
-            wet_area_cyl = math.pi * fus_dia * cyl_length
-            wet_area_tail = 2.3 * fus_dia * lar
-            wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
+        # Using the simple geometric description
+        fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
+        cyl_length = fus_length - lav - lar
+        wet_area_nose = 2.45 * fus_dia * lav
+        wet_area_cyl = math.pi * fus_dia * cyl_length
+        wet_area_tail = 2.3 * fus_dia * lar
+        wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
+
+        outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
+
+
+@RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops")
+class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
+
+    """Fuselage wet area estimation, determined based on :
+    - Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization
+    System Weights Estimation Method." (2017). Equation 61.
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+
+        self.add_output("data:geometry:fuselage:wet_area", units="m**2")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        b_f = inputs["data:geometry:fuselage:maximum_width"]
+        h_f = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+
+        # Using the formula from The Flight Optimization System Weights Estimation Method
+        fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
+        wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus

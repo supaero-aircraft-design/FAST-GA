@@ -15,10 +15,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.explicitcomponent import ExplicitComponent
 import numpy as np
 
+from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_HT_WET_EFFICIENCY
+
+
+@RegisterSubmodel(
+    SUBMODEL_HT_WET_EFFICIENCY, "fastga.submodel.geometry.horizontal_tail.efficiency.legacy"
+)
 class ComputeHTEfficiency(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail dynamic pressure reduction due to geometric positioning"""

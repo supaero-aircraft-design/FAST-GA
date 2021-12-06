@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
+"""FAST - Copyright (c) 2016 ONERA ISAE. """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -48,14 +46,13 @@ class GeometryFixedFuselage(om.Group):
       - wing dimensions are computed from global parameters (area, taper ratio...)
       - tail planes are dimensioned from HQ requirements
 
-    The hypothesis done is a fixed rear_length that fixes fuselage length leading to tail-wing distance changes when
-    wing position change. This results in a mainly-linear behaviour on the static margin derivative relative to wing
-    position.
+    The hypothesis done is a fixed rear_length that fixes fuselage length leading to tail-wing
+    distance changes when wing position change. This results in a mainly-linear behaviour on the
+    static margin derivative relative to wing position.
     """
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -65,7 +62,6 @@ class GeometryFixedFuselage(om.Group):
             "compute_fuselage",
             ComputeFuselageAlternate(
                 cabin_sizing=self.options[CABIN_SIZING_OPTION],
-                fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION],
                 propulsion_id=self.options["propulsion_id"],
             ),
             promotes=["*"],
@@ -94,13 +90,13 @@ class GeometryFixedTailDistance(om.Group):
       - wing dimensions are computed from global parameters (area, taper ratio...)
       - tail planes are dimensioned from HQ requirements
 
-    The hypothesis done is a fixed tail-wing distance leading to fuselage variation (rear_length) when wing position
-    changes. This results in a highly non-linear behaviour on the static margin derivative relative to wing position.
+    The hypothesis done is a fixed tail-wing distance leading to fuselage variation (rear_length)
+    when wing position changes. This results in a highly non-linear behaviour on the static
+    margin derivative relative to wing position.
     """
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(FUSELAGE_WET_AREA_OPTION, types=float, default=0.0)
         self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -112,7 +108,6 @@ class GeometryFixedTailDistance(om.Group):
             "compute_fuselage",
             ComputeFuselageLegacy(
                 cabin_sizing=self.options[CABIN_SIZING_OPTION],
-                fuselage_wet_area=self.options[FUSELAGE_WET_AREA_OPTION],
                 propulsion_id=self.options["propulsion_id"],
             ),
             promotes=["*"],

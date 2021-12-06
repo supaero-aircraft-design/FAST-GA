@@ -1,6 +1,4 @@
-"""
-Estimation of horizontal tail geometry (components).
-"""
+"""Constants for the fuselage geometry submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,9 +12,4 @@ Estimation of horizontal tail geometry (components).
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_ht_chords import ComputeHTChord
-from .compute_ht_distance import ComputeHTDistance
-from .compute_ht_mac import ComputeHTMacFD, ComputeHTMacFL
-from .compute_ht_sweep import ComputeHTSweep
-from .compute_ht_wet_area import ComputeHTWetArea
-from .compute_ht_efficiency import ComputeHTEfficiency
+SUBMODEL_FUSELAGE_WET_AREA = "submodel.geometry.fuselage.wet_area"

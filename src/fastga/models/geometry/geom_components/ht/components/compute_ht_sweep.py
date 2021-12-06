@@ -16,11 +16,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from ..constants import SUBMODEL_HT_SWEEP
 
 
+@RegisterSubmodel(SUBMODEL_HT_SWEEP, "fastga.submodel.geometry.horizontal_tail.sweep.legacy")
 class ComputeHTSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail sweeps and aspect ratio estimation"""

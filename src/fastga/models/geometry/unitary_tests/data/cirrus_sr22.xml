@@ -64,6 +64,7 @@
           <y units="m" is_input="False">0.8801431495764958<!--Y-position of mean aerodynamic chord of horizontal tail--></y>
           <at25percent>
             <x>
+              <absolute units="m">6.9</absolute>
               <from_wingMAC25 units="m" is_input="True">4.0<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
               <local units="m" is_input="False">0.10015051806445427<!--X-position of the 25% of mean aerodynamic chord of horizontal tail w.r.t. leading edge of root chord--></local>
             </x>
