@@ -319,7 +319,11 @@ def test_compute_fuselage_basic():
 
 def test_fuselage_wet_area():
 
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWetArea()), __file__, XML_FILE,)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageWetArea()),
+        __file__,
+        XML_FILE,
+    )
 
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
@@ -328,7 +332,11 @@ def test_fuselage_wet_area():
 
 def test_fuselage_wet_area_flops():
 
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWetAreaFLOPS()), __file__, XML_FILE,)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageWetAreaFLOPS()),
+        __file__,
+        XML_FILE,
+    )
 
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
