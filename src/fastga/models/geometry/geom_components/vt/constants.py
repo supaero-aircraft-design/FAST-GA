@@ -1,6 +1,4 @@
-"""
-Estimation of vertical tail geometry (components)
-"""
+"""Constants for the vertical tail geometry submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,7 +12,6 @@ Estimation of vertical tail geometry (components)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_vt_chords import ComputeVTChords
-from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
-from .compute_vt_sweep import ComputeVTSweep
-from .compute_vt_wet_area import ComputeVTWetArea
+SUBMODEL_VT_CHORD = "submodel.geometry.vertical_tail.chord"
+SUBMODEL_VT_SWEEP = "submodel.geometry.vertical_tail.sweep"
+SUBMODEL_VT_WET_AREA = "submodel.geometry.vertical_tail.wet_area"

@@ -113,6 +113,7 @@
           <z units="m" is_input="False">0.6721826166977168<!--Z-position of mean aerodynamic chord of vertical tail--></z>
           <at25percent>
             <x>
+              <absolute units="m">7.81</absolute>
               <from_wingMAC25 units="m" is_input="False">4.2947967322988125<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
               <local units="m" is_input="False">0.45378167538049013<!--X-position of the 25% of mean aerodynamic chord of vertical tail w.r.t. leading edge of root chord--></local>
             </x>

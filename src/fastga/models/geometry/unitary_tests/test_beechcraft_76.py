@@ -48,7 +48,8 @@ from ..geom_components.ht.components import (
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
-    ComputeVTmacFD,
+    ComputeVTMacFD,
+    ComputeVTMacFL,
     ComputeVTSweep,
     ComputeVTWetArea,
 )
@@ -85,10 +86,10 @@ def test_compute_vt_mac():
     """Tests computation of the vertical tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTmacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFD()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTmacFD(), ivc)
+    problem = run_system(ComputeVTMacFD(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
     vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
@@ -99,6 +100,26 @@ def test_compute_vt_mac():
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert vt_lp == pytest.approx(4.294, abs=1e-3)
+
+
+def test_compute_vt_mac_fl():
+    """Tests computation of the horizontal tail mac"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFL()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTMacFL(), ivc)
+    length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
+    assert length == pytest.approx(1.237, abs=1e-3)
+    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+    assert vt_x0 == pytest.approx(0.453, abs=1e-3)
+    vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
+    assert vt_z0 == pytest.approx(0.672, abs=1e-3)
+    lp_vt = problem.get_val(
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
+    )
+    assert lp_vt == pytest.approx(4.808, abs=1e-3)
 
 
 def test_compute_vt_sweep():
@@ -298,11 +319,7 @@ def test_compute_fuselage_basic():
 
 def test_fuselage_wet_area():
 
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetArea()),
-        __file__,
-        XML_FILE,
-    )
+    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWetArea()), __file__, XML_FILE,)
 
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
@@ -311,11 +328,7 @@ def test_fuselage_wet_area():
 
 def test_fuselage_wet_area_flops():
 
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageWetAreaFLOPS()),
-        __file__,
-        XML_FILE,
-    )
+    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWetAreaFLOPS()), __file__, XML_FILE,)
 
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]

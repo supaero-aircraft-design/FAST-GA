@@ -117,7 +117,7 @@ class ComputeHTMacFL(ExplicitComponent):
         b_h = inputs["data:geometry:horizontal_tail:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
         tail_type = inputs["data:geometry:has_T_tail"]
-        x_vt_tip = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:absolute"]
+        x_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:absolute"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
 
         tmp = (
@@ -134,7 +134,7 @@ class ComputeHTMacFL(ExplicitComponent):
         y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
         if tail_type == 1.0:
-            ht_lp = (x_vt_tip + x0_ht) - x_wing25
+            ht_lp = (x_ht + x0_ht) - x_wing25
         else:
             ht_lp = (fus_length - root_chord + x0_ht) - x_wing25
 

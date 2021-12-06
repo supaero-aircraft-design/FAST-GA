@@ -17,8 +17,12 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from ..constants import SUBMODEL_VT_CHORD
 
 
+@RegisterSubmodel(SUBMODEL_VT_CHORD, "fastga.submodel.geometry.vertical_tail.chord.legacy")
 class ComputeVTChords(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail chords and span estimation"""

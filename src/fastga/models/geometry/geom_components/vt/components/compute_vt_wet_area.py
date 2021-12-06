@@ -1,7 +1,4 @@
-"""
-    Estimation of vertical tail wet area
-"""
-
+"""Estimation of vertical tail wet area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,9 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from ..constants import SUBMODEL_VT_WET_AREA
 
 
+@RegisterSubmodel(SUBMODEL_VT_WET_AREA, "fastga.submodel.geometry.vertical_tail.wet_area.legacy")
 class ComputeVTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail wet area estimation"""

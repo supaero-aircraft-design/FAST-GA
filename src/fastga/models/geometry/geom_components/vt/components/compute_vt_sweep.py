@@ -1,7 +1,4 @@
-"""
-    Estimation of vertical tail sweeps.
-"""
-
+"""Estimation of vertical tail sweeps."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,15 +13,19 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from ..constants import SUBMODEL_VT_SWEEP
 
 
 # TODO: HT and VT components are similar --> factorize
+@RegisterSubmodel(SUBMODEL_VT_SWEEP, "fastga.submodel.geometry.vertical_tail.sweep.legacy")
 class ComputeVTSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Vertical tail sweeps estimation"""
+    """Vertical tail sweeps estimation."""
 
     def setup(self):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
