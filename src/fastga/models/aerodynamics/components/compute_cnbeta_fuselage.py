@@ -1,6 +1,4 @@
-"""
-    Estimation of yawing moment due to side-slip.
-"""
+"""Estimation of yawing moment due to side-slip."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -18,15 +16,23 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CN_BETA_FUSELAGE
+
+
+@RegisterSubmodel(
+    SUBMODEL_CN_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.yawing_moment.legacy"
+)
 class ComputeCnBetaFuselage(ExplicitComponent):
     """
     Yawing moment due to side-slip estimation
 
-    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-    Astronautics, Inc., 2012. Sixth Edition, equation 16.50
+    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of
+    Aeronautics and Astronautics, Inc., 2012. Sixth Edition, equation 16.50.
     """
 
     def setup(self):

@@ -17,14 +17,7 @@ from openmdao.core.group import Group
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.components.compute_L_D_max import ComputeLDMax
-from fastga.models.aerodynamics.components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from fastga.models.aerodynamics.components.hinge_moments_elevator import (
-    Compute2DHingeMomentsTail,
-    Compute3DHingeMomentsTail,
-)
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
-from fastga.models.aerodynamics.components import ComputeFuselagePitchingMoment
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
@@ -33,7 +26,14 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from .constants import SUBMODEL_CD0, SUBMODEL_CL_ALPHA_VT, SUBMODEL_HINGE_MOMENTS_TAIL
+from .constants import (
+    SUBMODEL_CD0,
+    SUBMODEL_CL_ALPHA_VT,
+    SUBMODEL_HINGE_MOMENTS_TAIL,
+    SUBMODEL_MAX_L_D,
+    SUBMODEL_CN_BETA_FUSELAGE,
+    SUBMODEL_CM_ALPHA_FUSELAGE,
+)
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -134,9 +134,17 @@ class AerodynamicsHighSpeed(Group):
             RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
-        self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
-        self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
-        self.add_subsystem("cmAlpha_fuse", ComputeFuselagePitchingMoment(), promotes=["*"])
+        self.add_subsystem(
+            "L_D_max", RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cnBeta_fuse", RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cmAlpha_fuse",
+            RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
+            promotes=["*"],
+        )
 
         option_high_speed = {"low_speed_aero": False}
         self.add_subsystem(
