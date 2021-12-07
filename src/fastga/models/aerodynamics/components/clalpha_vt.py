@@ -1,6 +1,4 @@
-"""
-    Estimation of vertical tail 3D lift coefficient.
-"""
+"""Estimation of vertical tail 3D lift coefficient."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,17 +15,26 @@
 import math
 
 import numpy as np
+
 import scipy.interpolate as interp
+
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .figure_digitization import FigureDigitization
 
+from ..constants import SUBMODEL_CL_ALPHA_VT
 
+
+@RegisterSubmodel(
+    SUBMODEL_CL_ALPHA_VT, "fastga.submodel.aerodynamics.vertical_tail.lift_curve_slope.legacy"
+)
 class ComputeClAlphaVT(FigureDigitization):
     """Vertical tail lift coefficient estimation
 
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
-    Characteristics. DARcorporation, 1985. Equation (8.22) applied with the geometric characteristics of the VTP and
-    an effective aspect ratio different from the geometric one obtained as  described in section 10.2.4.1
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DARcorporation, 1985. Equation (8.22) applied with the
+    geometric characteristics of the VTP and an effective aspect ratio different from the
+    geometric one obtained as  described in section 10.2.4.1.
     """
 
     def initialize(self):
@@ -86,7 +93,8 @@ class ComputeClAlphaVT(FigureDigitization):
 
         avg_fus_depth = np.sqrt(w_max * h_max) * root_chord_vt / (2.0 * l_ar)
 
-        # Compute the effect of fuselage and HTP as end plates which gives a different effective aspect ratio
+        # Compute the effect of fuselage and HTP as end plates which gives a different effective
+        # aspect ratio
         k_ar_fuselage = self.k_ar_fuselage(taper_ratio_vt, span_vt, avg_fus_depth)
 
         k_ar_fuselage_ht = 1.7 if tail_type == 1.0 else 1.2

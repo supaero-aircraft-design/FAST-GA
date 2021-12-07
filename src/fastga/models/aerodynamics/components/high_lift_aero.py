@@ -1,6 +1,4 @@
-"""
-Computation of lift and drag increment due to high-lift devices.
-"""
+"""Computation of lift and drag increment due to high-lift devices."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,13 +16,20 @@ import numpy as np
 import math
 
 from typing import Union, Tuple
+
 from scipy import interpolate
+
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .figure_digitization import FigureDigitization
 
+from ..constants import SUBMODEL_DELTA_HIGH_LIFT
 
+
+@RegisterSubmodel(SUBMODEL_DELTA_HIGH_LIFT, "fastga.submodel.aerodynamics.high_lift.delta.legacy")
 class ComputeDeltaHighLift(FigureDigitization):
     """
-    Provides lift and drag increments due to high-lift devices
+    Provides lift and drag increments due to high-lift devices.
     """
 
     def __init__(self, **kwargs):

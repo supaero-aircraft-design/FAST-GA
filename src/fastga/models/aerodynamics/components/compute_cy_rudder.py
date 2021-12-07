@@ -1,7 +1,4 @@
-"""
-    Estimation of yawing moment du to the rudder.
-"""
-
+"""Estimation of yawing moment du to the rudder."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,9 +14,14 @@
 
 import numpy as np
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .figure_digitization import FigureDigitization
 
+from ..constants import SUBMODEL_CY_RUDDER
 
+
+@RegisterSubmodel(SUBMODEL_CY_RUDDER, "fastga.submodel.aerodynamics.rudder.yawing_moment.legacy")
 class ComputeCyDeltaRudder(FigureDigitization):
     """
     Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam

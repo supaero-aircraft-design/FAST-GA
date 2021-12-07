@@ -17,13 +17,6 @@ from openmdao.core.group import Group
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.components.compute_cl_extreme import ComputeExtremeCL
-from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
-from fastga.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
-from fastga.models.aerodynamics.components.airfoil_lift_curve_slope import (
-    ComputeAirfoilLiftCurveSlope,
-)
-from fastga.models.aerodynamics.components.compute_cy_rudder import ComputeCyDeltaRudder
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
@@ -32,7 +25,14 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from .constants import SUBMODEL_CD0
+from .constants import (
+    SUBMODEL_CD0,
+    SUBMODEL_AIRFOIL_LIFT_SLOPE,
+    SUBMODEL_DELTA_HIGH_LIFT,
+    SUBMODEL_CL_EXTREME_CLEAN,
+    SUBMODEL_CL_ALPHA_VT,
+    SUBMODEL_CY_RUDDER,
+)
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -89,26 +89,42 @@ class AerodynamicsLowSpeed(Group):
             promotes=["*"],
         )
 
+        options_airfoil = {
+            "wing_airfoil_file": self.options["wing_airfoil"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+            "vtp_airfoil_file": self.options["vtp_airfoil"],
+        }
         self.add_subsystem(
             "airfoil_lift_slope",
-            ComputeAirfoilLiftCurveSlope(
-                wing_airfoil_file=self.options["wing_airfoil"],
-                htp_airfoil_file=self.options["htp_airfoil"],
-                vtp_airfoil_file=self.options["htp_airfoil"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
             promotes=["*"],
         )
-        self.add_subsystem("high_lift", ComputeDeltaHighLift(), promotes=["*"])
+
+        self.add_subsystem(
+            "high_lift", RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
+        )
+
+        options_cl_extreme = {
+            "wing_airfoil_file": self.options["wing_airfoil"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+        }
         self.add_subsystem(
             "Cl_extreme",
-            ComputeExtremeCL(
-                wing_airfoil_file=self.options["wing_airfoil"],
-                htp_airfoil_file=self.options["htp_airfoil"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME_CLEAN, options=options_cl_extreme),
             promotes=["*"],
         )
-        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(low_speed_aero=True), promotes=["*"])
-        self.add_subsystem("Cy_Delta_rudder", ComputeCyDeltaRudder(), promotes=["*"])
+
+        option_low_speed = {"low_speed_aero": True}
+        self.add_subsystem(
+            "clAlpha_vt",
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_low_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "Cy_Delta_rudder", RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER), promotes=["*"]
+        )
+
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp",

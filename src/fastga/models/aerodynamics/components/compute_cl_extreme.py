@@ -1,7 +1,4 @@
-"""
-    Estimation of the 3D maximum lift coefficients for wing and tail
-"""
-
+"""Estimation of the 3D maximum lift coefficients for wing and tail."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,21 +13,25 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.group import Group
-from openmdao.core.explicitcomponent import ExplicitComponent
+
+import openmdao.api as om
+
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN
 
 
-class ComputeExtremeCL(Group):
+@RegisterSubmodel(
+    SUBMODEL_CL_EXTREME_CLEAN, "fastga.submodel.aerodynamics.extreme_lift_coefficient.clean.legacy"
+)
+class ComputeExtremeCL(om.Group):
     """
     Computes maximum CL of the aircraft in landing/take-off conditions.
 
-    3D CL is deduced from 2D CL asymptote and the hypothesis that the max 3D lift corresponds to the lift at which one
-    section of the wing goes out of the linear range in its lift curve slope. Same hypothesis for the HTP
-    Contribution of high-lift devices is done apart and added.
-
+    3D CL is deduced from 2D CL asymptote and the hypothesis that the max 3D lift corresponds to
+    the lift at which one section of the wing goes out of the linear range in its lift curve
+    slope. Same hypothesis for the HTP Contribution of high-lift devices is done apart and added.
     """
 
     def initialize(self):
@@ -148,7 +149,7 @@ class ComputeExtremeCL(Group):
         )
 
 
-class ComputeLocalReynolds(ExplicitComponent):
+class ComputeLocalReynolds(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
@@ -188,7 +189,7 @@ class ComputeLocalReynolds(ExplicitComponent):
         outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
-class ComputeWing3DExtremeCL(ExplicitComponent):
+class ComputeWing3DExtremeCL(om.ExplicitComponent):
     """
     Computes wing 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition
     """
@@ -255,7 +256,7 @@ class ComputeWing3DExtremeCL(ExplicitComponent):
         return y, cl
 
 
-class ComputeHtp3DExtremeCL(ExplicitComponent):
+class ComputeHtp3DExtremeCL(om.ExplicitComponent):
     """
     Computes HTP 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition
     """
@@ -315,9 +316,9 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         y_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_vector"]
 
-        # According to Gudmundsson section 23.3, a safety margin of 0.2 should be taken for the computation of the
-        # HTP stall but we already do something similar by taking as the highest value, the first value having an error
-        # of 10% from linear behavior
+        # According to Gudmundsson section 23.3, a safety margin of 0.2 should be taken for the
+        # computation of the HTP stall but we already do something similar by taking as the
+        # highest value, the first value having an error of 10% from linear behavior
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
         y_vector = np.linspace(
             max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
@@ -363,7 +364,7 @@ class ComputeHtp3DExtremeCL(ExplicitComponent):
         return y, cl
 
 
-class ComputeAircraftMaxCl(ExplicitComponent):
+class ComputeAircraftMaxCl(om.ExplicitComponent):
     """
     Add high-lift contribution (flaps)
     """

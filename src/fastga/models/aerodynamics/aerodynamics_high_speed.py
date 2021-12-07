@@ -19,7 +19,6 @@ from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.components.compute_L_D_max import ComputeLDMax
 from fastga.models.aerodynamics.components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
 from fastga.models.aerodynamics.components.hinge_moments_elevator import (
     Compute2DHingeMomentsTail,
     Compute3DHingeMomentsTail,
@@ -34,7 +33,7 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from .constants import SUBMODEL_CD0
+from .constants import SUBMODEL_CD0, SUBMODEL_CL_ALPHA_VT
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -138,7 +137,14 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
         self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
         self.add_subsystem("cmAlpha_fuse", ComputeFuselagePitchingMoment(), promotes=["*"])
-        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(), promotes=["*"])
+
+        option_high_speed = {"low_speed_aero": False}
+        self.add_subsystem(
+            "clAlpha_vt",
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
+            promotes=["*"],
+        )
+
         self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
         self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])
         if self.options["compute_slipstream"]:
