@@ -1,6 +1,4 @@
-"""
-Estimation of horizontal tail area.
-"""
+"""Estimation of horizontal tail area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,6 +15,7 @@ Estimation of horizontal tail area.
 import numpy as np
 import math
 import openmdao.api as om
+
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
@@ -25,16 +24,22 @@ from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.constants import EngineSetting
+
+from .constants import SUBMODEL_HT_AREA
 
 _ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
+@RegisterSubmodel(
+    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
+)
 class UpdateHTArea(om.Group):
     """
     Computes needed ht area to:
-      - have enough rotational power during take-off phase
-      - have enough rotational power during landing phase
+      - have enough rotational power during take-off phase.
+      - have enough rotational power during landing phase.
     """
 
     def initialize(self):
@@ -292,9 +297,7 @@ class HTPConstraints(om.ExplicitComponent):
 
 
 class _UpdateArea(HTPConstraints):
-    """
-    Computes area of horizontal tail plane (internal function)
-    """
+    """Computes area of horizontal tail plane (internal function)."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -352,13 +355,13 @@ class _UpdateArea(HTPConstraints):
         # Limiting cases: Rotating power at takeoff/landing, with the most
         # forward CG position. Returns maximum area.
 
-        # CASE1: TAKE-OFF ##############################################################################################
+        # CASE1: TAKE-OFF ##########################################################################
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of take-off minimum speed
         area_1 = self.takeoff_rotation(inputs)
 
-        # CASE2: LANDING ###############################################################################################
+        # CASE2: LANDING ###########################################################################
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of equivalent area
@@ -428,13 +431,13 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
 
         area_htp = inputs["data:geometry:horizontal_tail:area"]
 
-        # CASE1: TAKE-OFF ##############################################################################################
+        # CASE1: TAKE-OFF ##########################################################################
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of take-off minimum speed
         area_diff_1 = area_htp - self.takeoff_rotation(inputs)
 
-        # CASE2: LANDING ###############################################################################################
+        # CASE2: LANDING ###########################################################################
         # method extracted from Torenbeek 1982 p325
 
         # Calculation of equivalent area
