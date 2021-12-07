@@ -1,6 +1,4 @@
-"""
-    Estimation of total profile drag.
-"""
+"""Estimation of total profile drag."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,16 +13,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CD0_SUM
+
+
+@RegisterSubmodel(SUBMODEL_CD0_SUM, "fastga.submodel.aerodynamics.sum.cd0.legacy")
 class Cd0Total(ExplicitComponent):
     """
-    Profile drag estimation for the whole aircraft. It is the simple sum of all the profile drag since evey subpart was
-    computed with the wing area as a reference and the interaction are taken into account with interference factors
+    Profile drag estimation for the whole aircraft. It is the simple sum of all the profile drag
+    since every subpart was computed with the wing area as a reference and the interaction are
+    taken into account with interference factors
 
-    Based on : The drag build-up method in Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
-    Procedures. Butterworth-Heinemann, 2013.
+    Based on : The drag build-up method in Gudmundsson, Snorri. General aviation aircraft design:
+    Applied Methods and Procedures. Butterworth-Heinemann, 2013.
     """
 
     def initialize(self):

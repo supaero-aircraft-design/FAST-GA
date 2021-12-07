@@ -1,7 +1,4 @@
-"""
-    Estimation of the vertical tail profile drag
-"""
-
+"""Estimation of the vertical tail profile drag."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,18 +15,24 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CD0_VT
+
+
+@RegisterSubmodel(SUBMODEL_CD0_VT, "fastga.submodel.aerodynamics.vertical_tail.cd0.legacy")
 class Cd0VerticalTail(ExplicitComponent):
     """
     Profile drag estimation for the vertical tail
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     And :
-    Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and Astronautics, Inc.,
-    2012.
+    Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
+    Astronautics, Inc., 2012.
     """
 
     def initialize(self):

@@ -15,3 +15,13 @@ POLAR_POINT_COUNT = 150
 SPAN_MESH_POINT = 50
 MACH_NB_PTS = 5
 ENGINE_COUNT = 10
+
+SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
+SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"
+SUBMODEL_CD0_FUSELAGE = "submodel.aerodynamics.fuselage.cd0"
+SUBMODEL_CD0_HT = "submodel.aerodynamics.horizontal_tail.cd0"
+SUBMODEL_CD0_VT = "submodel.aerodynamics.vertical_tail.cd0"
+SUBMODEL_CD0_NACELLE = "submodel.aerodynamics.nacelle.cd0"
+SUBMODEL_CD0_LANDING_GEAR = "submodel.aerodynamics.landing_gear.cd0"
+SUBMODEL_CD0_OTHER = "submodel.aerodynamics.other.cd0"
+SUBMODEL_CD0_SUM = "submodel.aerodynamics.sum.cd0"

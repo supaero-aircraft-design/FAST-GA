@@ -1,7 +1,4 @@
-"""
-Estimation of the wing profile drag.
-"""
-
+"""Estimation of the wing profile drag."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,17 +15,23 @@ Estimation of the wing profile drag.
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
+
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.geometry.profiles.get_profile import get_profile
 
+from ..constants import SUBMODEL_CD0_WING
 
+
+@RegisterSubmodel(SUBMODEL_CD0_WING, "fastga.submodel.aerodynamics.wing.cd0.legacy")
 class Cd0Wing(ExplicitComponent):
     """
     Profile drag estimation for the wing
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     """
 
     def initialize(self):

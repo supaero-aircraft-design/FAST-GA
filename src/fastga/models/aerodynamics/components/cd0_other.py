@@ -1,7 +1,4 @@
-"""
-    Estimation of the profile drag of miscellaneous items.
-"""
-
+"""Estimation of the profile drag of miscellaneous items."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,15 +13,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CD0_OTHER
+
+
+@RegisterSubmodel(SUBMODEL_CD0_OTHER, "fastga.submodel.aerodynamics.other.cd0.legacy")
 class Cd0Other(ExplicitComponent):
     """
     Profile drag estimation for miscellaneous items such as cowling, cooling and various component
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     """
 
     def initialize(self):
@@ -57,7 +60,8 @@ class Cd0Other(ExplicitComponent):
         cd0_cooling = (
             0.0005525  # (7.054E-6 / wing_area * mtow) FIXME: should come from propulsion model...
         )
-        # Gudmundsson p739. Sum of other components (not calculated here), cx_other*wing_area assumed typical
+        # Gudmundsson p739. Sum of other components (not calculated here), cx_other*wing_area
+        # assumed typical
         cd0_components = 0.0253 / wing_area
 
         if self.options["low_speed_aero"]:

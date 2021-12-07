@@ -1,8 +1,5 @@
-"""
-    Estimation of the nacelle profile drag
-"""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
+"""Estimation of the nacelle profile drag."""
+#  Thi file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,21 +13,27 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 import warnings
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
+from ..constants import SUBMODEL_CD0_NACELLE
 
+
+@RegisterSubmodel(SUBMODEL_CD0_NACELLE, "fastga.submodel.aerodynamics.nacelle.cd0.legacy")
 class Cd0Nacelle(ExplicitComponent):
     """
     Profile drag estimation for the engine nacelle
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     """
 
     def __init__(self, **kwargs):

@@ -1,7 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
-
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,7 +14,9 @@
 
 from openmdao.core.group import Group
 
-from fastga.models.aerodynamics.components.cd0 import Cd0
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+from fastoad.module_management.constants import ModelDomain
+
 from fastga.models.aerodynamics.components.compute_cl_extreme import ComputeExtremeCL
 from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
 from fastga.models.aerodynamics.components.high_lift_aero import ComputeDeltaHighLift
@@ -33,15 +32,12 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
+from .constants import SUBMODEL_CD0
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsLowSpeed(Group):
-    """
-    Models for low speed aerodynamics.
-    """
+    """Models for low speed aerodynamics."""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -80,16 +76,19 @@ class AerodynamicsLowSpeed(Group):
                 ),
                 promotes=["*"],
             )
+
+        options_cd0 = {
+            "low_speed_aero": True,
+            "wing_airfoil_file": self.options["wing_airfoil"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+            "propulsion_id": self.options["propulsion_id"],
+        }
         self.add_subsystem(
             "Cd0_all",
-            Cd0(
-                low_speed_aero=True,
-                wing_airfoil_file=self.options["wing_airfoil"],
-                htp_airfoil_file=self.options["htp_airfoil"],
-                propulsion_id=self.options["propulsion_id"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
+
         self.add_subsystem(
             "airfoil_lift_slope",
             ComputeAirfoilLiftCurveSlope(
