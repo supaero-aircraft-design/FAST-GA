@@ -13,17 +13,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
 import numpy as np
 
 from scipy.integrate import trapz
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from fastga.models.aerodynamics.constants import ENGINE_COUNT
+
+from ...constants import SUBMODEL_MFW
 
 POINTS_NB_WING = 50
 
 
+@RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
 class ComputeMFWAdvanced(ExplicitComponent):
     """
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering

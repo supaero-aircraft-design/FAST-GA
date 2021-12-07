@@ -1,7 +1,4 @@
-"""
-    Estimation of geometry of fuselage part A - Cabin (Commercial).
-"""
-
+"""Estimation of geometry of fuselage part A - Cabin (Commercial)."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -24,8 +21,10 @@ from .components import (
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
 )
+
 from .constants import SUBMODEL_FUSELAGE_WET_AREA
-from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION
+
+from fastga.models.options import CABIN_SIZING_OPTION
 
 
 class ComputeFuselageAlternate(Group):

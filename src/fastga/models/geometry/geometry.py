@@ -1,5 +1,4 @@
 """FAST - Copyright (c) 2016 ONERA ISAE. """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,27 +14,29 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.geometry.geom_components import (
-    ComputeTotalArea,
     ComputeHorizontalTailGeometryFD,
     ComputeHorizontalTailGeometryFL,
-    ComputeNacelleGeometry,
-    ComputeLGGeometry,
     ComputeVerticalTailGeometryFD,
     ComputeVerticalTailGeometryFL,
-    ComputeWingGeometry,
-    ComputeMFWSimple,
-    ComputeMFWAdvanced,
 )
 from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )
 
-from fastga.models.options import CABIN_SIZING_OPTION, FUSELAGE_WET_AREA_OPTION, MFW_COMPUTATION
+from fastga.models.options import CABIN_SIZING_OPTION
+
+from .constants import (
+    SUBMODEL_WING_GEOMETRY,
+    SUBMODEL_NACELLE_GEOMETRY,
+    SUBMODEL_LANDING_GEAR_GEOMETRY,
+    SUBMODEL_MFW,
+    SUBMODEL_AIRCRAFT_WET_AREA,
+)
 
 
 @RegisterOpenMDAOSystem("fastga.geometry.alternate", domain=ModelDomain.GEOMETRY)
@@ -53,7 +54,6 @@ class GeometryFixedFuselage(om.Group):
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -68,18 +68,28 @@ class GeometryFixedFuselage(om.Group):
         )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFL(), promotes=["*"])
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFL(), promotes=["*"])
-        self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
+        self.add_subsystem(
+            "compute_wing", RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY), promotes=["*"]
+        )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle",
-            ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
-        if self.options[MFW_COMPUTATION] == 0.0:
-            self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
-        else:
-            self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])
-        self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem(
+            "compute_lg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_GEOMETRY),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_tank", RegisterSubmodel.get_submodel(SUBMODEL_MFW), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_total_area",
+            RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_WET_AREA),
+            promotes=["*"],
+        )
 
 
 @RegisterOpenMDAOSystem("fastga.geometry.legacy", domain=ModelDomain.GEOMETRY)
@@ -97,7 +107,6 @@ class GeometryFixedTailDistance(om.Group):
 
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare(MFW_COMPUTATION, types=float, default=0.0)
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
@@ -112,15 +121,25 @@ class GeometryFixedTailDistance(om.Group):
             ),
             promotes=["*"],
         )
-        self.add_subsystem("compute_wing", ComputeWingGeometry(), promotes=["*"])
+        self.add_subsystem(
+            "compute_wing", RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY), promotes=["*"]
+        )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle",
-            ComputeNacelleGeometry(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("compute_lg", ComputeLGGeometry(), promotes=["*"])
-        if self.options[MFW_COMPUTATION] == 0.0:
-            self.add_subsystem("compute_tank", ComputeMFWSimple(), promotes=["*"])
-        else:
-            self.add_subsystem("compute_tank", ComputeMFWAdvanced(), promotes=["*"])
-        self.add_subsystem("compute_total_area", ComputeTotalArea(), promotes=["*"])
+        self.add_subsystem(
+            "compute_lg",
+            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_GEOMETRY),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_tank", RegisterSubmodel.get_submodel(SUBMODEL_MFW), promotes=["*"]
+        )
+        self.add_subsystem(
+            "compute_total_area",
+            RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_WET_AREA),
+            promotes=["*"],
+        )

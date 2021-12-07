@@ -16,7 +16,12 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
+
+
+@RegisterSubmodel(SUBMODEL_LANDING_GEAR_GEOMETRY, "fastga.submodel.geometry.landing_gear.legacy")
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """

@@ -19,12 +19,16 @@ import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
+from ...constants import SUBMODEL_NACELLE_GEOMETRY
 
+
+@RegisterSubmodel(SUBMODEL_NACELLE_GEOMETRY, "fastga.submodel.geometry.nacelle.legacy")
 class ComputeNacelleGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""

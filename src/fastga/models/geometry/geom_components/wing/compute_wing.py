@@ -27,8 +27,10 @@ from .constants import (
     SUBMODEL_WING_SWEEP,
     SUBMODEL_WING_WET_AREA,
 )
+from ...constants import SUBMODEL_WING_GEOMETRY
 
 
+@RegisterSubmodel(SUBMODEL_WING_GEOMETRY, "fastga.submodel.geometry.wing.legacy")
 class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
     """Wing geometry estimation."""
