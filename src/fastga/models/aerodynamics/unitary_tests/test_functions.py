@@ -1,4 +1,4 @@
-"""Test module for aerodynamics groups"""
+"""Test module for aerodynamics groups."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -44,6 +44,7 @@ from fastga.models.aerodynamics.components import (
     ComputeDeltaHighLift,
     Compute2DHingeMomentsTail,
     Compute3DHingeMomentsTail,
+    ComputeHingeMomentsTail,
     ComputeMachInterpolation,
     ComputeCyDeltaRudder,
     ComputeClAlphaVT,
@@ -99,8 +100,8 @@ def reshape_polar(cl, cdp):
 
 
 def polar_result_transfer():
-    # Put saved polar results in a temporary folder to activate Xfoil run and have repeatable results  [need writing
-    # permission]
+    # Put saved polar results in a temporary folder to activate Xfoil run and have repeatable
+    # results [need writing permission]
 
     tmp_folder = _create_tmp_directory()
 
@@ -119,7 +120,8 @@ def polar_result_transfer():
 
 
 def polar_result_retrieve(tmp_folder):
-    # Retrieve the polar results set aside during the test duration if there are some [need writing permission]
+    # Retrieve the polar results set aside during the test duration if there are some [need
+    # writing permission]
 
     files = glob.iglob(pth.join(tmp_folder.name, "*.csv"))
 
@@ -136,8 +138,8 @@ def polar_result_retrieve(tmp_folder):
                     )
                 else:
                     _LOGGER.info(
-                        "Cannot copy %s file to %s! Likely because the file already exists in the target directory"
-                        % (file, tmp_folder.name)
+                        "Cannot copy %s file to %s! Likely because the file already exists in the "
+                        "target directory " % (file, tmp_folder.name)
                     )
 
     tmp_folder.cleanup()
@@ -485,11 +487,11 @@ def comp_high_speed(
     cl0_wing: float,
     cl_alpha_wing: float,
     cm0: float,
-    coef_k_wing: float,
+    coeff_k_wing: float,
     cl0_htp: float,
     cl_alpha_htp: float,
     cl_alpha_htp_isolated: float,
-    coef_k_htp: float,
+    coeff_k_htp: float,
     cl_alpha_vector: np.ndarray,
     mach_vector: np.ndarray,
 ):
@@ -517,7 +519,7 @@ def comp_high_speed(
             )
             assert problem[
                 "data:aerodynamics:wing:cruise:induced_drag_coefficient"
-            ] == pytest.approx(coef_k_wing, abs=1e-4)
+            ] == pytest.approx(coeff_k_wing, abs=1e-4)
             assert problem["data:aerodynamics:horizontal_tail:cruise:CL0"] == pytest.approx(
                 cl0_htp, abs=1e-4
             )
@@ -529,7 +531,7 @@ def comp_high_speed(
             ) == pytest.approx(cl_alpha_htp_isolated, abs=1e-4)
             assert problem[
                 "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
-            ] == pytest.approx(coef_k_htp, abs=1e-4)
+            ] == pytest.approx(coeff_k_htp, abs=1e-4)
 
 
 def comp_low_speed(
@@ -538,11 +540,11 @@ def comp_low_speed(
     cl0_wing: float,
     cl_alpha_wing: float,
     cm0: float,
-    coef_k_wing: float,
+    coeff_k_wing: float,
     cl0_htp: float,
     cl_alpha_htp: float,
     cl_alpha_htp_isolated: float,
-    coef_k_htp: float,
+    coeff_k_htp: float,
     y_vector_wing: np.ndarray,
     cl_vector_wing: np.ndarray,
     chord_vector_wing: np.ndarray,
@@ -562,7 +564,7 @@ def comp_low_speed(
     ) == pytest.approx(cl_alpha_wing, abs=1e-3)
     assert problem["data:aerodynamics:wing:low_speed:CM0_clean"] == pytest.approx(cm0, abs=1e-4)
     assert problem["data:aerodynamics:wing:low_speed:induced_drag_coefficient"] == pytest.approx(
-        coef_k_wing, abs=1e-4
+        coeff_k_wing, abs=1e-4
     )
     assert problem["data:aerodynamics:horizontal_tail:low_speed:CL0"] == pytest.approx(
         cl0_htp, abs=1e-4
@@ -575,7 +577,7 @@ def comp_low_speed(
     ) == pytest.approx(cl_alpha_htp_isolated, abs=1e-4)
     assert problem[
         "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"
-    ] == pytest.approx(coef_k_htp, abs=1e-4)
+    ] == pytest.approx(coeff_k_htp, abs=1e-4)
     y, cl = reshape_curve(
         problem.get_val("data:aerodynamics:wing:low_speed:Y_vector", "m"),
         problem["data:aerodynamics:wing:low_speed:CL_vector"],
@@ -620,6 +622,22 @@ def hinge_moment_3d(XML_FILE: str, ch_alpha: float, ch_delta: float):
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(Compute3DHingeMomentsTail(), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
+    ) == pytest.approx(ch_alpha, abs=1e-4)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
+    ) == pytest.approx(ch_delta, abs=1e-4)
+
+
+def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
+    """Tests tail hinge-moments complete computation!"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeHingeMomentsTail()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHingeMomentsTail(), ivc)
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
     ) == pytest.approx(ch_alpha, abs=1e-4)

@@ -33,7 +33,7 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from .constants import SUBMODEL_CD0, SUBMODEL_CL_ALPHA_VT
+from .constants import SUBMODEL_CD0, SUBMODEL_CL_ALPHA_VT, SUBMODEL_HINGE_MOMENTS_TAIL
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -145,8 +145,9 @@ class AerodynamicsHighSpeed(Group):
             promotes=["*"],
         )
 
-        self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
-        self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])
+        self.add_subsystem(
+            "ch_ht", RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
+        )
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp",
