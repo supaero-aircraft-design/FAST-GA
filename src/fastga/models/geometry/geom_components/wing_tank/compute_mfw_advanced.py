@@ -1,7 +1,4 @@
-"""
-    Estimation of max fuel weight.
-"""
-
+"""Estimation of max fuel weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -38,7 +35,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
     "data:geometry:propulsion:tank:y_ratio_tank_end" have to be determined as close to possible
     as the real aircraft quantities. The quantity "settings:geometry:fuel_tanks:depth" allows to
     calibrate the model for each aircraft. WARNING : If this class is updated, update_wing_area
-    wil have to be updated as well as it uses the same approach.
+    will have to be updated as well as it uses the same approach.
     """
 
     def setup(self):
@@ -90,8 +87,9 @@ class ComputeMFWAdvanced(ExplicitComponent):
         y_tank_end = semi_span * y_ratio_tank_end
         y_array = np.linspace(y_tank_beginning, y_tank_end, POINTS_NB_WING)
 
-        # Computation of the fuel volume available in one wing. The 0.85 coefficient represents the internal
-        # obstructions caused by the structural and system components within the tank, typical of integral tanks.
+        # Computation of the fuel volume available in one wing. The 0.85 coefficient represents
+        # the internal obstructions caused by the structural and system components within the
+        # tank, typical of integral tanks.
 
         area_array = tank_volume_distribution(inputs, y_array)
 
@@ -128,7 +126,6 @@ def tank_volume_distribution(inputs, y_array_orig):
     # Create the array which will contain the tank cross section area at each section
 
     y_array = y_array_orig.flatten()
-    tank_cross_section = np.zeros_like(y_array)
 
     semi_span = span / 2
     y_tank_beginning = semi_span * y_ratio_tank_beginning
@@ -147,7 +144,8 @@ def tank_volume_distribution(inputs, y_array_orig):
         else:
             chord_array[idx] = slope_chord * y + root_chord
 
-    # Computation of the thickness ratio profile along the span, as tc = slope * y + tc_fuselage_center.
+    # Computation of the thickness ratio profile along the span, as tc = slope * y +
+    # tc_fuselage_center.
     slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
     # fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
     thickness_ratio_array = np.zeros_like(y_array)

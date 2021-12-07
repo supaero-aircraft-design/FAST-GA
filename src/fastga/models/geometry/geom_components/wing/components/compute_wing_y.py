@@ -1,7 +1,4 @@
-"""
-    Estimation of wing Ys (sections span).
-"""
-
+"""Estimation of wing Ys (sections span)."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,12 +15,18 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_SPAN
+
+
+@RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
 class ComputeWingY(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing Ys estimation"""
+    """Wing Ys estimation."""
 
     def setup(self):
 

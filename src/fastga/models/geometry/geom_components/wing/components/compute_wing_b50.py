@@ -1,7 +1,4 @@
-"""
-    Estimation of wing B50.
-"""
-
+"""Estimation of wing B50."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,12 +15,18 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_B50
+
+
+@RegisterSubmodel(SUBMODEL_WING_B50, "fastga.submodel.geometry.wing.half_span.legacy")
 class ComputeWingB50(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing B50 estimation"""
+    """Wing B50 estimation."""
 
     def setup(self):
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")

@@ -1,7 +1,4 @@
-"""
-Estimation of wing ToC.
-"""
-
+"""Estimation of wing ToC."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,8 +15,15 @@ Estimation of wing ToC.
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from ..constants import SUBMODEL_WING_THICKNESS_RATIO
+
 
 # TODO: computes relative thickness and generates profiles --> decompose
+@RegisterSubmodel(
+    SUBMODEL_WING_THICKNESS_RATIO, "fastga.submodel.geometry.wing.thickness_ratio.legacy"
+)
 class ComputeWingToc(om.ExplicitComponent):
     # TODO: Document hypothesis. Cite sources
     """Wing ToC estimation."""

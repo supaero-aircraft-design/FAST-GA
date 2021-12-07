@@ -1,6 +1,4 @@
-"""
-    Estimation of wing chords (l2 and l3).
-"""
+"""Estimation of wing chords (l2 and l3)."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -16,12 +14,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_L2_L3
+
+
+@RegisterSubmodel(SUBMODEL_WING_L2_L3, "fastga.submodel.geometry.wing.l2_l3.legacy")
 class ComputeWingL2AndL3(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing chords (l2 and l3) estimation"""
+    """Wing chords (l2 and l3) estimation."""
 
     def setup(self):
 

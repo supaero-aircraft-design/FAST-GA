@@ -1,6 +1,4 @@
-"""
-    Estimation of landing gears geometry.
-"""
+"""Estimation of landing gears geometry."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,11 +19,10 @@ import openmdao.api as om
 
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Landing gears geometry estimation. Position along the span is based on aircraft pictures analysis"""
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._engine_wrapper = None
+    """
+    Landing gears geometry estimation. Position along the span is based on aircraft pictures
+    analysis.
+    """
 
     def setup(self):
 

@@ -1,6 +1,4 @@
-"""
-    Estimation of nacelle and pylon geometry.
-"""
+"""Estimation of nacelle and pylon geometry."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -29,7 +27,7 @@ from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 class ComputeNacelleGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Nacelle and pylon geometry estimation"""
+    """Nacelle and pylon geometry estimation."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

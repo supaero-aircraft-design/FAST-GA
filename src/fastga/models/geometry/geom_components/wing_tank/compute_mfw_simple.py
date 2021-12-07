@@ -1,7 +1,4 @@
-"""
-    Estimation of max fuel weight.
-"""
-
+"""Estimation of max fuel weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,13 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+
 import warnings
+
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeMFWSimple(ExplicitComponent):
-
-    """Max fuel weight estimation based o RAYMER table 10.5 p269"""
+    """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 
     def setup(self):
 
