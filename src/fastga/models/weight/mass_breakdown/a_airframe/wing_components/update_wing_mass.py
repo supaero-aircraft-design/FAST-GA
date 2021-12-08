@@ -1,5 +1,5 @@
 """
-Update the mass of the wing based on the computation of the sub-components
+Update the mass of the wing based on the computation of the sub-wing_components
 in her MAE research project report.
 """
 

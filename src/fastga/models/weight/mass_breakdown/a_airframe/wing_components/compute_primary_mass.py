@@ -21,7 +21,7 @@ import numpy as np
 
 
 class ComputePrimaryMass(om.ExplicitComponent):
-    """Computes the primary mass by summing all sub components in the most contraining case"""
+    """Computes the primary mass by summing all sub wing_components in the most contraining case"""
 
     def setup(self):
         self.add_input(

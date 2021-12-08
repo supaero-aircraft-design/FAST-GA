@@ -21,15 +21,15 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .components.compute_web_mass import ComputeWebMass
-from .components.compute_upper_flange import ComputeUpperFlange
-from .components.compute_lower_flange import ComputeLowerFlange
-from .components.compute_skin_mass import ComputeSkinMass
-from .components.compute_ribs_mass import ComputeRibsMass
-from .components.compute_misc_mass import ComputeMiscMass
-from .components.compute_primary_mass import ComputePrimaryMass
-from .components.compute_secondary_mass import ComputeSecondaryMass
-from .components.update_wing_mass import UpdateWingMass
+from .wing_components.compute_web_mass import ComputeWebMass
+from .wing_components.compute_upper_flange import ComputeUpperFlange
+from .wing_components.compute_lower_flange import ComputeLowerFlange
+from .wing_components.compute_skin_mass import ComputeSkinMass
+from .wing_components.compute_ribs_mass import ComputeRibsMass
+from .wing_components.compute_misc_mass import ComputeMiscMass
+from .wing_components.compute_primary_mass import ComputePrimaryMass
+from .wing_components.compute_secondary_mass import ComputeSecondaryMass
+from .wing_components.update_wing_mass import UpdateWingMass
 
 from .constants import SUBMODEL_WING_MASS
 
