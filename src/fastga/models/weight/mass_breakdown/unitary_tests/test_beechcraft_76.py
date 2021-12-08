@@ -23,30 +23,36 @@ from ..a_airframe import (
     ComputeFuselageWeightRaymer,
     ComputeWingWeight,
     ComputeLandingGearWeight,
+    ComputeWingMassAnalytical,
 )
-from ..a_airframe.components.compute_web_mass import ComputeWebMass
-from ..a_airframe.components.compute_upper_flange import ComputeUpperFlange
-from ..a_airframe.components.compute_lower_flange import ComputeLowerFlange
-from ..a_airframe.components.compute_skin_mass import ComputeSkinMass
-from ..a_airframe.components.compute_ribs_mass import ComputeRibsMass
-from ..a_airframe.components.compute_misc_mass import ComputeMiscMass
-from ..a_airframe.components.compute_primary_mass import ComputePrimaryMass
-from ..a_airframe.components.compute_secondary_mass import ComputeSecondaryMass
-from ..a_airframe.components.update_wing_mass import UpdateWingMass
-from ..a_airframe.a1_wing_weight_analytical import ComputeWingMassAnalytical
+from ..a_airframe.components import (
+    ComputeWebMass,
+    ComputeLowerFlange,
+    ComputeUpperFlange,
+    ComputeSkinMass,
+    ComputeMiscMass,
+    ComputeRibsMass,
+    ComputePrimaryMass,
+    ComputeSecondaryMass,
+    UpdateWingMass,
+)
+from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
     ComputeEngineWeight,
     ComputeUnusableFuelWeight,
 )
+from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeNavigationSystemsWeight,
     ComputePowerSystemsWeight,
     ComputeNavigationSystemsWeightFLOPS,
 )
+from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
+from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
 from ..payload import ComputePayload
 
@@ -146,6 +152,18 @@ def test_compute_landing_gear_weight():
     assert weight_a52 == pytest.approx(24.12, abs=1e-2)
 
 
+def test_compute_airframe_weight():
+    """Tests airframe weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(AirframeWeight(), ivc)
+    weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
+    assert weight_a == pytest.approx(478.16, abs=1e-2)
+
+
 def test_compute_oil_weight():
     """Tests engine weight computation from sample XML data"""
 
@@ -198,6 +216,20 @@ def test_compute_unusable_fuel_weight():
     problem = run_system(ComputeUnusableFuelWeight(propulsion_id=ENGINE_WRAPPER), ivc)
     weight_b3 = problem.get_val("data:weight:propulsion:unusable_fuel:mass", units="kg")
     assert weight_b3 == pytest.approx(56.10, abs=1e-2)
+
+
+def test_compute_propulsion_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(PropulsionWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(PropulsionWeight(propulsion_id=ENGINE_WRAPPER), ivc)
+    weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
+    assert weight_b == pytest.approx(414.46, abs=1e-2)
 
 
 def test_compute_navigation_systems_weight():
@@ -268,6 +300,18 @@ def test_compute_life_support_systems_weight():
     assert weight_c27 == pytest.approx(0.0, abs=1e-2)
 
 
+def test_compute_systems_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(SystemsWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(SystemsWeight(), ivc)
+    weight_b = problem.get_val("data:weight:systems:mass", units="kg")
+    assert weight_b == pytest.approx(180.44, abs=1e-2)
+
+
 def test_compute_passenger_seats_weight():
     """Tests passenger seats weight computation from sample XML data"""
 
@@ -282,6 +326,18 @@ def test_compute_passenger_seats_weight():
     )  # additional 2 pilots seats (differs from old version)
 
 
+def test_compute_furniture_weight():
+    """Tests propulsion weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(FurnitureWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(FurnitureWeight(), ivc)
+    weight_b = problem.get_val("data:weight:furniture:mass", units="kg")
+    assert weight_b == pytest.approx(52.11, abs=1e-2)
+
+
 def test_evaluate_owe():
     """Tests a simple evaluation of Operating Weight Empty from sample XML data."""
 
@@ -292,6 +348,7 @@ def test_evaluate_owe():
     # noinspection PyTypeChecker
     mass_computation = run_system(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER), ivc)
 
+    print(mass_computation.get_val("data:weight:systems:mass", units="kg"))
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1125, abs=1)
 

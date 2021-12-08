@@ -553,10 +553,11 @@ class XfoilPolar(ExternalCodeComp):
 
     def _get_min_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
         """
-
         :param alpha:
         :param lift_coeff: CL
-        :return: min CL +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
+
+        :return: min CL +/- 0.3 around linear zone if enough alpha computed, or default value
+        otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:

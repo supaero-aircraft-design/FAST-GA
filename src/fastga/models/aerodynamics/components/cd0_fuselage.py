@@ -1,7 +1,4 @@
-"""
-    Estimation of the fuselage profile drag.
-"""
-
+"""Estimation of the fuselage profile drag."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,15 +15,21 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CD0_FUSELAGE
+
+
+@RegisterSubmodel(SUBMODEL_CD0_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.cd0.legacy")
 class Cd0Fuselage(ExplicitComponent):
     """
     Profile drag estimation for the fuselage
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     """
 
     def initialize(self):

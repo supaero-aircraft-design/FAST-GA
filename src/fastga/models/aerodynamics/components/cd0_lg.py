@@ -1,7 +1,4 @@
-"""
-    Estimation of the landing gear profile drag.
-"""
-
+"""Estimation of the landing gear profile drag."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,15 +13,21 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_CD0_LANDING_GEAR
+
+
+@RegisterSubmodel(SUBMODEL_CD0_LANDING_GEAR, "fastga.submodel.aerodynamics.landing_gear.cd0.legacy")
 class Cd0LandingGear(ExplicitComponent):
     """
     Profile drag estimation for the landing gear
 
-    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013.
+    Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+    Procedures. Butterworth-Heinemann, 2013.
     """
 
     def initialize(self):

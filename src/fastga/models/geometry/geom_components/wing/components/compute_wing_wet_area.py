@@ -1,7 +1,4 @@
-"""
-    Estimation of wing wet area.
-"""
-
+"""Estimation of wing wet area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,12 +13,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_WET_AREA
+
+
+@RegisterSubmodel(SUBMODEL_WING_WET_AREA, "fastga.submodel.geometry.wing.wet_area.legacy")
 class ComputeWingWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing wet area estimation"""
+    """Wing wet area estimation."""
 
     def setup(self):
 

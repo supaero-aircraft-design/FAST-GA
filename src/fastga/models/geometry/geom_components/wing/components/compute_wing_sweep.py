@@ -1,7 +1,4 @@
-"""
-    Estimation of wing sweeps.
-"""
-
+"""Estimation of wing sweeps."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,12 +15,18 @@
 import math
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_SWEEP
+
+
+@RegisterSubmodel(SUBMODEL_WING_SWEEP, "fastga.submodel.geometry.wing.sweep.legacy")
 class ComputeWingSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing sweeps estimation"""
+    """Wing sweeps estimation."""
 
     def setup(self):
 

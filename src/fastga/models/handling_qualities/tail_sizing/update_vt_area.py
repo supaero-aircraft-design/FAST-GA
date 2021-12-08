@@ -1,6 +1,4 @@
-"""
-Estimation of vertical tail area.
-"""
+"""Estimation of vertical tail area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,13 +19,16 @@ from scipy.optimize import fsolve
 
 from fastoad.model_base.atmosphere import Atmosphere
 from fastoad.module_management.service_registry import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 
 from ...propulsion.fuel_propulsion.base import FuelEngineSet
 from ...aerodynamics.constants import ENGINE_COUNT
+from .constants import SUBMODEL_VT_AREA
 
 
+@RegisterSubmodel(SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.legacy")
 class UpdateVTArea(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
@@ -71,10 +72,11 @@ class VTPConstraints(om.ExplicitComponent):
         @param inputs : dictionary containing the aircraft properties
         @param x : array containing the vertical tail plane area in m² and the crab angle in rad
         @param beta : the sideslip angle we want to compute the VTP area for, in rad
-        @param rudder_angle : the rudder angle we allow ourself to maintain a straight flight path during the crosswind
-        landing
+        @param rudder_angle : the rudder angle we allow ourself to maintain a straight flight path
+        during the crosswind landing
         @param eta_v : defines the percentage of aircraft dynamic pressure seen by the vtp
-        @return result_array : an array containing the moment and force difference on the appropriate axis
+        @return result_array : an array containing the moment and force difference on the
+        appropriate axis.
         """
         v_f = float(inputs["data:TLAR:v_approach"])
 
@@ -177,8 +179,8 @@ class VTPConstraints(om.ExplicitComponent):
         speed_of_sound_cr = atm_cr.speed_of_sound
         cruise_mach = cruise_speed / speed_of_sound_cr
         # Matches suggested goal by Raymer, Fig 16.20
-        # TODO: 2 contributions are missing in the equations suggested by Raymer the main one being the wing
-        # TODO: contribution, which would require dihedral angle, ...
+        # TODO : 2 contributions are missing in the equations suggested by Raymer the main one being
+        # TODO : the wing contribution, which would require dihedral angle, ...
         # TODO : page 649 of pdf of Raymer's book
         cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach ** 2
 
@@ -271,8 +273,9 @@ class VTPConstraints(om.ExplicitComponent):
             thrust_rate=1.0,
         )  # forced to maximum thrust
         propulsion_model.compute_flight_points(flight_point_cl)
-        # If you look at FuelEngineSet method to compute flight point you will see that it is multiplied buy engine
-        # count so we must divide it here to get the thrust of 1 engine only
+        # If you look at FuelEngineSet method to compute flight point you will see that it is
+        # multiplied buy engine count so we must divide it here to get the thrust of 1 engine
+        # only
         # FIXME : Take the thrust of one engine
         thrust_cl = float(flight_point_cl.thrust) / engine_number
         # Calculation of engine thrust and nacelle drag (failed one)
@@ -351,7 +354,8 @@ class VTPConstraints(om.ExplicitComponent):
         # Torque compensation
         # Only take 0.85 percent ot leave a margin for the pilot
         rudder_side_force_coefficient = cy_delta_r * rudder_usage * rudder_max_deflection
-        # We assume that the lift contribution added by the bank is located at the wing aerodynamics center
+        # We assume that the lift contribution added by the bank is located at the wing
+        # aerodynamics center
         bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
         # Vertical component of lift equals the weight, horizontal component used in bank
         bank_contribution_to = mtow * np.tan(5.0 * np.pi / 180.0)
@@ -428,9 +432,9 @@ class VTPConstraints(om.ExplicitComponent):
         # Roskam equation 4.68 in aerodynamics
         # Torque compensation
         rudder_side_force_coefficient = cy_delta_r * rudder_usage * rudder_max_deflection
-        # We assume that the lift contribution added by the bank is located at the wing aerodynamics center, may
-        # need to put the contribution @ 0. Based on a pilot REX, there is usually no bank at landing ot avoid a
-        # propeller strike on the runway
+        # We assume that the lift contribution added by the bank is located at the wing
+        # aerodynamics center, may need to put the contribution @ 0. Based on a pilot REX,
+        # there is usually no bank at landing ot avoid a propeller strike on the runway
         bank_lever_arm = cg_mac_position * l0_wing - 0.25 * l0_wing
         bank_contribution_ldg = (owe + payload) * np.tan(5.0 * np.pi / 180.0)
         area = (
@@ -451,11 +455,11 @@ class VTPConstraints(om.ExplicitComponent):
 class _UpdateVTArea(VTPConstraints):
     """
     Computes needed vt area to:
-      - have enough rotational moment/controllability during cruise
-      - maintain a straight flight path during a crosswind landing
-      - compensate 1-failed engine linear trajectory at limited altitude (5000ft)
-      - compensate 1-failed engine linear trajectory at takeoff
-      - compensate 1-failed engine linear trajectory at landing
+      - have enough rotational moment/controllability during cruise.
+      - maintain a straight flight path during a crosswind landing.
+      - compensate 1-failed engine linear trajectory at limited altitude (5000ft).
+      - compensate 1-failed engine linear trajectory at takeoff.
+      - compensate 1-failed engine linear trajectory at landing.
     """
 
     def __init__(self, **kwargs):
@@ -508,8 +512,8 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
             val=0.20,
-            desc="Ratio of the total rudder deflection not used in the computation of the VT area to leave a safety "
-            "margin",
+            desc="Ratio of the total rudder deflection not used in the computation of the VT area "
+            "to leave a safety margin",
         )
 
         self.add_output("data:geometry:vertical_tail:area", val=2.5, units="m**2")
@@ -530,35 +534,37 @@ class _UpdateVTArea(VTPConstraints):
 
         mtow = inputs["data:weight:aircraft:MTOW"]
 
-        # CASE1: OBJECTIVE TORQUE @ CRUISE #############################################################################
+        # CASE1: OBJECTIVE TORQUE @ CRUISE #########################################################
 
         area_1 = self.target_stability_constraint(inputs)
 
-        # CASE 2 : CROSSWIND LANDING ###################################################################################
-        # In this case we need to solve the lateral equilibrium equation. This method is adapted form what is presented
-        # in : Al-Shamma, Omran, Rashid Ali, and Haitham S. Hasan. "An Educational Rudder Sizing Algorithm for
-        # Utilization in Aircraft Design Software." International Journal of Applied Engineering Research 13.10 (2018):
+        # CASE 2 : CROSSWIND LANDING ###############################################################
+        # In this case we need to solve the lateral equilibrium equation. This method is adapted
+        # form what is presented in : Al-Shamma, Omran, Rashid Ali, and Haitham S. Hasan. "An
+        # Educational Rudder Sizing Algorithm for Utilization in Aircraft Design Software."
+        # International Journal of Applied Engineering Research 13.10 (2018):
         # 7889-7894.
 
         area_2 = self.crosswind_landing_constraint(inputs, area_1)
 
-        # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##############################################################
+        # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##########################################
 
         if engine_number != 1.0:
             area_3 = self.engine_out_climb(inputs)
         else:
             area_3 = 0.0
 
-        # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ############################################################
+        # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ########################################
 
         if engine_number != 1.0:
             area_4 = self.engine_out_takeoff(inputs)
         else:
             area_4 = 0.0
 
-        # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ############################################################
-        # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND WEIGHING MORE THAN ###
-        # 2722 KG ######################################################################################################
+        # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ########################################
+        # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND
+        # WEIGHING MORE THAN 2722 KG
+        # ##########################################################################################
 
         if not (
             (self.options["propulsion_id"] == "fastga.wrapper.propulsion.basicIC_engine")
@@ -577,11 +583,11 @@ class _UpdateVTArea(VTPConstraints):
 class _ComputeVTPAreaConstraints(VTPConstraints):
     """
     Computes the difference between actual VT_area and the following constraints:
-      - have enough rotational moment/controllability during cruise
-      - maintain a straight flight path during a crosswind landing
-      - compensate 1-failed engine linear trajectory at limited altitude (5000ft)
-      - compensate 1-failed engine linear trajectory at takeoff
-      - compensate 1-failed engine linear trajectory at landing
+      - have enough rotational moment/controllability during cruise.
+      - maintain a straight flight path during a crosswind landing.
+      - compensate 1-failed engine linear trajectory at limited altitude (5000ft).
+      - compensate 1-failed engine linear trajectory at takeoff.
+      - compensate 1-failed engine linear trajectory at landing.
     """
 
     def __init__(self, **kwargs):
@@ -639,8 +645,8 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input(
             "settings:handling_qualities:rudder:safety_margin",
             val=0.20,
-            desc="Ratio of the total rudder deflection not used in the computation of the VT area to leave a safety "
-            "margin",
+            desc="Ratio of the total rudder deflection not used in the computation of the VT area "
+            "to leave a safety margin",
         )
 
         self.add_output("data:constraints:vertical_tail:target_cruise_stability", units="m**2")
@@ -658,35 +664,37 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 
         mtow = inputs["data:weight:aircraft:MTOW"]
 
-        # CASE1: OBJECTIVE TORQUE @ CRUISE #############################################################################
+        # CASE1: OBJECTIVE TORQUE @ CRUISE #########################################################
 
         area_diff_1 = area_vtp - self.target_stability_constraint(inputs)
 
-        # CASE 2 : CROSSWIND LANDING ###################################################################################
-        # In this case we need to solve the lateral equilibrium equation. This method is adapted form what is presented
-        # in : Al-Shamma, Omran, Rashid Ali, and Haitham S. Hasan. "An Educational Rudder Sizing Algorithm for
-        # Utilization in Aircraft Design Software." International Journal of Applied Engineering Research 13.10 (2018):
+        # CASE 2 : CROSSWIND LANDING ###############################################################
+        # In this case we need to solve the lateral equilibrium equation. This method is adapted
+        # form what is presented in : Al-Shamma, Omran, Rashid Ali, and Haitham S. Hasan. "An
+        # Educational Rudder Sizing Algorithm for Utilization in Aircraft Design Software."
+        # International Journal of Applied Engineering Research 13.10 (2018):
         # 7889-7894.
 
         area_diff_2 = area_vtp - self.crosswind_landing_constraint(inputs, area_vtp)
 
-        # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##############################################################
+        # CASE3: ENGINE FAILURE COMPENSATION DURING CLIMB ##########################################
 
         if engine_number != 1.0:
             area_diff_3 = area_vtp - self.engine_out_climb(inputs)
         else:
             area_diff_3 = area_vtp
 
-        # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ############################################################
+        # CASE4: ENGINE FAILURE COMPENSATION DURING TAKEOFF ########################################
 
         if engine_number != 1.0:
             area_diff_4 = area_vtp - self.engine_out_takeoff(inputs)
         else:
             area_diff_4 = area_vtp
 
-        # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ############################################################
-        # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND WEIGHING MORE THAN ###
-        # 2722 KG ######################################################################################################
+        # CASE5: ENGINE FAILURE COMPENSATION DURING LANDING ########################################
+        # ACCORDING TO CS 23.149 (c) ONLY APPLIES TO AIRCRAFT POWERED BY RECIPROCATING ENGINE AND
+        # WEIGHING MORE THAN 2722 KG
+        # ##########################################################################################
 
         if not (
             (self.options["propulsion_id"] == "fastga.wrapper.propulsion.basicIC_engine")

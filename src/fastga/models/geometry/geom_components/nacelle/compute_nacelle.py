@@ -1,6 +1,4 @@
-"""
-    Estimation of nacelle and pylon geometry.
-"""
+"""Estimation of nacelle and pylon geometry."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,15 +19,19 @@ import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
+from ...constants import SUBMODEL_NACELLE_GEOMETRY
 
+
+@RegisterSubmodel(SUBMODEL_NACELLE_GEOMETRY, "fastga.submodel.geometry.nacelle.legacy")
 class ComputeNacelleGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Nacelle and pylon geometry estimation"""
+    """Nacelle and pylon geometry estimation."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

@@ -21,8 +21,7 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
-# TODO: it would be good to have a function to compute MAC for HT, VT and WING
-class ComputeVTmacFD(ExplicitComponent):
+class ComputeVTMacFD(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
@@ -99,10 +98,11 @@ class ComputeVTmacFD(ExplicitComponent):
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
 
 
-class ComputeVTmacFL(ExplicitComponent):
+class ComputeVTMacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Vertical tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (VTP distance computed).
+    Vertical tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (VTP
+    distance computed).
     """
 
     def setup(self):
@@ -110,8 +110,10 @@ class ComputeVTmacFL(ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
+        )
 
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
@@ -126,8 +128,8 @@ class ComputeVTmacFL(ExplicitComponent):
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
-        fus_length = inputs["data:geometry:fuselage:length"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
 
         tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180.0 * math.pi) - tip_chord * 0.25
 
@@ -140,7 +142,7 @@ class ComputeVTmacFL(ExplicitComponent):
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
-        vt_lp = (fus_length - root_chord + x0_vt) - x_wing25
+        vt_lp = (x_vt + x0_vt) - x_wing25
         x_tip = b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + x_wing25 + (vt_lp - x0_vt)
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt

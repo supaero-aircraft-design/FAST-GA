@@ -18,11 +18,15 @@ to aero-structural loads.
 
 import numpy as np
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
+from .constants import SUBMODEL_STRUCTURAL_LOADS
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 
+@RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
 class StructuralLoads(AerostructuralLoad):
     def setup(self):
         nans_array_orig_vector = np.full(SPAN_MESH_POINT, np.nan)

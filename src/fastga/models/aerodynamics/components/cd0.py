@@ -1,5 +1,6 @@
 """
-Group containing the computation of the aircraft profile drag based on the sum of the drag of its components.
+Group containing the computation of the aircraft profile drag based on the sum of the drag of
+its components.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -14,17 +15,24 @@ Group containing the computation of the aircraft profile drag based on the sum o
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from ..components.cd0_fuselage import Cd0Fuselage
-from ..components.cd0_ht import Cd0HorizontalTail
-from ..components.cd0_lg import Cd0LandingGear
-from ..components.cd0_nacelle import Cd0Nacelle
-from ..components.cd0_vt import Cd0VerticalTail
-from ..components.cd0_wing import Cd0Wing
-from ..components.cd0_other import Cd0Other
-from ..components.cd0_total import Cd0Total
 from openmdao.core.group import Group
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import (
+    SUBMODEL_CD0_WING,
+    SUBMODEL_CD0_FUSELAGE,
+    SUBMODEL_CD0_HT,
+    SUBMODEL_CD0_VT,
+    SUBMODEL_CD0_NACELLE,
+    SUBMODEL_CD0_LANDING_GEAR,
+    SUBMODEL_CD0_OTHER,
+    SUBMODEL_CD0_SUM,
+    SUBMODEL_CD0,
+)
+
+
+@RegisterSubmodel(SUBMODEL_CD0, "fastga?submodel.aerodynamics.aircraft.cd0.legacy")
 class Cd0(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -35,45 +43,63 @@ class Cd0(Group):
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
-        if self.options["low_speed_aero"]:
-            self.add_subsystem(
-                "cd0_wing",
-                Cd0Wing(low_speed_aero=True, wing_airfoil_file=self.options["wing_airfoil_file"]),
-                promotes=["*"],
-            )
-            self.add_subsystem("cd0_fuselage", Cd0Fuselage(low_speed_aero=True), promotes=["*"])
-            self.add_subsystem(
-                "cd0_ht",
-                Cd0HorizontalTail(
-                    low_speed_aero=True, htp_airfoil_file=self.options["htp_airfoil_file"]
-                ),
-                promotes=["*"],
-            )
-            self.add_subsystem("cd0_vt", Cd0VerticalTail(low_speed_aero=True), promotes=["*"])
-            self.add_subsystem(
-                "cd0_nacelle",
-                Cd0Nacelle(propulsion_id=self.options["propulsion_id"], low_speed_aero=True),
-                promotes=["*"],
-            )
-            self.add_subsystem("cd0_l_gear", Cd0LandingGear(low_speed_aero=True), promotes=["*"])
-            self.add_subsystem("cd0_other", Cd0Other(low_speed_aero=True), promotes=["*"])
-            self.add_subsystem("cd0_total", Cd0Total(low_speed_aero=True), promotes=["*"])
-        else:
-            self.add_subsystem(
-                "cd0_wing",
-                Cd0Wing(wing_airfoil_file=self.options["wing_airfoil_file"]),
-                promotes=["*"],
-            )
-            self.add_subsystem("cd0_fuselage", Cd0Fuselage(), promotes=["*"])
-            self.add_subsystem(
-                "cd0_ht",
-                Cd0HorizontalTail(htp_airfoil_file=self.options["htp_airfoil_file"]),
-                promotes=["*"],
-            )
-            self.add_subsystem("cd0_vt", Cd0VerticalTail(), promotes=["*"])
-            self.add_subsystem(
-                "cd0_nac", Cd0Nacelle(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
-            )
-            self.add_subsystem("cd0_lg", Cd0LandingGear(), promotes=["*"])
-            self.add_subsystem("cd0_other", Cd0Other(), promotes=["*"])
-            self.add_subsystem("cd0_total", Cd0Total(), promotes=["*"])
+        options_wing = {
+            "low_speed_aero": self.options["low_speed_aero"],
+            "wing_airfoil_file": self.options["wing_airfoil_file"],
+        }
+        self.add_subsystem(
+            "cd0_wing",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_WING, options=options_wing),
+            promotes=["*"],
+        )
+
+        low_speed_option = {"low_speed_aero": self.options["low_speed_aero"]}
+        self.add_subsystem(
+            "cd0_fuselage",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_FUSELAGE, options=low_speed_option),
+            promotes=["*"],
+        )
+
+        options_htp = {
+            "low_speed_aero": self.options["low_speed_aero"],
+            "htp_airfoil_file": self.options["htp_airfoil_file"],
+        }
+        self.add_subsystem(
+            "cd0_ht",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_HT, options=options_htp),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cd0_vt",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_VT, options=low_speed_option),
+            promotes=["*"],
+        )
+
+        options_nacelle = {
+            "low_speed_aero": self.options["low_speed_aero"],
+            "propulsion_id": self.options["propulsion_id"],
+        }
+        self.add_subsystem(
+            "cd0_nacelle",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_NACELLE, options=options_nacelle),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cd0_l_gear",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_LANDING_GEAR, options=low_speed_option),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cd0_other",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_OTHER, options=low_speed_option),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cd0_total",
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0_SUM, options=low_speed_option),
+            promotes=["*"],
+        )

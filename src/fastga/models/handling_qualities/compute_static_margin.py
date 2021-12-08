@@ -41,9 +41,6 @@ class _ComputeStaticMargin(om.ExplicitComponent):
     point.
     """
 
-    def initialize(self):
-        self.options.declare("target", types=float, allow_none=True, default=None)
-
     def setup(self):
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:aerodynamics:cruise:neutral_point:stick_fixed:x", val=np.nan)

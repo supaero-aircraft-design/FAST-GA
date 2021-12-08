@@ -1,7 +1,4 @@
-"""
-Estimation of wing mean aerodynamic chord.
-"""
-
+"""Estimation of wing mean aerodynamic chord."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,9 +13,15 @@ Estimation of wing mean aerodynamic chord.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_WING_MAC
+
+
+@RegisterSubmodel(SUBMODEL_WING_MAC, "fastga.submodel.geometry.wing.mac.legacy")
 class ComputeWingMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing mean aerodynamic chord estimation."""

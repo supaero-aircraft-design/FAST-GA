@@ -1,6 +1,4 @@
-"""
-    Estimation of the optimal aerodynamics configuration for the aircraft in cruise condition
-"""
+"""Estimation of the optimal aerodynamics configuration for the aircraft in cruise condition."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,9 +14,15 @@
 
 import numpy as np
 import math
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_MAX_L_D
+
+
+@RegisterSubmodel(SUBMODEL_MAX_L_D, "fastga.submodel.aerodynamics.aircraft.l_d_max.legacy")
 class ComputeLDMax(ExplicitComponent):
     """
     Computes optimal CL/CD aerodynamic performance of the aircraft in cruise conditions.

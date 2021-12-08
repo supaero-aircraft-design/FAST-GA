@@ -1,7 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
-
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,16 +15,47 @@
 import math
 
 import numpy as np
+
 import scipy.interpolate as inter
 
+import openmdao.api as om
+
 from fastoad.model_base import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .figure_digitization import FigureDigitization
 
+from ..constants import (
+    SUBMODEL_HINGE_MOMENTS_TAIL_2D,
+    SUBMODEL_HINGE_MOMENTS_TAIL_3D,
+    SUBMODEL_HINGE_MOMENTS_TAIL,
+)
 
+
+@RegisterSubmodel(
+    SUBMODEL_HINGE_MOMENTS_TAIL, "fastga.submodel.aerodynamics.tail.hinge_moments.legacy"
+)
+class ComputeHingeMomentsTail(om.Group):
+    def setup(self):
+        self.add_subsystem(
+            "two_d_hinge_moments",
+            RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_2D),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "three_d_hinge_moments",
+            RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_3D),
+            promotes=["*"],
+        )
+
+
+@RegisterSubmodel(
+    SUBMODEL_HINGE_MOMENTS_TAIL_2D, "fastga.submodel.aerodynamics.tail.hinge_moments.2d.legacy"
+)
 class Compute2DHingeMomentsTail(FigureDigitization):
     """
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
-    Characteristics. DAR corporation, 1985. Section 10.4.1, 10.4.2
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1, 10.4.2.
     """
 
     def setup(self):
@@ -110,10 +138,9 @@ class Compute2DHingeMomentsTail(FigureDigitization):
                 tan_0_5_phi_te_prime_prime - tail_thickness_ratio
             )
 
-        # Step 4.
-        # The overhang cb/cf will we taken equal to 3 as we assume a 1/4, 3/4 chord repartition for the hinge line)
-        # We will also assume that the thickness ratio of the elevator is the same as the tail and that it has a
-        # round nose
+        # Step 4. The overhang cb/cf will we taken equal to 3 as we assume a 1/4, 3/4 chord
+        # repartition for the hinge line) We will also assume that the thickness ratio of the
+        # elevator is the same as the tail and that it has a round nose
 
         balance_ratio = math.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0)
 
@@ -169,8 +196,8 @@ class Compute2DHingeMomentsTail(FigureDigitization):
                 * (tan_0_5_phi_te_prime_prime - tail_thickness_ratio)
             )
 
-        # Step 4. Same assumption as the step 4. of the previous section. Only this time we only take the curve for
-        # the NACA 0009
+        # Step 4. Same assumption as the step 4. of the previous section. Only this time we only
+        # take the curve for the NACA 0009
         k_ch_delta_balance = inter.interp1d([0.15, 0.50], [0.93, 0.2])(balance_ratio)
 
         ch_delta_balance = k_ch_delta_balance * ch_prime_prime_delta
@@ -182,10 +209,13 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"] = ch_delta_fin
 
 
+@RegisterSubmodel(
+    SUBMODEL_HINGE_MOMENTS_TAIL_3D, "fastga.submodel.aerodynamics.tail.hinge_moments.3d.legacy"
+)
 class Compute3DHingeMomentsTail(FigureDigitization):
     """
-    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic, Thrust and Power
-    Characteristics. DAR corporation, 1985. Section 10.4.1
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
     """
 
     def setup(self):
@@ -231,8 +261,8 @@ class Compute3DHingeMomentsTail(FigureDigitization):
         # We assume the same sweep angle for hl and tail
         sweep_hl = sweep_25_ht
 
-        # We'll compute the elevator effectiveness factor in the worst case scenario, i.e, with the highest deflection
-        # angle which we will take at 25 degree
+        # We'll compute the elevator effectiveness factor in the worst case scenario, i.e,
+        # with the highest deflection angle which we will take at 25 degree
         a_delta = self.k_prime_single_slotted(elevator_angle, elevator_chord_ratio)
 
         ch_delta_3d = (

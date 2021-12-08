@@ -14,36 +14,20 @@ FAST - Copyright (c) 2016 ONERA ISAE.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.weight.cg.cg_components.a_airframe import (
-    ComputeWingCG,
-    ComputeFuselageCG,
-    ComputeTailCG,
-    ComputeFlightControlCG,
-    ComputeLandingGearCG,
+from ..constants import SUBMODEL_CENTER_OF_GRAVITY
+
+from .cg_components.constants import (
+    SUBMODEL_PAYLOAD_CG,
+    SUBMODEL_AIRCRAFT_CG_EXTREME,
+    SUBMODEL_TANK_CG,
 )
-from fastga.models.weight.cg.cg_components.b_propulsion import (
-    ComputeEngineCG,
-    ComputeFuelLinesCG,
-    ComputeTankCG,
-)
-from fastga.models.weight.cg.cg_components.c_systems import (
-    ComputePowerSystemsCG,
-    ComputeLifeSupportCG,
-    ComputeNavigationSystemsCG,
-)
-from fastga.models.weight.cg.cg_components.d_furniture import ComputePassengerSeatsCG
-from fastga.models.weight.cg.cg_components.payload import ComputePayloadCG
-from fastga.models.weight.cg.cg_components.global_cg import ComputeGlobalCG
-from fastga.models.weight.cg.cg_components.update_mlg import UpdateMLG
 
 
-@RegisterOpenMDAOSystem("fastga.weight.cg", domain=ModelDomain.WEIGHT)
+@RegisterSubmodel(SUBMODEL_CENTER_OF_GRAVITY, "fastga.submodel.weight.cg.legacy")
 class CG(om.Group):
     """Model that computes the global center of gravity."""
 
@@ -51,27 +35,18 @@ class CG(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
-        self.add_subsystem("wing_cg", ComputeWingCG(), promotes=["*"])
-        self.add_subsystem("fuselage_cg", ComputeFuselageCG(), promotes=["*"])
-        self.add_subsystem("tail_cg", ComputeTailCG(), promotes=["*"])
-        self.add_subsystem("flight_control_cg", ComputeFlightControlCG(), promotes=["*"])
-        self.add_subsystem("landing_gear_cg", ComputeLandingGearCG(), promotes=["*"])
-        self.add_subsystem("engine_cg", ComputeEngineCG(), promotes=["*"])
-        self.add_subsystem("fuel_lines_cg", ComputeTankCG(), promotes=["*"])
-        self.add_subsystem("tank_cg", ComputeFuelLinesCG(), promotes=["*"])
-        self.add_subsystem("power_systems_cg", ComputePowerSystemsCG(), promotes=["*"])
-        self.add_subsystem("life_support_cg", ComputeLifeSupportCG(), promotes=["*"])
-        self.add_subsystem("navigation_systems_cg", ComputeNavigationSystemsCG(), promotes=["*"])
-        self.add_subsystem("passenger_seats_cg", ComputePassengerSeatsCG(), promotes=["*"])
-        self.add_subsystem("payload_cg", ComputePayloadCG(), promotes=["*"])
+        self.add_subsystem(
+            "tank_cg", RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "payload_cg", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
+        )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_cg",
-            ComputeGlobalCG(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_CG_EXTREME, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("update_mlg", UpdateMLG(), promotes=["*"])
-        self.add_subsystem("aircraft", ComputeAircraftCG(), promotes=["*"])
 
         # Solvers setup
         self.nonlinear_solver = om.NonlinearBlockGS()
@@ -87,34 +62,3 @@ class CG(om.Group):
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
         # self.linear_solver.options["rtol"] = 1e-5
-
-
-class ComputeAircraftCG(om.ExplicitComponent):
-    """Compute position of aircraft CG from CG ratio."""
-
-    def setup(self):
-
-        self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:fwd:MAC_position", val=np.nan)
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-
-        self.add_output("data:weight:aircraft:CG:aft:x", units="m")
-        self.add_output("data:weight:aircraft:CG:fwd:x", units="m")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        cg_aft_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
-        cg_fwd_ratio = inputs["data:weight:aircraft:CG:fwd:MAC_position"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        mac_position = inputs["data:geometry:wing:MAC:at25percent:x"]
-
-        outputs["data:weight:aircraft:CG:aft:x"] = (
-            mac_position - 0.25 * l0_wing + cg_aft_ratio * l0_wing
-        )
-        # Comment this line if ComputeGlobalCG is used
-        outputs["data:weight:aircraft:CG:fwd:x"] = (
-            mac_position - 0.25 * l0_wing + cg_fwd_ratio * l0_wing
-        )

@@ -17,13 +17,24 @@ Estimation of landing gear weight.
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from .constants import SUBMODEL_LANDING_GEAR_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_LANDING_GEAR_MASS
+] = "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+
+
+@RegisterSubmodel(
+    SUBMODEL_LANDING_GEAR_MASS, "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+)
 class ComputeLandingGearWeight(om.ExplicitComponent):
     """
     Weight estimation for landing gears
 
-    Based on a statistical analysis. See :cite:`wells:2017` for the formula and :cite:`raymer:2012` for the weight
-    reduction factor for non retractable landing gears
+    Based on a statistical analysis. See :cite:`wells:2017` for the formula and
+    :cite:`raymer:2012` for the weight reduction factor for non retractable landing gears
     """
 
     def setup(self):

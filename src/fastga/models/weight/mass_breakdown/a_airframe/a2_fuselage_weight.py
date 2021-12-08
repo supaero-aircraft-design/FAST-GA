@@ -1,6 +1,4 @@
-"""
-Estimation of fuselage weight.
-"""
+"""Estimation of fuselage weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,13 +17,22 @@ import openmdao.api as om
 import math
 
 from fastoad.model_base import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_FUSELAGE_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_FUSELAGE_MASS
+] = "fastga.submodel.weight.mass.airframe.fuselage.legacy"
 
 
+@RegisterSubmodel(SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.legacy")
 class ComputeFuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation
 
-    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in :cite:`gudmundsson:2013`.
+    Based on a statistical analysis. See :cite:`nicolai:2010` but can also be found in
+    :cite:`gudmundsson:2013`.
     """
 
     def setup(self):
@@ -68,6 +75,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         )
 
 
+@RegisterSubmodel(SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.raymer")
 class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     """
     Fuselage weight estimation

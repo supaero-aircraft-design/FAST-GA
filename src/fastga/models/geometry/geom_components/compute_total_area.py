@@ -1,7 +1,4 @@
-"""
-    Estimation of total aircraft wet area.
-"""
-
+"""Estimation of total aircraft wet area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,12 +13,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_AIRCRAFT_WET_AREA
+
+
+@RegisterSubmodel(SUBMODEL_AIRCRAFT_WET_AREA, "fastga.submodel.geometry.aircraft.wet_area.legacy")
 class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Total aircraft wet area estimation"""
+    """Total aircraft wet area estimation."""
 
     def setup(self):
         self.add_input("data:geometry:wing:wet_area", val=np.nan, units="m**2")

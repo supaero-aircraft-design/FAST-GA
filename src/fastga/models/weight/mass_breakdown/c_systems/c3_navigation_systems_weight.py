@@ -18,8 +18,15 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.model_base.atmosphere import Atmosphere
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_NAVIGATION_SYSTEM_MASS
 
 
+@RegisterSubmodel(
+    SUBMODEL_NAVIGATION_SYSTEM_MASS,
+    "fastga.submodel.weight.mass.system.navigation_systems.legacy",
+)
 class ComputeNavigationSystemsWeight(ExplicitComponent):
     """
     Weight estimation for navigation systems

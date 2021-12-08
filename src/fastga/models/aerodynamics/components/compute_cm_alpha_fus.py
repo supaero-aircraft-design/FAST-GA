@@ -1,7 +1,4 @@
-"""
-    Estimation of fuselage pitching moment.
-"""
-
+"""Estimation of fuselage pitching moment."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,15 +14,22 @@
 
 import numpy as np
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from .figure_digitization import FigureDigitization
+from ..constants import SUBMODEL_CM_ALPHA_FUSELAGE
 
 
+@RegisterSubmodel(
+    SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment.legacy"
+)
 class ComputeFuselagePitchingMoment(FigureDigitization):
     """
-    Estimation of the fuelage pitching moment using the methodology described in section 16.3.8 of Raymer
+    Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
+    of Raymer
 
-    Based on : Raymer, Daniel P. "Aircraft design: a conceptual approach (AIAA Education Series)." Reston,
-    Virginia (2012).
+    Based on : Raymer, Daniel P. "Aircraft design: a conceptual approach (AIAA Education
+    Series)." Reston, Virginia (2012).
     """
 
     def setup(self):

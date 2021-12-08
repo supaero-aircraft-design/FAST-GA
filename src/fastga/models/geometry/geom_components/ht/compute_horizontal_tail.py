@@ -16,14 +16,15 @@
 
 import openmdao.api as om
 
-from .components import (
-    ComputeHTChord,
-    ComputeHTDistance,
-    ComputeHTmacFD,
-    ComputeHTmacFL,
-    ComputeHTSweep,
-    ComputeHTWetArea,
-    ComputeHTEfficiency,
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .components import ComputeHTMacFD, ComputeHTMacFL
+from .constants import (
+    SUBMODEL_HT_CHORD,
+    SUBMODEL_HT_SWEEP,
+    SUBMODEL_HT_WET_AREA,
+    SUBMODEL_HT_WET_DISTANCE,
+    SUBMODEL_HT_WET_EFFICIENCY,
 )
 
 
@@ -31,20 +32,41 @@ class ComputeHorizontalTailGeometryFD(om.Group):
     """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
 
     def setup(self):
-        self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])
-        self.add_subsystem("ht_mac", ComputeHTmacFD(), promotes=["*"])
-        self.add_subsystem("ht_sweep", ComputeHTSweep(), promotes=["*"])
-        self.add_subsystem("ht_wet_area", ComputeHTWetArea(), promotes=["*"])
-        self.add_subsystem("ht_distance", ComputeHTDistance(), promotes=["*"])
-        self.add_subsystem("ht_eff", ComputeHTEfficiency(), promotes=["*"])
+        self.add_subsystem(
+            "ht_chord", RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+        )
+        self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
+        self.add_subsystem(
+            "ht_sweep", RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_distance", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_eff", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+        )
 
 
 class ComputeHorizontalTailGeometryFL(om.Group):
     """Horizontal tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
-        self.add_subsystem("ht_chord", ComputeHTChord(), promotes=["*"])
-        self.add_subsystem("ht_mac", ComputeHTmacFL(), promotes=["*"])
-        self.add_subsystem("ht_sweep", ComputeHTSweep(), promotes=["*"])
-        self.add_subsystem("ht_wet_area", ComputeHTWetArea(), promotes=["*"])
-        self.add_subsystem("ht_distance", ComputeHTDistance(), promotes=["*"])
+        self.add_subsystem(
+            "ht_chord", RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+        )
+        self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
+        self.add_subsystem(
+            "ht_sweep", RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_distance", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_eff", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+        )

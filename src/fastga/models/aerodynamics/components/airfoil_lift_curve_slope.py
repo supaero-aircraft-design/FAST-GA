@@ -19,8 +19,10 @@ import logging
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
+
 from ..external.xfoil.xfoil_polar import XfoilPolar
-from ..constants import POLAR_POINT_COUNT
+from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
 
 ALPHA_START_LINEAR = -5.0
 ALPHA_END_LINEAR = 10.0
@@ -28,6 +30,9 @@ ALPHA_END_LINEAR = 10.0
 _LOGGER = logging.getLogger(__name__)
 
 
+@RegisterSubmodel(
+    SUBMODEL_AIRFOIL_LIFT_SLOPE, "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.xfoil"
+)
 class ComputeAirfoilLiftCurveSlope(om.Group):
     def initialize(self):
         self.options.declare(
@@ -143,7 +148,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
 
 class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
-    """Lift curve slope coefficient from Xfoil polars"""
+    """Lift curve slope coefficient from Xfoil polars."""
 
     def setup(self):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
@@ -214,9 +219,10 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         OpenMDAO in both the alpha and CL array simultaneously
 
         @param array_alpha: an array with the alpha values and the additional zeros we want to
-        delete @param array_cl: the corresponding Cl array @return: final_array_alpha an array
-        containing the same alphas of the initial array but with the additional zeros deleted
-        @return: final_array_CL an array containing the corresponding CL
+        delete
+        @param array_cl: the corresponding Cl array @return: final_array_alpha an array containing
+        the same alphas of the initial array but with the additional zeros deleted
+        @return: final_array_CL an array containing the corresponding CL.
         """
 
         non_zero_array = np.where(array_alpha != 0)
@@ -233,12 +239,15 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
     @staticmethod
     def rearrange_data(array_alpha, array_cl):
         """
-        Function that rearrange the data so that the alpha array is sorted and the cl array is rearranged accordingly
+        Function that rearrange the data so that the alpha array is sorted and the cl array is
+        rearranged accordingly
 
         @param array_alpha: an array with the alpha values in potentially the wrong order
         @param array_cl: the corresponding Cl array
-        @return: final_array_alpha an array containing the same alphas of the initial array but sorted
-        @return: final_array_CL an array containing the corresponding CL in the corresponding position
+        @return: final_array_alpha an array containing the same alphas of the initial array but
+        sorted
+        @return: final_array_CL an array containing the corresponding CL in the corresponding
+        position.
         """
 
         sorter = np.zeros((len(array_alpha), 2))

@@ -1,7 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
-
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,16 +14,10 @@
 
 from openmdao.core.group import Group
 
-from fastga.models.aerodynamics.components.cd0 import Cd0
-from fastga.models.aerodynamics.components.compute_L_D_max import ComputeLDMax
-from fastga.models.aerodynamics.components.compute_cnbeta_fuselage import ComputeCnBetaFuselage
-from fastga.models.aerodynamics.components.clalpha_vt import ComputeClAlphaVT
-from fastga.models.aerodynamics.components.hinge_moments_elevator import (
-    Compute2DHingeMomentsTail,
-    Compute3DHingeMomentsTail,
-)
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+from fastoad.module_management.constants import ModelDomain
+
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
-from fastga.models.aerodynamics.components import ComputeFuselagePitchingMoment
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
@@ -35,8 +26,14 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     _ComputeSlipstreamOpenvsp,
 )
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
+from .constants import (
+    SUBMODEL_CD0,
+    SUBMODEL_CL_ALPHA_VT,
+    SUBMODEL_HINGE_MOMENTS_TAIL,
+    SUBMODEL_MAX_L_D,
+    SUBMODEL_CN_BETA_FUSELAGE,
+    SUBMODEL_CM_ALPHA_FUSELAGE,
+)
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
@@ -126,22 +123,39 @@ class AerodynamicsHighSpeed(Group):
                     ),
                     promotes=["*"],
                 )
+        options_cd0 = {
+            "low_speed_aero": False,
+            "wing_airfoil_file": self.options["wing_airfoil"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+            "propulsion_id": self.options["propulsion_id"],
+        }
         self.add_subsystem(
             "Cd0_all",
-            Cd0(
-                low_speed_aero=False,
-                wing_airfoil_file=self.options["wing_airfoil"],
-                htp_airfoil_file=self.options["htp_airfoil"],
-                propulsion_id=self.options["propulsion_id"],
-            ),
+            RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
-        self.add_subsystem("L_D_max", ComputeLDMax(), promotes=["*"])
-        self.add_subsystem("cnBeta_fuse", ComputeCnBetaFuselage(), promotes=["*"])
-        self.add_subsystem("cmAlpha_fuse", ComputeFuselagePitchingMoment(), promotes=["*"])
-        self.add_subsystem("clAlpha_vt", ComputeClAlphaVT(), promotes=["*"])
-        self.add_subsystem("ch_ht_2d", Compute2DHingeMomentsTail(), promotes=["*"])
-        self.add_subsystem("ch_ht_3d", Compute3DHingeMomentsTail(), promotes=["*"])
+        self.add_subsystem(
+            "L_D_max", RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cnBeta_fuse", RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE), promotes=["*"]
+        )
+        self.add_subsystem(
+            "cmAlpha_fuse",
+            RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
+            promotes=["*"],
+        )
+
+        option_high_speed = {"low_speed_aero": False}
+        self.add_subsystem(
+            "clAlpha_vt",
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "ch_ht", RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
+        )
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp",

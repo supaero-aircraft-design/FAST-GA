@@ -17,9 +17,15 @@
 
 import numpy as np
 import math
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_SEATS_CG
+
+
+@RegisterSubmodel(SUBMODEL_SEATS_CG, "fastga.submodel.weight.cg.furniture.seats.legacy")
 class ComputePassengerSeatsCG(ExplicitComponent):
 
     # TODO: Document equations. Cite sources

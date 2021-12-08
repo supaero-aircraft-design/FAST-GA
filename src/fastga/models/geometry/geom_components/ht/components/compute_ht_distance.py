@@ -18,7 +18,14 @@
 import numpy as np
 import openmdao.api as om
 
+from fastoad.module_management.service_registry import RegisterSubmodel
 
+from ..constants import SUBMODEL_HT_WET_DISTANCE
+
+
+@RegisterSubmodel(
+    SUBMODEL_HT_WET_DISTANCE, "fastga.submodel.geometry.horizontal_tail.distance.legacy"
+)
 class ComputeHTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail distance estimation"""

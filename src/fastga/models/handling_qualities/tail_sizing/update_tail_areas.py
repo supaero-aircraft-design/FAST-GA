@@ -1,6 +1,4 @@
-"""
-Computation of tail areas w.r.t. HQ criteria.
-"""
+"""Computation of tail areas w.r.t. HQ criteria."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,11 +14,10 @@ Computation of tail areas w.r.t. HQ criteria.
 
 import openmdao.api as om
 
-from .update_ht_area import UpdateHTArea
-from .update_vt_area import UpdateVTArea
-
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.module_management.constants import ModelDomain
+
+from .constants import SUBMODEL_HT_AREA, SUBMODEL_VT_AREA
 
 
 @RegisterOpenMDAOSystem(
@@ -40,13 +37,14 @@ class UpdateTailAreas(om.Group):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "horizontal_tail",
-            UpdateHTArea(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_HT_AREA, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "vertical_tail",
-            UpdateVTArea(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_VT_AREA, options=propulsion_option),
             promotes=["*"],
         )

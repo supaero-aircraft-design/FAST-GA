@@ -16,18 +16,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
 import scipy.optimize as optimize
+
 from scipy.constants import g
+
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
 
 
+@RegisterSubmodel(SUBMODEL_LOADCASE_GROUND_X, "fastga.submodel.weight.cg.loadcase.ground.legacy")
 class ComputeGroundCGCase(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Center of gravity estimation for all load cases on ground."""
@@ -99,6 +104,7 @@ class ComputeGroundCGCase(ExplicitComponent):
         outputs["data:weight:aircraft:CG:ground_condition:min:MAC_position"] = cg_fwd_ratio_pl
 
 
+@RegisterSubmodel(SUBMODEL_LOADCASE_FLIGHT_X, "fastga.submodel.weight.cg.loadcase.flight.legacy")
 class ComputeFlightCGCase(ExplicitComponent):
     """Center of gravity estimation for all load cases in flight"""
 

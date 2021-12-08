@@ -11,12 +11,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_cl_extreme import ComputeExtremeCL
+from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_reynolds import ComputeUnitReynolds
 from .compute_cnbeta_fuselage import ComputeCnBetaFuselage
 from .compute_L_D_max import ComputeLDMax
 from .high_lift_aero import ComputeDeltaHighLift
-from .hinge_moments_elevator import Compute2DHingeMomentsTail, Compute3DHingeMomentsTail
+from .hinge_moments_elevator import (
+    Compute2DHingeMomentsTail,
+    Compute3DHingeMomentsTail,
+    ComputeHingeMomentsTail,
+)
 from .mach_interpolation import ComputeMachInterpolation
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .compute_cy_rudder import ComputeCyDeltaRudder
@@ -25,3 +29,5 @@ from .compute_vn import ComputeVNAndVH, ComputeVN
 from .compute_cm_alpha_fus import ComputeFuselagePitchingMoment
 from .compute_equilibrated_polar import ComputeEquilibratedPolar
 from .compute_non_equilibrated_polar import ComputeNonEquilibratedPolar
+from .compute_cl_extreme_wing import ComputeExtremeCLWing
+from .compute_cl_extreme_htp import ComputeExtremeCLHtp

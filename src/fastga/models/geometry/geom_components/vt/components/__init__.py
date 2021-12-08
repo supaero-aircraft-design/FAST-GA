@@ -15,6 +15,6 @@ Estimation of vertical tail geometry (components)
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_vt_chords import ComputeVTChords
-from .compute_vt_mac import ComputeVTmacFD, ComputeVTmacFL
+from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
 from .compute_vt_sweep import ComputeVTSweep
 from .compute_vt_wet_area import ComputeVTWetArea
