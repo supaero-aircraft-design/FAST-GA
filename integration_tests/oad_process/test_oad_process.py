@@ -151,7 +151,7 @@ def test_oad_process_openvsp(cleanup):
 def test_oad_process_mission_builder(cleanup):
     """
     Test the overall aircraft design process only on Cirrus with wing positioning under VLM
-    method with the mission builder from FAST OAD. 
+    method with the mission builder from FAST OAD.
     """
 
     # Copy the mission file in the path we indicated in the configuration file
