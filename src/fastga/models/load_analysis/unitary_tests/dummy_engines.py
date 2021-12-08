@@ -36,11 +36,6 @@ ENGINE_WRAPPER_SR22 = "test.wrapper.load_analysis.cirrus.dummy_engine"
 class DummyEngineBE76(AbstractFuelPropulsion):
     def __init__(
         self,
-        max_power: float,
-        design_altitude_propeller: float,
-        fuel_type: float,
-        strokes_nb: float,
-        prop_layout: float,
     ):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
@@ -99,17 +94,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude_propeller": inputs[
-                "data:aerodynamics:propeller:cruise_level:altitude"
-            ],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
-        }
-
-        return DummyEngineBE76(**engine_params)
+        return DummyEngineBE76()
 
 
 # Cirrus SR22 dummy engine ###################################################################
@@ -117,14 +102,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-    def __init__(
-        self,
-        max_power: float,
-        design_altitude_propeller: float,
-        fuel_type: float,
-        strokes_nb: float,
-        prop_layout: float,
-    ):
+    def __init__(self):
         """
         Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
 
@@ -183,14 +161,4 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude_propeller": inputs[
-                "data:aerodynamics:propeller:cruise_level:altitude"
-            ],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
-        }
-
-        return DummyEngineSR22(**engine_params)
+        return DummyEngineSR22()

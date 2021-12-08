@@ -1,7 +1,4 @@
-"""
-Test module for basicIC_engine.py.
-"""
-
+"""Test module for basicIC_engine.py."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,7 +13,6 @@ Test module for basicIC_engine.py.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import pandas as pd
 
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting

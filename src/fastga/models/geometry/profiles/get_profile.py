@@ -79,8 +79,8 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                 except ValueError:
                     if line[0] != "NACA" and line[0] != "AIRFOIL":
                         _LOGGER.info(
-                            "Problem occurred while reading %s file!"
-                            % pth.join(resources.__path__[0], file_name)
+                            "Problem occurred while reading %s file!",
+                            pth.join(resources.__path__[0], file_name),
                         )
                     else:
                         # Skipping to next line
