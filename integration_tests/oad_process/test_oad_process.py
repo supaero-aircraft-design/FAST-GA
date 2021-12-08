@@ -105,7 +105,8 @@ def test_oad_process_vlm(cleanup):
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
 def test_oad_process_openvsp(cleanup):
     """
-    Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP method.
+    Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP
+    method.
     """
 
     logging.basicConfig(level=logging.WARNING)
@@ -149,8 +150,8 @@ def test_oad_process_openvsp(cleanup):
 
 def test_oad_process_mission_builder(cleanup):
     """
-    Test the overall aircraft design process only on Cirrus with wing positioning under VLM method with the mission
-    builder from FAST OAD.
+    Test the overall aircraft design process only on Cirrus with wing positioning under VLM
+    method with the mission builder from FAST OAD. 
     """
 
     # Copy the mission file in the path we indicated in the configuration file
