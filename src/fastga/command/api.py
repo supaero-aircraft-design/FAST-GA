@@ -1,6 +1,4 @@
-"""
-API.
-"""
+"""API."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -74,7 +72,8 @@ def _create_tmp_directory() -> TemporaryDirectory:
 
 
 def file_temporary_transfer(file_path: str):
-    # Put a copy of original python file into temporary directory and remove plugin registration from current file
+    # Put a copy of original python file into temporary directory and remove plugin registration
+    # from current file
 
     tmp_folder = _create_tmp_directory()
     file_name = pth.split(file_path)[-1]
@@ -148,7 +147,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                     saved_dict[variable_name] = (variable_description, subpackage_path)
             file.close()
 
-        # If path point to ./models directory list output variables described in the different models
+        # If path point to ./models directory list output variables described in the different
+        # models
         if pth.split(subpackage_path)[-1] == "models":
             for root, _, files in os.walk(subpackage_path, topdown=False):
                 vd_file_empty_description = False
@@ -206,13 +206,14 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                     tmp_folder = None
                     # noinspection PyBroadException
                     try:
-                        # if register decorator in module, temporary replace file removing decorators
+                        # if register decorator in module, temporary replace file removing
+                        # decorators
                         # noinspection PyBroadException
                         try:
                             spec.loader.exec_module(module)
                         except:
                             _LOGGER.info(
-                                "Trying to load %s, but it is not a module!" % pth.join(root, name)
+                                "Trying to load %s, but it is not a module!", pth.join(root, name)
                             )
                         if "RegisterOpenMDAOSystem" in dir(module):
                             tmp_folder = file_temporary_transfer(pth.join(root, name))
@@ -261,8 +262,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     # noinspection PyProtectedMember
                                     if option_name in my_class().options._dict.keys():
                                         local_options.append(option_name)
-                                # If no boolean options alternatives to be tested, search for input variables in models
-                                # and output variables for subpackages (including ivc)
+                                # If no boolean options alternatives to be tested, search for
+                                # input variables in models and output variables for subpackages
+                                # (including ivc)
                                 if len(local_options) == 0:
                                     if pth.split(subpackage_path)[-1] == "models":
                                         var_names = [var.name for var in variables if var.is_input]
@@ -285,7 +287,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                             )
                                     # Remove duplicates
                                     var_names = list(dict.fromkeys(var_names))
-                                    # Add to dictionary only variable name including data:, settings: or tuning:
+                                    # Add to dictionary only variable name including data:,
+                                    # settings: or tuning:
                                     for key in var_names:
                                         if (
                                             ("data:" in key)
@@ -294,8 +297,9 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         ):
                                             if key not in dict_to_be_saved.keys():
                                                 dict_to_be_saved[key] = ""
-                                # If boolean options alternatives encountered, all alternatives have to be tested to
-                                # ensure complete coverage of variables. Working principle is similar to previous one.
+                                # If boolean options alternatives encountered, all alternatives
+                                # have to be tested to ensure complete coverage of variables.
+                                # Working principle is similar to previous one.
                                 else:
                                     for options_tuple in list(
                                         product([True, False], repeat=len(local_options))
@@ -329,7 +333,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                 )
                                         # Remove duplicates
                                         var_names = list(dict.fromkeys(var_names))
-                                        # Add to dictionary only variable name including data:, settings: or tuning:
+                                        # Add to dictionary only variable name including data:,
+                                        # settings: or tuning:
                                         for key in var_names:
                                             if (
                                                 ("data:" in key)
@@ -363,7 +368,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 file.write("# Documentation of variables used in FAST-GA models\n")
                 file.write("# Each line should be like:\n")
                 file.write(
-                    "# my:variable||The description of my:variable, as long as needed, but on one line.\n"
+                    "# my:variable||The description of my:variable, as long as needed, but on one "
+                    "line.\n "
                 )
                 file.write(
                     '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
@@ -383,9 +389,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             file.close()
             if added_key:
                 warnings.warn(
-                    "file variable_descriptions.txt from {} subpackage contains empty descriptions! \n".format(
-                        pth.split(subpackage_path)[-1]
-                    )
+                    "file variable_descriptions.txt from {} subpackage contains empty "
+                    "descriptions! \n".format(pth.split(subpackage_path)[-1])
                     + "\tFollowing variables have empty descriptions : "
                     + ", ".join(added_key_names)
                 )
@@ -452,7 +457,8 @@ def write_needed_inputs(
 
 
 def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitComponent, Group]):
-    # List all "root" components in the systems, meaning the components that don't have any subcomponents
+    # List all "root" components in the systems, meaning the components that don't have any
+    # subcomponents
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
     problem = FASTOADProblem(group)
@@ -500,9 +506,10 @@ def generate_block_analysis(
     inputs_names = [var.name for var in variables if var.is_input]
     outputs_names = [var.name for var in variables if not var.is_input]
 
-    # Check the sub-systems of the local_system in question, and if there are ivc, list the outputs  of those ivc.
-    # We are gonna assume that ivc are only use in a situation similar to the one for the ComputePropellerPerformance
-    # group, meaning if there is an ivc, it will always start the group
+    # Check the sub-systems of the local_system in question, and if there are ivc, list the
+    # outputs  of those ivc. We are gonna assume that ivc are only use in a situation similar to
+    # the one for the ComputePropellerPerformance group, meaning if there is an ivc,
+    # it will always start the group
 
     ivc_outputs_names = list_ivc_outputs_name(local_system)
 
@@ -536,7 +543,8 @@ def generate_block_analysis(
             set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
             == set(inputs_names)
         ):
-            # If some inputs are missing write an error message and add them to the problem if authorized
+            # If some inputs are missing write an error message and add them to the problem if
+            # authorized
             missing_inputs = list(
                 set(inputs_names).difference(
                     set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
@@ -566,14 +574,17 @@ def generate_block_analysis(
             else:
                 raise Exception(message)
         else:
-            # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the function
+            # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the
+            # function
             def patched_function(inputs_dict: dict) -> dict:
                 """
-                The patched function perform a run of an openmdao component or group applying FASTOAD formalism.
+                The patched function perform a run of an openmdao component or group applying
+                FASTOAD formalism.
 
                 @param inputs_dict: dictionary of input (values, units) saved with their key name,
                 as an example: inputs_dict = {'in1': (3.0, "m")}.
-                @return: dictionary of the component/group outputs saving names as keys and (value, units) as tuple.
+                @return: dictionary of the component/group outputs saving names as keys and (value,
+                units) as tuple.
                 """
 
                 # Read .xml file and construct Independent Variable Component excluding outputs

@@ -1,6 +1,4 @@
-"""
-Management of 2D wing profiles.
-"""
+"""Management of 2D wing profiles."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,14 +13,12 @@ Management of 2D wing profiles.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import operator
-import copy
-from collections import namedtuple
-from typing import Sequence, Tuple
-
 import numpy as np
 import pandas as pd
+
 from scipy.interpolate import interp1d
-from scipy import interpolate
+from collections import namedtuple
+from typing import Sequence, Tuple
 
 Coordinates2D = namedtuple("Coordinates2D", ["x", "y"])
 
