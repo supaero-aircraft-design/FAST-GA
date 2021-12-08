@@ -37,7 +37,7 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
     ComputeSlipstreamOpenvsp,
 )
 from fastga.models.aerodynamics.components import (
-    ComputeExtremeCL,
+    ComputeAircraftMaxCl,
     ComputeUnitReynolds,
     ComputeCnBetaFuselage,
     ComputeLDMax,
@@ -53,6 +53,8 @@ from fastga.models.aerodynamics.components import (
     ComputeFuselagePitchingMoment,
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
+    ComputeExtremeCLWing,
+    ComputeExtremeCLHtp,
 )
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
@@ -697,43 +699,50 @@ def high_lift(
     ) == pytest.approx(cd_delta_elev, abs=1e-4)
 
 
-def extreme_cl(
-    XML_FILE: str,
-    cl_max_clean_wing: float,
-    cl_min_clean_wing: float,
-    cl_max_takeoff_wing: float,
-    cl_max_landing_wing: float,
-    cl_max_clean_htp: float,
-    cl_min_clean_htp: float,
-    alpha_max_clean_htp: float,
-    alpha_min_clean_htp: float,
-):
-    """Tests maximum/minimum cl component with default result cl=f(y) curve!"""
+def wing_extreme_cl_clean(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float):
+    """Tests maximum minimum lift coefficient for clean wing."""
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCL()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLWing()), __file__, XML_FILE)
 
     # Run problem
-    problem = run_system(ComputeExtremeCL(), ivc)
+    problem = run_system(ComputeExtremeCLWing(), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
 
-    # Check obtained value(s) is/(are) correct
     assert problem["data:aerodynamics:wing:low_speed:CL_max_clean"] == pytest.approx(
         cl_max_clean_wing, abs=1e-2
     )
     assert problem["data:aerodynamics:wing:low_speed:CL_min_clean"] == pytest.approx(
         cl_min_clean_wing, abs=1e-2
     )
-    assert problem["data:aerodynamics:aircraft:takeoff:CL_max"] == pytest.approx(
-        cl_max_takeoff_wing, abs=1e-2
-    )
-    assert problem["data:aerodynamics:aircraft:landing:CL_max"] == pytest.approx(
-        cl_max_landing_wing, abs=1e-2
-    )
+
+
+def htp_extreme_cl_clean(
+    XML_FILE: str,
+    cl_max_clean_htp: float,
+    cl_min_clean_htp: float,
+    alpha_max_clean_htp: float,
+    alpha_min_clean_htp: float,
+):
+    """Tests maximum minimum lift coefficient for clean htp."""
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file for Openvsp test
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLHtp()), __file__, XML_FILE)
+
+    # Run problem
+    problem = run_system(ComputeExtremeCLHtp(), ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
     assert problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"] == pytest.approx(
         cl_max_clean_htp, abs=1e-2
     )
@@ -746,6 +755,33 @@ def extreme_cl(
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min", units="deg"
     ) == pytest.approx(alpha_min_clean_htp, abs=1e-2)
+
+
+def extreme_cl(
+    XML_FILE: str,
+    cl_max_takeoff_wing: float,
+    cl_max_landing_wing: float,
+):
+    """Tests maximum/minimum cl component with default result cl=f(y) curve!"""
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file for Openvsp test
+    ivc = get_indep_var_comp(list_inputs(ComputeAircraftMaxCl()), __file__, XML_FILE)
+
+    # Run problem
+    problem = run_system(ComputeAircraftMaxCl(), ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    assert problem["data:aerodynamics:aircraft:takeoff:CL_max"] == pytest.approx(
+        cl_max_takeoff_wing, abs=1e-2
+    )
+    assert problem["data:aerodynamics:aircraft:landing:CL_max"] == pytest.approx(
+        cl_max_landing_wing, abs=1e-2
+    )
 
 
 def l_d_max(

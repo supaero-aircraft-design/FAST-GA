@@ -29,7 +29,9 @@ from .constants import (
     SUBMODEL_CD0,
     SUBMODEL_AIRFOIL_LIFT_SLOPE,
     SUBMODEL_DELTA_HIGH_LIFT,
-    SUBMODEL_CL_EXTREME_CLEAN,
+    SUBMODEL_CL_EXTREME_CLEAN_HT,
+    SUBMODEL_CL_EXTREME_CLEAN_WING,
+    SUBMODEL_CL_EXTREME,
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_CY_RUDDER,
 )
@@ -104,13 +106,25 @@ class AerodynamicsLowSpeed(Group):
             "high_lift", RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
         )
 
-        options_cl_extreme = {
-            "wing_airfoil_file": self.options["wing_airfoil"],
-            "htp_airfoil_file": self.options["htp_airfoil"],
-        }
+        option_wing_airfoil = {"wing_airfoil_file": self.options["wing_airfoil"]}
         self.add_subsystem(
-            "Cl_extreme",
-            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME_CLEAN, options=options_cl_extreme),
+            "wing_extreme_cl_clean",
+            RegisterSubmodel.get_submodel(
+                SUBMODEL_CL_EXTREME_CLEAN_WING, options=option_wing_airfoil
+            ),
+            promotes=["*"],
+        )
+
+        option_htp_airfoil = {"htp_airfoil_file": self.options["htp_airfoil"]}
+        self.add_subsystem(
+            "htp_extreme_cl_clean",
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME_CLEAN_HT, options=option_htp_airfoil),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "aircraft_extreme_cl",
+            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME),
             promotes=["*"],
         )
 

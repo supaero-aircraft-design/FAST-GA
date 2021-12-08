@@ -34,6 +34,8 @@ from .test_functions import (
     hinge_moments,
     high_lift,
     extreme_cl,
+    wing_extreme_cl_clean,
+    htp_extreme_cl_clean,
     l_d_max,
     cnbeta,
     slipstream_openvsp_cruise,
@@ -565,18 +567,40 @@ def test_high_lift():
     system() != "Windows",
     reason="No XFOIL executable available: not computed with empty result folder",
 )
-def test_extreme_cl():
+def test_extreme_cl_wing_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    extreme_cl(
+    wing_extreme_cl_clean(
         XML_FILE,
         cl_max_clean_wing=1.50,
         cl_min_clean_wing=-1.20,
-        cl_max_takeoff_wing=1.58,
-        cl_max_landing_wing=1.87,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows",
+    reason="No XFOIL executable available: not computed with empty result folder",
+)
+def test_extreme_cl_htp_clean():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    htp_extreme_cl_clean(
+        XML_FILE,
         cl_max_clean_htp=0.30,
         cl_min_clean_htp=-0.30,
         alpha_max_clean_htp=30.39,
         alpha_min_clean_htp=-30.36,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows",
+    reason="No XFOIL executable available: not computed with empty result folder",
+)
+def test_extreme_cl():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    extreme_cl(
+        XML_FILE,
+        cl_max_takeoff_wing=1.45,
+        cl_max_landing_wing=1.73,
     )
 
 

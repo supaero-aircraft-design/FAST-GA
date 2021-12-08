@@ -27,7 +27,11 @@ SUBMODEL_CD0_OTHER = "submodel.aerodynamics.other.cd0"
 SUBMODEL_CD0_SUM = "submodel.aerodynamics.sum.cd0"
 SUBMODEL_AIRFOIL_LIFT_SLOPE = "submodel.aerodynamics.airfoil.all.lift_curve_slope"
 SUBMODEL_DELTA_HIGH_LIFT = "submodel.aerodynamics.high_lift.delta"
-SUBMODEL_CL_EXTREME_CLEAN = "submodel.aerodynamics.extreme_lift_coefficient.clean"
+SUBMODEL_CL_EXTREME = "submodel.aerodynamics.aircraft.extreme_lift_coefficient"
+SUBMODEL_CL_EXTREME_CLEAN_WING = "submodel.aerodynamics.wing.extreme_lift_coefficient.clean"
+SUBMODEL_CL_EXTREME_CLEAN_HT = (
+    "submodel.aerodynamics.horizontal_tail.extreme_lift_coefficient.clean"
+)
 SUBMODEL_CL_ALPHA_VT = "submodel.aerodynamics.vertical_tail.lift_curve_slope"
 SUBMODEL_CY_RUDDER = "submodel.aerodynamics.rudder.yawing_moment"
 SUBMODEL_HINGE_MOMENTS_TAIL_2D = "submodel.aerodynamics.tail.hinge_moments.2d"
