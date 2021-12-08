@@ -154,7 +154,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         # ... so check that all EngineSetting values are in dict
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values.keys()]
         if unknown_keys:
-            raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
+            raise FastUnknownEngineSettingError("Unknown flight phases: %s", str(unknown_keys))
 
     @staticmethod
     def read_map(map_file_path):

@@ -1,6 +1,4 @@
-"""
-Vortex Lattice Method implementation.
-"""
+"""Vortex Lattice Method implementation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -95,8 +93,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """
-        Function that perform a complete calculation of aerodynamic parameters under VLM and returns only the
-        cl_alpha_aircraft parameter.
+        Function that perform a complete calculation of aerodynamic parameters under VLM and
+        returns only the cl_alpha_aircraft parameter.
 
         """
         _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coef(
@@ -106,8 +104,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
         """
-        Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a function of Mach
-        for later use in the computation of the V-n diagram
+        Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
+        function of Mach for later use in the computation of the V-n diagram
         """
         mach_interp = np.log(np.linspace(np.exp(0.15), np.exp(1.55 * cruise_mach), MACH_NB_PTS))
         cl_alpha_interp = np.zeros(np.size(mach_interp))
@@ -116,8 +114,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 inputs, altitude, mach_interp[idx], aoa_angle
             )
 
-        # We add the case were M=0, for thoroughness and since we are in an incompressible flow, the Cl_alpha is
-        # approximately the same as for the first Mach of the interpolation
+        # We add the case were M=0, for thoroughness and since we are in an incompressible flow,
+        # the Cl_alpha is approximately the same as for the first Mach of the interpolation
         mach_interp = np.insert(mach_interp, 0, 0.0)
         cl_alpha_inc = cl_alpha_interp[0]
         cl_alpha_interp = np.insert(cl_alpha_interp, 0, cl_alpha_inc)
@@ -126,15 +124,16 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def compute_aero_coef(self, inputs, altitude, mach, aoa_angle):
         """
-        Function that computes in VLM environment all the aerodynamic parameters @0° and aoa_angle and calculate
-        the associated derivatives.
+        Function that computes in VLM environment all the aerodynamic parameters @0° and
+        aoa_angle and calculate the associated derivatives.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing, cl_0_htp,\
-               cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp, coef_k_htp parameters.
+        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
+        cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
+        coef_k_htp parameters.
         """
 
         # Fix mach number of digits to consider similar results
@@ -219,7 +218,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             htp_0_isolated = self.compute_htp(inputs, altitude, mach, 0.0, use_airfoil=True)
             htp_X_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
 
-            # Post-process wing data -----------------------------------------------------------------------------------
+            # Post-process wing data ---------------------------------------------------------------
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             beta = math.sqrt(1 - mach ** 2)  # Prandtl-Glauert
             cl_0_wing = float(wing_0["cl"] * k_fus / beta)
@@ -242,7 +241,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             coef_e = float(coef_e * k_fus)
             coef_k_wing = float(1.0 / (math.pi * aspect_ratio_wing * coef_e))
 
-            # Post-process HTP-aircraft data ---------------------------------------------------------------------------
+            # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
             cl_X_htp = float(htp_X["cl"]) / beta * area_ratio
             cl_alpha_htp = float((cl_X_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
@@ -258,7 +257,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_htp = htp_X["y_vector"]
             cl_vector_htp = (np.array(htp_X["cl_vector"]) / beta * area_ratio).tolist()
 
-            # Post-process HTP-isolated data ---------------------------------------------------------------------------
+            # Post-process HTP-isolated data -------------------------------------------------------
             cl_alpha_htp_isolated = (
                 float(htp_X_isolated["cl"] - htp_0_isolated["cl"])
                 / beta
@@ -266,7 +265,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 / (aoa_angle * math.pi / 180)
             )
 
-            # Resize vectors -------------------------------------------------------------------------------------------
+            # Resize vectors -----------------------------------------------------------------------
             if SPAN_MESH_POINT < len(y_vector_wing):
                 y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
                 cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
@@ -292,7 +291,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_htp.extend(additional_zeros)
                 cl_vector_htp.extend(additional_zeros)
 
-            # Save results to defined path -----------------------------------------------------------------------------
+            # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
@@ -315,7 +314,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
-            # Read values from result file -----------------------------------------------------------------------------
+            # Read values from result file ---------------------------------------------------------
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
@@ -380,8 +379,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @param aoa_angle: air speed angle of attack with respect to aircraft (degree)
         @param flaps_angle: flaps angle in Deg (default=0.0: i.e. no deflection)
         @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True)
-        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector, cm_vector, cl
-        cdi, cm, coef_e
+        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
+        cm_vector, cl, cdi, cm, coef_e
         """
 
         # Generate geometries
@@ -471,8 +470,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft (degree)
         @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True)
-        @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector, cm_vector, cl
-        cdi, cm, coef_e
+        @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
+        cm_vector, cl, cdi, cm, coef_e
         """
 
         # Generate geometries
@@ -558,7 +557,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @param aoa_angle: air speed angle of attack with respect to aircraft (degree)
         @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True)
         @param flaps_angle: flaps angle in Deg (default=0.0: i.e. no deflection)
-        @return: wing/htp and aircraft dictionaries including their respective aerodynamic coefficients
+        @return: wing/htp and aircraft dictionaries including their respective aerodynamic
+        coefficients
         """
 
         # Get inputs
@@ -825,7 +825,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["aic_wake"] = aic_wake
 
     def generate_curvature(self, dictionary, file_name):
-        """Generates curvature corresponding to the airfoil contained in .af file"""
+        """Generates curvature corresponding to the airfoil contained in .af file."""
 
         x_panel = dictionary["x_panel"]
         panelangle_vect = dictionary["panel_angle_vect"]
@@ -858,7 +858,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["z"] = z_panel
 
     def apply_deflection(self, inputs, deflection_angle):
-        """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]"""
+        """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]."""
 
         root_chord = inputs["data:geometry:wing:root:chord"]
         x_start = (1.0 - inputs["data:geometry:flap:chord_ratio"]) * root_chord
@@ -900,7 +900,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param lift_coeff: CL array
         :param drag_coeff: CDp array
         :param ojective: CL_ref objective value
-        :return: CD_ref if CL_ref encountered, or default value otherwise
+        :return: CD_ref if CL_ref encountered, or default value otherwise.
         """
         # Reduce vectors for interpolation
         for idx in range(len(lift_coeff)):

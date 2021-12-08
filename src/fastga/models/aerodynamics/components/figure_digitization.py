@@ -579,7 +579,8 @@ class FigureDigitization(om.ExplicitComponent):
             ):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
-                    "value clipped, reference value is %f" % reference_angle
+                    "value clipped, reference value is %f",
+                    reference_angle,
                 )
             k3 = interpolate.interp1d(x, y)(np.clip(float(angle / reference_angle), min(x), max(x)))
         else:

@@ -1,6 +1,4 @@
-"""
-    Estimation of cl/cm/oswald aero coefficients using OPENVSP.
-"""
+"""Estimation of cl/cm/oswald aero coefficients using OPENVSP."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -112,8 +110,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_cl_alpha_aircraft(self, inputs, outputs, altitude, mach, aoa_angle):
         """
-        Function that perform a complete calculation of aerodynamic parameters under OpenVSP and returns only the
-        cl_alpha_aircraft parameter.
+        Function that perform a complete calculation of aerodynamic parameters under OpenVSP and
+        returns only the cl_alpha_aircraft parameter.
 
         """
         _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coef(
@@ -123,8 +121,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
         """
-        Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a function of Mach
-        for later use in the computation of the V-n diagram
+        Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
+        function of Mach for later use in the computation of the V-n diagram
         """
         mach_interp = np.log(np.linspace(np.exp(0.15), np.exp(1.55 * cruise_mach), MACH_NB_PTS))
         cl_alpha_interp = np.zeros(np.size(mach_interp))
@@ -133,8 +131,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 inputs, outputs, altitude, mach_interp[idx], aoa_angle
             )
 
-        # We add the case were M=0, for thoroughness and since we are in an incompressible flow, the Cl_alpha is
-        # approximately the same as for the first Mach of the interpolation
+        # We add the case were M=0, for thoroughness and since we are in an incompressible flow,
+        # the Cl_alpha is approximately the same as for the first Mach of the interpolation
         mach_interp = np.insert(mach_interp, 0, 0.0)
         cl_alpha_inc = cl_alpha_interp[0]
         cl_alpha_interp = np.insert(cl_alpha_interp, 0, cl_alpha_inc)
@@ -143,16 +141,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_aero_coef(self, inputs, outputs, altitude, mach, aoa_angle):
         """
-        Function that computes in OpenVSP environment all the aerodynamic parameters @0° and aoa_angle and calculate
-        the associated derivatives.
+        Function that computes in OpenVSP environment all the aerodynamic parameters @0° and
+        aoa_angle and calculate the associated derivatives.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing, cl_0_htp,\
-               cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp, coef_k_htp parameters.
+        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
+        cl_0_htp,  cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
+        coef_k_htp parameters.
         """
 
         # Fix mach number of digits to consider similar results
@@ -217,7 +216,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             htp_0_isolated = self.compute_isolated_htp(inputs, outputs, altitude, mach, 0.0)
             htp_X_isolated = self.compute_isolated_htp(inputs, outputs, altitude, mach, aoa_angle)
 
-            # Post-process wing data -----------------------------------------------------------------------------------
+            # Post-process wing data ---------------------------------------------------------------
             width_max = inputs["data:geometry:fuselage:maximum_width"]
             span_wing = inputs["data:geometry:wing:span"]
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
@@ -229,11 +228,12 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
             chord_vector_wing = wing_0["chord_vector"]
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
-            # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(piAe) -> e' = e/1.05^2
+            # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
+            # piAe) -> e' = e/1.05^2
             coef_e = float(wing_X["coef_e"] * k_fus / 1.05 ** 2)
             coef_k_wing = float(1.0 / (math.pi * span_wing ** 2 / sref_wing * coef_e))
 
-            # Post-process HTP-aircraft data ---------------------------------------------------------------------------
+            # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"])
             cl_X_htp = float(htp_X["cl"])
             cl_alpha_htp = float((cl_X_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
@@ -241,14 +241,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             y_vector_htp = htp_X["y_vector"]
             cl_vector_htp = (np.array(htp_X["cl_vector"]) * area_ratio).tolist()
 
-            # Post-process HTP-isolated data ---------------------------------------------------------------------------
+            # Post-process HTP-isolated data -------------------------------------------------------
             cl_alpha_htp_isolated = (
                 float(htp_X_isolated["cl"] - htp_0_isolated["cl"])
                 * area_ratio
                 / (aoa_angle * math.pi / 180)
             )
 
-            # Resize vectors -------------------------------------------------------------------------------------------
+            # Resize vectors -----------------------------------------------------------------------
             if SPAN_MESH_POINT < len(y_vector_wing):
                 y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
                 cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
@@ -274,7 +274,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 y_vector_htp.extend(additional_zeros)
                 cl_vector_htp.extend(additional_zeros)
 
-            # Save results to defined path -----------------------------------------------------------------------------
+            # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
@@ -297,7 +297,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
-            # Read values from result file -----------------------------------------------------------------------------
+            # Read values from result file ---------------------------------------------------------
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
@@ -346,19 +346,20 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_wing(self, inputs, outputs, altitude, mach, aoa_angle):
         """
-        Function that computes in OpenVSP environment the wing alone and returns the different aerodynamic parameters.
+        Function that computes in OpenVSP environment the wing alone and returns the different
+        aerodynamic parameters.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to wing (degree)
-        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector, cm_vector, cl
-        cdi, cm, coef_e
+        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
+        cm_vector, cl, cdi, cm, coef_e
         """
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ########################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
+        ############################################################################################
 
         # Get inputs (and calculate missing ones)
         sref_wing = float(inputs["data:geometry:wing:area"])
@@ -383,11 +384,11 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
         reynolds = v_inf * l0_wing / atm.kinematic_viscosity
 
-        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###################################
-        ################################################################################################################
+        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
+        ############################################################################################
 
-        # If a folder path is specified for openvsp .exe, it becomes working directory (target), if not temporary folder
-        # is created
+        # If a folder path is specified for openvsp .exe, it becomes working directory (target),
+        # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
@@ -575,15 +576,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_isolated_htp(self, inputs, outputs, altitude, mach, aoa_angle):
         """
-        Function that computes in OpenVSP environment the HTP alone and returns the different aerodynamic parameters.
+        Function that computes in OpenVSP environment the HTP alone and returns the different
+        aerodynamic parameters.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to htp (degree)
-        @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector, cm_vector, cl
-        cdi, cm, coef_e
+        @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
+        cm_vector, cl, cdi, cm, coef_e
         """
 
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
@@ -792,19 +794,21 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     def compute_aircraft(self, inputs, outputs, altitude, mach, aoa_angle):
         """
-        Function that computes in OpenVSP environment the complete aircraft (considering wing and horizontal tail plan)
-        and returns the different aerodynamic parameters. The downwash is done by OpenVSP considering far field.
+        Function that computes in OpenVSP environment the complete aircraft (considering wing and
+        horizontal tail plan) and returns the different aerodynamic parameters. The downwash is
+        done by OpenVSP considering far field.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: wing/htp and aircraft dictionaries including their respective aerodynamic coefficients
+        @return: wing/htp and aircraft dictionaries including their respective aerodynamic
+        coefficients
         """
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ########################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
+        ############################################################################################
 
         # Get inputs (and calculate missing ones)
         sref_wing = float(inputs["data:geometry:wing:area"])
@@ -838,11 +842,11 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
         reynolds = v_inf * l0_wing / atm.kinematic_viscosity
 
-        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###################################
-        ################################################################################################################
+        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
+        ############################################################################################
 
-        # If a folder path is specified for openvsp .exe, it becomes working directory (target), if not temporary folder
-        # is created
+        # If a folder path is specified for openvsp .exe, it becomes working directory (target),
+        # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
@@ -877,8 +881,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO WORKDIR ##############
-        ################################################################################################################
+        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
+        # WORKDIR ##################################################################################
 
         output_file_list = [
             pth.join(
@@ -934,14 +938,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
             parser.generate()
 
-        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #########################################################
-        ################################################################################################################
+        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
+        ############################################################################################
 
         self.options["external_output_files"] = output_file_list
         super().compute(inputs, outputs)
 
-        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ##########################
-        ################################################################################################################
+        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
+        ############################################################################################
 
         input_file_list = output_file_list
         input_file_list.append(input_file_list[0].replace("csv", "vspaero"))
@@ -963,8 +967,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #####################
-        ################################################################################################################
+        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
+        ############################################################################################
 
         parser = InputFileGenerator()
         template_file = pth.split(input_file_list[1])[1]
@@ -992,13 +996,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(reynolds), 0, 3)
             parser.generate()
 
-        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ########################################
-        ################################################################################################################
+        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
+        ############################################################################################
 
         super().compute(inputs, outputs)
 
-        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #########################################
-        ################################################################################################################
+        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
+        ############################################################################################
 
         # Open .lod file and extract data
         wing_y_vect = []
@@ -1217,8 +1221,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 
     def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust_rate):
         """
-        Function that computes in OpenVSP environment the wing with a rotor and returns the different aerodynamic
-        parameters.
+        Function that computes in OpenVSP environment the wing with a rotor and returns the
+        different aerodynamic parameters.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
@@ -1226,13 +1230,14 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to wing (degree)
         @param thrust_rate: thrust rate for computation of the power and thrust coefficient
-        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector, cm_vector, cl
-        cdi, cm, coef_e
+        @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
+        cm_vector, cl, cdi, cm, coef_e
         """
 
-        # TODO : Check for rules that would allow the scaling of these results i.e, same D/span gives same results...
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ########################################
-        ################################################################################################################
+        # TODO : Check for rules that would allow the scaling of these results i.e, same D/span
+        #  gives same results...
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
+        ############################################################################################
 
         # Get inputs (and calculate missing ones)
         sref_wing = float(inputs["data:geometry:wing:area"])
@@ -1273,8 +1278,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
         reynolds = v_inf * l0_wing / atm.kinematic_viscosity
 
-        # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM EFFECTS ON THE WING ########
-        ################################################################################################################
+        # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM ########
+        # EFFECTS ON THE WING ######################################################################
 
         propulsion_model = FuelEngineSet(
             self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
@@ -1312,8 +1317,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             motor_pos_z[0] = 0.0
             motor_rpm_signed[0] = engine_rpm
             eng_per_wing = 1
-            # Even if there is no engine of the wing, we put one so that we pick the correct template, the engine will
-            # be placed on the nose
+            # Even if there is no engine of the wing, we put one so that we pick the correct
+            # template, the engine will be placed on the nose
         else:
             if (
                 engine_count % 2 == 1.0
@@ -1328,7 +1333,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                 eng_per_wing = int(engine_count / 2)
 
             i = 0
-            # We put engine on the wings now, later, their position will be described by an array in the xml
+            # We put engine on the wings now, later, their position will be described by an array
+            # in the xml
             for y_ratio in y_ratio_array:
 
                 y_engine = y_ratio * semi_span
@@ -1366,11 +1372,11 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
                 motor_rpm_signed[eng_start + eng_per_wing + i] = -float(prop_rpm_loop)
                 i += 1
 
-        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###################################
-        ################################################################################################################
+        # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
+        ############################################################################################
 
-        # If a folder path is specified for openvsp .exe, it becomes working directory (target), if not temporary folder
-        # is created
+        # If a folder path is specified for openvsp .exe, it becomes working directory (target),
+        # if not temporary folder is created
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
@@ -1402,8 +1408,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO WORKDIR ##############
-        ################################################################################################################
+        # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
+        # WORKDIR ##################################################################################
 
         output_file_list = [
             pth.join(
@@ -1442,14 +1448,14 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
             parser.generate()
 
-        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #########################################################
-        ################################################################################################################
+        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
+        ############################################################################################
 
         self.options["external_output_files"] = output_file_list
         super().compute(inputs, outputs)
 
-        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ##########################
-        ################################################################################################################
+        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
+        ############################################################################################
 
         input_file_list = output_file_list
         input_file_list.append(input_file_list[0].replace(".csv", ".vspaero"))
@@ -1471,8 +1477,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         batch_file.write(command)
         batch_file.close()
 
-        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #####################
-        ################################################################################################################
+        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
+        ############################################################################################
 
         parser = InputFileGenerator()
 
@@ -1530,13 +1536,13 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 
         os.remove(pth.join(local_resources.__path__[0], rotor_template_file_name))
 
-        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ########################################
-        ################################################################################################################
+        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
+        ############################################################################################
 
         super().compute(inputs, outputs)
 
-        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #########################################
-        ################################################################################################################
+        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
+        ############################################################################################
 
         # Open .lod file and extract data
         wing_y_vect = []
@@ -1593,12 +1599,12 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 def generate_wing_rotor_file(engine_count: int):
 
     """
-    Uses the base VSPAERO template file to generate a file with all the line required to launch OpenVSP with n rotors
-    in the run
+    Uses the base VSPAERO template file to generate a file with all the line required to launch
+    OpenVSP with n rotors in the run
 
     :param engine_count: the number of engine in the run
 
-    return the path to the new template file for the n rotor run
+    return the path to the new template file for the n rotor run.
     """
 
     rotor_template_file_name = "wing_" + str(engine_count) + "_rotor_openvsp_DegenGeom.vspaero"
