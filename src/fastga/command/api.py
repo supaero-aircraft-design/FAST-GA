@@ -345,9 +345,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                                     dict_to_be_saved[key] = ""
                             except:
                                 _LOGGER.info(
-                                    "Failed to read {}.{} class parameters!".format(
-                                        root_lib, class_name
-                                    )
+                                    "Failed to read %s.%s class parameters!", (root_lib, class_name)
                                 )
                     except:
                         if not (tmp_folder is None):

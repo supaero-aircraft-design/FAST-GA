@@ -1,6 +1,4 @@
-"""
-Test module for geometry functions of cg components.
-"""
+"""Test module for geometry functions of cg components."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -30,9 +28,9 @@ from fastoad.constants import EngineSetting
 ENGINE_WRAPPER_BE76 = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
 
-########################################################################################################################
-########################### Beechcraft BE76 dummy engine ###############################################################
-########################################################################################################################
+####################################################################################################
+# Beechcraft BE76 dummy engine #####################################################################
+####################################################################################################
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
@@ -106,20 +104,13 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         return DummyEngineBE76(**engine_params)
 
 
-########################################################################################################################
-########################### Cirrus SR22 dummy engine ###################################################################
-########################################################################################################################
+####################################################################################################
+# Cirrus SR22 dummy engine #########################################################################
+####################################################################################################
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
-    def __init__(
-        self,
-        max_power: float,
-        design_altitude_propeller: float,
-        fuel_type: float,
-        strokes_nb: float,
-        prop_layout: float,
-    ):
+    def __init__(self):
         """
         Dummy engine model returning nacelle dimensions height-width-length-wet_area.
 
@@ -168,14 +159,5 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-        engine_params = {
-            "max_power": inputs["data:propulsion:IC_engine:max_power"],
-            "design_altitude_propeller": inputs[
-                "data:aerodynamics:propeller:cruise_level:altitude"
-            ],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
-            "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
-            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
-        }
 
-        return DummyEngineSR22(**engine_params)
+        return DummyEngineSR22()

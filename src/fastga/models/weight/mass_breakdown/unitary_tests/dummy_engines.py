@@ -1,6 +1,4 @@
-"""
-Test module for geometry functions of cg components.
-"""
+"""Test module for geometry functions of mass breakdown components."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +19,7 @@ import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.model_base import FlightPoint, Atmosphere
+from fastoad.model_base import FlightPoint
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion

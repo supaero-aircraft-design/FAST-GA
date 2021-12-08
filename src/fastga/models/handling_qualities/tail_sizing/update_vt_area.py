@@ -462,9 +462,6 @@ class _UpdateVTArea(VTPConstraints):
       - compensate 1-failed engine linear trajectory at landing.
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
