@@ -33,6 +33,7 @@ from .constants import (
     SUBMODEL_MAX_L_D,
     SUBMODEL_CN_BETA_FUSELAGE,
     SUBMODEL_CM_ALPHA_FUSELAGE,
+    SUBMODEL_CY_RUDDER,
 )
 
 
@@ -150,6 +151,11 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem(
             "clAlpha_vt",
             RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "Cy_Delta_rudder",
+            RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_high_speed),
             promotes=["*"],
         )
 

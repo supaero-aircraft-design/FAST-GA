@@ -136,7 +136,9 @@ class AerodynamicsLowSpeed(Group):
         )
 
         self.add_subsystem(
-            "Cy_Delta_rudder", RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER), promotes=["*"]
+            "Cy_Delta_rudder",
+            RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_low_speed),
+            promotes=["*"],
         )
 
         if self.options["compute_slipstream"]:

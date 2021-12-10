@@ -1,5 +1,6 @@
-"""Package containing the subcomponents necessary for the airframe mass estimation."""
-
+"""
+Test module for mass breakdown functions.
+"""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,11 +14,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .a1_wing_weight import ComputeWingWeight
-from .a1_wing_weight_analytical import ComputeWingMassAnalytical
-from .a2_fuselage_weight import ComputeFuselageWeight
-from .a2_fuselage_weight import ComputeFuselageWeightRaymer
-from .a2_fuselage_weight_analytical import ComputeFuselageMassAnalytical
-from .a3_tail_weight import ComputeTailWeight
-from .a4_flight_control_weight import ComputeFlightControlsWeight
-from .a5_landing_gear_weight import ComputeLandingGearWeight
+import pytest
+
+from ..a_airframe import ComputeFuselageMassAnalytical
+
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+
+XML_FILE = "tbm_900.xml"
+
+
+def _test_compute_fuselage_mass():
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFuselageMassAnalytical()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFuselageMassAnalytical(), ivc)
+    assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(365.0, abs=1e-2)

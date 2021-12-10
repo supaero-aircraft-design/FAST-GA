@@ -1,7 +1,4 @@
-"""
-Update the mass of the wing based on the computation of the sub-wing_components
-in her MAE research project report.
-"""
+"""Computes the mass of the engine support, adapted from Torenbeek by Lucas REMOND."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,21 +13,27 @@ in her MAE research project report.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
+
 import numpy as np
 
 
-class UpdateWingMass(om.ExplicitComponent):
+class ComputeEngineSupport(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:weight:airframe:wing:primary_structure:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:airframe:wing:secondary_structure:mass", val=np.nan, units="kg")
 
-        self.add_output("data:weight:airframe:wing:mass", val=100.0, units="kg")
+        self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+
+        self.add_output("data:weight:airframe:fuselage:engine_support:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        primary_structure_mass = inputs["data:weight:airframe:wing:primary_structure:mass"]
-        secondary_structure_mass = inputs["data:weight:airframe:wing:secondary_structure:mass"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
-        wing_mass = primary_structure_mass + secondary_structure_mass
+        engine_mass = inputs["data:weight:propulsion:engine:mass"]
 
-        outputs["data:weight:airframe:wing:mass"] = wing_mass
+        if prop_layout == 2 or prop_layout == 3:
+            mass_support_engine = 0.025 * engine_mass
+        else:
+            mass_support_engine = 0
+
+        outputs["data:weight:airframe:fuselage:engine_support:mass"] = mass_support_engine
