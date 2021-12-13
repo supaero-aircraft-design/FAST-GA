@@ -41,10 +41,7 @@ from .constants import SUBMODEL_FUSELAGE_MASS
     SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.analytical"
 )
 class ComputeFuselageMassAnalytical(om.Group):
-    """
-    Computes analytically the mass of each component of the fuselage and add them to get total wing
-    mass
-    """
+    """Computes analytically the mass of each fuselage component and add them to get total mass."""
 
     def setup(self):
         self.add_subsystem("compute_shell", ComputeShell(), promotes=["*"])
