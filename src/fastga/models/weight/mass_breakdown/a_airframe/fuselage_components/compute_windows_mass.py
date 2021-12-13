@@ -27,9 +27,7 @@ class ComputeWindows(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:windows:number", val=4.0)
         self.add_input("data:geometry:cabin:windows:height", val=0.5, units="m")
         self.add_input("data:geometry:cabin:windows:width", val=0.5, units="m")
-        self.add_input(
-            "data:geometry:cabin:max_differential_pressure", val=np.nan, units="kg/cm**2"
-        )
+        self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="hPa")
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
@@ -47,7 +45,8 @@ class ComputeWindows(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         fuselage_maximum_width = inputs["data:geometry:fuselage:maximum_width"]
-        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"]
+        # Converting to kg/cm**2, can't be done by OpenMDAO
+        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"] * 0.00102
         cabin_windows_height = inputs["data:geometry:cabin:windows:height"]
         cabin_windows_width = inputs["data:geometry:cabin:windows:width"]
         cabin_windows_number = inputs["data:geometry:cabin:windows:number"]

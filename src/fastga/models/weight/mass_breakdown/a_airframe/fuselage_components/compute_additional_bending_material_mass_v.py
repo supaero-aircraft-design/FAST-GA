@@ -42,8 +42,8 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
 
         self.add_input("data:weight:furniture:passenger_seats:mass", val=np.nan, units="lb")
 
-        self.add_output("data:loads:fuselage:inertia", val=np.nan, units="m**4")
-        self.add_output("data:loads:fuselage:sigmaMh", val=np.nan, units="N/m**2")
+        self.add_input("data:loads:fuselage:inertia", val=np.nan, units="m**4")
+        self.add_input("data:loads:fuselage:sigmaMh", val=np.nan, units="N/m**2")
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
@@ -132,4 +132,4 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
             ) / 2 + b0 * (x_v_bend - wing_centroid)
         additional_mass_vertical = volume * rho_skin
 
-        outputs["data:loads:fuselage:additional_mass:vertical"] = additional_mass_vertical
+        outputs["data:weight:airframe:fuselage:additional_mass:vertical"] = additional_mass_vertical

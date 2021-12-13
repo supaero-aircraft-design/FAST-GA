@@ -51,13 +51,6 @@ class ComputeFuselageMassAnalytical(om.Group):
     mass
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
-        self.linear_solver = om.LinearBlockGS()
-
     def setup(self):
         self.add_subsystem("compute_shell", ComputeShell(), promotes=["*"])
         self.add_subsystem("compute_tail_cone", ComputeTailCone(), promotes=["*"])
@@ -78,16 +71,3 @@ class ComputeFuselageMassAnalytical(om.Group):
             "compute_add_mass_vertical", ComputeAddBendingMassVertical(), promotes=["*"]
         )
         self.add_subsystem("update_fuselage", UpdateFuselageMass(), promotes=["*"])
-
-        # Solver configuration
-        self.nonlinear_solver.options["debug_print"] = True
-        # self.nonlinear_solver.options["err_on_non_converge"] = True
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 100
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
-        self.nonlinear_solver.options["rtol"] = 1e-4
-
-        # self.linear_solver.options["err_on_non_converge"] = True
-        self.linear_solver.options["iprint"] = 0
-        self.linear_solver.options["maxiter"] = 10
-        self.linear_solver.options["rtol"] = 1e-4

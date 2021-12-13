@@ -21,9 +21,7 @@ class ComputeBulkhead(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input(
-            "data:geometry:cabin:max_differential_pressure", val=np.nan, units="kg/cm**2"
-        )
+        self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="hPa")
         self.add_input(
             "data:geometry:cabin:pressurized",
             val=0.0,
@@ -36,7 +34,8 @@ class ComputeBulkhead(om.ExplicitComponent):
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]
         pressurized = inputs["data:geometry:cabin:pressurized"]
-        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"]
+        # Converting to kg/cm**2, can't be done by OpenMDAO
+        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"] * 0.00102
 
         fuselage_radius = np.sqrt(fuselage_max_height * fuselage_max_width) / 2.0
 

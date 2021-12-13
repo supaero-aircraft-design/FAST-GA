@@ -31,6 +31,8 @@ class ComputeTailCone(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:aerodynamics:rudder:cruise:Cy_delta_r", val=np.nan, units="rad**-1")
         self.add_input("data:weight:airframe:fuselage:shell:added_weight_ratio", val=np.nan)
+        self.add_input("data:weight:airframe:horizontal_tail:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:vertical_tail:mass", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
 
@@ -55,6 +57,8 @@ class ComputeTailCone(om.ExplicitComponent):
         lar = inputs["data:geometry:fuselage:rear_length"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]
+        vtp_mass = inputs["data:weight:airframe:vertical_tail:mass"]
+        htp_mass = inputs["data:weight:airframe:horizontal_tail:mass"]
 
         tau_cone = inputs["settings:materials:fuselage:skin:max_shear_stress"]
         cone_taper_ratio = inputs["settings:geometry:fuselage:cone:taper_ratio"]
@@ -64,15 +68,19 @@ class ComputeTailCone(om.ExplicitComponent):
 
         density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
         cl_v_max = cy_delta_r * delta_r_max
-        q_ne = 0.5 * density * vd
+        q_ne = 0.5 * density * vd ** 2
         max_lift_vtp = q_ne * cl_v_max * vtp_area
 
         torsion_moment_vtp = (
-            max_lift_vtp * vtp_span / 3 * (1.0 + 2.0 * vtp_taper_ratio) / (1.0 + vtp_taper_ratio)
+            max_lift_vtp * vtp_span / 3.0 * (1.0 + 2.0 * vtp_taper_ratio) / (1.0 + vtp_taper_ratio)
         )
         volume_cone = (
             torsion_moment_vtp / tau_cone * lar / fuselage_radius * 2.0 / (1.0 + cone_taper_ratio)
         )
-        cone_mass = rho_skin * volume_cone * added_mass_ratio
+        cone_mass_torsion = rho_skin * volume_cone * added_mass_ratio
 
-        outputs["data:weight:airframe:fuselage:cone:mass"] = cone_mass
+        cone_mass_tail_support = 0.10 * (vtp_mass + htp_mass)
+
+        outputs["data:weight:airframe:fuselage:cone:mass"] = (
+            cone_mass_torsion + cone_mass_tail_support
+        )

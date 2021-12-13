@@ -24,9 +24,7 @@ class ComputeShell(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="m**2")
-        self.add_input(
-            "data:geometry:cabin:max_differential_pressure", val=np.nan, units="kg/cm**2"
-        )
+        self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="Pa")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
@@ -87,7 +85,7 @@ class ComputeShell(om.ExplicitComponent):
             2
             * np.pi
             * fuselage_radius ** 2
-            * (1 / 3 + 2 / 3 * (lav / fuselage_radius) ** (8 / 5)) ** (5 / 8)
+            * (1.0 / 3.0 + 2.0 / 3.0 * (lav / fuselage_radius) ** (8 / 5)) ** (5 / 8)
             * fuselage_skin_thickness
         )
 

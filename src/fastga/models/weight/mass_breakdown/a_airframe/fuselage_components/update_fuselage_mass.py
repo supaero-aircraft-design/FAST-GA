@@ -43,19 +43,34 @@ class UpdateFuselageMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
+        shell_mass = inputs["data:weight:airframe:fuselage:shell:mass"]
+        cone_mass = inputs["data:weight:airframe:fuselage:cone:mass"]
+        windows_mass = inputs["data:weight:airframe:fuselage:windows:mass"]
+        insulation_mass = inputs["data:weight:airframe:fuselage:insulation:mass"]
+        floor_mass = inputs["data:weight:airframe:fuselage:floor:mass"]
+        nlg_hatch_mass = inputs["data:weight:airframe:fuselage:nlg_hatch:mass"]
+        doors_mass = inputs["data:weight:airframe:fuselage:doors:mass"]
+        wing_fuselage_connection_mass = inputs[
+            "data:weight:airframe:fuselage:wing_fuselage_connection:mass"
+        ]
+        engine_support_mass = inputs["data:weight:airframe:fuselage:engine_support:mass"]
+        bulkhead_mass = inputs["data:weight:airframe:fuselage:bulkhead:mass"]
+        additional_mass_h = inputs["data:weight:airframe:fuselage:bulkhead:mass"]
+        additional_mass_v = inputs["data:weight:airframe:fuselage:additional_mass:vertical"]
+
         fuselage_mass = (
-            inputs["data:weight:airframe:fuselage:shell:mass"]
-            + inputs["data:weight:airframe:fuselage:cone:mass"]
-            + inputs["data:weight:airframe:fuselage:windows:mass"]
-            + inputs["data:weight:airframe:fuselage:insulation:mass"]
-            + inputs["data:weight:airframe:fuselage:floor:mass"]
-            + inputs["data:weight:airframe:fuselage:nlg_hatch:mass"]
-            + inputs["data:weight:airframe:fuselage:doors:mass"]
-            + inputs["data:weight:airframe:fuselage:wing_fuselage_connection:mass"]
-            + inputs["data:weight:airframe:fuselage:engine_support:mass"]
-            + inputs["data:weight:airframe:fuselage:bulkhead:mass"]
-            + inputs["data:weight:airframe:fuselage:additional_mass:horizontal"]
-            + inputs["data:weight:airframe:fuselage:additional_mass:vertical"]
+            shell_mass
+            + cone_mass
+            + windows_mass
+            + insulation_mass
+            + floor_mass
+            + nlg_hatch_mass
+            + doors_mass
+            + wing_fuselage_connection_mass
+            + engine_support_mass
+            + bulkhead_mass
+            + additional_mass_h
+            + additional_mass_v
         )
 
         outputs["data:weight:airframe:fuselage:mass"] = fuselage_mass

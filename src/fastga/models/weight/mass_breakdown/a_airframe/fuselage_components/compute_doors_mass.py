@@ -23,9 +23,7 @@ class ComputeDoors(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:doors:number", val=2.0)
         self.add_input("data:geometry:cabin:doors:height", val=1.0, units="m")
         self.add_input("data:geometry:cabin:doors:width", val=0.61, units="m")
-        self.add_input(
-            "data:geometry:cabin:max_differential_pressure", val=np.nan, units="kg/cm**2"
-        )
+        self.add_input("data:geometry:cabin:max_differential_pressure", val=np.nan, units="hPa")
         self.add_input(
             "data:weight:airframe:fuselage:shell:area_density", val=np.nan, units="kg/m**2"
         )
@@ -42,7 +40,8 @@ class ComputeDoors(om.ExplicitComponent):
         doors_number = inputs["data:geometry:cabin:doors:number"]
         doors_height = inputs["data:geometry:cabin:doors:height"]
         doors_width = inputs["data:geometry:cabin:doors:width"]
-        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"]
+        # Converting to kg/cm**2, can't be done by OpenMDAO
+        delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"] * 0.00102
         shell_area_density = inputs["data:weight:airframe:fuselage:shell:area_density"]
         pressurized = inputs["data:geometry:cabin:pressurized"]
 

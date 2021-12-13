@@ -32,7 +32,7 @@ class ComputeEngineSupport(om.ExplicitComponent):
         engine_mass = inputs["data:weight:propulsion:engine:mass"]
 
         if prop_layout == 2 or prop_layout == 3:
-            mass_support_engine = 0.025 * engine_mass
+            mass_support_engine = 2.5 * engine_mass / 100.0
         else:
             mass_support_engine = 0
 

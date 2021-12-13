@@ -42,9 +42,9 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
         pressurized = inputs["data:geometry:cabin:pressurized"]
 
         if pressurized:
-            mass_wing_fuselage_connection = 20.4 + 0.907 * 0.001 * n_ult * mtow
+            mass_wing_fuselage_connection = 20.4 + 0.907e-3 * n_ult * mtow
         else:
-            mass_wing_fuselage_connection = 0.4 * 0.001 * (n_ult * mtow) ** 1.185
+            mass_wing_fuselage_connection = 0.4e-3 * (n_ult * mtow) ** 1.185
 
         outputs[
             "data:weight:airframe:fuselage:wing_fuselage_connection:mass"

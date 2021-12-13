@@ -31,7 +31,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
 
         self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
@@ -66,8 +66,8 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         )
         self.add_input("data:weight:furniture:passenger_seats:mass", val=np.nan, units="lb")
 
-        self.add_output("data:loads:fuselage:inertia", val=np.nan, units="m**4")
-        self.add_output("data:loads:fuselage:sigmaMh", val=np.nan, units="N/m**2")
+        self.add_input("data:loads:fuselage:inertia", val=np.nan, units="m**4")
+        self.add_input("data:loads:fuselage:sigmaMh", val=np.nan, units="N/m**2")
 
         self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="rad")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
@@ -89,7 +89,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         cabin_length = inputs["data:geometry:cabin:length"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]
-        engine_layout = inputs["data:geometry:propulsion:layout"]
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
 
         cl_max_htp_clean = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"]
         cl_delta_htp = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
@@ -300,7 +300,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                             n * distributed_cabin_weight * (x - lav) ** 2
                             + moment_to_compensate_with_lift / wing_centroid * x
                         )
-                horizontal_bending_vector_rear[np.where(x_vector_front == x)[0]] = bending
+                horizontal_bending_vector_front[np.where(x_vector_front == x)[0]] = bending
 
             # Calculation of x_h_bend
             index = np.where(
@@ -356,4 +356,6 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
             additional_mass_load_case = volume_load_case * rho_skin
             additional_mass_horizontal = max(additional_mass_load_case, additional_mass_horizontal)
 
-        outputs["data:loads:fuselage:additional_mass:horizontal"] = additional_mass_horizontal
+        outputs[
+            "data:weight:airframe:fuselage:additional_mass:horizontal"
+        ] = additional_mass_horizontal
