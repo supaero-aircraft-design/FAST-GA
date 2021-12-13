@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import logging
 import os.path as pth
+import logging
 import shutil
 from shutil import rmtree
 from platform import system
@@ -39,14 +39,15 @@ AIRCRAFT_ID = ["sr22", "be76"]
 
 @pytest.fixture(scope="module")
 def cleanup():
+    """Empties results folder to avoid any conflicts"""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     rmtree("D:/tmp", ignore_errors=True)
 
 
 def test_oad_process_vlm(cleanup):
-    """
-    Test the overall aircraft design process with wing positioning under VLM method.
-    """
+    """Test the overall aircraft design process with wing positioning under VLM method."""
+    cleanup()
+
     logging.basicConfig(level=logging.WARNING)
 
     for aircraft_id in AIRCRAFT_ID:
@@ -107,6 +108,8 @@ def test_oad_process_openvsp(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP
     method.
     """
+    cleanup()
+
     logging.basicConfig(level=logging.WARNING)
 
     # Define used files depending on options
@@ -151,6 +154,8 @@ def test_oad_process_mission_builder(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under VLM
     method with the mission builder from FAST OAD.
     """
+    cleanup()
+
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
     os.mkdir("D:/tmp")
