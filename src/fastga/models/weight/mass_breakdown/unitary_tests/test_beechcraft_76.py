@@ -37,7 +37,20 @@ from ..a_airframe.wing_components import (
     ComputeSecondaryMass,
     UpdateWingMass,
 )
-from ..a_airframe.fuselage_components import *
+from ..a_airframe.fuselage_components import (
+    ComputeWingFuselageConnection,
+    ComputeShell,
+    ComputeWindows,
+    ComputeFloor,
+    ComputeDoors,
+    ComputeBulkhead,
+    ComputeInsulation,
+    ComputeNLGHatch,
+    ComputeTailCone,
+    ComputeEngineSupport,
+    ComputeAddBendingMassVertical,
+    ComputeAddBendingMassHorizontal,
+)
 from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
@@ -65,7 +78,7 @@ from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 XML_FILE = "beechcraft_76.xml"
 
 
-def _test_compute_payload():
+def test_compute_payload():
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePayload()), __file__, XML_FILE)
@@ -76,7 +89,7 @@ def _test_compute_payload():
     assert problem["data:weight:aircraft:max_payload"] == pytest.approx(450.0, abs=1e-2)
 
 
-def _test_compute_wing_weight():
+def test_compute_wing_weight():
     """Tests wing weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -90,7 +103,7 @@ def _test_compute_wing_weight():
     )  # difference because of integer conversion error
 
 
-def _test_compute_fuselage_weight():
+def test_compute_fuselage_weight():
     """Tests fuselage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -102,7 +115,7 @@ def _test_compute_fuselage_weight():
     assert weight_a2 == pytest.approx(156.31, abs=1e-2)
 
 
-def _test_compute_fuselage_weight_raymer():
+def test_compute_fuselage_weight_raymer():
     """Tests fuselage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -111,7 +124,7 @@ def _test_compute_fuselage_weight_raymer():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuselageWeightRaymer(), ivc)
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass_raymer", units="kg")
-    assert weight_a2 == pytest.approx(165.077, abs=1e-2)
+    assert weight_a2 == pytest.approx(161.15, abs=1e-2)
 
 
 def test_compute_shell_mass():
@@ -268,7 +281,7 @@ def test_compute_fuselage_mass_analytical():
     assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(169.67, abs=1e-2)
 
 
-def _test_compute_empennage_weight():
+def test_compute_empennage_weight():
     """Tests empennage weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -282,7 +295,7 @@ def _test_compute_empennage_weight():
     assert weight_a32 == pytest.approx(11.81, abs=1e-2)
 
 
-def _test_compute_flight_controls_weight():
+def test_compute_flight_controls_weight():
     """Tests flight controls weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -294,7 +307,7 @@ def _test_compute_flight_controls_weight():
     assert weight_a4 == pytest.approx(31.80, abs=1e-2)
 
 
-def _test_compute_landing_gear_weight():
+def test_compute_landing_gear_weight():
     """Tests landing gear weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -308,7 +321,7 @@ def _test_compute_landing_gear_weight():
     assert weight_a52 == pytest.approx(24.12, abs=1e-2)
 
 
-def _test_compute_airframe_weight():
+def test_compute_airframe_weight():
     """Tests airframe weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -320,7 +333,7 @@ def _test_compute_airframe_weight():
     assert weight_a == pytest.approx(478.16, abs=1e-2)
 
 
-def _test_compute_oil_weight():
+def test_compute_oil_weight():
     """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -334,7 +347,7 @@ def _test_compute_oil_weight():
     assert weight_b1_2 == pytest.approx(8.90, abs=1e-2)
 
 
-def _test_compute_engine_weight():
+def test_compute_engine_weight():
     """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -348,7 +361,7 @@ def _test_compute_engine_weight():
     assert weight_b1 == pytest.approx(357.41, abs=1e-2)
 
 
-def _test_compute_fuel_lines_weight():
+def test_compute_fuel_lines_weight():
     """Tests fuel lines weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -360,7 +373,7 @@ def _test_compute_fuel_lines_weight():
     assert weight_b2 == pytest.approx(57.05, abs=1e-2)
 
 
-def _test_compute_unusable_fuel_weight():
+def test_compute_unusable_fuel_weight():
     """Tests engine weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -374,7 +387,7 @@ def _test_compute_unusable_fuel_weight():
     assert weight_b3 == pytest.approx(56.10, abs=1e-2)
 
 
-def _test_compute_propulsion_weight():
+def test_compute_propulsion_weight():
     """Tests propulsion weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -388,7 +401,7 @@ def _test_compute_propulsion_weight():
     assert weight_b == pytest.approx(414.46, abs=1e-2)
 
 
-def _test_compute_navigation_systems_weight():
+def test_compute_navigation_systems_weight():
     """Tests navigation systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -412,7 +425,7 @@ def _test_compute_navigation_systems_weight():
     assert weight_c32 == pytest.approx(2971.02, abs=1e-2)
 
 
-def _test_compute_power_systems_weight():
+def test_compute_power_systems_weight():
     """Tests power systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -426,7 +439,7 @@ def _test_compute_power_systems_weight():
     assert weight_c13 == pytest.approx(12.383, abs=1e-2)
 
 
-def _test_compute_life_support_systems_weight():
+def test_compute_life_support_systems_weight():
     """Tests life support systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -456,7 +469,7 @@ def _test_compute_life_support_systems_weight():
     assert weight_c27 == pytest.approx(0.0, abs=1e-2)
 
 
-def _test_compute_systems_weight():
+def test_compute_systems_weight():
     """Tests propulsion weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -468,7 +481,7 @@ def _test_compute_systems_weight():
     assert weight_b == pytest.approx(180.44, abs=1e-2)
 
 
-def _test_compute_passenger_seats_weight():
+def test_compute_passenger_seats_weight():
     """Tests passenger seats weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -482,7 +495,7 @@ def _test_compute_passenger_seats_weight():
     )  # additional 2 pilots seats (differs from old version)
 
 
-def _test_compute_furniture_weight():
+def test_compute_furniture_weight():
     """Tests propulsion weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -494,7 +507,7 @@ def _test_compute_furniture_weight():
     assert weight_b == pytest.approx(52.11, abs=1e-2)
 
 
-def _test_evaluate_owe():
+def test_evaluate_owe():
     """Tests a simple evaluation of Operating Weight Empty from sample XML data."""
 
     ivc = get_indep_var_comp(
@@ -509,7 +522,7 @@ def _test_evaluate_owe():
     assert oew == pytest.approx(1125, abs=1)
 
 
-def _test_loop_compute_owe():
+def test_loop_compute_owe():
     """Tests a weight computation loop matching the max payload criterion."""
 
     # Payload is computed from NPAX_design
@@ -529,7 +542,7 @@ def _test_loop_compute_owe():
     assert oew == pytest.approx(1126, abs=1)
 
 
-def _test_compute_web_mass():
+def test_compute_web_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWebMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:mass", val=182.191, units="kg")
@@ -552,7 +565,7 @@ def _test_compute_web_mass():
     )
 
 
-def _test_compute_upper_flange_mass():
+def test_compute_upper_flange_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeUpperFlange()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:mass", val=182.191, units="kg")
@@ -575,7 +588,7 @@ def _test_compute_upper_flange_mass():
     )
 
 
-def _test_compute_lower_flange_mass():
+def test_compute_lower_flange_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLowerFlange()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:mass", val=182.191, units="kg")
@@ -598,7 +611,7 @@ def _test_compute_lower_flange_mass():
     )
 
 
-def _test_compute_skin_mass():
+def test_compute_skin_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSkinMass()), __file__, XML_FILE)
 
@@ -607,7 +620,7 @@ def _test_compute_skin_mass():
     assert problem["data:weight:airframe:wing:skin:mass"] == pytest.approx(49.720, abs=1e-2)
 
 
-def _test_compute_ribs_mass():
+def test_compute_ribs_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeRibsMass()), __file__, XML_FILE)
 
@@ -616,7 +629,7 @@ def _test_compute_ribs_mass():
     assert problem["data:weight:airframe:wing:ribs:mass"] == pytest.approx(22.128, abs=1e-2)
 
 
-def _test_compute_misc_mass():
+def test_compute_misc_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeMiscMass()), __file__, XML_FILE)
 
@@ -625,7 +638,7 @@ def _test_compute_misc_mass():
     assert problem["data:weight:airframe:wing:misc:mass"] == pytest.approx(37.113, abs=1e-2)
 
 
-def _test_compute_primary_mass():
+def test_compute_primary_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePrimaryMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:web:mass:max_fuel_in_wing", val=1.804, units="kg")
@@ -653,7 +666,7 @@ def _test_compute_primary_mass():
     )
 
 
-def _test_compute_secondary_mass():
+def test_compute_secondary_mass():
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
@@ -666,7 +679,7 @@ def _test_compute_secondary_mass():
     )
 
 
-def _test_update_wing_mass():
+def test_update_wing_mass():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(UpdateWingMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=136.662, units="kg")
@@ -677,7 +690,7 @@ def _test_update_wing_mass():
     assert problem["data:weight:airframe:wing:mass"] == pytest.approx(182.216, abs=1e-2)
 
 
-def _test_compute_wing_mass_analytical():
+def test_compute_wing_mass_analytical():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWingMassAnalytical()), __file__, XML_FILE)
 

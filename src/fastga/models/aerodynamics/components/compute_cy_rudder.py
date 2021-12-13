@@ -34,6 +34,7 @@ class ComputeCyDeltaRudder(FigureDigitization):
     """
 
     def initialize(self):
+        """Declaring the low_speed_aero options so we can use low speed and cruise conditions."""
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):

@@ -1,9 +1,4 @@
-"""
-Computes the mass of the fuselage
-
-Computes the additional horizontal bending mass, adapted from TASOPT by Lucas REMOND.
-"""
-
+"""Computes the mass of the fuselage using a method adapted from TASOPT by Lucas REMOND."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

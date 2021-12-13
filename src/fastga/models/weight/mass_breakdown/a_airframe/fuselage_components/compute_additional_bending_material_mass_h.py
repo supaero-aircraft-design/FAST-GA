@@ -24,7 +24,15 @@ FUSELAGE_MESH_POINT = 100
 
 
 class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
+    """
+    Computes the horizontal additional bending material based on the method described in TASOPT.
+    """
+
     def setup(self):
+        """
+        Declaring inputs and outputs for the computation of the horizontal additional bending
+        material.
+        """
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
@@ -82,7 +90,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:additional_mass:horizontal", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
+        """Computing the horizontal additional bending material."""
         wing_area = inputs["data:geometry:wing:area"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -122,7 +130,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         delta_e_max = inputs["data:mission:sizing:landing:elevator_angle"]
 
-        vd = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
+        v_d = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         n_ult_flight = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult_landing = inputs["data:mission:landing:cs23:sizing_factor:ultimate_aircraft"]
 
@@ -136,7 +144,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
 
         density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
 
-        q_never_exceed = 0.5 * density * vd ** 2
+        q_never_exceed = 0.5 * density * v_d ** 2
         lift_max_h = q_never_exceed * wing_area * cl_max_htp
         # Inertia relief factor, typical value according to TASOPT
         rmh = 0.4
@@ -190,19 +198,23 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
         additional_mass_horizontal = 0.0
 
         for load_case in load_case_array:
-            n = load_case[0]
+            load_factor = load_case[0]
             lift_max_h = load_case[1]
 
             # Calculation of the horizontal bending moment distribution on the rear of the fuselage
             horizontal_bending_vector_rear = np.zeros_like(x_vector_rear)
-            for x in x_vector_rear:
-                if x <= lav + cabin_length:
-                    bending = n * distributed_cabin_weight * (lav + cabin_length - x) ** 2 + (
-                        n * tail_weight + rmh * lift_max_h
-                    ) * (tail_x_cg - x)
+            for x_position in x_vector_rear:
+                if x_position <= lav + cabin_length:
+                    bending = load_factor * distributed_cabin_weight * (
+                        lav + cabin_length - x_position
+                    ) ** 2 + (load_factor * tail_weight + rmh * lift_max_h) * (
+                        tail_x_cg - x_position
+                    )
                 else:
-                    bending = (n * tail_weight + rmh * lift_max_h) * (tail_x_cg - x)
-                horizontal_bending_vector_rear[np.where(x_vector_rear == x)[0]] = bending
+                    bending = (load_factor * tail_weight + rmh * lift_max_h) * (
+                        tail_x_cg - x_position
+                    )
+                horizontal_bending_vector_rear[np.where(x_vector_rear == x_position)[0]] = bending
 
             # Calculation of x_h_bend
             index = np.where(
@@ -219,12 +231,14 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                 if x_h_bend <= lav + cabin_length:
                     # Definition of the added horizontal-axis bending area terms
                     a2_rear = (
-                        n
+                        load_factor
                         * x_ratio_centroid_to_cabin_rear
                         / (2.0 * cabin_length * fuselage_radius * sigma_mh)
                         * distributed_cabin_weight
                     )
-                    a1_rear = (n * tail_weight + rmh * lift_max_h) / (fuselage_radius * sigma_mh)
+                    a1_rear = (load_factor * tail_weight + rmh * lift_max_h) / (
+                        fuselage_radius * sigma_mh
+                    )
                     a0_rear = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
                     volume_rear = (
                         a2_rear
@@ -242,12 +256,14 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                     # Decomposition in 2 integrals : cabin zone and then up to x_h_bend in the
                     # tail cone
                     a2_rear = (
-                        n
+                        load_factor
                         * x_ratio_centroid_to_cabin_rear
                         / (cabin_length * fuselage_radius * sigma_mh)
                         * distributed_cabin_weight
                     )
-                    a1_rear = (n * tail_weight + rmh * lift_max_h) / (fuselage_radius * sigma_mh)
+                    a1_rear = (load_factor * tail_weight + rmh * lift_max_h) / (
+                        fuselage_radius * sigma_mh
+                    )
                     a0_rear = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
                     volume_rear_cabin = (
                         a2_rear * (lav + cabin_length - wing_centroid) ** 3 / 3.0
@@ -270,37 +286,37 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
             # The same expression as in the bending moment expression for the front of the
             # fuselage is needed here, applied at x = wing_centroid. And without the lift. This
             # is to calculate the lift needed to match the front and the rear distributions.
-            max_moment_front = n * distributed_cabin_weight * (wing_centroid - lav) ** 2
+            max_moment_front = load_factor * distributed_cabin_weight * (wing_centroid - lav) ** 2
 
             if engine_layout == 3:
-                max_moment_front += n * engine_weight * (wing_centroid - engine_cg_x)
+                max_moment_front += load_factor * engine_weight * (wing_centroid - engine_cg_x)
 
             moment_to_compensate_with_lift = horizontal_bending_vector_rear[0] - max_moment_front
 
-            for x in x_vector_front:
+            for x_position in x_vector_front:
                 if engine_layout == 3:
-                    if x <= engine_cg_x:
-                        bending = moment_to_compensate_with_lift / wing_centroid * x
-                    elif x <= lav:
+                    if x_position <= engine_cg_x:
+                        bending = moment_to_compensate_with_lift / wing_centroid * x_position
+                    elif x_position <= lav:
                         bending = (
-                            moment_to_compensate_with_lift / wing_centroid * x
-                            + n * engine_weight * (x - engine_cg_x)
+                            moment_to_compensate_with_lift / wing_centroid * x_position
+                            + load_factor * engine_weight * (x_position - engine_cg_x)
                         )
                     else:
                         bending = (
-                            n * engine_weight * (x - engine_cg_x)
-                            + n * distributed_cabin_weight * (x - lav) ** 2
-                            + moment_to_compensate_with_lift / wing_centroid * x
+                            load_factor * engine_weight * (x_position - engine_cg_x)
+                            + load_factor * distributed_cabin_weight * (x_position - lav) ** 2
+                            + moment_to_compensate_with_lift / wing_centroid * x_position
                         )
                 else:
-                    if x <= lav:
-                        bending = moment_to_compensate_with_lift / wing_centroid * x
+                    if x_position <= lav:
+                        bending = moment_to_compensate_with_lift / wing_centroid * x_position
                     else:
                         bending = (
-                            n * distributed_cabin_weight * (x - lav) ** 2
-                            + moment_to_compensate_with_lift / wing_centroid * x
+                            load_factor * distributed_cabin_weight * (x_position - lav) ** 2
+                            + moment_to_compensate_with_lift / wing_centroid * x_position
                         )
-                horizontal_bending_vector_front[np.where(x_vector_front == x)[0]] = bending
+                horizontal_bending_vector_front[np.where(x_vector_front == x_position)[0]] = bending
 
             # Calculation of x_h_bend
             index = np.where(
@@ -327,7 +343,9 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                         / wing_centroid
                         / (fuselage_radius * sigma_mh)
                     )
-                    a2_front_cabin = n * distributed_cabin_weight / (fuselage_radius * sigma_mh)
+                    a2_front_cabin = (
+                        load_factor * distributed_cabin_weight / (fuselage_radius * sigma_mh)
+                    )
                     volume_front_nose = (
                         a0_front * (lav - x_h_bend)
                         + a1_front_nose / 2 * (lav - x_h_bend) ** 2
@@ -345,7 +363,9 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                     a1_front_cabin = (moment_to_compensate_with_lift / wing_centroid) / (
                         fuselage_radius * sigma_mh
                     )
-                    a2_front_cabin = n * distributed_cabin_weight / (fuselage_radius * sigma_mh)
+                    a2_front_cabin = (
+                        load_factor * distributed_cabin_weight / (fuselage_radius * sigma_mh)
+                    )
                     volume_front = (
                         a0_front * (wing_centroid - x_h_bend)
                         + a1_front_cabin / 2 * (wing_centroid - x_h_bend) ** 2
