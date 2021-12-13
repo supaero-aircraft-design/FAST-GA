@@ -1,8 +1,7 @@
 """
-Update the mass of the wing based on the computation of the sub-components
+Update the mass of the wing based on the computation of the sub-wing_components
 in her MAE research project report.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

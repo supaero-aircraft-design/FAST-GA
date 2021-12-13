@@ -31,7 +31,7 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
     """
     Weight estimation for navigation systems
 
-    Based on a statistical analysis. See :cite:`roskampart5:1985` Torenbeek method
+    Based on a statistical analysis. See :cite:`roskampart5:1985` Torenbeek method.
     """
 
     def setup(self):
@@ -66,7 +66,7 @@ class ComputeNavigationSystemsWeightFLOPS(ExplicitComponent):
     """
     Weight estimation for navigation systems (includes avionics and instruments)
 
-    Based on a statistical analysis. See :cite:`wells:2017`
+    Based on a statistical analysis. See :cite:`wells:2017`.
     """
 
     def setup(self):

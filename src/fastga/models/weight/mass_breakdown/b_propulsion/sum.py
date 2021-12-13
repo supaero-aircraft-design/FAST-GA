@@ -24,9 +24,7 @@ from ..constants import SUBMODEL_PROPULSION_MASS
 
 @RegisterSubmodel(SUBMODEL_PROPULSION_MASS, "fastga.submodel.weight.mass.propulsion.legacy.fuel")
 class PropulsionWeight(om.Group):
-    """
-    Computes mass of propulsion system.
-    """
+    """Computes mass of propulsion system."""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

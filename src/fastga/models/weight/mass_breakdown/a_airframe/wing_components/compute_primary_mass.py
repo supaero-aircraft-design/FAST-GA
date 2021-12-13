@@ -2,7 +2,6 @@
 Computes the mass of the primary structure based on the model presented by Raquel ALONSO
 in her MAE research project report.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +20,7 @@ import numpy as np
 
 
 class ComputePrimaryMass(om.ExplicitComponent):
-    """Computes the primary mass by summing all sub components in the most contraining case"""
+    """Computes the primary mass by summing all sub components in the most constraining case."""
 
     def setup(self):
         self.add_input(

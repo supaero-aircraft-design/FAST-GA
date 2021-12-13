@@ -15,7 +15,18 @@
         <wet_area units="m**2" is_input="False">82.21685637423752<!--aircraft total wet area--></wet_area>
       </aircraft>
       <cabin>
+        <doors>
+          <width units="m">0.5</width>
+          <height units="m">0.75</height>
+        </doors>
+        <windows>
+          <number>6.0</number>
+          <height units="m">0.25</height>
+          <width units="m">0.2</width>
+        </windows>
+        <pressurized>0.0</pressurized>
         <NPAX is_input="False">2.0<!--maximum number of passenger that can be seated in the aircraft assuming a constant number of seats per row--></NPAX>
+        <max_differential_pressure units="Pa">0.0<!-- 0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <aisle_width units="m" is_input="True">0.0<!--width of aisles--></aisle_width>
         <length units="m" is_input="False">2.896754653679918<!--cabin length--></length>
         <luggage>
@@ -40,14 +51,20 @@
       </flap>
       <fuselage>
         <PAX_length units="m" is_input="False">1.5<!--length of passenger-dedicated zone--></PAX_length>
-        <front_length units="m" is_input="False">1.87292<!--length of front non-cylindrical part of the fuselage--></front_length>
+        <front_length units="m" is_input="False">1.75<!--length of front non-cylindrical part of the fuselage--></front_length>
         <length units="m" is_input="False">8.994853092667494<!--total fuselage length--></length>
         <luggage_length units="m" is_input="False">0.6967546536799178<!--length of the luggage compartment--></luggage_length>
         <maximum_height units="m" is_input="False">1.3378<!--maximum fuselage height--></maximum_height>
         <maximum_width units="m" is_input="False">1.1978<!--maximum fuselage width--></maximum_width>
-        <rear_length units="m" is_input="False">4.225178438987577<!--length of rear non-cylindrical part of the fuselage--></rear_length>
+        <rear_length units="m" is_input="False">3.2<!--length of rear non-cylindrical part of the fuselage--></rear_length>
         <wet_area units="m**2" is_input="False">29.630110718012276<!--fuselage wet area--></wet_area>
       </fuselage>
+      <cockpit>
+        <windows>
+          <width units="m">1.0</width>
+          <height units="m">0.4</height>
+        </windows>
+      </cockpit>
       <horizontal_tail>
         <area units="m**2" is_input="False">3.7139017292000687<!--horizontal tail area--></area>
         <aspect_ratio is_input="True">3.84<!--aspect ratio of horizontal tail--></aspect_ratio>
@@ -410,6 +427,9 @@
         <low_speed>
           <Cy_delta_r units="1/rad" is_input="False">1.888239590256808<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
         </low_speed>
+        <cruise>
+          <Cy_delta_r units="1/rad" is_input="False">2.0<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </cruise>
       </rudder>
       <wing>
         <airfoil>
@@ -490,6 +510,13 @@
       </wing>
     </constraints>
     <mission>
+      <landing>
+        <cs23>
+          <sizing_factor>
+            <ultimate_aircraft>6.0</ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
+      </landing>
       <sizing>
         <fuel units="kg" is_input="False">238.8774532834575<!--consumed fuel mass during whole mission--></fuel>
         <holding>
@@ -813,6 +840,9 @@
   </xfoil>
   <settings>
     <geometry>
+      <fuselage>
+          <min_skin_thickness units="m">0.0005</min_skin_thickness>
+      </fuselage>
       <fuel_tanks>
           <depth>0.4</depth>
       </fuel_tanks>
@@ -843,6 +873,11 @@
         </payload>
       </aircraft>
       <airframe>
+        <fuselage>
+          <reinforcements>
+            <mass_fraction>0.2</mass_fraction>
+          </reinforcements>
+        </fuselage>
         <landing_gear>
           <front>
             <weight_ratio is_input="True">0.23<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
@@ -850,5 +885,23 @@
         </landing_gear>
       </airframe>
     </weight>
+    <materials>
+        <insulation>
+            <area_density units="kg/m**2">0.45</area_density>
+        </insulation>
+        <fuselage>
+            <skin>
+                <max_shear_stress units="Pa">105e6</max_shear_stress>
+                <density units="kg/m**3">2780</density>
+                <young_modulus units="GPa">69.5</young_modulus>
+                <sigma_02 units="MPa">110<!--elasticity limit of the material--></sigma_02>
+                <sigma_max units="MPa">180<!--ultimate tensile strength of the material--></sigma_max>
+            </skin>
+            <stringer>
+                <density units="kg/m**3">2780</density>
+                <young_modulus units="GPa">68.0</young_modulus>
+            </stringer>
+        </fuselage>
+    </materials>
   </settings>
 </FASTOAD_model>

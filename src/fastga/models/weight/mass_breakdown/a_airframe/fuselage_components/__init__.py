@@ -1,4 +1,4 @@
-"""Package containing the subcomponents necessary for the airframe mass estimation."""
+"""Fuselage component computation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,11 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .a1_wing_weight import ComputeWingWeight
-from .a1_wing_weight_analytical import ComputeWingMassAnalytical
-from .a2_fuselage_weight import ComputeFuselageWeight
-from .a2_fuselage_weight import ComputeFuselageWeightRaymer
-from .a2_fuselage_weight_analytical import ComputeFuselageMassAnalytical
-from .a3_tail_weight import ComputeTailWeight
-from .a4_flight_control_weight import ComputeFlightControlsWeight
-from .a5_landing_gear_weight import ComputeLandingGearWeight
+from .compute_additional_bending_material_mass_h import ComputeAddBendingMassHorizontal
+from .compute_additional_bending_material_mass_v import ComputeAddBendingMassVertical
+from .compute_bulkhead_mass import ComputeBulkhead
+from .compute_cone_mass import ComputeTailCone
+from .compute_doors_mass import ComputeDoors
+from .compute_engine_support_mass import ComputeEngineSupport
+from .compute_floor_mass import ComputeFloor
+from .compute_insulation_mass import ComputeInsulation
+from .compute_nlg_hatch_mass import ComputeNLGHatch
+from .compute_shell_mass import ComputeShell
+from .compute_windows_mass import ComputeWindows
+from .compute_wing_fuselage_connection_mass import ComputeWingFuselageConnection

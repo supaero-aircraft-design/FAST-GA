@@ -2,7 +2,6 @@
 Computes the mass of the wing spar web based on the model presented by Raquel ALONSO
 in her MAE research project report.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -39,8 +38,8 @@ class ComputeMiscMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the misc mass necessary to react to the given linear force vector, according to the
-        methodology developed by NASA's FLOPS
+        Component that computes the misc mass necessary to react to the given linear force
+        vector, according to the methodology developed by NASA's FLOPS.
         """
 
         wing_area_sq_ft = inputs["data:geometry:wing:area"] * (3.28084 ** 2.0)

@@ -257,7 +257,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
         """
-
         # Treat inputs (with check on thrust rate <=1.0)
         if thrust_is_regulated is not None:
             thrust_is_regulated = np.asarray(np.round(thrust_is_regulated, 0), dtype=bool)
@@ -391,7 +390,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude
         :return: efficiency
         """
-
         propeller_efficiency_SL = interp2d(
             self.thrust_SL, self.speed_SL, self.efficiency_SL, kind="cubic"
         )
@@ -449,7 +447,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param flight_points: current flight point(s)
         :return: maximum power in kW
         """
-
         atmosphere = Atmosphere(np.asarray(flight_points.altitude), altitude_in_feet=False)
         sigma = atmosphere.density / Atmosphere(0.0).density
         max_power = (self.max_power / 1e3) * (sigma - (1 - sigma) / 7.55)  # max power in kW
@@ -470,7 +467,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude
         :return: SFC (in g/kw) and Power (in W)
         """
-
         # Load engine map and save interpolation formula
         rpm_vect, pme_vect, _, sfc_matrix = self.read_map(self.map_file_path)
         torque_vect = pme_vect * 1e5 * self.volume / (8.0 * np.pi)
@@ -525,7 +521,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :return: maximum thrust (in N)
         """
-
         # Calculate maximum propeller thrust @ given altitude and speed
         if isinstance(atmosphere.true_airspeed, float):
             lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
@@ -637,7 +632,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         Butterworth-Heinemann, 2013. Equation (6-44)
 
         """
-
         power_sl = self.max_power / 745.7  # conversion to european hp
         uninstalled_weight = (power_sl - 21.55) / 0.5515
         self.engine.mass = uninstalled_weight

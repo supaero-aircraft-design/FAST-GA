@@ -1,7 +1,4 @@
-"""
-    Estimation of navigation systems center of gravity.
-"""
-
+"""Estimation of navigation systems center of gravity."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -28,7 +25,7 @@ from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
 )
 class ComputeNavigationSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Navigation systems center of gravity estimation"""
+    """Navigation systems center of gravity estimation."""
 
     def setup(self):
 

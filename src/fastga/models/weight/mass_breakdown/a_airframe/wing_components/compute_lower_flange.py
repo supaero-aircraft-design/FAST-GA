@@ -2,7 +2,6 @@
 Computes the mass of the wing spar cap/flange based on the model presented by Raquel ALONSO
 in her MAE research project report.
 """
-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

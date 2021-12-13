@@ -29,9 +29,7 @@ from ..constants import SUBMODEL_AIRFRAME_MASS
 
 @RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
 class AirframeWeight(om.Group):
-    """
-    Computes mass of airframe.
-    """
+    """Computes mass of airframe."""
 
     def setup(self):
         self.add_subsystem(

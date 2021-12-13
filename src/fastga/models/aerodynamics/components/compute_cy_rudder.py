@@ -33,10 +33,11 @@ class ComputeCyDeltaRudder(FigureDigitization):
     Thrust and Power Characteristics. DARcorporation, 1985.
     """
 
+    def initialize(self):
+        """Declaring the low_speed_aero options so we can use low speed and cruise conditions."""
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
     def setup(self):
-        self.add_input(
-            "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
-        )
         self.add_input(
             "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -47,7 +48,16 @@ class ComputeCyDeltaRudder(FigureDigitization):
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
         self.add_input("data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan)
 
-        self.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
+        if self.options["low_speed_aero"]:
+            self.add_input(
+                "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+            )
+            self.add_output("data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1")
+        else:
+            self.add_input(
+                "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
+            )
+            self.add_output("data:aerodynamics:rudder:cruise:Cy_delta_r", units="rad**-1")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -59,7 +69,11 @@ class ComputeCyDeltaRudder(FigureDigitization):
         rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
         k_ar_effective = float(inputs["data:aerodynamics:vertical_tail:k_ar_effective"])
 
-        cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
+        if self.options["low_speed_aero"]:
+            cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
+        else:
+            cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
+
         cl_alpha_vt_airfoil = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"]
 
         # Assumed that the rudder covers more or less all of the vertical tail while leaving a
@@ -82,4 +96,7 @@ class ComputeCyDeltaRudder(FigureDigitization):
 
         cy_delta_r = cl_alpha_vt / cl_alpha_vt_airfoil * kb * k_a_delta * k_cl_delta * cl_delta_th
 
-        outputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"] = cy_delta_r
+        if self.options["low_speed_aero"]:
+            outputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"] = cy_delta_r
+        else:
+            outputs["data:aerodynamics:rudder:cruise:Cy_delta_r"] = cy_delta_r

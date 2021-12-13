@@ -952,16 +952,27 @@ def cl_alpha_vt(
     ) == pytest.approx(cl_alpha_vt_cruise, abs=1e-4)
 
 
-def cy_delta_r(XML_FILE: str, cy_delta_r_: float):
+def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
     """Tests cy delta of the rudder!"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyDeltaRudder(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1"
+    ) == pytest.approx(cy_delta_r_, abs=1e-4)
+
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyDeltaRudder()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyDeltaRudder(), ivc)
     assert problem.get_val(
-        "data:aerodynamics:rudder:low_speed:Cy_delta_r", units="rad**-1"
-    ) == pytest.approx(cy_delta_r_, abs=1e-4)
+        "data:aerodynamics:rudder:cruise:Cy_delta_r", units="rad**-1"
+    ) == pytest.approx(cy_delta_r_cruise, abs=1e-4)
 
 
 def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):

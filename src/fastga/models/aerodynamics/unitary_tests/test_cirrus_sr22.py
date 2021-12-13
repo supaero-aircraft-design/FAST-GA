@@ -973,7 +973,7 @@ def test_cl_alpha_vt():
 
 def test_cy_delta_r():
     """Tests cy delta of the rudder."""
-    cy_delta_r(XML_FILE, cy_delta_r_=1.8858)
+    cy_delta_r(XML_FILE, cy_delta_r_=1.8858, cy_delta_r_cruise=1.9255)
 
 
 def test_cm_alpha_fus():

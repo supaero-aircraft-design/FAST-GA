@@ -1,6 +1,4 @@
-"""
-    Estimation of power systems center(s) of gravity.
-"""
+"""Estimation of power systems center(s) of gravity."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -26,7 +24,7 @@ from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 @RegisterSubmodel(SUBMODEL_POWER_SYSTEMS_CG, "fastga.submodel.weight.cg.system.power_system.legacy")
 class ComputePowerSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Power systems center(s) of gravity estimation"""
+    """Power systems center(s) of gravity estimation."""
 
     def setup(self):
 

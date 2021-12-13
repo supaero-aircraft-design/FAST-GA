@@ -28,8 +28,8 @@ class ComputePowerSystemsWeight(ExplicitComponent):
     """
     Weight estimation for power systems (generation and distribution)
 
-    Based on a statistical analysis. See :cite:`roskampart5:1985` USAF method for the electric system weight and
-    hydraulic weight
+    Based on a statistical analysis. See :cite:`roskampart5:1985` USAF method for the electric
+    system weight and hydraulic weight.
     """
 
     def setup(self):

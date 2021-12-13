@@ -16,7 +16,7 @@ Test module for mass breakdown functions.
 
 import pytest
 
-from ..a_airframe.components import (
+from ..a_airframe.wing_components import (
     ComputeWebMass,
     ComputeLowerFlange,
     ComputeUpperFlange,
