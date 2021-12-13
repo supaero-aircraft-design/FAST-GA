@@ -25,7 +25,7 @@ from .constants import SUBMODEL_PAYLOAD_MASS
 
 @RegisterSubmodel(SUBMODEL_PAYLOAD_MASS, "fastga.submodel.weight.mass.payload.legacy")
 class ComputePayload(om.ExplicitComponent):
-    """Computes payload from NPAX"""
+    """Computes payload from NPAX."""
 
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)

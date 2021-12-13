@@ -1,7 +1,4 @@
-"""
-    Estimation of global center of gravity.
-"""
-
+"""Estimation of global center of gravity."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -32,7 +29,7 @@ from .constants import (
 @RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")
 class ComputeGlobalCG(Group):
     # TODO: Document equations. Cite sources
-    """Global center of gravity estimation"""
+    """Global center of gravity estimation."""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

@@ -1,7 +1,4 @@
-"""
-    Estimation of life support systems center of gravities.
-"""
-
+"""Estimation of life support systems center of gravities."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -28,7 +25,7 @@ from ..constants import SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG
 )
 class ComputeLifeSupportCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Life support systems center of gravity estimation"""
+    """Life support systems center of gravity estimation."""
 
     def setup(self):
 

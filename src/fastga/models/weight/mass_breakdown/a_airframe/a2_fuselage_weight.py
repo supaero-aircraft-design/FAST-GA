@@ -80,11 +80,11 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     """
     Fuselage weight estimation
 
-    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of Aeronautics and
-    Astronautics, Inc., 2012.
+    Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of
+    Aeronautics and Astronautics, Inc., 2012.
 
-    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-    Butterworth-Heinemann, 2013. Equation (6-25).
+    Can also be found in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods
+    and Procedures. Butterworth-Heinemann, 2013. Equation (6-25).
     """
 
     def setup(self):

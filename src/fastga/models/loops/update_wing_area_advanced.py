@@ -60,8 +60,9 @@ class UpdateWingAreaAdvanced(om.Group):
 
 
 class _UpdateWingAreaAdvanced(om.ExplicitComponent):
-    """Computation of wing area from needed approach speed and mission fuel. For the mission wing area the code uses
-    the fsolve algorithm on a function that computes the wing area following the same approach as in compute_mfw."""
+    """Computation of wing area from needed approach speed and mission fuel. For the mission wing
+    area the code uses the fsolve algorithm on a function that computes the wing area following
+    the same approach as in compute_mfw."""
 
     def setup(self):
 

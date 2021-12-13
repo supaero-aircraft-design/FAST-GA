@@ -1,7 +1,4 @@
-"""
-    Estimation of flight control center of gravity.
-"""
-
+"""Estimation of flight control center of gravity."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -29,7 +26,7 @@ from ..constants import SUBMODEL_FLIGHT_CONTROLS_CG
 )
 class ComputeFlightControlCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Control surfaces center of gravity estimation"""
+    """Control surfaces center of gravity estimation."""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")

@@ -162,9 +162,8 @@ class ComputeUpperFlange(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Component that computes the wing web mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla
+        methodology developed by Raquel Alonso Castilla.
         """
-
         wing_mass = inputs["data:weight:airframe:wing:mass"]
 
         if not self.options["min_fuel_in_wing"]:

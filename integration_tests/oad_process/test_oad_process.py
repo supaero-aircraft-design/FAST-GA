@@ -47,7 +47,6 @@ def test_oad_process_vlm(cleanup):
     """
     Test the overall aircraft design process with wing positioning under VLM method.
     """
-
     logging.basicConfig(level=logging.WARNING)
 
     for aircraft_id in AIRCRAFT_ID:
@@ -108,7 +107,6 @@ def test_oad_process_openvsp(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP
     method.
     """
-
     logging.basicConfig(level=logging.WARNING)
 
     # Define used files depending on options
@@ -153,7 +151,6 @@ def test_oad_process_mission_builder(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under VLM
     method with the mission builder from FAST OAD.
     """
-
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
     os.mkdir("D:/tmp")

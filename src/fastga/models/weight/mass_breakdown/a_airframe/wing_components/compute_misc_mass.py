@@ -38,8 +38,8 @@ class ComputeMiscMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the misc mass necessary to react to the given linear force vector, according to the
-        methodology developed by NASA's FLOPS
+        Component that computes the misc mass necessary to react to the given linear force
+        vector, according to the methodology developed by NASA's FLOPS.
         """
 
         wing_area_sq_ft = inputs["data:geometry:wing:area"] * (3.28084 ** 2.0)

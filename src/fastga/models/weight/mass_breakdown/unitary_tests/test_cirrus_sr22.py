@@ -63,8 +63,7 @@ def test_compute_payload():
 
 
 def test_compute_wing_weight():
-    """Tests wing weight computation from sample XML data"""
-
+    """Tests wing weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWingWeight()), __file__, XML_FILE)
 
@@ -77,8 +76,7 @@ def test_compute_wing_weight():
 
 
 def test_compute_fuselage_weight():
-    """Tests fuselage weight computation from sample XML data"""
-
+    """Tests fuselage weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeight()), __file__, XML_FILE)
 
@@ -89,8 +87,7 @@ def test_compute_fuselage_weight():
 
 
 def test_compute_fuselage_weight_raymer():
-    """Tests fuselage weight computation from sample XML data"""
-
+    """Tests fuselage weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeightRaymer()), __file__, XML_FILE)
 
@@ -101,8 +98,7 @@ def test_compute_fuselage_weight_raymer():
 
 
 def test_compute_empennage_weight():
-    """Tests empennage weight computation from sample XML data"""
-
+    """Tests empennage weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeTailWeight()), __file__, XML_FILE)
 
@@ -115,8 +111,7 @@ def test_compute_empennage_weight():
 
 
 def test_compute_flight_controls_weight():
-    """Tests flight controls weight computation from sample XML data"""
-
+    """Tests flight controls weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFlightControlsWeight()), __file__, XML_FILE)
 
@@ -127,8 +122,7 @@ def test_compute_flight_controls_weight():
 
 
 def test_compute_landing_gear_weight():
-    """Tests landing gear weight computation from sample XML data"""
-
+    """Tests landing gear weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeLandingGearWeight()), __file__, XML_FILE)
 
@@ -141,8 +135,7 @@ def test_compute_landing_gear_weight():
 
 
 def test_compute_airframe_weight():
-    """Tests airframe weight computation from sample XML data"""
-
+    """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
 
@@ -153,8 +146,7 @@ def test_compute_airframe_weight():
 
 
 def test_compute_oil_weight():
-    """Tests engine weight computation from sample XML data"""
-
+    """Tests engine weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeOilWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -167,8 +159,7 @@ def test_compute_oil_weight():
 
 
 def test_compute_engine_weight():
-    """Tests engine weight computation from sample XML data"""
-
+    """Tests engine weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeEngineWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -181,8 +172,7 @@ def test_compute_engine_weight():
 
 
 def test_compute_fuel_lines_weight():
-    """Tests fuel lines weight computation from sample XML data"""
-
+    """Tests fuel lines weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeFuelLinesWeight()), __file__, XML_FILE)
 
@@ -193,8 +183,7 @@ def test_compute_fuel_lines_weight():
 
 
 def test_compute_unusable_fuel_weight():
-    """Tests engine weight computation from sample XML data"""
-
+    """Tests engine weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeUnusableFuelWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -207,8 +196,7 @@ def test_compute_unusable_fuel_weight():
 
 
 def test_compute_propulsion_weight():
-    """Tests propulsion weight computation from sample XML data"""
-
+    """Tests propulsion weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(PropulsionWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE

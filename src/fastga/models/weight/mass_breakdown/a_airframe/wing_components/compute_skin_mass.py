@@ -88,9 +88,8 @@ class ComputeSkinMass(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Component that computes the skin mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla
+        methodology developed by Raquel Alonso Castilla.
         """
-
         fus_width = inputs["data:geometry:fuselage:maximum_width"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]
         wing_span = inputs["data:geometry:wing:span"]

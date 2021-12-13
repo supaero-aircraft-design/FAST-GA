@@ -27,7 +27,7 @@ class ComputeEngineWeight(ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
-    Based on a statistical analysis. See :cite:`raymer:2012`
+    Based on a statistical analysis. See :cite:`raymer:2012`.
     """
 
     def __init__(self, **kwargs):
