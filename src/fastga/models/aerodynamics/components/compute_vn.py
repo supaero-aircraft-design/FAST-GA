@@ -27,8 +27,10 @@ import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.constants import MACH_NB_PTS
 

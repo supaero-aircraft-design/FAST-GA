@@ -19,7 +19,7 @@ import numpy as np
 import math
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 
 
 class ComputeAeroCenter(ExplicitComponent):

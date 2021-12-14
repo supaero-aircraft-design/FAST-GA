@@ -16,7 +16,7 @@ import openmdao.api as om
 
 import numpy as np
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 
 from scipy.constants import g
 

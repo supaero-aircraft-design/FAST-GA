@@ -41,8 +41,7 @@ classifiers = [
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
 python = "^3.7"
-fast-oad = "^1.1.2"
-jupyterlab = "2.3.2"
+fast-oad = "^1.2.1"
 
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]

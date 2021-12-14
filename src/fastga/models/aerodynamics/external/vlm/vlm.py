@@ -23,7 +23,7 @@ import warnings
 import pandas as pd
 import logging
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 

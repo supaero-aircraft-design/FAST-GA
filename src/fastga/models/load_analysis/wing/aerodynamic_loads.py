@@ -17,7 +17,7 @@ Computes the aerodynamic loads on the wing of the aircraft in the most stringent
 
 import numpy as np
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS

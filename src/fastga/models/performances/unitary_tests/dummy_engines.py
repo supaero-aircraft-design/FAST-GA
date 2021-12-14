@@ -19,9 +19,11 @@ from openmdao.core.component import Component
 from typing import Union
 import numpy as np
 
+from stdatm import Atmosphere
+
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.model_base import FlightPoint, Atmosphere
+from fastoad.model_base import FlightPoint
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion

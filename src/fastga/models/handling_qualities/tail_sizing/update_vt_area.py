@@ -17,7 +17,7 @@ import openmdao.api as om
 
 from scipy.optimize import fsolve
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import BundleLoader
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.model_base import FlightPoint

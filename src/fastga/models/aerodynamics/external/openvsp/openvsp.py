@@ -26,7 +26,9 @@ from tempfile import TemporaryDirectory
 
 import numpy as np
 
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
+
+from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder

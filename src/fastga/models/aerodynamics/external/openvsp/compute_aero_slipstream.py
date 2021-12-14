@@ -16,7 +16,7 @@
 
 import numpy as np
 from openmdao.core.group import Group
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 
 from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...constants import SPAN_MESH_POINT

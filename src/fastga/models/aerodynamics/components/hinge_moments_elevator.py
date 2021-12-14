@@ -20,7 +20,7 @@ import scipy.interpolate as inter
 
 import openmdao.api as om
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .figure_digitization import FigureDigitization

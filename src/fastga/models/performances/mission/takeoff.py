@@ -21,7 +21,9 @@ import logging
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
-from fastoad.model_base import Atmosphere, FlightPoint
+from stdatm import Atmosphere
+
+from fastoad.model_base import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader

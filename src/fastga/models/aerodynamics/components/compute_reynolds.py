@@ -17,7 +17,7 @@ Computes Mach number and unitary Reynolds.
 
 
 import numpy as np
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 

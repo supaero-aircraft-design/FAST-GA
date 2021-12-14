@@ -20,12 +20,14 @@ import scipy.interpolate as inter
 import openmdao.api as om
 from scipy.constants import g
 
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
 
 
 class aircraft_equilibrium_limit(om.ExplicitComponent):

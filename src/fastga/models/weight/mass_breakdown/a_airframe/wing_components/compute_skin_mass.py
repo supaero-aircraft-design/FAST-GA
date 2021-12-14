@@ -20,7 +20,7 @@ import numpy as np
 
 from fastga.models.aerodynamics.constants import MACH_NB_PTS
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 
 from scipy.interpolate import interp1d
 

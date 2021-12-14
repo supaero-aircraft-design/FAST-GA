@@ -21,7 +21,9 @@ from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d
 import os.path as pth
 
-from fastoad.model_base import FlightPoint, Atmosphere
+from stdatm import Atmosphere
+
+from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 

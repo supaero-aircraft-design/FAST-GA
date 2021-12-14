@@ -46,6 +46,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.cmd.api import _get_simple_system_list
 
 from . import resources
+from fastga.utils.warnings import VariableDescriptionWarning
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -183,7 +184,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                             + variable_name
                                             + " already saved in "
                                             + pth.split(saved_dict[variable_name][1])[-1]
-                                            + " subpackage!"
+                                            + " subpackage!",
+                                            category=VariableDescriptionWarning,
                                         )
                         file.close()
                 if vd_file_empty_description:
@@ -191,7 +193,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         "file variable_descriptions.txt from %s subpackage contains empty"
                         " descriptions! \n" % pth.split(root)[-1]
                         + "\tFollowing variables have empty descriptions : "
-                        + ", ".join(empty_description_variables)
+                        + ", ".join(empty_description_variables),
+                        category=VariableDescriptionWarning,
                     )
 
         # Explore subpackage models and find the output variables and store them in a dictionary
@@ -390,7 +393,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                     "file variable_descriptions.txt from {} subpackage contains empty "
                     "descriptions! \n".format(pth.split(subpackage_path)[-1])
                     + "\tFollowing variables have empty descriptions : "
-                    + ", ".join(added_key_names)
+                    + ", ".join(added_key_names),
+                    category=VariableDescriptionWarning,
                 )
 
 

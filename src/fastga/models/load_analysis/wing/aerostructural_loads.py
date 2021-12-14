@@ -19,7 +19,7 @@ import numpy as np
 from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT

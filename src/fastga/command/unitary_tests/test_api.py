@@ -1,6 +1,4 @@
-"""
-Test module for the generate_block_analysis function.
-"""
+"""Test module for the generate_block_analysis function."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,6 +17,8 @@ import os
 import pytest
 import warnings
 
+from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
 from fastga import models
@@ -31,7 +31,7 @@ from fastga.models import (
     performances,
 )
 from fastga.models.weight import cg, mass_breakdown
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+from fastga.utils.warnings import VariableDescriptionWarning
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -258,8 +258,8 @@ def test_variable_descriptions_auto_gen():
         counter = 0
         if len(w) != 0:
             for warning_message in w:
-                print(warning_message.message)
-                if not issubclass(warning_message.category, DeprecationWarning):
+                if issubclass(warning_message.category, VariableDescriptionWarning):
+                    print(warning_message.message)
                     counter += 1
 
         assert counter == 0
