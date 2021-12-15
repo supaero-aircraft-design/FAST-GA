@@ -664,7 +664,7 @@ class ComputeVN(om.ExplicitComponent):
             # maximum design load factor
 
             if vmg == vmg_min_1:  # On the gust line
-                n_vmg = load_factor_gust_n(u_de_vmg, vmg_min_1)  # [-]
+                n_vmg = load_factor_gust_p(u_de_vmg, vmg_min_1)  # [-]
             else:
                 n_vmg = n_vc_ps  # [-]
 

@@ -46,8 +46,6 @@ def cleanup():
 
 def test_oad_process_vlm(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
-    cleanup()
-
     logging.basicConfig(level=logging.WARNING)
 
     for aircraft_id in AIRCRAFT_ID:
@@ -108,8 +106,6 @@ def test_oad_process_openvsp(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under OpenVSP
     method.
     """
-    cleanup()
-
     logging.basicConfig(level=logging.WARNING)
 
     # Define used files depending on options
@@ -144,9 +140,9 @@ def test_oad_process_openvsp(cleanup):
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 244.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1595.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1600.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 990.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 995.0, atol=1)
 
 
 def test_oad_process_mission_builder(cleanup):
@@ -154,8 +150,6 @@ def test_oad_process_mission_builder(cleanup):
     Test the overall aircraft design process only on Cirrus with wing positioning under VLM
     method with the mission builder from FAST OAD.
     """
-    cleanup()
-
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
     os.mkdir("D:/tmp")

@@ -1036,10 +1036,25 @@ def v_n_diagram(
     # noinspection PyTypeChecker
     problem = run_system(ComputeVNAndVH(propulsion_id=ENGINE_WRAPPER), ivc)
     assert (
-        np.max(np.abs(velocity_vect - problem.get_val("data:flight_domain:velocity", units="m/s")))
+        np.max(
+            np.abs(
+                velocity_vect
+                - problem.get_val(
+                    "data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s"
+                )
+            )
+        )
         <= 1e-3
     )
-    assert np.max(np.abs(load_factor_vect - problem["data:flight_domain:load_factor"])) <= 1e-3
+    assert (
+        np.max(
+            np.abs(
+                load_factor_vect
+                - problem["data:mission:sizing:cs23:flight_domain:mtow:load_factor"]
+            )
+        )
+        <= 1e-3
+    )
 
 
 def load_factor(

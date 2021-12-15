@@ -21,8 +21,6 @@ model:
         geometry:
             id: fastga.geometry.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-            fuselage_wet_area: 1.0
-            max_fuel_weight_computation: 1.0
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
@@ -56,3 +54,6 @@ model:
         wing_area:
             id: fastga.loop.wing_area_advanced
 
+submodels:
+    submodel.geometry.fuselage.wet_area: fastga.submodel.geometry.fuselage.wet_area.flops
+    submodel.geometry.mfw: fastga.submodel.geometry.mfw.advanced

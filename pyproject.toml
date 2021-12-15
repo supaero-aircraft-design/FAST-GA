@@ -42,6 +42,7 @@ classifiers = [
 # doing again the commit including changes in docs/requirements.txt will succeed.
 python = "^3.7"
 fast-oad = "^1.2.1"
+matplotlib = "^3.5"
 
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]
