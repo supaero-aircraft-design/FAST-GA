@@ -3,3 +3,4 @@ exclude_paths:
   - '**/tests/**'
   - 'tests/**'
   - '**/unitary_tests/**'
+  - 'integration_tests/**'

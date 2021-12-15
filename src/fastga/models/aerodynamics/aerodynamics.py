@@ -1,6 +1,4 @@
-"""
-    FAST - Copyright (c) 2016 ONERA ISAE.
-"""
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -15,17 +13,24 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from openmdao.api import Group
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
+from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
+
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
 class Aerodynamics(Group):
+    """
+    Computes the aerodynamic properties of the aircraft in cruise conditions and in low speed
+    conditions. Calls the AerodynamicHighSpeed and AerodynamicsLowSpeed sub-groups.
+    """
+
     def initialize(self):
+        """Definition of the options for the group."""
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
@@ -38,6 +43,7 @@ class Aerodynamics(Group):
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
+        """Add the LowSpeed and HighSpeedAerodynamics subsystems"""
         # Compute the low speed aero (landing/takeoff)
         self.add_subsystem(
             "aero_low",
