@@ -3,6 +3,3 @@ exclude_paths:
   - '**/tests/**'
   - 'tests/**'
   - '**/unitary_tests/**'
-  - 'docs/conf.py'
-  - '.github/**'
-  - 'integration_tests/**'
