@@ -12,16 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import warnings
-
 
 class FASTOADGAWarning(UserWarning):
+
     """Base class for FAST-OAD-GA warning."""
 
     name = "warn_fast_oad_ga"
 
 
 class VariableDescriptionWarning(FASTOADGAWarning):
+
     """Warning class for warnings in the generation of variable_descriptions.txt"""
 
     name = "warn_variable_descriptions"

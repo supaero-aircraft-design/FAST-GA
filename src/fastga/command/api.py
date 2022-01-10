@@ -45,8 +45,9 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 # noinspection PyProtectedMember
 from fastoad.cmd.api import _get_simple_system_list
 
-from . import resources
 from fastga.utils.warnings import VariableDescriptionWarning
+
+from . import resources
 
 _LOGGER = logging.getLogger(__name__)
 

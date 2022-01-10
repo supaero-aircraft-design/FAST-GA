@@ -43,7 +43,7 @@ class Aerodynamics(Group):
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
-        """Add the LowSpeed and HighSpeedAerodynamics subsystems"""
+        """Add the LowSpeed and HighSpeedAerodynamics subsystems."""
         # Compute the low speed aero (landing/takeoff)
         self.add_subsystem(
             "aero_low",
