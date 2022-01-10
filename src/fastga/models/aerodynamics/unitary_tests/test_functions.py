@@ -15,15 +15,16 @@
 import logging
 import shutil
 import glob
-import pytest
 import time
 import tempfile
 import os
+import os.path as pth
+import pytest
+import numpy as np
+
 from platform import system
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import os.path as pth
-import numpy as np
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path

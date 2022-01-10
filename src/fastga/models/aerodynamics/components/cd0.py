@@ -32,7 +32,7 @@ from ..constants import (
 )
 
 
-@RegisterSubmodel(SUBMODEL_CD0, "fastga?submodel.aerodynamics.aircraft.cd0.legacy")
+@RegisterSubmodel(SUBMODEL_CD0, "fastga.submodel.aerodynamics.aircraft.cd0.legacy")
 class Cd0(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)

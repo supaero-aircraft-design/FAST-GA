@@ -39,7 +39,7 @@ AIRCRAFT_ID = ["sr22", "be76"]
 
 @pytest.fixture(scope="module")
 def cleanup():
-    """Empties results folder to avoid any conflicts"""
+    """Empties results folder to avoid any conflicts."""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     rmtree("D:/tmp", ignore_errors=True)
 
