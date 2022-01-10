@@ -160,7 +160,7 @@ def test_compute_windows_mass():
     """Tests fuselage windows weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeWindows()), __file__, XML_FILE)
-    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11)
+    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11, units="kg/m**2")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWindows(), ivc)
@@ -193,7 +193,7 @@ def test_compute_nlg_hatch_mass():
     """Tests NLG hatch weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeNLGHatch()), __file__, XML_FILE)
-    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11)
+    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11, units="kg/m**2")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeNLGHatch(), ivc)
@@ -204,7 +204,7 @@ def test_compute_doors_mass():
     """Tests fuselage doors weight computation from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeDoors()), __file__, XML_FILE)
-    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11)
+    ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11, units="kg/m**2")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeDoors(), ivc)

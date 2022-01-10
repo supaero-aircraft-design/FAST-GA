@@ -43,8 +43,9 @@ class ComputePowerSystemsCG(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
-        # Electric system gravity center, formula based on the fact that on a Cirrus SR22, one battery is in front of
-        # the firewall while the other one is behind the pressure bulkhead
+        # Electric system gravity center, formula based on the fact that on a Cirrus SR22,
+        # one battery is in front of the firewall while the other one is behind the pressure
+        # bulkhead
         x_cg_c12 = lav + 0.5 * (fus_length - (lav + lar))
         # Hydraulic system gravity center
         x_cg_c13 = lav + 0.5 * (fus_length - (lav + lar))

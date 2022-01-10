@@ -19,7 +19,7 @@ import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion

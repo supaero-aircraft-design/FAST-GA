@@ -18,7 +18,7 @@ import numpy as np
 import openmdao.api as om
 import math
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_TAIL_MASS

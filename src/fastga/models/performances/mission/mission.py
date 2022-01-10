@@ -24,7 +24,9 @@ from scipy.constants import g
 from scipy.interpolate import interp1d
 import time
 
-from fastoad.model_base import Atmosphere, FlightPoint
+from stdatm import Atmosphere
+
+from fastoad.model_base import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader

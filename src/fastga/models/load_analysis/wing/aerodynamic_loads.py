@@ -17,7 +17,7 @@ Computes the aerodynamic loads on the wing of the aircraft in the most stringent
 
 import numpy as np
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
@@ -111,7 +111,10 @@ class AerodynamicLoads(AerostructuralLoad):
             "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
         )
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:mass", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:mass",
+            shape=ENGINE_COUNT,
+            val=np.nan,
+            units="kg",
         )
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")

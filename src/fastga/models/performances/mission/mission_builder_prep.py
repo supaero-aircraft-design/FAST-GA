@@ -15,7 +15,7 @@
 import openmdao.api as om
 import numpy as np
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 

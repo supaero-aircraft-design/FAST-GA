@@ -22,9 +22,11 @@ from scipy.constants import g
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+from stdatm import Atmosphere
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import FlightPoint, Atmosphere
+from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.module_management.service_registry import RegisterSubmodel
 

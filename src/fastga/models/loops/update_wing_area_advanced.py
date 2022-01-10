@@ -286,10 +286,10 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
             "data:geometry:propulsion:engine:y_ratio": (y_ratio_tank, None),
             "data:geometry:propulsion:tank:LE_chord_percentage": (le_chord_percentage, None),
             "data:geometry:propulsion:tank:TE_chord_percentage": (te_chord_percentage, None),
-            "data:geometry:propulsion:nacelle:width": (nacelle_width, None),
-            "data:geometry:wing:span": (wing_span, None),
+            "data:geometry:propulsion:nacelle:width": (nacelle_width, "m"),
+            "data:geometry:wing:span": (wing_span, "m"),
             "data:geometry:landing_gear:type": (lg_type, None),
-            "data:geometry:landing_gear:y": (y_lg, None),
+            "data:geometry:landing_gear:y": (y_lg, "m"),
             "settings:geometry:fuel_tanks:depth": (k, None),
         }
 

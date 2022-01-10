@@ -23,7 +23,7 @@ from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 
 CSV_DATA_LABELS = [
     "time",

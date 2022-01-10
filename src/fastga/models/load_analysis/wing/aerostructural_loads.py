@@ -19,7 +19,7 @@ import numpy as np
 from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
@@ -148,7 +148,10 @@ class AerostructuralLoad(ComputeVN):
             "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
         )
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:mass", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:mass",
+            shape=ENGINE_COUNT,
+            val=np.nan,
+            units="kg",
         )
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")

@@ -21,7 +21,7 @@ from .xfoil_polar import _DEFAULT_AIRFOIL_FILE, XfoilPolar
 
 import numpy as np
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 
 
 class XfoilGroup(Group):

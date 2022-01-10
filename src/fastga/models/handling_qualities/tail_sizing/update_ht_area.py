@@ -19,13 +19,15 @@ import openmdao.api as om
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
 
 from .constants import SUBMODEL_HT_AREA
 

@@ -27,8 +27,10 @@ import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import Atmosphere, FlightPoint
+from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.constants import MACH_NB_PTS
 
@@ -662,7 +664,7 @@ class ComputeVN(om.ExplicitComponent):
             # maximum design load factor
 
             if vmg == vmg_min_1:  # On the gust line
-                n_vmg = load_factor_gust_n(u_de_vmg, vmg_min_1)  # [-]
+                n_vmg = load_factor_gust_p(u_de_vmg, vmg_min_1)  # [-]
             else:
                 n_vmg = n_vc_ps  # [-]
 

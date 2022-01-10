@@ -274,8 +274,12 @@ def evolution_diagram(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    velocity_array = list(variables["data:flight_domain:velocity"].value)
-    load_factor_array = list(variables["data:flight_domain:load_factor"].value)
+    velocity_array = list(variables["data:mission:sizing:cs23:flight_domain:mtow:velocity"].value)
+    load_factor_array = list(
+        variables["data:mission:sizing:cs23:flight_domain:mtow:load_factor"].value
+    )
+    category = variables["data:TLAR:category"].value
+    level = variables["data:TLAR:level"].value
 
     # Save maneuver envelope
     x_maneuver_line = list(np.linspace(velocity_array[0], velocity_array[2], 10))
@@ -323,6 +327,9 @@ def evolution_diagram(
     if not (velocity_array[4] == 0.0):
         x_gust.append(velocity_array[4])
         y_gust.append(load_factor_array[4])
+    if (level == 4.0) or (category == 4.0):
+        x_gust.append(velocity_array[15])
+        y_gust.append(load_factor_array[15])
     x_gust.append(velocity_array[7])
     y_gust.append(load_factor_array[7])
     x_gust.append(velocity_array[11])

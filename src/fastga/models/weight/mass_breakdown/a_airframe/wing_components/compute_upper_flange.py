@@ -24,7 +24,7 @@ from scipy.interpolate import interp1d
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
-from fastoad.model_base.atmosphere import Atmosphere
+from stdatm import Atmosphere
 
 
 class ComputeUpperFlange(om.ExplicitComponent):

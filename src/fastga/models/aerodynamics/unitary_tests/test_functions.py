@@ -15,15 +15,16 @@
 import logging
 import shutil
 import glob
-import pytest
 import time
 import tempfile
 import os
+import os.path as pth
+import pytest
+import numpy as np
+
 from platform import system
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import os.path as pth
-import numpy as np
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -1036,10 +1037,25 @@ def v_n_diagram(
     # noinspection PyTypeChecker
     problem = run_system(ComputeVNAndVH(propulsion_id=ENGINE_WRAPPER), ivc)
     assert (
-        np.max(np.abs(velocity_vect - problem.get_val("data:flight_domain:velocity", units="m/s")))
+        np.max(
+            np.abs(
+                velocity_vect
+                - problem.get_val(
+                    "data:mission:sizing:cs23:flight_domain:mtow:velocity", units="m/s"
+                )
+            )
+        )
         <= 1e-3
     )
-    assert np.max(np.abs(load_factor_vect - problem["data:flight_domain:load_factor"])) <= 1e-3
+    assert (
+        np.max(
+            np.abs(
+                load_factor_vect
+                - problem["data:mission:sizing:cs23:flight_domain:mtow:load_factor"]
+            )
+        )
+        <= 1e-3
+    )
 
 
 def load_factor(

@@ -20,7 +20,7 @@ import logging
 import pandas as pd
 from scipy.optimize import fsolve
 
-from fastoad.model_base import Atmosphere
+from stdatm import Atmosphere
 import fastga.models.aerodynamics.external.xfoil as xfoil
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
