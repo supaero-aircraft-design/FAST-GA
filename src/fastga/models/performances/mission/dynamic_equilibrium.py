@@ -260,9 +260,15 @@ class DynamicEquilibrium(om.ExplicitComponent):
         # Return equilibrated lift coefficients if low speed maximum clean Cl not exceeded
         # otherwise only cl_wing, 3rd term is an error flag returned by the function
         if cl_array[0] < cl_max_clean:
-            return float(cl_array[0]), float(cl_array[1]), False
+            cl_wing_return = float(cl_array[0])
+            cl_htp_return = float(cl_array[1])
+            error = False
         else:
-            return float(mass * g * load_factor / (q * wing_area)), 0.0, True
+            cl_wing_return = float(mass * g * load_factor / (q * wing_area))
+            wl_htp_return = 0.0
+            error = True
+
+        return cl_wing_return, cl_htp_return, error
 
     def save_point(
         self,

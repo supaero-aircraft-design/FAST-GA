@@ -108,8 +108,8 @@ class XfoilPolar(ExternalCodeComp):
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
 
-        # Search if data already stored for this profile and mach with reynolds values bounding current value.
-        # If so, use linear interpolation with the nearest upper/lower reynolds
+        # Search if data already stored for this profile and mach with reynolds values bounding
+        # current value. If so, use linear interpolation with the nearest upper/lower reynolds
         no_file = True
         data_saved = None
         interpolated_result = None
@@ -202,7 +202,8 @@ class XfoilPolar(ExternalCodeComp):
                         upper_value = np.array(
                             np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
                         ).ravel()
-                        # If values relative to alpha vector, performs interpolation with shared vector
+                        # If values relative to alpha vector, performs interpolation with shared
+                        # vector
                         if np.size(lower_value) == len(alpha_lower):
                             lower_value = np.interp(
                                 alpha_shared, np.array(alpha_lower), lower_value
@@ -219,7 +220,7 @@ class XfoilPolar(ExternalCodeComp):
             if result_folder_path != "":
                 os.makedirs(result_folder_path, exist_ok=True)
 
-            # Pre-processing (populating temp directory) -----------------------------------------------
+            # Pre-processing (populating temp directory)
             # XFoil exe
             tmp_directory = self._create_tmp_directory()
             if self.options[OPTION_XFOIL_EXE_PATH]:
@@ -263,14 +264,15 @@ class XfoilPolar(ExternalCodeComp):
                 ALPHA_STEP,
             )
 
-            # Run XFOIL --------------------------------------------------------------------------------
+            # Run XFOIL
             self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
             self.options["external_output_files"] = [tmp_result_file_path]
             # noinspection PyBroadException
             try:
                 super().compute(inputs, outputs)
                 result_array_p = self._read_polar(tmp_result_file_path)
-            except:  # catch the error and try to read result file for non-convergence on higher angles
+            except:
+                # catch the error and try to read result file for non-convergence on higher angles
                 e = sys.exc_info()[1]
                 try:
                     result_array_p = self._read_polar(tmp_result_file_path)
@@ -296,14 +298,15 @@ class XfoilPolar(ExternalCodeComp):
                 try:
                     super().compute(inputs, outputs)
                     result_array_n = self._read_polar(tmp_result_file_path)
-                except:  # catch the error and try to read result file for non-convergence on higher angles
+                except:
+                    # catch the error and try to read result file for non-convergence on higher angles
                     e = sys.exc_info()[1]
                     try:
                         result_array_n = self._read_polar(tmp_result_file_path)
                     except:
                         raise TimeoutError("<p>Error: %s</p>" % e)
 
-            # Post-processing --------------------------------------------------------------------------
+            # Post-processing
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
                 # noinspection PyUnboundLocalVariable
@@ -353,7 +356,7 @@ class XfoilPolar(ExternalCodeComp):
                 cm.extend(additional_zeros)
                 cm = np.array(cm)
 
-            # Save results to defined path -------------------------------------------------------------
+            # Save results to defined path
             if not error:
                 results = [
                     np.array(mach),
@@ -390,7 +393,7 @@ class XfoilPolar(ExternalCodeComp):
                         "%s folder!" % local_resources.__path__[0]
                     )
 
-            # Getting output files if needed -------------------------------------------------------
+            # Getting output files if needed
             if self.options[OPTION_RESULT_FOLDER_PATH] != "":
                 if pth.exists(tmp_result_file_path):
                     polar_file_path = pth.join(
@@ -405,8 +408,8 @@ class XfoilPolar(ExternalCodeComp):
                 if pth.exists(self.stderr):
                     stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
                     shutil.move(self.stderr, stderr_file_path)
-            # Try to delete the temp directory, if process not finished correctly try to close files before removing
-            # directory for second attempt
+            # Try to delete the temp directory, if process not finished correctly try to
+            # close files before removing directory for second attempt
             # noinspection PyBroadException
             try:
                 tmp_directory.cleanup()
@@ -530,7 +533,8 @@ class XfoilPolar(ExternalCodeComp):
 
         :param alpha:
         :param lift_coeff: CL
-        :return: max CL within +/- 0.3 around linear zone if enough alpha computed, or default value otherwise
+        :return: max CL within +/- 0.3 around linear zone if enough alpha computed, or default value
+        otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
         if len(alpha) > 2:

@@ -149,8 +149,9 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
         atm = Atmosphere(altitude, altitude_in_feet=False)
         velocity = mach * atm.speed_of_sound
 
-        # We need to compute the AOA for which the most constraining Delta_Cl due to slipstream will appear, this
-        # is taken as the angle for which the clean wing is at its max angle of attack
+        # We need to compute the AOA for which the most constraining Delta_Cl due to slipstream
+        # will appear, this is taken as the angle for which the clean wing is at its max angle of
+        # attack
 
         alpha_max = (cl_max_clean - cl0) / cl_alpha
 

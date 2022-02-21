@@ -188,7 +188,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         return rpm_vect, pme_vect, pme_limit_vect, sfc_matrix
 
     def compute_flight_points(self, flight_points: FlightPoint):
-        # pylint: disable=too-many-arguments  # they define the trajectory
+        # pylint: disable=too-many-arguments
+        # they define the trajectory
         self.specific_shape = np.shape(flight_points.mach)
         if isinstance(flight_points.mach, float):
             sfc, thrust_rate, thrust = self._compute_flight_points(

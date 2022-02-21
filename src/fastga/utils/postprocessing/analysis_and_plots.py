@@ -134,14 +134,18 @@ def aircraft_geometry_plot(
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     y = np.concatenate((-y, y))
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
