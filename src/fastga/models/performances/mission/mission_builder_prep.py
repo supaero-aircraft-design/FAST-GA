@@ -1,4 +1,4 @@
-"""Simple module for prepping the use of the mission builder"""
+"""Simple module for prepping the use of the mission builder."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -38,8 +38,8 @@ class PrepareMissionBuilder(om.Group):
 
 class _PrepareMissionBuilder(om.ExplicitComponent):
     """
-    Make some simple computation in order to enable the use of the mission builder in FAST-OAD-GA with relevant
-    physic properties
+    Make some simple computation in order to enable the use of the mission builder in FAST-OAD-GA
+    with relevant physic properties
     """
 
     def setup(self):
@@ -67,6 +67,7 @@ class _PrepareMissionBuilder(om.ExplicitComponent):
 
         outputs["data:mission:sizing:cs23:min_climb_speed"] = v_climb_min
 
-        # Based on the ratio between the speed of best L/D and the speed of best endurance according to Gudmundsson
+        # Based on the ratio between the speed of best L/D and the speed of best endurance
+        # according to Gudmundsson
 
         outputs["data:mission:sizing:holding:v_holding"] = 0.75 * inputs["data:TLAR:v_cruise"]

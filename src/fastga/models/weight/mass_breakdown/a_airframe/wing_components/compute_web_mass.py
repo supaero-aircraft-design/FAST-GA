@@ -145,8 +145,8 @@ class ComputeWebMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the wing web mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla.
+        Component that computes the wing web mass necessary to react to the given linear force
+        vector, according to the methodology developed by Raquel Alonso Castilla.
         """
         wing_mass = inputs["data:weight:airframe:wing:mass"]
 
@@ -195,8 +195,9 @@ class ComputeWebMass(om.ExplicitComponent):
 
         safety_factor = inputs["data:mission:sizing:cs23:safety_factor"]
 
-        # STEP 1 - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT THE ROOT (Y=0) AND AT
-        # THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN THE INTERPOLATION WE WILL DO LATER ##############
+        # STEP 1 - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT
+        # THE ROOT (Y=0) AND AT THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN THE
+        # INTERPOLATION WE WILL DO LATER
 
         semi_span = wing_span / 2.0
 

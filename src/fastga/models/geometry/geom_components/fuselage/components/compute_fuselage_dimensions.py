@@ -56,7 +56,8 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
 class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Geometry of fuselage - Cabin is sized based on layout (seats, aisle...) and HTP/VTP position (Fixed tail Distance).
+    Geometry of fuselage - Cabin is sized based on layout (seats, aisle...) and HTP/VTP position
+    (Fixed tail Distance).
     """
 
     def __init__(self, **kwargs):
@@ -156,8 +157,9 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
             lav = propulsion_length + spinner_length
         else:
             lav = 1.40 * h_f
-            # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76 tend to say it is
-            # around 1.40, though it varies a lot depending on the airplane and its use
+            # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76
+            # tend to say it is around 1.40, though it varies a lot depending on the airplane and
+            # its use
         # Calculate fuselage length
         fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
         plane_length = fa_length + max(
@@ -181,7 +183,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
 class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Geometry of fuselage - Cabin is sized based on layout (seats, aisle...) and additional rear length (Fixed Length).
+    Geometry of fuselage - Cabin is sized based on layout (seats, aisle...) and additional rear
+    length (Fixed Length).
     """
 
     def __init__(self, **kwargs):

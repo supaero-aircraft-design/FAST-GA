@@ -150,9 +150,10 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
         y_lg = float(inputs["data:geometry:landing_gear:y"])
         k = float(inputs["settings:geometry:fuel_tanks:depth"])
 
-        # We first have to recompute all the data needed for the tank capacity computation that depends on the wing area
-        # To ensure coherency with the method used, we will use the generate block analysis method on the component that
-        # compute said value and then use a block_analysis on the compute_mfw_advanced component.
+        # We first have to recompute all the data needed for the tank capacity computation that
+        # depends on the wing area To ensure coherency with the method used, we will use the
+        # generate block analysis method on the component that compute said value and then use a
+        # block_analysis on the compute_mfw_advanced component.
 
         # First we need to compute the y positions and the span
 
@@ -239,8 +240,8 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
         ]
         tip_chord = convert_units(tip_chord_original_value, tip_chord_original_unit, "m")
 
-        # We can now move on to the computation of the mfw for that wing area and then return the difference to solve
-        # for the right wing_area
+        # We can now move on to the computation of the mfw for that wing area and then return the
+        # difference to solve for the right wing_area
 
         var_inputs_compute_mfw = [
             "data:propulsion:IC_engine:fuel_type",

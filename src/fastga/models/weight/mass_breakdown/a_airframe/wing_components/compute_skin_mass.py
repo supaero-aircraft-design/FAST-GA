@@ -75,7 +75,8 @@ class ComputeSkinMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
-            desc="Correction coefficient needed to account for the hypothesis of a rectangular wingbox",
+            desc="Correction coefficient needed to account for the hypothesis of a rectangular "
+            "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
@@ -87,8 +88,8 @@ class ComputeSkinMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the skin mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla.
+        Component that computes the skin mass necessary to react to the given linear force
+        vector, according to the methodology developed by Raquel Alonso Castilla.
         """
         fus_width = inputs["data:geometry:fuselage:maximum_width"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]
@@ -107,8 +108,9 @@ class ComputeSkinMass(om.ExplicitComponent):
         rho_m = inputs["settings:materials:aluminium:density"]
         shear_modulus = inputs["settings:materials:aluminium:shear_modulus"]
 
-        # There is a slight problem when taper ratio tends to one as it induces a 0 / 0 division that could not be
-        # solved by hand, consequently when taper ratio gets too close to 1. it will be taken as 0.97
+        # There is a slight problem when taper ratio tends to one as it induces a 0 / 0 division
+        # that could not be solved by hand, consequently when taper ratio gets too close to 1. it
+        # will be taken as 0.97
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         if taper_ratio > 0.97:
             taper_ratio = 0.97

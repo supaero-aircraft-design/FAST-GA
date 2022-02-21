@@ -81,8 +81,9 @@ class ComputeWingCG(ExplicitComponent):
                 chord_reduction = (y_cg - y2_wing) / (y4_wing - y2_wing) * (l2_wing - l4_wing)
 
             chord_at_cg_pos = l2_wing - chord_reduction
-            # In the computation of the mfw, we assume that there is 30% of the chord between front and rear spar,
-            # we will do the same assumption here. It was also assumed that the front spar is at 30 % of the chord
+            # In the computation of the mfw, we assume that there is 30% of the chord between
+            # front and rear spar, we will do the same assumption here. It was also assumed that
+            # the front spar is at 30 % of the chord
             distance_between_spars = 0.30 * chord_at_cg_pos
 
             x_cg_wing_rel = (

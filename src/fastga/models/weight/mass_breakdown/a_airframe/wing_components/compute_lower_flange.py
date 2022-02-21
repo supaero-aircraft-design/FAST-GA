@@ -109,8 +109,8 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.add_input(
             "settings:wing:airfoil:flanges:height_ratio",
             val=0.93,
-            desc="ratio of the height between the two flanges and the the thickness of the airfoil, depends on the "
-            "airfoil",
+            desc="ratio of the height between the two flanges and the the thickness of the "
+            "airfoil, depends on the airfoil",
         )
         self.add_input(
             "settings:materials:aluminium:density",
@@ -161,8 +161,8 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the wing web mass necessary to react to the given linear force vector,
-        according to the methodology developed by Raquel Alonso Castilla.
+        Component that computes the wing web mass necessary to react to the given linear force
+        vector, according to the methodology developed by Raquel Alonso Castilla.
         """
 
         wing_mass = inputs["data:weight:airframe:wing:mass"]

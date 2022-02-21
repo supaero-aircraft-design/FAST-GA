@@ -116,9 +116,9 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         inv_a = np.linalg.inv(a)
         CL = np.dot(inv_a, b)
 
-        # Now that we have the Cl on both lifting surfaces we need to find the corresponding aircraft angle of attack
-        # and elevator deflection to see if the equilibrium is possible, but first we must remove the effect of HLD
-        # on the wing
+        # Now that we have the Cl on both lifting surfaces we need to find the corresponding
+        # aircraft angle of attack and elevator deflection to see if the equilibrium is possible,
+        # but first we must remove the effect of HLD on the wing
 
         Cl_corrected_1 = float(CL[0] - (cl_flaps + cl0_wing))
         Cl_corrected_2 = float(CL[1])
