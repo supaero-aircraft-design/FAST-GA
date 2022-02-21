@@ -4,3 +4,7 @@ exclude_paths:
   - 'tests/**'
   - '**/unitary_tests/**'
   - 'integration_tests/**'
+  - '**/conftest.py'
+  - 'docs/conf.py'
+  - '.github/**'
+  - '**.md'

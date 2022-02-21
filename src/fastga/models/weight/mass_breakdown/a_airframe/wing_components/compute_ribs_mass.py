@@ -34,7 +34,8 @@ class ComputeRibsMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:airfoil:skin:ka",
             val=0.92,
-            desc="Correction coefficient needed to account for the hypothesis of a rectangular wingbox",
+            desc="Correction coefficient needed to account for the hypothesis of a rectangular "
+            "wingbox",
         )
         self.add_input(
             "settings:wing:airfoil:skin:d_wingbox",
@@ -52,8 +53,8 @@ class ComputeRibsMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
-        Component that computes the ribs mass necessary to react to the given linear force vector, according to the
-        methodology developed by Raquel Alonso Castilla.
+        Component that computes the ribs mass necessary to react to the given linear force
+        vector, according to the methodology developed by Raquel Alonso Castilla.
         """
         fus_width = inputs["data:geometry:fuselage:maximum_width"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]

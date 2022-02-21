@@ -38,6 +38,9 @@ K3 = "k3.csv"
 KB_FLAPS = "kb_flaps.csv"
 A_DELTA_AIRFOIL = "a_delta_airfoil.csv"
 K_A_DELTA = "k_a_delta.csv"
+K_P_FLAPS = "k_p.csv"
+DELTA_CM_DELTA_CL_REF = "delta_cm_delta_cl_ref.csv"
+K_DELTA = "k_delta.csv"
 K_AR_FUSELAGE = "k_ar_fuselage.csv"
 K_VH = "k_vh.csv"
 K_CH_ALPHA = "k_ch_alpha.csv"
@@ -802,6 +805,207 @@ class FigureDigitization(om.ExplicitComponent):
         return k_a_delta
 
     @staticmethod
+    def k_p_flaps(taper_ratio, eta_in, eta_out) -> float:
+        """
+        Roskam data to account for the partial span flaps factor on the pitch moment coefficient
+
+        :param taper_ratio: lifting surface taper ratio
+        :param eta_in: start of the control surface, in percent of the lifting surface span
+        :param eta_out: end of the control surface, in percent of the lifting surface span
+        :return k_p: partial span factor.
+        """
+
+        file = pth.join(resources.__path__[0], K_P_FLAPS)
+        db = read_csv(file)
+
+        eta_in_1_0 = FigureDigitization.interpolate_database(
+            db, "taper_1_0_X", "taper_1_0_Y", eta_in
+        )
+        eta_out_1_0 = FigureDigitization.interpolate_database(
+            db, "taper_1_0_X", "taper_1_0_Y", eta_out
+        )
+
+        eta_in_0_5 = FigureDigitization.interpolate_database(
+            db, "taper_0_5_X", "taper_0_5_Y", eta_in
+        )
+        eta_out_0_5 = FigureDigitization.interpolate_database(
+            db, "taper_0_5_X", "taper_0_5_Y", eta_out
+        )
+
+        eta_in_0_333 = FigureDigitization.interpolate_database(
+            db, "taper_0_333_X", "taper_0_333_Y", eta_in
+        )
+        eta_out_0_333 = FigureDigitization.interpolate_database(
+            db, "taper_0_333_X", "taper_0_333_Y", eta_out
+        )
+
+        eta_in_0_25 = FigureDigitization.interpolate_database(
+            db, "taper_0_25_X", "taper_0_25_Y", eta_in
+        )
+        eta_out_0_25 = FigureDigitization.interpolate_database(
+            db, "taper_0_25_X", "taper_0_25_Y", eta_out
+        )
+
+        taper_array = [0.25, 0.333, 0.5, 1.0]
+        eta_in_array = [eta_in_0_25, eta_in_0_333, eta_in_0_5, eta_in_1_0]
+        eta_out_array = [eta_out_0_25, eta_out_0_333, eta_out_0_5, eta_out_1_0]
+
+        if taper_ratio != np.clip(taper_ratio, 0.25, 1.0):
+            _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
+
+        k_p = interpolate.interp1d(taper_array, eta_out_array)(
+            np.clip(taper_ratio, 0.25, 1.0)
+        ) - interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
+
+        return k_p
+
+    @staticmethod
+    def pitch_to_reference_lift(thickness_ratio: float, chord_ratio: float) -> float:
+        """
+        Roskam data to account for the ratio between the pitch moment coefficient and the
+        reference lift coefficient increment
+
+        :param thickness_ratio: thickness to chord ratio of the lifting surface
+        :param chord_ratio: chord ratio of the control surface over the lifting surface
+        :return delta_cm_delta_cl_ref: ration between the pitching moment and the reference lift
+        coefficient.
+        """
+
+        if chord_ratio != np.clip(chord_ratio, 0.05, 0.4):
+            _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
+
+        file = pth.join(resources.__path__[0], DELTA_CM_DELTA_CL_REF)
+        db = read_csv(file)
+
+        x_21 = db["TOC_21_X"]
+        y_21 = db["TOC_21_Y"]
+        errors = np.logical_or(np.isnan(x_21), np.isnan(y_21))
+        x_21 = x_21[np.logical_not(errors)].tolist()
+        y_21 = y_21[np.logical_not(errors)].tolist()
+        k_21 = interpolate.interp1d(x_21, y_21)(np.clip(chord_ratio, min(x_21), max(x_21)))
+
+        x_18 = db["TOC_18_X"]
+        y_18 = db["TOC_18_Y"]
+        errors = np.logical_or(np.isnan(x_18), np.isnan(y_18))
+        x_18 = x_18[np.logical_not(errors)].tolist()
+        y_18 = y_18[np.logical_not(errors)].tolist()
+        k_18 = interpolate.interp1d(x_18, y_18)(np.clip(chord_ratio, min(x_18), max(x_18)))
+
+        x_15 = db["TOC_15_X"]
+        y_15 = db["TOC_15_Y"]
+        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
+        x_15 = x_15[np.logical_not(errors)].tolist()
+        y_15 = y_15[np.logical_not(errors)].tolist()
+        k_15 = interpolate.interp1d(x_15, y_15)(np.clip(chord_ratio, min(x_15), max(x_15)))
+
+        x_12 = db["TOC_12_X"]
+        y_12 = db["TOC_12_Y"]
+        errors = np.logical_or(np.isnan(x_12), np.isnan(y_12))
+        x_12 = x_12[np.logical_not(errors)].tolist()
+        y_12 = y_12[np.logical_not(errors)].tolist()
+        k_12 = interpolate.interp1d(x_12, y_12)(np.clip(chord_ratio, min(x_12), max(x_12)))
+
+        x_09 = db["TOC_09_X"]
+        y_09 = db["TOC_09_Y"]
+        errors = np.logical_or(np.isnan(x_09), np.isnan(y_09))
+        x_09 = x_09[np.logical_not(errors)].tolist()
+        y_09 = y_09[np.logical_not(errors)].tolist()
+        k_09 = interpolate.interp1d(x_09, y_09)(np.clip(chord_ratio, min(x_09), max(x_09)))
+
+        x_06 = db["TOC_06_X"]
+        y_06 = db["TOC_06_Y"]
+        errors = np.logical_or(np.isnan(x_06), np.isnan(y_06))
+        x_06 = x_06[np.logical_not(errors)].tolist()
+        y_06 = y_06[np.logical_not(errors)].tolist()
+        k_06 = interpolate.interp1d(x_06, y_06)(np.clip(chord_ratio, min(x_06), max(x_06)))
+
+        x_03 = db["TOC_03_X"]
+        y_03 = db["TOC_03_Y"]
+        errors = np.logical_or(np.isnan(x_03), np.isnan(y_03))
+        x_03 = x_03[np.logical_not(errors)].tolist()
+        y_03 = y_03[np.logical_not(errors)].tolist()
+        k_03 = interpolate.interp1d(x_03, y_03)(np.clip(chord_ratio, min(x_03), max(x_03)))
+
+        toc_array = [0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21]
+        k_array = [k_03, k_06, k_09, k_12, k_15, k_18, k_21]
+
+        if thickness_ratio != np.clip(thickness_ratio, 0.03, 0.4):
+            _LOGGER.warning(
+                "Thickness to chord ratio outside of the range in Roskam's book, " "value clipped"
+            )
+
+        k = interpolate.interp1d(toc_array, k_array)(np.clip(thickness_ratio, 0.03, 0.4))
+
+        return k
+
+    @staticmethod
+    def k_delta_flaps(taper_ratio: float, eta_in: float, eta_out: float) -> float:
+        """
+        Roskam data to estimate the conversion factor which accounts for partial span flaps on a
+        swept wing (c_prime/c = 1.0)
+
+        :param taper_ratio: lifting surface taper ratio
+        :param eta_in: start of the control surface, in percent of the lifting surface span
+        :param eta_out: end of the control surface, in percent of the lifting surface span
+        :return delta_k: partial span factor.
+        """
+
+        file = pth.join(resources.__path__[0], K_DELTA)
+        db = read_csv(file)
+
+        x_10 = db["X_1_0"]
+        y_10 = db["Y_1_0"]
+        errors = np.logical_or(np.isnan(x_10), np.isnan(y_10))
+        x_10 = x_10[np.logical_not(errors)].tolist()
+        y_10 = y_10[np.logical_not(errors)].tolist()
+        eta_in_1_0 = interpolate.interp1d(x_10, y_10)(np.clip(eta_in, min(x_10), max(x_10)))
+        eta_out_1_0 = interpolate.interp1d(x_10, y_10)(np.clip(eta_out, min(x_10), max(x_10)))
+
+        x_05 = db["X_0_5"]
+        y_05 = db["Y_0_5"]
+        errors = np.logical_or(np.isnan(x_05), np.isnan(y_05))
+        x_05 = x_05[np.logical_not(errors)].tolist()
+        y_05 = y_05[np.logical_not(errors)].tolist()
+        eta_in_0_5 = interpolate.interp1d(x_05, y_05)(np.clip(eta_in, min(x_05), max(x_05)))
+        eta_out_0_5 = interpolate.interp1d(x_05, y_05)(np.clip(eta_out, min(x_05), max(x_05)))
+
+        x_0333 = db["X_0_333"]
+        y_0333 = db["Y_0_333"]
+        errors = np.logical_or(np.isnan(x_0333), np.isnan(y_0333))
+        x_0333 = x_0333[np.logical_not(errors)].tolist()
+        y_0333 = y_0333[np.logical_not(errors)].tolist()
+        eta_in_0_333 = interpolate.interp1d(x_0333, y_0333)(
+            np.clip(eta_in, min(x_0333), max(x_0333))
+        )
+        eta_out_0_333 = interpolate.interp1d(x_0333, y_0333)(
+            np.clip(eta_out, min(x_0333), max(x_0333))
+        )
+
+        x_02 = db["X_0_2"]
+        y_02 = db["Y_0_2"]
+        errors = np.logical_or(np.isnan(x_02), np.isnan(y_02))
+        x_02 = x_02[np.logical_not(errors)].tolist()
+        y_02 = y_02[np.logical_not(errors)].tolist()
+        eta_in_0_2 = interpolate.interp1d(x_02, y_02)(np.clip(eta_in, min(x_02), max(x_02)))
+        eta_out_0_2 = interpolate.interp1d(x_02, y_02)(np.clip(eta_out, min(x_02), max(x_02)))
+
+        taper_array = [0.2, 0.333, 0.5, 1.0]
+        eta_in_array = [eta_in_0_2, eta_in_0_333, eta_in_0_5, eta_in_1_0]
+        eta_out_array = [eta_out_0_2, eta_out_0_333, eta_out_0_5, eta_out_1_0]
+
+        if taper_ratio != np.clip(taper_ratio, 0.2, 1.0):
+            _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
+
+        k_delta_in = interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.2, 1.0))
+        k_delta_out = interpolate.interp1d(taper_array, eta_out_array)(
+            np.clip(taper_ratio, 0.2, 1.0)
+        )
+
+        k_delta = k_delta_out - k_delta_in
+
+        return k_delta
+
+    @staticmethod
     def k_ar_fuselage(taper_ratio, span, avg_fuselage_depth) -> float:
         """
         Roskam data to account for the effect of the fuselage on the VTP effective aspect ratio (
@@ -812,7 +1016,7 @@ class FigureDigitization(om.ExplicitComponent):
         :param avg_fuselage_depth: average fuselage depth (diameter if fuselage considered
         circular), in m
         :return k_ar_fuselage: correction factor to account for the end plate effect of the fuselage
-         on effective VTP AR
+         on effective VTP AR.
         """
 
         file = pth.join(resources.__path__[0], K_AR_FUSELAGE)
@@ -1133,3 +1337,18 @@ class FigureDigitization(om.ExplicitComponent):
         )
 
         return k_fus
+
+    @staticmethod
+    def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
+
+        database_x = database[tag_x]
+        database_y = database[tag_y]
+        errors = np.logical_or(np.isnan(database_x), np.isnan(database_x))
+        database_x = database_x[np.logical_not(errors)].tolist()
+        database_y = database_y[np.logical_not(errors)].tolist()
+
+        output_y = interpolate.interp1d(database_x, database_y)(
+            np.clip(input_x, min(database_x), max(database_x))
+        )
+
+        return output_y

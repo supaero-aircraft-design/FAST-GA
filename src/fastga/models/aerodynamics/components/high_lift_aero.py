@@ -219,15 +219,48 @@ class ComputeDeltaHighLift(FigureDigitization):
         :return: increment of moment coefficient
         """
 
-        wing_taper_ratio = float(inputs["data:geometry:wing:taper_ratio"])
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        cl_alpha_airfoil_wing = inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
+        span_wing = inputs["data:geometry:wing:span"]
+        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
+        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
+        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
+        flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
+        wing_thickness_ratio = float(inputs["data:geometry:wing:thickness_ratio"])
+        sweep_25 = float(inputs["data:geometry:wing:sweep_25"]) * np.pi / 180.0
 
-        # Method from Roskam (sweep=0, flaps 60%, simple slotted and not extensible, at 25% MAC, cf/c+0.25)
-        k_p = interpolate.interp1d([0.0, 0.2, 0.33, 0.5, 1.0], [0.65, 0.75, 0.7, 0.63, 0.5])
-        # k_p: Figure 8.105, interpolated function of taper ratio (span ratio fixed)
-        delta_cl_flap = self._get_flaps_delta_cl(inputs, flap_angle, mach)[0]
+        beta_ref = np.sqrt(1.0 - mach ** 2.0)
+        k = cl_alpha_airfoil_wing / (2.0 * np.pi)
+        cl_alpha_ref = (
+            2.0 * np.pi * 6.0 / (2.0 + np.sqrt((36.0 * beta_ref ** 2.0 / k ** 2.0 + 4.0)))
+        )
+
+        # First we need to compute the increment in the lift coefficient for the reference case
+        delta_cl_2d_ref = self._compute_delta_cl_airfoil_2d(inputs, flap_angle, mach)
+        eta_in_ref = 0.0
+        eta_out_ref = 1.0
+        kb_ref = self.k_b_flaps(eta_in_ref, eta_out_ref, taper_ratio_wing)
+        a_delta_flap_ref = self.a_delta_airfoil(float(inputs["data:geometry:flap:chord_ratio"]))
+        k_a_delta_ref = self.k_a_delta(a_delta_flap_ref, 6.0)
+        delta_cl_ref = (
+            kb_ref * delta_cl_2d_ref * (cl_alpha_ref / cl_alpha_airfoil_wing) * k_a_delta_ref
+        )
+
+        # Now we can compute the coefficient
+        eta_in = float(y1_wing / (span_wing / 2.0))
+        eta_out = float(
+            ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing))
+            / (span_wing / 2.0 - y2_wing)
+        )
+        k_delta = self.k_delta_flaps(taper_ratio_wing, eta_in, eta_out)
+        k_p = self.k_p_flaps(taper_ratio_wing, eta_in, eta_out)
+        delta_cm_delta_cl_ref = self.pitch_to_reference_lift(wing_thickness_ratio, flap_chord_ratio)
+
         delta_cm_flap = (
-            k_p(min(max(0.0, wing_taper_ratio), 1.0)) * (-0.27) * delta_cl_flap
-        )  # -0.27: Figure 8.106
+            k_delta * aspect_ratio_wing / 1.5 * np.tan(sweep_25) + k_p * delta_cm_delta_cl_ref
+        ) * delta_cl_ref
 
         return delta_cm_flap
 

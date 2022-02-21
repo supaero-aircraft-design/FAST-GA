@@ -247,7 +247,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         _LOGGER.debug("Entering aerodynamic computation")
 
         # Check AOA input is float
-        if not (type(INPUT_AOA) == float):
+        if not isinstance(INPUT_AOA, float):
             raise TypeError("INPUT_AOA should be a float!")
 
         if self.options["low_speed_aero"]:
@@ -282,7 +282,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
                     inputs, outputs, INPUT_AOA, altitude, mach
                 )
 
-        # Defining outputs -----------------------------------------------------------------------------
+        # Defining outputs
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:CL0_clean"] = cl_0_wing
             outputs["data:aerodynamics:wing:low_speed:CL_alpha"] = cl_alpha_wing

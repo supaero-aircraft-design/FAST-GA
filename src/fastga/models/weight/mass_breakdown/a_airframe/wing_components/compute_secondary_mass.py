@@ -26,8 +26,8 @@ class ComputeSecondaryMass(om.ExplicitComponent):
         self.add_input(
             "settings:wing:structure:secondary_mass_ratio",
             val=0.25,
-            desc="Ratio of the mass of the secondary structure and the primary structure (between 0.25 and 0.30 "
-            "according to literature",
+            desc="Ratio of the mass of the secondary structure and the primary structure (between "
+            "0.25 and 0.30 according to literature",
         )
 
         self.add_output("data:weight:airframe:wing:secondary_structure:mass", units="kg")

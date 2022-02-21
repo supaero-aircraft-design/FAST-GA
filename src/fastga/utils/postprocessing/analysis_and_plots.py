@@ -29,6 +29,8 @@ from openmdao.utils.units import convert_units
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 
+from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
+
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
@@ -44,8 +46,8 @@ def aircraft_geometry_plot(
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
     :param plot_nacelle: boolean to turn on or off the plotting of the nacelles
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -132,14 +134,18 @@ def aircraft_geometry_plot(
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
 
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     x = np.concatenate((x_fuselage, x_wing, x_ht))
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     y = np.concatenate((y_fuselage, y_wing, y_ht))
 
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     y = np.concatenate((-y, y))
-    # pylint: disable=invalid-name # that's a common naming
+    # pylint: disable=invalid-name
+    # that's a common naming
     x = np.concatenate((x, x))
 
     if fig is None:
@@ -268,8 +274,8 @@ def evolution_diagram(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: V-N plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -391,16 +397,16 @@ def cl_wing_diagram(
     file_formatter=None,
 ) -> [go.FigureWidget, go.FigureWidget]:
     """
-    Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL before the added part of
-    the wing or before the reduced part of the wing.
+    Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL
+    before the added part of the wing or before the reduced part of the wing.
 
     :param aircraft_ref_file_path: path of reference aircraft data file
     :param aircraft_mod_file_path: path of modified aircraft data file
     :param prop_on: boolean stating if the rotor is on or off (for single propeller plane)
     :param name_ref: name to give to the trace of the reference aircraft
     :param name_mod: name to give to the trace of the modified aircraft
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: Cl distribution figure along the span.
     """
 
@@ -525,8 +531,8 @@ def cg_lateral_diagram(
     :param name: name to give to the trace added to the figure
     :param color: color that we give to the aft, empty and fwd CGs of the aircraft
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -989,7 +995,8 @@ def drag_breakdown_diagram(
     nacelle_drag_low_speed = variables["data:aerodynamics:nacelles:low_speed:CD0"].value[0]
     other_drag_low_speed = variables["data:aerodynamics:other:low_speed:CD0"].value[0]
 
-    # CRUD (other undesirable drag). Factor from Gudmundsson book. Introduced in aerodynamics.components.cd0_total.py.
+    # CRUD (other undesirable drag). Factor from Gudmundsson book. Introduced in
+    # aerodynamics.components.cd0_total.py.
     crud_factor = 1.25
 
     if fig is None:
@@ -1104,8 +1111,8 @@ def payload_range(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: payload range figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -1185,8 +1192,8 @@ def aircraft_polar(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :param equilibrated: boolean stating if the polar plotted is the equilibrated one or not
     :return: plane polar figure.
     """
@@ -1194,26 +1201,42 @@ def aircraft_polar(
 
     if equilibrated:
         cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CL"].value)
-        cl_array_cruise = [e for i, e in enumerate(cl_array_cruise) if e != 0]
+        cl_array_cruise = [
+            e for i, e in enumerate(cl_array_cruise) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:equilibrated:CD"].value)
-        cd_array_cruise = [e for i, e in enumerate(cd_array_cruise) if e != 0]
+        cd_array_cruise = [
+            e for i, e in enumerate(cd_array_cruise) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cl_array_low_speed = list(
             variables["data:aerodynamics:aircraft:low_speed:equilibrated:CL"].value
         )
-        cl_array_low_speed = [e for i, e in enumerate(cl_array_low_speed) if e != 0]
+        cl_array_low_speed = [
+            e for i, e in enumerate(cl_array_low_speed) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cd_array_low_speed = list(
             variables["data:aerodynamics:aircraft:low_speed:equilibrated:CD"].value
         )
-        cd_array_low_speed = [e for i, e in enumerate(cd_array_low_speed) if e != 0]
+        cd_array_low_speed = [
+            e for i, e in enumerate(cd_array_low_speed) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
     else:
         cl_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CL"].value)
-        cl_array_cruise = [e for i, e in enumerate(cl_array_cruise) if e != 0]
+        cl_array_cruise = [
+            e for i, e in enumerate(cl_array_cruise) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cd_array_cruise = list(variables["data:aerodynamics:aircraft:cruise:CD"].value)
-        cd_array_cruise = [e for i, e in enumerate(cd_array_cruise) if e != 0]
+        cd_array_cruise = [
+            e for i, e in enumerate(cd_array_cruise) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cl_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CL"].value)
-        cl_array_low_speed = [e for i, e in enumerate(cl_array_low_speed) if e != 0]
+        cl_array_low_speed = [
+            e for i, e in enumerate(cl_array_low_speed) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
         cd_array_low_speed = list(variables["data:aerodynamics:aircraft:low_speed:CD"].value)
-        cd_array_low_speed = [e for i, e in enumerate(cd_array_low_speed) if e != 0]
+        cd_array_low_speed = [
+            e for i, e in enumerate(cd_array_low_speed) if e != 0 and e < FIRST_INVALID_COEFF
+        ]
 
     # Computation of the highest CL/CD ratio which gives the L/D max.
     l_d_max_cruise = max(np.asarray(cl_array_cruise) / np.asarray(cd_array_cruise))

@@ -28,19 +28,19 @@ THICKNESS = "thickness"
 
 
 class Profile:
-    """Class for managing 2D wing profiles"""
+    """Class for managing 2D wing profiles."""
 
-    # pylint: disable=invalid-name  # X and Z are valid names in this context
+    # pylint: disable=invalid-name
+    # X and Z are valid names in this context
 
     def __init__(self, chord_length: float = 0.0):
 
         self._rel_mean_line_and_thickness = pd.DataFrame(columns=[X, Z, THICKNESS])
         """
         Data of mean line and thickness, computed after inputs of :meth:`set_points`_.
-        
         DataFrame keys are 'x', 'z' and 'thickness'.
         - 'x' and 'z' are relative to chord_length
-        - 'thickness' is relative to max thickness (and given according to 'x')
+        - 'thickness' is relative to max thickness (and given according to 'x').
         """
 
         self.chord_length: float = chord_length

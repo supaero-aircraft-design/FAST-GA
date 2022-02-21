@@ -57,6 +57,14 @@ class Mission(om.Group):
 
     """
 
+    def __init__(self, **kwargs):
+        """Defining solvers for mission computation resolution."""
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
+
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
         self.options.declare("out_file", default="", types=str)
@@ -110,15 +118,11 @@ class Mission(om.Group):
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
 
         # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
         self.nonlinear_solver.options["debug_print"] = True
-        # self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 100
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
         self.nonlinear_solver.options["rtol"] = 1e-2
 
-        self.linear_solver = om.LinearBlockGS()
         # self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
@@ -198,6 +202,10 @@ class _Atmosphere(Atmosphere):
     ):
         super().__init__(altitude, delta_t, altitude_in_feet)
         self._calibrated_airspeed = None
+        self._equivalent_airspeed = None
+        self._true_airspeed = None
+        self._mach = None
+        self._unitary_reynolds = None
 
     @property
     def true_airspeed(self) -> Union[float, Sequence[float]]:
@@ -755,7 +763,7 @@ class _compute_descent(DynamicEquilibrium):
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
-        atm = _Atmosphere(altitude_t)
+        atm = _Atmosphere(altitude_t, altitude_in_feet=False)
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas

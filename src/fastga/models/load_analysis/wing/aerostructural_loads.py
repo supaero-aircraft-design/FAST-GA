@@ -173,8 +173,8 @@ class AerostructuralLoad(ComputeVN):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##############################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##########################
+        ############################################################################################
 
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         y_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"]
@@ -204,8 +204,9 @@ class AerostructuralLoad(ComputeVN):
         shear_max = 0.0
         rbm_max = 0.0
 
-        # STEP 2/XX - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT THE ROOT (Y=0) AND AT
-        # THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN THE INTERPOLATION WE WILL DO LATER ##############
+        # STEP 2/XX - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT
+        # AT THE ROOT (Y=0) AND AT THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN
+        # THE INTERPOLATION WE WILL DO LATER
 
         # We delete the zeros
         y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
@@ -230,8 +231,8 @@ class AerostructuralLoad(ComputeVN):
         cl_vector_slip = np.append(cl_vector_slip, 0.0)
         chord_vector = np.append(chord_vector, chord_vector[-1])
 
-        # STEP 3/XX - WE COMPUTE THE BASELINE LIFT THAT WE ASSUME WILL SCALE WITH THE LOAD FACTOR, THAT IS WHY WE
-        # COMPUTE It OUT OF THE LOOPS ##################################################################################
+        # STEP 3/XX - WE COMPUTE THE BASELINE LIFT THAT WE ASSUME WILL SCALE WITH THE LOAD
+        # FACTOR, THAT IS WHY WE COMPUTE It OUT OF THE LOOPS
 
         y_vector, _ = self.compute_relief_force(inputs, y_vector_orig, chord_vector, wing_mass, 0.0)
         cl_s = self.compute_cl_s(y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector)
@@ -244,16 +245,16 @@ class AerostructuralLoad(ComputeVN):
         weight_shear_diagram = np.full(len(y_vector), 0.0)
         weight_bending_diagram = np.full(len(y_vector), 0.0)
 
-        # STEP 4/XX - WE INITIALIZE THE LOOPS ON THE DIFFERENT SIZING CASE THAT WE DEFINED AND THEN LAUNCH THEM ########
-        ################################################################################################################
+        # STEP 4/XX - WE INITIALIZE THE LOOPS ON THE DIFFERENT SIZING CASE THAT WE DEFINED AND
+        # THEN LAUNCH THEM
 
         mass_array = np.array([mtow, min(mzfw, mtow)])
 
         for mass in mass_array:
 
-            # STEP 4.1/XX - FIRST SUB-STEP IS TO COMPUTE THEN LOAD FACTOR EXPERIENCED BY THE AIRCRAFT AT THE CURRENT
-            # SIZING MASS USING THE FUNCTION WE INHERITED FROM THE ComputeVn CLASS AND THE BASELINE WEIGHT DISTRIBUTION
-            # FOR CURRENT FUEL IN THE WING #############################################################################
+            # STEP 4.1/XX - FIRST SUB-STEP IS TO COMPUTE THEN LOAD FACTOR EXPERIENCED BY THE
+            # AIRCRAFT AT THE CURRENT SIZING MASS USING THE FUNCTION WE INHERITED FROM THE
+            # ComputeVn CLASS AND THE BASELINE WEIGHT DISTRIBUTION FOR CURRENT FUEL IN THE WING
 
             if abs(mtow - mzfw) < 5.0:
                 fuel_mass = 0.0
@@ -279,8 +280,8 @@ class AerostructuralLoad(ComputeVN):
 
             for load_factor in load_factor_list:
 
-                # STEP 4.2/XX - WE COMPUTE THE REAL CONDITIONS EXPERIENCED IN TERMS OF LIFT AND WEIGHT AND SCALE
-                # THE INITIAL VECTOR ACCORDING TO LOAD FACTOR AND LIFT EQUILIBRIUM
+                # STEP 4.2/XX - WE COMPUTE THE REAL CONDITIONS EXPERIENCED IN TERMS OF LIFT AND
+                # WEIGHT AND SCALE THE INITIAL VECTOR ACCORDING TO LOAD FACTOR AND LIFT EQUILIBRIUM
 
                 cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
                 cl_s_actual = cl_s * cl_wing / cl_0
@@ -290,9 +291,9 @@ class AerostructuralLoad(ComputeVN):
                 )
                 weight_array = weight_array_orig * factor_of_safety * load_factor
 
-                # STEP 4.3/XX - WE COMPUTE THE SHEAR AND WEIGHT DIAGRAM WITH THE APPROPRIATE FUNCTION, IDENTIFY THE
-                # MOST EXTREME CONSTRAINTS AND SAVE THE CONDITIONS IN WHICH THEY ARE EXPERIENCED FOR LATER USE IN
-                # THE POST-PROCESSING PHASE ########################################################################
+                # STEP 4.3/XX - WE COMPUTE THE SHEAR AND WEIGHT DIAGRAM WITH THE APPROPRIATE
+                # FUNCTION, IDENTIFY THE MOST EXTREME CONSTRAINTS AND SAVE THE CONDITIONS IN
+                # WHICH THEY ARE EXPERIENCED FOR LATER USE IN THE POST-PROCESSING PHASE
 
                 tot_shear_diagram = AerostructuralLoad.compute_shear_diagram(
                     y_vector, weight_array + lift_section
@@ -323,8 +324,7 @@ class AerostructuralLoad(ComputeVN):
                     )
                     rbm_max = abs(root_bending_moment)
 
-        # STEP 5/XX - WE ADD ZEROS TO THE RESULTS ARRAYS TO MAKE THEM FIT THE OPENMDAO FORMAT ##########################
-        ################################################################################################################
+        # STEP 5/XX - WE ADD ZEROS TO THE RESULTS ARRAYS TO MAKE THEM FIT THE OPENMDAO FORMAT
 
         additional_zeros = np.zeros(SPAN_MESH_POINT_LOADS - len(y_vector))
         lift_shear_diagram = np.concatenate([lift_shear_diagram, additional_zeros])
@@ -351,9 +351,11 @@ class AerostructuralLoad(ComputeVN):
         """
         Function that computes the shear diagram of a given array with linear forces in them
 
-        @param y_vector: an array containing the position of the different station at which the linear forces are given
+        @param y_vector: an array containing the position of the different station at which the
+        linear forces are given
         @param force_array: an array containing the linear forces
-        @return: shear_force_diagram an array representing the shear diagram of the linear forces given in input
+        @return: shear_force_diagram an array representing the shear diagram of the linear forces
+        given in input
         """
 
         # We first create the array to fill
@@ -370,16 +372,19 @@ class AerostructuralLoad(ComputeVN):
         """
         Function that computes the root bending diagram of a given array with linear forces in them
 
-        @param y_vector: an array containing the position of the different station at which the linear forces are given
+        @param y_vector: an array containing the position of the different station at which the
+        linear forces are given
         @param force_array: an array containing the linear forces
-        @return: bending_moment_diagram an array representing the root bending diagram of the linear forces given in
+        @return: bending_moment_diagram an array representing the root bending diagram of the
+        linear forces given in
         input
         """
 
         # We first create the array to fill
         bending_moment_diagram = np.zeros(len(y_vector))
 
-        # Each station of the shear diagram is equal to the root bending moment created by all subsequent stations
+        # Each station of the shear diagram is equal to the root bending moment created by all
+        # subsequent stations
         for i in range(len(y_vector)):
             lever_arm = y_vector - y_vector[i]
             bending_moment_diagram[i] = trapz(force_array[i:] * lever_arm[i:], y_vector[i:])
@@ -389,17 +394,21 @@ class AerostructuralLoad(ComputeVN):
     @staticmethod
     def compute_cl_s(y_vector_cl_orig, y_vector_chord_orig, y_vector, cl_list, chord_list):
         """
-        Function that computes linear lift on all section of y_vector based on an original cl distribution
+        Function that computes linear lift on all section of y_vector based on an original cl
+        distribution
 
-        @param y_vector_cl_orig: an array containing the position of the different station at which the original lift
-        distribution was computed, typically a result of OpenVSP or VLM
-        @param y_vector_chord_orig: an array containing the position of the different station at which the chord
-        distribution was computed, typically a result of OpenVSP or VLM
-        @param y_vector: an array containing the position of the different station at which the linear forces are given
+        @param y_vector_cl_orig: an array containing the position of the different station at which
+        the original lift distribution was computed, typically a result of OpenVSP or VLM
+        @param y_vector_chord_orig: an array containing the position of the different station at
+        which the chord distribution was computed, typically a result of OpenVSP or VLM
+        @param y_vector: an array containing the position of the different station at which the
+        linear forces are given
         @param cl_list: an array containing the original lift coefficient distribution
-        @param chord_list: an array containing the original wing chord length at the different station
-        @return: lift_chord an array representing the linear lift at the different station of y_vector, integrating this
-        vector along the wing span and multiplying it by the dynamic pressure will give you the actual lift distribution
+        @param chord_list: an array containing the original wing chord length at the different
+        station
+        @return: lift_chord an array representing the linear lift at the different station of
+        y_vector, integrating this vector along the wing span and multiplying it by the dynamic
+        pressure will give you the actual lift distribution
         """
 
         # We create the interpolation function
@@ -416,26 +425,29 @@ class AerostructuralLoad(ComputeVN):
     @staticmethod
     def compute_relief_force(inputs, y_vector, chord_vector, wing_mass, fuel_mass, point_mass=True):
         """
-        Function that computes the baseline weight distribution and modify the y_vector to account for point masses.
-        We chose to represent point masses as linear masses on finite length and to do this we need to modify the
-        y_vector
+        Function that computes the baseline weight distribution and modify the y_vector to
+        account for point masses. We chose to represent point masses as linear masses on finite
+        length and to do this we need to modify the y_vector
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
-        @param y_vector: an array containing the original position of the different station at which the chords are
-        given
+        @param y_vector: an array containing the original position of the different station at which
+        the chords are given
         @param chord_vector: an array containing the chord of the wing at different span station
         @param wing_mass: a float containing the mass of the wing
         @param fuel_mass: a float containing the mass of the fuel
-        @param point_mass: a boolean, if it's FALSE all point mass will be equal to zero used in the post-processing
-        @return: y_vector an array containing the position of the wing span at which the wing mass are sampled
-        @return: weight_array an array containing linear masses of all structural components on the wing
+        @param point_mass: a boolean, if it's FALSE all point mass will be equal to zero used in the
+        post-processing
+        @return: y_vector an array containing the position of the wing span at which the wing mass
+        are sampled
+        @return: weight_array an array containing linear masses of all structural components on the
+        wing
         """
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR WEIGHT COMPUTATION ############################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR WEIGHT COMPUTATION
 
-        # For post-processing we need to be able to compute the linear mass of each component separately, to do this we
-        # chose to render this function able to set each mass to 0 to nullify its influence
+        # For post-processing we need to be able to compute the linear mass of each component
+        # separately, to do this we chose to render this function able to set each mass to 0 to
+        # nullify its influence
         if point_mass:
             tot_engine_mass = inputs["data:weight:propulsion:engine:mass"]
             tot_lg_mass = inputs["data:weight:airframe:landing_gear:main:mass"]
@@ -463,18 +475,17 @@ class AerostructuralLoad(ComputeVN):
 
         g = 9.81
 
-        # STEP 2/XX - REARRANGE THE DATA TO FIT ON ONE WING AS WE ASSUME SYMMETRICAL LOADING ###########################
-        ################################################################################################################
+        # STEP 2/XX - REARRANGE THE DATA TO FIT ON ONE WING AS WE ASSUME SYMMETRICAL LOADING
 
         # Computing the mass of the components for one wing
         single_engine_mass = tot_engine_mass / engine_count
         single_lg_mass = tot_lg_mass / 2.0  # We assume 2 MLG
 
-        # STEP 3/XX - AS MENTIONED BEFORE, ADDING POINT MASS WILL ADD Y STATIONS TO THE Y VECTOR SO WE DO THEM
-        # BEFORE ANYTHING ELSE #########################################################################################
+        # STEP 3/XX - AS MENTIONED BEFORE, ADDING POINT MASS WILL ADD Y STATIONS TO THE Y VECTOR
+        # SO WE DO THEM BEFORE ANYTHING ELSE
 
-        # We create the array that will store the "point mass" which we chose to represent as distributed mass over a
-        # small finite interval
+        # We create the array that will store the "point mass" which we chose to represent as
+        # distributed mass over a small finite interval
         point_mass_array = np.zeros(len(y_vector))
 
         # Adding the motor weight
@@ -500,11 +511,12 @@ class AerostructuralLoad(ComputeVN):
             y_vector, chord_vector, point_mass_array, y_lg, single_lg_mass, inputs
         )
 
-        # STEP 4/XX - WE CAN NOW ADD THE DISTRIBUTED MASS, I.E THE WING AND THE FUEL. A HARD-CODED VAlUE ENABLE TO
-        # CHANGE FROM ONE MASS DISTRIBUTION TO ANOTHER #################################################################
+        # STEP 4/XX - WE CAN NOW ADD THE DISTRIBUTED MASS, I.E THE WING AND THE FUEL. A
+        # HARD-CODED VAlUE ENABLE TO CHANGE FROM ONE MASS DISTRIBUTION TO ANOTHER
 
-        # We first compute the shape of the distribution regardless of the amplitude which we will later adjust to make
-        # sure that the integration of the mass distribution gives the actual mass
+        # We first compute the shape of the distribution regardless of the amplitude which we
+        # will later adjust to make sure that the integration of the mass distribution gives the
+        # actual mass
         distribution_type = 0.0
 
         if distribution_type == 1.0:
@@ -519,12 +531,12 @@ class AerostructuralLoad(ComputeVN):
 
         readjust_fuel = trapz(fuel_weight_distribution, y_vector)
 
-        # We readjust to make sure that the integration of the mass distribution gives the actual mass
+        # We readjust to make sure that the integration of the mass distribution gives the actual
+        # mass
         wing_mass_array = wing_mass * struct_weight_distribution / (2.0 * readjust_struct)
         fuel_mass_array = fuel_mass * fuel_weight_distribution / (2.0 * readjust_fuel)
 
-        # STEP 4/XX - WE CAN NOW ADD ALL THE MASS TOGETHER AND RETURN ALL VALUES #######################################
-        ################################################################################################################
+        # STEP 4/XX - WE CAN NOW ADD ALL THE MASS TOGETHER AND RETURN ALL VALUES
         mass_array = wing_mass_array + fuel_mass_array + point_mass_array
         weight_array = -mass_array * g
 
@@ -537,8 +549,10 @@ class AerostructuralLoad(ComputeVN):
 
         @param array: a sorted array in which we want to insert an element
         @param element: the element we want to insert in the sorted array
-        @return: final_array a sorted array based on the input array with the argument float inserted in it
-        @return: index the location at which we add to insert the element ot keep the initial array sorted
+        @return: final_array a sorted array based on the input array with the argument float
+        inserted in it
+        @return: index the location at which we add to insert the element ot keep the initial
+        array sorted
         """
 
         tmp_array = np.append(array, element)
@@ -550,12 +564,13 @@ class AerostructuralLoad(ComputeVN):
     @staticmethod
     def delete_additional_zeros(array, length: int = None):
         """
-        Function that delete the additional zeros we had to add to fit the format imposed by OpenMDAO
+        Function that delete the additional zeros we had to add to fit the format imposed by
+        OpenMDAO
 
         @param array: an array with additional zeros we want to delete
         @param length: if len is specified leave zeros up until the length of the array is len
-        @return: final_array an array containing the same elements of the initial array but with the additional zeros
-        deleted
+        @return: final_array an array containing the same elements of the initial array but with
+        the additional zeros deleted
         """
 
         last_zero = np.amax(np.where(array != 0.0)) + 1
@@ -569,44 +584,45 @@ class AerostructuralLoad(ComputeVN):
     @staticmethod
     def add_point_mass(y_vector, chord_vector, point_mass_array, y_point_mass, point_mass, inputs):
         """
-        Function that add a point mass to an already created point_mass_array. Modify the y station sampling and chord
-        sampling to account for the additional station added.
+        Function that add a point mass to an already created point_mass_array. Modify the y
+        station sampling and chord sampling to account for the additional station added.
 
-        @param y_vector: the original y_vector which will be modified by adding NB_POINTS_POINT_MASS + 2 points to
-        represent the location of the new point mass
-        @param chord_vector: the original chord vector which will be modified by adding NB_POINTS_POINT_MASS + 2 points
-        to represent the chord at the newly added location
+        @param y_vector: the original y_vector which will be modified by adding
+        NB_POINTS_POINT_MASS + 2 points to represent the location of the new point mass
+        @param chord_vector: the original chord vector which will be modified by adding
+        NB_POINTS_POINT_MASS + 2 points to represent the chord at the newly added location
         @param point_mass_array: the original point mass vector on which we will add the point mass
         @param y_point_mass: the y station of the point mass
         @param point_mass: the value of the mass which we want to add
         @param inputs: inputs parameters defined within FAST-OAD-GA
-        @return: y_vector_new : the new vector contains the y station at which we sample the point mass array with the
-        newly added point mass
+        @return: y_vector_new : the new vector contains the y station at which we sample the point
+        mass array with the newly added point mass
         @return: chord_vector_new : the new vector contains the chord at the new y_station
         @return: point_mass_array_new : the new vector contains the sampled point mass
         """
 
-        # STEP 1/XX - WE EXTRACT THE NECESSARY OUTPUT FROM THE INPUTS ##################################################
-        ################################################################################################################
+        # STEP 1/XX - WE EXTRACT THE NECESSARY OUTPUT FROM THE INPUTS
 
         semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
 
-        # STEP 2/XX - WE CREATE THE INTERPOLATION VECTOR FOR THE CHORD AND THE MASSES. WE ALSO CREATE A VECTOR TO STOCK
-        # WHERE THE MASS ARE ADDED AND HAVE A WAY TO READJUST THE AMPLITUDE ############################################
+        # STEP 2/XX - WE CREATE THE INTERPOLATION VECTOR FOR THE CHORD AND THE MASSES. WE ALSO
+        # CREATE A VECTOR TO STOCK WHERE THE MASS ARE ADDED AND HAVE A WAY TO READJUST THE
+        # AMPLITUDE
 
         fake_point_mass_array = np.zeros(len(point_mass_array))
         present_mass_interp = interp1d(y_vector, point_mass_array)
         present_chord_interp = interp1d(y_vector, chord_vector)
 
-        # STEP 3/XX - WE ALSO STOCK WHERE WE ADD THE Y STATION SINCE IT'LL BE LATER NECESSARY TO READJUST THE AMPLITUDE
-        ################################################################################################################
+        # STEP 3/XX - WE ALSO STOCK WHERE WE ADD THE Y STATION SINCE IT'LL BE LATER NECESSARY TO
+        # READJUST THE AMPLITUDE
 
         interval_len = POINT_MASS_SPAN_RATIO * semi_span / NB_POINTS_POINT_MASS
         nb_point_side = (NB_POINTS_POINT_MASS - 1.0) / 2.0
         y_added = []
 
-        # STEP 4/XX - WE ADD THE NB_POINTS_POINT_MASS AND 2 MORE POINT JUST BEFORE AND AFTER TO GET THE PROPER SQUARE
-        # SHAPE AND NOT A TRAPEZE. WE ALSO ADD THE CORRESPONDING POINT IN THE CHORD VECTOR##############################
+        # STEP 4/XX - WE ADD THE NB_POINTS_POINT_MASS AND 2 MORE POINT JUST BEFORE AND AFTER TO
+        # GET THE PROPER SQUARE SHAPE AND NOT A TRAPEZE. WE ALSO ADD THE CORRESPONDING POINT IN
+        # THE CHORD VECTOR
 
         for i in range(NB_POINTS_POINT_MASS):
             y_current = y_point_mass + (i - nb_point_side) * interval_len
@@ -634,16 +650,17 @@ class AerostructuralLoad(ComputeVN):
         point_mass_array = np.insert(point_mass_array, index, present_mass_interp(y_max))
         fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
-        # STEP 5/XX - WE NOW HAVE THE RIGHT WE JUST NEED TO SCALE IT PROPERLY WHICH IS THE POINT OF THIS STEP ##########
-        ################################################################################################################
+        # STEP 5/XX - WE NOW HAVE THE RIGHT WE JUST NEED TO SCALE IT PROPERLY WHICH IS THE POINT
+        # OF THIS STEP
 
         where_add_mass_grt = np.greater_equal(y_vector, min(y_added))
         where_add_mass_lss = np.less_equal(y_vector, max(y_added))
         where_add_mass = np.logical_and(where_add_mass_grt, where_add_mass_lss)
         where_add_mass_index = np.where(where_add_mass)
 
-        # The fake mass array we use to readjust contains the mass at the station between the first one we added and
-        # the last one which might contains the y station added for other point mass if two are on top of each other
+        # The fake mass array we use to readjust contains the mass at the station between the
+        # first one we added and the last one which might contains the y station added for other
+        # point mass if two are on top of each other
 
         for idx in where_add_mass_index:
             fake_point_mass_array[idx] = 1.0

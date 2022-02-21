@@ -27,8 +27,6 @@ from fastoad.model_base import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
 from fastoad.constants import EngineSetting
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
@@ -211,7 +209,8 @@ class _v2(om.ExplicitComponent):
             else:
                 _LOGGER.critical(
                     "Climb rate is less than %f, adjust weight, propulsion or takeoff "
-                    "configuration" % CLIMB_GRAD_AEO
+                    "configuration",
+                    CLIMB_GRAD_AEO,
                 )
                 raise RuntimeError()
 

@@ -1,5 +1,6 @@
 """
-Computes the aerodynamic loads on the wing of the aircraft in the most stringent case according to aerostructural loads.
+Computes the aerodynamic loads on the wing of the aircraft in the most stringent case
+according to aerostructural loads.
 """
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
@@ -133,8 +134,7 @@ class AerodynamicLoads(AerostructuralLoad):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##############################################
-        ################################################################################################################
+        # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION
 
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         y_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"]
@@ -156,11 +156,12 @@ class AerodynamicLoads(AerostructuralLoad):
 
         cruise_v_tas = inputs["data:TLAR:v_cruise"]
 
-        # STEP 2/XX - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT AT THE ROOT (Y=0) AND AT
-        # THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN THE INTERPOLATION WE WILL DO LATER ##############
+        # STEP 2/XX - DELETE THE ADDITIONAL ZEROS WE HAD TO PUT TO FIT OPENMDAO AND ADD A POINT
+        # AT THE ROOT (Y=0) AND AT THE VERY TIP (Y=SPAN/2) TO GET THE WHOLE SPAN OF THE WING IN
+        # THE INTERPOLATION WE WILL DO LATER
 
-        # We delete the zeros we had to add to fit the size we set in the aerodynamics module and add the physic
-        # extrema that are missing, the root and the full span,
+        # We delete the zeros we had to add to fit the size we set in the aerodynamics module and
+        # add the physic extrema that are missing, the root and the full span,
         y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
         y_vector_slip = AerostructuralLoad.delete_additional_zeros(y_vector_slip)
         cl_vector = AerostructuralLoad.delete_additional_zeros(cl_vector, len(y_vector))
@@ -182,18 +183,20 @@ class AerodynamicLoads(AerostructuralLoad):
         cl_vector_slip = np.append(cl_vector_slip, 0.0)
         chord_vector = np.append(chord_vector, tip_chord)
 
-        # To get the same y_vector array as in the aerostructural computation, the only important part here is the
-        # location of the y samples so we don't need to register the structural mass array
+        # To get the same y_vector array as in the aerostructural computation, the only important
+        # part here is the location of the y samples so we don't need to register the structural
+        # mass array
         y_vector, _ = self.compute_relief_force(
             inputs, y_vector_orig, chord_vector, 0.0, 0.0, False
         )
 
-        # STEP 3/XX - WE COMPUTE THE BASELINE LIFT AND SCALE IT UP ACCORDING TO THE MOST CONSTRAINING CASE IDENTIFIED IN
-        # THE AEROSTRUCTURAL ANALYSIS ##################################################################################
+        # STEP 3/XX - WE COMPUTE THE BASELINE LIFT AND SCALE IT UP ACCORDING TO THE MOST
+        # CONSTRAINING CASE IDENTIFIED IN THE AEROSTRUCTURAL ANALYSIS
 
-        # Now we identify the constraint that gives the highest lift distribution in amplitude which is linked with
-        # the highest absolute load factor. From there we can recompute the equilibrium and get the lift distribution
-        # in the most stringent case which will be what we will plot
+        # Now we identify the constraint that gives the highest lift distribution in amplitude
+        # which is linked with the highest absolute load factor. From there we can recompute the
+        # equilibrium and get the lift distribution in the most stringent case which will be what
+        # we will plot
         if load_factor_shear > load_factor_rbm:
             mass = inputs["data:loads:max_shear:mass"]
             load_factor = load_factor_shear
@@ -213,8 +216,8 @@ class AerodynamicLoads(AerostructuralLoad):
         cl_s_slip_actual = cl_s_slip * (v_ref / cruise_v_tas) ** 2.0
         lift_distribution = (cl_s_actual + cl_s_slip_actual) * dynamic_pressure
 
-        # STEP 4/XX - WE ADD ZEROS AT THE END OF THE RESULT LIFT DISTRIBUTION TO FIT THE FORMAT IMPOSED BY OPENMDAO ####
-        ################################################################################################################
+        # STEP 4/XX - WE ADD ZEROS AT THE END OF THE RESULT LIFT DISTRIBUTION TO FIT THE FORMAT
+        # IMPOSED BY OPENMDAO
 
         additional_zeros = np.zeros(SPAN_MESH_POINT_LOADS - len(y_vector))
         lift_distribution_outputs = np.concatenate([lift_distribution, additional_zeros])
