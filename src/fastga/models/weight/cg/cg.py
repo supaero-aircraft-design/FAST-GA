@@ -32,6 +32,7 @@ class CG(om.Group):
     """Model that computes the global center of gravity."""
 
     def __init__(self, **kwargs):
+        """Defining solvers for cg computation resolution."""
         super().__init__(**kwargs)
 
         # Solvers setup

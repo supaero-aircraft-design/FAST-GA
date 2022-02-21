@@ -40,6 +40,7 @@ from ..cg_components.constants import (
 )
 class ComputeCGRatioAircraftEmpty(om.Group):
     def __init__(self, **kwargs):
+        """Defining solvers for aircraft empty cg computation resolution."""
         super().__init__(**kwargs)
 
         # Solvers setup

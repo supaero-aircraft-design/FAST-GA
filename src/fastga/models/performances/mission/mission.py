@@ -58,6 +58,7 @@ class Mission(om.Group):
     """
 
     def __init__(self, **kwargs):
+        """Defining solvers for mission computation resolution."""
         super().__init__(**kwargs)
 
         # Solvers setup

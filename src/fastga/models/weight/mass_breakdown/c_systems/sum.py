@@ -30,6 +30,7 @@ class SystemsWeight(om.Group):
     """Computes mass of systems."""
 
     def __init__(self, **kwargs):
+        """Defining solvers for systems weight computation resolution."""
         super().__init__(**kwargs)
 
         # Solvers setup
