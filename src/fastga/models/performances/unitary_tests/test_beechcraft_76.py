@@ -250,11 +250,11 @@ def test_compute_descent():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:descent:fuel", units="kg")
-    assert fuel_mass == pytest.approx(0.81, abs=1e-2)
+    assert fuel_mass == pytest.approx(1.12, abs=1e-2)
     distance = (
         problem.get_val("data:mission:sizing:main_route:descent:distance", units="m") / 1000
     )  # conversion to km
-    assert distance == pytest.approx(84, abs=1)
+    assert distance == pytest.approx(91, abs=1)
     duration = problem.get_val("data:mission:sizing:main_route:descent:duration", units="min")
     assert duration == pytest.approx(27, abs=1)
 

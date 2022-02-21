@@ -87,10 +87,11 @@ class ComputeAeroCenter(ExplicitComponent):
         beta = math.sqrt(1.0 - mach ** 2.0)
         cl_delta_ht_cruise = cl_delta_ht / beta
 
-        # The cl_alpha_ht in the formula for the free_elevator_factor is defined with respect to the tail angle of
-        # attack, the one we compute is wth respect to the plane so it includes downwash, as a consequence we must
-        # correct it influence for this specific calculation. We will use the formula for elliptical wing as it is well
-        # known
+        # The cl_alpha_ht in the formula for the free_elevator_factor is defined with respect to
+        # the tail angle of attack, the one we compute is wth respect to the plane so it includes
+        # downwash, as a consequence we must correct it influence for this specific calculation.
+        # We will use the formula for elliptical wing as it is well known
+
         downwash_effect = 1.0 - 2.0 * cl_alpha_wing / (math.pi * aspect_ratio)
         cl_alpha_ht_ht = cl_alpha_ht / downwash_effect
         free_elevator_factor = 1.0 - (cl_delta_ht_cruise / cl_alpha_ht_ht) * (

@@ -755,7 +755,7 @@ class _compute_descent(DynamicEquilibrium):
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
-        atm = _Atmosphere(altitude_t)
+        atm = _Atmosphere(altitude_t, altitude_in_feet=False)
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
