@@ -265,7 +265,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             error = False
         else:
             cl_wing_return = float(mass * g * load_factor / (q * wing_area))
-            wl_htp_return = 0.0
+            cl_htp_return = 0.0
             error = True
 
         return cl_wing_return, cl_htp_return, error
