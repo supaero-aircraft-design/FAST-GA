@@ -818,41 +818,33 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_P_FLAPS)
         db = read_csv(file)
 
-        x_10 = db["taper_1_0_X"]
-        y_10 = db["taper_1_0_Y"]
-        errors = np.logical_or(np.isnan(x_10), np.isnan(y_10))
-        x_10 = x_10[np.logical_not(errors)].tolist()
-        y_10 = y_10[np.logical_not(errors)].tolist()
-        eta_in_1_0 = interpolate.interp1d(x_10, y_10)(np.clip(eta_in, min(x_10), max(x_10)))
-        eta_out_1_0 = interpolate.interp1d(x_10, y_10)(np.clip(eta_out, min(x_10), max(x_10)))
-
-        x_05 = db["taper_0_5_X"]
-        y_05 = db["taper_0_5_Y"]
-        errors = np.logical_or(np.isnan(x_05), np.isnan(y_05))
-        x_05 = x_05[np.logical_not(errors)].tolist()
-        y_05 = y_05[np.logical_not(errors)].tolist()
-        eta_in_0_5 = interpolate.interp1d(x_05, y_05)(np.clip(eta_in, min(x_05), max(x_05)))
-        eta_out_0_5 = interpolate.interp1d(x_05, y_05)(np.clip(eta_out, min(x_05), max(x_05)))
-
-        x_0333 = db["taper_0_333_X"]
-        y_0333 = db["taper_0_333_Y"]
-        errors = np.logical_or(np.isnan(x_0333), np.isnan(y_0333))
-        x_0333 = x_0333[np.logical_not(errors)].tolist()
-        y_0333 = y_0333[np.logical_not(errors)].tolist()
-        eta_in_0_333 = interpolate.interp1d(x_0333, y_0333)(
-            np.clip(eta_in, min(x_0333), max(x_0333))
+        eta_in_1_0 = FigureDigitization.interpolate_database(
+            db, "taper_1_0_X", "taper_1_0_Y", eta_in
         )
-        eta_out_0_333 = interpolate.interp1d(x_0333, y_0333)(
-            np.clip(eta_out, min(x_0333), max(x_0333))
+        eta_out_1_0 = FigureDigitization.interpolate_database(
+            db, "taper_1_0_X", "taper_1_0_Y", eta_out
         )
 
-        x_025 = db["taper_0_25_X"]
-        y_025 = db["taper_0_25_Y"]
-        errors = np.logical_or(np.isnan(x_025), np.isnan(y_025))
-        x_025 = x_025[np.logical_not(errors)].tolist()
-        y_025 = y_025[np.logical_not(errors)].tolist()
-        eta_in_0_25 = interpolate.interp1d(x_025, y_025)(np.clip(eta_in, min(x_025), max(x_025)))
-        eta_out_0_25 = interpolate.interp1d(x_025, y_025)(np.clip(eta_out, min(x_025), max(x_025)))
+        eta_in_0_5 = FigureDigitization.interpolate_database(
+            db, "taper_0_5_X", "taper_0_5_Y", eta_in
+        )
+        eta_out_0_5 = FigureDigitization.interpolate_database(
+            db, "taper_0_5_X", "taper_0_5_Y", eta_out
+        )
+
+        eta_in_0_333 = FigureDigitization.interpolate_database(
+            db, "taper_0_333_X", "taper_0_333_Y", eta_in
+        )
+        eta_out_0_333 = FigureDigitization.interpolate_database(
+            db, "taper_0_333_X", "taper_0_333_Y", eta_out
+        )
+
+        eta_in_0_25 = FigureDigitization.interpolate_database(
+            db, "taper_0_25_X", "taper_0_25_Y", eta_in
+        )
+        eta_out_0_25 = FigureDigitization.interpolate_database(
+            db, "taper_0_25_X", "taper_0_25_Y", eta_out
+        )
 
         taper_array = [0.25, 0.333, 0.5, 1.0]
         eta_in_array = [eta_in_0_25, eta_in_0_333, eta_in_0_5, eta_in_1_0]
@@ -861,10 +853,9 @@ class FigureDigitization(om.ExplicitComponent):
         if taper_ratio != np.clip(taper_ratio, 0.25, 1.0):
             _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
 
-        kp_in = interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
-        kp_out = interpolate.interp1d(taper_array, eta_out_array)(np.clip(taper_ratio, 0.25, 1.0))
-
-        k_p = kp_out - kp_in
+        k_p = interpolate.interp1d(taper_array, eta_out_array)(
+            np.clip(taper_ratio, 0.25, 1.0)
+        ) - interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
 
         return k_p
 
@@ -1346,3 +1337,18 @@ class FigureDigitization(om.ExplicitComponent):
         )
 
         return k_fus
+
+    @staticmethod
+    def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
+
+        database_x = database[tag_x]
+        database_y = database[tag_y]
+        errors = np.logical_or(np.isnan(database_x), np.isnan(database_x))
+        database_x = database_x[np.logical_not(errors)].tolist()
+        database_y = database_y[np.logical_not(errors)].tolist()
+
+        output_y = interpolate.interp1d(database_x, database_y)(
+            np.clip(input_x, min(database_x), max(database_x))
+        )
+
+        return output_y
