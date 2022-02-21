@@ -20,7 +20,6 @@ import logging
 import copy
 
 from scipy.constants import g
-import warnings
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -114,14 +113,14 @@ class _UpdateWingAreaAdvanced(om.ExplicitComponent):
 
         if ier != 1:
             _LOGGER.warning(
-                "Could not find a wing area that suits the requirement for fuel inside the wing, using the "
-                "other constraints instead. New value is equal to %f"
-                % max(wing_area_mission, wing_area_approach)
+                "Could not find a wing area that suits the requirement for fuel inside the wing, "
+                "using the other constraints instead. New value is equal to %f",
+                max(wing_area_mission, wing_area_approach),
             )
         else:
             _LOGGER.info(
-                "Looping on wing area with new value equal to %f"
-                % max(wing_area_mission, wing_area_approach)
+                "Looping on wing area with new value equal to %f",
+                max(wing_area_mission, wing_area_approach),
             )
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)

@@ -40,7 +40,7 @@ class UpdateWingAreaSimple(om.Group):
 
 
 class _UpdateWingAreaSimple(om.ExplicitComponent):
-    """Computation of wing area from needed approach speed and mission fuel"""
+    """Computation of wing area from needed approach speed and mission fuel."""
 
     def setup(self):
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
@@ -97,8 +97,8 @@ class _UpdateWingAreaSimple(om.ExplicitComponent):
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
 
         _LOGGER.info(
-            "Looping on wing area with new value equal to %f"
-            % max(wing_area_mission, wing_area_approach)
+            "Looping on wing area with new value equal to %f",
+            max(wing_area_mission, wing_area_approach),
         )
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
