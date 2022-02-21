@@ -864,9 +864,9 @@ class FigureDigitization(om.ExplicitComponent):
         kp_in = interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
         kp_out = interpolate.interp1d(taper_array, eta_out_array)(np.clip(taper_ratio, 0.25, 1.0))
 
-        kp = kp_out - kp_in
+        k_p = kp_out - kp_in
 
-        return kp
+        return k_p
 
     @staticmethod
     def pitch_to_reference_lift(thickness_ratio: float, chord_ratio: float) -> float:

@@ -31,6 +31,13 @@ from .cg_components.constants import (
 class CG(om.Group):
     """Model that computes the global center of gravity."""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
+
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -49,16 +56,11 @@ class CG(om.Group):
         )
 
         # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
         self.nonlinear_solver.options["debug_print"] = True
         self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 50
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
-        # self.nonlinear_solver.options["rtol"] = 1e-5
 
-        self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
-        # self.linear_solver.options["rtol"] = 1e-5

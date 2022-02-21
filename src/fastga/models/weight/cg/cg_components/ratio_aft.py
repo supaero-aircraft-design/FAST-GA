@@ -39,6 +39,13 @@ from ..cg_components.constants import (
     SUBMODEL_AIRCRAFT_X_CG_RATIO, "fastga.submodel.weight.cg.aircraft_empty.x_ratio.legacy"
 )
 class ComputeCGRatioAircraftEmpty(om.Group):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
+
     def setup(self):
         self.add_subsystem(
             "wing_cg", RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
@@ -91,19 +98,14 @@ class ComputeCGRatioAircraftEmpty(om.Group):
         self.add_subsystem("cg_ratio", CGRatio(), promotes=["*"])
 
         # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
         self.nonlinear_solver.options["debug_print"] = True
         self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 50
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
-        # self.nonlinear_solver.options["rtol"] = 1e-5
 
-        self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
-        # self.linear_solver.options["rtol"] = 1e-5
 
 
 @RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")

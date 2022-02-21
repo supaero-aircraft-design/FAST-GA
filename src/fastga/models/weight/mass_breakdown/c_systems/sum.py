@@ -27,9 +27,14 @@ from ..constants import SUBMODEL_SYSTEMS_MASS
 
 @RegisterSubmodel(SUBMODEL_SYSTEMS_MASS, "fastga.submodel.weight.mass.systems.legacy")
 class SystemsWeight(om.Group):
-    """
-    Computes mass of airframe.
-    """
+    """Computes mass of systems."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
 
     def setup(self):
         self.add_subsystem(
@@ -70,16 +75,11 @@ class SystemsWeight(om.Group):
         self.add_subsystem("systems_weight_sum", weight_sum, promotes=["*"])
 
         # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
         self.nonlinear_solver.options["debug_print"] = True
         self.nonlinear_solver.options["err_on_non_converge"] = True
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 50
-        # self.nonlinear_solver.options["reraise_child_analysiserror"] = True
-        # self.nonlinear_solver.options["rtol"] = 1e-3
 
-        self.linear_solver = om.LinearBlockGS()
         self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
-        # self.linear_solver.options["rtol"] = 1e-3

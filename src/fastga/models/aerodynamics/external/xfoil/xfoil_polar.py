@@ -573,7 +573,7 @@ class XfoilPolar(ExternalCodeComp):
                 return min(lift_coeff[delta <= 0.3]), False
 
         _LOGGER.warning(
-            "2D CL min not found, less than 40% of angle range computed: using default value %f",
+            "2D CL min not found, less than 40%% of angle range computed: using default value %f",
             DEFAULT_2D_CL_MIN,
         )
         return DEFAULT_2D_CL_MIN, True
