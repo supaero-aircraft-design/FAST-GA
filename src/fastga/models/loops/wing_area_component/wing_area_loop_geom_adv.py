@@ -20,10 +20,9 @@ import copy
 
 import numpy as np
 import openmdao.api as om
+from openmdao.utils.units import convert_units
 
 from scipy.optimize import fsolve
-
-from openmdao.utils.units import convert_units
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
@@ -161,7 +160,15 @@ class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
 
 
 def compute_wing_area_new(wing_area, inputs, fuel_mission):
+    """
+    Computes the difference between the mfw for a given wing area and the fuel that we need to
+    store inside the mission, when solved, there is just enough room inside the wing to hold the
+    fuel
 
+    :param wing_area: wing area, in m**2
+    :param inputs: inputs of the component
+    :param fuel_mission: fuel needed to achieve the mission, in kg
+    """
     wing_ar = float(inputs["data:geometry:wing:aspect_ratio"])
     wing_taper_ratio = float(inputs["data:geometry:wing:taper_ratio"])
     fus_width = float(inputs["data:geometry:fuselage:maximum_width"])

@@ -1,6 +1,4 @@
-"""
-Computation of wing area and wing area related constraints.
-"""
+"""Computation of wing area and wing area related constraints."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,11 +12,8 @@ Computation of wing area and wing area related constraints.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
 import logging
-from scipy.constants import g
-import warnings
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from fastoad.module_management.constants import ModelDomain
@@ -39,10 +34,11 @@ _LOGGER = logging.getLogger(__name__)
 class UpdateWingAreaGroup(om.Group):
     """
     Groups that gather the computation of the updated wing area, chooses the biggest one and
-    computes the constraints based on the new wing area
+    computes the constraints based on the new wing area.
     """
 
     def setup(self):
+        """Adding the update groups, the selection of the maximum and the constraints."""
         self.add_subsystem(
             "loop_wing_area_geom",
             RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_LOOP),

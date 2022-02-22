@@ -12,23 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from importlib.resources import path
+import os
 import warnings
 import math
-import pandas as pd
-from openmdao.components.external_code_comp import ExternalCodeComp
-from openmdao.utils.file_wrap import InputFileGenerator
-import os
 import os.path as pth
-from pathlib import Path
-import tempfile
-from tempfile import TemporaryDirectory
-
+import pandas as pd
 import numpy as np
 
-from fastoad.model_base import FlightPoint
+from importlib.resources import path
 
-from stdatm import Atmosphere
+from openmdao.components.external_code_comp import ExternalCodeComp
+from openmdao.utils.file_wrap import InputFileGenerator
+
+from fastoad.model_base import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
@@ -37,14 +33,19 @@ from fastoad._utils.resource_management.copy import copy_resource, copy_resource
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
-from . import resources as local_resources
-from . import openvsp3201
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
     PROPELLER_EFFICIENCY,
 )
+
+# noinspection PyProtectedMember
+from fastga.command.api import _create_tmp_directory
+
+from . import resources as local_resources
+from . import openvsp3201
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
 
 from ... import resources
 
@@ -60,6 +61,8 @@ VSPAERO_EXE_NAME = "vspaero.exe"
 
 
 class OPENVSPSimpleGeometry(ExternalCodeComp):
+    """Execution of OpenVSP for clean surfaces."""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.stderr = None
@@ -114,7 +117,6 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         """
         Function that perform a complete calculation of aerodynamic parameters under OpenVSP and
         returns only the cl_alpha_aircraft parameter.
-
         """
         _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coef(
             inputs, outputs, altitude, mach, aoa_angle
@@ -124,13 +126,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
         """
         Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
-        function of Mach for later use in the computation of the V-n diagram
+        function of Mach for later use in the computation of the V-n diagram.
         """
         mach_interp = np.log(np.linspace(np.exp(0.15), np.exp(1.55 * cruise_mach), MACH_NB_PTS))
-        cl_alpha_interp = np.zeros(np.size(mach_interp))
-        for idx in range(len(mach_interp)):
+        cl_alpha_interp = np.zeros_like(mach_interp)
+        for idx, mach in enumerate(mach_interp):
             cl_alpha_interp[idx] = self.compute_cl_alpha_aircraft(
-                inputs, outputs, altitude, mach_interp[idx], aoa_angle
+                inputs, outputs, altitude, mach, aoa_angle
             )
 
         # We add the case were M=0, for thoroughness and since we are in an incompressible flow,
@@ -152,7 +154,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
-        cl_0_htp,  cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
+        cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
         """
 
@@ -208,44 +210,44 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_wing(inputs, outputs, altitude, mach, 0.0)
-            wing_X = self.compute_wing(inputs, outputs, altitude, mach, aoa_angle)
+            wing_aoa = self.compute_wing(inputs, outputs, altitude, mach, aoa_angle)
 
             # Compute complete aircraft @ 0°/X° angle of attack
             _, htp_0, _ = self.compute_aircraft(inputs, outputs, altitude, mach, 0.0)
-            _, htp_X, _ = self.compute_aircraft(inputs, outputs, altitude, mach, aoa_angle)
+            _, htp_aoa, _ = self.compute_aircraft(inputs, outputs, altitude, mach, aoa_angle)
 
             # Compute isolated HTP @ 0°/X° angle of attack
             htp_0_isolated = self.compute_isolated_htp(inputs, outputs, altitude, mach, 0.0)
-            htp_X_isolated = self.compute_isolated_htp(inputs, outputs, altitude, mach, aoa_angle)
+            htp_aoa_isolated = self.compute_isolated_htp(inputs, outputs, altitude, mach, aoa_angle)
 
             # Post-process wing data ---------------------------------------------------------------
             width_max = inputs["data:geometry:fuselage:maximum_width"]
             span_wing = inputs["data:geometry:wing:span"]
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             cl_0_wing = float(wing_0["cl"] * k_fus)
-            cl_X_wing = float(wing_X["cl"] * k_fus)
+            cl_aoa_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
-            cl_alpha_wing = (cl_X_wing - cl_0_wing) / (aoa_angle * math.pi / 180)
+            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * math.pi / 180)
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
             chord_vector_wing = wing_0["chord_vector"]
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
             # piAe) -> e' = e/1.05^2
-            coef_e = float(wing_X["coef_e"] * k_fus / 1.05 ** 2)
+            coef_e = float(wing_aoa["coef_e"] * k_fus / 1.05 ** 2)
             coef_k_wing = float(1.0 / (math.pi * span_wing ** 2 / sref_wing * coef_e))
 
             # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"])
-            cl_X_htp = float(htp_X["cl"])
-            cl_alpha_htp = float((cl_X_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
-            coef_k_htp = float(htp_X["cdi"]) / cl_X_htp ** 2
-            y_vector_htp = htp_X["y_vector"]
-            cl_vector_htp = (np.array(htp_X["cl_vector"]) * area_ratio).tolist()
+            cl_aoa_htp = float(htp_aoa["cl"])
+            cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
+            coef_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2
+            y_vector_htp = htp_aoa["y_vector"]
+            cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
             # Post-process HTP-isolated data -------------------------------------------------------
             cl_alpha_htp_isolated = (
-                float(htp_X_isolated["cl"] - htp_0_isolated["cl"])
+                float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
                 * area_ratio
                 / (aoa_angle * math.pi / 180)
             )
@@ -287,7 +289,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     chord_vector_wing,
                     coef_k_wing,
                     cl_0_htp,
-                    cl_X_htp,
+                    cl_aoa_htp,
                     cl_alpha_htp,
                     cl_alpha_htp_isolated,
                     y_vector_htp,
@@ -316,7 +318,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             ) * math.sqrt(sref_wing / saved_area_wing)
             coef_k_wing = float(data.loc["coef_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
+            cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
                 area_ratio / saved_area_ratio
@@ -338,7 +340,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             chord_vector_wing,
             coef_k_wing,
             cl_0_htp,
-            cl_X_htp,
+            cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
@@ -394,7 +396,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
-            tmp_directory = self._create_tmp_directory()
+            tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
@@ -532,9 +534,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         wing_cl_vect = []
         wing_cd_vect = []
         wing_cm_vect = []
-        with open(output_file_list[0], "r") as lf:
-            data = lf.readlines()
-            for i in range(len(data)):
+        with open(output_file_list[0], "r") as file_stream:
+            data = file_stream.readlines()
+            for i, _ in enumerate(data):
                 line = data[i].split()
                 line.append("**")
                 if line[0] == "1":
@@ -555,11 +557,11 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     )  # sum CM left/right
                     break
         # Open .polar file and extract data
-        with open(output_file_list[1], "r") as lf:
-            data = lf.readlines()
+        with open(output_file_list[1], "r") as file_stream:
+            data = file_stream.readlines()
             wing_e = float(data[1].split()[10])
         # Delete temporary directory
-        if not (self.options["openvsp_exe_path"]):
+        if not self.options["openvsp_exe_path"]:
             # noinspection PyUnboundLocalVariable
             tmp_directory.cleanup()
         # Return values
@@ -621,7 +623,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
-            tmp_directory = self._create_tmp_directory()
+            tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
@@ -852,7 +854,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
-            tmp_directory = self._create_tmp_directory()
+            tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
@@ -1089,21 +1091,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         return wing, htp, aircraft
 
     @staticmethod
-    def _create_tmp_directory() -> TemporaryDirectory:
-
-        """Provide temporary directory for calculation."""
-
-        for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
-            if tmp_base_path is not None:
-                os.makedirs(tmp_base_path, exist_ok=True)
-            tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
-            break
-
-        return tmp_directory
-
-    @staticmethod
     def search_results(result_folder_path, geometry_set):
-
+        """Search the results folder to see if the geometry has already been calculated."""
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
                 "sweep25_wing",
@@ -1146,7 +1135,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
-
+        """Saves the results for this geometry."""
         # Save geometry if not already computed by finding first available index
         geometry_set_labels = [
             "sweep25_wing",
@@ -1169,7 +1158,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
     @staticmethod
     def save_results(result_file_path, results):
-
+        """Read saved results."""
         labels = [
             "cl_0_wing",
             "cl_alpha_wing",
@@ -1201,6 +1190,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
 
 class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
+    """Execution of OpenVSP for surfaces with slipstream effects."""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
@@ -1382,7 +1373,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         if self.options["openvsp_exe_path"]:
             target_directory = pth.abspath(self.options["openvsp_exe_path"])
         else:
-            tmp_directory = self._create_tmp_directory()
+            tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for both wing/HTP
         input_file_list = [
@@ -1616,7 +1607,7 @@ def generate_wing_rotor_file(engine_count: int):
     file_to_copy = open(original_template, "r").readlines()
     file = open(new_template, "w")
 
-    for i in range(len(file_to_copy)):
+    for i, _ in enumerate(file_to_copy):
         if "NumberOfRotors" in file_to_copy[i]:
             new_line = list(file_to_copy[i][:])
             new_line[-2] = str(engine_count)
