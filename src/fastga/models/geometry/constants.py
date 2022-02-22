@@ -14,6 +14,7 @@
 
 SUBMODEL_WING_GEOMETRY = "submodel.geometry.wing"
 SUBMODEL_NACELLE_GEOMETRY = "submodel.geometry.nacelle"
+SUBMODEL_PROPELLER_GEOMETRY = "submodel.geometry.propeller.position"
 SUBMODEL_LANDING_GEAR_GEOMETRY = "submodel.geometry.landing_gear"
 SUBMODEL_MFW = "submodel.geometry.mfw"
 SUBMODEL_AIRCRAFT_WET_AREA = "submodel.geometry.aircraft.wet_area"

@@ -36,6 +36,7 @@ from .constants import (
     SUBMODEL_LANDING_GEAR_GEOMETRY,
     SUBMODEL_MFW,
     SUBMODEL_AIRCRAFT_WET_AREA,
+    SUBMODEL_PROPELLER_GEOMETRY,
 )
 
 
@@ -75,6 +76,11 @@ class GeometryFixedFuselage(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle",
             RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_propeller_distance_from_leading_edge",
+            RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -128,6 +134,11 @@ class GeometryFixedTailDistance(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle",
             RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_propeller_distance_from_leading_edge",
+            RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
