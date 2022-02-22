@@ -19,19 +19,20 @@ import os
 import shutil
 import inspect
 import importlib
+import tempfile
+from tempfile import TemporaryDirectory
+from copy import deepcopy
+from itertools import product
+from pathlib import Path
 from typing import Union, List
+from platform import system
+import openmdao.api as om
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.group import Group
 from openmdao.core.system import System
-import openmdao.api as om
-from copy import deepcopy
-from itertools import product
-from tempfile import TemporaryDirectory
-from pathlib import Path
-import tempfile
-from platform import system
+
 
 from fastoad.openmdao.variables import VariableList
 from fastoad.cmd.exceptions import FastFileExistsError
@@ -63,7 +64,6 @@ BOOLEAN_OPTIONS = [
 
 def _create_tmp_directory() -> TemporaryDirectory:
     """Provide temporary directory."""
-
     for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
         if tmp_base_path is not None:
             os.makedirs(tmp_base_path, exist_ok=True)
@@ -74,9 +74,10 @@ def _create_tmp_directory() -> TemporaryDirectory:
 
 
 def file_temporary_transfer(file_path: str):
-    # Put a copy of original python file into temporary directory and remove plugin registration
-    # from current file
-
+    """
+    Put a copy of original python file into temporary directory and remove plugin registration
+    from current file.
+    """
     tmp_folder = _create_tmp_directory()
     file_name = pth.split(file_path)[-1]
     shutil.copy(file_path, pth.join(tmp_folder.name, file_name))
@@ -84,7 +85,7 @@ def file_temporary_transfer(file_path: str):
     lines = file.read()
     lines = lines.split("\n")
     idx_to_remove = []
-    for idx in range(len(lines)):
+    for idx, _ in enumerate(lines):
         if "@RegisterOpenMDAOSystem" in lines[idx]:
             idx_to_remove.append(idx)
     for idx in sorted(idx_to_remove, reverse=True):
@@ -99,8 +100,7 @@ def file_temporary_transfer(file_path: str):
 
 
 def retrieve_original_file(tmp_folder, file_path: str):
-    # Retrieve the original file
-
+    """Retrieve the original file."""
     file_name = pth.split(file_path)[-1]
     shutil.copy(pth.join(tmp_folder.name, file_name), file_path)
 
@@ -115,11 +115,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
     from fastga.command.api import generate_variables_description
     import my_package
 
-    generate_variables_description(my_package.__path__[0], overwrite=True)
+    generate_variables_description(my_package.__path__[0], overwrite=True).
 
     :param subpackage_path: the path of the subpackage to explore
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and subpackage_path already exists
+    :raise FastFileExistsError: if overwrite==False and subpackage_path already exists.
     """
 
     if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
@@ -250,7 +250,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 if "propulsion_id" in my_class().options:
                                     available_id_list = _get_simple_system_list()
                                     idx_to_remove = []
-                                    for idx in range(len(available_id_list)):
+                                    for idx, _ in enumerate(available_id_list):
                                         available_id_list[idx] = available_id_list[idx][0]
                                         if "PROPULSION" in available_id_list[idx]:
                                             idx_to_remove.extend(list(range(idx + 1)))
@@ -269,20 +269,15 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 # If no boolean options alternatives to be tested, search for
                                 # input variables in models and output variables for subpackages
                                 # (including ivc)
-                                if len(local_options) == 0:
+                                if not local_options:
                                     if pth.split(subpackage_path)[-1] == "models":
                                         var_names = [var.name for var in variables if var.is_input]
                                     else:
                                         var_names = [
                                             var.name for var in variables if not var.is_input
                                         ]
-                                        if (
-                                            len(
-                                                list_ivc_outputs_name(
-                                                    my_class(**options_dictionary)
-                                                )
-                                            )
-                                            != 0
+                                        if not list_ivc_outputs_name(
+                                            my_class(**options_dictionary)
                                         ):
                                             var_names.append(
                                                 list_ivc_outputs_name(
@@ -309,7 +304,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         product([True, False], repeat=len(local_options))
                                     ):
                                         # Define local option dictionary
-                                        for idx in range(len(local_options)):
+                                        for idx, _ in enumerate(local_options):
                                             options_dictionary[local_options[idx]] = options_tuple[
                                                 idx
                                             ]
@@ -365,7 +360,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 file.write("\n")
             file.close()
         else:
-            if len(dict_to_be_saved.keys()) != 0:
+            if not dict_to_be_saved.keys():
                 file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
                 file.write("# Documentation of variables used in FAST-GA models\n")
                 file.write("# Each line should be like:\n")
@@ -446,6 +441,16 @@ def generate_xml_file(xml_file_path: str, overwrite: bool = False):
 def write_needed_inputs(
     problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
 ):
+    """
+    Writes the input file of the problem with unconnected inputs of the configured problem.
+    Written value of each variable will be taken:
+        1. from input_data if it contains the variable
+        2. from defined default values in component definitions
+    :param problem: problem we want to write the inputs of
+    :param xml_file_path: if provided, variable values will be read from it
+    :param source_formatter: the class that defines format of input file. if
+                             not provided, expected format will be the default one.
+    """
     variables = DataFile(xml_file_path)
     variables.update(
         VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
@@ -460,8 +465,10 @@ def write_needed_inputs(
 
 
 def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitComponent, Group]):
-    # List all "root" components in the systems, meaning the components that don't have any
-    # subcomponents
+    """
+    List all "root" components in the systems, meaning the components that don't have any
+    subcomponents.
+    """
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
     problem = FASTOADProblem(group)
@@ -501,7 +508,7 @@ def generate_block_analysis(
 ):
 
     # If a valid ID is provided, build a system based on that ID
-    if type(local_system) == str:
+    if isinstance(local_system, str):
         local_system = RegisterOpenMDAOSystem.get_system(local_system, options=options)
 
     # Search what are the component/group outputs
@@ -610,7 +617,7 @@ def generate_block_analysis(
                 # Get output names from component/group and construct dictionary
                 outputs_units = [var.units for var in variables if not var.is_input]
                 outputs_dict = {}
-                for idx in range(len(outputs_names)):
+                for idx, _ in enumerate(outputs_names):
                     value = problem_local.get_val(outputs_names[idx], outputs_units[idx])
                     outputs_dict[outputs_names[idx]] = (value, outputs_units[idx])
                 return outputs_dict
@@ -655,7 +662,7 @@ class VariableListLocal(VariableList):
         will be used. Otherwise, the absolute name will be used.
 
         :param local_system: OpenMDAO Component instance to inspect
-        :return: VariableList instance
+        :return: VariableList instance.
         """
 
         problem = om.Problem()
@@ -675,7 +682,7 @@ class VariableListLocal(VariableList):
 
 
 def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """Reads all variables from a component/problem and return as a list"""
+    """Reads all variables from a component/problem and return as a list."""
     if isinstance(component, om.Group):
         new_component = AutoUnitsDefaultGroup()
         new_component.add_subsystem("system", component, promotes=["*"])
@@ -686,7 +693,7 @@ def list_variables(component: Union[om.ExplicitComponent, om.Group]) -> list:
 
 
 def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """Reads all variables from a component/problem and returns inputs as a list"""
+    """Reads all variables from a component/problem and returns inputs as a list."""
     variables = list_variables(component)
     input_names = [var.name for var in variables if var.is_input]
 
@@ -694,7 +701,7 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
 
 
 def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
-    """Reads all variables from a component/problem and returns outputs as a list"""
+    """Reads all variables from a component/problem and returns outputs as a list."""
     variables = list_variables(component)
     output_names = [var.name for var in variables if not var.is_input]
 

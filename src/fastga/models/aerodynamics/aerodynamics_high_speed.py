@@ -39,9 +39,7 @@ from .constants import (
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsHighSpeed(Group):
-    """
-    Models for high speed aerodynamics.
-    """
+    """Models for high speed aerodynamics."""
 
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
