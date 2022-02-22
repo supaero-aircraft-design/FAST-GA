@@ -65,13 +65,19 @@ class ComputeDeltaHighLift(FigureDigitization):
         self.add_input("data:mission:sizing:takeoff:flap_angle", val=10.0, units="deg")
 
         self.add_output("data:aerodynamics:flaps:landing:CL")
+        self.add_output("data:aerodynamics:flaps:landing:CL_2D")
         self.add_output("data:aerodynamics:flaps:landing:CL_max")
         self.add_output("data:aerodynamics:flaps:landing:CM")
+        self.add_output("data:aerodynamics:flaps:landing:CM_2D")
         self.add_output("data:aerodynamics:flaps:landing:CD")
+        self.add_output("data:aerodynamics:flaps:landing:CD_2D")
         self.add_output("data:aerodynamics:flaps:takeoff:CL")
+        self.add_output("data:aerodynamics:flaps:takeoff:CL_2D")
         self.add_output("data:aerodynamics:flaps:takeoff:CL_max")
         self.add_output("data:aerodynamics:flaps:takeoff:CM")
+        self.add_output("data:aerodynamics:flaps:takeoff:CM_2D")
         self.add_output("data:aerodynamics:flaps:takeoff:CD")
+        self.add_output("data:aerodynamics:flaps:takeoff:CD_2D")
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
         self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
@@ -82,6 +88,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         mach_ls = inputs["data:aerodynamics:low_speed:mach"]
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]
+        flap_area_ratio = self._compute_flap_area_ratio(inputs)
 
         # Computes flaps contribution during low speed operations (take-off/landing)
         for self.phase in ["landing", "takeoff"]:
@@ -95,18 +102,25 @@ class ComputeDeltaHighLift(FigureDigitization):
                     flap_angle,
                     mach_ls,
                 )
-                outputs["data:aerodynamics:flaps:landing:CM"] = self._get_flaps_delta_cm(
+                outputs[
+                    "data:aerodynamics:flaps:landing:CL_2D"
+                ] = self._compute_delta_cl_airfoil_2d(inputs, flap_angle, mach_ls)
+                cm_3d = self._get_flaps_delta_cm(
                     inputs,
                     flap_angle,
                     mach_ls,
                 )
-                outputs["data:aerodynamics:flaps:landing:CD"] = self._get_flaps_delta_cd(
+                outputs["data:aerodynamics:flaps:landing:CM"] = cm_3d
+                outputs["data:aerodynamics:flaps:landing:CM_2D"] = cm_3d / flap_area_ratio
+                cd_3d = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
                     inputs["data:geometry:flap:chord_ratio"],
                     inputs["data:geometry:wing:thickness_ratio"],
                     flap_angle,
-                    self._compute_flap_area_ratio(inputs),
+                    flap_area_ratio,
                 )
+                outputs["data:aerodynamics:flaps:landing:CD"] = cd_3d
+                outputs["data:aerodynamics:flaps:landing:CD_2D"] = cd_3d / flap_area_ratio
             else:
                 flap_angle = float(inputs["data:mission:sizing:takeoff:flap_angle"])
                 (
@@ -117,18 +131,25 @@ class ComputeDeltaHighLift(FigureDigitization):
                     flap_angle,
                     mach_ls,
                 )
-                outputs["data:aerodynamics:flaps:takeoff:CM"] = self._get_flaps_delta_cm(
+                outputs[
+                    "data:aerodynamics:flaps:takeoff:CL_2D"
+                ] = self._compute_delta_cl_airfoil_2d(inputs, flap_angle, mach_ls)
+                cm_3d = self._get_flaps_delta_cm(
                     inputs,
                     flap_angle,
                     mach_ls,
                 )
-                outputs["data:aerodynamics:flaps:takeoff:CD"] = self._get_flaps_delta_cd(
+                outputs["data:aerodynamics:flaps:takeoff:CM"] = cm_3d
+                outputs["data:aerodynamics:flaps:takeoff:CM_2D"] = cm_3d / flap_area_ratio
+                cd_3d = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
                     inputs["data:geometry:flap:chord_ratio"],
                     inputs["data:geometry:wing:thickness_ratio"],
                     flap_angle,
                     self._compute_flap_area_ratio(inputs),
                 )
+                outputs["data:aerodynamics:flaps:takeoff:CD"] = cd_3d
+                outputs["data:aerodynamics:flaps:takeoff:CD_2D"] = cd_3d / flap_area_ratio
 
         # Computes elevator contribution during low speed operations (for different deflection angle)
         outputs["data:aerodynamics:elevator:low_speed:CL_delta"] = self._get_elevator_delta_cl(

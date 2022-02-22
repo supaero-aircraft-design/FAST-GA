@@ -652,13 +652,19 @@ def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
 def high_lift(
     XML_FILE: str,
     delta_cl0_landing: float,
+    delta_cl0_landing_2d: float,
     delta_clmax_landing: float,
     delta_cm_landing: float,
+    delta_cm_landing_2d: float,
     delta_cd_landing: float,
+    delta_cd_landing_2d: float,
     delta_cl0_takeoff: float,
+    delta_cl0_takeoff_2d: float,
     delta_clmax_takeoff: float,
     delta_cm_takeoff: float,
+    delta_cm_takeoff_2d: float,
     delta_cd_takeoff: float,
+    delta_cd_takeoff_2d: float,
     cl_delta_elev: float,
     cd_delta_elev: float,
 ):
@@ -671,17 +677,29 @@ def high_lift(
     assert problem["data:aerodynamics:flaps:landing:CL"] == pytest.approx(
         delta_cl0_landing, abs=1e-4
     )
+    assert problem["data:aerodynamics:flaps:landing:CL_2D"] == pytest.approx(
+        delta_cl0_landing_2d, abs=1e-4
+    )
     assert problem["data:aerodynamics:flaps:landing:CL_max"] == pytest.approx(
         delta_clmax_landing, abs=1e-4
     )
     assert problem["data:aerodynamics:flaps:landing:CM"] == pytest.approx(
         delta_cm_landing, abs=1e-4
     )
+    assert problem["data:aerodynamics:flaps:landing:CM_2D"] == pytest.approx(
+        delta_cm_landing_2d, abs=1e-4
+    )
     assert problem["data:aerodynamics:flaps:landing:CD"] == pytest.approx(
         delta_cd_landing, abs=1e-4
     )
+    assert problem["data:aerodynamics:flaps:landing:CD_2D"] == pytest.approx(
+        delta_cd_landing_2d, abs=1e-4
+    )
     assert problem["data:aerodynamics:flaps:takeoff:CL"] == pytest.approx(
         delta_cl0_takeoff, abs=1e-4
+    )
+    assert problem["data:aerodynamics:flaps:takeoff:CL_2D"] == pytest.approx(
+        delta_cl0_takeoff_2d, abs=1e-4
     )
     assert problem["data:aerodynamics:flaps:takeoff:CL_max"] == pytest.approx(
         delta_clmax_takeoff, abs=1e-4
@@ -689,8 +707,14 @@ def high_lift(
     assert problem["data:aerodynamics:flaps:takeoff:CM"] == pytest.approx(
         delta_cm_takeoff, abs=1e-4
     )
+    assert problem["data:aerodynamics:flaps:takeoff:CM_2D"] == pytest.approx(
+        delta_cm_takeoff_2d, abs=1e-4
+    )
     assert problem["data:aerodynamics:flaps:takeoff:CD"] == pytest.approx(
         delta_cd_takeoff, abs=1e-4
+    )
+    assert problem["data:aerodynamics:flaps:takeoff:CD_2D"] == pytest.approx(
+        delta_cd_takeoff_2d, abs=1e-4
     )
     assert problem.get_val(
         "data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1"
