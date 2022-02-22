@@ -28,7 +28,7 @@ from ..constants import SUBMODEL_CD0_HT
 @RegisterSubmodel(SUBMODEL_CD0_HT, "fastga.submodel.aerodynamics.horizontal_tail.cd0.legacy")
 class Cd0HorizontalTail(ExplicitComponent):
     """
-    Profile drag estimation for the horizontal tail
+    Profile drag estimation for the horizontal tail.
 
     Based on : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
     Procedures. Butterworth-Heinemann, 2013.

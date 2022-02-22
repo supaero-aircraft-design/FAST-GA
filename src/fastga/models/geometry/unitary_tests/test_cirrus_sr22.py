@@ -54,6 +54,7 @@ from ..geom_components.vt.components import (
     ComputeVTWetArea,
 )
 from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
+from ..geom_components.propeller.compute_propeller import ComputePropellerGeometry
 from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
@@ -536,6 +537,19 @@ def test_geometry_nacelle():
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
     x_nacelle_result = [1.148, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
     assert np.max(abs(x_nacelle - x_nacelle_result)) < 1e-3
+
+
+def test_geometry_propeller():
+    """Tests computation of the nacelle and pylons component"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputePropellerGeometry()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputePropellerGeometry(), ivc)
+    x_prop_from_le = problem.get_val("data:geometry:propulsion:nacelle:from_LE", units="m")
+    x_prop_from_le_result = [2.5397, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
+    assert np.max(abs(x_prop_from_le - x_prop_from_le_result)) < 1e-3
 
 
 def test_landing_gear_geometry():

@@ -1,6 +1,4 @@
-"""
-    Estimation of aerodynamic center.
-"""
+"""Estimation of aerodynamic center."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -24,7 +22,7 @@ from stdatm import Atmosphere
 
 class ComputeAeroCenter(ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Aerodynamic center estimation"""
+    """Aerodynamic center estimation."""
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
