@@ -38,7 +38,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class VLMSimpleGeometry(om.ExplicitComponent):
 
-    """Computation of the aerodynamics properties using the in-house VLM code"""
+    """Computation of the aerodynamics properties using the in-house VLM code."""
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
@@ -933,7 +933,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @staticmethod
     def search_results(result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
-
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
                 "sweep25_wing",
