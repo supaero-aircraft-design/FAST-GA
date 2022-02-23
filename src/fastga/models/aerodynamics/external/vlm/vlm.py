@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-import numpy as np
 import copy
 import openmdao.api as om
 from typing import Optional
@@ -22,12 +21,13 @@ import os.path as pth
 import warnings
 import pandas as pd
 import logging
+import numpy as np
 
 from stdatm import Atmosphere
 
-from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
-
 from fastga.models.geometry.profiles.get_profile import get_profile
+
+from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
@@ -37,6 +37,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
+    """Computation of the aerodynamics properties using the in-house VLM code"""
+
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
         super().__init__(**kwargs)
@@ -96,6 +98,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         Function that perform a complete calculation of aerodynamic parameters under VLM and
         returns only the cl_alpha_aircraft parameter.
 
+        :param inputs: input necessary to compute the aircraft aerodynamics.
+        :param altitude: altitude at which the aerodynamic properties are computed, in m.
+        :param mach: mach number used for the computation
+        :param aoa_angle: angle of attack used in the aoa derivative computation, in deg.
         """
         _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coef(
             inputs, altitude, mach, aoa_angle
@@ -105,11 +111,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
         """
         Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
-        function of Mach for later use in the computation of the V-n diagram
+        function of Mach for later use in the computation of the V-n diagram.
         """
         mach_interp = np.log(np.linspace(np.exp(0.15), np.exp(1.55 * cruise_mach), MACH_NB_PTS))
         cl_alpha_interp = np.zeros(np.size(mach_interp))
-        for idx in range(len(mach_interp)):
+        for idx, _ in enumerate(mach_interp):
             cl_alpha_interp[idx] = self.compute_cl_alpha_aircraft(
                 inputs, altitude, mach_interp[idx], aoa_angle
             )
@@ -202,7 +208,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             wing_0 = self.compute_wing(
                 inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
             )
-            wing_X = self.compute_wing(
+            wing_aoa = self.compute_wing(
                 inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
             )
 
@@ -210,56 +216,56 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             _, htp_0, _ = self.compute_aircraft(
                 inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
             )
-            _, htp_X, _ = self.compute_aircraft(
+            _, htp_aoa, _ = self.compute_aircraft(
                 inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
             )
 
             # Compute isolated HTP @ 0°/X° angle of attack
             htp_0_isolated = self.compute_htp(inputs, altitude, mach, 0.0, use_airfoil=True)
-            htp_X_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
+            htp_aoa_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
 
             # Post-process wing data ---------------------------------------------------------------
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             beta = math.sqrt(1 - mach ** 2)  # Prandtl-Glauert
             cl_0_wing = float(wing_0["cl"] * k_fus / beta)
-            cl_X_wing = float(wing_X["cl"] * k_fus / beta)
+            cl_aoa_wing = float(wing_aoa["cl"] * k_fus / beta)
             cm_0_wing = float(wing_0["cm"] * k_fus / beta)
-            cl_alpha_wing = (cl_X_wing - cl_0_wing) / (aoa_angle * math.pi / 180)
+            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * math.pi / 180)
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus / beta).tolist()
             chord_vector_wing = wing_0["chord_vector"]
-            cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_X_wing)
+            cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_aoa_wing)
             if mach <= 0.4:
-                coef_e = wing_X["coef_e"]
+                coef_e = wing_aoa["coef_e"]
             else:
-                coef_e = wing_X["coef_e"] * (
+                coef_e = wing_aoa["coef_e"] * (
                     -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
                 )  # Mach correction
-            cdi = cl_X_wing ** 2 / (math.pi * aspect_ratio_wing * coef_e) + cdp_foil
-            coef_e = wing_X["cl"] ** 2 / (math.pi * aspect_ratio_wing * cdi)
+            cdi = cl_aoa_wing ** 2 / (math.pi * aspect_ratio_wing * coef_e) + cdp_foil
+            coef_e = wing_aoa["cl"] ** 2 / (math.pi * aspect_ratio_wing * cdi)
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             coef_e = float(coef_e * k_fus)
             coef_k_wing = float(1.0 / (math.pi * aspect_ratio_wing * coef_e))
 
             # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
-            cl_X_htp = float(htp_X["cl"]) / beta * area_ratio
-            cl_alpha_htp = float((cl_X_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
-            cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_X["cl"] / beta)
+            cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
+            cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
+            cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
             if mach <= 0.4:
-                coef_e = htp_X["coef_e"]
+                coef_e = htp_aoa["coef_e"]
             else:
-                coef_e = htp_X["coef_e"] * (
+                coef_e = htp_aoa["coef_e"] * (
                     -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
                 )  # Mach correction
-            cdi = (htp_X["cl"] / beta) ** 2 / (math.pi * aspect_ratio_htp * coef_e) + cdp_foil
-            coef_k_htp = float(cdi / cl_X_htp ** 2 * area_ratio)
-            y_vector_htp = htp_X["y_vector"]
-            cl_vector_htp = (np.array(htp_X["cl_vector"]) / beta * area_ratio).tolist()
+            cdi = (htp_aoa["cl"] / beta) ** 2 / (math.pi * aspect_ratio_htp * coef_e) + cdp_foil
+            coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
+            y_vector_htp = htp_aoa["y_vector"]
+            cl_vector_htp = (np.array(htp_aoa["cl_vector"]) / beta * area_ratio).tolist()
 
             # Post-process HTP-isolated data -------------------------------------------------------
             cl_alpha_htp_isolated = (
-                float(htp_X_isolated["cl"] - htp_0_isolated["cl"])
+                float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
                 / beta
                 * area_ratio
                 / (aoa_angle * math.pi / 180)
@@ -302,7 +308,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     chord_vector_wing,
                     coef_k_wing,
                     cl_0_htp,
-                    cl_X_htp,
+                    cl_aoa_htp,
                     cl_alpha_htp,
                     cl_alpha_htp_isolated,
                     y_vector_htp,
@@ -331,7 +337,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             ) * math.sqrt(sref_wing / saved_area_wing)
             coef_k_wing = float(data.loc["coef_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_X_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
+            cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
                 area_ratio / saved_area_ratio
@@ -353,7 +359,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             chord_vector_wing,
             coef_k_wing,
             cl_0_htp,
-            cl_X_htp,
+            cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
@@ -411,17 +417,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aoa_angle = aoa_angle * math.pi / 180
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
-        cp = -2 / v_inf * np.divide(gamma, panelchord)
+        c_p = -2 / v_inf * np.divide(gamma, panelchord)
         for i in range(self.n_x):
-            cp[i * self.n_y] = cp[i * self.n_y] * 1
-        cl_wing = -np.sum(cp * panelsurf) / np.sum(panelsurf)
+            c_p[i * self.n_y] = c_p[i * self.n_y] * 1
+        cl_wing = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(aic_wake, gamma) / v_inf
-        cdind_panel = cp * alphaind
+        cdind_panel = c_p * alphaind
         cdi_wing = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
         wing_e = (
             cl_wing ** 2 / (math.pi * aspect_ratio * cdi_wing) * 0.955
         )  # !!!: manual correction?
-        cmpanel = np.multiply(cp, (x_c[: self.n_x * self.n_y] - meanchord / 4))
+        cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
         cm_wing = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
         # Calculate curves
@@ -432,12 +438,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord_wing = self.wing["chord"]
         for j in range(self.n_y):
             cl_span = 0.0
-            y = yc_wing[j]
+            y_local = yc_wing[j]
             chord = (chord_wing[j] + chord_wing[j + 1]) / 2.0
             for i in range(self.n_x):
-                cl_span += -cp[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
+                cl_span += -c_p[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
             wing_cl_vect.append(cl_span)
-            wing_y_vect.append(y)
+            wing_y_vect.append(y_local)
             wing_chord_vect.append(chord)
 
         # Return values
@@ -463,15 +469,16 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aoa_angle: float,
         use_airfoil: Optional[bool] = True,
     ):
-        """VLM computation for the horizontal tail alone.
+        """
+        VLM computation for the horizontal tail alone.
 
-        @param inputs: inputs parameters defined within FAST-OAD-GA
-        @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
-        @param aoa_angle: air speed angle of attack with respect to aircraft (degree)
-        @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True)
+        @param inputs: inputs parameters defined within FAST-OAD-GA.
+        @param altitude: altitude for aerodynamic calculation in meters.
+        @param mach: air speed expressed in mach.
+        @param aoa_angle: air speed angle of attack with respect to aircraft (degree).
+        @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True).
         @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e
+        cm_vector, cl, cdi, cm, coef_e.
         """
 
         # Generate geometries
@@ -501,15 +508,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aoa_angle = aoa_angle * math.pi / 180
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
-        cp = -2 / v_inf * np.divide(gamma, panelchord)
+        c_p = -2 / v_inf * np.divide(gamma, panelchord)
         for i in range(self.n_x):
-            cp[i * self.n_y] = cp[i * self.n_y] * 1
-        cl_htp = -np.sum(cp * panelsurf) / np.sum(panelsurf)
+            c_p[i * self.n_y] = c_p[i * self.n_y] * 1
+        cl_htp = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(aic_wake, gamma) / v_inf
-        cdind_panel = cp * alphaind
+        cdind_panel = c_p * alphaind
         cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
         htp_e = cl_htp ** 2 / (math.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avod 0.0 division
-        cmpanel = np.multiply(cp, (x_c[: self.n_x * self.n_y] - meanchord / 4))
+        cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
         cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
         # Calculate curves
@@ -519,12 +526,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord_htp = self.htp["chord"]
         for j in range(self.n_y):
             cl_span = 0.0
-            y = yc_htp[j]
+            y_local = yc_htp[j]
             chord = (chord_htp[j] + chord_htp[j + 1]) / 2.0
             for i in range(self.n_x):
-                cl_span += -cp[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
+                cl_span += -c_p[i * self.n_y + j] * panelchord[i * self.n_y + j] / chord
             htp_cl_vect.append(cl_span)
-            htp_y_vect.append(y)
+            htp_y_vect.append(y_local)
 
         # Return values
         htp = {
@@ -549,16 +556,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         flaps_angle: Optional[float] = 0.0,
         use_airfoil: Optional[bool] = True,
     ):
-        """VLM computation for the complete aircraft.
+        """
+        VLM computation for the complete aircraft.
 
-        @param inputs: inputs parameters defined within FAST-OAD-GA
-        @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
-        @param aoa_angle: air speed angle of attack with respect to aircraft (degree)
-        @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True)
-        @param flaps_angle: flaps angle in Deg (default=0.0: i.e. no deflection)
+        @param inputs: inputs parameters defined within FAST-OAD-GA.
+        @param altitude: altitude for aerodynamic calculation in meters.
+        @param mach: air speed expressed in mach.
+        @param aoa_angle: air speed angle of attack with respect to aircraft (degree).
+        @param use_airfoil: adds the camberline coordinates of the selected airfoil (default=True).
+        @param flaps_angle: flaps angle in Deg (default=0.0: i.e. no deflection).
         @return: wing/htp and aircraft dictionaries including their respective aerodynamic
-        coefficients
+        coefficients.
         """
 
         # Get inputs
@@ -677,7 +685,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_common(self.wing)
 
     def _generate_htp(self, inputs):
-        """Generates the coordinates for VLM calculations and AIC matrix of the htp"""
+        """Generates the coordinates for VLM calculations and AIC matrix of the htp."""
 
         semi_span = inputs["data:geometry:horizontal_tail:span"] / 2.0
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
@@ -705,7 +713,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_common(self.htp)
 
     def _generate_common(self, dictionary):
-        """Common code shared between wing and htp to calculate geometry/aero parameters"""
+        """Common code shared between wing and htp to calculate geometry/aero parameters."""
 
         # Initial data (zero matrix/array)
         x_le = dictionary["x_le"]
@@ -716,11 +724,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panelchord = dictionary["panel_chord"]
         panelsurf = dictionary["panel_surf"]
         x_c = dictionary["x_c"]
-        yc = dictionary["yc"]
-        x1 = dictionary["x1"]
-        y1 = dictionary["y1"]
-        x2 = dictionary["x2"]
-        y2 = dictionary["y2"]
+        y_c = dictionary["yc"]
+        x_1 = dictionary["x1"]
+        y_1 = dictionary["y1"]
+        x_2 = dictionary["x2"]
+        y_2 = dictionary["y2"]
         aic = dictionary["aic"]
         aic_wake = dictionary["aic_wake"]
         # Calculate panel corners x-coordinate
@@ -742,44 +750,44 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 x_c[i * self.n_y + j] = (
                     x_panel[i, j] + x_panel[i, j + 1]
                 ) * 0.5 + 0.75 * panelchord[i * self.n_y + j]
-                yc[i * self.n_y + j] = (y_panel[j] + y_panel[j + 1]) * 0.5
-                x1[i * self.n_y + j] = x_panel[i, j] + 0.25 * (x_panel[i + 1, j] - x_panel[i, j])
-                y1[i * self.n_y + j] = y_panel[j]
-                x2[i * self.n_y + j] = x_panel[i, j + 1] + 0.25 * (
+                y_c[i * self.n_y + j] = (y_panel[j] + y_panel[j + 1]) * 0.5
+                x_1[i * self.n_y + j] = x_panel[i, j] + 0.25 * (x_panel[i + 1, j] - x_panel[i, j])
+                y_1[i * self.n_y + j] = y_panel[j]
+                x_2[i * self.n_y + j] = x_panel[i, j + 1] + 0.25 * (
                     x_panel[i + 1, j + 1] - x_panel[i, j + 1]
                 )
-                y2[i * self.n_y + j] = y_panel[j + 1]
+                y_2[i * self.n_y + j] = y_panel[j + 1]
         # Calculate characteristic points (Left side)
         for i in range(self.n_x):
             for j in range(self.n_y):
                 x_c[self.n_x * self.n_y + (i * self.n_y + j)] = x_c[i * self.n_y + j]
-                yc[self.n_x * self.n_y + (i * self.n_y + j)] = -yc[i * self.n_y + j]
-                x1[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
+                y_c[self.n_x * self.n_y + (i * self.n_y + j)] = -y_c[i * self.n_y + j]
+                x_1[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
                     i, self.n_y + j + 1
                 ] + 0.25 * (x_panel[i + 1, self.n_y + j + 1] - x_panel[i, self.n_y + j + 1])
-                y1[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j + 1]
+                y_1[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j + 1]
                 if j == 0:
-                    y2[self.n_x * self.n_y + (i * self.n_y + j)] = 0
-                    x2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[i, 0] + 0.25 * (
+                    y_2[self.n_x * self.n_y + (i * self.n_y + j)] = 0
+                    x_2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[i, 0] + 0.25 * (
                         x_panel[i + 1, 0] - x_panel[i, 0]
                     )
                 else:
-                    x2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
+                    x_2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
                         i, self.n_y + j
                     ] + 0.25 * (x_panel[i + 1, self.n_y + j] - x_panel[i, self.n_y + j])
-                    y2[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j]
+                    y_2[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j]
         # Aerodynamic coefficients computation (Right side)
         for i in range(self.n_x * self.n_y):
             for j in range(self.n_x * self.n_y):
                 # Right wing
-                coeff_1 = x_c[i] - x1[j]
-                coeff_2 = yc[i] - y1[j]
-                coeff_3 = x_c[i] - x2[j]
-                coeff_4 = yc[i] - y2[j]
+                coeff_1 = x_c[i] - x_1[j]
+                coeff_2 = y_c[i] - y_1[j]
+                coeff_3 = x_c[i] - x_2[j]
+                coeff_4 = y_c[i] - y_2[j]
                 coeff_5 = math.sqrt(coeff_1 ** 2 + coeff_2 ** 2)
                 coeff_6 = math.sqrt(coeff_3 ** 2 + coeff_4 ** 2)
-                coeff_7 = x2[j] - x1[j]
-                coeff_8 = y2[j] - y1[j]
+                coeff_7 = x_2[j] - x_1[j]
+                coeff_8 = y_2[j] - y_1[j]
                 coeff_10 = (coeff_7 * coeff_1 + coeff_8 * coeff_2) / coeff_5 - (
                     coeff_7 * coeff_3 + coeff_8 * coeff_4
                 ) / coeff_6
@@ -792,14 +800,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         for i in range(self.n_x * self.n_y):
             for j in range(self.n_x * self.n_y):
                 # Left wing
-                coeff_1 = x_c[i] - x1[self.n_x * self.n_y + j]
-                coeff_2 = yc[i] - y1[self.n_x * self.n_y + j]
-                coeff_3 = x_c[i] - x2[self.n_x * self.n_y + j]
-                coeff_4 = yc[i] - y2[self.n_x * self.n_y + j]
+                coeff_1 = x_c[i] - x_1[self.n_x * self.n_y + j]
+                coeff_2 = y_c[i] - y_1[self.n_x * self.n_y + j]
+                coeff_3 = x_c[i] - x_2[self.n_x * self.n_y + j]
+                coeff_4 = y_c[i] - y_2[self.n_x * self.n_y + j]
                 coeff_5 = math.sqrt(coeff_1 ** 2 + coeff_2 ** 2)
                 coeff_6 = math.sqrt(coeff_3 ** 2 + coeff_4 ** 2)
-                coeff_7 = x2[self.n_x * self.n_y + j] - x1[self.n_x * self.n_y + j]
-                coeff_8 = y2[self.n_x * self.n_y + j] - y1[self.n_x * self.n_y + j]
+                coeff_7 = x_2[self.n_x * self.n_y + j] - x_1[self.n_x * self.n_y + j]
+                coeff_8 = y_2[self.n_x * self.n_y + j] - y_1[self.n_x * self.n_y + j]
                 coeff_9 = (coeff_7 * coeff_1 + coeff_8 * coeff_2) / coeff_5 - (
                     coeff_7 * coeff_3 + coeff_8 * coeff_4
                 ) / coeff_6
@@ -816,11 +824,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["panel_chord"] = panelchord
         dictionary["panel_surf"] = panelsurf
         dictionary["x_c"] = x_c
-        dictionary["yc"] = yc
-        dictionary["x1"] = x1
-        dictionary["y1"] = y1
-        dictionary["x2"] = x2
-        dictionary["y2"] = y2
+        dictionary["yc"] = y_c
+        dictionary["x1"] = x_1
+        dictionary["y1"] = y_1
+        dictionary["x2"] = x_2
+        dictionary["y2"] = y_2
         dictionary["aic"] = aic
         dictionary["aic_wake"] = aic_wake
 
@@ -926,6 +934,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     @staticmethod
     def search_results(result_folder_path, geometry_set):
+        """Search the results folder to see if the geometry has already been calculated."""
 
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
@@ -969,8 +978,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
+        """Save geometry if not already computed by finding first available index."""
 
-        # Save geometry if not already computed by finding first available index
         geometry_set_labels = [
             "sweep25_wing",
             "taper_ratio_wing",
@@ -992,7 +1001,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     @staticmethod
     def save_results(result_file_path, results):
-
+        """Reads saved results."""
         labels = [
             "cl_0_wing",
             "cl_alpha_wing",

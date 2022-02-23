@@ -276,9 +276,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         var_names = [
                                             var.name for var in variables if not var.is_input
                                         ]
-                                        if not list_ivc_outputs_name(
-                                            my_class(**options_dictionary)
-                                        ):
+                                        if list_ivc_outputs_name(my_class(**options_dictionary)):
                                             var_names.append(
                                                 list_ivc_outputs_name(
                                                     my_class(**options_dictionary)
@@ -360,7 +358,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 file.write("\n")
             file.close()
         else:
-            if not dict_to_be_saved.keys():
+            if dict_to_be_saved.keys():
                 file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
                 file.write("# Documentation of variables used in FAST-GA models\n")
                 file.write("# Each line should be like:\n")

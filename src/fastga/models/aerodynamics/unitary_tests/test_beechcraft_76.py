@@ -169,7 +169,7 @@ def test_vlm_comp_high_speed():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or True,
+    system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
