@@ -1,6 +1,4 @@
-"""
-    Estimation of speed/load factors for aircraft design.
-"""
+"""Estimation of speed/load factors for aircraft design."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,9 +13,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-import numpy as np
 import warnings
 import logging
+
+import numpy as np
 
 from scipy.constants import g
 import scipy.optimize as optimize
@@ -42,6 +41,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ComputeVNAndVH(om.Group):
+    """Group containing the computation of the V_h and the V-n diagram"""
+
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -90,9 +91,9 @@ class ComputeVh(om.ExplicitComponent):
         _LOGGER.info("Entering load factors computation")
 
         design_mass = inputs["data:weight:aircraft:MTOW"]
-        vh = self.max_speed(inputs, 0.0, design_mass)
+        v_h = self.max_speed(inputs, 0.0, design_mass)
 
-        outputs["data:TLAR:v_max_sl"] = vh
+        outputs["data:TLAR:v_max_sl"] = v_h
 
     def max_speed(self, inputs, altitude, mass):
         # noinspection PyTypeChecker
@@ -119,10 +120,11 @@ class ComputeVh(om.ExplicitComponent):
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)
 
+        # TODO: Change to use the Equilibrium computation
         # Get the necessary thrust to overcome
-        cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed ** 2.0)
-        cd = cd0 + coeff_k * cl ** 2.0
-        drag = 0.5 * atm.density * wing_area * cd * air_speed ** 2.0
+        c_l = (mass * g) / (0.5 * atm.density * wing_area * air_speed ** 2.0)
+        c_d = cd0 + coeff_k * c_l ** 2.0
+        drag = 0.5 * atm.density * wing_area * c_d * air_speed ** 2.0
 
         return thrust - drag
 

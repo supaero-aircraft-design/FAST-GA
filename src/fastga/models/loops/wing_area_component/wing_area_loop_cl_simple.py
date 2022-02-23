@@ -38,6 +38,9 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
     Computes needed wing area to have enough lift at required approach speed.
     """
 
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+
     def setup(self):
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -90,6 +93,9 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
     Computes the difference between the lift coefficient required for the low speed conditions
     and the what the wing can provide.
     """
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
 

@@ -85,7 +85,7 @@ def test_oad_process_vlm(cleanup):
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1620, atol=1)
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1000.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1001.0, atol=1)
         else:
             # noinspection PyTypeChecker
             assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 238.0, atol=1)

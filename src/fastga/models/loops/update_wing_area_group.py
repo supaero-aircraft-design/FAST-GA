@@ -37,8 +37,12 @@ class UpdateWingAreaGroup(om.Group):
     computes the constraints based on the new wing area.
     """
 
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+
     def setup(self):
         """Adding the update groups, the selection of the maximum and the constraints."""
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "loop_wing_area_geom",
             RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_LOOP),
@@ -47,7 +51,7 @@ class UpdateWingAreaGroup(om.Group):
         )
         self.add_subsystem(
             "loop_wing_area_aero",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_LOOP),
+            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_LOOP, options=propulsion_option),
             promotes_inputs=["*"],
             promotes_outputs=[],
         )
@@ -65,7 +69,7 @@ class UpdateWingAreaGroup(om.Group):
         )
         self.add_subsystem(
             "constraint_wing_area_aero",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_CONS),
+            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_CONS, options=propulsion_option),
             promotes_inputs=["*"],
             promotes_outputs=["*"],
         )
