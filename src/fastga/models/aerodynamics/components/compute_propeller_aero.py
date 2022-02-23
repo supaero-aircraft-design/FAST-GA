@@ -13,10 +13,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os.path as pth
-import numpy as np
 import openmdao.api as om
 import math
 import logging
+import numpy as np
 import pandas as pd
 from scipy.optimize import fsolve
 
@@ -35,6 +35,9 @@ SPEED_PTS_NB = 10
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
 class ComputePropellerPerformance(om.Group):
+
+    """Computes propeller profiles aerodynamic coefficient and propeller behaviour."""
+
     def initialize(self):
         self.options.declare(
             "sections_profile_position_list",
@@ -166,9 +169,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         # construct table for cruise
         altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        thrust_vect, theta_vect, eta_vect = self.construct_table(
-            inputs, speed_interp, altitude, omega
-        )
+        # theta_vect can be obtained with construct table, it is the second input, not used as of
+        # now
+        thrust_vect, _, eta_vect = self.construct_table(inputs, speed_interp, altitude, omega)
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
 
@@ -184,6 +187,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         ]
 
     def compute_extreme_pitch(self, inputs, v_inf):
+        """For a given flight speed computes the min and max possible value of theta at .75 r/R."""
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         omega = self.options["average_rpm"]
         phi_vect = (
@@ -196,6 +200,16 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.theta_max = phi_75 + 25.0
 
     def construct_table(self, inputs, speed_interp, altitude, omega):
+        """
+        Computes the propeller characteristics in the given flight conditions for various
+        pitches. These tables will then be reformatted to fit the OpenMDAO formalism.
+
+        :param inputs: the inputs containing the propeller geometry.
+        :param speed_interp: the array containing the flight speed at which we compute the
+        propeller thrust and efficiency, in m/s.
+        :param altitude: the altitude for the propeller computation, in m.
+        :param omega: the propeller rotation speed, in rpm.
+        """
         thrust_vect = []
         theta_vect = []
         eta_vect = []
@@ -209,14 +223,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                 thrust, eta, _ = self.compute_pitch_performance(
                     inputs, theta_75, v_inf, altitude, omega, self.options["elements_number"]
                 )
-                if len(local_thrust_vect) != 0:
-                    local_thrust_vect.append(thrust)
-                    local_theta_vect.append(theta_75)
-                    local_eta_vect.append(eta)
-                else:
-                    local_thrust_vect.append(thrust)
-                    local_theta_vect.append(theta_75)
-                    local_eta_vect.append(eta)
+                local_thrust_vect.append(thrust)
+                local_theta_vect.append(theta_75)
+                local_eta_vect.append(eta)
 
             # Find first the "monotone" zone (10 points of increase)
             idx_in_zone = 0
@@ -228,7 +237,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     idx_in_zone = idx + 1
                     break
             # Erase end of the curve if thrust decreases
-            if len(np.where(thrust_difference[idx_in_zone:] < 0.0)[0]) != 0:
+            # Testing a non empty sequence with an if will return True if it is not empty see
+            # PEP8 recommended method
+            if list(np.where(thrust_difference[idx_in_zone:] < 0.0)[0]):
                 idx_end = np.min(np.where(thrust_difference[idx_in_zone:] < 0.0)) + idx_in_zone
                 local_thrust_vect = local_thrust_vect[0 : idx_end + 1]
                 local_theta_vect = local_theta_vect[0 : idx_end + 1]
@@ -236,9 +247,13 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             # Erase start of the curve if thrust is negative or decreases
             idx_start = 0
             thrust_difference = np.array(local_thrust_vect[1:]) - np.array(local_thrust_vect[0:-1])
-            if len(np.where(np.array(local_thrust_vect) < 0.0)[0]) != 0.0:
+            # Testing a non empty sequence with an if will return True if it is not empty see
+            # PEP8 recommended method
+            if list(np.where(np.array(local_thrust_vect) < 0.0)[0]):
                 idx_start = int(np.max(np.where(np.array(local_thrust_vect) < 0.0)))
-            if len(np.where(thrust_difference < 0.0)[0]) != 0.0:
+            # Testing a non empty sequence with an if will return True if it is not empty see
+            # PEP8 recommended method
+            if list(np.where(thrust_difference < 0.0)[0]):
                 idx_start = max(idx_start, int(np.max(np.where(thrust_difference < 0.0)) + 1))
             local_thrust_vect = local_thrust_vect[idx_start:]
             local_theta_vect = local_theta_vect[idx_start:]
@@ -282,10 +297,14 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
     @staticmethod
     def reformat_table(thrust_vect, eta_vect):
+        """
+        Reformat the table by intersecting the thrust array and interpolating the
+        corresponding efficiencies.
+        """
         min_thrust = 0.0
         max_thrust = 0.0
         thrust_limit = []
-        for idx in range(len(thrust_vect)):
+        for idx, _ in enumerate(thrust_vect):
             min_thrust = max(min_thrust, thrust_vect[idx][0])
             max_thrust = max(max_thrust, thrust_vect[idx][-1])
             thrust_limit.append(thrust_vect[idx][-1])
@@ -301,21 +320,20 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return thrust_limit, thrust_interp, efficiency_interp
 
-    def compute_pitch_performance(self, inputs, theta_75, v_inf, h, omega, elements_number):
+    def compute_pitch_performance(self, inputs, theta_75, v_inf, altitude, omega, elements_number):
 
         """
-
         This function calculates the thrust, efficiency and power at a given flight speed,
         altitude h and propeller angular speed.
 
         :param inputs: structure of data relative to the blade geometry available from setup
-        :param theta_75: pitch defined at r = 0.75*R radial position [deg.]
-        :param v_inf: flight speeds [m/s]
-        :param h: flight altitude [m]
-        :param omega: angular velocity of the propeller [RPM]
-        :param elements_number: number of elements for discretization [-]
+        :param theta_75: pitch defined at r = 0.75*R radial position [deg].
+        :param v_inf: flight speeds [m/s].
+        :param altitude: flight altitude [m].
+        :param omega: angular velocity of the propeller [RPM].
+        :param elements_number: number of elements for discretization [-].
 
-        :return: thrust [N], eta (efficiency) [-] and power [W]
+        :return: thrust [N], eta (efficiency) [-] and power [W].
         """
 
         blades_number = inputs["data:geometry:propeller:blades_number"]
@@ -328,17 +346,17 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         length = radius_max - radius_min
-        dr = length / elements_number
+        element_length = length / elements_number
         omega = omega * math.pi / 30.0
-        atm = Atmosphere(h, altitude_in_feet=False)
+        atm = Atmosphere(altitude, altitude_in_feet=False)
 
         # Initialise vectors
         vi_vect = np.zeros(elements_number)
         vt_vect = np.zeros(elements_number)
         radius_vect = np.zeros(elements_number)
         theta_vect = np.zeros(elements_number)
-        dT_vect = np.zeros(elements_number)
-        dQ_vect = np.zeros(elements_number)
+        thrust_element_vector = np.zeros(elements_number)
+        torque_element_vector = np.zeros(elements_number)
         alpha_vect = np.zeros(elements_number)
         speed_vect = np.array([0.1 * float(v_inf), 1.0])
 
@@ -346,7 +364,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         for i in range(elements_number):
 
             # Calculate element center radius and chord
-            radius = radius_min + (i + 0.5) * dr
+            radius = radius_min + (i + 0.5) * element_length
             chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
 
             # Find related profile name
@@ -410,18 +428,18 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             # )
             out_of_polars = results[3]
             if out_of_polars:
-                dT_vect[i] = 0.0
-                dQ_vect[i] = 0.0
+                thrust_element_vector[i] = 0.0
+                torque_element_vector[i] = 0.0
                 # warnings.warn(
                 #   "Propeller element out of calculated polars: contribution canceled!"
                 # )
             else:
-                dT_vect[i] = results[0] * dr * atm.density
-                dQ_vect[i] = results[1] * dr * atm.density
+                thrust_element_vector[i] = results[0] * element_length * atm.density
+                torque_element_vector[i] = results[1] * element_length * atm.density
             alpha_vect[i] = results[2]
 
-        torque = np.sum(dQ_vect)
-        thrust = float(np.sum(dT_vect))
+        torque = np.sum(torque_element_vector)
+        thrust = float(np.sum(thrust_element_vector))
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
 
@@ -473,51 +491,55 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
         v_t = (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0)
-        w = math.sqrt(v_ax ** 2.0 + v_t ** 2.0)
+        rel_fluid_speed = math.sqrt(v_ax ** 2.0 + v_t ** 2.0)
         phi = math.atan(v_ax / v_t)
         alpha = theta - phi * 180.0 / math.pi
 
         # Compute local mach
-        atm.true_airspeed = w
+        atm.true_airspeed = rel_fluid_speed
         mach_local = atm.mach
 
         # Apply the compressibility corrections for cl and cd
-        if (alpha > max(alpha_element)) or (alpha < min(alpha_element)):
-            out_of_polars = True
-        else:
-            out_of_polars = False
-        cl = np.interp(alpha, alpha_element, cl_element)
-        cd = np.interp(alpha, alpha_element, cd_element)
+        out_of_polars = bool((alpha > max(alpha_element)) or (alpha < min(alpha_element)))
+
+        c_l = np.interp(alpha, alpha_element, cl_element)
+        c_d = np.interp(alpha, alpha_element, cd_element)
         if mach_local < 1:
             beta = math.sqrt(1 - mach_local ** 2.0)
             # cl = cl / (beta + (1 - beta) * cl / 2)
             # Prandtl-Glauert correction as Karman-Tsien
             # and Laitone only apply to the pressure coefficient distribution
-            cl = cl / beta
+            c_l = c_l / beta
         else:
             beta = math.sqrt(mach_local ** 2.0 - 1)
-            cl = cl / beta
-            cd = cd / beta
+            c_l = c_l / beta
+            c_d = c_d / beta
 
         # Calculate force and momentum
-        dT = 0.5 * blades_number * chord * w ** 2.0 * (cl * math.cos(phi) - cd * math.sin(phi))
-        dQ = (
+        thrust_element = (
             0.5
             * blades_number
             * chord
-            * w ** 2.0
-            * (cl * math.sin(phi) + cd * math.cos(phi))
+            * rel_fluid_speed ** 2.0
+            * (c_l * math.cos(phi) - c_d * math.sin(phi))
+        )
+        torque_element = (
+            0.5
+            * blades_number
+            * chord
+            * rel_fluid_speed ** 2.0
+            * (c_l * math.sin(phi) + c_d * math.cos(phi))
             * radius
         )
 
         # Store results
-        f = np.empty(4)
-        f[0] = dT
-        f[1] = dQ
-        f[2] = alpha
-        f[3] = out_of_polars
+        output = np.empty(4)
+        output[0] = thrust_element
+        output[1] = torque_element
+        output[2] = alpha
+        output[3] = out_of_polars
 
-        return f
+        return output
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -585,7 +607,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         #         2
         #         / math.pi
         #         * math.acos(
-        #             math.exp(-blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi)))
+        #             math.exp(
+        #                  -blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi))
+        #             )
         #         ),
         #     )
         # else:
@@ -593,15 +617,15 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         f_hub = 1.0
 
         # Calculate force and momentum
-        dT = 4.0 * math.pi * radius * (v_inf + v_i) * v_i * f_tip * f_hub
-        dQ = 4.0 * math.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
+        thrust_element = 4.0 * math.pi * radius * (v_inf + v_i) * v_i * f_tip * f_hub
+        torque_element = 4.0 * math.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
 
         # Store results
-        f = np.empty(2)
-        f[0] = dT
-        f[1] = dQ
+        output = np.empty(2)
+        output[0] = thrust_element
+        output[1] = torque_element
 
-        return f
+        return output
 
     def delta(
         self,
@@ -643,7 +667,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :return: The difference between BEM dual methods for dT/(rho*dr) and dQ/ increments.
         """
 
-        f1 = self.bem_theory(
+        bem_result = self.bem_theory(
             speed_vect,
             radius,
             chord,
@@ -658,14 +682,15 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             atm,
         )
 
-        f2 = self.disk_theory(
+        adt_result = self.disk_theory(
             speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf
         )
 
-        return f1[0:1] - f2
+        return bem_result[0:1] - adt_result
 
     @staticmethod
     def read_polar_result(airfoil_name):
+        """Reads the results of the xfoil run for the given profile."""
         result_file = pth.join(xfoil.__path__[0], "resources", airfoil_name + "_30S.csv")
         mach = 0.0
         reynolds = 1e6
