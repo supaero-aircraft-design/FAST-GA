@@ -35,6 +35,7 @@ SPEED_PTS_NB = 10
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
 class ComputePropellerPerformance(om.Group):
+
     """Computes propeller profiles aerodynamic coefficient and propeller behaviour."""
 
     def initialize(self):

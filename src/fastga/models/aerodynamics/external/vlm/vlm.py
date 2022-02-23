@@ -37,6 +37,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
+
     """Computation of the aerodynamics properties using the in-house VLM code"""
 
     def __init__(self, **kwargs):
@@ -686,7 +687,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def _generate_htp(self, inputs):
         """Generates the coordinates for VLM calculations and AIC matrix of the htp."""
-
         semi_span = inputs["data:geometry:horizontal_tail:span"] / 2.0
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -714,7 +714,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def _generate_common(self, dictionary):
         """Common code shared between wing and htp to calculate geometry/aero parameters."""
-
         # Initial data (zero matrix/array)
         x_le = dictionary["x_le"]
         chord = dictionary["chord"]
@@ -834,7 +833,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def generate_curvature(self, dictionary, file_name):
         """Generates curvature corresponding to the airfoil contained in .af file."""
-
         x_panel = dictionary["x_panel"]
         panelangle_vect = dictionary["panel_angle_vect"]
         panelangle = dictionary["panel_angle"]
@@ -979,7 +977,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
         """Save geometry if not already computed by finding first available index."""
-
         geometry_set_labels = [
             "sweep25_wing",
             "taper_ratio_wing",

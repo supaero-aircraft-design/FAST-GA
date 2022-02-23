@@ -1136,7 +1136,6 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
         """Save geometry if not already computed by finding first available index."""
-
         geometry_set_labels = [
             "sweep25_wing",
             "taper_ratio_wing",
