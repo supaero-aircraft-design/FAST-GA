@@ -131,6 +131,12 @@ data:aerodynamics:flaps:takeoff:CD || additional drag coefficient due to flaps d
 data:aerodynamics:flaps:takeoff:CL || lift coefficient increment due to flaps deployment in takeoff configuration
 data:aerodynamics:flaps:takeoff:CL_max || maximum lift coefficient increment due to flaps deployment in takeoff configuration
 data:aerodynamics:flaps:takeoff:CM || additional pitching moment coefficient due to the deployment of flaps in takeoff configuration
+data:aerodynamics:flaps:landing:CD_2D || airfoil additional drag coefficient due to flaps deployment in landing configuration
+data:aerodynamics:flaps:landing:CL_2D || airfoil additional lift coefficient due to flaps deployment in landing configuration
+data:aerodynamics:flaps:landing:CM_2D || airfoil additional pitching moment coefficient due to flaps deployment in landing configuration
+data:aerodynamics:flaps:takeoff:CD_2D || airfoil additional drag coefficient due to flaps deployment in takeoff configuration
+data:aerodynamics:flaps:takeoff:CL_2D || airfoil additional lift coefficient due to flaps deployment in takeoff configuration
+data:aerodynamics:flaps:takeoff:CM_2D || airfoil additional pitching moment coefficient due to flaps deployment in takeoff configuration
 
 data:aerodynamics:rudder:low_speed:Cy_delta_r || derivative of the side force coefficient with respect to the rudder command in low speed conditions
 data:aerodynamics:rudder:cruise:Cy_delta_r || derivative of the side force coefficient with respect to the rudder command in cruise conditions
