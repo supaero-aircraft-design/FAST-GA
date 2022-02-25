@@ -71,4 +71,5 @@ venv*/
 
 # Private files
 **/private/**
+__pycache__
 /devutils/

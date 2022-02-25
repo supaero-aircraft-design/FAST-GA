@@ -1,0 +1,98 @@
+<FASTOAD_model>
+    <data>
+        <geometry>
+            <hybrid_powertrain>
+                <battery>
+                    <nb_packs is_input="True">2</nb_packs>
+                    <cell_diameter units="m" is_input="True">0.018</cell_diameter>
+                    <cell_length units="m" is_input="True">0.065</cell_length>
+                    <cell_capacity units="A*h" is_input="True">3</cell_capacity>
+                    <cell_mass units="g" is_input="True">44.5</cell_mass>
+                </battery>
+                <bop>
+                    <pressure_reg_volume units="L" is_input="True">1.3</pressure_reg_volume>
+                     <fitting_factor  is_input="True">1</fitting_factor>
+                </bop>
+                <compressor>
+                    <volume units="L" is_input="False">15</volume>
+                </compressor>
+                <fuel_cell>
+                    <stack_volume units="cm**3" is_input="False">24096</stack_volume>
+                    <stack_length units="m" is_input="False">0.490</stack_length>
+                    <stack_width units="m" is_input="False">0.155</stack_width>
+                    <stack_height units="m" is_input="False">0.320</stack_height>
+                    <stack_area units="cm**2" is_input="True">759.50</stack_area>
+                    <nb_stacks  is_input="True">2</nb_stacks>
+                </fuel_cell>
+                <h2_storage>
+                    <nb_tanks is_input="True">2</nb_tanks>
+                    <length_radius_ratio is_input="True">6</length_radius_ratio>
+                    <fos is_input="True">2.25</fos>
+                    <maximum_stress units="Pa" is_input="True">180000000</maximum_stress>
+                    <mass_fitting_factor is_input="True">1</mass_fitting_factor>
+                    <tank_density units="kg/m**3" is_input="True">1530</tank_density>
+                </h2_storage>
+                <hex>
+                    <radiator_surface_density units="g/cm**2" is_input="True">1.97</radiator_surface_density>
+                </hex>
+                <inverter>
+                    <length_width_ratio is_input="True">4</length_width_ratio>
+                    <length_height_ratio is_input="True">2</length_height_ratio>
+                </inverter>
+            </hybrid_powertrain>
+        </geometry>
+        <mission>
+            <sizing>
+                <endurance units="min" is_input="True">30</endurance>
+            </sizing>
+        </mission>
+        <propulsion>
+            <hybrid_powertrain>
+                <battery>
+                    <type is_input="True">0</type>
+                    <required_energy units="W*h" is_input="True">10000</required_energy>
+                    <input_current units="A" is_input="False">110</input_current>
+                    <max_C_rate units="h**-1" is_input="True">2</max_C_rate>
+                    <int_resistance units="ohm" is_input="True">0.039</int_resistance>
+                    <SOC is_input="True">0.5</SOC>
+                    <cell_nom_voltage units="V" is_input="True">3.7</cell_nom_voltage>
+                    <sys_nom_voltage units="V" is_input="False">540</sys_nom_voltage>
+                    <max_power units="kW" is_input="False">20</max_power>
+                </battery>
+                <compressor>
+                    <motor_efficiency is_input="True">0.8</motor_efficiency>
+                    <specific_work units="J/kg" is_input="True">20</specific_work>
+                    <delta is_input="True">1</delta>
+                    <ref_mass units="kg" is_input="True">3</ref_mass>
+                    <ref_radius units="m" is_input="True">0.135</ref_radius>
+                    <power units="W" is_input="False">2</power>
+                </compressor>
+                <fuel_cell>
+                    <fc_type is_input="True">0</fc_type>
+                    <design_power units="W" is_input="False">33000</design_power>
+                    <stack_pressure units="Pa" is_input="True">20000</stack_pressure>
+                    <cell_voltage units="V" is_input="False">0.67</cell_voltage>
+                    <design_current units="A" is_input="True">110</design_current>
+                    <required_power units="J" is_input="False">22</required_power>
+                    <nominal_pressure units="Pa" is_input="True">10000</nominal_pressure>
+                    <operating_temperature units="K" is_input="True">340</operating_temperature>
+                    <cooling_power units="W" is_input="False">17490</cooling_power>
+                </fuel_cell>
+                <h2_storage>
+                    <pressure units="Pa" is_input="True">3500000</pressure>
+<!--          <temperature units="K" is_input="True"></temperature>-->
+                </h2_storage>
+                <hex>
+                    <air_speed units="m/s" is_input="True">13.89</air_speed>
+                </hex>
+                <inverter>
+                    <power_density units="kW/m**3" is_input="True">70000</power_density>
+                    <efficiency  is_input="True">0.94</efficiency>
+                </inverter>
+                <motor>
+                    <nominal_torque units="N*m" is_input="True">250</nominal_torque>
+                </motor>
+            </hybrid_powertrain>
+        </propulsion>
+    </data>
+</FASTOAD_model>
