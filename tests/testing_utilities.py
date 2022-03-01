@@ -28,7 +28,7 @@ from fastoad.module_management.service_registry import _RegisterOpenMDAOService
 
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
-from fastoad.io.configuration.configuration import AutoUnitsDefaultGroup
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 
 _LOGGER = logging.getLogger(__name__)
 

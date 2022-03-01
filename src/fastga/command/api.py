@@ -35,12 +35,12 @@ from openmdao.core.system import System
 
 
 from fastoad.openmdao.variables import VariableList
-from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.cmd.exceptions import FastPathExistsError
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.io import VariableIO
-from fastoad.io.configuration.configuration import AutoUnitsDefaultGroup
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 # noinspection PyProtectedMember
@@ -119,12 +119,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 
     :param subpackage_path: the path of the subpackage to explore
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and subpackage_path already exists.
+    :raise FastPathExistsError: if overwrite==False and subpackage_path already exists.
     """
 
     if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
         # noinspection PyStringFormat
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Variable descriptions file is not written because it already exists. "
             "Use overwrite=True to bypass."
             % pth.join(subpackage_path, "variable_descriptions.txt"),
@@ -398,10 +398,10 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
 
     :param configuration_file_path: the path of the file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(configuration_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Configuration file is not written because it already exists. "
             "Use overwrite=True to bypass." % configuration_file_path,
             configuration_file_path,
@@ -420,10 +420,10 @@ def generate_xml_file(xml_file_path: str, overwrite: bool = False):
 
     :param xml_file_path: the path of the file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(xml_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Configuration file is not written because it already exists. "
             "Use overwrite=True to bypass." % xml_file_path,
             xml_file_path,
