@@ -62,9 +62,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
 
     def setup(self, component: Component):
         component.add_input("data:propulsion:HE_engine:max_power", np.nan, units="W")
-        component.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
-        component.add_input("data:mission:sizing:main_route:cruise:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
@@ -103,6 +101,9 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "data:aerodynamics:propeller:cruise_level:efficiency",
             np.full((SPEED_PTS_NB, THRUST_PTS_NB), np.nan),
         )
+        component.add_input(
+            "data:aerodynamics:propeller:cruise_level:altitude", units="m", val=np.nan
+        )
         component.add_input("data:propulsion:hybrid_powertrain:motor:speed", np.nan, units="rpm")
         component.add_input("data:propulsion:hybrid_powertrain:motor:nominal_torque", np.nan, units="N*m")
         component.add_input("data:propulsion:hybrid_powertrain:motor:max_torque", np.nan, units="N*m")
@@ -126,9 +127,10 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         """
         engine_params = {
             "max_power": inputs["data:propulsion:HE_engine:max_power"],
-            "cruise_altitude": inputs["data:mission:sizing:main_route:cruise:altitude"],
-            "cruise_speed": inputs["data:TLAR:v_cruise"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "cruise_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
             "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
             "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
             "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
@@ -157,8 +159,8 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
 
 @ValidityDomainChecker(
     {
-        "data:propulsion:HE_engine:max_power": (50000, 250000),  # power range validity
-        "data:geometry:propulsion:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
+        "data:propulsion:HE_engine:max_power": (10000, 250000),  # power range validity
+        "data:geometry:propulsion:engine:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
     }
 )
 class OMBasicHEEngineComponent(BaseOMPropulsionComponent):

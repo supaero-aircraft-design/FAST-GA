@@ -54,8 +54,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
     def __init__(
             self,
             max_power: float,
-            cruise_altitude: float,
-            cruise_speed: float,
+            cruise_altitude_propeller: float,
             prop_layout: float,
             speed_SL,
             thrust_SL,
@@ -86,8 +85,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         and constant propeller efficiency using analytical model from following sources:
 
         :param max_power: maximum delivered mechanical power of engine (units=W)
-        :param cruise_altitude: design altitude for cruise (units=m)
-        :param cruise_speed: design altitude for cruise (units=m/s)
+        :param cruise_altitude_propeller: design altitude for cruise (units=m)
         :param prop_layout: propulsion position in nose (=3.0) or wing (=1.0)
         """
 
@@ -102,8 +100,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         # self.map_file_path = pth.join(resources.__path__[0], "FourCylindersAtmospheric.csv")
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.cruise_altitude = cruise_altitude
-        self.cruise_speed = cruise_speed
+        self.cruise_altitude_propeller = cruise_altitude_propeller
         self.idle_thrust_rate = 0.01
         self.speed_SL = speed_SL
         self.thrust_SL = thrust_SL
@@ -445,7 +442,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, atmosphere.true_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
-                altitude, [0, self.cruise_altitude], [lower_bound, upper_bound]
+                altitude, [0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
             )
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))
@@ -460,8 +457,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 propeller_efficiency[idx] = (
                         lower_bound
                         + (upper_bound - lower_bound)
-                        * np.minimum(altitude, self.cruise_altitude)
-                        / self.cruise_altitude
+                        * np.minimum(altitude, self.cruise_altitude_propeller)
+                        / self.cruise_altitude_propeller
                 )
 
         return propeller_efficiency
@@ -469,7 +466,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
     def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
         """
         Compute engine maximum power @ given flight-point.
-
+        !FIX ME! : This is true only for air breathing engines
         :param flight_points: current flight point(s)
         :return: maximum power in kW
         """
@@ -539,8 +536,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
         lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
         upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
-        thrust_max_propeller = lower_bound + (upper_bound - lower_bound) * np.minimum(altitude, self.cruise_altitude) \
-                               / self.cruise_altitude
+        thrust_max_propeller = lower_bound + (upper_bound - lower_bound) * np.minimum(altitude, self.cruise_altitude_propeller) \
+                               / self.cruise_altitude_propeller
 
         # Found thrust relative to electric engine maximum power @ given altitude and speed:
         # calculates first thrust interpolation vector (between min and max of propeller table) and associated
