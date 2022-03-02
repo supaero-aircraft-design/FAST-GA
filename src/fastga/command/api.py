@@ -469,7 +469,8 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
     """
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
-    problem = FASTOADProblem(group)
+    problem = FASTOADProblem()
+    problem.model = group
     try:
         problem.setup()
     except RuntimeError:
@@ -530,7 +531,8 @@ def generate_block_analysis(
         # If no input file and some inputs are missing, generate it and return None
         group = AutoUnitsDefaultGroup()
         group.add_subsystem("system", local_system, promotes=["*"])
-        problem = FASTOADProblem(group)
+        problem = FASTOADProblem()
+        problem.model = group
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
         raise Exception(
@@ -569,7 +571,8 @@ def generate_block_analysis(
                 group = AutoUnitsDefaultGroup()
                 group.add_subsystem("system", local_system, promotes=["*"])
                 group.add_subsystem("ivc", ivc, promotes=["*"])
-                problem = FASTOADProblem(group)
+                problem = FASTOADProblem()
+                problem.model = group
                 problem.input_file_path = xml_file_path
                 problem.output_file_path = xml_file_path
                 problem.setup()
