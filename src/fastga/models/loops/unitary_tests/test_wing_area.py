@@ -129,7 +129,7 @@ def test_simple_cl():
     ivc_cons.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_cons.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc_cons.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
-    ivc_cons.add_output("data:geometry:wing:area", val=14.02)
+    ivc_cons.add_output("data:geometry:wing:area", val=14.02, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaLiftSimple(), ivc_cons)
     assert_allclose(

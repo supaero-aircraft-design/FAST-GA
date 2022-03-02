@@ -604,9 +604,11 @@ def generate_block_analysis(
                 for name, value in inputs_dict.items():
                     ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
-                group_local.add_subsystem("system", local_system, promotes=["*"])
                 group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
-                problem_local = FASTOADProblem(group_local)
+                group_local.add_subsystem("system", local_system, promotes=["*"])
+                problem_local = FASTOADProblem()
+                model_local = problem_local.model
+                model_local.add_subsystem("local_system", group_local, promotes=["*"])
                 problem_local.setup()
                 problem_local.run_model()
                 if overwrite:
