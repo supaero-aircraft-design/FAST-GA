@@ -108,6 +108,9 @@
           <tank_density units="kg/m**3" is_input="True">1530</tank_density>
           <thickness_fitting_factor is_input="True">1<!--Parameter to adjust the thickness of the fuel tanks (too low)--></thickness_fitting_factor>
         </h2_storage>
+        <hex>
+          <radiator_surface_density units="kg/cm**2" is_input="True">0.004</radiator_surface_density>
+        </hex>
         <inverter>
           <length_height_ratio is_input="True">4</length_height_ratio>
           <length_width_ratio is_input="True">2</length_width_ratio>
@@ -216,6 +219,8 @@
         <compressor>
           <delta is_input="True">70</delta>
           <motor_efficiency is_input="True">0.8</motor_efficiency>
+          <ref_mass units="kg" is_input="True">1.5</ref_mass>
+          <ref_radius units="m" is_input="True">0.3</ref_radius>
           <specific_work units="J/kg" is_input="True">0.5e-3</specific_work>
         </compressor>
         <cooling_intake>
@@ -238,6 +243,7 @@
         <inverter>
           <efficiency is_input="True">0.94</efficiency>
           <power_density units="kW/m**3" is_input="True">0.07</power_density>
+          <specific_power units="W/kg" is_input="True">20000</specific_power>
         </inverter>
         <motor>
           <TO_power units="W" is_input="True">44000</TO_power>
@@ -285,6 +291,17 @@
           <k_factor is_input="True">1.0<!--proportional corrective factor for wing mass--></k_factor>
         </wing>
       </airframe>
+      <propulsion>
+        <engine>
+          <mass units="kg" is_input="True">50<!--engine (B1): mass--></mass>
+        </engine>
+        <fuel_lines>
+          <mass units="kg" is_input="True">10<!--fuel lines (B2): mass--></mass>
+        </fuel_lines>
+        <unusable_fuel>
+          <mass units="kg" is_input="True">0.5<!--total unusable fuel mass--></mass>
+        </unusable_fuel>
+      </propulsion>
     </weight>
   </data>
   <settings>

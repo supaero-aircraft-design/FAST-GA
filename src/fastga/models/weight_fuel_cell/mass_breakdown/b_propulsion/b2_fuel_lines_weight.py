@@ -28,7 +28,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
         self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
 
@@ -41,7 +41,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
-        engine_nb = inputs["data:geometry:propulsion:count"]
+        engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
         fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
 

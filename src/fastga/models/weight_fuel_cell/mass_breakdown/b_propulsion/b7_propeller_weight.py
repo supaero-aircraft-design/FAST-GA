@@ -29,7 +29,7 @@ class ComputePropellerWeight(ExplicitComponent):
         self.add_input("data:geometry:propeller:blades_number", val=np.nan, units=None)
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="ft")
         self.add_input("data:propulsion:HE_engine:max_power", units="W")
-        self.add_input("data:geometry:propulsion:count", val=np.nan, units=None)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan, units=None)
         self.add_input("settings:weight:hybrid_powertrain:prop_reduction_factor", val=np.nan, units=None)
 
         self.add_output("data:weight:hybrid_powertrain:propeller:mass", units="lb")
@@ -40,7 +40,7 @@ class ComputePropellerWeight(ExplicitComponent):
         num_blades = inputs["data:geometry:propeller:blades_number"]
         prop_diameter = inputs["data:geometry:propeller:diameter"]
         max_power = inputs["data:propulsion:HE_engine:max_power"]
-        num_eng = inputs["data:geometry:propulsion:count"]
+        num_eng = inputs["data:geometry:propulsion:engine:count"]
         k_factor_prop = inputs["settings:weight:hybrid_powertrain:prop_reduction_factor"]
 
         b7 = k_factor_prop * 31.92 * num_prop * (num_blades ** 0.391) * (

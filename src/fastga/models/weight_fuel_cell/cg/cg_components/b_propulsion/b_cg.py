@@ -53,7 +53,7 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
-        fuel_cell_cg = inputs=["data:weight:hybrid_powertrain:fuel_cell:CG:x"]
+        fuel_cell_cg = inputs["data:weight:hybrid_powertrain:fuel_cell:CG:x"]
         battery_cg = inputs["data:weight:hybrid_powertrain:battery:CG:x"]
 
         engine_mass = inputs["data:weight:hybrid_powertrain:engine:mass"]
