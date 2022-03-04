@@ -26,6 +26,7 @@ from itertools import product
 from pathlib import Path
 from typing import Union, List
 from platform import system
+from deprecated import deprecated
 import openmdao.api as om
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
@@ -392,6 +393,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 )
 
 
+@deprecated(
+    version="0.2.0",
+    reason="Will be removed in version 1.0. Please use the generate_configuration_file from "
+    'fast-oad-core api with the distribution_name="fastga" instead',
+)
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
     """
     Generates a sample configuration file.

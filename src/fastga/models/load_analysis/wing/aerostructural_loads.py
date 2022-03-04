@@ -137,7 +137,10 @@ class AerostructuralLoad(ComputeVN):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
@@ -462,9 +465,7 @@ class AerostructuralLoad(ComputeVN):
         if engine_config != 1.0:
             y_ratio = 0.0
         else:
-            y_ratio_data = inputs["data:geometry:propulsion:engine:y_ratio"]
-            used_index = np.where(y_ratio_data >= 0.0)[0]
-            y_ratio = y_ratio_data[used_index]
+            y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
 
         y_ratio_pun_mass_data = inputs["data:weight:airframe:wing:punctual_mass:y_ratio"]
         used_index_pun_mass = np.where(y_ratio_pun_mass_data >= 0.0)[0]

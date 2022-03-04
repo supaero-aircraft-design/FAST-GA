@@ -160,8 +160,7 @@ def test_advanced_geom():
     ivc_loop.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc_loop.add_output(
         "data:geometry:propulsion:engine:y_ratio",
-        shape=10,
-        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+        val=0.34,
     )
     ivc_loop.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
     ivc_loop.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
@@ -189,8 +188,7 @@ def test_advanced_geom():
     ivc_cons.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc_cons.add_output(
         "data:geometry:propulsion:engine:y_ratio",
-        shape=10,
-        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+        val=0.34,
     )
     ivc_cons.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
     ivc_cons.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)

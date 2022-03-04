@@ -20,8 +20,6 @@ import openmdao.api as om
 # noinspection PyProtectedMember
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.aerodynamics.constants import ENGINE_COUNT
-
 from ...constants import SUBMODEL_PROPELLER_GEOMETRY
 
 
@@ -39,11 +37,24 @@ class ComputePropellerGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
-        self.add_input("data:geometry:propulsion:nacelle:x", shape=ENGINE_COUNT, units="m")
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
+        self.add_input(
+            "data:geometry:propulsion:nacelle:x",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propulsion:engine:y_ratio",
+            units="m",
+        )
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
 
-        self.add_output("data:geometry:propulsion:nacelle:from_LE", shape=ENGINE_COUNT, units="m")
+        self.add_output(
+            "data:geometry:propulsion:nacelle:from_LE",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propulsion:engine:y_ratio",
+            units="m",
+        )
 
         self.declare_partials("*", "*", method="fd")
 
@@ -63,17 +74,10 @@ class ComputePropellerGeometry(om.ExplicitComponent):
 
         if prop_layout == 1.0:
             y_nacelle_array = y_ratio * span / 2
-            unused_index = np.where(y_nacelle_array < 0.0)
-
-            for i in unused_index:
-                y_nacelle_array[i] = -1.0
-
-            used_index = np.where(y_nacelle_array >= 0.0)[0]
 
             x_from_le_array = np.copy(y_nacelle_array)
 
-            for index in used_index:
-                y_nacelle = y_nacelle_array[index]
+            for idx, y_nacelle in enumerate(y_nacelle_array):
                 if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
                     chord = l2_wing + (l4_wing - l2_wing) / (y4_wing - y2_wing) * (
                         y_nacelle - y2_wing
@@ -81,23 +85,14 @@ class ComputePropellerGeometry(om.ExplicitComponent):
                 else:  # Nacelle in the straight part of the wing
                     chord = l2_wing
 
-                x_from_le_array[index] = max(nacelle_length - chord, 0.0)
+                x_from_le_array[idx] = max(nacelle_length - chord, 0.0)
 
         elif prop_layout == 2.0:
-            x_from_le = fa_length - 0.25 * l0_wing - (nacelle_x[0] - nacelle_length)
-            x_from_le_array = np.concatenate(
-                (np.array([x_from_le]), np.full(ENGINE_COUNT - 1, -1.0))
-            )
+            x_from_le_array = fa_length - 0.25 * l0_wing - (nacelle_x[0] - nacelle_length)
         elif prop_layout == 3.0:
-            x_from_le = fa_length - 0.25 * l0_wing
-            x_from_le_array = np.concatenate(
-                (np.array([x_from_le]), np.full(ENGINE_COUNT - 1, -1.0))
-            )
+            x_from_le_array = fa_length - 0.25 * l0_wing
         else:
-            x_from_le = fa_length - 0.25 * l0_wing
-            x_from_le_array = np.concatenate(
-                (np.array([x_from_le]), np.full(ENGINE_COUNT - 1, -1.0))
-            )
+            x_from_le_array = fa_length - 0.25 * l0_wing
             warnings.warn(
                 "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
                     prop_layout

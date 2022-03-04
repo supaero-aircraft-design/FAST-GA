@@ -101,7 +101,10 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)

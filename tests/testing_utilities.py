@@ -25,6 +25,7 @@ from copy import deepcopy
 
 # noinspection PyProtectedMember
 from fastoad.module_management.service_registry import _RegisterOpenMDAOService
+from fastoad.openmdao.problem import FASTOADProblem
 
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
@@ -41,7 +42,7 @@ def run_system(
     check=False,
 ):
     """Runs and returns an OpenMDAO problem with provided component and data"""
-    problem = om.Problem()
+    problem = FASTOADProblem()
     model = problem.model
     model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
@@ -99,7 +100,7 @@ class VariableListLocal(VariableList):
         :return: VariableList instance.
         """
 
-        problem = om.Problem()
+        problem = FASTOADProblem()
         if isinstance(system, om.Group):
             problem.model = deepcopy(system)
         else:

@@ -28,7 +28,6 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 
 from fastga.command.api import generate_block_analysis
 
-from fastga.models.aerodynamics.constants import ENGINE_COUNT
 from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l2_l3 import (
     ComputeWingL2AndL3,
@@ -68,7 +67,10 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
@@ -132,7 +134,10 @@ class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)

@@ -60,7 +60,10 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")

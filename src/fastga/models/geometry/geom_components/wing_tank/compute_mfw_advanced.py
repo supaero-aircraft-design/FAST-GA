@@ -22,8 +22,6 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.aerodynamics.constants import ENGINE_COUNT
-
 from ...constants import SUBMODEL_MFW
 
 POINTS_NB_WING = 50
@@ -58,7 +56,10 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
@@ -170,9 +171,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     if engine_config != 1.0:
         y_ratio = 0.0
     else:
-        y_ratio_data = inputs["data:geometry:propulsion:engine:y_ratio"]
-        used_index = np.where(y_ratio_data >= 0.0)[0]
-        y_ratio = y_ratio_data[used_index]
+        y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
 
     y_eng_array = semi_span * np.array(y_ratio)
 
