@@ -100,10 +100,16 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:y_ratio",
+            shape_by_conn=True,
+            val=0.0,
         )
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:mass", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:mass",
+            shape_by_conn=True,
+            copy_shape="data:weight:airframe:wing:punctual_mass:y_ratio",
+            units="kg",
+            val=0.0,
         )
 
         self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)

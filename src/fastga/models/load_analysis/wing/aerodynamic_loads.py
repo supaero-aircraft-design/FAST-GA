@@ -112,13 +112,16 @@ class AerodynamicLoads(AerostructuralLoad):
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
 
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:y_ratio",
+            shape_by_conn=True,
+            val=0.0,
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
-            shape=ENGINE_COUNT,
-            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:weight:airframe:wing:punctual_mass:y_ratio",
             units="kg",
+            val=0.0,
         )
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")

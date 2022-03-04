@@ -491,7 +491,10 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
 
     # Find the outputs of all of those systems that are IndepVarComp
     for sub_system_keys in dict_sub_system.keys():
-        if dict_sub_system[sub_system_keys] == "IndepVarComp":
+        if (
+            dict_sub_system[sub_system_keys] == "IndepVarComp"
+            and sub_system_keys.split(".")[-1] != "fastoad_shaper"
+        ):
             actual_attribute_name = sub_system_keys.replace("model.system.", "")
             address_levels = actual_attribute_name.split(".")
             component = model.system
@@ -674,7 +677,7 @@ class VariableListLocal(VariableList):
         :return: VariableList instance.
         """
 
-        problem = om.Problem()
+        problem = FASTOADProblem()
         if isinstance(local_system, om.Group):
             problem.model = deepcopy(local_system)
         else:

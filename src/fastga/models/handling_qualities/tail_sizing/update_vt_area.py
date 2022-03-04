@@ -487,8 +487,9 @@ class _UpdateVTArea(VTPConstraints):
         )
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
         self.add_input(
-            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
+
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
@@ -620,7 +621,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input("data:geometry:vertical_tail:rudder:max_deflection", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input(
-            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")

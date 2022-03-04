@@ -75,13 +75,16 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
 
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:y_ratio",
+            shape_by_conn=True,
+            val=0.0,
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
-            shape=ENGINE_COUNT,
-            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:weight:airframe:wing:punctual_mass:y_ratio",
             units="kg",
+            val=0.0,
         )
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")

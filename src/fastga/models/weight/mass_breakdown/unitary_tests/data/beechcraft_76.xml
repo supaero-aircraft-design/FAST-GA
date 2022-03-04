@@ -700,9 +700,9 @@
         <wing>
           <k_factor is_input="True">1.0<!--proportional corrective factor for wing mass--></k_factor>
           <punctual_mass>
-            <y_ratio>[-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
-            <mass>[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</mass>
-          </punctual_mass>
+                        <y_ratio>0.0</y_ratio>
+                        <mass>0.0</mass>
+                    </punctual_mass>
           <CG>
             <x units="m" is_input="False">3.7047580077380493<!--wing (A1): X-position of center of gravity--></x>
           </CG>

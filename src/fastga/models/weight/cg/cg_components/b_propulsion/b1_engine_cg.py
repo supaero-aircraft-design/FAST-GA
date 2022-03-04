@@ -34,10 +34,14 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input(
-            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
         self.add_input(
-            "data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:x",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:geometry:propulsion:nacelle:x",
+            units="m",
         )
         self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
 
@@ -76,11 +80,8 @@ class ComputeEngineCG(ExplicitComponent):
         if prop_layout == 1.0:
 
             x_cg_b1 = 0
-            used_index = np.where(y_nacelle_array >= 0.0)[0]
 
-            for index in used_index:
-                y_nacelle = y_nacelle_array[index]
-                x_nacelle = x_nacelle_array[index]  # back of the nacelle = leading edge of the wing
+            for y_nacelle, x_nacelle in zip(y_nacelle_array, x_nacelle_array):
                 if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
                     l_wing_nac = l4_wing + (l2_wing - l4_wing) * (y4_wing - y_nacelle) / (
                         y4_wing - y2_wing
@@ -93,7 +94,7 @@ class ComputeEngineCG(ExplicitComponent):
                     x_nacelle_cg = x_nacelle - delta_x_nacelle - (nacelle_length - x_cg_in_nacelle)
                 x_cg_b1 += x_nacelle_cg / engine_count_pre_wing
         elif prop_layout == 2.0:
-            x_cg_b1 = x_nacelle_array[0] - (nacelle_length - x_cg_in_nacelle)
+            x_cg_b1 = x_nacelle_array - (nacelle_length - x_cg_in_nacelle)
         elif prop_layout == 3.0:
             x_cg_b1 = x_cg_in_nacelle + prop_depth
         else:
