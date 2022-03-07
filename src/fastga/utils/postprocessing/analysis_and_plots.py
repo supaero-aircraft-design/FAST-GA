@@ -197,13 +197,9 @@ def aircraft_geometry_plot(
             all_colour = colour.CSS4_COLORS.keys()
             random_generator = SystemRandom()
             trace_colour = list(all_colour)[random_generator.randrange(0, len(list(all_colour)))]
-            used_index = np.where(pos_y_nacelle >= 0.0)[0]
             show_legend = True
 
-            for index in used_index:
-
-                y_nacelle_local = pos_y_nacelle[index]
-                x_nacelle_local = pos_x_nacelle[index]
+            for y_nacelle_local, x_nacelle_local in zip(pos_y_nacelle, pos_x_nacelle):
 
                 y_nacelle_left = y_nacelle_plot + y_nacelle_local
                 y_nacelle_right = -y_nacelle_plot - y_nacelle_local

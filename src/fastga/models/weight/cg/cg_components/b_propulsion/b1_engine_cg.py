@@ -40,7 +40,7 @@ class ComputeEngineCG(ExplicitComponent):
             "data:geometry:propulsion:nacelle:x",
             val=np.nan,
             shape_by_conn=True,
-            copy_shape="data:geometry:propulsion:nacelle:x",
+            copy_shape="data:geometry:propulsion:nacelle:y",
             units="m",
         )
         self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
