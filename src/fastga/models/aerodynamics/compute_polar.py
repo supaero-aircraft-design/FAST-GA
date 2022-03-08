@@ -33,22 +33,22 @@ class ComputePolar(Group):
 
     def setup(self):
         self.add_subsystem(
-            "non_equilibrated_polar_cruise",
+            "equilibrated_polar_cruise",
             ComputeEquilibratedPolar(low_speed_aero=False, cg_ratio=self.options["cg_ratio"]),
             promotes=["*"],
         )
         self.add_subsystem(
-            "equilibrated_polar_cruise",
+            "non_equilibrated_polar_cruise",
             ComputeNonEquilibratedPolar(low_speed_aero=False),
             promotes=["*"],
         )
         self.add_subsystem(
-            "non_equilibrated_polar_ls",
+            "equilibrated_polar_ls",
             ComputeEquilibratedPolar(low_speed_aero=True, cg_ratio=self.options["cg_ratio"]),
             promotes=["*"],
         )
         self.add_subsystem(
-            "equilibrated_polar_ls",
+            "non_equilibrated_polar_ls",
             ComputeNonEquilibratedPolar(low_speed_aero=True),
             promotes=["*"],
         )
