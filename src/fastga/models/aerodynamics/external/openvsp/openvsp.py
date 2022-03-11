@@ -1207,7 +1207,6 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
@@ -1272,9 +1271,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM ########
         # EFFECTS ON THE WING ######################################################################
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         flight_point = FlightPoint(
             mach=mach,
             altitude=altitude,

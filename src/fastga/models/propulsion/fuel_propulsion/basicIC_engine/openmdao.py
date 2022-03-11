@@ -19,9 +19,9 @@ from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
-from .basicIC_engine import BasicICEngine
-
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
+from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
 
 
@@ -106,6 +106,7 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         component.add_input(
             "data:aerodynamics:propeller:cruise_level:altitude", units="m", val=np.nan
         )
+        component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -131,7 +132,9 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
         }
 
-        return BasicICEngine(**engine_params)
+        return FuelEngineSet(
+            BasicICEngine(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
 
 
 @ValidityDomainChecker(

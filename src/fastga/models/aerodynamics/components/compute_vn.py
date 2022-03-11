@@ -72,7 +72,6 @@ class ComputeVh(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
@@ -100,9 +99,7 @@ class ComputeVh(om.ExplicitComponent):
         return np.max(roots[roots > 0.0])
 
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]

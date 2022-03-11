@@ -229,9 +229,7 @@ class VTPConstraints(om.ExplicitComponent):
         return area
 
     def engine_out_climb(self, inputs):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
         engine_number = inputs["data:geometry:propulsion:engine:count"]
@@ -299,9 +297,7 @@ class VTPConstraints(om.ExplicitComponent):
         return area
 
     def engine_out_takeoff(self, inputs):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         y_nacelle = max(inputs["data:geometry:propulsion:nacelle:y"])
         engine_number = inputs["data:geometry:propulsion:engine:count"]
@@ -402,9 +398,7 @@ class VTPConstraints(om.ExplicitComponent):
 
         distance_to_cg = wing_vtp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         failure_altitude_ldg = 0.0  # CS23 for Twin engine - at 0ft
         atm_ldg = Atmosphere(failure_altitude_ldg)
@@ -470,7 +464,6 @@ class _UpdateVTArea(VTPConstraints):
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -603,7 +596,6 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)

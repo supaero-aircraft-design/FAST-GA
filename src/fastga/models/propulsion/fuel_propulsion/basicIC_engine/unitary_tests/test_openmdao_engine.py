@@ -818,6 +818,8 @@ def test_OMBasicICEngineComponent():
         "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
     )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
+    # We will only test one engine here
+    ivc.add_output("data:geometry:propulsion:engine:count", 1)
 
     ivc.add_output("data:propulsion:mach", [machs, machs])
     ivc.add_output("data:propulsion:altitude", [altitudes, altitudes], units="ft")
