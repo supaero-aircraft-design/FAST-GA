@@ -152,7 +152,10 @@ def test_oad_process_mission_builder(cleanup):
     """
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
-    os.mkdir("D:/tmp")
+
+    if not os.path.exists("D:/tmp"):
+        os.mkdir("D:/tmp")
+
     shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
 
     logging.basicConfig(level=logging.WARNING)
@@ -189,7 +192,7 @@ def test_oad_process_mission_builder(cleanup):
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 259.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1619.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1620.0, atol=1)
     # noinspection PyTypeChecker
     assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1000.0, atol=1)
 

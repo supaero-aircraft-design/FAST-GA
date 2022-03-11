@@ -1,6 +1,4 @@
-"""
-    Estimation of payload range diagram points.
-"""
+"""Estimation of payload range diagram points."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -15,13 +13,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import numpy as np
 import openmdao.api as om
+
+
+from scipy.optimize import fsolve
+
 from fastga.command import api as api_cs23
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
-import logging
-from scipy.optimize import fsolve
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup, FASTOADProblem
 
 from fastga.models.performances.mission.mission import Mission
 
@@ -166,82 +168,49 @@ class ComputePayloadRange(om.ExplicitComponent):
     @staticmethod
     def fuel_function(range_parameter, fuel_target, mass, inputs, prop_id):
 
-        variables = api_cs23.list_variables(Mission(propulsion_id=prop_id))
-        inputs_mission = [var for var in variables if var.is_input]
-        for i in range(len(inputs_mission)):
-            inputs_mission[i].value = inputs[inputs_mission[i].name]
-
-        var_names = np.array([var.name for var in inputs_mission], dtype="object")
-        var_value = np.array([var.value.tolist() for var in inputs_mission], dtype="object")
-        var_units = np.array([var.units for var in inputs_mission], dtype="object")
-
-        index_range = np.where(var_names == "data:TLAR:range")
-        var_value[index_range[0]] = range_parameter
-
-        index_mtow = np.where(var_names == "data:weight:aircraft:MTOW")
-        var_value[index_mtow[0]] = mass
-
-        compute_fuel = api_cs23.generate_block_analysis(
+        mission_component = AutoUnitsDefaultGroup()
+        mission_component.add_subsystem(
+            "system",
             Mission(propulsion_id=prop_id),
-            var_names.tolist(),
-            "",
-            overwrite=True,
+            promotes=["*"],
         )
+        variables = api_cs23.list_variables(mission_component)
+        var_inputs = [var.name for var in variables if var.is_input]
+        var_units = [var.units for var in variables if var.is_input]
+        var_shapes = [np.shape(var.val) for var in variables if var.is_input]
 
-        inputs_dict = {}
+        input_zip = zip(var_inputs, var_units, var_shapes)
 
-        for i in range(np.size(var_names)):
-            inputs_dict.update({var_names[i]: (var_value[i], var_units[i])})
+        ivc = om.IndepVarComp()
+        for var_names, var_unit, var_shape in input_zip:
+            if var_names != "data:TLAR:range" and var_names != "data:weight:aircraft:MTOW":
+                ivc.add_output(
+                    name=var_names, val=inputs[var_names], units=var_unit, shape=var_shape
+                )
 
-        output = compute_fuel(inputs_dict)
-        fuel = output.get("data:mission:sizing:fuel")[0]
+        ivc.add_output(name="data:TLAR:range", val=range_parameter, units="m")
+        ivc.add_output(name="data:weight:aircraft:MTOW", val=mass, units="kg")
+
+        problem = FASTOADProblem()
+        model = problem.model
+
+        model.add_subsystem("ivc", ivc, promotes_outputs=["*"])
+        model.add_subsystem("mission", Mission(propulsion_id=prop_id), promotes=["*"])
+
+        model.nonlinear_solver = om.NonlinearBlockGS()
+        model.nonlinear_solver.options["iprint"] = 0
+        model.nonlinear_solver.options["maxiter"] = 10
+        model.nonlinear_solver.options["rtol"] = 1e-3
+
+        model.linear_solver = om.LinearBlockGS()
+        model.linear_solver.options["iprint"] = 0
+        model.linear_solver.options["maxiter"] = 10
+        model.linear_solver.options["rtol"] = 1e-3
+
+        problem.setup()
+
+        problem.run_model()
+
+        fuel = problem.get_val("data:mission:sizing:fuel", units="kg")
 
         return fuel - fuel_target
-
-
-class TestComponent(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
-    def setup(self):
-        variables = api_cs23.list_variables(Mission(propulsion_id=self.options["propulsion_id"]))
-
-        inputs_mission = [var for var in variables if var.is_input]
-
-        for comp_input in inputs_mission:
-            self.add_input(
-                comp_input.name,
-                val=np.nan,
-                units=comp_input.metadata["units"],
-                shape=comp_input.metadata["shape"],
-            )
-
-        self.add_output("test", units="kg")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        variables = api_cs23.list_variables(Mission(propulsion_id=self.options["propulsion_id"]))
-        inputs_mission = [var for var in variables if var.is_input]
-        for i in range(len(inputs_mission)):
-            inputs_mission[i].value = inputs[inputs_mission[i].name]
-
-        var_names = np.array([var.name for var in inputs_mission], dtype="object")
-        var_value = np.array([var.value.tolist() for var in inputs_mission], dtype="object")
-        var_units = np.array([var.units for var in inputs_mission], dtype="object")
-
-        compute_fuel = api_cs23.generate_block_analysis(
-            Mission(propulsion_id=self.options["propulsion_id"]),
-            var_names.tolist(),
-            "",
-            overwrite=True,
-        )
-
-        inputs_dict = {}
-
-        for i in range(np.size(var_names)):
-            inputs_dict.update({var_names[i]: (var_value[i], var_units[i])})
-
-        output = compute_fuel(inputs_dict)
-        fuel = output.get("data:mission:sizing:fuel")[0]
-
-        outputs["test"] = fuel

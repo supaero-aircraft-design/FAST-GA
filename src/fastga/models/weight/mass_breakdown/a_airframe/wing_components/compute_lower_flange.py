@@ -22,7 +22,6 @@ from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 from stdatm import Atmosphere
 
@@ -32,7 +31,6 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
     def setup(self):
-        nans_array_ov = np.full(SPAN_MESH_POINT, np.nan)
 
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
@@ -68,28 +66,33 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input(
             "data:aerodynamics:wing:low_speed:chord_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
             units="m",
         )
         self.add_input(
-            "data:aerodynamics:wing:low_speed:CL_vector", val=nans_array_ov, shape=SPAN_MESH_POINT
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
