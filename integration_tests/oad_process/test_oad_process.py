@@ -44,7 +44,7 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
-def _test_oad_process_vlm(cleanup):
+def test_oad_process_vlm(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
 
@@ -241,12 +241,12 @@ def test_oad_process_mission_builder_2_engine(cleanup):
 
     # Check values
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 259.0, atol=1)
-    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 227.0, atol=1)
+    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.25, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1620.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1701.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1000.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1084.0, atol=1)
 
 
 def _check_weight_performance_loop(problem):
