@@ -1,3 +1,4 @@
+"""Constants for propulsion mass submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .b1_2_oil_weight import ComputeOilWeight
-from .b1_engine_weight import ComputeEngineWeight, ComputeEngineWeightRaymer
-from .b2_fuel_lines_weight import ComputeFuelLinesWeight, ComputeFuelLinesWeightFLOPS
-from .b3_unusable_fuel_weight import ComputeUnusableFuelWeight
+SUBMODEL_INSTALLED_ENGINE_MASS = "submodel.weight.mass.propulsion.installed_engine"
+SUBMODEL_FUEL_SYSTEM_MASS = "submodel.weight.mass.propulsion.fuel_system"
+SUBMODEL_UNUSABLE_FUEL_MASS = "submodel.weight.mass.propulsion.unusable_fuel"

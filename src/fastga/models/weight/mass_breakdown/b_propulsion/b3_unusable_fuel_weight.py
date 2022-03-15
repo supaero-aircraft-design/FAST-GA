@@ -1,6 +1,4 @@
-"""
-Estimation of engine and associated component weight.
-"""
+"""Estimation of unsuable fuel weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,8 +20,18 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
+from fastoad.module_management.service_registry import RegisterSubmodel
+
+from .constants import SUBMODEL_UNUSABLE_FUEL_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_UNUSABLE_FUEL_MASS
+] = "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
 
 
+@RegisterSubmodel(
+    SUBMODEL_UNUSABLE_FUEL_MASS, "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
+)
 class ComputeUnusableFuelWeight(ExplicitComponent):
     """
     Weight estimation for motor oil

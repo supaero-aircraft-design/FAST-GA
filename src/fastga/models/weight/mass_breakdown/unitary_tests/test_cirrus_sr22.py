@@ -28,7 +28,9 @@ from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
+    ComputeFuelLinesWeightFLOPS,
     ComputeEngineWeight,
+    ComputeEngineWeightRaymer,
     ComputeUnusableFuelWeight,
 )
 from ..b_propulsion.sum import PropulsionWeight
@@ -171,6 +173,19 @@ def test_compute_engine_weight():
     assert weight_b1 == pytest.approx(330.21, abs=1e-2)
 
 
+def test_compute_engine_weight_raymer():
+    """Tests engine weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeEngineWeightRaymer(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEngineWeightRaymer(propulsion_id=ENGINE_WRAPPER), ivc)
+    weight_b1 = problem.get_val("data:weight:propulsion:engine:mass", units="kg")
+    assert weight_b1 == pytest.approx(372.90, abs=1e-2)
+
+
 def test_compute_fuel_lines_weight():
     """Tests fuel lines weight computation from sample XML data."""
     # Research independent input value in .xml file
@@ -180,6 +195,17 @@ def test_compute_fuel_lines_weight():
     problem = run_system(ComputeFuelLinesWeight(), ivc)
     weight_b2 = problem.get_val("data:weight:propulsion:fuel_lines:mass", units="kg")
     assert weight_b2 == pytest.approx(31.30, abs=1e-2)
+
+
+def test_compute_fuel_lines_weight_flops():
+    """Tests fuel lines weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFuelLinesWeightFLOPS()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFuelLinesWeightFLOPS(), ivc)
+    weight_b2 = problem.get_val("data:weight:propulsion:fuel_lines:mass", units="kg")
+    assert weight_b2 == pytest.approx(20.84, abs=1e-2)
 
 
 def test_compute_unusable_fuel_weight():

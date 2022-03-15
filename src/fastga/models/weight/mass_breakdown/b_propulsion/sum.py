@@ -16,9 +16,11 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .b1_engine_weight import ComputeEngineWeight
-from .b3_unusable_fuel_weight import ComputeUnusableFuelWeight
-from .b2_fuel_lines_weight import ComputeFuelLinesWeight
+from .constants import (
+    SUBMODEL_INSTALLED_ENGINE_MASS,
+    SUBMODEL_UNUSABLE_FUEL_MASS,
+    SUBMODEL_FUEL_SYSTEM_MASS,
+)
 from ..constants import SUBMODEL_PROPULSION_MASS
 
 
@@ -30,17 +32,24 @@ class PropulsionWeight(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "engine_weight",
-            ComputeEngineWeight(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(
+                SUBMODEL_INSTALLED_ENGINE_MASS, options=propulsion_option
+            ),
             promotes=["*"],
         )
         self.add_subsystem(
             "unusable_fuel",
-            ComputeUnusableFuelWeight(propulsion_id=self.options["propulsion_id"]),
+            RegisterSubmodel.get_submodel(SUBMODEL_UNUSABLE_FUEL_MASS, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("fuel_lines_weight", ComputeFuelLinesWeight(), promotes=["*"])
+        self.add_subsystem(
+            "fuel_lines_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_FUEL_SYSTEM_MASS),
+            promotes=["*"],
+        )
 
         weight_sum = om.AddSubtractComp()
         weight_sum.add_equation(
