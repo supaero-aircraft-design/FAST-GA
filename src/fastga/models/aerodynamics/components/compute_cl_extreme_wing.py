@@ -135,8 +135,18 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:tip:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:Y_vector", val=nans_array, units="m")
-        self.add_input("data:aerodynamics:wing:low_speed:CL_vector", val=nans_array)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:Y_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            units="m",
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
+        )
 
         self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
         self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean")

@@ -17,6 +17,7 @@ according to aerostructural loads.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 
 from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -24,15 +25,12 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 from .constants import SUBMODEL_AERODYNAMIC_LOADS
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
-
 
 @RegisterSubmodel(SUBMODEL_AERODYNAMIC_LOADS, "fastga.submodel.loads.wings.aerodynamic.legacy")
-class AerodynamicLoads(AerostructuralLoad):
+class AerodynamicLoads(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
-        nans_array_ov = np.full(SPAN_MESH_POINT, np.nan)
         self.add_input("data:loads:max_shear:load_factor", val=np.nan)
         self.add_input("data:loads:max_shear:mass", val=np.nan, units="kg")
         self.add_input("data:loads:max_rbm:load_factor", val=np.nan)
@@ -40,28 +38,33 @@ class AerodynamicLoads(AerostructuralLoad):
 
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input(
             "data:aerodynamics:wing:low_speed:chord_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
             units="m",
         )
         self.add_input(
-            "data:aerodynamics:wing:low_speed:CL_vector", val=nans_array_ov, shape=SPAN_MESH_POINT
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input(
@@ -192,7 +195,7 @@ class AerodynamicLoads(AerostructuralLoad):
         # To get the same y_vector array as in the aerostructural computation, the only important
         # part here is the location of the y samples so we don't need to register the structural
         # mass array
-        y_vector, _ = self.compute_relief_force(
+        y_vector, _ = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector, 0.0, 0.0, False
         )
 
@@ -214,8 +217,10 @@ class AerodynamicLoads(AerostructuralLoad):
         dynamic_pressure = 1.0 / 2.0 * atm.density * cruise_v_tas ** 2.0
 
         cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
-        cl_s = self.compute_cl_s(y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector)
-        cl_s_slip = self.compute_cl_s(
+        cl_s = AerostructuralLoad.compute_cl_s(
+            y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector
+        )
+        cl_s_slip = AerostructuralLoad.compute_cl_s(
             y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector
         )
         cl_s_actual = cl_s * cl_wing / cl_0
