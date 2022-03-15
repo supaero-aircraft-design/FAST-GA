@@ -1,6 +1,4 @@
-"""
-Estimation of the position of the CG that limits takeoff rotation.
-"""
+"""Estimation of the position of the CG that limits takeoff rotation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +19,6 @@ from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader

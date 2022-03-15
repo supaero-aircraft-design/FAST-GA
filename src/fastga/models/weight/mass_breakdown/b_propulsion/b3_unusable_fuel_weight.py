@@ -23,8 +23,6 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
 
 class ComputeUnusableFuelWeight(ExplicitComponent):
     """

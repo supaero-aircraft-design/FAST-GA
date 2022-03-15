@@ -31,8 +31,6 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)

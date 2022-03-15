@@ -25,8 +25,6 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 
-from ...propulsion.fuel_propulsion.base import FuelEngineSet
-from ...aerodynamics.constants import ENGINE_COUNT
 from .constants import SUBMODEL_VT_AREA
 
 

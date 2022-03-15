@@ -127,7 +127,6 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
 
     def setup(self):
 
-        nans_array = np.full(SPAN_MESH_POINT, np.nan)
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_max_2D", val=np.nan)

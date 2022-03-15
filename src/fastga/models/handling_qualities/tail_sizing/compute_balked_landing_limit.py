@@ -1,5 +1,6 @@
 """
-Estimation of the position of the CG that limits balked landing, adaptation of the method proposed by Gudmundsson.
+Estimation of the position of the CG that limits balked landing. Adaptation of the method
+proposed by Gudmundsson.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -21,7 +22,6 @@ import openmdao.api as om
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader

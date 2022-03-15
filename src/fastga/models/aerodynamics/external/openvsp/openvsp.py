@@ -35,7 +35,6 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
     PROPELLER_EFFICIENCY,
 )

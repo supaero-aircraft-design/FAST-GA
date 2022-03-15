@@ -17,7 +17,6 @@ import numpy as np
 import warnings
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from .....aerodynamics.constants import ENGINE_COUNT
 
 
 class ComputeEngineCG(ExplicitComponent):

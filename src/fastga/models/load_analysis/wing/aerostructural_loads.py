@@ -23,7 +23,7 @@ from scipy.interpolate import interp1d
 from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, MACH_NB_PTS
+from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
     tank_volume_distribution,
 )
@@ -48,7 +48,6 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
-        nans_array_mach = np.full(MACH_NB_PTS + 1, np.nan)
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
             val=np.nan,

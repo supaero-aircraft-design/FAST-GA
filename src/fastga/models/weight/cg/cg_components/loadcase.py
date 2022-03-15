@@ -30,7 +30,6 @@ from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
 
 

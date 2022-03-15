@@ -37,7 +37,6 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT, TakeOffPhase
 from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 POINTS_NB_CLIMB = 100
