@@ -1,5 +1,6 @@
 """
-Estimation of the position of the CG that limits balked landing, adaptation of the method proposed by Gudmundsson.
+Estimation of the position of the CG that limits balked landing. Adaptation of the method
+proposed by Gudmundsson.
 """
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -21,7 +22,6 @@ import openmdao.api as om
 from scipy.constants import g
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
@@ -201,7 +201,6 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient", val=np.nan
@@ -226,9 +225,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         v_s0 = math.sqrt((mlw * 9.81) / (0.5 * rho * wing_area * cl_max_landing))
         v_ref = 1.3 * v_s0
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         x_cg = float(fa_length)
         increment = l0_wing / 100.0

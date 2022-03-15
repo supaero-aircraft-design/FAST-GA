@@ -534,11 +534,11 @@ def test_geometry_nacelle():
     nacelle_wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units="m**2")
     assert nacelle_wet_area == pytest.approx(3.841, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
-    y_nacelle_result = [1.972, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-    assert np.max(abs(y_nacelle - y_nacelle_result)) < 1e-3
+    y_nacelle_result = 1.972
+    assert abs(y_nacelle - y_nacelle_result) < 1e-3
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
-    x_nacelle_result = [3.092, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-    assert np.max(abs(x_nacelle - x_nacelle_result)) < 1e-3
+    x_nacelle_result = 3.092
+    assert abs(x_nacelle - x_nacelle_result) < 1e-3
 
 
 def test_geometry_propeller():
@@ -550,8 +550,8 @@ def test_geometry_propeller():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePropellerGeometry(), ivc)
     x_prop_from_le = problem.get_val("data:geometry:propulsion:nacelle:from_LE", units="m")
-    x_prop_from_le_result = [0.1954, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]
-    assert np.max(abs(x_prop_from_le - x_prop_from_le_result)) < 1e-3
+    x_prop_from_le_result = 0.1954
+    assert abs(x_prop_from_le - x_prop_from_le_result) < 1e-3
 
 
 def test_landing_gear_geometry():

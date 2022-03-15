@@ -14,7 +14,6 @@ Estimation of engine and associated component weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from scipy.constants import lbf
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -22,8 +21,6 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
-
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
 class ComputeOilWeight(ExplicitComponent):
@@ -44,15 +41,13 @@ class ComputeOilWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         n_eng = inputs["data:geometry:propulsion:engine:count"]
 
-        propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), n_eng)
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         flight_point = FlightPoint(
             mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0

@@ -22,7 +22,6 @@ from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
 
 from stdatm import Atmosphere
 
@@ -32,7 +31,6 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
     def setup(self):
-        nans_array_ov = np.full(SPAN_MESH_POINT, np.nan)
 
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
@@ -42,7 +40,10 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
@@ -65,28 +66,33 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input(
             "data:aerodynamics:wing:low_speed:chord_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
             units="m",
         )
         self.add_input(
-            "data:aerodynamics:wing:low_speed:CL_vector", val=nans_array_ov, shape=SPAN_MESH_POINT
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
         )
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector",
-            val=nans_array_ov,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
@@ -97,10 +103,16 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:y_ratio",
+            shape_by_conn=True,
+            val=0.0,
         )
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:mass", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:mass",
+            shape_by_conn=True,
+            copy_shape="data:weight:airframe:wing:punctual_mass:y_ratio",
+            units="kg",
+            val=0.0,
         )
 
         self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)

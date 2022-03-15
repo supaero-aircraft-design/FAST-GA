@@ -79,7 +79,7 @@
     	  	<propulsion>
     	  	  	<count is_input="True">1.0<!--number of engine--></count>
     	  	  	<layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
-    	  	  	<y_ratio is_input="True">[0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position along wing span (if layout=1-2)--></y_ratio>
+    	  	  	<y_ratio is_input="True">0.0<!--engine position along wing span (if layout=1-2)--></y_ratio>
     	  	</propulsion>
     	  	<vertical_tail>
     	  	  	<aspect_ratio is_input="True">1.5<!--aspect ratio of vertical tail--></aspect_ratio>

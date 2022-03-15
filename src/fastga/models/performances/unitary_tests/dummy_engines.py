@@ -27,6 +27,7 @@ from fastoad.model_base import FlightPoint
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
+from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.performances.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.performances.cirrus.dummy_engine"
@@ -101,6 +102,7 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -114,7 +116,9 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
         }
 
-        return DummyEngineBE76(**engine_params)
+        return FuelEngineSet(
+            DummyEngineBE76(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
 
 
 ########################################################################################################################
@@ -171,7 +175,8 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 class DummyEngineWrapperSR22(IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-        return DummyEngineSR22()
+        return FuelEngineSet(DummyEngineSR22(), inputs["data:geometry:propulsion:engine:count"])

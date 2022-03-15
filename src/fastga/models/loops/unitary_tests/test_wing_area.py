@@ -129,7 +129,7 @@ def test_simple_cl():
     ivc_cons.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_cons.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
     ivc_cons.add_output("data:aerodynamics:aircraft:landing:CL_max", val=2.0272)
-    ivc_cons.add_output("data:geometry:wing:area", val=14.02)
+    ivc_cons.add_output("data:geometry:wing:area", val=14.02, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaLiftSimple(), ivc_cons)
     assert_allclose(
@@ -160,8 +160,7 @@ def test_advanced_geom():
     ivc_loop.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc_loop.add_output(
         "data:geometry:propulsion:engine:y_ratio",
-        shape=10,
-        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+        val=0.34,
     )
     ivc_loop.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
     ivc_loop.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
@@ -189,8 +188,7 @@ def test_advanced_geom():
     ivc_cons.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc_cons.add_output(
         "data:geometry:propulsion:engine:y_ratio",
-        shape=10,
-        val=[0.34, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0],
+        val=0.34,
     )
     ivc_cons.add_output("data:geometry:propulsion:tank:LE_chord_percentage", val=0.05)
     ivc_cons.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)

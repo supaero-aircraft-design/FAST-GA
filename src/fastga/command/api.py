@@ -26,6 +26,7 @@ from itertools import product
 from pathlib import Path
 from typing import Union, List
 from platform import system
+from deprecated import deprecated
 import openmdao.api as om
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.implicitcomponent import ImplicitComponent
@@ -35,12 +36,12 @@ from openmdao.core.system import System
 
 
 from fastoad.openmdao.variables import VariableList
-from fastoad.cmd.exceptions import FastFileExistsError
+from fastoad.cmd.exceptions import FastPathExistsError
 from fastoad.openmdao.problem import FASTOADProblem
 from fastoad.io import DataFile, IVariableIOFormatter
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.io import VariableIO
-from fastoad.io.configuration.configuration import AutoUnitsDefaultGroup
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 # noinspection PyProtectedMember
@@ -119,12 +120,12 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 
     :param subpackage_path: the path of the subpackage to explore
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and subpackage_path already exists.
+    :raise FastPathExistsError: if overwrite==False and subpackage_path already exists.
     """
 
     if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
         # noinspection PyStringFormat
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Variable descriptions file is not written because it already exists. "
             "Use overwrite=True to bypass."
             % pth.join(subpackage_path, "variable_descriptions.txt"),
@@ -392,16 +393,21 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 )
 
 
+@deprecated(
+    version="0.2.0",
+    reason="Will be removed in version 1.0. Please use the generate_configuration_file from "
+    'fast-oad-core api with the distribution_name="fastga" instead',
+)
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
     """
     Generates a sample configuration file.
 
     :param configuration_file_path: the path of the file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(configuration_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Configuration file is not written because it already exists. "
             "Use overwrite=True to bypass." % configuration_file_path,
             configuration_file_path,
@@ -420,10 +426,10 @@ def generate_xml_file(xml_file_path: str, overwrite: bool = False):
 
     :param xml_file_path: the path of the file to be written
     :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastFileExistsError: if overwrite==False and configuration_file_path already exists
+    :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
     if not overwrite and pth.exists(xml_file_path):
-        raise FastFileExistsError(
+        raise FastPathExistsError(
             "Configuration file is not written because it already exists. "
             "Use overwrite=True to bypass." % xml_file_path,
             xml_file_path,
@@ -469,7 +475,8 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
     """
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
-    problem = FASTOADProblem(group)
+    problem = FASTOADProblem()
+    problem.model = group
     try:
         problem.setup()
     except RuntimeError:
@@ -484,7 +491,10 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
 
     # Find the outputs of all of those systems that are IndepVarComp
     for sub_system_keys in dict_sub_system.keys():
-        if dict_sub_system[sub_system_keys] == "IndepVarComp":
+        if (
+            dict_sub_system[sub_system_keys] == "IndepVarComp"
+            and sub_system_keys.split(".")[-1] != "fastoad_shaper"
+        ):
             actual_attribute_name = sub_system_keys.replace("model.system.", "")
             address_levels = actual_attribute_name.split(".")
             component = model.system
@@ -530,7 +540,8 @@ def generate_block_analysis(
         # If no input file and some inputs are missing, generate it and return None
         group = AutoUnitsDefaultGroup()
         group.add_subsystem("system", local_system, promotes=["*"])
-        problem = FASTOADProblem(group)
+        problem = FASTOADProblem()
+        problem.model = group
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
         raise Exception(
@@ -569,7 +580,8 @@ def generate_block_analysis(
                 group = AutoUnitsDefaultGroup()
                 group.add_subsystem("system", local_system, promotes=["*"])
                 group.add_subsystem("ivc", ivc, promotes=["*"])
-                problem = FASTOADProblem(group)
+                problem = FASTOADProblem()
+                problem.model = group
                 problem.input_file_path = xml_file_path
                 problem.output_file_path = xml_file_path
                 problem.setup()
@@ -604,9 +616,11 @@ def generate_block_analysis(
                 for name, value in inputs_dict.items():
                     ivc_local.add_output(name, value[0], units=value[1])
                 group_local = AutoUnitsDefaultGroup()
-                group_local.add_subsystem("system", local_system, promotes=["*"])
                 group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
-                problem_local = FASTOADProblem(group_local)
+                group_local.add_subsystem("system", local_system, promotes=["*"])
+                problem_local = FASTOADProblem()
+                model_local = problem_local.model
+                model_local.add_subsystem("local_system", group_local, promotes=["*"])
                 problem_local.setup()
                 problem_local.run_model()
                 if overwrite:
@@ -663,7 +677,7 @@ class VariableListLocal(VariableList):
         :return: VariableList instance.
         """
 
-        problem = om.Problem()
+        problem = FASTOADProblem()
         if isinstance(local_system, om.Group):
             problem.model = deepcopy(local_system)
         else:

@@ -37,7 +37,6 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT, TakeOffPhase
 from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 POINTS_NB_CLIMB = 100
@@ -308,7 +307,6 @@ class _compute_taxi(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         if self.options["taxi_out"]:
             self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
             self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
@@ -327,9 +325,7 @@ class _compute_taxi(om.ExplicitComponent):
         if self.options["taxi_out"]:
             _LOGGER.info("Entering mission computation")
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         if self.options["taxi_out"]:
             thrust_rate = inputs["data:mission:sizing:taxi_out:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_out:duration"]
@@ -371,7 +367,6 @@ class _compute_climb(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
@@ -403,9 +398,7 @@ class _compute_climb(DynamicEquilibrium):
             except:
                 _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
@@ -557,7 +550,6 @@ class _compute_cruise(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
@@ -579,9 +571,7 @@ class _compute_cruise(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_distance = max(
             0.0,
@@ -713,7 +703,6 @@ class _compute_descent(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
@@ -737,9 +726,7 @@ class _compute_descent(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         descent_rate = inputs["data:mission:sizing:main_route:descent:descent_rate"]
         cl = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]

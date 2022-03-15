@@ -18,8 +18,6 @@ in her MAE research project report.
 import openmdao.api as om
 import numpy as np
 
-from fastga.models.aerodynamics.constants import MACH_NB_PTS
-
 from stdatm import Atmosphere
 
 from scipy.interpolate import interp1d
@@ -27,7 +25,6 @@ from scipy.interpolate import interp1d
 
 class ComputeSkinMass(om.ExplicitComponent):
     def setup(self):
-        nans_array_mach = np.full(MACH_NB_PTS + 1, np.nan)
 
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -50,14 +47,15 @@ class ComputeSkinMass(om.ExplicitComponent):
 
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
-            val=nans_array_mach,
+            val=np.nan,
             units="rad**-1",
-            shape=MACH_NB_PTS + 1,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:aircraft:mach_interpolation:mach_vector",
         )
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
-            val=nans_array_mach,
-            shape=MACH_NB_PTS + 1,
+            val=np.nan,
+            shape_by_conn=True,
         )
 
         self.add_input(

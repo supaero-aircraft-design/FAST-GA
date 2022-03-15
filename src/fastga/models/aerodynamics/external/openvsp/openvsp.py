@@ -35,7 +35,6 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
     PROPELLER_EFFICIENCY,
 )
@@ -45,7 +44,7 @@ from fastga.command.api import _create_tmp_directory
 
 from . import resources as local_resources
 from . import openvsp3201
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, ENGINE_COUNT
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 from ... import resources
 
@@ -1203,13 +1202,14 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         super().setup()
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
-        nan_array = np.full(ENGINE_COUNT, np.nan)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=nan_array)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
 
     def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust_rate):
         """
@@ -1256,10 +1256,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         if engine_config != 1.0:
             y_ratio_array = 0.0
         else:
-            used_index = np.where(
-                np.array(inputs["data:geometry:propulsion:engine:y_ratio"]) >= 0.0
-            )[0]
-            y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])[used_index]
+            y_ratio_array = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
 
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
@@ -1273,9 +1270,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM ########
         # EFFECTS ON THE WING ######################################################################
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         flight_point = FlightPoint(
             mach=mach,
             altitude=altitude,

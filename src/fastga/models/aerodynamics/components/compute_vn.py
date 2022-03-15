@@ -31,10 +31,6 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from fastga.models.aerodynamics.constants import MACH_NB_PTS
-
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)
@@ -74,7 +70,6 @@ class ComputeVh(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
@@ -102,9 +97,7 @@ class ComputeVh(om.ExplicitComponent):
         return np.max(roots[roots > 0.0])
 
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
@@ -146,7 +139,7 @@ class ComputeVN(om.ExplicitComponent):
         self.lbf_to_N = lbf  # Converting from pound force to Newtons
 
     def setup(self):
-        nans_array = np.full(MACH_NB_PTS + 1, np.nan)
+
         self.add_input("data:TLAR:category", val=3.0)
         self.add_input("data:TLAR:level", val=2.0)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -160,14 +153,15 @@ class ComputeVN(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
-            val=nans_array,
+            val=np.nan,
             units="rad**-1",
-            shape=MACH_NB_PTS + 1,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:aircraft:mach_interpolation:mach_vector",
         )
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
-            val=nans_array,
-            shape=MACH_NB_PTS + 1,
+            val=np.nan,
+            shape_by_conn=True,
         )
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")

@@ -34,7 +34,7 @@
                 <engine>
                     <count is_input="True">12.0<!--number of engines--></count>
                     <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
-                    <y_ratio is_input="True">[0.188, 0.3075, 0.4269, 0.5462, 0.667, 0.785, -1.0, -1.0, -1.0, -1.0]<!--engine position with respect to total span--></y_ratio>
+                    <y_ratio is_input="True">[0.188, 0.3075, 0.4269, 0.5462, 0.667, 0.785]<!--engine position with respect to total span--></y_ratio>
                 </engine>
                 <tank>
                     <LE_chord_percentage>0.1</LE_chord_percentage>
@@ -93,8 +93,8 @@
             <airframe>
                 <wing>
                     <punctual_mass>
-                        <y_ratio>[0.99171843, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]</y_ratio>
-                        <mass>[53.1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</mass>
+                        <y_ratio>0.99171843</y_ratio>
+                        <mass>53.1</mass>
                     </punctual_mass>
                 </wing>
                 <landing_gear>

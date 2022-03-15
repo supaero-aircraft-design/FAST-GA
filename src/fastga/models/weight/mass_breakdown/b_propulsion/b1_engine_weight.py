@@ -14,13 +14,10 @@ Estimation of engine and associated component weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
 class ComputeEngineWeight(ExplicitComponent):
@@ -41,17 +38,13 @@ class ComputeEngineWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         # This should give the UNINSTALLED weight
         uninstalled_engine_weight = propulsion_model.compute_weight()

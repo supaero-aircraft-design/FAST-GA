@@ -14,12 +14,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
+import numpy as np
 
 from stdatm import Atmosphere
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
 
-import numpy as np
+from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
+from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT
+
 
 FIRST_INVALID_COEFF = 100.0
 

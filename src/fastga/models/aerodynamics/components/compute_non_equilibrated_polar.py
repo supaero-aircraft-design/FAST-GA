@@ -16,7 +16,7 @@
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.models.aerodynamics.constants import POLAR_POINT_COUNT
+from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT
 
 import numpy as np
 

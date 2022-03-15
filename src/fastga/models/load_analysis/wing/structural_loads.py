@@ -17,32 +17,41 @@ to aero-structural loads.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 from .constants import SUBMODEL_STRUCTURAL_LOADS
 
-from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, ENGINE_COUNT
-
 
 @RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
-class StructuralLoads(AerostructuralLoad):
+class StructuralLoads(om.ExplicitComponent):
     def setup(self):
-        nans_array_orig_vector = np.full(SPAN_MESH_POINT, np.nan)
+
         self.add_input("data:loads:max_shear:load_factor", val=np.nan)
         self.add_input("data:loads:max_rbm:load_factor", val=np.nan)
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
-            val=nans_array_orig_vector,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
             units="m",
         )
         self.add_input(
             "data:aerodynamics:wing:low_speed:chord_vector",
-            val=nans_array_orig_vector,
-            shape=SPAN_MESH_POINT,
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
             units="m",
+        )
+        # This add_input is needed because in the other module of the wing load computation,
+        # the shape of this vector is copied based on the Y_vector and not having it here would
+        # cause the code to crash.
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
 
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
@@ -60,7 +69,10 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:y_ratio", shape=ENGINE_COUNT, val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:engine:y_ratio",
+            shape_by_conn=True,
+        )
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
@@ -72,13 +84,16 @@ class StructuralLoads(AerostructuralLoad):
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
 
         self.add_input(
-            "data:weight:airframe:wing:punctual_mass:y_ratio", shape=ENGINE_COUNT, val=np.nan
+            "data:weight:airframe:wing:punctual_mass:y_ratio",
+            shape_by_conn=True,
+            val=0.0,
         )
         self.add_input(
             "data:weight:airframe:wing:punctual_mass:mass",
-            shape=ENGINE_COUNT,
-            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:weight:airframe:wing:punctual_mass:y_ratio",
             units="kg",
+            val=0.0,
         )
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
@@ -148,23 +163,23 @@ class StructuralLoads(AerostructuralLoad):
         # THE INTERPOLATION WE WILL DO LATER
 
         # Reformat the y_vector array as was done in the aerostructural component
-        y_vector = self.delete_additional_zeros(y_vector)
-        chord_vector = self.delete_additional_zeros(chord_vector)
-        y_vector, _ = self.insert_in_sorted_array(y_vector, 0.0)
+        y_vector = AerostructuralLoad.delete_additional_zeros(y_vector)
+        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector)
+        y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)
         chord_vector = np.insert(chord_vector, 0, root_chord)
-        y_vector_orig, _ = self.insert_in_sorted_array(y_vector, semi_span)
+        y_vector_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, semi_span)
         chord_vector_orig = np.append(chord_vector, tip_chord)
 
         # STEP 3/XX - WE COMPUTE THE BASELINE WEiGHT DISTRIBUTION AND SCALE IT UP ACCORDING TO
         # THE MOST CONSTRAINING CASE IDENTIFIED IN  THE AEROSTRUCTURAL ANALYSIS
 
-        y_vector, point_mass_array_orig = self.compute_relief_force(
+        y_vector, point_mass_array_orig = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector_orig, 0.0, 0.0
         )
-        _, wing_mass_array_orig = self.compute_relief_force(
+        _, wing_mass_array_orig = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector_orig, wing_mass, 0.0, False
         )
-        _, fuel_mass_array_orig = self.compute_relief_force(
+        _, fuel_mass_array_orig = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector_orig, 0.0, fuel_mass, False
         )
 
@@ -183,13 +198,13 @@ class StructuralLoads(AerostructuralLoad):
             "data:loads:structure:ultimate:force_distribution:point_mass"
         ] = point_mass_array_outputs
 
-        point_shear_array = self.compute_shear_diagram(
+        point_shear_array = AerostructuralLoad.compute_shear_diagram(
             y_vector, load_factor_shear * point_mass_array_orig
         )
-        wing_shear_array = self.compute_shear_diagram(
+        wing_shear_array = AerostructuralLoad.compute_shear_diagram(
             y_vector, load_factor_shear * wing_mass_array_orig
         )
-        fuel_shear_array = self.compute_shear_diagram(
+        fuel_shear_array = AerostructuralLoad.compute_shear_diagram(
             y_vector, load_factor_shear * fuel_mass_array_orig
         )
 
@@ -204,13 +219,13 @@ class StructuralLoads(AerostructuralLoad):
         outputs["data:loads:structure:ultimate:shear:fuel"] = fuel_shear_array
         outputs["data:loads:structure:ultimate:shear:point_mass"] = point_shear_array
 
-        point_root_bending_array = self.compute_bending_moment_diagram(
+        point_root_bending_array = AerostructuralLoad.compute_bending_moment_diagram(
             y_vector, load_factor_rbm * point_mass_array_orig
         )
-        wing_root_bending_array = self.compute_bending_moment_diagram(
+        wing_root_bending_array = AerostructuralLoad.compute_bending_moment_diagram(
             y_vector, load_factor_rbm * wing_mass_array_orig
         )
-        fuel_root_bending_array = self.compute_bending_moment_diagram(
+        fuel_root_bending_array = AerostructuralLoad.compute_bending_moment_diagram(
             y_vector, load_factor_rbm * fuel_mass_array_orig
         )
 

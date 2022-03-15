@@ -1,6 +1,4 @@
-"""
-Estimation of the position of the CG that limits takeoff rotation.
-"""
+"""Estimation of the position of the CG that limits takeoff rotation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,7 +19,6 @@ from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
 from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import FuelEngineSet
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
@@ -107,7 +104,6 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
@@ -166,9 +162,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         z_cg_aircraft = inputs["data:weight:aircraft_empty:CG:z"]
         z_cg_engine = inputs["data:weight:propulsion:engine:CG:z"]
 
-        propulsion_model = FuelEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
 
         # Conditions for calculation
         atm = Atmosphere(0.0)
