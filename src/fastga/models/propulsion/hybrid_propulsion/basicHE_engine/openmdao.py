@@ -107,7 +107,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:propulsion:hybrid_powertrain:motor:speed", np.nan, units="rpm")
         component.add_input("data:propulsion:hybrid_powertrain:motor:nominal_torque", np.nan, units="N*m")
         component.add_input("data:propulsion:hybrid_powertrain:motor:max_torque", np.nan, units="N*m")
-        component.add_input("data:propulsion:hybrid_powertrain:power_electronics:n_conv", np.nan)
+        component.add_input("data:propulsion:hybrid_powertrain:power_electronics:efficiency", np.nan)
         component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_power", np.nan, units='W')
         component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow", np.nan, units='kg/s')
         component.add_input("data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power", np.nan, units='W/kg')
@@ -142,7 +142,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "motor_speed": inputs["data:propulsion:hybrid_powertrain:motor:speed"],
             "nominal_torque": inputs["data:propulsion:hybrid_powertrain:motor:nominal_torque"],
             "max_torque": inputs["data:propulsion:hybrid_powertrain:motor:max_torque"],
-            "eta_pe": inputs["data:propulsion:hybrid_powertrain:power_electronics:n_conv"],
+            "eta_pe": inputs["data:propulsion:hybrid_powertrain:power_electronics:efficiency"],
             "fc_des_power": inputs["data:propulsion:hybrid_powertrain:fuel_cell:design_power"],
             "H2_mass_flow": inputs["data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow"],
             "pe_specific_power": inputs["data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power"],

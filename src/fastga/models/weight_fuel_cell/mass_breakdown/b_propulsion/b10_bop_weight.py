@@ -30,8 +30,8 @@ class ComputeBoPWeight(ExplicitComponent):
         self.add_input("data:geometry:hybrid_powertrain:hex:area", val=np.nan, units='m**2')
         self.add_input("data:weight:hybrid_powertrain:fuel_cell:mass", val=np.nan, units="kg")
 
-        self.add_output("data:weight:hybrid_powertrain:compressor:mass", units="kg")
-        self.add_output("data:weight:hybrid_powertrain:hex:radiator_mass", units="kg")
+        self.add_output("data:weight:hybrid_powertrain:bop:compressor:mass", units="kg")
+        self.add_output("data:weight:hybrid_powertrain:bop:hex:radiator_mass", units="kg")
         self.add_output("data:weight:hybrid_powertrain:bop:lc_ss_mass", units="kg")
         self.add_output("data:weight:hybrid_powertrain:bop:total_mass", units="kg")
 
@@ -49,12 +49,12 @@ class ComputeBoPWeight(ExplicitComponent):
         # Compressor
         M_compressor = M_ref * (R / R_ref) ** 3
 
-        outputs['data:weight:hybrid_powertrain:compressor:mass'] = M_compressor
+        outputs['data:weight:hybrid_powertrain:bop:compressor:mass'] = M_compressor
 
         # HEX
         M_hex = radiator_area * 10000 * radiator_surface_density
 
-        outputs['data:weight:hybrid_powertrain:hex:radiator_mass'] = M_hex
+        outputs['data:weight:hybrid_powertrain:bop:hex:radiator_mass'] = M_hex
 
         # FC liquid cooling subsystem : based on https://www.researchgate.net/publication/319935703
         LC_SUBSYSTEM_MASS_FRACTION = 0.17

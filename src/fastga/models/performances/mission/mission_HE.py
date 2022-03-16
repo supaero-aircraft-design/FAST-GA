@@ -482,6 +482,8 @@ class _compute_taxi(om.ExplicitComponent):
             mach=mach, altitude=0.0, engine_setting=EngineSetting.IDLE, thrust_rate=thrust_rate
         )
         flight_point.add_field("battery_power", annotation_type=float)
+        flight_point.add_field("emotor_input_power", annotation_type=float)
+        flight_point.add_field("powertrain_power_input", annotation_type=float)
         propulsion_model.compute_flight_points(flight_point)
         hyd_mass = propulsion_model.get_consumed_mass(flight_point, duration)
 
@@ -623,15 +625,15 @@ class _compute_climb(DynamicEquilibrium):
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate_sl) / float(POINTS_NB_CLIMB)
 
+        # Climb rate interpolation
+        climb_rate_interp = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])
         while altitude_t < cruise_altitude:
 
             # Calculate dynamic pressure
             atm = _Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
-            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
-                altitude_t
-            )
+            climb_rate = climb_rate_interp(altitude_t)
             gamma = math.asin(climb_rate / v_tas)
             mach = v_tas / atm.speed_of_sound
             atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
@@ -655,10 +657,11 @@ class _compute_climb(DynamicEquilibrium):
                 thrust=thrust,
             )
             flight_point.add_field("battery_power", annotation_type=float)
+            flight_point.add_field("emotor_input_power", annotation_type=float)
+            flight_point.add_field("powertrain_power_input", annotation_type=float)
             propulsion_model.compute_flight_points(flight_point)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
-
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -674,6 +677,9 @@ class _compute_climb(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:climb",
+                    flight_point.battery_power,
+                    flight_point.emotor_input_power,
+                    flight_point.powertrain_power_input,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -734,6 +740,9 @@ class _compute_climb(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:climb",
+                flight_point.battery_power,
+                flight_point.emotor_input_power,
+                flight_point.powertrain_power_input,
             )
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
@@ -800,6 +809,7 @@ class _compute_cruise(DynamicEquilibrium):
         # self.add_output("data:mission:sizing:main_route:cruise:battery_capacity_array", shape=POINTS_POWER_COUNT, units="A*h")
         self.add_output("data:mission:sizing:main_route:cruise:distance", units="m")
         self.add_output("data:mission:sizing:main_route:cruise:duration", units="s")
+        self.add_output("data:mission:sizing:main_route:cruise:power_fuel_cell", units="W")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -836,7 +846,7 @@ class _compute_cruise(DynamicEquilibrium):
         # cruise_power = [0]  # Array used to get the maximum value of power at the end
         cruise_time = [0]
         # cruise_capacity = [0]
-        # power_cruise = 0.0
+        cruise_power = [0]
         # cruise_current = [0]  # Array used to get the maximum value of current at the end
         # current_cruise = 0.0
         # bat_capacity_cruise = 0.0
@@ -866,6 +876,8 @@ class _compute_cruise(DynamicEquilibrium):
                 thrust=thrust,
             )
             flight_point.add_field("battery_power", annotation_type=float)
+            flight_point.add_field("emotor_input_power", annotation_type=float)
+            flight_point.add_field("powertrain_power_input", annotation_type=float)
             propulsion_model.compute_flight_points(flight_point)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
@@ -885,6 +897,9 @@ class _compute_cruise(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:cruise",
+                    flight_point.battery_power,
+                    flight_point.emotor_input_power,
+                    flight_point.powertrain_power_input,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -899,8 +914,8 @@ class _compute_cruise(DynamicEquilibrium):
             time_t += min(time_step, (cruise_distance - distance_t) / v_tas)
 
             # # Estimate the battery energy consumption, capacity, current and update cruise duration
-            # cruise_power.append(flight_point.battery_power)
-            # power_cruise = max(cruise_power)
+            cruise_power.append(flight_point.powertrain_power_input)
+            power_cruise = max(cruise_power)
             #
             # cruise_current.append(flight_point.battery_power / system_voltage)
             # current_cruise = max(cruise_current)
@@ -931,24 +946,27 @@ class _compute_cruise(DynamicEquilibrium):
         #     cruise_capacity.append(0)
 
         # Save results
-        if self.options["out_file"] != "":
-            self.save_point(
-                time_t + inputs["data:mission:sizing:main_route:climb:duration"],
-                cruise_altitude,
-                distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
-                mass_t,
-                v_tas,
-                atm.calibrated_airspeed,
-                atm.density,
-                0.0,
-                previous_step,
-                flight_point.thrust_rate,
-                flight_point.sfc,
-                "sizing:main_route:cruise",
-            )
+        # if self.options["out_file"] != "":
+        #     self.save_point(
+        #         time_t + inputs["data:mission:sizing:main_route:climb:duration"],
+        #         cruise_altitude,
+        #         distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
+        #         mass_t,
+        #         v_tas,
+        #         atm.calibrated_airspeed,
+        #         atm.density,
+        #         0.0,
+        #         previous_step,
+        #         flight_point.thrust_rate,
+        #         flight_point.sfc,
+        #         "sizing:main_route:cruise",
+        #         flight_point.battery_power,
+        #         flight_point.emotor_input_power,
+        #         flight_point.powertrain_power_input,
+        #     )
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
-        # outputs["data:mission:sizing:main_route:cruise:power"] = power_cruise
+        outputs["data:mission:sizing:main_route:cruise:power_fuel_cell"] = power_cruise
         # outputs["data:mission:sizing:main_route:cruise:current"] = current_cruise
         # outputs["data:mission:sizing:main_route:cruise:battery_capacity"] = bat_capacity_cruise
         # outputs["data:mission:sizing:main_route:cruise:battery_energy"] = bat_energy_cruise
@@ -1101,6 +1119,8 @@ class _compute_descent(DynamicEquilibrium):
                 thrust=thrust,
             )
             flight_point.add_field("battery_power", annotation_type=float)
+            flight_point.add_field("emotor_input_power", annotation_type=float)
+            flight_point.add_field("powertrain_power_input", annotation_type=float)
             propulsion_model.compute_flight_points(flight_point)
             # Save results
             if self.options["out_file"] != "":
@@ -1121,6 +1141,9 @@ class _compute_descent(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:descent",
+                    flight_point.battery_power,
+                    flight_point.emotor_input_power,
+                    flight_point.powertrain_power_input,
                 )
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
@@ -1183,6 +1206,9 @@ class _compute_descent(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:descent",
+                flight_point.battery_power,
+                flight_point.emotor_input_power,
+                flight_point.powertrain_power_input,
             )
 
         # outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t

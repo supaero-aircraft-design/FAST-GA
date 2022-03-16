@@ -30,6 +30,7 @@ class ComputeFuelCells(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current", val=np.nan, units='A')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:required_power", val=np.nan, units='W')
+        self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", val=40000, units='W')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure", val=np.nan, units='Pa')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure", val=np.nan, units='Pa')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=759.50, units='cm**2')
@@ -61,12 +62,13 @@ class ComputeFuelCells(om.ExplicitComponent):
         nominal_pressure = inputs['data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure']
         fc_type = inputs['data:propulsion:hybrid_powertrain:fuel_cell:fc_type']
         nb_stacks = inputs['data:geometry:hybrid_powertrain:fuel_cell:number_stacks']
+        cruise_power = inputs["data:mission:sizing:main_route:cruise:power_fuel_cell"]
 
         # Creating a FuelCell instance on which all computing methods will be called. This instance encapsulates the
         # computation of all the fuel cell stacks if there are more than 1.
 
         fc = FuelCell(stack_current=design_current,
-                      required_power=required_power,
+                      required_power=max(required_power, cruise_power),
                       compressor_power=compressor_power,
                       stack_pressure=stack_pressure,
                       stack_area=stack_area,

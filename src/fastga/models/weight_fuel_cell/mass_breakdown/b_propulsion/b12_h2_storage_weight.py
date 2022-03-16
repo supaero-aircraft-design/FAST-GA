@@ -26,6 +26,10 @@ class ComputeH2StorageWeight(ExplicitComponent):
         self.add_input("data:geometry:hybrid_powertrain:h2_storage:single_tank_volume", val=np.nan, units='m**3')
         self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume", val=np.nan, units="m**3")
         self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_density", val=np.nan, units='kg/m**3')
+        self.add_input("data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_350b", val=np.nan)
+        self.add_input("data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_700b",val=np.nan)
+        self.add_input("data:propulsion:hybrid_powertrain:h2_storage:pressure",val = np.nan, units='MPa')
+        self.add_input("data:mission:sizing:fuel", val=np.nan, units='kg')
         # self.add_input("data:geometry:hybrid_powertrain:h2_storage:mass_fitting_factor", val=1, units=None,
         #                desc='Parameter to adjust the mass of the fuel tanks arguably too high')
 
@@ -37,8 +41,24 @@ class ComputeH2StorageWeight(ExplicitComponent):
         tank_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:single_tank_volume']
         int_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume']
         density = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_density']
+        grav_cap_350 = inputs["data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_350b"]
+        grav_cap_700 = inputs["data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_700b"]
+        pressure = inputs["data:propulsion:hybrid_powertrain:h2_storage:pressure"]
+        fuel_weight = inputs["data:mission:sizing:fuel"]
         # mass_fit = inputs['data:geometry:hybrid_powertrain:h2_storage:mass_fitting_factor']
 
-        b12 = nb_tanks * (tank_volume - int_volume) * density  # [kg]
+        # Analytic thickness calculation is wrong, following formula to be avoided
+        # b12 = nb_tanks * (tank_volume - int_volume) * density  # [kg]
+
+        # Use this formula until analytic thickness calculation is fixed:
+        if pressure < 35:
+            grav_cap = grav_cap_350
+        elif pressure > 70:
+            grav_cap = grav_cap_700
+        else:
+            grav_cap = np.interp(pressure,[35,70],np.concatenate((grav_cap_350,grav_cap_700)))
+
+        b12 = fuel_weight / grav_cap
+
 
         outputs['data:weight:hybrid_powertrain:h2_storage:mass'] = b12

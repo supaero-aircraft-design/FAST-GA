@@ -189,7 +189,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         # pylint: disable=too-many-arguments  # they define the trajectory
         self.specific_shape = np.shape(flight_points.mach)
         if isinstance(flight_points.mach, float):
-            battery_power, sfc, thrust_rate, thrust = self._compute_flight_points(
+            battery_power, sfc, thrust_rate, thrust, pe_power, pe_power_in = self._compute_flight_points(
                 flight_points.mach,
                 flight_points.altitude,
                 flight_points.engine_setting,
@@ -201,6 +201,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
             flight_points.sfc = sfc
             flight_points.thrust_rate = thrust_rate
             flight_points.thrust = thrust
+            flight_points.emotor_input_power = pe_power
+            flight_points.powertrain_power_input = pe_power_in
         else:
             mach = np.asarray(flight_points.mach)
             altitude = np.asarray(flight_points.altitude).flatten()
@@ -218,7 +220,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             else:
                 thrust = np.asarray(flight_points.thrust).flatten()
             self.specific_shape = np.shape(mach)
-            battery_power, sfc, thrust_rate, thrust = self._compute_flight_points(
+            battery_power, sfc, thrust_rate, thrust, pe_power, pe_power_in = self._compute_flight_points(
                 mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust,
             )
             if len(self.specific_shape) != 1:  # reshape data that is not array form
@@ -230,11 +232,17 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 flight_points.thrust_rate = thrust_rate.reshape(self.specific_shape)
                 # noinspection PyUnresolvedReferences
                 flight_points.thrust = thrust.reshape(self.specific_shape)
+                # noinspection PyUnresolvedReferences
+                flight_points.emotor_input_power = pe_power.reshape(self.specific_shape)
+                # noinspection PyUnresolvedReferences
+                flight_points.powertrain_power_input = pe_power_in.reshape(self.specific_shape)
             else:
                 flight_points.battery_power = battery_power
                 flight_points.sfc = sfc
                 flight_points.thrust_rate = thrust_rate
                 flight_points.thrust = thrust
+                flight_points.emotor_input_power = pe_power
+                flight_points.powertrain_power_input = pe_power_in
 
     def _compute_flight_points(
             self,
@@ -318,16 +326,16 @@ class BasicHEEngine(AbstractHybridPropulsion):
             # pass
         power_losses = (alpha * torque ** 2) + (beta * self.motor_speed ** 1.5)
 
-        pe_power = mech_power + power_losses  # Power received by power electronics
+        pe_power = mech_power + power_losses  # Power received by power electronics*
 
         # Power is fully supplied by battery in descent phase
         battery_power = np.where(
             engine_setting == EngineSetting.IDLE,
             pe_power/self.eta_pe,
-            pe_power/self.eta_pe - self.fc_des_power
+            np.maximum(0, pe_power/self.eta_pe - self.fc_des_power)
         )
 
-        return battery_power, sfc_thrust, out_thrust_rate, out_thrust
+        return battery_power, sfc_thrust, out_thrust_rate, out_thrust, pe_power, pe_power/self.eta_pe
 
     @staticmethod
     def _check_thrust_inputs(
@@ -466,14 +474,12 @@ class BasicHEEngine(AbstractHybridPropulsion):
     def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
         """
         Compute engine maximum power @ given flight-point.
-        !FIX ME! : This is true only for air breathing engines
+        !FIX ME! : why is there a dependency on the air density?
         :param flight_points: current flight point(s)
         :return: maximum power in kW
         """
 
-        atmosphere = Atmosphere(np.asarray(flight_points.altitude), altitude_in_feet=False)
-        sigma = atmosphere.density / Atmosphere(0.0).density
-        max_power = (self.max_power / 1e3) * (sigma - (1 - sigma) / 7.55)  # max power in kW
+        max_power = (self.max_power / 1e3)  # max power in kW
 
         return max_power
 
@@ -543,7 +549,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         # calculates first thrust interpolation vector (between min and max of propeller table) and associated
         # efficiency, then calculates power and found thrust (interpolation limits to max propeller thrust)
         sigma = atmosphere.density / Atmosphere(0.0).density
-        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
+        max_power = self.max_power
         thrust_interp = np.linspace(np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
                                     thrust_max_propeller, 10).transpose()
         if np.size(altitude) == 1:  # Calculate for float
