@@ -562,6 +562,7 @@ class _compute_climb(DynamicEquilibrium):
         self.add_output("data:mission:sizing:main_route:climb:battery_power_array", shape=POINTS_POWER_COUNT, units="W")
         self.add_output("data:mission:sizing:main_route:climb:battery_time_array", shape=POINTS_POWER_COUNT, units="h")
         self.add_output("data:mission:sizing:main_route:climb:battery_capacity_array", shape=POINTS_POWER_COUNT, units="A*h")
+        self.add_output("data:mission:sizing:main_route:climb:max_emotor_input_power", units="W")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -605,10 +606,11 @@ class _compute_climb(DynamicEquilibrium):
         climb_current = [0]  # Array used to get the maximum value of current
         current_climb = 0.0
         bat_energy_climb = 0.0
-        climb_power = [0]  # Array used to get the maximum value of power
+        battery_power_climb_array = [0]  # Array used to get the maximum value of power
+        emotor_power_input = 0
         climb_time = [0]
         climb_capacity = [0]
-        power_climb = 0.0
+        battery_power_climb = 0.0
         atm_0 = Atmosphere(0.0)
         previous_step = ()
 
@@ -660,6 +662,7 @@ class _compute_climb(DynamicEquilibrium):
             flight_point.add_field("emotor_input_power", annotation_type=float)
             flight_point.add_field("powertrain_power_input", annotation_type=float)
             propulsion_model.compute_flight_points(flight_point)
+            emotor_power_input = max(emotor_power_input, flight_point.emotor_input_power)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
             # Save results
@@ -697,9 +700,9 @@ class _compute_climb(DynamicEquilibrium):
             time_t += time_step
 
             # Estimate battery energy and update time
-            climb_power.append(flight_point.battery_power)
+            battery_power_climb_array.append(flight_point.battery_power)
 
-            power_climb = max(climb_power)
+            battery_power_climb = max(battery_power_climb_array)
             climb_current.append(flight_point.battery_power / system_voltage)
             current_climb = max(climb_current)
 
@@ -720,8 +723,8 @@ class _compute_climb(DynamicEquilibrium):
                 )
 
         # Add additional zeros in the power array to meet the plot requirements during post-processing
-        while len(climb_power) < POINTS_POWER_COUNT:
-            climb_power.append(0)
+        while len(battery_power_climb_array) < POINTS_POWER_COUNT:
+            battery_power_climb_array.append(0)
             climb_time.append(0)
             climb_capacity.append(0)
 
@@ -749,13 +752,14 @@ class _compute_climb(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
         outputs["data:mission:sizing:main_route:climb:duration"] = time_t
         outputs["data:mission:sizing:main_route:climb:v_cas"] = v_cas
-        outputs["data:mission:sizing:main_route:climb:battery_power"] = power_climb
+        outputs["data:mission:sizing:main_route:climb:battery_power"] = battery_power_climb
         outputs["data:mission:sizing:main_route:climb:battery_current"] = current_climb
         outputs["data:mission:sizing:main_route:climb:battery_capacity"] = bat_capacity
         outputs["data:mission:sizing:main_route:climb:battery_energy"] = bat_energy_climb
-        outputs["data:mission:sizing:main_route:climb:battery_power_array"] = climb_power
+        outputs["data:mission:sizing:main_route:climb:battery_power_array"] = battery_power_climb_array
         outputs["data:mission:sizing:main_route:climb:battery_time_array"] = climb_time
         outputs["data:mission:sizing:main_route:climb:battery_capacity_array"] = climb_capacity
+        outputs["data:mission:sizing:main_route:climb:max_emotor_input_power"] = emotor_power_input
 
 
 class _compute_cruise(DynamicEquilibrium):
@@ -1084,7 +1088,7 @@ class _compute_descent(DynamicEquilibrium):
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = abs((altitude_t / descent_rate)) / float(POINTS_NB_DESCENT)
 
-        while altitude_t > 0.0:
+        while altitude_t > 1.0:
 
             # Calculate dynamic pressure
             atm = _Atmosphere(altitude_t, altitude_in_feet=False)
