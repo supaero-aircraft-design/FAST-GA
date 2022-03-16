@@ -23,6 +23,7 @@ from ..a_airframe import (
     ComputeFuselageWeightRaymer,
     ComputeWingWeight,
     ComputeLandingGearWeight,
+    ComputePaintWeight,
 )
 from ..a_airframe.sum import AirframeWeight
 from ..b_propulsion import (
@@ -134,6 +135,17 @@ def test_compute_landing_gear_weight():
     assert weight_a51 == pytest.approx(39.68, abs=1e-2)
     weight_a52 = problem.get_val("data:weight:airframe:landing_gear:front:mass", units="kg")
     assert weight_a52 == pytest.approx(16.49, abs=1e-2)
+
+
+def test_compute_paint_weight():
+    """Tests landing gear weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputePaintWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputePaintWeight(), ivc)
+    weight_a7 = problem.get_val("data:weight:airframe:paint:mass", units="kg")
+    assert weight_a7 == pytest.approx(19.56, abs=1e-2)
 
 
 def test_compute_airframe_weight():

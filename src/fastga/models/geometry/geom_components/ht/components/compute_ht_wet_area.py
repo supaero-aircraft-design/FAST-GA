@@ -43,9 +43,9 @@ class ComputeHTWetArea(ExplicitComponent):
         tail_type = inputs["data:geometry:has_T_tail"]
 
         if tail_type == 1.0:
-            wet_area_coeff = 1.6 * 1.05  # k_b coef from Gudmunnson p.707
+            wet_area_coeff = 1.6 * 1.05  # k_b coeff from Gudmunnson p.707
         else:
-            wet_area_coeff = 2.0 * 1.05  # k_b coef from Gudmunnson p.707
+            wet_area_coeff = 2.0 * 1.05  # k_b coeff from Gudmunnson p.707
         wet_area = wet_area_coeff * area
 
         outputs["data:geometry:horizontal_tail:wet_area"] = wet_area

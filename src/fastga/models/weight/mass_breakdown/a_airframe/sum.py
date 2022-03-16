@@ -22,6 +22,7 @@ from .constants import (
     SUBMODEL_TAIL_MASS,
     SUBMODEL_FLIGHT_CONTROLS_MASS,
     SUBMODEL_LANDING_GEAR_MASS,
+    SUBMODEL_PAINT_MASS,
 )
 
 from ..constants import SUBMODEL_AIRFRAME_MASS
@@ -53,6 +54,11 @@ class AirframeWeight(om.Group):
             RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_MASS),
             promotes=["*"],
         )
+        self.add_subsystem(
+            "paint_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_PAINT_MASS),
+            promotes=["*"],
+        )
 
         weight_sum = om.AddSubtractComp()
         weight_sum.add_equation(
@@ -65,6 +71,7 @@ class AirframeWeight(om.Group):
                 "data:weight:airframe:flight_controls:mass",
                 "data:weight:airframe:landing_gear:main:mass",
                 "data:weight:airframe:landing_gear:front:mass",
+                "data:weight:airframe:paint:mass",
             ],
             units="kg",
             desc="Mass of the airframe",
