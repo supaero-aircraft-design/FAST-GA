@@ -18,6 +18,7 @@ import pytest
 
 from ..a_airframe import (
     ComputeTailWeight,
+    ComputeTailWeightGD,
     ComputeFlightControlsWeight,
     ComputeFuselageWeight,
     ComputeFuselageWeightRaymer,
@@ -111,6 +112,19 @@ def test_compute_empennage_weight():
     assert weight_a31 == pytest.approx(13.84, abs=1e-2)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(9.29, abs=1e-2)
+
+
+def test_compute_empennage_weight_gd():
+    """Tests empennage weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeTailWeightGD()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeTailWeightGD(), ivc)
+    weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
+    assert weight_a31 == pytest.approx(9.90, abs=1e-2)
+    weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
+    assert weight_a32 == pytest.approx(6.78, abs=1e-2)
 
 
 def test_compute_flight_controls_weight():
