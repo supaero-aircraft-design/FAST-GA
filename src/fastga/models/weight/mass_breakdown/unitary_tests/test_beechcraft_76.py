@@ -20,6 +20,7 @@ from ..a_airframe import (
     ComputeTailWeight,
     ComputeTailWeightGD,
     ComputeFlightControlsWeight,
+    ComputeFlightControlsWeightFLOPS,
     ComputeFuselageWeight,
     ComputeFuselageWeightRaymer,
     ComputeFuselageMassAnalytical,
@@ -330,6 +331,17 @@ def test_compute_flight_controls_weight():
     problem = run_system(ComputeFlightControlsWeight(), ivc)
     weight_a4 = problem.get_val("data:weight:airframe:flight_controls:mass", units="kg")
     assert weight_a4 == pytest.approx(31.80, abs=1e-2)
+
+
+def test_compute_flight_controls_weight_flops():
+    """Tests flight controls weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFlightControlsWeightFLOPS()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFlightControlsWeightFLOPS(), ivc)
+    weight_a4 = problem.get_val("data:weight:airframe:flight_controls:mass", units="kg")
+    assert weight_a4 == pytest.approx(30.67, abs=1e-2)
 
 
 def test_compute_landing_gear_weight():

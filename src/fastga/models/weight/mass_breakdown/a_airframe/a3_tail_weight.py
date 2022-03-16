@@ -43,7 +43,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
         self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
-        self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
@@ -77,8 +77,8 @@ class ComputeTailWeight(om.ExplicitComponent):
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
 
-        rho_cruise = Atmosphere(cruise_alt).density
-        dynamic_pressure = 1.0 / 2.0 * rho_cruise * (v_cruise_ktas * 0.5144) ** 2.0 * 0.0208854
+        rho_cruise = Atmosphere(cruise_alt, altitude_in_feet=True).density
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise_ktas ** 2.0 * 0.0208854
         # In lb/ft2
 
         a31 = 0.016 * (
