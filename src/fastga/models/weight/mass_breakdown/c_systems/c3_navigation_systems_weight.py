@@ -39,7 +39,7 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
 
-        self.add_output("data:weight:systems:navigation:mass", units="lb")
+        self.add_output("data:weight:systems:avionics:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -58,4 +58,4 @@ class ComputeNavigationSystemsWeight(ExplicitComponent):
         else:
             c3 = 40 + 0.008 * mtow  # mass formula in lb
 
-        outputs["data:weight:systems:navigation:mass"] = c3
+        outputs["data:weight:systems:avionics:mass"] = c3

@@ -27,7 +27,7 @@ data:weight:propulsion:engine:CG:z || Z-position of center of gravity of the eng
 data:weight:propulsion:fuel_lines:CG:x || X-position of center of gravity of the fuel lines
 data:weight:propulsion:tank:CG:x || X-position of center of gravity of the tank
 data:weight:systems:life_support:air_conditioning:CG:x || X-position of center of gravity of the air conditioning
-data:weight:systems:navigation:CG:x || X-position of center of gravity of the navigation system
+data:weight:systems:avionics:CG:x || X-position of center of gravity of the navigation system
 data:weight:systems:power:electric_systems:CG:x || X-position of center of gravity of the electric power unit
 data:weight:systems:power:hydraulic_systems:CG:x || X-position of center of gravity of the hydraulic power unit
 

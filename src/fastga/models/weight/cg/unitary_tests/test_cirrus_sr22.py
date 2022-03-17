@@ -182,7 +182,7 @@ def test_compute_cg_navigation_systems():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeNavigationSystemsCG(), ivc)
-    x_cg_c3 = problem.get_val("data:weight:systems:navigation:CG:x", units="m")
+    x_cg_c3 = problem.get_val("data:weight:systems:avionics:CG:x", units="m")
     assert x_cg_c3 == pytest.approx(1.79, abs=1e-2)
 
 

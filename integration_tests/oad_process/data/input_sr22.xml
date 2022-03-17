@@ -210,9 +210,9 @@
         <wing>
           <k_factor>0.925<!--proportional corrective factor for wing mass--></k_factor>
           <punctual_mass>
-                        <y_ratio>0.0</y_ratio>
-                        <mass>0.0</mass>
-                    </punctual_mass>
+            <mass>0.0</mass>
+            <y_ratio>0.0</y_ratio>
+          </punctual_mass>
         </wing>
       </airframe>
     </weight>

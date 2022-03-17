@@ -472,7 +472,7 @@ def test_compute_navigation_systems_weight():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeNavigationSystemsWeight(), ivc)
-    weight_c3 = problem.get_val("data:weight:systems:navigation:mass", units="kg")
+    weight_c3 = problem.get_val("data:weight:systems:avionics:mass", units="kg")
     assert weight_c3 == pytest.approx(32.29, abs=1e-2)
 
 

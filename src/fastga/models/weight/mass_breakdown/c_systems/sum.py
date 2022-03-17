@@ -67,7 +67,7 @@ class SystemsWeight(om.Group):
                 "data:weight:systems:life_support:seat_installation:mass",
                 "data:weight:systems:life_support:fixed_oxygen:mass",
                 "data:weight:systems:life_support:security_kits:mass",
-                "data:weight:systems:navigation:mass",
+                "data:weight:systems:avionics:mass",
             ],
             units="kg",
             desc="Mass of aircraft systems",

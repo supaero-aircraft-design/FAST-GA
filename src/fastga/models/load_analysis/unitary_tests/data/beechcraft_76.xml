@@ -517,22 +517,22 @@
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
-          <flight_domain>
-            <mtow>
-              <load_factor>[1.0,-1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 3.8, -1.52, 3.8, 0.0, 2.80478191, -0.80478191, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
-              <velocity units="m/s">[34.68847613,45.76289206,67.62028859,56.42028253,0.0,0.0,77.99808042,77.99808042,77.99808042,109.13915703,109.13915703,109.13915703,109.13915703,98.22524132,77.99808042,0.0,30.87129503,43.65860412,55.56833105]</velocity>
-            </mtow>
-            <mzfw>
-              <load_factor>[1.0,-1.0,3.8,-1.52,0.0,0.0,-1.52,3.8,-1.52,3.8,0.0,2.80478191,-0.80478191,0.0,0.0,0.0,1.0,2.0,2.0]</load_factor>
-              <velocity units="m/s">[34.68847613,45.76289206,67.62028859,56.42028253,0.0,0.0,77.99808042,77.99808042,77.99808042,109.13915703,109.13915703,109.13915703,109.13915703,98.22524132,77.99808042,0.0,30.87129503,43.65860412,55.56833105]</velocity>
-            </mzfw>
-          </flight_domain>
           <characteristic_speed>
             <vd units="knot" is_input="True">194.0<!--limit speed--></vd>
           </characteristic_speed>
           <sizing_factor>
             <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
           </sizing_factor>
+          <flight_domain>
+            <mtow>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 3.8, -1.52, 3.8, 0.0, 2.80478191, -0.80478191, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[34.68847613, 45.76289206, 67.62028859, 56.42028253, 0.0, 0.0, 77.99808042, 77.99808042, 77.99808042, 109.13915703, 109.13915703, 109.13915703, 109.13915703, 98.22524132, 77.99808042, 0.0, 30.87129503, 43.65860412, 55.56833105]</velocity>
+            </mtow>
+            <mzfw>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 3.8, -1.52, 3.8, 0.0, 2.80478191, -0.80478191, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[34.68847613, 45.76289206, 67.62028859, 56.42028253, 0.0, 0.0, 77.99808042, 77.99808042, 77.99808042, 109.13915703, 109.13915703, 109.13915703, 109.13915703, 98.22524132, 77.99808042, 0.0, 30.87129503, 43.65860412, 55.56833105]</velocity>
+            </mzfw>
+          </flight_domain>
         </cs23>
         <main_route>
           <climb>
@@ -663,8 +663,8 @@
             <x units="m" is_input="False">3.7047580077380493<!--wing (A1): X-position of center of gravity--></x>
           </CG>
           <punctual_mass>
-              <y_ratio>0.0</y_ratio>
-              <mass>0.0</mass>
+            <mass>0.0</mass>
+            <y_ratio>0.0</y_ratio>
           </punctual_mass>
         </wing>
         <landing_gear>
@@ -718,12 +718,12 @@
       </propulsion>
       <systems>
         <mass units="kg" is_input="False">179.37951350940276<!--Mass of aircraft systems--></mass>
-        <navigation>
+        <avionics>
           <mass units="lbm" is_input="False">70.8092336129646<!--navigation (C3): mass--></mass>
           <CG>
             <x units="m" is_input="False">2.22292<!--navigation (C3): X-position of center of gravity--></x>
           </CG>
-        </navigation>
+        </avionics>
         <life_support>
           <air_conditioning>
             <mass units="lbm" is_input="False">93.332904377508<!--air conditioning (C2): mass--></mass>
