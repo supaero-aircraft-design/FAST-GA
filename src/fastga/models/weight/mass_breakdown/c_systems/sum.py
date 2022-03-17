@@ -19,7 +19,7 @@ from fastoad.module_management.service_registry import RegisterSubmodel
 from .constants import (
     SUBMODEL_POWER_SYSTEM_MASS,
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
-    SUBMODEL_NAVIGATION_SYSTEM_MASS,
+    SUBMODEL_AVIONICS_SYSTEM_MASS,
 )
 
 from ..constants import SUBMODEL_SYSTEMS_MASS
@@ -50,7 +50,7 @@ class SystemsWeight(om.Group):
         )
         self.add_subsystem(
             "navigation_systems_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEM_MASS),
+            RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
             promotes=["*"],
         )
 

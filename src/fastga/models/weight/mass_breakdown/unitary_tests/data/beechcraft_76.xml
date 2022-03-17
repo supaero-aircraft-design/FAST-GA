@@ -760,6 +760,7 @@
         <mass units="kg" is_input="False">179.37951350940276<!--Mass of aircraft systems--></mass>
         <avionics>
           <mass units="lbm" is_input="False">70.8092336129646<!--navigation (C3): mass--></mass>
+          <mass_uninstalled units="lbm" is_input="False">45.0<!--navigation (C3): mass--></mass_uninstalled>
           <CG>
             <x units="m" is_input="False">2.22292<!--navigation (C3): X-position of center of gravity--></x>
           </CG>

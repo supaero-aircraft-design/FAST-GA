@@ -66,8 +66,9 @@ from ..b_propulsion import (
 from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
-    ComputeNavigationSystemsWeight,
+    ComputeAvionicsSystemsWeight,
     ComputePowerSystemsWeight,
+    ComputeAvionicsSystemsWeightFromUninstalled,
 )
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
@@ -465,15 +466,29 @@ def test_compute_propulsion_weight():
     assert weight_b == pytest.approx(414.46, abs=1e-2)
 
 
-def test_compute_navigation_systems_weight():
+def test_compute_avionics_systems_weight():
     """Tests navigation systems weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeNavigationSystemsWeight()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeAvionicsSystemsWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeNavigationSystemsWeight(), ivc)
+    problem = run_system(ComputeAvionicsSystemsWeight(), ivc)
     weight_c3 = problem.get_val("data:weight:systems:avionics:mass", units="kg")
     assert weight_c3 == pytest.approx(32.29, abs=1e-2)
+
+
+def test_compute_avionics_systems_weight():
+    """Tests navigation systems weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeAvionicsSystemsWeightFromUninstalled()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAvionicsSystemsWeightFromUninstalled(), ivc)
+    weight_c3 = problem.get_val("data:weight:systems:avionics:mass", units="kg")
+    assert weight_c3 == pytest.approx(33.37, abs=1e-2)
 
 
 def test_compute_power_systems_weight():
