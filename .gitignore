@@ -70,3 +70,4 @@ venv*/
 
 # Private files
 **/private/**
+/devutils/

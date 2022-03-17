@@ -17,7 +17,6 @@ Estimation of navigation systems weight.
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from stdatm import Atmosphere
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_NAVIGATION_SYSTEM_MASS
