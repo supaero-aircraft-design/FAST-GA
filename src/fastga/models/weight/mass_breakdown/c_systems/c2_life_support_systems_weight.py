@@ -248,31 +248,28 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         m_iae = inputs["data:weight:systems:avionics:mass"]
         limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
         fus_width = inputs["data:geometry:fuselage:maximum_height"]
         fus_height = inputs["data:geometry:fuselage:maximum_width"]
-        fus_length = inputs["data:geometry:fuselage:length"]
 
         span = inputs["data:geometry:wing:span"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
-        nac_height = inputs["data:geometry:propulsion:nacelle:height"]
-        nac_width = inputs["data:geometry:propulsion:nacelle:width"]
         engine_number = inputs["data:geometry:propulsion:engine:count"]
 
-        nac_diameter = (nac_height + nac_width) / 2.0
+        nac_diameter = (
+            inputs["data:geometry:propulsion:nacelle:height"]
+            + inputs["data:geometry:propulsion:nacelle:width"]
+        ) / 2.0
 
-        fus_planform = fus_width * fus_length
+        fus_planform = fus_width * inputs["data:geometry:fuselage:length"]
 
-        n_occ = n_pax + 2.0
+        n_occ = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
         # Because there are two pilots that needs to be taken into account
 
         atm = Atmosphere(cruise_alt, altitude_in_feet=True)
         limit_mach = limit_speed / atm.speed_of_sound  # converted to mach
-
-        c21 = 0.0
 
         c22 = (
             3.2 * (fus_planform * fus_height) ** 0.6 + 9 * n_occ ** 0.83
@@ -280,20 +277,16 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         # mass formula in lb
 
         c23 = span / math.cos(sweep_25) + 3.8 * nac_diameter * engine_number + 1.5 * fus_width
-        c24 = 0.0
-        c25 = 0.0
 
         c26 = 7.0 * n_occ ** 0.702
 
-        c27 = 0.0
-
-        outputs["data:weight:systems:life_support:insulation:mass"] = c21
+        outputs["data:weight:systems:life_support:insulation:mass"] = 0.0
         outputs["data:weight:systems:life_support:air_conditioning:mass"] = c22
         outputs["data:weight:systems:life_support:de_icing:mass"] = c23
-        outputs["data:weight:systems:life_support:internal_lighting:mass"] = c24
-        outputs["data:weight:systems:life_support:seat_installation:mass"] = c25
+        outputs["data:weight:systems:life_support:internal_lighting:mass"] = 0.0
+        outputs["data:weight:systems:life_support:seat_installation:mass"] = 0.0
         outputs["data:weight:systems:life_support:fixed_oxygen:mass"] = c26
-        outputs["data:weight:systems:life_support:security_kits:mass"] = c27
+        outputs["data:weight:systems:life_support:security_kits:mass"] = 0.0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 

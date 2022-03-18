@@ -12,6 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# flake8: noqa
+
 from .a1_wing_weight import ComputeWingWeight
 from .a1_wing_weight_analytical import ComputeWingMassAnalytical
 from .a2_fuselage_weight import ComputeFuselageWeight

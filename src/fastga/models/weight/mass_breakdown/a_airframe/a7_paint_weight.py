@@ -43,7 +43,7 @@ class ComputeNoPaintWeight(om.IndepVarComp):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        outputs["data:weight:airframe:paint:mass"] = 0.0
+        outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
 
 
 @RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
