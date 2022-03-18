@@ -17,7 +17,7 @@ submodels:
     submodel.weight.mass.propulsion : fastga.submodel.weight.mass.propulsion.hybrid.fuelcell
     submodel.weight.cg.propulsion : fastga.submodel.weight.cg.propulsion.hybrid.fuelcell
     submodel.weight.cg.propulsion.tank: fastga.submodel.weight.cg.propulsion.tank.gh2
-    submodel.aerodynamics.other.cd0: fastga.submodel.aerodynamics.other.cd0.fuel_cell
+    submodel.aerodynamics.other.cd0: fastga.submodel.aerodynamics.other.cd0.legacy
 
 model:
     # propeller:
