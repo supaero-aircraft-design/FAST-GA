@@ -39,6 +39,7 @@ from ..b_propulsion import (
 from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
+    ComputeLifeSupportSystemsWeightFLOPS,
     ComputeAvionicsSystemsWeight,
     ComputePowerSystemsWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
@@ -284,7 +285,7 @@ def test_compute_avionics_systems_weight():
     assert weight_c3 == pytest.approx(59.874, abs=1e-2)
 
 
-def test_compute_avionics_systems_weight():
+def test_compute_avionics_systems_weight_from_uninstalled():
     """Tests navigation systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
@@ -328,6 +329,38 @@ def test_compute_life_support_systems_weight():
     assert weight_c22 == pytest.approx(45.31, abs=1e-2)
     weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
     assert weight_c23 == pytest.approx(0.0, abs=1e-2)
+    weight_c24 = problem.get_val(
+        "data:weight:systems:life_support:internal_lighting:mass", units="kg"
+    )
+    assert weight_c24 == pytest.approx(0.0, abs=1e-2)
+    weight_c25 = problem.get_val(
+        "data:weight:systems:life_support:seat_installation:mass", units="kg"
+    )
+    assert weight_c25 == pytest.approx(0.0, abs=1e-2)
+    weight_c26 = problem.get_val("data:weight:systems:life_support:fixed_oxygen:mass", units="kg")
+    assert weight_c26 == pytest.approx(8.40, abs=1e-2)
+    weight_c27 = problem.get_val("data:weight:systems:life_support:security_kits:mass", units="kg")
+    assert weight_c27 == pytest.approx(0.0, abs=1e-2)
+
+
+def test_compute_life_support_systems_weight_flops():
+    """Tests life support systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeLifeSupportSystemsWeightFLOPS()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeLifeSupportSystemsWeightFLOPS(), ivc)
+    weight_c21 = problem.get_val("data:weight:systems:life_support:insulation:mass", units="kg")
+    assert weight_c21 == pytest.approx(0.0, abs=1e-2)
+    weight_c22 = problem.get_val(
+        "data:weight:systems:life_support:air_conditioning:mass", units="kg"
+    )
+    assert weight_c22 == pytest.approx(27.02, abs=1e-2)
+    weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
+    assert weight_c23 == pytest.approx(25.73, abs=1e-2)
     weight_c24 = problem.get_val(
         "data:weight:systems:life_support:internal_lighting:mass", units="kg"
     )

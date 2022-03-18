@@ -12,7 +12,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .c1_power_systems_weight import ComputePowerSystemsWeight
-from .c2_life_support_systems_weight import ComputeLifeSupportSystemsWeight
+from .c2_life_support_systems_weight import (
+    ComputeLifeSupportSystemsWeight,
+    ComputeLifeSupportSystemsWeightFLOPS,
+)
 from .c3_avionics_systems_weight import (
     ComputeAvionicsSystemsWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
