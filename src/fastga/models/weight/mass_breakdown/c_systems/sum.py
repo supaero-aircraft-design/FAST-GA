@@ -20,6 +20,7 @@ from .constants import (
     SUBMODEL_POWER_SYSTEM_MASS,
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
     SUBMODEL_AVIONICS_SYSTEM_MASS,
+    SUBMODEL_RECORDING_SYSTEM_MASS,
 )
 
 from ..constants import SUBMODEL_SYSTEMS_MASS
@@ -53,6 +54,11 @@ class SystemsWeight(om.Group):
             RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
             promotes=["*"],
         )
+        self.add_subsystem(
+            "recording_systems_weight",
+            RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEM_MASS),
+            promotes=["*"],
+        )
 
         weight_sum = om.AddSubtractComp()
         weight_sum.add_equation(
@@ -68,6 +74,7 @@ class SystemsWeight(om.Group):
                 "data:weight:systems:life_support:fixed_oxygen:mass",
                 "data:weight:systems:life_support:security_kits:mass",
                 "data:weight:systems:avionics:mass",
+                "data:weight:systems:recording:mass",
             ],
             units="kg",
             desc="Mass of aircraft systems",

@@ -20,3 +20,4 @@ from .c3_avionics_systems_weight import (
     ComputeAvionicsSystemsWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
 )
+from .c4_recording_systems_weight import ComputeRecordingSystemsWeight

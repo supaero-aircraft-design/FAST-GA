@@ -15,3 +15,4 @@
 SUBMODEL_POWER_SYSTEM_MASS = "submodel.weight.mass.system.power_system"
 SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS = "submodel.weight.mass.system.life_support_system"
 SUBMODEL_AVIONICS_SYSTEM_MASS = "submodel.weight.mass.system.avionics_system"
+SUBMODEL_RECORDING_SYSTEM_MASS = "submodel.weight.mass.system.recording_system"

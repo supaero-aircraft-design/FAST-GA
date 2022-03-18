@@ -70,6 +70,7 @@ from ..c_systems import (
     ComputeAvionicsSystemsWeight,
     ComputePowerSystemsWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
+    ComputeRecordingSystemsWeight,
 )
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
@@ -566,6 +567,18 @@ def test_compute_life_support_systems_weight_flops():
     assert weight_c26 == pytest.approx(8.40, abs=1e-2)
     weight_c27 = problem.get_val("data:weight:systems:life_support:security_kits:mass", units="kg")
     assert weight_c27 == pytest.approx(0.0, abs=1e-2)
+
+
+def test_compute_recording_systems_weight():
+    """Tests power systems weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeRecordingSystemsWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeRecordingSystemsWeight(), ivc)
+    weight_c12 = problem.get_val("data:weight:systems:recording:mass", units="kg")
+    assert weight_c12 == pytest.approx(0.0, abs=1e-2)
 
 
 def test_compute_systems_weight():
