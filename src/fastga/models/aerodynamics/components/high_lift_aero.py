@@ -12,10 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import math
 
 from typing import Union, Tuple
+
+import numpy as np
 
 from scipy import interpolate
 
@@ -221,11 +222,11 @@ class ComputeDeltaHighLift(FigureDigitization):
         eta_out = ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing)) / (
             span_wing / 2.0 - y2_wing
         )
-        kb = self.k_b_flaps(eta_in, eta_out, taper_ratio_wing)
+        k_b = self.k_b_flaps(eta_in, eta_out, taper_ratio_wing)
         a_delta_flap = self.a_delta_airfoil(float(inputs["data:geometry:flap:chord_ratio"]))
         k_a_delta = self.k_a_delta(a_delta_flap, aspect_ratio_wing)
         delta_cl0_flaps = (
-            kb * delta_cl_airfoil * (cl_alpha_wing / cl_alpha_airfoil_wing) * k_a_delta
+            k_b * delta_cl_airfoil * (cl_alpha_wing / cl_alpha_airfoil_wing) * k_a_delta
         )
         delta_cl_max_flaps = self._compute_delta_cl_max_flaps(inputs, flap_angle)
 
@@ -312,10 +313,10 @@ class ComputeDeltaHighLift(FigureDigitization):
             k1_0_30 = (
                 -0.000 * chord_ratio ** 3 + 4.694 * chord_ratio ** 2 + 4.372 * chord_ratio - 0.0031
             )
-            k1 = interpolate.interp1d(
+            flap_chord_contribution = interpolate.interp1d(
                 [0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)]
             )(np.clip(thickness_ratio, 0.12, 0.30))
-            k2 = (
+            flap_deflection_contribution = (
                 -3.795e-7 * flap_angle ** 3
                 + 5.387e-5 * flap_angle ** 2
                 + 6.843e-4 * flap_angle
@@ -337,9 +338,9 @@ class ComputeDeltaHighLift(FigureDigitization):
                 + 3.4564 * chord_ratio
                 - 0.0054
             )
-            k1 = interpolate.interp1d([0.12, 0.21], [float(k1_0_12), float(k1_0_21)])(
-                np.clip(thickness_ratio, 0.12, 0.21)
-            )
+            flap_chord_contribution = interpolate.interp1d(
+                [0.12, 0.21], [float(k1_0_12), float(k1_0_21)]
+            )(np.clip(thickness_ratio, 0.12, 0.21))
             k2_0_12 = (
                 -3.9877e-12 * flap_angle ** 6
                 + 1.1685e-9 * flap_angle ** 5
@@ -367,7 +368,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                 - 41677e-3 * flap_angle
                 + 6.749e-4
             )
-            k2 = interpolate.interp1d(
+            flap_deflection_contribution = interpolate.interp1d(
                 [0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)]
             )(np.clip(thickness_ratio, 0.12, 0.30))
 
@@ -384,7 +385,7 @@ class ComputeDeltaHighLift(FigureDigitization):
             k1_0_30 = (
                 -0.000 * chord_ratio ** 3 + 4.694 * chord_ratio ** 2 + 4.372 * chord_ratio - 0.0031
             )
-            k1 = interpolate.interp1d(
+            flap_chord_contribution = interpolate.interp1d(
                 [0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)]
             )(np.clip(thickness_ratio, 0.12, 0.30))
             k2_0_12 = (
@@ -405,10 +406,10 @@ class ComputeDeltaHighLift(FigureDigitization):
                 - 1.2443e-4 * flap_angle
                 + 5.1647e-4
             )
-            k2 = interpolate.interp1d(
+            flap_deflection_contribution = interpolate.interp1d(
                 [0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)]
             )(np.clip(thickness_ratio, 0.12, 0.30))
-        delta_cd_flaps = k1 * k2 * area_ratio
+        delta_cd_flaps = flap_chord_contribution * flap_deflection_contribution * area_ratio
 
         return delta_cd_flaps
 
@@ -459,12 +460,19 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_area_ratio = self._compute_flap_area_ratio(inputs)
 
         base_increment = self.base_max_lift_increment(el_aero * 100.0, flap_type)
-        k1 = self.k1_max_lift(flap_chord_ratio * 100.0, flap_type)
-        k2 = self.k2_max_lift(flap_angle, flap_type)
-        k3 = self.k3_max_lift(flap_angle, flap_type)
+        flap_chord_factor = self.k1_max_lift(flap_chord_ratio * 100.0, flap_type)
+        flap_angle_factor = self.k2_max_lift(flap_angle, flap_type)
+        flap_motion_factor = self.k3_max_lift(flap_angle, flap_type)
 
         k_planform = (1.0 - 0.08 * math.cos(sweep_25) ** 2.0) * math.cos(sweep_25) ** (3.0 / 4.0)
-        delta_cl_max_flaps = base_increment * k1 * k2 * k3 * k_planform * flap_area_ratio
+        delta_cl_max_flaps = (
+            base_increment
+            * flap_chord_factor
+            * flap_angle_factor
+            * flap_motion_factor
+            * k_planform
+            * flap_area_ratio
+        )
 
         return delta_cl_max_flaps
 

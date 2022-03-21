@@ -290,20 +290,21 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
-        limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
-        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
         fus_width = inputs["data:geometry:fuselage:maximum_height"]
         fus_height = inputs["data:geometry:fuselage:maximum_width"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
         fus_planform = fus_width * fus_length
 
-        n_occ = n_pax + 2.0
+        n_occ = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
         # Because there are two pilots that needs to be taken into account
 
-        speed_of_sound = Atmosphere(cruise_alt, altitude_in_feet=True).speed_of_sound
-        limit_mach = limit_speed / speed_of_sound  # converted to mach
+        speed_of_sound = Atmosphere(
+            inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=True
+        ).speed_of_sound
+        limit_mach = (
+            inputs["data:mission:sizing:cs23:characteristic_speed:vd"] / speed_of_sound
+        )  # converted to mach
 
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
