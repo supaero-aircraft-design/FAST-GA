@@ -1,6 +1,4 @@
-"""
-Estimation of engine and associated component weight.
-"""
+"""Estimation of engine and associated component weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -25,7 +23,7 @@ from fastoad.constants import EngineSetting
 
 class ComputeOilWeight(ExplicitComponent):
     """
-    Weight estimation for motor oil
+    Weight estimation for motor oil.
 
     Based on a statistical analysis. See :cite:`wells:2017`.
     """

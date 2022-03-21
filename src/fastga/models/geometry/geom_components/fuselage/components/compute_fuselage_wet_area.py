@@ -1,6 +1,4 @@
-"""
-Estimation of fuselage wet area.
-"""
+"""Estimation of fuselage wet area."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -31,9 +29,9 @@ RegisterSubmodel.active_models[
 @RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy")
 class ComputeFuselageWetArea(ExplicitComponent):
 
-    """Fuselage wet area estimation, based on :
-    - a simple geometric description of the fuselage one cone at the front a cylinder in the middle
-    and a cone at the back.
+    """
+    Fuselage wet area estimation, based on a simple geometric description of the fuselage one
+    cone at the front a cylinder in the middle and a cone at the back.
     """
 
     def setup(self):
@@ -70,9 +68,10 @@ class ComputeFuselageWetArea(ExplicitComponent):
 @RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops")
 class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
-    """Fuselage wet area estimation, determined based on :
-    - Wells, Douglas P., Bryce L. Horvath, and Linwood A. McCullers. "The Flight Optimization
-    System Weights Estimation Method." (2017). Equation 61.
+    """
+    Fuselage wet area estimation, determined based on Wells, Douglas P., Bryce L. Horvath,
+    and Linwood A. McCullers. "The Flight Optimization System Weights Estimation Method." (2017).
+    Equation 61.
     """
 
     def setup(self):

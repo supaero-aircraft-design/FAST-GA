@@ -12,11 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# flake8: noqa
+
 from .a1_wing_weight import ComputeWingWeight
 from .a1_wing_weight_analytical import ComputeWingMassAnalytical
 from .a2_fuselage_weight import ComputeFuselageWeight
 from .a2_fuselage_weight import ComputeFuselageWeightRaymer
 from .a2_fuselage_weight_analytical import ComputeFuselageMassAnalytical
-from .a3_tail_weight import ComputeTailWeight
-from .a4_flight_control_weight import ComputeFlightControlsWeight
+from .a3_tail_weight import ComputeTailWeight, ComputeTailWeightGD
+from .a4_flight_control_weight import ComputeFlightControlsWeight, ComputeFlightControlsWeightFLOPS
 from .a5_landing_gear_weight import ComputeLandingGearWeight
+from .a7_paint_weight import ComputePaintWeight

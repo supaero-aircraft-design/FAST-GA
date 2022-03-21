@@ -1,6 +1,4 @@
-"""
-Estimation of engine and associated component weight.
-"""
+"""Estimation of engine and associated component weight."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,13 +16,22 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
+
+RegisterSubmodel.active_models[
+    SUBMODEL_INSTALLED_ENGINE_MASS
+] = "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
 
 
+@RegisterSubmodel(
+    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
+)
 class ComputeEngineWeight(ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
-    Based on a statistical analysis. See :cite:`raymer:2012`.
+    Based on a statistical analysis. See :cite:`raymer:2012`, Table 15.2.
     """
 
     def __init__(self, **kwargs):
@@ -50,5 +57,44 @@ class ComputeEngineWeight(ExplicitComponent):
         uninstalled_engine_weight = propulsion_model.compute_weight()
 
         b1 = 1.4 * uninstalled_engine_weight
+
+        outputs["data:weight:propulsion:engine:mass"] = b1
+
+
+@RegisterSubmodel(
+    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.raymer"
+)
+class ComputeEngineWeightRaymer(ExplicitComponent):
+    """
+    Engine weight estimation calling wrapper
+
+    Based on a statistical analysis. See :cite:`raymer:2012` Formula 15.52, can also be found in
+    :cite:`roskampart5:1985` USAF method.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper.setup(self)
+
+        self.add_output("data:weight:propulsion:engine:mass", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+        engine_count = inputs["data:geometry:propulsion:engine:count"]
+
+        # This should give the UNINSTALLED weight in lbs !
+        uninstalled_engine_weight = propulsion_model.compute_weight()
+
+        b1 = 2.575 * uninstalled_engine_weight ** 0.922 * engine_count
 
         outputs["data:weight:propulsion:engine:mass"] = b1

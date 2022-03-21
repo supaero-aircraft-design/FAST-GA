@@ -706,12 +706,12 @@
       </propulsion>
       <systems>
         <mass units="kg" is_input="False">210.144909722453<!--Mass of aircraft systems--></mass>
-        <navigation>
+        <avionics>
           <mass units="lbm" is_input="False">132.0<!--navigation (C3): mass--></mass>
           <CG>
             <x units="m" is_input="False">1.798849535217935<!--navigation (C3): X-position of center of gravity--></x>
           </CG>
-        </navigation>
+        </avionics>
         <life_support>
           <air_conditioning>
             <mass units="lbm" is_input="False">99.91101569712397<!--air conditioning (C2): mass--></mass>

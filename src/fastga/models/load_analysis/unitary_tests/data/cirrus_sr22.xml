@@ -517,6 +517,12 @@
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
+          <characteristic_speed>
+            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
           <flight_domain>
             <mtow>
               <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.1387426113633, -2.1387426113633006, 3.8, 0.0, 3.31588134646662, -1.31588134646662, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
@@ -527,12 +533,6 @@
               <velocity units="m/s">[33.087876724367646, 36.89366952160302, 64.50014594776054, 45.48557060397588, 0.0, 0.0, 78.93704320816128, 78.93704320816128, 78.93704320816128, 110.27211418096526, 110.27211418096526, 110.27211418096526, 110.27211418096526, 99.24490276286873, 78.93704320816128, 0.0, 29.392112203103423, 41.56672370442061, 52.905801965586164]</velocity>
             </mzfw>
           </flight_domain>
-          <characteristic_speed>
-            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
-          </characteristic_speed>
-          <sizing_factor>
-            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
-          </sizing_factor>
         </cs23>
         <main_route>
           <climb>
@@ -663,9 +663,9 @@
             <x units="m" is_input="False">2.988551198231612<!--wing (A1): X-position of center of gravity--></x>
           </CG>
           <punctual_mass>
-                        <y_ratio>0.0</y_ratio>
-                        <mass>0.0</mass>
-                    </punctual_mass>
+            <mass>0.0</mass>
+            <y_ratio>0.0</y_ratio>
+          </punctual_mass>
         </wing>
         <landing_gear>
           <front>
@@ -718,12 +718,12 @@
       </propulsion>
       <systems>
         <mass units="kg" is_input="False">210.144909722453<!--Mass of aircraft systems--></mass>
-        <navigation>
+        <avionics>
           <mass units="lbm" is_input="False">132.0<!--navigation (C3): mass--></mass>
           <CG>
             <x units="m" is_input="False">1.798849535217935<!--navigation (C3): X-position of center of gravity--></x>
           </CG>
-        </navigation>
+        </avionics>
         <life_support>
           <air_conditioning>
             <mass units="lbm" is_input="False">99.91101569712397<!--air conditioning (C2): mass--></mass>

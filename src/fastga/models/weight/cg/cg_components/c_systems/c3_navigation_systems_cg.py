@@ -31,7 +31,7 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
 
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
-        self.add_output("data:weight:systems:navigation:CG:x", units="m")
+        self.add_output("data:weight:systems:avionics:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -43,4 +43,4 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
         l_instr = 0.7
         x_cg_c3 = lav + l_instr / 2.0
 
-        outputs["data:weight:systems:navigation:CG:x"] = x_cg_c3
+        outputs["data:weight:systems:avionics:CG:x"] = x_cg_c3

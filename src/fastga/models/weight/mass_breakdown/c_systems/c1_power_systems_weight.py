@@ -36,7 +36,7 @@ class ComputePowerSystemsWeight(ExplicitComponent):
 
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:propulsion:fuel_lines:mass", val=np.nan, units="lb")
-        self.add_input("data:weight:systems:navigation:mass", val=np.nan, units="lb")
+        self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
 
         self.add_output("data:weight:systems:power:electric_systems:mass", units="lb")
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
@@ -47,7 +47,7 @@ class ComputePowerSystemsWeight(ExplicitComponent):
 
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
-        m_iae = inputs["data:weight:systems:navigation:mass"]
+        m_iae = inputs["data:weight:systems:avionics:mass"]
 
         c12 = 426.0 * ((m_fuel_lines + m_iae) / 1000.0) ** 0.51  # mass formula in lb
         c13 = 0.007 * mtow  # mass formula in lb
