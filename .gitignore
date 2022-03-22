@@ -41,6 +41,7 @@ tags
 
 # Unittest and coverage
 **/htmlcov/**
+*.html
 .coverage
 .tox
 junit.xml
