@@ -17,26 +17,25 @@ import sys
 import os
 import os.path as pth
 import shutil
-import tempfile
+
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import warnings
-import pandas as pd
 from typing import Tuple
-import numpy as np
 from importlib.resources import path
+import pandas as pd
+import numpy as np
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
-import math
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
 
-from ...constants import POLAR_POINT_COUNT
-from . import resources as local_resources
-
 from fastga.models.geometry.profiles.get_profile import get_profile
 from fastga.models.aerodynamics.external.xfoil import xfoil699
+
+from ...constants import POLAR_POINT_COUNT
+from . import resources as local_resources
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
@@ -63,9 +62,7 @@ _XFOIL_PATH_LIMIT = 64
 
 
 class XfoilPolar(ExternalCodeComp):
-    """
-    Runs a polar computation with XFOIL and returns the 2D max lift coefficient
-    """
+    """Runs a polar computation with XFOIL and returns the 2D max lift coefficient."""
 
     _xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
     """Column names in XFOIL polar result"""
@@ -118,7 +115,7 @@ class XfoilPolar(ExternalCodeComp):
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
                 self.options["airfoil_file"].replace(
-                    ".af", "_" + str(math.ceil(self.options[OPTION_ALPHA_END]))
+                    ".af", "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END])))
                 )
                 + "S.csv",
             )
@@ -142,7 +139,7 @@ class XfoilPolar(ExternalCodeComp):
                 if not (saved_mach_list[index] in near_mach):
                     near_mach.append(saved_mach_list[index])
                     distance_to_mach.append(abs(saved_mach_list[index] - mach))
-            if len(near_mach) == 0:
+            if not near_mach:
                 index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
             else:
                 selected_mach_index = distance_to_mach.index(min(distance_to_mach))
@@ -273,11 +270,11 @@ class XfoilPolar(ExternalCodeComp):
                 result_array_p = self._read_polar(tmp_result_file_path)
             except:
                 # catch the error and try to read result file for non-convergence on higher angles
-                e = sys.exc_info()[1]
+                error = sys.exc_info()[1]
                 try:
                     result_array_p = self._read_polar(tmp_result_file_path)
                 except:
-                    raise TimeoutError("<p>Error: %s</p>" % e)
+                    raise TimeoutError("<p>Error: %s</p>" % error)
 
             if self.options[OPTION_COMP_NEG_AIR_SYM]:
                 os.remove(self.stdin)
@@ -299,7 +296,8 @@ class XfoilPolar(ExternalCodeComp):
                     super().compute(inputs, outputs)
                     result_array_n = self._read_polar(tmp_result_file_path)
                 except:
-                    # catch the error and try to read result file for non-convergence on higher angles
+                    # catch the error and try to read result file for non-convergence on higher
+                    # angles
                     e = sys.exc_info()[1]
                     try:
                         result_array_n = self._read_polar(tmp_result_file_path)
@@ -604,7 +602,7 @@ class XfoilPolar(ExternalCodeComp):
         for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
             if tmp_base_path is not None:
                 os.makedirs(tmp_base_path, exist_ok=True)
-            tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
+            tmp_directory = TemporaryDirectory(prefix="x", dir=tmp_base_path)
             tmp_candidates.append(tmp_directory.name)
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
             tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
