@@ -18,7 +18,6 @@ import math
 import openmdao.api as om
 import copy
 import logging
-from typing import Sequence, Union
 
 from scipy.constants import g
 from scipy.interpolate import interp1d
@@ -192,104 +191,6 @@ class UpdateFW(om.ExplicitComponent):
         outputs["data:mission:sizing:fuel"] = m_total
 
 
-class _Atmosphere(Atmosphere):
-    def __init__(
-        self,
-        altitude: Union[float, Sequence[float]],
-        delta_t: float = 0.0,
-        altitude_in_feet: bool = True,
-    ):
-        super().__init__(altitude, delta_t, altitude_in_feet)
-        self._calibrated_airspeed = None
-        self._equivalent_airspeed = None
-        self._true_airspeed = None
-        self._mach = None
-        self._unitary_reynolds = None
-
-    @property
-    def true_airspeed(self) -> Union[float, Sequence[float]]:
-        """True airspeed (TAS) in m/s."""
-        # Dev note: true_airspeed is the "hub". Other speed values will be calculated
-        # from this true_airspeed.
-        if self._true_airspeed is None:
-            if self._mach is not None:
-                self._true_airspeed = self._mach * self.speed_of_sound
-            if self._equivalent_airspeed is not None:
-                sea_level = Atmosphere(0)
-                self._true_airspeed = self._return_value(
-                    self._equivalent_airspeed * np.sqrt(sea_level.density / self.density)
-                )
-            if self._unitary_reynolds is not None:
-                self._true_airspeed = self._unitary_reynolds * self.kinematic_viscosity
-            if self._calibrated_airspeed is not None:
-                sea_level = Atmosphere(0)
-                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
-                impact_pressure = sea_level.pressure * (
-                    (
-                        (np.asarray(self._calibrated_airspeed) / sea_level.speed_of_sound) ** 2.0
-                        / 5.0
-                        + 1.0
-                    )
-                    ** 3.5
-                    - 1.0
-                )
-                total_pressure = current_level.pressure + impact_pressure
-                sigma_0 = total_pressure / current_level.pressure
-                gamma = 1.4
-                mach = (2.0 / (gamma - 1.0) * (sigma_0 ** ((gamma - 1.0) / gamma) - 1.0)) ** 0.5
-                self._true_airspeed = mach * current_level.speed_of_sound
-        return self._return_value(self._true_airspeed)
-
-    @property
-    def calibrated_airspeed(self) -> Union[float, Sequence[float]]:
-        """Calibrated airspeed (CAS) in m/s."""
-        if self._calibrated_airspeed is None:
-            if self._true_airspeed is not None:
-                sea_level = Atmosphere(0)
-                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
-                mach = np.asarray(self._true_airspeed) / current_level.speed_of_sound
-                gamma = 1.4
-                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * mach ** 2.0) ** (gamma / (gamma - 1.0))
-                total_pressure = sigma_0 * current_level.pressure
-                impact_pressure = total_pressure - current_level.pressure
-                self._calibrated_airspeed = (
-                    sea_level.speed_of_sound
-                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
-                    ** 0.5
-                )
-            if self._mach is not None:
-                sea_level = Atmosphere(0)
-                current_level = Atmosphere(self._altitude, altitude_in_feet=False)
-                gamma = 1.4
-                sigma_0 = (1.0 + (gamma - 1.0) / 2.0 * self._mach ** 2.0) ** (gamma / (gamma - 1.0))
-                total_pressure = sigma_0 * current_level.pressure
-                impact_pressure = total_pressure - current_level.pressure
-                self._calibrated_airspeed = (
-                    sea_level.speed_of_sound
-                    * (5.0 * ((impact_pressure / sea_level.pressure + 1.0) ** (1.0 / 3.5) - 1.0))
-                    ** 0.5
-                )
-        return self._return_value(self._calibrated_airspeed)
-
-    @true_airspeed.setter
-    def true_airspeed(self, value: Union[float, Sequence[float]]):
-        self._reset_speeds()
-        self._true_airspeed = value
-
-    @calibrated_airspeed.setter
-    def calibrated_airspeed(self, value: Union[float, Sequence[float]]):
-        self._reset_speeds()
-        self._calibrated_airspeed = value
-
-    def _reset_speeds(self):
-        """To be used before setting a new speed value as private attribute."""
-        self._mach = None
-        self._true_airspeed = None
-        self._calibrated_airspeed = None
-        self._equivalent_airspeed = None
-        self._unitary_reynolds = None
-
-
 class _compute_taxi(om.ExplicitComponent):
     """
     Compute the fuel consumption for taxi based on speed and duration.
@@ -423,9 +324,10 @@ class _compute_climb(DynamicEquilibrium):
         previous_step = ()
 
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
-        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
+        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be
+        # FIXME: an input!
         cl = math.sqrt(3 * cd0 / coef_k_wing)
-        atm = _Atmosphere(altitude_t, altitude_in_feet=False)
+        atm = Atmosphere(altitude_t, altitude_in_feet=False)
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
@@ -438,7 +340,7 @@ class _compute_climb(DynamicEquilibrium):
         while altitude_t < cruise_altitude:
 
             # Calculate dynamic pressure
-            atm = _Atmosphere(altitude_t, altitude_in_feet=False)
+            atm = Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
             climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
@@ -446,7 +348,7 @@ class _compute_climb(DynamicEquilibrium):
             )
             gamma = math.asin(climb_rate / v_tas)
             mach = v_tas / atm.speed_of_sound
-            atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
+            atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)
@@ -597,7 +499,7 @@ class _compute_cruise(DynamicEquilibrium):
         time_t = 0.0
         mass_fuel_t = 0.0
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl)
-        atm = _Atmosphere(cruise_altitude, altitude_in_feet=False)
+        atm = Atmosphere(cruise_altitude, altitude_in_feet=False)
         atm.true_airspeed = v_tas
         mach = atm.mach
         previous_step = ()
@@ -749,8 +651,9 @@ class _compute_descent(DynamicEquilibrium):
         previous_step = ()
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
-        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
-        atm = _Atmosphere(altitude_t, altitude_in_feet=False)
+        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be
+        # FIXME: an input!
+        atm = Atmosphere(altitude_t, altitude_in_feet=False)
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
@@ -763,12 +666,12 @@ class _compute_descent(DynamicEquilibrium):
         while altitude_t > 0.0:
 
             # Calculate dynamic pressure
-            atm = _Atmosphere(altitude_t, altitude_in_feet=False)
+            atm = Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
             mach = v_tas / atm.speed_of_sound
             gamma = math.asin(descent_rate / v_tas)
-            atm_1 = _Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
+            atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)

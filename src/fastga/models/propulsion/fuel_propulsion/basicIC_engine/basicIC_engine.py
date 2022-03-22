@@ -14,12 +14,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import math
-import numpy as np
 import pandas as pd
 from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d
 import os.path as pth
+import numpy as np
 
 from stdatm import Atmosphere
 
@@ -27,11 +26,11 @@ from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 
-from .exceptions import FastBasicICEngineInconsistentInputParametersError
-from . import resources
-
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
+
+from .exceptions import FastBasicICEngineInconsistentInputParametersError
+from . import resources
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -255,7 +254,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
         :param engine_setting: define engine settings
-        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-
+        wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
@@ -303,7 +303,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         # as some thrust rates that are computed may have been provided as input)
         out_thrust_rate = out_thrust / max_thrust
 
-        # Now SFC (g/kwh) can be computed and converted to sfc_thrust (kg/N) to match computation from turboshaft
+        # Now SFC (g/kwh) can be computed and converted to sfc_thrust (kg/N) to match computation
+        # from turboshaft
         sfc, mech_power = self.sfc(out_thrust, engine_setting, atmosphere)
         sfc_time = (mech_power * 1e-3) * sfc / 3.6e6  # sfc in kg/s
         sfc_thrust = sfc_time / np.maximum(out_thrust, 1e-6)  # avoid 0 division
@@ -690,10 +691,12 @@ class BasicICEngine(AbstractFuelPropulsion):
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)
         cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds)) ** 2.58
+            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds)) ** 2.58
         )  # 100% turbulent
-        f = self.nacelle.length / math.sqrt(4 * self.nacelle.height * self.nacelle.width / math.pi)
-        ff_nac = 1 + 0.35 / f  # Raymer (seen in Gudmunsson)
+        fineness_ratio = self.nacelle.length / np.sqrt(
+            4 * self.nacelle.height * self.nacelle.width / np.pi
+        )
+        ff_nac = 1 + 0.35 / fineness_ratio  # Raymer (seen in Gudmunsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
