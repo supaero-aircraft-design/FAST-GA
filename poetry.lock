@@ -402,7 +402,7 @@ pyflakes = ">=2.4.0,<2.5.0"
 
 [[package]]
 name = "fonttools"
-version = "4.31.1"
+version = "4.31.2"
 description = "Tools to manipulate font files"
 category = "main"
 optional = false
@@ -1094,7 +1094,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "openmdao"
-version = "3.17.0"
+version = "3.16.0"
 description = "OpenMDAO framework infrastructure"
 category = "main"
 optional = false
@@ -1109,11 +1109,11 @@ requests = "*"
 scipy = "*"
 
 [package.extras]
-all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipympl", "ipyparallel", "ipython", "ipywidgets (>=7.6.5)", "jupyter", "jupyter-book", "jupyter-sphinx (==0.3.1)", "matplotlib", "matplotlib", "nbconvert", "notebook", "numpydoc (>=1.1)", "numpydoc (>=1.1)", "parameterized", "playwright (<1.15)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "sphinx-sitemap", "tabulate", "tabulate", "testflo", "testflo (>=1.3.6websockets)"]
-docs = ["matplotlib", "jupyter", "nbconvert", "testflo", "ipyparallel", "numpydoc (>=1.1)", "tabulate", "jupyter-book", "jupyter-sphinx (==0.3.1)", "sphinx-sitemap"]
-notebooks = ["notebook", "tabulate", "ipython", "ipywidgets (>=7.6.5)", "ipympl"]
+all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipyparallel (<7)", "ipython", "jupyter", "jupyter-book", "jupyter-sphinx (==0.3.1)", "matplotlib", "nbconvert", "notebook", "numpydoc (>=1.1)", "numpydoc (>=1.1)", "parameterized", "playwright (<1.15)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "sphinx-sitemap", "tabulate", "tabulate", "testflo", "testflo (>=1.3.6websockets)"]
+docs = ["matplotlib", "jupyter", "nbconvert", "testflo", "ipyparallel (<7)", "numpydoc (>=1.1)", "tabulate", "jupyter-book", "jupyter-sphinx (==0.3.1)", "sphinx-sitemap"]
+notebooks = ["notebook", "tabulate", "ipython"]
 test = ["parameterized", "numpydoc (>=1.1)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "testflo (>=1.3.6websockets)", "aiounittest", "playwright (<1.15)"]
-visualization = ["bokeh (>=1.3.4)", "matplotlib", "colorama"]
+visualization = ["bokeh (>=1.3.4)", "colorama"]
 
 [[package]]
 name = "openmdao-extensions"
@@ -2015,7 +2015,7 @@ jupyterlab = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "6cd0143c31c40d67ae1eaeb2f23adfca3b7d2c031dcf5598dda5bff8a17ef6b8"
+content-hash = "a6fa36c0fc77e665fde0cc864e72aadb8f0dd0f752247e78b692ab9fb24e4413"
 
 [metadata.files]
 aenum = [
@@ -2277,8 +2277,8 @@ flake8 = [
     {file = "flake8-4.0.1.tar.gz", hash = "sha256:806e034dda44114815e23c16ef92f95c91e4c71100ff52813adf7132a6ad870d"},
 ]
 fonttools = [
-    {file = "fonttools-4.31.1-py3-none-any.whl", hash = "sha256:2b288eae806800668cb5cdf52a37b5ac701c5adda2dd5c88b685581ce3385285"},
-    {file = "fonttools-4.31.1.zip", hash = "sha256:f8b35ed9ba189710994cec2c86b8eb5f0c49336698575e439a0d5671d3ca1ace"},
+    {file = "fonttools-4.31.2-py3-none-any.whl", hash = "sha256:2df636a3f402ef14593c6811dac0609563b8c374bd7850e76919eb51ea205426"},
+    {file = "fonttools-4.31.2.zip", hash = "sha256:236b29aee6b113e8f7bee28779c1230a86ad2aac9a74a31b0aedf57e7dfb62a4"},
 ]
 identify = [
     {file = "identify-2.4.12-py2.py3-none-any.whl", hash = "sha256:5f06b14366bd1facb88b00540a1de05b69b310cbc2654db3c7e07fa3a4339323"},
@@ -2697,7 +2697,7 @@ numpy = [
     {file = "numpy-1.21.1.zip", hash = "sha256:dff4af63638afcc57a3dfb9e4b26d434a7a602d225b42d746ea7fe2edf1342fd"},
 ]
 openmdao = [
-    {file = "openmdao-3.17.0.tar.gz", hash = "sha256:8796201407c7af09b008a9fe56023dd9b1b8118a329a8e1e78100f439eb88cbe"},
+    {file = "openmdao-3.16.0.tar.gz", hash = "sha256:e04af16ff68a068d787f1ea6419709843cf03202b746b1ce9d5eea22c3f7db02"},
 ]
 openmdao-extensions = [
     {file = "openmdao_extensions-1.0.2.tar.gz", hash = "sha256:10d63ba2cb0cb8a30346dca6ebb467df0d8c31555e6505f9a27ed284ad1e3055"},
