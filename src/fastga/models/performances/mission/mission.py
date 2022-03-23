@@ -483,6 +483,11 @@ class _compute_cruise(DynamicEquilibrium):
                 - inputs["data:mission:sizing:main_route:descent:distance"]
             ),
         )
+        if cruise_distance == 0.0:
+            _LOGGER.warning(
+                "Cruise distance is negative, check the input value mainly the range "
+                "and/or the climb and descent inputs"
+            )
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
