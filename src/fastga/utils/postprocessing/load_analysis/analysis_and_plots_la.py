@@ -30,7 +30,7 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def force_repartition_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the force repartition on the wing.
@@ -112,7 +112,7 @@ def force_repartition_diagram(
 
 
 def shear_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the shear repartition on the wing.
@@ -184,9 +184,7 @@ def shear_diagram(
     return fig
 
 
-def rbm_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
-) -> go.FigureWidget:
+def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None) -> go.FigureWidget:
     """
     Returns a figure plot of the root bending moment repartition on the wing.
     Different designs can be superposed by providing an existing fig.

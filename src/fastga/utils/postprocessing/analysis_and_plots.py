@@ -35,7 +35,7 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def aircraft_geometry_plot(
-    aircraft_file_path: str, name=None, fig=None, plot_nacelle: bool = True, file_formatter=None
+    aircraft_file_path: str, name="", fig=None, plot_nacelle: bool = True, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -260,7 +260,7 @@ def aircraft_geometry_plot(
 
 
 def evolution_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the V-N diagram of the aircraft.
@@ -384,139 +384,126 @@ def evolution_diagram(
     return fig
 
 
-def cl_wing_diagram(
-    aircraft_ref_file_path: str,
-    aircraft_mod_file_path: str,
-    prop_on: bool = True,
-    name_ref=None,
-    name_mod=None,
+def compressibility_effects_diagram(
+    aircraft_file_path: str,
+    name: str = "",
+    fig=None,
     file_formatter=None,
-) -> [go.FigureWidget, go.FigureWidget]:
+) -> go.FigureWidget:
     """
-    Returns a figure plot of the CL distribution on the semi-wing, and highlights the delta_CL
-    before the added part of the wing or before the reduced part of the wing.
+    Returns a figure plot of the evolution of the lift curve slope with Mach number.
 
-    :param aircraft_ref_file_path: path of reference aircraft data file
-    :param aircraft_mod_file_path: path of modified aircraft data file
+    :param aircraft_file_path: path of the  aircraft data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
+    :return: Cl_alpha distribution with Mach number.
+    """
+
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
+
+    cl_alpha_array = list(
+        variables["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"].value
+    )
+    cl_alpha_unit = variables["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"].units
+    if cl_alpha_unit == "1/deg" or cl_alpha_unit == "deg**-1":
+        cl_alpha_array = [i * 180.0 / np.pi for i in cl_alpha_array]
+    mach_array = list(variables["data:aerodynamics:aircraft:mach_interpolation:mach_vector"].value)
+
+    if fig is None:
+        fig = go.Figure()
+
+    scatter = go.Scatter(x=mach_array, y=cl_alpha_array, name=name)
+    fig.add_trace(scatter)
+    fig = go.FigureWidget(fig)
+
+    fig.update_layout(
+        title_text="Lift coefficient slope as a function of Mach number",
+        title_x=0.5,
+        xaxis_title="Mach number [-]",
+        yaxis_title="Lift coefficient slope [rad**-1]",
+        legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
+    )
+
+    return fig
+
+
+def cl_wing_diagram(
+    aircraft_file_path: str,
+    name: str = "",
+    prop_on: bool = False,
+    fig=None,
+    file_formatter=None,
+) -> go.FigureWidget:
+    """
+    Returns a figure plot of the CL distribution on the semi-wing.
+
+    :param aircraft_file_path: path of the  aircraft data file
+    :param name: name to give to the trace added to the figure
     :param prop_on: boolean stating if the rotor is on or off (for single propeller plane)
-    :param name_ref: name to give to the trace of the reference aircraft
-    :param name_mod: name to give to the trace of the modified aircraft
+    :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
     default format will be assumed.
     :return: Cl distribution figure along the span.
     """
 
-    variables_ref = VariableIO(aircraft_ref_file_path, file_formatter).read()
-    variables_mod = VariableIO(aircraft_mod_file_path, file_formatter).read()
+    variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     if prop_on:
-        cl_array_ref = list(
-            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value
-        )
-        span_array_ref = list(
-            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value
-        )
-        cl_array_mod = list(
-            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value
-        )
-        span_array_mod = list(
-            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value
-        )
+        try:
+            cl_array = list(
+                variables["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"].value
+            )
+            span_array = list(
+                variables["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"].value
+            )
+        except ValueError:
+            cl_array = list(variables["data:aerodynamics:wing:low_speed:CL_vector"].value)
+            span_array = list(variables["data:aerodynamics:wing:low_speed:Y_vector"].value)
     else:
-        cl_array_ref = list(
-            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value
-        )
-        span_array_ref = list(
-            variables_ref["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value
-        )
-        cl_array_mod = list(
-            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value
-        )
-        span_array_mod = list(
-            variables_mod["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value
-        )
+        try:
+            cl_array = list(
+                variables["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"].value
+            )
+            span_array = list(
+                variables["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"].value
+            )
+        except ValueError:
+            cl_array = list(variables["data:aerodynamics:wing:low_speed:CL_vector"].value)
+            span_array = list(variables["data:aerodynamics:wing:low_speed:Y_vector"].value)
 
-    cl_array_ref = [i for i in cl_array_ref if i != 0]
-    cl_array_ref.append(0)
-    span_array_ref = [i for i in span_array_ref if i != 0]
-    semi_span_ref = variables_ref["data:geometry:wing:span"].value[0] / 2
+    cl_array = [i for i in cl_array if i != 0]
+    cl_array.append(0)
+    span_array = [i for i in span_array if i != 0]
+    semi_span = variables["data:geometry:wing:span"].value[0] / 2
+    span_array.append(semi_span)
 
-    span_array_ref.append(semi_span_ref)
+    if fig is None:
+        fig = go.Figure()
 
-    cl_array_mod = [i for i in cl_array_mod if i != 0]
-    cl_array_mod.append(0)
-    span_array_mod = [i for i in span_array_mod if i != 0]
-    semi_span_mod = variables_mod["data:geometry:wing:span"].value[0] / 2
-
-    span_array_mod.append(semi_span_mod)
-
-    if span_array_mod[-1] >= span_array_ref[-1]:
-        longer_wing = True
-        span_array_short = span_array_ref
-        span_array_long = span_array_mod
-        cl_array_short = cl_array_ref
-        cl_array_long = cl_array_mod
-        name_short = name_ref
-        name_long = name_mod
+    if prop_on:
+        name_diagram = " propeller ON"
     else:
-        longer_wing = False
-        span_array_short = span_array_mod
-        span_array_long = span_array_ref
-        cl_array_short = cl_array_mod
-        cl_array_long = cl_array_ref
-        name_short = name_mod
-        name_long = name_ref
+        name_diagram = " propeller OFF"
 
-    y = np.interp(span_array_short, span_array_long, cl_array_long)
-
-    fig = go.Figure()
-    scatter = go.Scatter(x=span_array_short, y=cl_array_short, name=name_short)
-    fig.add_trace(scatter)
-    scatter = go.Scatter(x=span_array_long, y=cl_array_long, name=name_long)
-    fig.add_trace(scatter)
-    scatter = go.Scatter(x=span_array_short, y=y, mode="markers", name="interpol")
+    scatter = go.Scatter(x=span_array, y=cl_array, name=name + name_diagram)
     fig.add_trace(scatter)
     fig = go.FigureWidget(fig)
 
-    if prop_on:
-        name_diagram = "propeller ON"
-    else:
-        name_diagram = "propeller OFF"
-
     fig.update_layout(
-        title_text="CL wing distribution with " + name_diagram,
+        title_text="CL wing distribution",
         title_x=0.5,
-        xaxis=dict(range=[0.0, max(span_array_long) * 1.1]),
         xaxis_title="Semi-Span [m]",
-        yaxis=dict(range=[0, max(cl_array_long) * 1.1]),
         yaxis_title="CL [-]",
         legend=dict(yanchor="top", y=0.99, xanchor="right", x=0.99),
     )
 
-    fig1 = go.Figure()
-    if longer_wing:
-        y_scatter = y - cl_array_ref
-    else:
-        y_scatter = list(np.array(cl_array_mod) - y)
-
-    scatter = go.Scatter(x=span_array_short, y=y_scatter, name="Delta_CL")
-    fig1.add_trace(scatter)
-    fig1 = go.FigureWidget(fig1)
-    fig1.update_layout(
-        title_text="Delta_CL wing Modified Configuration minus Reference Configuration with "
-        + name_diagram,
-        title_x=0.5,
-        xaxis=dict(range=[0.0, max(span_array_short) * 1.1]),
-        xaxis_title="Semi-Span of shortest configuration : " + name_short + " [m]",
-        yaxis=dict(range=[min(y_scatter) * 1.1, max(y_scatter) * 1.2]),
-        yaxis_title="Delta_CL [-]",
-    )
-
-    return fig, fig1
+    return fig
 
 
 def cg_lateral_diagram(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None, color=None
+    aircraft_file_path: str, name="", fig=None, file_formatter=None, color=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the lateral view of the plane.
@@ -961,7 +948,6 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
 
 def drag_breakdown_diagram(
     aircraft_file_path: str,
-    fig=None,
     file_formatter=None,
 ) -> go.FigureWidget:
     """Return a plot of the drag breakdown of the wing in cruise conditions."""
@@ -995,16 +981,15 @@ def drag_breakdown_diagram(
     # aerodynamics.components.cd0_total.py.
     crud_factor = 1.25
 
-    if fig is None:
-        fig = make_subplots(
-            rows=1,
-            cols=2,
-            subplot_titles=(
-                "Drag coefficient breakdown in cruise conditions",
-                "Drag coefficient breakdown in low_speed conditions",
-            ),
-            specs=[[{"type": "domain"}, {"type": "domain"}]],
-        )
+    fig = make_subplots(
+        rows=1,
+        cols=2,
+        subplot_titles=(
+            "Drag coefficient breakdown in cruise conditions",
+            "Drag coefficient breakdown in low_speed conditions",
+        ),
+        specs=[[{"type": "domain"}, {"type": "domain"}]],
+    )
 
     fig.add_trace(
         go.Sunburst(
@@ -1098,7 +1083,7 @@ def drag_breakdown_diagram(
 
 
 def payload_range(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the payload range diagram of the plane.
