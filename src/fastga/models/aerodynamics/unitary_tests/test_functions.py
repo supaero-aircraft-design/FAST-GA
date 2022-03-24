@@ -1149,7 +1149,6 @@ def propeller(
                 sections_profile_name_list=["naca4430"],
                 sections_profile_position_list=[0],
                 elements_number=3,
-                vectors_length=7,
             )
         ),
         __file__,
@@ -1162,7 +1161,6 @@ def propeller(
             sections_profile_name_list=["naca4430"],
             sections_profile_position_list=[0],
             elements_number=3,
-            vectors_length=7,
         ),
         ivc,
     )

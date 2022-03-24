@@ -7,6 +7,7 @@ data:geometry:propeller:blades_number || number of blades on the propeller
 data:geometry:propeller:chord_vect || blade chord at the station along the radius stored in radius_ratio_vect
 data:geometry:propeller:diameter || propeller diameter
 data:geometry:propeller:hub_diameter || propeller hub diameter
+data:geometry:propeller:average_rpm || average rotation speed of the propeller
 data:geometry:propeller:depth || depth of the propeller
 data:geometry:propeller:radius_ratio_vect || blade station at which blade geometric properties are sampled, as a percent of blade radius
 data:geometry:propeller:sweep_vect || blade sweep at the station along the radius stored in radius_ratio_vect

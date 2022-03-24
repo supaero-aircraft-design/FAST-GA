@@ -52,6 +52,7 @@
         <type>0.0<!--0=non-retractable / 1=retractable--></type>
       </landing_gear>
       <propeller>
+        <average_rpm units="rpm">2500.0</average_rpm>
         <blades_number>3.0<!--number of blades on the propeller--></blades_number>
         <chord_vect units="m">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--blade chord at the station along the radius stored in radius_ratio_vect--></chord_vect>
         <depth units="m">0.3<!--depth of the propeller--></depth>

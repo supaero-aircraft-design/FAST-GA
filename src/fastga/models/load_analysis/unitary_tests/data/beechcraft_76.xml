@@ -88,6 +88,7 @@
         <length units="m" is_input="False">9.522568203015826</length>
       </plane>
       <propeller>
+        <average_rpm units="rpm">2500.0</average_rpm>
         <blades_number is_input="True">2.0<!--number of blades on the propeller--></blades_number>
         <chord_vect units="m" is_input="True">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--blade chord at the station along the radius stored in radius_ratio_vect--></chord_vect>
         <depth units="m" is_input="True">0.3<!--depth of the propeller--></depth>
