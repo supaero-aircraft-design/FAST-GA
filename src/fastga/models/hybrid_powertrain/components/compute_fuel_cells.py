@@ -30,7 +30,7 @@ class ComputeFuelCells(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current", val=np.nan, units='A')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:required_power", val=np.nan, units='W')
-        self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", val=40000, units='W')
+        self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", val=22000, units='W')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure", val=np.nan, units='Pa')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure", val=np.nan, units='Pa')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=759.50, units='cm**2')

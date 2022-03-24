@@ -140,12 +140,18 @@
           <nb_stacks is_input="True">2</nb_stacks>
         </fuel_cell>
         <h2_storage>
+          <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
+          <gravimetric_capacity_700b is_input="True">0.048</gravimetric_capacity_700b>
           <nb_tanks is_input="True">2</nb_tanks>
-          <length_radius_ratio is_input="True">6</length_radius_ratio>
+          <length_radius_ratio is_input="True">3</length_radius_ratio>
           <fos is_input="True">2.25</fos>
           <maximum_stress units="MPa" is_input="True">1900</maximum_stress>
-          <mass_fitting_factor is_input="True">1</mass_fitting_factor>
-          <tank_density units="kg/m**3" is_input="True">1530</tank_density>
+          <mass_fitting_factor is_input="True">1.0</mass_fitting_factor>
+          <cfc_density units="kg/m**3" is_input="True">1530</cfc_density>
+          <thickness_fitting_factor is_input="True">1.754</thickness_fitting_factor>
+          <liner_thickness is_input="True" units='mm'>5.0</liner_thickness>
+          <liner_density is_input="True" units="kg/m**3">1000.</liner_density>
+          <bop_factor is_input="True">1.3</bop_factor>
         </h2_storage>
         <hex>
           <radiator_surface_density units="g/cm**2" is_input="True">1.97</radiator_surface_density>
@@ -508,7 +514,7 @@
     </constraints>
     <mission>
       <sizing>
-        <fuel units="kg" is_input="False">252.19391779967108<!--consumed fuel mass during whole mission--></fuel>
+        <fuel units="kg" is_input="False">12.0<!--consumed fuel mass during whole mission--></fuel>
         <endurance units="min" is_input="False">50</endurance>
         <cs23>
           <sizing_factor_ultimate is_input="True">5.7</sizing_factor_ultimate>
@@ -555,6 +561,7 @@
             <distance units="m" is_input="False">24114.427039885122<!--covered ground distance during climb phase--></distance>
             <duration units="s" is_input="False">496.9804449004967<!--duration of climb phase in sizing mission--></duration>
             <fuel units="kg" is_input="False">7.833128232411083<!--mass of consumed fuel during climb phase in sizing mission--></fuel>
+            <battery_energy units="kW*h" is_input="False">5.435151242793038</battery_energy>
             <v_cas units="m/s" is_input="False">45.75448995358913</v_cas>
             <climb_rate>
               <cruise_level units="ft/min" is_input="True">750.0</cruise_level>
@@ -572,8 +579,10 @@
             <distance units="m" is_input="False">75202.4025503226<!--covered ground distance during descent phase--></distance>
             <duration units="s" is_input="False">1506.9542966085064<!--duration of descent phase in sizing mission--></duration>
             <fuel units="kg" is_input="False">5.99372114117938<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+            <battery_energy units="kW*h" is_input="False">0.3079308944998988</battery_energy>
           </descent>
           <reserve>
+            <battery_energy units="kW*h" is_input="False">12.0</battery_energy>
             <fuel units="kg" is_input="False">26.9383443322907</fuel>
           </reserve>
         </main_route>
@@ -627,7 +636,7 @@
           <hyd_mass_flow units="kg/s" is_input="False">0.522</hyd_mass_flow>
         </fuel_cell>
         <h2_storage>
-          <pressure units="Pa" is_input="True">3500000</pressure>
+          <pressure units="MPa" is_input="True">70</pressure>
 <!--          <temperature units="K" is_input="True"></temperature>-->
         </h2_storage>
         <hex>
