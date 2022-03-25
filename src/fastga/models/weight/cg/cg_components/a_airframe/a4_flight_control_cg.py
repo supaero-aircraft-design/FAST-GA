@@ -25,46 +25,45 @@ from ..constants import SUBMODEL_FLIGHT_CONTROLS_CG
     SUBMODEL_FLIGHT_CONTROLS_CG, "fastga.submodel.weight.cg.airframe.flight_controls.legacy"
 )
 class ComputeFlightControlCG(ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Control surfaces center of gravity estimation."""
+    """
+    Control surfaces center of gravity estimation. Based on the position of the aerodynamic
+    center of all lifting surfaces. Not taken at the exact position of the control surfaces as
+    flight controls weight includes cockpit controls and pulleys/cables.
+    """
 
     def setup(self):
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
 
         self.add_output("data:weight:airframe:flight_controls:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
-        y0_wing = inputs["data:geometry:wing:MAC:y"]
-        l2_wing = inputs["data:geometry:wing:root:chord"]
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
 
-        # TODO: revision mark on model to be checked
-        if y2_wing > y0_wing:
-            x_leading_edge = 0
-            l_cg_control = l2_wing
-            x_cg_control = x_leading_edge + l_cg_control
-            x_cg_a4 = fa_length - 0.25 * l0_wing - x0_wing + x_cg_control
-        else:
-            x_leading_edge = x4_wing * (y0_wing - y2_wing) / (y4_wing - y2_wing)
-            l_cg_control = l2_wing + (y0_wing - y2_wing) / (y4_wing - y2_wing) * (l4_wing - l2_wing)
-            x_cg_control = x_leading_edge + l_cg_control
-            x_cg_a4 = fa_length - 0.25 * l0_wing - x0_wing + x_cg_control
+        x_cg_a4 = 0.5 * fa_length + 0.25 * (fa_length + lp_ht) + 0.25 * (fa_length + lp_vt)
 
         outputs["data:weight:airframe:flight_controls:CG:x"] = x_cg_a4
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        partials[
+            "data:weight:airframe:flight_controls:CG:x", "data:geometry:wing:MAC:at25percent:x"
+        ] = 1
+        partials[
+            "data:weight:airframe:flight_controls:CG:x",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = 0.25
+        partials[
+            "data:weight:airframe:flight_controls:CG:x",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = 0.25
