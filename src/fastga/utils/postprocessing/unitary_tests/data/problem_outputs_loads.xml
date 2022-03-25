@@ -568,12 +568,12 @@
         </takeoff>
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi in phase--></duration>
-          <speed units="knot" is_input="True">30.0<!--ground velocity during taxi in phase--></speed>
+          <speed units="knot" is_input="True">20.0<!--ground velocity during taxi in phase--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate during taxi in phase--></thrust_rate>
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">300.0<!--duration of taxi out phase--></duration>
-          <speed units="knot" is_input="True">30.0<!--ground velocity during taxi out phase--></speed>
+          <speed units="knot" is_input="True">20.0<!--ground velocity during taxi out phase--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate during taxi out phase--></thrust_rate>
         </taxi_out>
         <main_route>

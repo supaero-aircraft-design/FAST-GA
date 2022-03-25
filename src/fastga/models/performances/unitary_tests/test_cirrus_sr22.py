@@ -167,7 +167,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_out:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.192, abs=1e-2
+        0.13, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
     # Research independent input value in .xml file
@@ -179,7 +179,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_in:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.192, abs=1e-2
+        0.13, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
 
@@ -300,7 +300,7 @@ def test_payload_range():
     payload_result = np.array([420, 420, 355, 310.697, 0])
     assert np.max(np.abs(payload_array - payload_result)) <= 1e-1
     range_array = problem.get_val("data:payload_range:range_array", units="NM")
-    range_result = np.array([0.0, 1171.88, 1634.65, 1957.44, 2213.56])
+    range_result = np.array([0.0, 1172.88, 1635.65, 1958.44, 2214.56])
     assert np.max(np.abs(range_array - range_result)) <= 1e-1
     specific_range_array = problem.get_val("data:payload_range:specific_range_array", units="NM/kg")
     specific_range_result = np.array([0.0, 6.24, 6.47, 6.58, 7.45])

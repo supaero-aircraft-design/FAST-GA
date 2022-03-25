@@ -166,7 +166,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_out:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.23, abs=1e-2
+        0.15, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
     # Research independent input value in .xml file
@@ -178,7 +178,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_in:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.23, abs=1e-2
+        0.15, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
 

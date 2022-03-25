@@ -506,13 +506,13 @@
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi-in phase in sizing mission--></duration>
           <fuel units="kg" is_input="False">1.3691263819948132<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
-          <speed units="knot" is_input="True">30.0<!--speed during taxi-in phase in sizing mission--></speed>
+          <speed units="knot" is_input="True">20.0<!--speed during taxi-in phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">300.0<!--duration of taxi-out phase in sizing mission--></duration>
           <fuel units="kg" is_input="False">1.3691263819948132<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
-          <speed units="knot" is_input="True">30.0<!--speed during taxi-out phase in sizing mission--></speed>
+          <speed units="knot" is_input="True">20.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <main_route>
