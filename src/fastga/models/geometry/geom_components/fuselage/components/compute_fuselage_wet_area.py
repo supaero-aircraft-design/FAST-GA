@@ -43,6 +43,7 @@ class ComputeFuselageWetArea(ExplicitComponent):
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
+        self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -62,7 +63,10 @@ class ComputeFuselageWetArea(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
+        master_cross_section = math.pi * (fus_dia / 2.0) ** 2.0
+
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
+        outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
 
 
 @RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops")
@@ -81,6 +85,7 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
+        self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -94,4 +99,7 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
         fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
         wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
 
+        master_cross_section = math.pi * (fus_dia / 2.0) ** 2.0
+
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
+        outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section

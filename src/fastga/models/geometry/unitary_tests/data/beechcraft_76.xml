@@ -47,6 +47,7 @@
         <maximum_width units="m" is_input="False">1.1978<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">4.225178438987577<!--length of rear non-cylindrical part of the fuselage--></rear_length>
         <wet_area units="m**2" is_input="False">29.630110718012276<!--fuselage wet area--></wet_area>
+        <master_cross_section units="m**2" is_input="False">1.258<!--fuselage wet area--></master_cross_section>
       </fuselage>
       <horizontal_tail>
         <area units="m**2" is_input="False">3.7139017292000687<!--horizontal tail area--></area>
@@ -201,6 +202,7 @@
           <height units="m" is_input="False">0.6230628899061188<!--height of the nacelle--></height>
           <length units="m" is_input="False">1.6495763911390064<!--nacelle length--></length>
           <wet_area units="m**2" is_input="False">5.120917766334194<!--nacelle wet area--></wet_area>
+          <master_cross_section units="m**2" is_input="False">0.57890572<!--fuselage wet area--></master_cross_section>
           <width units="m" is_input="False">0.9291288709126333<!--width of the nacelle--></width>
           <y units="m" is_input="False">1.9729600331104677<!--Y-position of nacelle center--></y>
         </nacelle>

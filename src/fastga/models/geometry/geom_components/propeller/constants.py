@@ -1,4 +1,4 @@
-"""Constants for the geometry submodels."""
+"""Constants for the horizontal tail geometry submodels."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,9 +12,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_WING_GEOMETRY = "submodel.geometry.wing"
-SUBMODEL_NACELLE_GEOMETRY = "submodel.geometry.nacelle"
-SUBMODEL_PROPELLER_GEOMETRY = "submodel.geometry.propeller.geometry"
-SUBMODEL_LANDING_GEAR_GEOMETRY = "submodel.geometry.landing_gear"
-SUBMODEL_MFW = "submodel.geometry.mfw"
-SUBMODEL_AIRCRAFT_WET_AREA = "submodel.geometry.aircraft.wet_area"
+SUBMODEL_PROPELLER_POSITION = "submodel.geometry.propeller.position"
+SUBMODEL_PROPELLER_INSTALLATION = "submodel.geometry.propeller.installation_effect"
