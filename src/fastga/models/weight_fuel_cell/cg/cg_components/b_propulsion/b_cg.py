@@ -42,11 +42,13 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
         self.add_input("data:weight:propulsion:fuel_lines:CG:x", units="m", val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:fuel_cell:CG:x", units="m", val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:battery:CG:x", units="m", val=np.nan)
+        self.add_input("data:weight:hybrid_powertrain:h2_storage:CG:x", units='m', val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:engine:mass", units="kg", val=np.nan)
         self.add_input("data:weight:propulsion:fuel_lines:mass", units="kg", val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:fuel_cell:mass", units="kg", val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:battery:mass", units="kg", val=np.nan)
-        # self.add_input("data:weight:propulsion:mass", units="kg", val=np.nan)
+        self.add_input("data:weight:hybrid_powertrain:h2_storage:mass", units="kg", val=np.nan)
+
 
         self.add_output("data:weight:propulsion:CG:x", units="m")
 
@@ -55,15 +57,17 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
         fuel_cell_cg = inputs["data:weight:hybrid_powertrain:fuel_cell:CG:x"]
         battery_cg = inputs["data:weight:hybrid_powertrain:battery:CG:x"]
+        h2_tanks_cg = inputs["data:weight:hybrid_powertrain:h2_storage:CG:x"]
 
         engine_mass = inputs["data:weight:hybrid_powertrain:engine:mass"]
         fuel_lines_mass = inputs["data:weight:propulsion:fuel_lines:mass"]
         fuel_cells_mass = inputs["data:weight:hybrid_powertrain:fuel_cell:mass"]
         battery_mass = inputs["data:weight:hybrid_powertrain:battery:mass"]
+        h2_tanks_mass = inputs["data:weight:hybrid_powertrain:h2_storage:mass"]
 
         cg_propulsion = (engine_cg * engine_mass + fuel_lines_cg * fuel_lines_mass +
-                         fuel_cell_cg*fuel_cells_mass + battery_cg*battery_mass) / (
-            engine_mass + fuel_lines_mass + fuel_cells_mass + battery_mass
+                         fuel_cell_cg*fuel_cells_mass + battery_cg*battery_mass + h2_tanks_cg*h2_tanks_mass) / (
+            engine_mass + fuel_lines_mass + fuel_cells_mass + battery_mass + h2_tanks_mass
         )
 
         outputs["data:weight:propulsion:CG:x"] = cg_propulsion

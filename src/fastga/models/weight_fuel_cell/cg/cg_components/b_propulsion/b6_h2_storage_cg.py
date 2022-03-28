@@ -32,7 +32,7 @@ class ComputeH2StorageCG(ExplicitComponent):
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
 
         self.add_output("data:weight:propulsion:tank:CG:x", units="m")
-        # self.add_output("data:weight:hybrid_powertrain:h2_storage:CG:x", units="m")
+        self.add_output("data:weight:hybrid_powertrain:h2_storage:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -43,5 +43,5 @@ class ComputeH2StorageCG(ExplicitComponent):
         # H2 tanks assumed to be placed just behind the pilot seat (stacked in height if more than 1)
         b6 = fus_front_length + 0.9 * cabin_length  # 90% of the cabin length
 
-        outputs["data:weight:propulsion:tank:CG:x"] = b6
-        # outputs["data:weight:hybrid_powertrain:h2_storage:CG:x"] = b6
+        outputs["data:weight:propulsion:tank:CG:x"] = b6 # This is for loadcases with fuel weight
+        outputs["data:weight:hybrid_powertrain:h2_storage:CG:x"] = b6 # this is for empty CG
