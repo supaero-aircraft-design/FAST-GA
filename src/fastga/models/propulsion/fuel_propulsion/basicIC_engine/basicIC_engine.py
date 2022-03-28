@@ -68,6 +68,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         thrust_CL,
         thrust_limit_CL,
         efficiency_CL,
+        effective_J,
+        effective_efficiency_ls,
+        effective_efficiency_cruise,
     ):
         """
         Parametric Internal Combustion engine.
@@ -115,6 +118,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.thrust_CL = thrust_CL
         self.thrust_limit_CL = thrust_limit_CL
         self.efficiency_CL = efficiency_CL
+        self.effective_J = float(effective_J)
+        self.effective_efficiency_ls = float(effective_efficiency_ls)
+        self.effective_efficiency_cruise = float(effective_efficiency_cruise)
         self.specific_shape = None
 
         # Evaluate engine volume based on max power @ 0.0m
@@ -392,33 +398,45 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude
         :return: efficiency
         """
+        # Include advance ratio loss in here, we will assume that since we work at constant RPM
+        # the change in advance ration is equal to a change in velocity
+        installed_airspeed = atmosphere.true_airspeed * self.effective_J
+
         propeller_efficiency_SL = interp2d(
-            self.thrust_SL, self.speed_SL, self.efficiency_SL, kind="cubic"
+            self.thrust_SL,
+            self.speed_SL,
+            self.efficiency_SL * self.effective_efficiency_ls,  # Include the efficiency loss
+            # in here
+            kind="cubic",
         )
         propeller_efficiency_CL = interp2d(
-            self.thrust_CL, self.speed_CL, self.efficiency_CL, kind="cubic"
+            self.thrust_CL,
+            self.speed_CL,
+            self.efficiency_CL * self.effective_efficiency_cruise,  # Include the efficiency loss
+            # in here
+            kind="cubic",
         )
         if isinstance(atmosphere.true_airspeed, float):
             thrust_interp_SL = np.minimum(
                 np.maximum(np.min(self.thrust_SL), thrust),
-                np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL),
+                np.interp(installed_airspeed, self.speed_SL, self.thrust_limit_SL),
             )
             thrust_interp_CL = np.minimum(
                 np.maximum(np.min(self.thrust_CL), thrust),
-                np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL),
+                np.interp(installed_airspeed, self.speed_CL, self.thrust_limit_CL),
             )
         else:
             thrust_interp_SL = np.minimum(
                 np.maximum(np.min(self.thrust_SL), thrust),
-                np.interp(list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL),
+                np.interp(list(installed_airspeed), self.speed_SL, self.thrust_limit_SL),
             )
             thrust_interp_CL = np.minimum(
                 np.maximum(np.min(self.thrust_CL), thrust),
-                np.interp(list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL),
+                np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, atmosphere.true_airspeed))
-            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, atmosphere.true_airspeed))
+            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, installed_airspeed))
+            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
                 altitude, [0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
@@ -427,10 +445,10 @@ class BasicICEngine(AbstractFuelPropulsion):
             propeller_efficiency = np.zeros(np.size(thrust))
             for idx in range(np.size(thrust)):
                 lower_bound = propeller_efficiency_SL(
-                    thrust_interp_SL[idx], atmosphere.true_airspeed[idx]
+                    thrust_interp_SL[idx], installed_airspeed[idx]
                 )
                 upper_bound = propeller_efficiency_CL(
-                    thrust_interp_CL[idx], atmosphere.true_airspeed[idx]
+                    thrust_interp_CL[idx], installed_airspeed[idx]
                 )
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
                 propeller_efficiency[idx] = (

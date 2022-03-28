@@ -796,22 +796,28 @@ def test_compute_flight_points():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )  # load a 4-strokes 130kW gasoline engine
 
     # Test with scalars
     flight_point = FlightPoint(
-        mach=0.3, altitude=0.0, engine_setting=EngineSetting.CLIMB.value, thrust=480.58508079
+        mach=0.3,
+        altitude=0.0,
+        engine_setting=EngineSetting.CLIMB.value,
+        thrust=465.98665098785256,
     )  # with engine_setting as int
     engine.compute_flight_points(flight_point)
     np.testing.assert_allclose(flight_point.thrust_rate, 0.5, rtol=1e-2)
-    np.testing.assert_allclose(flight_point.sfc, 1.356846e-05, rtol=1e-2)
+    np.testing.assert_allclose(flight_point.sfc, 1.398174e-05, rtol=1e-2)
 
     flight_point = FlightPoint(
         mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=0.8
     )  # with engine_setting as EngineSetting
     engine.compute_flight_points(flight_point)
-    np.testing.assert_allclose(flight_point.thrust, 3992.47453905 * 0.8, rtol=1e-2)
-    np.testing.assert_allclose(flight_point.sfc, 2.414166e-16, rtol=1e-2)
+    np.testing.assert_allclose(flight_point.thrust, 3193.9796312400003, rtol=1e-2)
+    np.testing.assert_allclose(flight_point.sfc, 2.488831e-16, rtol=1e-2)
 
     # Test full arrays
     # 2D arrays are used, where first line is for thrust rates, and second line
@@ -821,7 +827,7 @@ def test_compute_flight_points():
     machs = [0, 0.3, 0.3, 0.4, 0.4]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3193.97963124, 480.58508079, 480.58508079, 209.52130202, 339.32315391]
+    thrusts = [3193.979631, 465.986781, 465.986781, 201.76765, 329.66022]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -829,7 +835,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [2.41416580e-16, 1.35684586e-05, 1.35684586e-05, 1.96216640e-05, 1.50682721e-05]
+    expected_sfc = [2.488831e-16, 1.398174e-05, 1.398174e-05, 2.040742e-05, 1.553841e-05]
 
     flight_points = FlightPoint(
         mach=machs + machs,
@@ -861,6 +867,9 @@ def test_engine_weight():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(_50kw_engine.compute_weight(), 82, atol=1)
     # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
@@ -878,6 +887,9 @@ def test_engine_weight():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(_250kw_engine.compute_weight(), 569, atol=1)
     # BasicICEngine(max_power(W), design_altitude(m), design_speed(m/s), fuel_type, strokes_nb, prop_layout)
@@ -895,6 +907,9 @@ def test_engine_weight():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(_130kw_engine.compute_weight(), 277, atol=1)
 
@@ -915,6 +930,9 @@ def test_engine_dim():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(
         _50kw_engine.compute_dimensions(), [0.45, 0.67, 1.20, 2.71], atol=1e-2
@@ -934,6 +952,9 @@ def test_engine_dim():
         THRUST_CL,
         THRUST_CL_LIMIT,
         EFFICIENCY_CL,
+        0.95,  # Effective advance ratio factor
+        0.97,  # Effective efficiency in low speed conditions
+        0.98,  # Effective efficiency in cruise conditions
     )
     np.testing.assert_allclose(
         _250kw_engine.compute_dimensions(), [0.77, 1.15, 2.05, 7.92], atol=1e-2

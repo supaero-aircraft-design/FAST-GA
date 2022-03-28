@@ -173,3 +173,6 @@ data:aerodynamics:aircraft:low_speed:equilibrated:CD || array containing the dra
 data:aerodynamics:aircraft:low_speed:equilibrated:CL || array containing the lift coefficient for the equilibrated polar in low-speed conditions
 
 data:aerodynamics:propeller:cruise_level:altitude || altitude at which the cruise level propeller efficiency map was computed
+
+data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise || Value to multiply the uninstalled efficiency with to obtain the effective efficiency due to the presence of cowling (fuselage or nacelle) behind the propeller
+data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed || Value to multiply the uninstalled efficiency with to obtain the effective efficiency due to the presence of cowling (fuselage or nacelle) behind the propeller
