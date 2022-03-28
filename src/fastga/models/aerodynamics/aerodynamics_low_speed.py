@@ -34,6 +34,7 @@ from .constants import (
     SUBMODEL_CL_EXTREME,
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_CY_RUDDER,
+    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
 )
 
 
@@ -91,6 +92,15 @@ class AerodynamicsLowSpeed(Group):
             promotes=["*"],
         )
 
+        option_low_speed = {"low_speed_aero": True}
+        self.add_subsystem(
+            "Effective_efficiency_propeller",
+            RegisterSubmodel.get_submodel(
+                SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER, options=option_low_speed
+            ),
+            promotes=["*"],
+        )
+
         options_airfoil = {
             "wing_airfoil_file": self.options["wing_airfoil"],
             "htp_airfoil_file": self.options["htp_airfoil"],
@@ -128,7 +138,6 @@ class AerodynamicsLowSpeed(Group):
             promotes=["*"],
         )
 
-        option_low_speed = {"low_speed_aero": True}
         self.add_subsystem(
             "clAlpha_vt",
             RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_low_speed),

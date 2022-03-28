@@ -43,6 +43,7 @@ from .test_functions import (
     compute_mach_interpolation_roskam,
     cl_alpha_vt,
     cy_delta_r,
+    effective_efficiency,
     cm_alpha_fus,
     high_speed_connection,
     low_speed_connection,
@@ -980,6 +981,13 @@ def test_cl_alpha_vt():
 def test_cy_delta_r():
     """Tests cy delta of the rudder."""
     cy_delta_r(XML_FILE, cy_delta_r_=1.8858, cy_delta_r_cruise=1.9255)
+
+
+def test_effective_efficiency():
+    """Tests cy delta of the rudder."""
+    effective_efficiency(
+        XML_FILE, effective_efficiency_low_speed=0.9662, effective_efficiency_cruise=0.9759
+    )
 
 
 def test_cm_alpha_fus():

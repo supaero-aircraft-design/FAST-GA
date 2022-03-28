@@ -24,6 +24,7 @@ from .hinge_moments_elevator import (
 from .mach_interpolation import ComputeMachInterpolation
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .compute_cy_rudder import ComputeCyDeltaRudder
+from .compute_effective_efficiency_prop import ComputeEffectiveEfficiencyPropeller
 from .clalpha_vt import ComputeClAlphaVT
 from .compute_vn import ComputeVNAndVH, ComputeVN
 from .compute_cm_alpha_fus import ComputeFuselagePitchingMoment
