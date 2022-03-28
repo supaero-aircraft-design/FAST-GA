@@ -24,12 +24,18 @@ from .b4_Eengine_weight import ComputeEEngineWeight
 from .b5_cables_weight import ComputeCablesWeight
 from .b6_power_electronics_weight import ComputePowerElecWeight
 from .b7_propeller_weight import ComputePropellerWeight
-from .b8_battery_weight import ComputeBatteryWeight
-from .b9_fuel_cells_weight import ComputeFuelCellWeight
-from .b10_bop_weight import ComputeBoPWeight
+# from .b8_battery_weight import ComputeBatteryWeight
+# from .b9_fuel_cells_weight import ComputeFuelCellWeight
+# from .b10_bop_weight import ComputeBoPWeight
 from .b11_inverter_weight import ComputeInverterWeight
-from .b12_h2_storage_weight import ComputeH2StorageWeight
+# from .b12_h2_storage_weight import ComputeH2StorageWeight
 from fastga.models.weight.mass_breakdown.constants import SUBMODEL_PROPULSION_MASS
+from .constants import (
+SUBMODEL_PROPULSION_FUELCELL_MASS,
+SUBMODEL_PROPULSION_H2STORAGE_MASS,
+SUBMODEL_PROPULSION_BATTERY_MASS,
+SUBMODEL_PROPULSION_BOP_MASS,
+)
 
 
 @RegisterSubmodel(SUBMODEL_PROPULSION_MASS, "fastga.submodel.weight.mass.propulsion.hybrid.fuelcell")
@@ -46,11 +52,11 @@ class PropulsionWeight(om.Group):
         self.add_subsystem("propeller_weight", ComputePropellerWeight(), promotes=["*"])
         self.add_subsystem("electric_engine_weight", ComputeEEngineWeight(propulsion_id=self.options["propulsion_id"]),
                            promotes=["*"])
-        self.add_subsystem("battery_weight", ComputeBatteryWeight(), promotes=["*"])
-        self.add_subsystem("fuel_cells_weight", ComputeFuelCellWeight(), promotes=["*"])
-        self.add_subsystem("balance_of_plant_weight", ComputeBoPWeight(), promotes=["*"])
+        self.add_subsystem("battery_weight", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_BATTERY_MASS), promotes=["*"])
+        self.add_subsystem("fuel_cells_weight", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_FUELCELL_MASS), promotes=["*"])
+        self.add_subsystem("balance_of_plant_weight", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_BOP_MASS), promotes=["*"])
         self.add_subsystem("inverter_weight", ComputeInverterWeight(), promotes=["*"])
-        self.add_subsystem("h2_storage_weight", ComputeH2StorageWeight(), promotes=["*"])
+        self.add_subsystem("h2_storage_weight", RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_H2STORAGE_MASS), promotes=["*"])
 
 
         hybrid_powertrain_sum = om.AddSubtractComp()

@@ -14,43 +14,32 @@
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SUBMODEL_PROPULSION_H2STORAGE_MASS
 
-
-class ComputeH2StorageWeight(ExplicitComponent):
+@RegisterSubmodel(SUBMODEL_PROPULSION_H2STORAGE_MASS, "fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.h2storage.legacy")
+class ComputeH2StorageWeightLegacy(ExplicitComponent):
     """
-    Computing hydrogen storage weight
+    Computing hydrogen storage weight based on gravimetric index interval for two reference tanks of 350b and 700b:
+    "Technical Assessment of Compressed Hydrogen Storage Tank Systems for Automotive Applications", Thanh Hua, Argonne National Lab
     """
     def setup(self):
 
-        self.add_input("data:geometry:hybrid_powertrain:h2_storage:nb_tanks", val=np.nan, units=None)
-        self.add_input("data:geometry:hybrid_powertrain:h2_storage:single_tank_volume", val=np.nan, units='m**3')
-        self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume", val=np.nan, units="m**3")
-        self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_density", val=np.nan, units='kg/m**3')
         self.add_input("data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_350b", val=np.nan)
         self.add_input("data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_700b",val=np.nan)
         self.add_input("data:propulsion:hybrid_powertrain:h2_storage:pressure",val = np.nan, units='MPa')
         self.add_input("data:mission:sizing:fuel", val=np.nan, units='kg')
-        # self.add_input("data:geometry:hybrid_powertrain:h2_storage:mass_fitting_factor", val=1, units=None,
-        #                desc='Parameter to adjust the mass of the fuel tanks arguably too high')
 
         self.add_output("data:weight:hybrid_powertrain:h2_storage:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        nb_tanks = inputs['data:geometry:hybrid_powertrain:h2_storage:nb_tanks']
-        tank_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:single_tank_volume']
-        int_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume']
-        density = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_density']
         grav_cap_350 = inputs["data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_350b"]
         grav_cap_700 = inputs["data:geometry:hybrid_powertrain:h2_storage:gravimetric_capacity_700b"]
         pressure = inputs["data:propulsion:hybrid_powertrain:h2_storage:pressure"]
         fuel_weight = inputs["data:mission:sizing:fuel"]
-        # mass_fit = inputs['data:geometry:hybrid_powertrain:h2_storage:mass_fitting_factor']
 
-        # Analytic thickness calculation is wrong, following formula to be avoided
-        # b12 = nb_tanks * (tank_volume - int_volume) * density  # [kg]
-
-        # Use this formula until analytic thickness calculation is fixed:
+        # Interpolation
         if pressure < 35:
             grav_cap = grav_cap_350
         elif pressure > 70:
@@ -62,3 +51,39 @@ class ComputeH2StorageWeight(ExplicitComponent):
 
 
         outputs['data:weight:hybrid_powertrain:h2_storage:mass'] = b12
+
+
+@RegisterSubmodel(SUBMODEL_PROPULSION_H2STORAGE_MASS, "fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.h2storage.physical")
+class ComputeH2StorageWeightPhysical(ExplicitComponent):
+        """
+        Computing hydrogen storage weight using physical model of A. J. COLOZZA. “Hydrogen Storage for Aircraft Applications Overview”. In: (2002).
+        Complemented and calibrated based on data of "Technical Assessment of Compressed Hydrogen Storage Tank Systems for Automotive Applications", Thanh Hua, Argonne National Lab
+        """
+
+        def setup(self):
+
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:nb_tanks", val=np.nan, units=None)
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:single_tank_volume", val=np.nan, units='m**3')
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume", val=np.nan, units="m**3")
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:cfc_density", val=np.nan, units='kg/m**3')
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:liner_density", val=np.nan, units='kg/m**3')
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:bop_factor", val=np.nan, units=None)
+            self.add_input("data:geometry:hybrid_powertrain:h2_storage:single_tank_liner_volume", val=np.nan, units='m**3')
+
+            self.add_output("data:weight:hybrid_powertrain:h2_storage:mass", units="kg")
+
+        def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+            nb_tanks = inputs['data:geometry:hybrid_powertrain:h2_storage:nb_tanks']
+            tank_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:single_tank_volume']
+            density_cfp = inputs['data:geometry:hybrid_powertrain:h2_storage:cfc_density']
+            density_liner = inputs['data:geometry:hybrid_powertrain:h2_storage:liner_density']
+            bop_factor = inputs["data:geometry:hybrid_powertrain:h2_storage:bop_factor"]
+            liner_volum = inputs["data:geometry:hybrid_powertrain:h2_storage:single_tank_liner_volume"]
+            int_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume']
+
+            tank_mass = ((tank_volume - liner_volum - int_volume) * density_cfp + liner_volum * density_liner) * bop_factor  # [kg]
+
+            b12 = nb_tanks * tank_mass
+
+            outputs['data:weight:hybrid_powertrain:h2_storage:mass'] = b12

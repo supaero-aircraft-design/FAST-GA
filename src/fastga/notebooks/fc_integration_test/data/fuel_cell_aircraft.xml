@@ -101,14 +101,18 @@
           <stack_width units="m" is_input="True">0.155</stack_width>
         </fuel_cell>
         <h2_storage>
-          <fos is_input="True">2.25<!--Factor of safety defined by industry standard specifications--></fos>
-          <length_radius_ratio is_input="True">6</length_radius_ratio>
-          <maximum_stress units="MPa" is_input="True">1900<!--Maximum stress allowed by the chosen material--></maximum_stress>
-          <nb_tanks is_input="True">2</nb_tanks>
-          <tank_density units="kg/m**3" is_input="True">1530</tank_density>
-          <thickness_fitting_factor is_input="True">1<!--Parameter to adjust the thickness of the fuel tanks (too low)--></thickness_fitting_factor>
           <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
           <gravimetric_capacity_700b is_input="True">0.048</gravimetric_capacity_700b>
+          <nb_tanks is_input="True">2</nb_tanks>
+          <length_radius_ratio is_input="True">3</length_radius_ratio>
+          <fos is_input="True">2.25</fos>
+          <maximum_stress units="MPa" is_input="True">1900</maximum_stress>
+          <mass_fitting_factor is_input="True">1.0</mass_fitting_factor>
+          <cfc_density units="kg/m**3" is_input="True">1530</cfc_density>
+          <thickness_fitting_factor is_input="True">1.754</thickness_fitting_factor>
+          <liner_thickness is_input="True" units='mm'>5.0</liner_thickness>
+          <liner_density is_input="True" units="kg/m**3">1000.</liner_density>
+          <bop_factor is_input="True">1.3</bop_factor>
         </h2_storage>
         <hex>
           <radiator_surface_density units="kg/cm**2" is_input="True">0.004</radiator_surface_density>

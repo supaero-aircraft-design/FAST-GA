@@ -15,8 +15,11 @@ weight calculations. """
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SUBMODEL_PROPULSION_BOP_MASS
 
 
+@RegisterSubmodel(SUBMODEL_PROPULSION_BOP_MASS, 'fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.bop.legacy')
 class ComputeBoPWeight(ExplicitComponent):
     """
     Weight estimation for the BoP.

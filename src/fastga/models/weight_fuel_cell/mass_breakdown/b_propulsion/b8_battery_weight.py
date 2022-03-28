@@ -17,8 +17,10 @@ Estimation of battery weight
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from fastga.models.hybrid_powertrain.components.resources.constants import CELL_WEIGHT_FRACTION
+from fastoad.module_management.service_registry import RegisterSubmodel
+from .constants import SUBMODEL_PROPULSION_BATTERY_MASS
 
-
+@RegisterSubmodel(SUBMODEL_PROPULSION_BATTERY_MASS, "fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.battery.legacy")
 class ComputeBatteryWeight(ExplicitComponent):
     """
     Weight estimation for battery

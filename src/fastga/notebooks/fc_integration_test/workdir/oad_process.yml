@@ -3,7 +3,7 @@ title: Sample OAD Process applied to beechcraft
 # List of folder paths where user added custom registered OpenMDAO components
 module_folders:
     # - D:\enguyen\fuel-cell-general-aviation\src\fastga\models\weight_fuel_cell\mass_breakdown\b_propulsion
-    - D:\enguyen\fuel-cell-general-aviation\src\fastga\models\weight_fuel_cell\cg\cg_components\b_propulsion
+    # - D:\enguyen\fuel-cell-general-aviation\src\fastga\models\weight_fuel_cell\cg\cg_components\b_propulsion
 
 # Input and output files
 input_file: ./problem_inputs.xml
@@ -18,6 +18,7 @@ submodels:
     submodel.weight.cg.propulsion : fastga.submodel.weight.cg.propulsion.hybrid.fuelcell
     submodel.weight.cg.propulsion.tank: fastga.submodel.weight.cg.propulsion.tank.gh2
     submodel.aerodynamics.other.cd0: fastga.submodel.aerodynamics.other.cd0.legacy
+    submodel.weight.mass.propulsion.h2storage : fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.h2storage.legacy
 
 model:
     # propeller:
