@@ -99,7 +99,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
 )
 class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
     """
-    Flight controls weight estimation
+    Flight controls weight estimation.
 
     Based on a statistical analysis. See :cite:`wells:2017`.
     """

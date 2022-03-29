@@ -26,9 +26,11 @@ from ..constants import SUBMODEL_FLIGHT_CONTROLS_CG
 )
 class ComputeFlightControlCG(ExplicitComponent):
     """
-    Control surfaces center of gravity estimation. Based on the position of the aerodynamic
-    center of all lifting surfaces. Not taken at the exact position of the control surfaces as
-    flight controls weight includes cockpit controls and pulleys/cables.
+    Control surfaces center of gravity estimation.
+
+    Based on the position of the aerodynamic center of all lifting surfaces. Not taken at the exact
+    position of the control surfaces as flight controls weight includes cockpit controls and
+    pulleys/cables.
     """
 
     def setup(self):

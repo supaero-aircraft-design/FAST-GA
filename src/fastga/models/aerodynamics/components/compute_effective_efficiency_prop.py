@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import warnings
+import numpy as np
 import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
@@ -78,32 +78,36 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
-        else:
-            altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-
-        if engine_layout == 3.0:
-            wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
-            if self.options["low_speed_aero"]:
+            if engine_layout == 3.0:
+                wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
-            else:
-                friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
-        elif engine_layout == 1.0 or engine_layout == 2.0:
-            wet_area_cowling = inputs["data:geometry:propulsion:nacelle:wet_area"]
-            if self.options["low_speed_aero"]:
+            elif engine_layout == 1.0 or engine_layout == 2.0:
+                wet_area_cowling = inputs["data:geometry:propulsion:nacelle:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:nacelles:low_speed:CD0"]
             else:
-                friction_drag_coeff = inputs["data:aerodynamics:nacelles:cruise:CD0"]
-        else:
-            wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
-            if self.options["low_speed_aero"]:
+                wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
                 friction_drag_coeff = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
-            else:
-                friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
-            warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    engine_layout
+                warnings.warn(
+                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
+                        engine_layout
+                    )
                 )
-            )
+        else:
+            altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+            if engine_layout == 3.0:
+                wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
+                friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
+            elif engine_layout == 1.0 or engine_layout == 2.0:
+                wet_area_cowling = inputs["data:geometry:propulsion:nacelle:wet_area"]
+                friction_drag_coeff = inputs["data:aerodynamics:nacelles:cruise:CD0"]
+            else:
+                wet_area_cowling = inputs["data:geometry:fuselage:wet_area"]
+                friction_drag_coeff = inputs["data:aerodynamics:fuselage:cruise:CD0"]
+                warnings.warn(
+                    "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
+                        engine_layout
+                    )
+                )
 
         # All drag coefficient are given wrt the wing area but for this formula we need to have
         # this coefficient with respect to the cowling wet area

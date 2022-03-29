@@ -12,16 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import os
 import math
-import openmdao.api as om
 import copy
 import logging
+import time
 
+import numpy as np
+import openmdao.api as om
 from scipy.constants import g
 from scipy.interpolate import interp1d
-import time
 
 from stdatm import Atmosphere
 
@@ -352,11 +352,11 @@ class _compute_climb(DynamicEquilibrium):
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)
-            q = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
-                inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs, gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
             )
             thrust = float(previous_step[1])
 
@@ -512,11 +512,11 @@ class _compute_cruise(DynamicEquilibrium):
         while distance_t < cruise_distance:
 
             # Calculate dynamic pressure
-            q = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
-                inputs, 0.0, q, 0.0, 0.0, mass_t, "none", previous_step[0:2]
+                inputs, 0.0, dynamic_pressure, 0.0, 0.0, mass_t, "none", previous_step[0:2]
             )
             thrust = float(previous_step[1])
 
@@ -680,17 +680,17 @@ class _compute_descent(DynamicEquilibrium):
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * math.sin(gamma)
-            q = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium, decrease gamma if obtained thrust is negative
             previous_step = self.dynamic_equilibrium(
-                inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs, gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
             )
             thrust = previous_step[1]
             while thrust < 0.0:
                 gamma = 0.9 * gamma
                 previous_step = self.dynamic_equilibrium(
-                    inputs, gamma, q, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                    inputs, gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
                 )
                 thrust = previous_step[1]
 
