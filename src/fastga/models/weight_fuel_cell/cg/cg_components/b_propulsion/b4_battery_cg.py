@@ -49,8 +49,8 @@ class ComputeBatteryCG(ExplicitComponent):
         if nb_packs == 1:  # Single battery placed behind the pilot seat and the hydrogen tanks : 95% of the cabin
             cg_b4 = fus_front_length + 0.95 * cabin_length
         else:  # Both batteries placed one after the other at the front of the aircraft behind fuel cell stacks
-            cg_batt_1 = 0.15 * fus_length  # 15% of the fuselage
-            cg_batt_2 = 0.2 * fus_length  # 20% of the fuselage
+            cg_batt_1 = 0.7 * fus_front_length  # 70% of the fuselage front
+            cg_batt_2 = 0.85 * fus_front_length  # 85% of the fuselage front
             cg_b4 = (cg_batt_1 + cg_batt_2) / 2
 
         outputs["data:weight:hybrid_powertrain:battery:CG:x"] = cg_b4

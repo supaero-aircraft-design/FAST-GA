@@ -625,7 +625,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.engine.width = self.ref["width"] * (self.max_power / self.ref["max_power"]) ** (1 / 3)
 
         if self.prop_layout == 3.0:
-            nacelle_length = 1.15 * self.engine.length
+            nacelle_length = 4.0 * self.engine.length
             # Based on the length between nose and firewall for TB20 and SR22
         else:
             nacelle_length = 1.5 * self.engine.length

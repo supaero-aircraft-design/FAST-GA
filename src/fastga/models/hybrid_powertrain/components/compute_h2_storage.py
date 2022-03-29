@@ -51,6 +51,7 @@ class ComputeH2Storage(om.ExplicitComponent):
         # self.add_output("data:weight:hybrid_powertrain:h2_storage:single_tank_mass", units='kg')
         # self.add_output("data:weight:hybrid_powertrain:h2_storage:total_tanks_mass", units='kg')
         self.add_output("data:geometry:hybrid_powertrain:h2_storage:single_tank_liner_volume", units='m**3')
+        self.add_output("data:weight:aircraft:MFW", units="kg")
 
         self.declare_partials('*', '*', method="fd")
 
@@ -104,5 +105,6 @@ class ComputeH2Storage(om.ExplicitComponent):
         outputs['data:geometry:hybrid_powertrain:h2_storage:tank_internal_length'] = tank_length + 2 * tank_radius
         outputs['data:geometry:hybrid_powertrain:h2_storage:wall_thickness'] = thickness
         outputs['data:geometry:hybrid_powertrain:h2_storage:total_h2_mass_storable'] = m_H
+        outputs['data:weight:aircraft:MFW'] = m_H
         # outputs['data:weight:hybrid_powertrain:h2_storage:single_tank_mass'] = tank_mass
         # outputs['data:weight:hybrid_powertrain:h2_storage:total_tanks_mass'] = tot_tank_mass

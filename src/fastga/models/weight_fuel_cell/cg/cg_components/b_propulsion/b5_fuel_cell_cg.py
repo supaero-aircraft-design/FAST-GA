@@ -25,16 +25,16 @@ class ComputeFuelCellCG(ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:hybrid_powertrain:fuel_cell:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        fus_length = inputs["data:geometry:fuselage:length"]
+        fus_front_length = inputs["data:geometry:fuselage:front_length"]
 
-        # Fuel cell stack(s) assumed to be placed at 10% of the fuselage length, in parallel if more than 1 stack
-        cg_b5 = 0.1 * fus_length
+        # Fuel cell stack(s) assumed to be placed at 50% of the fuselage front length, in parallel if more than 1 stack
+        cg_b5 = 0.5 * fus_front_length
 
         outputs["data:weight:hybrid_powertrain:fuel_cell:CG:x"] = cg_b5
