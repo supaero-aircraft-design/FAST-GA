@@ -7,7 +7,7 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/supaero-aircraft-design/FAST-GA/HEAD?urlpath=lab%2Ftree%2Fsrc%2Ffastga%2Fnotebooks)
 
 FAST-(OAD)-GA: Future Aircraft Sizing Tool - Overall Aircraft Design (General Aviation extension)
 ===============================================================================================
