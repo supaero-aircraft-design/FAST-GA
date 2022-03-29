@@ -79,7 +79,7 @@ class GeometryFixedFuselage(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "compute_propeller_distance_from_leading_edge",
+            "compute_propeller_geometry",
             RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
@@ -137,7 +137,7 @@ class GeometryFixedTailDistance(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "compute_propeller_distance_from_leading_edge",
+            "compute_propeller_geometry",
             RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
             promotes=["*"],
         )

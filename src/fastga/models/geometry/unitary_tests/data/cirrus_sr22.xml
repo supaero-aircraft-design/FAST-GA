@@ -47,6 +47,7 @@
         <maximum_width units="m" is_input="False">1.2720000000000002<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">3.1814765664767926<!--length of rear non-cylindrical part of the fuselage--></rear_length>
         <wet_area units="m**2" is_input="False">21.952067466091645<!--fuselage wet area--></wet_area>
+        <master_cross_section units="m**2" is_input="False">1.410<!--fuselage wet area--></master_cross_section>
       </fuselage>
       <horizontal_tail>
         <area units="m**2" is_input="False">2.674064426651461<!--horizontal tail area--></area>
@@ -89,6 +90,7 @@
         <length units="m" is_input="False">7.788566303432905</length>
       </plane>
       <propeller>
+        <average_rpm units="rpm">2500.0</average_rpm>
         <blades_number is_input="True">3.0<!--number of blades on the propeller--></blades_number>
         <chord_vect units="m" is_input="True">[0.11163526, 0.15856474, 0.16254664, 0.21189369, 0.18558474, 0.11163526, 0.11163526]<!--blade chord at the station along the radius stored in radius_ratio_vect--></chord_vect>
         <depth units="m" is_input="True">0.3<!--depth of the propeller--></depth>
@@ -197,6 +199,7 @@
           <y_ratio is_input="True">0.34<!--engine position with respect to total span--></y_ratio>
         </engine>
         <nacelle>
+          <master_cross_section units="m**2" is_input="False">0.849<!--fuselage wet area--></master_cross_section>
           <height units="m" is_input="False">0.7546659597502833<!--height of the nacelle--></height>
           <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
           <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
@@ -509,13 +512,13 @@
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi-in phase in sizing mission--></duration>
           <fuel units="kg" is_input="False">1.3691263819948132<!--mass of consumed fuel during taxi-in phase in sizing mission--></fuel>
-          <speed units="knot" is_input="True">30.0<!--speed during taxi-in phase in sizing mission--></speed>
+          <speed units="knot" is_input="True">20.0<!--speed during taxi-in phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">300.0<!--duration of taxi-out phase in sizing mission--></duration>
           <fuel units="kg" is_input="False">1.3691263819948132<!--mass of consumed fuel during taxi-out phase in sizing mission--></fuel>
-          <speed units="knot" is_input="True">30.0<!--speed during taxi-out phase in sizing mission--></speed>
+          <speed units="knot" is_input="True">20.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>

@@ -7,6 +7,7 @@ data:geometry:propeller:blades_number || number of blades on the propeller
 data:geometry:propeller:chord_vect || blade chord at the station along the radius stored in radius_ratio_vect
 data:geometry:propeller:diameter || propeller diameter
 data:geometry:propeller:hub_diameter || propeller hub diameter
+data:geometry:propeller:average_rpm || average rotation speed of the propeller
 data:geometry:propeller:depth || depth of the propeller
 data:geometry:propeller:radius_ratio_vect || blade station at which blade geometric properties are sampled, as a percent of blade radius
 data:geometry:propeller:sweep_vect || blade sweep at the station along the radius stored in radius_ratio_vect
@@ -86,3 +87,5 @@ settings:geometry:fuel_tanks:depth || ratio of the tank depth as a percentage of
 
 data:weight:airframe:wing:punctual_mass:mass || mass of the punctual masses on the wing used for wing load computation
 data:weight:airframe:wing:punctual_mass:y_ratio || position (as a percent of wing semi-span) of the punctual masses on the wing used for wing load computation, only positive ratio will be considered
+
+data:aerodynamics:propeller:installation_effect:effective_advance_ratio || Value to multiply the flight advance ration with to obtain the effective advance ratio due to the presence of cowling (fuselage or nacelle) behind the propeller

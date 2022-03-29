@@ -89,7 +89,7 @@ def test_compute_cg_flight_control():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFlightControlCG(), ivc)
     x_cg_a4 = problem.get_val("data:weight:airframe:flight_controls:CG:x", units="m")
-    assert x_cg_a4 == pytest.approx(4.54, abs=1e-2)
+    assert x_cg_a4 == pytest.approx(5.72, abs=1e-2)
 
 
 def test_compute_cg_landing_gear():
@@ -219,9 +219,9 @@ def test_compute_cg_ratio_aft():
     empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
     assert empty_mass == pytest.approx(1109.06, abs=1e-2)
     cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
-    assert cg_x == pytest.approx(3.19, abs=1e-2)
+    assert cg_x == pytest.approx(3.22, abs=1e-2)
     cg_mac_pos = problem["data:weight:aircraft:empty:CG:MAC_position"]
-    assert cg_mac_pos == pytest.approx(0.07, abs=1e-2)
+    assert cg_mac_pos == pytest.approx(0.09, abs=1e-2)
 
 
 def test_compute_cg_load_case():
@@ -271,9 +271,9 @@ def test_complete_cg():
     # noinspection PyTypeChecker
     problem = run_system(CG(propulsion_id=ENGINE_WRAPPER), ivc, check=True)
     cg_global = problem.get_val("data:weight:aircraft:CG:aft:x", units="m")
-    assert cg_global == pytest.approx(3.508, abs=1e-3)
+    assert cg_global == pytest.approx(3.527, abs=1e-3)
     cg_ratio = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
-    assert cg_ratio == pytest.approx(0.286, abs=1e-3)
+    assert cg_ratio == pytest.approx(0.299, abs=1e-3)
     z_cg_empty_ac = problem.get_val("data:weight:aircraft_empty:CG:z", units="m")
     assert z_cg_empty_ac == pytest.approx(1.21, abs=1e-3)
     z_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:z", units="m")

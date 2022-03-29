@@ -15,7 +15,6 @@ Test module for geometry functions of the different components.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-import numpy as np
 import pytest
 
 from ..geom_components.fuselage.components import (
@@ -54,7 +53,10 @@ from ..geom_components.vt.components import (
     ComputeVTWetArea,
 )
 from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
-from ..geom_components.propeller.compute_propeller import ComputePropellerGeometry
+from ..geom_components.propeller.components import (
+    ComputePropellerPosition,
+    ComputePropellerInstallationEffect,
+)
 from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
@@ -329,6 +331,8 @@ def test_fuselage_wet_area():
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(29.630, abs=1e-3)
+    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
+    assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
 
 def test_fuselage_wet_area_flops():
@@ -342,6 +346,8 @@ def test_fuselage_wet_area_flops():
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(27.213, abs=1e-3)
+    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
+    assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
 
 def test_geometry_wing_toc():
@@ -533,6 +539,10 @@ def test_geometry_nacelle():
     assert nacelle_width == pytest.approx(0.929, abs=1e-3)
     nacelle_wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units="m**2")
     assert nacelle_wet_area == pytest.approx(3.841, abs=1e-3)
+    nacelle_master_cross_section = problem.get_val(
+        "data:geometry:propulsion:nacelle:master_cross_section", units="m**2"
+    )
+    assert nacelle_master_cross_section == pytest.approx(0.57890572, abs=1e-3)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
     y_nacelle_result = 1.972
     assert abs(y_nacelle - y_nacelle_result) < 1e-3
@@ -541,17 +551,31 @@ def test_geometry_nacelle():
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
 
 
-def test_geometry_propeller():
+def test_position_propeller():
     """Tests computation of the nacelle and pylons component"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputePropellerGeometry()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputePropellerPosition()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputePropellerGeometry(), ivc)
+    problem = run_system(ComputePropellerPosition(), ivc)
     x_prop_from_le = problem.get_val("data:geometry:propulsion:nacelle:from_LE", units="m")
     x_prop_from_le_result = 0.1954
     assert abs(x_prop_from_le - x_prop_from_le_result) < 1e-3
+
+
+def test_installation_effect_propeller():
+    """Tests computation propeller effective advance ratio factor computation"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputePropellerInstallationEffect()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputePropellerInstallationEffect(), ivc)
+    prop_installation_effect = problem.get_val(
+        "data:aerodynamics:propeller:installation_effect" ":effective_advance_ratio"
+    )
+    assert prop_installation_effect == pytest.approx(0.949, abs=1e-3)
 
 
 def test_landing_gear_geometry():

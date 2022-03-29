@@ -107,6 +107,18 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "data:aerodynamics:propeller:cruise_level:altitude", units="m", val=np.nan
         )
         component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
+        component.add_input(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+            val=1.0,
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+            val=1.0,
+        )
+        component.add_input(
+            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+            val=1.0,
+        )
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -130,6 +142,15 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "thrust_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust"],
             "thrust_limit_CL": inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"],
             "efficiency_CL": inputs["data:aerodynamics:propeller:cruise_level:efficiency"],
+            "effective_J": inputs[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
+            ],
+            "effective_efficiency_ls": inputs[
+                "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
+            ],
+            "effective_efficiency_cruise": inputs[
+                "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
+            ],
         }
 
         return FuelEngineSet(
@@ -146,6 +167,12 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             1.0,
             3.0,
         ],  # propulsion position (3.0=Nose, 1.0=Wing)
+        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio": [0.0, 1.0],
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed": [
+            0.0,
+            1.0,
+        ],
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise": [0.0, 1.0],
     }
 )
 class OMBasicICEngineComponent(BaseOMPropulsionComponent):

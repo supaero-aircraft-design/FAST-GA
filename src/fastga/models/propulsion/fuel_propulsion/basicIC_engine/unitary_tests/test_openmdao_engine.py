@@ -791,7 +791,7 @@ def test_OMBasicICEngineComponent():
     machs = [0, 0.3, 0.3, 0.5, 0.5]
     altitudes = [0, 0, 0, 4000, 8000]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3193.97963124, 480.58508079, 480.58508079, 145.47341988, 241.10415143]
+    thrusts = [3193.979631, 465.986781, 465.986781, 139.615132, 233.405598]
     phases = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -799,7 +799,7 @@ def test_OMBasicICEngineComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [2.414166e-16, 1.356846e-05, 1.356846e-05, 2.939614e-05, 2.172072e-05]
+    expected_sfc = [2.488831e-16, 1.398174e-05, 1.398174e-05, 3.069944e-05, 2.250824e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:IC_engine:max_power", 130000, units="W")
@@ -818,6 +818,13 @@ def test_OMBasicICEngineComponent():
         "data:aerodynamics:propeller:cruise_level:thrust_limit", THRUST_CL_LIMIT, units="N"
     )
     ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
+    ivc.add_output("data:aerodynamics:propeller:installation_effect:effective_advance_ratio", 0.95)
+    ivc.add_output(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed", 0.97
+    )
+    ivc.add_output(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise", 0.98
+    )
     # We will only test one engine here
     ivc.add_output("data:geometry:propulsion:engine:count", 1)
 

@@ -56,6 +56,7 @@ from fastga.models.aerodynamics.components import (
     ComputeNonEquilibratedPolar,
     ComputeExtremeCLWing,
     ComputeExtremeCLHtp,
+    ComputeEffectiveEfficiencyPropeller,
 )
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
@@ -1000,6 +1001,37 @@ def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
     ) == pytest.approx(cy_delta_r_cruise, abs=1e-4)
 
 
+def effective_efficiency(
+    XML_FILE: str, effective_efficiency_low_speed: float, effective_efficiency_cruise: float
+):
+    """Tests effective efficiency of the propeller!"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeEffectiveEfficiencyPropeller(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEffectiveEfficiencyPropeller(low_speed_aero=True), ivc)
+    assert (
+        problem.get_val(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+        )
+        == pytest.approx(effective_efficiency_low_speed, abs=1e-4)
+    )
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeEffectiveEfficiencyPropeller()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEffectiveEfficiencyPropeller(), ivc)
+    assert (
+        problem.get_val(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+        )
+        == pytest.approx(effective_efficiency_cruise, abs=1e-4)
+    )
+
+
 def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
     """Tests cm alpha of the fuselage"""
     # Research independent input value in .xml file
@@ -1149,7 +1181,6 @@ def propeller(
                 sections_profile_name_list=["naca4430"],
                 sections_profile_position_list=[0],
                 elements_number=3,
-                vectors_length=7,
             )
         ),
         __file__,
@@ -1162,7 +1193,6 @@ def propeller(
             sections_profile_name_list=["naca4430"],
             sections_profile_position_list=[0],
             elements_number=3,
-            vectors_length=7,
         ),
         ivc,
     )

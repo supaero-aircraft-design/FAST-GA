@@ -50,7 +50,6 @@ class ComputePropellerPerformance(om.Group):
             types=list,
         )
         self.options.declare("elements_number", default=20, types=int)
-        self.options.declare("vectors_length", default=10, types=int)
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -75,7 +74,6 @@ class ComputePropellerPerformance(om.Group):
                 sections_profile_position_list=self.options["sections_profile_position_list"],
                 sections_profile_name_list=self.options["sections_profile_name_list"],
                 elements_number=self.options["elements_number"],
-                vectors_length=self.options["vectors_length"],
             ),
             promotes=["*"],
         )
@@ -90,19 +88,39 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("sections_profile_position_list", types=list)
         self.options.declare("sections_profile_name_list", types=list)
-        self.options.declare("average_rpm", default=2500.0, types=float)
         self.options.declare("elements_number", default=20, types=int)
-        self.options.declare("vectors_length", default=10, types=int)
 
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:blades_number", val=np.nan)
-        nans_array = np.full(self.options["vectors_length"], np.nan)
-        self.add_input("data:geometry:propeller:sweep_vect", val=nans_array, units="deg")
-        self.add_input("data:geometry:propeller:chord_vect", val=nans_array, units="m")
-        self.add_input("data:geometry:propeller:twist_vect", val=nans_array, units="deg")
-        self.add_input("data:geometry:propeller:radius_ratio_vect", val=nans_array)
+        self.add_input(
+            "data:geometry:propeller:average_rpm",
+            val=2500,
+            units="rpm",
+        )
+        self.add_input(
+            "data:geometry:propeller:sweep_vect",
+            val=np.nan,
+            units="deg",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propeller:radius_ratio_vect",
+        )
+        self.add_input(
+            "data:geometry:propeller:chord_vect",
+            val=np.nan,
+            units="m",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propeller:radius_ratio_vect",
+        )
+        self.add_input(
+            "data:geometry:propeller:twist_vect",
+            val=np.nan,
+            units="deg",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propeller:radius_ratio_vect",
+        )
+        self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -140,7 +158,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         _LOGGER.debug("Entering propeller computation")
 
         # Define init values
-        omega = self.options["average_rpm"]
+        omega = inputs["data:geometry:propeller:average_rpm"]
         v_min = 5.0
         v_max = inputs["data:TLAR:v_cruise"] * 1.2
         speed_interp = np.linspace(v_min, v_max, SPEED_PTS_NB)
@@ -189,7 +207,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
     def compute_extreme_pitch(self, inputs, v_inf):
         """For a given flight speed computes the min and max possible value of theta at .75 r/R."""
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
-        omega = self.options["average_rpm"]
+        omega = inputs["data:geometry:propeller:average_rpm"]
         phi_vect = (
             180.0
             / math.pi

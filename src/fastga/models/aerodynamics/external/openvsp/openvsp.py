@@ -35,10 +35,6 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import (
-    PROPELLER_EFFICIENCY,
-)
-
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory
 
@@ -1265,6 +1261,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
+        atm.true_airspeed = v_inf
         reynolds = v_inf * l0_wing / atm.kinematic_viscosity
 
         # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM ########
@@ -1279,14 +1276,18 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         )
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)
-        power = thrust * v_inf / PROPELLER_EFFICIENCY
+        thrust_one_prop = thrust / engine_count
+        propeller_efficiency = float(
+            propulsion_model.engine.propeller_efficiency(thrust_one_prop, atm)
+        )
+        shaft_power_one_prop = thrust_one_prop * v_inf / propeller_efficiency
         engine_rps = engine_rpm / 60.0
         # For now thrust is distributed equally on each engine
         thrust_coefficient = round(
-            float(thrust / engine_count / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)), 5
+            float(thrust_one_prop / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)), 5
         )
         power_coefficient = round(
-            float(power / engine_count / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)), 5
+            float(shaft_power_one_prop / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)), 5
         )
 
         prop_radius = round(propeller_diameter / 2.0, 3)

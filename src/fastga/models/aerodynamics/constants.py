@@ -34,6 +34,7 @@ SUBMODEL_CL_EXTREME_CLEAN_HT = (
 )
 SUBMODEL_CL_ALPHA_VT = "submodel.aerodynamics.vertical_tail.lift_curve_slope"
 SUBMODEL_CY_RUDDER = "submodel.aerodynamics.rudder.yawing_moment"
+SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER = "submodel.aerodynamics.propeller.effective_efficiency"
 SUBMODEL_HINGE_MOMENTS_TAIL_2D = "submodel.aerodynamics.tail.hinge_moments.2d"
 SUBMODEL_HINGE_MOMENTS_TAIL_3D = "submodel.aerodynamics.tail.hinge_moments.3d"
 SUBMODEL_HINGE_MOMENTS_TAIL = "submodel.aerodynamics.tail.hinge_moments"

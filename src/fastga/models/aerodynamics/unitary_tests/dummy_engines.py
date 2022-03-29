@@ -14,12 +14,13 @@
 
 import pandas as pd
 from openmdao.core.component import Component
-from typing import Union
+from typing import Union, Sequence
 import numpy as np
 
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
@@ -74,6 +75,11 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
         return 0.0
+
+    def propeller_efficiency(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+    ) -> Union[float, Sequence]:
+        return 0.83
 
 
 @RegisterPropulsion(ENGINE_WRAPPER_BE76)
@@ -148,6 +154,11 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
         return 0.0
+
+    def propeller_efficiency(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+    ) -> Union[float, Sequence]:
+        return 0.83
 
 
 @RegisterPropulsion(ENGINE_WRAPPER_SR22)

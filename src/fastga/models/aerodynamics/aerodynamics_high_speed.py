@@ -34,6 +34,7 @@ from .constants import (
     SUBMODEL_CN_BETA_FUSELAGE,
     SUBMODEL_CM_ALPHA_FUSELAGE,
     SUBMODEL_CY_RUDDER,
+    SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
 )
 
 
@@ -133,6 +134,16 @@ class AerodynamicsHighSpeed(Group):
             RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
+
+        option_high_speed = {"low_speed_aero": False}
+        self.add_subsystem(
+            "Effective_efficiency_propeller",
+            RegisterSubmodel.get_submodel(
+                SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER, options=option_high_speed
+            ),
+            promotes=["*"],
+        )
+
         self.add_subsystem(
             "L_D_max", RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
         )
@@ -145,7 +156,6 @@ class AerodynamicsHighSpeed(Group):
             promotes=["*"],
         )
 
-        option_high_speed = {"low_speed_aero": False}
         self.add_subsystem(
             "clAlpha_vt",
             RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
