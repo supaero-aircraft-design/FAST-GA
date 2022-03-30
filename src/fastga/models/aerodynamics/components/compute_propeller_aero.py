@@ -12,16 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import openmdao.api as om
 import math
 import logging
 import numpy as np
-import pandas as pd
 from scipy.optimize import fsolve
 
 from stdatm import Atmosphere
-import fastga.models.aerodynamics.external.xfoil as xfoil
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
@@ -383,25 +380,29 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         omega = omega * math.pi / 30.0
         atm = Atmosphere(altitude, altitude_in_feet=False)
 
+        theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
+
         # Initialise vectors
         vi_vect = np.zeros(elements_number)
         vt_vect = np.zeros(elements_number)
-        radius_vect = np.zeros(elements_number)
-        theta_vect = np.zeros(elements_number)
         thrust_element_vector = np.zeros(elements_number)
         torque_element_vector = np.zeros(elements_number)
         alpha_vect = np.zeros(elements_number)
         speed_vect = np.array([0.1 * float(v_inf), 1.0])
 
+        elements_number = np.arange(3)
+        radius = radius_min + (elements_number + 0.5) * element_length
+        chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
+
+        theta = np.interp(radius / radius_max, radius_ratio_vect, twist_vect) + (
+            theta_75 - theta_75_ref
+        )
+        sweep = np.interp(radius / radius_max, radius_ratio_vect, sweep_vect)
+
         # Loop on element number to compute equations
-        for i in range(elements_number):
+        for i in elements_number:
 
-            # Calculate element center radius and chord
-            radius = radius_min + (i + 0.5) * element_length
-            chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
-
-            # Find related profile name
-            index = np.where(sections_profile_position_list < (radius / radius_max))[0]
+            index = np.where(sections_profile_position_list < (radius[i] / radius_max))[0]
             if index is None:
                 profile_name = sections_profile_name_list[0]
             else:
@@ -414,28 +415,20 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                 inputs[profile_name + "_polar:CD"],
             )
 
-            # Search element angle to aircraft axial air (~v_inf) and sweep angle
-            theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
-            theta = np.interp(radius / radius_max, radius_ratio_vect, twist_vect) + (
-                theta_75 - theta_75_ref
-            )
-            theta_vect[i] = theta
-            sweep = np.interp(radius / radius_max, radius_ratio_vect, sweep_vect)
-
             # Solve BEM vs. disk theory system of equations
             speed_vect = fsolve(
                 self.delta,
                 speed_vect,
                 (
-                    radius,
+                    radius[i],
                     radius_min,
                     radius_max,
-                    chord,
+                    chord[i],
                     blades_number,
-                    sweep,
+                    sweep[i],
                     omega,
                     v_inf,
-                    theta,
+                    theta[i],
                     alpha_element,
                     cl_element,
                     cd_element,
@@ -445,31 +438,24 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             )
             vi_vect[i] = speed_vect[0]
             vt_vect[i] = speed_vect[1]
-            radius_vect[i] = radius
             results = self.bem_theory(
                 speed_vect,
-                radius,
-                chord,
+                radius[i],
+                chord[i],
                 blades_number,
-                sweep,
+                sweep[i],
                 omega,
                 v_inf,
-                theta,
+                theta[i],
                 alpha_element,
                 cl_element,
                 cd_element,
                 atm,
             )
-            # results = self.disk_theory(
-            #     speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf
-            # )
             out_of_polars = results[3]
             if out_of_polars:
                 thrust_element_vector[i] = 0.0
                 torque_element_vector[i] = 0.0
-                # warnings.warn(
-                #   "Propeller element out of calculated polars: contribution canceled!"
-                # )
             else:
                 thrust_element_vector[i] = results[0] * element_length * atm.density
                 torque_element_vector[i] = results[1] * element_length * atm.density
@@ -479,9 +465,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         thrust = float(np.sum(thrust_element_vector))
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
-
-        # if eta < 0.0 or eta > 1.0:
-        #     warnings.warn("Propeller not working in propulsive mode!")
 
         return thrust, eta, torque
 
@@ -543,9 +526,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         c_d = np.interp(alpha, alpha_element, cd_element)
         if mach_local < 1:
             beta = math.sqrt(1 - mach_local ** 2.0)
-            # cl = cl / (beta + (1 - beta) * cl / 2)
-            # Prandtl-Glauert correction as Karman-Tsien
-            # and Laitone only apply to the pressure coefficient distribution
             c_l = c_l / beta
         else:
             beta = math.sqrt(mach_local ** 2.0 - 1)
