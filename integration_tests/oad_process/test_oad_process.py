@@ -34,7 +34,7 @@ for folder in PATH[1 : len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 
-AIRCRAFT_ID = ["be76"]
+AIRCRAFT_ID = ["sr22", "be76"]
 
 
 @pytest.fixture(scope="module")
@@ -97,7 +97,7 @@ def test_oad_process_vlm(cleanup):
                 problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1747.0, atol=1
             )
             # noinspection PyTypeChecker
-            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1112.0, atol=1)
+            assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1115.0, atol=1)
 
 
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")

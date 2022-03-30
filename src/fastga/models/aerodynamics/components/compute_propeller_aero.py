@@ -22,7 +22,7 @@ from scipy.optimize import fsolve
 
 from stdatm import Atmosphere
 import fastga.models.aerodynamics.external.xfoil as xfoil
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -75,8 +75,16 @@ class ComputePropellerPerformance(om.Group):
                 sections_profile_name_list=self.options["sections_profile_name_list"],
                 elements_number=self.options["elements_number"],
             ),
-            promotes=["*"],
+            promotes_inputs=["data:*"],
+            promotes_outputs=["*"],
         )
+
+        for profile in self.options["sections_profile_name_list"]:
+            self.connect(
+                profile + "_polar.xfoil:alpha", "propeller_aero." + profile + "_polar:alpha"
+            )
+            self.connect(profile + "_polar.xfoil:CL", "propeller_aero." + profile + "_polar:CL")
+            self.connect(profile + "_polar.xfoil:CD", "propeller_aero." + profile + "_polar:CD")
 
 
 class _ComputePropellerPerformance(om.ExplicitComponent):
@@ -123,6 +131,13 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
+
+        for profile in self.options["sections_profile_name_list"]:
+            self.add_input(
+                profile + "_polar:alpha", val=np.nan, units="deg", shape=POLAR_POINT_COUNT
+            )
+            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT)
+            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT)
 
         self.add_output(
             "data:aerodynamics:propeller:sea_level:efficiency", shape=(SPEED_PTS_NB, THRUST_PTS_NB)
@@ -393,7 +408,11 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                 profile_name = sections_profile_name_list[int(index[-1])]
 
             # Load profile polars
-            alpha_element, cl_element, cd_element = self.read_polar_result(profile_name)
+            alpha_element, cl_element, cd_element = self.reshape_polar(
+                inputs[profile_name + "_polar:alpha"],
+                inputs[profile_name + "_polar:CL"],
+                inputs[profile_name + "_polar:CD"],
+            )
 
             # Search element angle to aircraft axial air (~v_inf) and sweep angle
             theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
@@ -707,63 +726,18 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         return bem_result[0:1] - adt_result
 
     @staticmethod
-    def read_polar_result(airfoil_name):
-        """Reads the results of the xfoil run for the given profile."""
-        result_file = pth.join(xfoil.__path__[0], "resources", airfoil_name + "_30S.csv")
-        mach = 0.0
-        reynolds = 1e6
-        data_saved = pd.read_csv(result_file)
-        values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
-        labels = data_saved.to_numpy()[:, 0].tolist()
-        data_saved = pd.DataFrame(values, index=labels)
-        index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
-        data_reduced = data_saved.loc[labels, index_mach]
-        # Search if this exact reynolds has been computed and save results
-        reynolds_vect = np.array(
-            [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
+    def reshape_polar(alpha, cl, cd):
+        """
+        Reads the polar under the openmdao format (meaning with additional zeros and reshape
+        so that only relevant angle are considered.
+
+        Assumes that the AOA list is ordered.
+        """
+        idx_start = np.argmin(alpha)
+        idx_end = np.argmax(alpha)
+
+        return (
+            alpha[idx_start : idx_end + 1],
+            cl[idx_start : idx_end + 1],
+            cd[idx_start : idx_end + 1],
         )
-        index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
-        if len(index_reynolds) == 1:
-            interpolated_result = data_reduced.loc[labels, index_reynolds]
-        # Else search for lower/upper Reynolds
-        else:
-            lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
-            upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
-            if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
-                index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
-                interpolated_result = data_reduced.loc[labels, index_lower_reynolds]
-                # Calculate reynolds interval ratio
-                x_ratio = (min(upper_reynolds) - reynolds) / (
-                    min(upper_reynolds) - max(lower_reynolds)
-                )
-                # Search for common alpha range
-                alpha_lower = np.array(
-                    np.matrix(data_reduced.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                ).ravel()
-                alpha_upper = np.array(
-                    np.matrix(data_reduced.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                ).ravel()
-                alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                data_reduced.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
-                labels.remove("alpha")
-                # Calculate average values (cd, cl...) with linear interpolation
-                for label in labels:
-                    lower_value = np.array(
-                        np.matrix(data_reduced.loc[label, index_lower_reynolds].to_numpy()[0])
-                    ).ravel()
-                    upper_value = np.array(
-                        np.matrix(data_reduced.loc[label, index_upper_reynolds].to_numpy()[0])
-                    ).ravel()
-                    # If values relative to alpha vector, performs interpolation with shared vector
-                    if np.size(lower_value) == len(alpha_lower):
-                        lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
-                        upper_value = np.interp(alpha_shared, np.array(alpha_upper), upper_value)
-                    value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
-                    interpolated_result.loc[label, index_lower_reynolds] = str(value)
-        # Extract alpha, cl and cd vectors
-        # noinspection PyUnboundLocalVariable
-        alpha_vect = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
-        cl_vect = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
-        cd_vect = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
-        return alpha_vect, cl_vect, cd_vect
