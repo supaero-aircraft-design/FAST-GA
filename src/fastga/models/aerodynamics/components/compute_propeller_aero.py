@@ -452,7 +452,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                 cd_element,
                 atm,
             )
-            out_of_polars = results[2]
+            out_of_polars = results[3]
             if out_of_polars:
                 thrust_element_vector[i] = 0.0
                 torque_element_vector[i] = 0.0
@@ -550,100 +550,10 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         )
 
         # Store results
-        output = np.empty(3)
+        output = np.empty(4)
         output[0] = thrust_element
         output[1] = torque_element
-        output[2] = out_of_polars
-
-        return output
-
-    @staticmethod
-    def bem_theory_vect(
-        speed_vect: tuple,
-        radius: np.array,
-        chord: np.array,
-        blades_number: float,
-        sweep: np.array,
-        omega: float,
-        v_inf: float,
-        theta: np.array,
-        cl_interp,
-        cd_interp,
-        atm: Atmosphere,
-    ):
-        """
-        The core of the Propeller code. Given the geometry of a propeller element,
-        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
-        thrust and the torque produced using force and momentum with BEM theory.
-
-        :param speed_vect: the vector of axial and tangential induced speed in m/s
-        :param radius: radius position of the element center  [m]
-        :param chord: chord at the center of element [m]
-        :param blades_number: number of blades [-]
-        :param sweep: sweep angle [deg.]
-        :param omega: angular speed of propeller [rad/sec]
-        :param v_inf: flight speed [m/s]
-        :param theta: profile angle relative to aircraft airflow v_inf [deg.]
-        :param cl_interp: cl interpolation function [-]
-        :param cd_interp: cd interpolation function [-]
-        :param atm: atmosphere properties
-
-        :return: The calculated dT/(rho*dr) and dQ/(rho*dr) increments with BEM method.
-        """
-
-        # Extract axial/tangential speeds
-        v_i = speed_vect[0]
-        v_t = speed_vect[1]
-
-        # Calculate speed composition and relative air angle (in deg.)
-        v_ax = v_inf + v_i
-        v_t = (omega * radius - v_t) * np.cos(sweep * np.pi / 180.0)
-        rel_fluid_speed = np.sqrt(v_ax ** 2.0 + v_t ** 2.0)
-        phi = np.atan(v_ax / v_t)
-        alpha = theta - phi * 180.0 / np.pi
-
-        # Compute local mach
-        atm.true_airspeed = rel_fluid_speed
-        mach_local = atm.mach
-
-        try:
-            c_l = np.diag(cl_interp(alpha, radius))
-            c_d = np.diag(cd_interp(alpha, radius))
-            out_of_polars = False
-        except ValueError:
-            c_l = np.zeros_like(radius)
-            c_d = np.zeros_like(radius)
-            out_of_polars = True
-
-        if mach_local < 1:
-            beta = np.sqrt(1 - mach_local ** 2.0)
-            c_l = c_l / beta
-        else:
-            beta = np.sqrt(mach_local ** 2.0 - 1)
-            c_l = c_l / beta
-            c_d = c_d / beta
-
-        # Calculate force and momentum
-        thrust_element = (
-            0.5
-            * blades_number
-            * chord
-            * rel_fluid_speed ** 2.0
-            * (c_l * np.cos(phi) - c_d * np.sin(phi))
-        )
-        torque_element = (
-            0.5
-            * blades_number
-            * chord
-            * rel_fluid_speed ** 2.0
-            * (c_l * np.sin(phi) + c_d * np.cos(phi))
-            * radius
-        )
-
-        # Store results
-        output = np.empty(3)
-        output[0] = thrust_element
-        output[1] = torque_element
+        output[2] = alpha
         output[3] = out_of_polars
 
         return output
@@ -734,92 +644,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return output
 
-    # noinspection PyUnusedLocal
-    @staticmethod
-    def disk_theory_vect(
-        speed_vect: tuple,
-        radius: np.array,
-        radius_min: float,
-        radius_max: float,
-        blades_number: float,
-        sweep: np.array,
-        omega: float,
-        v_inf: float,
-    ):
-        """
-        The core of the Propeller code. Given the geometry of a propeller element,
-        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
-        thrust and the torque produced using force and momentum with disk theory.
-
-        :param speed_vect: the vector of axial and tangential induced speed in m/s
-        :param radius: radius position of the element center  [m]
-        :param radius_min: Hub radius [m]
-        :param radius_max: Max radius [m]
-        :param blades_number: number of blades [-]
-        :param sweep: sweep angle [deg.]
-        :param omega: angular speed of propeller [rad/sec]
-        :param v_inf: flight speed [m/s]
-
-        :return: The calculated dT/(rho*dr) and dQ/(rho*dr) increments with disk theory method.
-        """
-
-        # Extract axial/tangential speeds
-        v_i = speed_vect[0]
-        v_t = speed_vect[1]
-
-        # Calculate speed composition and relative air angle (in deg.)
-        v_ax = v_inf + v_i
-        # Needed for the computation of the hub lost factor
-        # phi = math.atan(v_ax / (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0))
-
-        # f_tip is the tip loose factor
-        f_tip = (
-            2
-            / np.pi
-            * np.acos(
-                np.exp(
-                    -blades_number
-                    / 2
-                    * (
-                        (radius_max - radius)
-                        / radius
-                        * np.sqrt(
-                            1
-                            + (omega * radius / np.max(v_inf + v_i, np.full_like(v_i, 1e-12)))
-                            ** 2.0
-                        )
-                    )
-                )
-            )
-        )
-
-        # f_hub is the hub loose factor FIXME: to be activated in future versions
-        # if phi > 0.0:
-        #     f_hub = min(
-        #         1.0,
-        #         2
-        #         / math.pi
-        #         * math.acos(
-        #             math.exp(
-        #                  -blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi))
-        #             )
-        #         ),
-        #     )
-        # else:
-        #     f_hub = 1.0
-        f_hub = 1.0
-
-        # Calculate force and momentum
-        thrust_element = 4.0 * np.pi * radius * (v_inf + v_i) * v_i * f_tip * f_hub
-        torque_element = 4.0 * np.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
-
-        # Store results
-        output = np.empty(2)
-        output[0] = thrust_element
-        output[1] = torque_element
-
-        return output
-
     def delta(
         self,
         speed_vect: np.array,
@@ -880,64 +704,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         )
 
         return bem_result[0:1] - adt_result
-
-    def delta_vect(
-        self,
-        speed_vect: tuple,
-        radius: np.array,
-        radius_min: float,
-        radius_max: float,
-        chord: np.array,
-        blades_number: float,
-        sweep: np.array,
-        omega: float,
-        v_inf: float,
-        theta: np.array,
-        cl_interp,
-        cd_interp,
-        atm: Atmosphere,
-    ):
-        """
-        The core of the Propeller code. Given the geometry of a propeller element,
-        its aerodynamic polars, flight conditions and axial/tangential velocities it computes the
-        thrust and the torque produced using force and momentum with disk theory.
-
-        :param speed_vect: the vector of axial and tangential induced speed in m/s
-        :param radius: radius position of the element center  [m]
-        :param radius_min: Hub radius [m]
-        :param radius_max: Max radius [m]
-        :param chord: chord at the center of element [m]
-        :param blades_number: number of blades [-]
-        :param sweep: sweep angle [deg.]
-        :param omega: angular speed of propeller [rad/sec]
-        :param v_inf: flight speed [m/s]
-        :param theta: profile angle relative to aircraft airflow v_inf [DEG]
-        :param cl_interp: cl interpolation function [-]
-        :param cd_interp: cd interpolation function [-]
-        :param atm: atmosphere properties
-
-        :return: The difference between BEM dual methods for dT/(rho*dr) and dQ/ increments.
-        """
-
-        bem_result = self.bem_theory_vect(
-            speed_vect,
-            radius,
-            chord,
-            blades_number,
-            sweep,
-            omega,
-            v_inf,
-            theta,
-            cl_interp,
-            cd_interp,
-            atm,
-        )
-
-        adt_result = self.disk_theory(
-            speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf
-        )
-
-        return np.concatenate(bem_result[0:1]) - np.concatenate(adt_result)
 
     @staticmethod
     def reshape_polar(alpha, cl, cd):
