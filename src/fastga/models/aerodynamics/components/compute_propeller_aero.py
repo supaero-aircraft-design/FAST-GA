@@ -636,11 +636,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     * (
                         (radius_max - radius)
                         / radius
-                        * math.sqrt(
-                            1
-                            + (omega * radius / ((v_inf + v_i) + 1e-12 * ((v_inf + v_i) == 0.0)))
-                            ** 2.0
-                        )
+                        * math.sqrt(1 + (omega * radius / (v_ax + 1e-12 * (v_ax == 0.0))) ** 2.0)
                     )
                 )
             )
@@ -735,7 +731,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         return bem_result[0:1] - adt_result
 
     @staticmethod
-    def reshape_polar(alpha, cl, cd):
+    def reshape_polar(alpha, c_l, c_d):
         """
         Reads the polar under the openmdao format (meaning with additional zeros and reshape
         so that only relevant angle are considered.
@@ -747,6 +743,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return (
             alpha[idx_start : idx_end + 1],
-            cl[idx_start : idx_end + 1],
-            cd[idx_start : idx_end + 1],
+            c_l[idx_start : idx_end + 1],
+            c_d[idx_start : idx_end + 1],
         )

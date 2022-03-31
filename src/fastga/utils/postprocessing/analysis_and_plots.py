@@ -15,12 +15,11 @@ Defines the analysis and plotting functions for postprocessing.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import plotly
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import matplotlib.colors as colour
 
-import plotly
-
-from plotly.subplots import make_subplots
 
 from typing import Dict
 from random import SystemRandom

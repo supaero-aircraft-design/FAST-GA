@@ -13,9 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import os.path as pth
 import warnings
 import math
-import os.path as pth
 import pandas as pd
 import numpy as np
 

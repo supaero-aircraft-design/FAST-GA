@@ -103,7 +103,7 @@ class TakeOffPhase(om.Group):
         prob = om.Problem(model=component)
         prob.setup()
         data = []
-        if type(iotypes) == tuple:
+        if isinstance(iotypes, tuple):
             data.extend(prob.model.list_inputs(out_stream=None))
             data.extend(prob.model.list_outputs(out_stream=None))
         else:

@@ -106,14 +106,13 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         tan_0_5_phi_te_prime = (y_90 / 2.0 - y_99 / 2.0) / 9.0
         tan_0_5_phi_te_prime_prime = (y_95 / 2.0 - y_99 / 2.0) / 9.0
 
-        if (
-            (tan_0_5_phi_te == tan_0_5_phi_te_prime)
-            and (tan_0_5_phi_te_prime == tan_0_5_phi_te_prime_prime)
-            and (tan_0_5_phi_te_prime_prime == tail_thickness_ratio)
-        ):
-            condition = True
-        else:
-            condition = False
+        condition = bool(
+            (
+                (tan_0_5_phi_te == tan_0_5_phi_te_prime)
+                and (tan_0_5_phi_te_prime == tan_0_5_phi_te_prime_prime)
+                and (tan_0_5_phi_te_prime_prime == tail_thickness_ratio)
+            )
+        )
 
         # Step 2.
         cl_alpha_ht_th = 6.3 + tail_thickness_ratio / 0.2 * (7.3 - 6.3)
