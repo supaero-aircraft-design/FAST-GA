@@ -18,8 +18,8 @@ proposed by Gudmundsson.
 import numpy as np
 import math
 import scipy.interpolate as inter
-import openmdao.api as om
 from scipy.constants import g
+import openmdao.api as om
 
 from fastoad.model_base import FlightPoint
 

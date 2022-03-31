@@ -20,11 +20,11 @@ import openmdao.api as om
 
 from scipy.optimize import fsolve
 
-from fastga.command import api as api_cs23
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup, FASTOADProblem
 
+from fastga.command import api as api_cs23
 from fastga.models.performances.mission.mission import Mission
 
 _LOGGER = logging.getLogger(__name__)

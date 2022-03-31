@@ -176,10 +176,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         cl_htp_local = self.cl_tail_sol
         delta_elevator = self.delta_e_sol
 
-        if (cl_htp_local > cl_max_clean_htp) or (cl_htp_local < cl_min_clean_htp):
-            error_on_htp = True
-        else:
-            error_on_htp = False
+        error_on_htp = bool((cl_htp_local > cl_max_clean_htp) or (cl_htp_local < cl_min_clean_htp))
 
         error_on_wing = self.error_on_pitch_equilibrium
 

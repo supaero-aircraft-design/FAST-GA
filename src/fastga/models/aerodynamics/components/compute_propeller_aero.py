@@ -12,17 +12,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import openmdao.api as om
 import math
 import logging
 import numpy as np
-import pandas as pd
 from scipy.optimize import fsolve
 
 from stdatm import Atmosphere
-import fastga.models.aerodynamics.external.xfoil as xfoil
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
 
 from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
@@ -75,8 +72,16 @@ class ComputePropellerPerformance(om.Group):
                 sections_profile_name_list=self.options["sections_profile_name_list"],
                 elements_number=self.options["elements_number"],
             ),
-            promotes=["*"],
+            promotes_inputs=["data:*"],
+            promotes_outputs=["*"],
         )
+
+        for profile in self.options["sections_profile_name_list"]:
+            self.connect(
+                profile + "_polar.xfoil:alpha", "propeller_aero." + profile + "_polar:alpha"
+            )
+            self.connect(profile + "_polar.xfoil:CL", "propeller_aero." + profile + "_polar:CL")
+            self.connect(profile + "_polar.xfoil:CD", "propeller_aero." + profile + "_polar:CD")
 
 
 class _ComputePropellerPerformance(om.ExplicitComponent):
@@ -123,6 +128,13 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
+
+        for profile in self.options["sections_profile_name_list"]:
+            self.add_input(
+                profile + "_polar:alpha", val=np.nan, units="deg", shape=POLAR_POINT_COUNT
+            )
+            self.add_input(profile + "_polar:CL", val=np.nan, shape=POLAR_POINT_COUNT)
+            self.add_input(profile + "_polar:CD", val=np.nan, shape=POLAR_POINT_COUNT)
 
         self.add_output(
             "data:aerodynamics:propeller:sea_level:efficiency", shape=(SPEED_PTS_NB, THRUST_PTS_NB)
@@ -231,6 +243,44 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         thrust_vect = []
         theta_vect = []
         eta_vect = []
+
+        radius_min = inputs["data:geometry:propeller:hub_diameter"] / 2.0
+        radius_max = inputs["data:geometry:propeller:diameter"] / 2.0
+        length = radius_max - radius_min
+        elements_number = np.arange(self.options["elements_number"])
+        element_length = length / self.options["elements_number"]
+        radius = radius_min + (elements_number + 0.5) * element_length
+        sections_profile_position_list = self.options["sections_profile_position_list"]
+        sections_profile_name_list = self.options["sections_profile_name_list"]
+
+        alpha_interp = np.array([0])
+
+        for profile in self.options["sections_profile_name_list"]:
+            alpha_interp = np.union1d(alpha_interp, inputs[profile + "_polar:alpha"])
+
+        alpha_list = np.zeros((len(radius), len(alpha_interp)))
+        cl_list = np.zeros((len(radius), len(alpha_interp)))
+        cd_list = np.zeros((len(radius), len(alpha_interp)))
+
+        for idx, _ in enumerate(radius):
+
+            index = np.where(sections_profile_position_list < (radius[idx] / radius_max))[0]
+            if index is None:
+                profile_name = sections_profile_name_list[0]
+            else:
+                profile_name = sections_profile_name_list[int(index[-1])]
+
+            # Load profile polars
+            alpha_element, cl_element, cd_element = self.reshape_polar(
+                inputs[profile_name + "_polar:alpha"],
+                inputs[profile_name + "_polar:CL"],
+                inputs[profile_name + "_polar:CD"],
+            )
+
+            alpha_list[idx, :] = alpha_interp
+            cl_list[idx, :] = np.interp(alpha_interp, alpha_element, cl_element)
+            cd_list[idx, :] = np.interp(alpha_interp, alpha_element, cd_element)
+
         for v_inf in speed_interp:
             self.compute_extreme_pitch(inputs, v_inf)
             theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
@@ -239,7 +289,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             local_eta_vect = []
             for theta_75 in theta_interp:
                 thrust, eta, _ = self.compute_pitch_performance(
-                    inputs, theta_75, v_inf, altitude, omega, self.options["elements_number"]
+                    inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
                 )
                 local_thrust_vect.append(thrust)
                 local_theta_vect.append(theta_75)
@@ -338,7 +388,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return thrust_limit, thrust_interp, efficiency_interp
 
-    def compute_pitch_performance(self, inputs, theta_75, v_inf, altitude, omega, elements_number):
+    def compute_pitch_performance(
+        self, inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
+    ):
 
         """
         This function calculates the thrust, efficiency and power at a given flight speed,
@@ -349,14 +401,18 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :param v_inf: flight speeds [m/s].
         :param altitude: flight altitude [m].
         :param omega: angular velocity of the propeller [RPM].
-        :param elements_number: number of elements for discretization [-].
+        :param radius: radius of discretized blade element [m].
+        :param alpha_list: angle of attack list for aerodynamic coefficient of profile at
+        discretized blade element [deg].
+        :param cl_list: cl list for aerodynamic coefficient of profile at discretized blade
+        element [-].
+        :param cd_list: cd list for aerodynamic coefficient of profile at discretized blade
+        element [-].
 
         :return: thrust [N], eta (efficiency) [-] and power [W].
         """
 
         blades_number = inputs["data:geometry:propeller:blades_number"]
-        sections_profile_position_list = self.options["sections_profile_position_list"]
-        sections_profile_name_list = self.options["sections_profile_name_list"]
         radius_min = inputs["data:geometry:propeller:hub_diameter"] / 2.0
         radius_max = inputs["data:geometry:propeller:diameter"] / 2.0
         sweep_vect = inputs["data:geometry:propeller:sweep_vect"]
@@ -364,105 +420,80 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         length = radius_max - radius_min
-        element_length = length / elements_number
+        element_length = length / self.options["elements_number"]
         omega = omega * math.pi / 30.0
         atm = Atmosphere(altitude, altitude_in_feet=False)
 
+        theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
+
         # Initialise vectors
-        vi_vect = np.zeros(elements_number)
-        vt_vect = np.zeros(elements_number)
-        radius_vect = np.zeros(elements_number)
-        theta_vect = np.zeros(elements_number)
-        thrust_element_vector = np.zeros(elements_number)
-        torque_element_vector = np.zeros(elements_number)
-        alpha_vect = np.zeros(elements_number)
+        vi_vect = np.zeros_like(radius)
+        vt_vect = np.zeros_like(radius)
+        thrust_element_vector = np.zeros_like(radius)
+        torque_element_vector = np.zeros_like(radius)
+        alpha_vect = np.zeros_like(radius)
         speed_vect = np.array([0.1 * float(v_inf), 1.0])
 
+        chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
+
+        theta = np.interp(radius / radius_max, radius_ratio_vect, twist_vect) + (
+            theta_75 - theta_75_ref
+        )
+        sweep = np.interp(radius / radius_max, radius_ratio_vect, sweep_vect)
+
         # Loop on element number to compute equations
-        for i in range(elements_number):
-
-            # Calculate element center radius and chord
-            radius = radius_min + (i + 0.5) * element_length
-            chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
-
-            # Find related profile name
-            index = np.where(sections_profile_position_list < (radius / radius_max))[0]
-            if index is None:
-                profile_name = sections_profile_name_list[0]
-            else:
-                profile_name = sections_profile_name_list[int(index[-1])]
-
-            # Load profile polars
-            alpha_element, cl_element, cd_element = self.read_polar_result(profile_name)
-
-            # Search element angle to aircraft axial air (~v_inf) and sweep angle
-            theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
-            theta = np.interp(radius / radius_max, radius_ratio_vect, twist_vect) + (
-                theta_75 - theta_75_ref
-            )
-            theta_vect[i] = theta
-            sweep = np.interp(radius / radius_max, radius_ratio_vect, sweep_vect)
+        for idx, _ in enumerate(radius):
 
             # Solve BEM vs. disk theory system of equations
             speed_vect = fsolve(
                 self.delta,
                 speed_vect,
                 (
-                    radius,
+                    radius[idx],
                     radius_min,
                     radius_max,
-                    chord,
+                    chord[idx],
                     blades_number,
-                    sweep,
+                    sweep[idx],
                     omega,
                     v_inf,
-                    theta,
-                    alpha_element,
-                    cl_element,
-                    cd_element,
+                    theta[idx],
+                    alpha_list[idx, :],
+                    cl_list[idx, :],
+                    cd_list[idx, :],
                     atm,
                 ),
                 xtol=1e-3,
             )
-            vi_vect[i] = speed_vect[0]
-            vt_vect[i] = speed_vect[1]
-            radius_vect[i] = radius
+            vi_vect[idx] = speed_vect[0]
+            vt_vect[idx] = speed_vect[1]
             results = self.bem_theory(
                 speed_vect,
-                radius,
-                chord,
+                radius[idx],
+                chord[idx],
                 blades_number,
-                sweep,
+                sweep[idx],
                 omega,
                 v_inf,
-                theta,
-                alpha_element,
-                cl_element,
-                cd_element,
+                theta[idx],
+                alpha_list[idx, :],
+                cl_list[idx, :],
+                cd_list[idx, :],
                 atm,
             )
-            # results = self.disk_theory(
-            #     speed_vect, radius, radius_min, radius_max, blades_number, sweep, omega, v_inf
-            # )
             out_of_polars = results[3]
             if out_of_polars:
-                thrust_element_vector[i] = 0.0
-                torque_element_vector[i] = 0.0
-                # warnings.warn(
-                #   "Propeller element out of calculated polars: contribution canceled!"
-                # )
+                thrust_element_vector[idx] = 0.0
+                torque_element_vector[idx] = 0.0
             else:
-                thrust_element_vector[i] = results[0] * element_length * atm.density
-                torque_element_vector[i] = results[1] * element_length * atm.density
-            alpha_vect[i] = results[2]
+                thrust_element_vector[idx] = results[0] * element_length * atm.density
+                torque_element_vector[idx] = results[1] * element_length * atm.density
+            alpha_vect[idx] = results[2]
 
         torque = np.sum(torque_element_vector)
         thrust = float(np.sum(thrust_element_vector))
         power = float(torque * omega)
         eta = float(v_inf * thrust / power)
-
-        # if eta < 0.0 or eta > 1.0:
-        #     warnings.warn("Propeller not working in propulsive mode!")
 
         return thrust, eta, torque
 
@@ -524,9 +555,6 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         c_d = np.interp(alpha, alpha_element, cd_element)
         if mach_local < 1:
             beta = math.sqrt(1 - mach_local ** 2.0)
-            # cl = cl / (beta + (1 - beta) * cl / 2)
-            # Prandtl-Glauert correction as Karman-Tsien
-            # and Laitone only apply to the pressure coefficient distribution
             c_l = c_l / beta
         else:
             beta = math.sqrt(mach_local ** 2.0 - 1)
@@ -608,11 +636,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
                     * (
                         (radius_max - radius)
                         / radius
-                        * math.sqrt(
-                            1
-                            + (omega * radius / ((v_inf + v_i) + 1e-12 * ((v_inf + v_i) == 0.0)))
-                            ** 2.0
-                        )
+                        * math.sqrt(1 + (omega * radius / (v_ax + 1e-12 * (v_ax == 0.0))) ** 2.0)
                     )
                 )
             )
@@ -707,63 +731,18 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         return bem_result[0:1] - adt_result
 
     @staticmethod
-    def read_polar_result(airfoil_name):
-        """Reads the results of the xfoil run for the given profile."""
-        result_file = pth.join(xfoil.__path__[0], "resources", airfoil_name + "_30S.csv")
-        mach = 0.0
-        reynolds = 1e6
-        data_saved = pd.read_csv(result_file)
-        values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
-        labels = data_saved.to_numpy()[:, 0].tolist()
-        data_saved = pd.DataFrame(values, index=labels)
-        index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
-        data_reduced = data_saved.loc[labels, index_mach]
-        # Search if this exact reynolds has been computed and save results
-        reynolds_vect = np.array(
-            [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
+    def reshape_polar(alpha, c_l, c_d):
+        """
+        Reads the polar under the openmdao format (meaning with additional zeros and reshape
+        so that only relevant angle are considered.
+
+        Assumes that the AOA list is ordered.
+        """
+        idx_start = np.argmin(alpha)
+        idx_end = np.argmax(alpha)
+
+        return (
+            alpha[idx_start : idx_end + 1],
+            c_l[idx_start : idx_end + 1],
+            c_d[idx_start : idx_end + 1],
         )
-        index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
-        if len(index_reynolds) == 1:
-            interpolated_result = data_reduced.loc[labels, index_reynolds]
-        # Else search for lower/upper Reynolds
-        else:
-            lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
-            upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
-            if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
-                index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
-                interpolated_result = data_reduced.loc[labels, index_lower_reynolds]
-                # Calculate reynolds interval ratio
-                x_ratio = (min(upper_reynolds) - reynolds) / (
-                    min(upper_reynolds) - max(lower_reynolds)
-                )
-                # Search for common alpha range
-                alpha_lower = np.array(
-                    np.matrix(data_reduced.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                ).ravel()
-                alpha_upper = np.array(
-                    np.matrix(data_reduced.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                ).ravel()
-                alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                data_reduced.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
-                labels.remove("alpha")
-                # Calculate average values (cd, cl...) with linear interpolation
-                for label in labels:
-                    lower_value = np.array(
-                        np.matrix(data_reduced.loc[label, index_lower_reynolds].to_numpy()[0])
-                    ).ravel()
-                    upper_value = np.array(
-                        np.matrix(data_reduced.loc[label, index_upper_reynolds].to_numpy()[0])
-                    ).ravel()
-                    # If values relative to alpha vector, performs interpolation with shared vector
-                    if np.size(lower_value) == len(alpha_lower):
-                        lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
-                        upper_value = np.interp(alpha_shared, np.array(alpha_upper), upper_value)
-                    value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
-                    interpolated_result.loc[label, index_lower_reynolds] = str(value)
-        # Extract alpha, cl and cd vectors
-        # noinspection PyUnboundLocalVariable
-        alpha_vect = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
-        cl_vect = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
-        cd_vect = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
-        return alpha_vect, cl_vect, cd_vect
