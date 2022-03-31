@@ -243,6 +243,44 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         thrust_vect = []
         theta_vect = []
         eta_vect = []
+
+        radius_min = inputs["data:geometry:propeller:hub_diameter"] / 2.0
+        radius_max = inputs["data:geometry:propeller:diameter"] / 2.0
+        length = radius_max - radius_min
+        elements_number = np.arange(self.options["elements_number"])
+        element_length = length / self.options["elements_number"]
+        radius = radius_min + (elements_number + 0.5) * element_length
+        sections_profile_position_list = self.options["sections_profile_position_list"]
+        sections_profile_name_list = self.options["sections_profile_name_list"]
+
+        alpha_interp = np.array([0])
+
+        for profile in self.options["sections_profile_name_list"]:
+            alpha_interp = np.union1d(alpha_interp, inputs[profile + "_polar:alpha"])
+
+        alpha_list = np.zeros((len(radius), len(alpha_interp)))
+        cl_list = np.zeros((len(radius), len(alpha_interp)))
+        cd_list = np.zeros((len(radius), len(alpha_interp)))
+
+        for idx, _ in enumerate(radius):
+
+            index = np.where(sections_profile_position_list < (radius[idx] / radius_max))[0]
+            if index is None:
+                profile_name = sections_profile_name_list[0]
+            else:
+                profile_name = sections_profile_name_list[int(index[-1])]
+
+            # Load profile polars
+            alpha_element, cl_element, cd_element = self.reshape_polar(
+                inputs[profile_name + "_polar:alpha"],
+                inputs[profile_name + "_polar:CL"],
+                inputs[profile_name + "_polar:CD"],
+            )
+
+            alpha_list[idx, :] = alpha_interp
+            cl_list[idx, :] = np.interp(alpha_interp, alpha_element, cl_element)
+            cd_list[idx, :] = np.interp(alpha_interp, alpha_element, cd_element)
+
         for v_inf in speed_interp:
             self.compute_extreme_pitch(inputs, v_inf)
             theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
@@ -251,7 +289,7 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
             local_eta_vect = []
             for theta_75 in theta_interp:
                 thrust, eta, _ = self.compute_pitch_performance(
-                    inputs, theta_75, v_inf, altitude, omega, self.options["elements_number"]
+                    inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
                 )
                 local_thrust_vect.append(thrust)
                 local_theta_vect.append(theta_75)
@@ -350,7 +388,9 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
 
         return thrust_limit, thrust_interp, efficiency_interp
 
-    def compute_pitch_performance(self, inputs, theta_75, v_inf, altitude, omega, elements_number):
+    def compute_pitch_performance(
+        self, inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
+    ):
 
         """
         This function calculates the thrust, efficiency and power at a given flight speed,
@@ -361,14 +401,18 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         :param v_inf: flight speeds [m/s].
         :param altitude: flight altitude [m].
         :param omega: angular velocity of the propeller [RPM].
-        :param elements_number: number of elements for discretization [-].
+        :param radius: radius of discretized blade element [m].
+        :param alpha_list: angle of attack list for aerodynamic coefficient of profile at
+        discretized blade element [deg].
+        :param cl_list: cl list for aerodynamic coefficient of profile at discretized blade
+        element [-].
+        :param cd_list: cd list for aerodynamic coefficient of profile at discretized blade
+        element [-].
 
         :return: thrust [N], eta (efficiency) [-] and power [W].
         """
 
         blades_number = inputs["data:geometry:propeller:blades_number"]
-        sections_profile_position_list = self.options["sections_profile_position_list"]
-        sections_profile_name_list = self.options["sections_profile_name_list"]
         radius_min = inputs["data:geometry:propeller:hub_diameter"] / 2.0
         radius_max = inputs["data:geometry:propeller:diameter"] / 2.0
         sweep_vect = inputs["data:geometry:propeller:sweep_vect"]
@@ -376,22 +420,20 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
         length = radius_max - radius_min
-        element_length = length / elements_number
+        element_length = length / self.options["elements_number"]
         omega = omega * math.pi / 30.0
         atm = Atmosphere(altitude, altitude_in_feet=False)
 
         theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
 
         # Initialise vectors
-        vi_vect = np.zeros(elements_number)
-        vt_vect = np.zeros(elements_number)
-        thrust_element_vector = np.zeros(elements_number)
-        torque_element_vector = np.zeros(elements_number)
-        alpha_vect = np.zeros(elements_number)
+        vi_vect = np.zeros_like(radius)
+        vt_vect = np.zeros_like(radius)
+        thrust_element_vector = np.zeros_like(radius)
+        torque_element_vector = np.zeros_like(radius)
+        alpha_vect = np.zeros_like(radius)
         speed_vect = np.array([0.1 * float(v_inf), 1.0])
 
-        elements_number = np.arange(3)
-        radius = radius_min + (elements_number + 0.5) * element_length
         chord = np.interp(radius / radius_max, radius_ratio_vect, chord_vect)
 
         theta = np.interp(radius / radius_max, radius_ratio_vect, twist_vect) + (
@@ -400,66 +442,53 @@ class _ComputePropellerPerformance(om.ExplicitComponent):
         sweep = np.interp(radius / radius_max, radius_ratio_vect, sweep_vect)
 
         # Loop on element number to compute equations
-        for i in elements_number:
-
-            index = np.where(sections_profile_position_list < (radius[i] / radius_max))[0]
-            if index is None:
-                profile_name = sections_profile_name_list[0]
-            else:
-                profile_name = sections_profile_name_list[int(index[-1])]
-
-            # Load profile polars
-            alpha_element, cl_element, cd_element = self.reshape_polar(
-                inputs[profile_name + "_polar:alpha"],
-                inputs[profile_name + "_polar:CL"],
-                inputs[profile_name + "_polar:CD"],
-            )
+        for idx, _ in enumerate(radius):
 
             # Solve BEM vs. disk theory system of equations
             speed_vect = fsolve(
                 self.delta,
                 speed_vect,
                 (
-                    radius[i],
+                    radius[idx],
                     radius_min,
                     radius_max,
-                    chord[i],
+                    chord[idx],
                     blades_number,
-                    sweep[i],
+                    sweep[idx],
                     omega,
                     v_inf,
-                    theta[i],
-                    alpha_element,
-                    cl_element,
-                    cd_element,
+                    theta[idx],
+                    alpha_list[idx, :],
+                    cl_list[idx, :],
+                    cd_list[idx, :],
                     atm,
                 ),
                 xtol=1e-3,
             )
-            vi_vect[i] = speed_vect[0]
-            vt_vect[i] = speed_vect[1]
+            vi_vect[idx] = speed_vect[0]
+            vt_vect[idx] = speed_vect[1]
             results = self.bem_theory(
                 speed_vect,
-                radius[i],
-                chord[i],
+                radius[idx],
+                chord[idx],
                 blades_number,
-                sweep[i],
+                sweep[idx],
                 omega,
                 v_inf,
-                theta[i],
-                alpha_element,
-                cl_element,
-                cd_element,
+                theta[idx],
+                alpha_list[idx, :],
+                cl_list[idx, :],
+                cd_list[idx, :],
                 atm,
             )
             out_of_polars = results[3]
             if out_of_polars:
-                thrust_element_vector[i] = 0.0
-                torque_element_vector[i] = 0.0
+                thrust_element_vector[idx] = 0.0
+                torque_element_vector[idx] = 0.0
             else:
-                thrust_element_vector[i] = results[0] * element_length * atm.density
-                torque_element_vector[i] = results[1] * element_length * atm.density
-            alpha_vect[i] = results[2]
+                thrust_element_vector[idx] = results[0] * element_length * atm.density
+                torque_element_vector[idx] = results[1] * element_length * atm.density
+            alpha_vect[idx] = results[2]
 
         torque = np.sum(torque_element_vector)
         thrust = float(np.sum(thrust_element_vector))
