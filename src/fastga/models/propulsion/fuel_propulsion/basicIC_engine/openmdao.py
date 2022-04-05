@@ -167,12 +167,12 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             1.0,
             3.0,
         ],  # propulsion position (3.0=Nose, 1.0=Wing)
-        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio": [0.0, 1.0],
-        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed": [
+        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio": (0.0, 1.0),
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed": (
             0.0,
             1.0,
-        ],
-        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise": [0.0, 1.0],
+        ),
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise": (0.0, 1.0),
     }
 )
 class OMBasicICEngineComponent(BaseOMPropulsionComponent):
