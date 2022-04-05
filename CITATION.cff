@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Lutz"
+  given-names: "Florent"
+  orcid: "https://orcid.org/0000-0002-4261-9659"
+- family-names: "Reysset"
+  given-names: "Aurelien"
+title: "FAST-(OAD)-GA: Future Aircraft Sizing Tool - Overall Aircraft Design (General Aviation extension)"
+version: 0.1.4-beta
+date-released: 2021-07-07
+url: "https://github.com/supaero-aircraft-design/FAST-GA"
