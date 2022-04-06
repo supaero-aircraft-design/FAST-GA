@@ -26,6 +26,8 @@ from itertools import product
 from pathlib import Path
 from typing import Union, List
 from platform import system
+
+import numpy as np
 from deprecated import deprecated
 import openmdao.api as om
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -710,6 +712,61 @@ def list_inputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
     input_names = [var.name for var in variables if var.is_input]
 
     return input_names
+
+
+def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tuple:
+    """
+    Reads all variables from a component/problem and returns inputs name and metadata as a
+    list.
+    """
+
+    prob = om.Problem()
+    model = prob.model
+    model.add_subsystem("component", component, promotes=["*"])
+
+    prob_copy = deepcopy(prob)
+
+    var_copy_shape_name_list = []
+    var_copy_shape_list = []
+
+    try:
+        prob_copy.setup()
+    except RuntimeError:
+        # noinspection PyProtectedMember
+        vars_metadata = FASTOADProblem()._get_undetermined_dynamic_vars_metadata(prob_copy)
+        if vars_metadata:
+            # If vars_metadata is empty, it means the RuntimeError was not because
+            # of dynamic shapes, and the incoming self.setup() will raise it.
+            ivc = om.IndepVarComp()
+            for name, meta in vars_metadata.items():
+                # We use a (2,)-shaped array as value here. This way, it will be easier to
+                # identify dynamic-shaped data in an input file generated from current problem.
+                var_copy_shape_name_list.append(name)
+                var_copy_shape_list.append(meta["copy_shape"])
+                ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
+            prob.model.add_subsystem("temp_shaper", ivc, promotes=["*"])
+
+    variables = list_variables(component)
+
+    var_inputs = []
+    var_units = []
+    var_shape = []
+    var_shape_by_conn = []
+    var_copy_shape = []
+
+    for var in variables:
+        if var.is_input:
+            var_inputs.append(var.name)
+            var_units.append(var.units)
+            var_shape.append(variables[var.name].metadata["shape"])
+            if var.name in var_copy_shape_name_list:
+                var_shape_by_conn.append(True)
+                var_copy_shape.append(var_copy_shape_list[var_copy_shape_name_list.index(var.name)])
+            else:
+                var_shape_by_conn.append(False)
+                var_copy_shape.append(None)
+
+    return var_inputs, var_units, var_shape, var_shape_by_conn, var_copy_shape
 
 
 def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
