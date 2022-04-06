@@ -37,7 +37,10 @@ class ComputeLGGeometry(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:height", units="m")
         self.add_output("data:geometry:landing_gear:y", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", method="exact"
+        )
+        self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -48,3 +51,9 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
+        partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2
+        partials["data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width"] = 0.5
