@@ -42,7 +42,7 @@ class ComputeShell(om.ExplicitComponent):
         self.add_input("settings:geometry:fuselage:min_skin_thickness", val=np.nan, units="m")
         self.add_input("settings:weight:airframe:fuselage:reinforcements:mass_fraction", val=np.nan)
 
-        self.add_output("data:geometry:fuselage:skin_thickness", val=np.nan, units="m")
+        self.add_output("data:geometry:fuselage:skin_thickness", val=1e-3, units="m")
         self.add_output("data:loads:fuselage:inertia", units="m**4")
         self.add_output("data:loads:fuselage:sigmaMh", units="N/m**2")
         self.add_output("data:weight:airframe:fuselage:shell:mass", units="kg")
