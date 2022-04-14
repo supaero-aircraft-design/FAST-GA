@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-import copy
-import openmdao.api as om
-from typing import Optional
 import os
 import os.path as pth
 import warnings
+from typing import Optional
+import math
+import copy
+import openmdao.api as om
 import pandas as pd
 import logging
 import numpy as np
