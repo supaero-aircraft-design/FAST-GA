@@ -55,7 +55,7 @@ class UpdateFuselageMass(om.ExplicitComponent):
         ]
         engine_support_mass = inputs["data:weight:airframe:fuselage:engine_support:mass"]
         bulkhead_mass = inputs["data:weight:airframe:fuselage:bulkhead:mass"]
-        additional_mass_h = inputs["data:weight:airframe:fuselage:bulkhead:mass"]
+        additional_mass_h = inputs["data:weight:airframe:fuselage:additional_mass:horizontal"]
         additional_mass_v = inputs["data:weight:airframe:fuselage:additional_mass:vertical"]
 
         fuselage_mass = (
