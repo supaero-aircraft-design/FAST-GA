@@ -1242,7 +1242,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         return thrust_is_regulated, thrust_rate, thrust
 
     def propeller_efficiency(
-            self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
     ) -> Union[float, Sequence]:
         """
         Compute the propeller efficiency.
@@ -1305,10 +1305,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 )
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
                 propeller_efficiency[idx] = (
-                        lower_bound
-                        + (upper_bound - lower_bound)
-                        * np.minimum(altitude, self.cruise_altitude_propeller)
-                        / self.cruise_altitude_propeller
+                    lower_bound
+                    + (upper_bound - lower_bound)
+                    * np.minimum(altitude, self.cruise_altitude_propeller)
+                    / self.cruise_altitude_propeller
                 )
 
         return propeller_efficiency

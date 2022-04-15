@@ -139,16 +139,14 @@ class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
         component.add_input(
             "settings:propulsion:turboprop:efficiency:combustion", val=43.260e6 * 0.95, units="J/kg"
         )
-        component.add_input(
-            "settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98
-        )
+        component.add_input("settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98)
         component.add_input("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8)
         component.add_input(
             "settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95
         )
         component.add_input("settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05)
         component.add_input(
-            "settings:propulsion:turboprop:electric_power_offtake", val=50*745.7, units="W"
+            "settings:propulsion:turboprop:electric_power_offtake", val=50 * 745.7, units="W"
         )
         component.add_input("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
         component.add_input("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
@@ -218,8 +216,9 @@ class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
             ],
         }
 
-        return FuelEngineSet(BasicTPEngine(**engine_params), inputs[
-            "data:geometry:propulsion:engine:count"])
+        return FuelEngineSet(
+            BasicTPEngine(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
 
 
 @ValidityDomainChecker(
