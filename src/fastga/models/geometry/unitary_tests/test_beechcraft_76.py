@@ -573,7 +573,7 @@ def test_installation_effect_propeller():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePropellerInstallationEffect(), ivc)
     prop_installation_effect = problem.get_val(
-        "data:aerodynamics:propeller:installation_effect" ":effective_advance_ratio"
+        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
     )
     assert prop_installation_effect == pytest.approx(0.949, abs=1e-3)
 

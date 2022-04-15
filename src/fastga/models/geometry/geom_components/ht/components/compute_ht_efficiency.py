@@ -35,10 +35,18 @@ class ComputeHTEfficiency(ExplicitComponent):
 
         self.add_output("data:aerodynamics:horizontal_tail:efficiency")
 
+        self.declare_partials(
+            of="data:aerodynamics:horizontal_tail:efficiency",
+            wrt="data:geometry:has_T_tail",
+            method="exact",
+        )
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        if inputs["data:geometry:has_T_tail"] == 1.0:
-            outputs["data:aerodynamics:horizontal_tail:efficiency"] = 1.0
+        outputs["data:aerodynamics:horizontal_tail:efficiency"] = (
+            0.9 + 0.1 * inputs["data:geometry:has_T_tail"]
+        )
 
-        else:
-            outputs["data:aerodynamics:horizontal_tail:efficiency"] = 0.9
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        partials["data:aerodynamics:horizontal_tail:efficiency", "data:geometry:has_T_tail"] = 0.1

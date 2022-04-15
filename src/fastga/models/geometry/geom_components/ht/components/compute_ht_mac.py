@@ -29,7 +29,7 @@ class ComputeHTMacFD(ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:horizontal_tail:MAC:length", units="m")
@@ -39,7 +39,7 @@ class ComputeHTMacFD(ExplicitComponent):
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:length",
             ["data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:tip:chord"],
-            method="fd",
+            method="exact",
         )
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
@@ -49,7 +49,7 @@ class ComputeHTMacFD(ExplicitComponent):
                 "data:geometry:horizontal_tail:sweep_25",
                 "data:geometry:horizontal_tail:span",
             ],
-            method="fd",
+            method="exact",
         )
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:y",
@@ -58,7 +58,7 @@ class ComputeHTMacFD(ExplicitComponent):
                 "data:geometry:horizontal_tail:tip:chord",
                 "data:geometry:horizontal_tail:span",
             ],
-            method="fd",
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -67,9 +67,7 @@ class ComputeHTMacFD(ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        tmp = (
-            root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht / 180.0 * math.pi) - tip_chord * 0.25
-        )
+        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
             (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
@@ -84,6 +82,65 @@ class ComputeHTMacFD(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
+        b_h = inputs["data:geometry:horizontal_tail:span"]
+
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
+        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
+        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+
+        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        d_tmp_d_rc = 0.25
+        d_tmp_d_tc = -0.25
+        d_tmp_d_bh = 0.5 * math.tan(sweep_25_ht)
+        d_tmp_d_sweep = b_h / 2 * (1.0 + math.tan(sweep_25_ht) ** 2.0)
+
+        tmp_2 = (root_chord + 2 * tip_chord) / (3 * (root_chord + tip_chord))
+        d_tmp_2_d_rc = -tip_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
+        d_tmp_2_d_tc = root_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
+
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:root:chord",
+        ] = (
+            d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:tip:chord",
+        ] = (
+            d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:sweep_25",
+        ] = (
+            tmp_2 * d_tmp_d_sweep
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:span",
+        ] = (
+            tmp_2 * d_tmp_d_bh
+        )
+
+        partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
+            0.5 * root_chord + tip_chord
+        ) / (3 * (root_chord + tip_chord))
+        partials[
+            "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:root:chord"
+        ] = (-b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        partials[
+            "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:tip:chord"
+        ] = (b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+
 
 class ComputeHTMacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -94,7 +151,7 @@ class ComputeHTMacFL(ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
@@ -108,7 +165,43 @@ class ComputeHTMacFL(ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:MAC:y", units="m")
         self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:geometry:horizontal_tail:MAC:length",
+            ["data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:tip:chord"],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            [
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:sweep_25",
+                "data:geometry:horizontal_tail:span",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:geometry:horizontal_tail:MAC:y",
+            [
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:span",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            [
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:sweep_25",
+                "data:geometry:horizontal_tail:span",
+                "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",
+                "data:geometry:fuselage:length",
+                "data:geometry:wing:MAC:at25percent:x",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
@@ -120,9 +213,7 @@ class ComputeHTMacFL(ExplicitComponent):
         x_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:absolute"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
 
-        tmp = (
-            root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht / 180.0 * math.pi) - tip_chord * 0.25
-        )
+        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
             (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
@@ -142,3 +233,136 @@ class ComputeHTMacFL(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] = ht_lp
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
+        b_h = inputs["data:geometry:horizontal_tail:span"]
+        tail_type = inputs["data:geometry:has_T_tail"]
+
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
+        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
+        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+
+        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        d_tmp_d_rc = 0.25
+        d_tmp_d_tc = -0.25
+        d_tmp_d_bh = 0.5 * math.tan(sweep_25_ht)
+        d_tmp_d_sweep = b_h / 2 * (1.0 + math.tan(sweep_25_ht) ** 2.0)
+
+        tmp_2 = (root_chord + 2 * tip_chord) / (3 * (root_chord + tip_chord))
+        d_tmp_2_d_rc = -tip_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
+        d_tmp_2_d_tc = root_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
+
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:root:chord",
+        ] = (
+            d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:tip:chord",
+        ] = (
+            d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:sweep_25",
+        ] = (
+            tmp_2 * d_tmp_d_sweep
+        )
+        partials[
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+            "data:geometry:horizontal_tail:span",
+        ] = (
+            tmp_2 * d_tmp_d_bh
+        )
+
+        partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
+            0.5 * root_chord + tip_chord
+        ) / (3 * (root_chord + tip_chord))
+        partials[
+            "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:root:chord"
+        ] = (-b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        partials[
+            "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:tip:chord"
+        ] = (b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+
+        if tail_type == 1.0:
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:root:chord",
+            ] = (
+                d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:tip:chord",
+            ] = (
+                d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:sweep_25",
+            ] = (
+                tmp_2 * d_tmp_d_sweep
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:span",
+            ] = (
+                tmp_2 * d_tmp_d_bh
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",
+            ] = 1.0
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:fuselage:length",
+            ] = 0.0
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:wing:MAC:at25percent:x",
+            ] = -1.0
+        else:
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:root:chord",
+            ] = (d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc) - 1.0
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:tip:chord",
+            ] = (
+                d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:sweep_25",
+            ] = (
+                tmp_2 * d_tmp_d_sweep
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:span",
+            ] = (
+                tmp_2 * d_tmp_d_bh
+            )
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",
+            ] = 0.0
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:fuselage:length",
+            ] = 1.0
+            partials[
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+                "data:geometry:wing:MAC:at25percent:x",
+            ] = -1.0

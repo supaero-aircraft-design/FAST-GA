@@ -125,8 +125,8 @@ class TakeOffPhase(om.Group):
 
 class _v2(om.ExplicitComponent):
     """
-    Calculate V2 safety speed @ defined altitude considering a 30% safety margin on max lift capability (alpha imposed).
-    Find corresponding climb rate margin for imposed thrust rate.
+    Calculate V2 safety speed @ defined altitude considering a 30% safety margin on max lift
+    capability (alpha imposed). Find corresponding climb rate margin for imposed thrust rate.
     Fuel burn is neglected : mass = MTOW.
     """
 
@@ -176,7 +176,8 @@ class _v2(om.ExplicitComponent):
         atm = Atmosphere(SAFETY_HEIGHT, altitude_in_feet=False)
 
         iteration_number = 0
-        factor = 1.2  # Minimum safety factor between stall speed and V2 according to CS 23.65 for the climb with all
+        factor = 1.2  # Minimum safety factor between stall speed and V2 according to CS 23.65
+        # for the climb with all
         # engines operating
         # Define Cl considering 30% margin and estimate alpha
         while True:
@@ -288,8 +289,8 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         v2 = np.zeros(np.size(alpha))
         atm_0 = Atmosphere(0.0)
 
-        # Step 1.0 computes the lift-off speed for different value of angle of attack ranging from 0° to the angle of
-        # attack corresponding to the V2 computation from previously
+        # Step 1.0 computes the lift-off speed for different value of angle of attack ranging
+        # from 0° to the angle of attack corresponding to the V2 computation from previously
 
         for i in range(len(alpha)):
 
@@ -319,8 +320,8 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 rel_error = abs(v - v_lift_off[i]) / v
                 v_lift_off[i] = v
 
-            # Step 2.0 consists in performing the transition from v_lift_off to V2 with a constant rotation speed for
-            # the same range of AOA
+            # Step 2.0 consists in performing the transition from v_lift_off to V2 with a
+            # constant rotation speed for the same range of AOA
 
             # Perform climb with imposed rotational speed till reaching safety height
             alpha_t = alpha[i]
@@ -454,8 +455,8 @@ class _vr_from_v2(om.ExplicitComponent):
         )
         # Start reverted calculation of flight from lift-off to 0° alpha angle
         atm = Atmosphere(0.0)
-        # We find the value that corresponds to the speed at which, if we engage in a constant speed rotation we will
-        # get the AOA computed for v_lift_off at v_lift_off
+        # We find the value that corresponds to the speed at which, if we engage in a constant
+        # speed rotation we will get the AOA computed for v_lift_off at v_lift_off
         while (alpha_t != 0.0) and (v_t != 0.0):
             # Estimation of thrust
             flight_point = FlightPoint(
