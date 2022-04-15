@@ -54,7 +54,7 @@ class AerodynamicsLowSpeed(Group):
 
     # noinspection PyTypeChecker
     def setup(self):
-        if not (self.options["use_openvsp"]):
+        if not self.options["use_openvsp"]:
             self.add_subsystem(
                 "aero_vlm",
                 ComputeAEROvlm(

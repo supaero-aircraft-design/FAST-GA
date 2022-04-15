@@ -55,7 +55,7 @@ class AerodynamicsHighSpeed(Group):
 
     # noinspection PyTypeChecker
     def setup(self):
-        if not (self.options["use_openvsp"]):
+        if not self.options["use_openvsp"]:
             if self.options["compute_mach_interpolation"]:
                 self.add_subsystem(
                     "aero_vlm",
