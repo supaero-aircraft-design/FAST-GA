@@ -132,6 +132,26 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             val=1.0,
         )
+        self.add_input("settings:propulsion:turboprop:efficiency:first_compressor_stage", val=0.85)
+        self.add_input("settings:propulsion:turboprop:efficiency:second_compressor_stage", val=0.86)
+        self.add_input("settings:propulsion:turboprop:efficiency:high_pressure_turbine", val=0.86)
+        self.add_input("settings:propulsion:turboprop:efficiency:power_turbine", val=0.86)
+        self.add_input(
+            "settings:propulsion:turboprop:efficiency:combustion", val=43.260e6 * 0.95, units="J/kg"
+        )
+        self.add_input("settings:propulsion:turboprop:efficiency:high_pressure_axe", val=0.98)
+        self.add_input("settings:propulsion:turboprop:pressure_loss:inlet", val=0.8)
+        self.add_input("settings:propulsion:turboprop:pressure_loss:combustion_chamber", val=0.95)
+        self.add_input("settings:propulsion:turboprop:bleed:turbine_cooling", val=0.05)
+        self.add_input(
+            "settings:propulsion:turboprop:electric_power_offtake", val=50 * 745.7, units="W"
+        )
+        self.add_input("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
+        self.add_input("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
+        self.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
+        self.add_input(
+            "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio", val=0.25
+        )
 
         self.add_output(
             "data:propulsion:turboprop:sea_level:mach",
@@ -227,6 +247,26 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             ],
             "effective_efficiency_cruise": inputs[
                 "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
+            ],
+            "eta_225": inputs["settings:propulsion:turboprop:efficiency:first_compressor_stage"],
+            "eta_253": inputs["settings:propulsion:turboprop:efficiency:second_compressor_stage"],
+            "eta_445": inputs["settings:propulsion:turboprop:efficiency:high_pressure_turbine"],
+            "eta_455": inputs["settings:propulsion:turboprop:efficiency:power_turbine"],
+            "eta_q": inputs["settings:propulsion:turboprop:efficiency:combustion"],
+            "eta_axe": inputs["settings:propulsion:turboprop:efficiency:high_pressure_axe"],
+            "pi_02": inputs["settings:propulsion:turboprop:pressure_loss:inlet"],
+            "pi_cc": inputs["settings:propulsion:turboprop:pressure_loss:combustion_chamber"],
+            "c": inputs["settings:propulsion:turboprop:bleed:turbine_cooling"],
+            "hp_shaft_power_out": inputs["settings:propulsion:turboprop:electric_power_offtake"],
+            "gearbox_efficiency": inputs["settings:propulsion:turboprop:efficiency:gearbox"],
+            "inter_compressor_bleed": inputs[
+                "settings:propulsion:turboprop:bleed:inter_compressor"
+            ],
+            "exhaust_mach_design": inputs[
+                "settings:propulsion:turboprop:design_point:mach_exhaust"
+            ],
+            "pr_1_ratio_design": inputs[
+                "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio"
             ],
         }
         engine = BasicTPEngine(**engine_params)
