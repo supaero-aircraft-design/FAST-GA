@@ -716,15 +716,15 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         f = np.zeros(5)
         # Temperature change through the combustion chamber
-        f[0] = (
-            1.0
-            - m * (1 + f_fuel_ratio - g - self.c - icb) * (cp_4 * t_4t - cp_3 * t_3t) / (mc * self.eta_q)
+        f[0] = 1.0 - m * (1 + f_fuel_ratio - g - self.c - icb) * (cp_4 * t_4t - cp_3 * t_3t) / (
+            mc * self.eta_q
         )
         f[1] = (
-            1.0 - m * (1 + f_fuel_ratio - g - icb) * np.sqrt(t_41t * rg) / p_41t / f_gamma_41 / self.a41
+            1.0
+            - m * (1 + f_fuel_ratio - g - icb) * np.sqrt(t_41t * rg) / p_41t / f_gamma_41 / self.a41
         )
         # Pressure change through the compressors
-        f[2] = (1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253))
+        f[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
         f[3] = 1.0 - self.opr_2_opr_1_dp / (opr_2 / opr_1)
         # Temperature change through the compressor
         f[4] = (
@@ -743,7 +743,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
                     - self.hp_shaft_power_out / (cp_3 * m * (1 - icb) * t_2t)
                     - t_25t / t_2t * cp_25 / cp_3 * (1 / (1 - icb) - 1)
                 )
-            ) / t_3t
+            )
+            / t_3t
         )
 
         self.t_4t_int = t_4t
@@ -787,7 +788,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         p_5t = p_0 * (1 + (gamma5 - 1) / 2 * mach_8 ** 2) ** f1_5
 
         # Temperature change in the power turbine
-        function_minimize = 1.0 - t_45t/t_5t * (p_5t / p_45t) ** (f2_45 * self.eta_455)
+        function_minimize = 1.0 - t_45t / t_5t * (p_5t / p_45t) ** (f2_45 * self.eta_455)
 
         self.mach_8_int = mach_8
 
