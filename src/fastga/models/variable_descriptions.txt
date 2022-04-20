@@ -100,3 +100,18 @@ data:propulsion:turboprop:off_design:bleed_usage || usage of the bleed in off-de
 data:propulsion:turboprop:off_design:itt_limit || inter turbine temperature limitation in off-design point
 data:propulsion:turboprop:off_design:opr_limit || pressure ratio limitation in off-design point
 data:propulsion:turboprop:off_design:power_limit || mechanical power limitation in off-design point
+
+settings:propulsion:turboprop:bleed:inter_compressor || total compressor airflow extracted after the first  compression stage (in station 25)
+settings:propulsion:turboprop:bleed:turbine_cooling || percentage of the total aspirated airflow used for turbine cooling (fixed)
+settings:propulsion:turboprop:design_point:first_stage_pressure_ratio || ratio of the first stage pressure ratio to the OPR at the design point
+settings:propulsion:turboprop:design_point:mach_exhaust || mach number at the exhaust in the design point
+settings:propulsion:turboprop:efficiency:combustion || fuel energy content
+settings:propulsion:turboprop:efficiency:first_compressor_stage || first compressor stage polytropic efficiency
+settings:propulsion:turboprop:efficiency:gearbox || power shaft mechanical efficiency
+settings:propulsion:turboprop:efficiency:high_pressure_axe || high pressure axe mechanical efficiency
+settings:propulsion:turboprop:efficiency:high_pressure_turbine || high pressure turbine  polytropic efficiency
+settings:propulsion:turboprop:efficiency:power_turbine || power turbine  polytropic efficiency
+settings:propulsion:turboprop:efficiency:second_compressor_stage || second compressor stage polytropic efficiency
+settings:propulsion:turboprop:electric_power_offtake || power used for electrical generation obtained from the HP shaft
+settings:propulsion:turboprop:pressure_loss:combustion_chamber || combustion chamber pressure loss
+settings:propulsion:turboprop:pressure_loss:inlet || inlet total pressure loss
