@@ -303,13 +303,13 @@ class ComputeTurbopropMap(om.ExplicitComponent):
 
         cruise_mach = cruise_velocity / atm_cruise.speed_of_sound
 
-        # Since the cruise speed gives by construction the highest Mach number we know we will never cross it, hence
-        # the following bounds for the mach array
+        # Since the cruise speed gives by construction the highest Mach number we know we will
+        # never cross it, hence the following bounds for the mach array
         mach_array = np.linspace(1e-5, 1.3 * cruise_mach, nb_of_mach)
         # print("\n", mach_array)
 
-        # We then compute the maximum thrust for those mach they are gonna be used to define the thrust for which we
-        # interpolate the fuel consumption
+        # We then compute the maximum thrust for those mach they are gonna be used to define the
+        # thrust for which we interpolate the fuel consumption
         max_thrust_list = []
 
         for mach in mach_array:
@@ -321,10 +321,11 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         max_thrust_array = np.array(max_thrust_list)
         # print("\n", max_thrust_array)
 
-        # thrust_preliminary_intersect will contain the thrust at which we will interpolate our data. To minimize
-        # computation time we will try to build it at relevant point while keeping the overall number of points low.
-        # To do so we will create a linspace containing nb_of_thrust points for each max thrust and delete all the
-        # points that overlap with linspace covering lower thrust. We initialize slightly higher than the first interval
+        # thrust_preliminary_intersect will contain the thrust at which we will interpolate our
+        # data. To minimize computation time we will try to build it at relevant point while
+        # keeping the overall number of points low. To do so we will create a linspace containing
+        # nb_of_thrust points for each max thrust and delete all the points that overlap with
+        # linspace covering lower thrust. We initialize slightly higher than the first interval
         # to ensure that this point will be kept in the first overlap
         thrust_preliminary_intersect = np.array([min(max_thrust_array) / (nb_of_thrust - 1e-5)])
 
@@ -337,9 +338,9 @@ class ComputeTurbopropMap(om.ExplicitComponent):
                 first_thrust_array, max_thrust_current_mach, nb_of_thrust
             )
 
-            # We keep values that don't overlap and add a value slightly above the maximum thrust because we will
-            # need to interpolate the data to complete the table and we want a point that is not too far to reduce
-            # the error because of the over-fitting
+            # We keep values that don't overlap and add a value slightly above the maximum thrust
+            # because we will need to interpolate the data to complete the table and we want a
+            # point that is not too far to reduce the error because of the over-fitting
             retained_thrust_idx = np.where(
                 current_even_spacing > np.amax(thrust_preliminary_intersect)
             )[0]
@@ -378,16 +379,14 @@ class ComputeTurbopropMap(om.ExplicitComponent):
                     np.where(thrust_preliminary_intersect == float(thrust))[0][0],
                 ] = sfc
 
-        sfc_general_before = np.copy(sfc_general)
+        # sfc_general_before = np.copy(sfc_general)
         # print("\n", sfc_general_before)
-
-        degree = 3
 
         valid_idx_previous_mach = np.array([])
         thrust_to_interpolate = np.zeros((1, 1))
 
-        # We now interpolate on the data that are missing but just enough to ensure that we will be able to do a 2D
-        # interpolation with value that are not INVALID_IDX
+        # We now interpolate on the data that are missing but just enough to ensure that we will
+        # be able to do a 2D interpolation with value that are not INVALID_IDX
         for mach in mach_array:
             corresponding_sfc_array = sfc_general[np.where(mach_array == mach)[0]][0]
 
@@ -414,8 +413,10 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         # thrust_plot, mach_plot = np.meshgrid(thrust_preliminary_intersect, mach_array)
         # fig3d = plt.figure()
         # ax = Axes3D(fig3d)
-        # ax.scatter(thrust_plot, mach_plot, sfc_general, cmap="viridis", linewidth=0.25, label="predicted behaviour")
-        # ax.scatter(thrust_plot, mach_plot, sfc_general_before, cmap="viridis", linewidth=0.25, label="reference data")
+        # ax.scatter(thrust_plot, mach_plot, sfc_general, cmap="viridis",
+        #   linewidth=0.25, label="predicted behaviour")
+        # ax.scatter(thrust_plot, mach_plot, sfc_general_before, cmap="viridis",
+        #   linewidth=0.25, label="reference data")
         # ax.legend()
         # plt.show()
 

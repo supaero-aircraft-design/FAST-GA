@@ -22,7 +22,9 @@ from .data.dummy_maps import *
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting
 
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import BasicTPEngineMapped
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import (
+    BasicTPEngineMapped,
+)
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 
 import copy
