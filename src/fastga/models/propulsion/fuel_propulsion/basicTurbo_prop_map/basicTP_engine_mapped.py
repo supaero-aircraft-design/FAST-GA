@@ -196,7 +196,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             eta_axe=eta_axe,
             pi_02=pi_02,
             pi_cc=pi_cc,
-            c=c,
+            cooling_ratio=c,
             hp_shaft_power_out=hp_shaft_power_out,
             gearbox_efficiency=gearbox_efficiency,
             inter_compressor_bleed=inter_compressor_bleed,

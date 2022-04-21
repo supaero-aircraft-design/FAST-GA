@@ -17,14 +17,13 @@ Defines the analysis and plotting functions for postprocessing of load analysis.
 import numpy as np
 import plotly
 import plotly.graph_objects as go
+from fastoad.io import VariableIO
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
 from fastga.models.load_analysis.wing.aerostructural_loads import (
     POINT_MASS_SPAN_RATIO,
     NB_POINTS_POINT_MASS,
 )
-
-from fastoad.io import VariableIO
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
