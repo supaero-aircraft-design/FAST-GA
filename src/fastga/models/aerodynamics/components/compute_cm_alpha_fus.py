@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .figure_digitization import FigureDigitization

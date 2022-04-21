@@ -15,16 +15,12 @@
 import math
 
 import numpy as np
-
-import scipy.interpolate as inter
-
 import openmdao.api as om
-
-from stdatm import Atmosphere
+import scipy.interpolate as inter
 from fastoad.module_management.service_registry import RegisterSubmodel
+from stdatm import Atmosphere
 
 from .figure_digitization import FigureDigitization
-
 from ..constants import (
     SUBMODEL_HINGE_MOMENTS_TAIL_2D,
     SUBMODEL_HINGE_MOMENTS_TAIL_3D,

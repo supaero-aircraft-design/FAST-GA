@@ -12,17 +12,17 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-import math
 import logging
+import math
+
 import numpy as np
-from scipy.optimize import fsolve
-
-from stdatm import Atmosphere
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
-
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+from scipy.optimize import fsolve
+from stdatm import Atmosphere
+
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -12,21 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import copy
+import logging
+import math
 import os
 import os.path as pth
 import warnings
 from typing import Optional
-import math
-import copy
+
+import numpy as np
 import openmdao.api as om
 import pandas as pd
-import logging
-import numpy as np
-
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
 DEFAULT_NX = 19

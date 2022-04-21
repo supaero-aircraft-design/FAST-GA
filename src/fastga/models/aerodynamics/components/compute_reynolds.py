@@ -17,8 +17,8 @@ Computes Mach number and unitary Reynolds.
 
 
 import numpy as np
-from stdatm import Atmosphere
 from openmdao.core.explicitcomponent import ExplicitComponent
+from stdatm import Atmosphere
 
 
 class ComputeUnitReynolds(ExplicitComponent):

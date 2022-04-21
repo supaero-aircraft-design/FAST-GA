@@ -12,23 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import math
 import warnings
-import logging
 
 import numpy as np
-
-from scipy.constants import g
-import scipy.optimize as optimize
-from scipy import interpolate
-from scipy.constants import knot, foot, lbf
 import openmdao.api as om
-
+import scipy.optimize as optimize
+from fastoad.constants import EngineSetting
+from fastoad.model_base import FlightPoint
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import FlightPoint
-from fastoad.constants import EngineSetting
-
+from scipy import interpolate
+from scipy.constants import g
+from scipy.constants import knot, foot, lbf
 from stdatm import Atmosphere
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain

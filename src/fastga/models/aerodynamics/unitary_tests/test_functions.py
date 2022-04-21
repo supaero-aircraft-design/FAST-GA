@@ -12,31 +12,22 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
-import shutil
 import glob
-import time
-import tempfile
+import logging
 import os
 import os.path as pth
-import pytest
-import numpy as np
-
-from platform import system
+import shutil
+import tempfile
+import time
 from pathlib import Path
+from platform import system
 from tempfile import TemporaryDirectory
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-from tests.xfoil_exe.get_xfoil import get_xfoil_path
+import numpy as np
+import pytest
 
-from fastga.models.aerodynamics.components.cd0 import Cd0
-from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
-from fastga.models.aerodynamics.external.xfoil import resources
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
-from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
-    ComputeSlipstreamOpenvsp,
-)
+from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
+from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
     ComputeAircraftMaxCl,
     ComputeUnitReynolds,
@@ -58,11 +49,19 @@ from fastga.models.aerodynamics.components import (
     ComputeExtremeCLHtp,
     ComputeEffectiveEfficiencyPropeller,
 )
+from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
-from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
-from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
-from fastga.models.aerodynamics.load_factor import LoadFactor
 from fastga.models.aerodynamics.components.compute_propeller_aero import ComputePropellerPerformance
+from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
+    ComputeSlipstreamOpenvsp,
+)
+from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.xfoil import resources
+from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.load_factor import LoadFactor
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
 TMP_SAVE_FOLDER = "test_save"

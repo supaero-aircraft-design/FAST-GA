@@ -14,16 +14,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from openmdao.api import Group
+
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import (
     ComputeEquilibratedPolar,
 )
 from fastga.models.aerodynamics.components.compute_non_equilibrated_polar import (
     ComputeNonEquilibratedPolar,
 )
-
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
 
 
 @RegisterOpenMDAOSystem("fastga.aerodynamics.cl_cd_polar", domain=ModelDomain.AERODYNAMICS)

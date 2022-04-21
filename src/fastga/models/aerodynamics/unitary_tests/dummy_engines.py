@@ -12,19 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-from openmdao.core.component import Component
 from typing import Union, Sequence
-import numpy as np
 
-from fastoad.module_management.service_registry import RegisterPropulsion
+import numpy as np
+import pandas as pd
 from fastoad.model_base import FlightPoint
 from fastoad.model_base.propulsion import IOMPropulsionWrapper
+from fastoad.module_management.service_registry import RegisterPropulsion
+from openmdao.core.component import Component
 from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.propulsion import IPropulsion
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.propulsion import IPropulsion
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.aerodynamics.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.aerodynamics.cirrus.dummy_engine"

@@ -16,10 +16,8 @@
 import math
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 from fastoad.module_management.service_registry import RegisterSubmodel
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_CN_BETA_FUSELAGE
 
