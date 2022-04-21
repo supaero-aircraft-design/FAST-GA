@@ -230,7 +230,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.engine.length = None
         self.engine.width = None
         self.engine.height = None
-        self.nacelle = None
+
+        self.nacelle = Nacelle()
+        self.nacelle.wet_area = None
+
         self.propeller = None
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values

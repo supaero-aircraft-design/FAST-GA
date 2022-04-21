@@ -284,7 +284,7 @@ class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
             "eta_axe": inputs["settings:propulsion:turboprop:efficiency:high_pressure_axe"],
             "pi_02": inputs["settings:propulsion:turboprop:pressure_loss:inlet"],
             "pi_cc": inputs["settings:propulsion:turboprop:pressure_loss:combustion_chamber"],
-            "c": inputs["settings:propulsion:turboprop:bleed:turbine_cooling"],
+            "cooling_ratio": inputs["settings:propulsion:turboprop:bleed:turbine_cooling"],
             "hp_shaft_power_out": inputs["settings:propulsion:turboprop:electric_power_offtake"],
             "gearbox_efficiency": inputs["settings:propulsion:turboprop:efficiency:gearbox"],
             "inter_compressor_bleed": inputs[

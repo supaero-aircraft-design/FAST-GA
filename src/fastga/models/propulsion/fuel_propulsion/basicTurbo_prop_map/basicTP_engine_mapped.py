@@ -100,7 +100,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         eta_axe=0.98,
         pi_02=0.8,
         pi_cc=0.95,
-        c=0.05,
+        cooling_ratio=0.05,
         hp_shaft_power_out=50 * 745.7,
         gearbox_efficiency=0.98,
         inter_compressor_bleed=0.04,
@@ -196,7 +196,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             eta_axe=eta_axe,
             pi_02=pi_02,
             pi_cc=pi_cc,
-            cooling_ratio=c,
+            cooling_ratio=cooling_ratio,
             hp_shaft_power_out=hp_shaft_power_out,
             gearbox_efficiency=gearbox_efficiency,
             inter_compressor_bleed=inter_compressor_bleed,
@@ -237,7 +237,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
         # Declare sub-components attribute
         self.engine = Engine(power_SL=power_design)
-        self.nacelle = None
+        self.nacelle = Nacelle()
+        self.nacelle.wet_area = None
         self.propeller = None
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
