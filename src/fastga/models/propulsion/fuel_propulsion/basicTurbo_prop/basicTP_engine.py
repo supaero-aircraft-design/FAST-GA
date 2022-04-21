@@ -718,9 +718,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         f = np.zeros(5)
         # Temperature change through the combustion chamber
-        f[0] = 1.0 - air_mass_flow * (1 + f_fuel_ratio - g_r - self.c - icb) * (cp_4 * t_4t - cp_3 * t_3t) / (
-            m_c * self.eta_q
-        )
+        f[0] = 1.0 - air_mass_flow * (1 + f_fuel_ratio - g_r - self.c - icb) * (
+            cp_4 * t_4t - cp_3 * t_3t
+        ) / (m_c * self.eta_q)
         f[1] = (
             1.0
             - air_mass_flow
@@ -887,7 +887,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         # Computing the exhaust thrust
         thrust_exhaust = (
-            air_mass_flow * (1 + f_fuel_ratio - icb - g) * (v_8 - flight_mach * np.sqrt(t_0 * 287.0 * 1.4))
+            air_mass_flow
+            * (1 + f_fuel_ratio - icb - g)
+            * (v_8 - flight_mach * np.sqrt(t_0 * 287.0 * 1.4))
         )
 
         power_sol = power / 1000.0
@@ -966,8 +968,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return f_value
 
-    def turboshaft_performance_envelope_limits_real_gas(self, limit_name, limit_value, altitude,
-                                                        mach_vol):
+    def turboshaft_performance_envelope_limits_real_gas(
+        self, limit_name, limit_value, altitude, mach_vol
+    ):
 
         """
         Function that finds the fuel flow which leads to the desired engine limit
