@@ -347,8 +347,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 float(sfc),
                 name,
             ]
-            row = pd.Series(data, index=CSV_DATA_LABELS)
-            df = df.append(row, ignore_index=True)
+            row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
+            df = pd.concat([df, row])
             df.to_csv(self.options["out_file"])
 
     def equation_outer(
