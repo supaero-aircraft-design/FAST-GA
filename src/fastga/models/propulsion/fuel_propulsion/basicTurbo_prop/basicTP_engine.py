@@ -13,26 +13,25 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os.path as pth
 import logging
 import math
 import numpy as np
 from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d, interp1d
 from scipy.optimize import fsolve
-import os.path as pth
 from pandas import read_csv
-from . import resources
 
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 
-from .exceptions import (
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop import resources
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import (
     FastBasicICEngineInconsistentInputParametersError,
     FastBasicTPEngineImpossibleTurbopropGeometry,
     FastBasicTPEngineUnknownLimit,
 )
-
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
@@ -98,12 +97,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
         exhaust_mach_design=0.4,
         pr_1_ratio_design=0.25,
     ):
-
         """
         Parametric turboprop engine.
 
         It computes engine characteristics using a simplified thermodynamic model, according to
-        the model established byt Aitor Busteros Ramos
+        the model established byt Aitor Busteros Ramos.
 
         :param power_design: thermodynamic power at the design point, in kW
         :param t_41t_design: turbine entry temperature at the design point, in K
@@ -148,7 +146,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         compression stage (in station 25)
         :param exhaust_mach_design: mach number at the exhaust in the design point
         :param pr_1_ratio_design: ratio of the first stage pressure ration to the OPR at the design
-        point
+        point.
         """
 
         # Load the value of the air properties graph
@@ -246,9 +244,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
         (
             alfa,
             alfa_p,
-            a41,
-            a45,
-            a8,
+            a_41,
+            a_45,
+            a_8,
             eta_compress,
             mc,
             t_4t,
@@ -260,9 +258,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # Storing the propeller geometry and constant parameter
         self.alfa = alfa
         self.alfa_p = alfa_p
-        self.a41 = a41
-        self.a45 = a45
-        self.a8 = a8
+        self.a_41 = a_41
+        self.a_45 = a_45
+        self.a_8 = a_8
         self.eta_compress_design = eta_compress
         self.mc_dp = mc
         self.t_4t_dp = t_4t
@@ -344,11 +342,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :return f_gamma: equal to
         np.sqrt(gamma) * (2 / (gamma + 1)) ** ((gamma + 1) / (2 * (gamma - 1)))
         """
-        f1 = gamma / (gamma - 1)
-        f2 = 1 / f1
+        f_1 = gamma / (gamma - 1)
+        f_2 = 1 / f_1
         f_gamma = np.sqrt(gamma) * (2 / (gamma + 1)) ** ((gamma + 1) / (2 * (gamma - 1)))
 
-        return f1, f2, f_gamma
+        return f_1, f_2, f_gamma
 
     @staticmethod
     def air_renewal_coefficients():
@@ -362,10 +360,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         file = pth.join(resources.__path__[0], "cabin_pressurisation.csv")
         db = read_csv(file)
 
-        h = db["FLIGHT_ALTITUDE"]
+        h_flight = db["FLIGHT_ALTITUDE"]
         h_cab = db["CABIN_ALTITUDE"]
 
-        cabin_pressure = interp1d(h, h_cab)
+        cabin_pressure = interp1d(h_flight, h_cab)
 
         return cabin_pressure
 
@@ -409,7 +407,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         power,
         exhaust_mach,
         bleed_control,
-        h0,
+        h_0,
     ):
         """
         Solver for the design point. Finds the engine properties for which the thermodynamic
@@ -432,7 +430,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param power: the thermodynamic power at the design point, in kW
         :param exhaust_mach: mach number at the exhaust
         :param bleed_control: setting of the bleed at the design point, either "high" or "low"
-        :param h0: the design point altitude, in m
+        :param h_0: the design point altitude, in m
 
         :return f: an array containing the application of the thermodynamic equation written as
         differences to set to 0
@@ -445,19 +443,19 @@ class BasicTPEngine(AbstractFuelPropulsion):
         p_5t = var_to_solve[5]
         m0 = var_to_solve[6]
 
-        g = self.air_renewal(h0, bleed_control) / m0
+        g = self.air_renewal(h_0, bleed_control) / m0
 
         p4t = p_3t * self.pi_cc
 
-        cp_2, cv_2, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        cp_25, cv_25, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        cp_3, cv_3, gamma3 = self.compute_cp_cv_gamma(t_3t)
+        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
+        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
+        cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
         cp_4, cv_4, gamma4 = self.compute_cp_cv_gamma(t_4t)
-        cp_41, cv_41, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        f1_41, f2_41, function_gamma_41 = self.compute_gamma_functions(gamma41)
-        cp_45, cv_45, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        f1_45, f2_45, function_gamma_45 = self.compute_gamma_functions(gamma45)
-        cp_5, cv_5, gamma5 = self.compute_cp_cv_gamma(t_5t)
+        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
+        f1_41, _, function_gamma_41 = self.compute_gamma_functions(gamma41)
+        cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
+        _, f2_45, function_gamma_45 = self.compute_gamma_functions(gamma45)
+        cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
         f1_5, f2_5, function_gamma_5 = self.compute_gamma_functions(gamma5)
 
         fuel_air_ratio = mc / m0
@@ -510,18 +508,18 @@ class BasicTPEngine(AbstractFuelPropulsion):
         rg = 287.0
 
         design_point_mach = self.design_point_mach
-        h0 = self.design_point_altitude
+        h_0 = self.design_point_altitude
         power = self.design_point_power
         global_opr = self.opr_d
         t_41t = self.t_41t_d
         exhaust_mach = self.exhaust_mach_design
         bleed_control = self.bleed_control_design
-        cab_bleed = self.air_renewal(h0, bleed_control)
+        cab_bleed = self.air_renewal(h_0, bleed_control)
         opr_1 = self.opr_1_design
         opr_2 = global_opr / self.opr_1_design
 
         # Computing air properties at the entry of the turboprop
-        atmosphere_0 = Atmosphere(h0, altitude_in_feet=False)
+        atmosphere_0 = Atmosphere(h_0, altitude_in_feet=False)
         p_0 = atmosphere_0.pressure
         t_0 = atmosphere_0.temperature
 
@@ -566,7 +564,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 power,
                 exhaust_mach,
                 bleed_control,
-                h0,
+                h_0,
             ),
             xtol=1e-4,
             full_output=True,
@@ -601,15 +599,15 @@ class BasicTPEngine(AbstractFuelPropulsion):
         alfa_p = p_45t / p_41t
 
         # Computing the turboprop sections
-        a41 = airflow_design * (1 + f - g - icb) * np.sqrt(t_41t * rg) / p4t / f_gamma_41
-        a45 = airflow_design * (1 + f - g - icb) * np.sqrt(t_45t * rg) / p_45t / f_gamma_45
-        a8_1 = airflow_design * (1 + f - g - icb) * np.sqrt(t_5t * rg) / p_5t
-        a8_2 = (
+        a_41 = airflow_design * (1 + f - g - icb) * np.sqrt(t_41t * rg) / p4t / f_gamma_41
+        a_45 = airflow_design * (1 + f - g - icb) * np.sqrt(t_45t * rg) / p_45t / f_gamma_45
+        a_8_1 = airflow_design * (1 + f - g - icb) * np.sqrt(t_5t * rg) / p_5t
+        a_8_2 = (
             np.sqrt(gamma5)
             * exhaust_mach
             * (1 + (gamma5 - 1) / 2 * exhaust_mach ** 2) ** ((gamma5 + 1) / (2 * (1 - gamma5)))
         )
-        a8 = a8_1 / a8_2
+        a_8 = a_8_1 / a_8_2
 
         # Verification that the solution found by the solver give plausible results on the whole
         # turboprop
@@ -645,7 +643,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 "parameters "
             )
 
-        return alfa, alfa_p, a41, a45, a8, eta_compress, mc, t_4t, t_41t, t_45t, opr_2 / opr_1
+        return alfa, alfa_p, a_41, a_45, a_8, eta_compress, mc, t_4t, t_41t, t_45t, opr_2 / opr_1
 
     def turboshaft_performance_solver_real_gas(self, var_to_solve, mc, p_2t, t_2t, m_air):
 
@@ -721,7 +719,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
         f[1] = (
             1.0
-            - m * (1 + f_fuel_ratio - g - icb) * np.sqrt(t_41t * rg) / p_41t / f_gamma_41 / self.a41
+            - m
+            * (1 + f_fuel_ratio - g - icb)
+            * np.sqrt(t_41t * rg)
+            / p_41t
+            / f_gamma_41
+            / self.a_41
         )
         # Pressure change through the compressors
         f[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
@@ -779,9 +782,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         mach_8 = (
             f_gamma_5
-            * self.a45
+            * self.a_45
             / np.sqrt(gamma5)
-            / self.a8
+            / self.a_8
             * (p_45t / p_0) ** ((gamma5 + 1) / 2 / gamma5)
         )
 

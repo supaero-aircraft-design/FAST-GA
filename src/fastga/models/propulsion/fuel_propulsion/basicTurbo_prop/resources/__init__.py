@@ -1,9 +1,4 @@
-"""
-Provides a parametric model for turboprop:
-
-- as a pure Python
-- as OpenMDAO modules
-"""
+"""Provides a parametric model for turboprop as a pure Python and as OpenMDAO modules."""
 
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO

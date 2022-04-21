@@ -19,7 +19,9 @@ from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
-from .basicTP_engine_mapped import BasicTPEngineMapped
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import (
+    BasicTPEngineMapped,
+)
 
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
@@ -34,8 +36,8 @@ from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine
 class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
     """
     Wrapper class for basic Turboprop model using precalculated maps.
-    It is made to allow a direct call to :class:`~.basicIC_engine.BasicTPEngineMapped` in an OpenMDAO
-    component.
+    It is made to allow a direct call to :class:`~.basicIC_engine.BasicTPEngineMapped` in an
+    OpenMDAO component.
     Example of usage of this class::
         import openmdao.api as om
         class MyComponent(om.ExplicitComponent):

@@ -52,9 +52,6 @@ NACELLE_LABELS = {
 
 @RegisterOpenMDAOSystem("fastga.propulsion.turboprop_construction", domain=ModelDomain.AERODYNAMICS)
 class ComputeTurbopropMap(om.ExplicitComponent):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
     def initialize(self):
         self.options.declare(
             "number_of_thrust_subdivision",
@@ -332,6 +329,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         _LOGGER.debug("Finishing turboprop computation")
 
     def construct_table(self, altitude, inputs, engine):
+        """Construct the sfc table for the given engine at the given altitude."""
 
         nb_of_mach = MACH_PTS_NB_TURBOPROP
         nb_of_thrust = self.options["number_of_thrust_subdivision"]
@@ -463,6 +461,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         return mach_array, thrust_preliminary_intersect, sfc_general, max_thrust_array
 
     def format_table(self, sfc_table, thrust_table):
+        """Reformat the sfc table to fit the OpenMDAO formalism."""
 
         nb_of_mach = MACH_PTS_NB_TURBOPROP
         nb_of_thrust = np.size(thrust_table)

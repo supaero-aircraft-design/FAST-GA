@@ -19,8 +19,7 @@ from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
-from .basicTP_engine import BasicTPEngine
-
+from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB

@@ -16,18 +16,12 @@
 
 
 class FastBasicICEngineInconsistentInputParametersError(Exception):
-    """
-    Raised when provided parameter combination is incorrect.
-    """
+    """Raised when provided parameter combination is incorrect."""
 
 
 class FastBasicTPEngineImpossibleTurbopropGeometry(Exception):
-    """
-    Raised when the geometry of the turboprop can't be computed
-    """
+    """Raised when the geometry of the turboprop can't be computed."""
 
 
 class FastBasicTPEngineUnknownLimit(Exception):
-    """
-    Raised when an unknown limit given to the turboprop
-    """
+    """Raised when an unknown limit given to the turboprop."""

@@ -14,8 +14,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import numpy as np
 from typing import Union, Sequence, Tuple, Optional
+import numpy as np
 from scipy.interpolate import interp2d, interp1d
 
 from fastoad.model_base import FlightPoint, Atmosphere
@@ -52,8 +52,7 @@ NACELLE_LABELS = {
 
 
 class BasicTPEngineMapped(AbstractFuelPropulsion):
-
-    """Mapped version of the turboprop, need the constructed table beforehand to work"""
+    """Mapped version of the turboprop, need the constructed table beforehand to work."""
 
     def __init__(
         self,
@@ -109,8 +108,9 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
     ):
 
         """
-        Parametric turboprop engine reading a map computed beforehand. Based on the basic turboprop engine, but post
-        treatment is done beforehand to save computation time on the sfc estimation function
+        Parametric turboprop engine reading a map computed beforehand. Based on the basic turboprop
+        engine, but post treatment is done beforehand to save computation time on the sfc estimation
+        function
 
         :param power_design: thermodynamic power at the design point, in kW
         :param t_41t_design: turbine entry temperature at the design point, in K
@@ -123,32 +123,45 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         :param itt_limit: temperature limit between the turbines, in K
         :param power_limit: power limit on the gearbox, in kW
         :param opr_limit: opr limit in the compressor
-        :param speed_SL: array with the speed at which the sea level performance of the propeller were computed
-        :param thrust_SL: array with the required thrust at which the sea level performance of the propeller were
+        :param speed_SL: array with the speed at which the sea level performance of the propeller
+        were computed
+        :param thrust_SL: array with the required thrust at which the sea level performance of the
+        propeller were
         computed
         :param thrust_limit_SL: array with the limit thrust available at the speed in speed_SL
-        :param efficiency_SL: array containing the sea level efficiency computed at speed_SL and thrust_SL
-        :param speed_CL: array with the speed at which the cruise level performance of the propeller were computed
-        :param thrust_CL: array with the required thrust at which the cruise level performance of the propeller were
-        computed
-        :param thrust_limit_CL: array with the limit thrust available at the speed in speed_CL
-        :param efficiency_CL: array containing the cruise level efficiency computed at speed_CL and thrust_CL
-        :param turbo_mach_SL: array with the mach at which the sea level performance of the turboprop were computed
-        :param turbo_thrust_SL: array with the required thrust at which the sea level performance of the turboprop were
-        computed
-        :param turbo_thrust_max_SL: array with the limit thrust available at the mach in turbo_mach_SL
-        :param turbo_sfc_SL: array containing the sea level sfc computed at turbo_mach_SL and turbo_thrust_SL
-        :param turbo_mach_CL: array with the mach at which the cruise level performance of the turboprop were computed
-        :param turbo_thrust_CL: array with the required thrust at which the cruise level performance of the turboprop
+        :param efficiency_SL: array containing the sea level efficiency computed at speed_SL and
+        thrust_SL
+        :param speed_CL: array with the speed at which the cruise level performance of the propeller
         were computed
-        :param turbo_thrust_max_CL: array with the limit thrust available at the mach in turbo_mach_CL
-        :param turbo_sfc_CL: array containing the cruise level sfc computed at turbo_mach_CL and turbo_thrust_CL
-        :param turbo_mach_IL: array with the mach at which the intermediate level performance of the turboprop were
-        computed
-        :param turbo_thrust_IL: array with the required thrust at which the intermediate level performance of the
+        :param thrust_CL: array with the required thrust at which the cruise level performance of
+        the propeller were  computed
+        :param thrust_limit_CL: array with the limit thrust available at the speed in speed_CL
+        :param efficiency_CL: array containing the cruise level efficiency computed at speed_CL and
+        thrust_CL
+        :param turbo_mach_SL: array with the mach at which the sea level performance of the
         turboprop were computed
-        :param turbo_thrust_max_IL: array with the limit thrust available at the mach in turbo_mach_IL
-        :param turbo_sfc_IL: array containing the intermediate level sfc computed at turbo_mach_IL and turbo_thrust_IL
+        :param turbo_thrust_SL: array with the required thrust at which the sea level performance of
+        the turboprop were computed
+        :param turbo_thrust_max_SL: array with the limit thrust available at the mach in
+        turbo_mach_SL
+        :param turbo_sfc_SL: array containing the sea level sfc computed at turbo_mach_SL and
+        turbo_thrust_SL
+        :param turbo_mach_CL: array with the mach at which the cruise level performance of the
+        turboprop were computed
+        :param turbo_thrust_CL: array with the required thrust at which the cruise level performance
+        of the turboprop were computed
+        :param turbo_thrust_max_CL: array with the limit thrust available at the mach in
+        turbo_mach_CL
+        :param turbo_sfc_CL: array containing the cruise level sfc computed at turbo_mach_CL and
+        turbo_thrust_CL
+        :param turbo_mach_IL: array with the mach at which the intermediate level performance of the
+        turboprop were computed
+        :param turbo_thrust_IL: array with the required thrust at which the intermediate level
+        performance of the turboprop were computed
+        :param turbo_thrust_max_IL: array with the limit thrust available at the mach in
+        turbo_mach_IL
+        :param turbo_sfc_IL: array containing the intermediate level sfc computed at turbo_mach_IL
+        and turbo_thrust_IL
         :param level_IL: altitude at which the intermediate level computation were conducted
         """
 
@@ -317,7 +330,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
         :param mach: Mach number
         :param altitude: (unit=m) altitude w.r.t. to sea level
-        :param thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
+        :param thrust_is_regulated: tells if thrust_rate or thrust should be used
+        (works element-wise)
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
@@ -328,7 +342,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         :param flight_points.mach: Mach number
         :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
         :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used (works element-wise)
+        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used 
+        (works element-wise)
         :param flight_points.thrust_rate: thrust rate (unit=none)
         :param flight_points.thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
@@ -377,7 +392,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         # as some thrust rates that are computed may have been provided as input)
         out_thrust_rate = out_thrust / max_thrust
 
-        # Now SFC (g/s/N) can be computed and converted to sfc_thrust (kg/N) to match computation from turboshaft
+        # Now SFC (g/s/N) can be computed and converted to sfc_thrust (kg/N) to match computation
+        # from turboshaft
         sfc_thrust = self.sfc(out_thrust, atmosphere)
 
         return sfc_thrust, out_thrust_rate, out_thrust
@@ -521,8 +537,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         :return: SFC (in kg/s/N)
         """
 
-        # Compute sfc
-        power_shaft = np.zeros(np.size(thrust))
         # torque = np.zeros(np.size(thrust))
         sfc = np.zeros(np.size(thrust))
         if np.size(thrust) == 1:

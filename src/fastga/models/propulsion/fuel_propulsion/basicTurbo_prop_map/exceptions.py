@@ -16,6 +16,4 @@
 
 
 class FastBasicICEngineInconsistentInputParametersError(Exception):
-    """
-    Raised when provided parameter combination is incorrect.
-    """
+    """Raised when provided parameter combination is incorrect."""
