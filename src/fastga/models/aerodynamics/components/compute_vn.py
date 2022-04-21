@@ -21,6 +21,7 @@ import openmdao.api as om
 import scipy.optimize as optimize
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from scipy import interpolate

@@ -25,6 +25,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
 from openmdao.components.external_code_comp import ExternalCodeComp

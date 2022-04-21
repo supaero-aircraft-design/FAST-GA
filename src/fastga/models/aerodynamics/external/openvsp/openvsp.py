@@ -20,10 +20,12 @@ from importlib.resources import path
 
 import numpy as np
 import pandas as pd
+
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from openmdao.components.external_code_comp import ExternalCodeComp

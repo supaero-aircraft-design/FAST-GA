@@ -17,6 +17,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, R
 from openmdao.core.group import Group
 
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     _ComputeSlipstreamOpenvsp,

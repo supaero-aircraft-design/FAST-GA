@@ -15,6 +15,7 @@
 import warnings
 
 import numpy as np
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management.service_registry import RegisterSubmodel
