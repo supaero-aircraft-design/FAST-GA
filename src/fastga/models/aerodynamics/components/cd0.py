@@ -15,9 +15,8 @@ its components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
-
 from fastoad.module_management.service_registry import RegisterSubmodel
+from openmdao.core.group import Group
 
 from ..constants import (
     SUBMODEL_CD0_WING,

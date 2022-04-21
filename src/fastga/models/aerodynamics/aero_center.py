@@ -13,10 +13,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import math
-from openmdao.core.explicitcomponent import ExplicitComponent
 
+import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 from stdatm import Atmosphere
 
 

@@ -15,13 +15,10 @@
 import math
 
 import numpy as np
-
+from fastoad.module_management.service_registry import RegisterSubmodel
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
-
 from fastga.models.geometry.profiles.get_profile import get_profile
-
 from ..constants import SUBMODEL_CD0_WING
 
 

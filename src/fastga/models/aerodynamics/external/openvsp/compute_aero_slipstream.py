@@ -19,8 +19,8 @@ from openmdao.core.group import Group
 from stdatm import Atmosphere
 
 from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
-from ...constants import SPAN_MESH_POINT
 from ...components.compute_reynolds import ComputeUnitReynolds
+from ...constants import SPAN_MESH_POINT
 
 
 class ComputeSlipstreamOpenvsp(Group):

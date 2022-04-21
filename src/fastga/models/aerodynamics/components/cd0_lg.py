@@ -13,10 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 from fastoad.module_management.service_registry import RegisterSubmodel
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_CD0_LANDING_GEAR
 

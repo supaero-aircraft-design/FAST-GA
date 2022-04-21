@@ -17,13 +17,13 @@
 import logging
 
 import numpy as np
-from openmdao.core.group import Group
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 from .vlm import VLMSimpleGeometry
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 _LOGGER = logging.getLogger(__name__)
 

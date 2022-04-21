@@ -12,37 +12,32 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import math
 import os
 import os.path as pth
 import warnings
-import math
-import pandas as pd
-import numpy as np
-
 from importlib.resources import path
 
-from openmdao.components.external_code_comp import ExternalCodeComp
-from openmdao.utils.file_wrap import InputFileGenerator
-
-from fastoad.model_base import FlightPoint
+import numpy as np
+import pandas as pd
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
+from fastoad.constants import EngineSetting
+from fastoad.model_base import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.constants import EngineSetting
-
+from openmdao.components.external_code_comp import ExternalCodeComp
+from openmdao.utils.file_wrap import InputFileGenerator
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory
-
-from . import resources as local_resources
 from . import openvsp3201
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
-
+from . import resources as local_resources
 from ... import resources
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"

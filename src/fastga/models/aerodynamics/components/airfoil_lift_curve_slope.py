@@ -18,11 +18,10 @@ import logging
 
 import numpy as np
 import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
+from ..external.xfoil.xfoil_polar import XfoilPolar
 
 ALPHA_START_LINEAR = -5.0
 ALPHA_END_LINEAR = 10.0

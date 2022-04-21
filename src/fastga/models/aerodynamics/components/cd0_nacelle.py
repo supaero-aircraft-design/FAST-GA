@@ -12,18 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
 import warnings
 
-from openmdao.core.explicitcomponent import ExplicitComponent
+import numpy as np
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management.service_registry import RegisterSubmodel
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
 from ..constants import SUBMODEL_CD0_NACELLE
 
 

@@ -13,29 +13,28 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import sys
 import os
 import os.path as pth
 import shutil
-
+import sys
+import warnings
+from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
-import warnings
 from typing import Tuple
-from importlib.resources import path
-import pandas as pd
+
 import numpy as np
-from openmdao.components.external_code_comp import ExternalCodeComp
-from openmdao.utils.file_wrap import InputFileGenerator
+import pandas as pd
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
+from openmdao.components.external_code_comp import ExternalCodeComp
+from openmdao.utils.file_wrap import InputFileGenerator
 
-from fastga.models.geometry.profiles.get_profile import get_profile
 from fastga.models.aerodynamics.external.xfoil import xfoil699
-
-from ...constants import POLAR_POINT_COUNT
+from fastga.models.geometry.profiles.get_profile import get_profile
 from . import resources as local_resources
+from ...constants import POLAR_POINT_COUNT
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"

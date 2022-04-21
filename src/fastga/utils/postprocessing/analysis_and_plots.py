@@ -14,19 +14,18 @@ Defines the analysis and plotting functions for postprocessing.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from random import SystemRandom
+from typing import Dict
+
+import matplotlib.colors as colour
 import numpy as np
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import matplotlib.colors as colour
-
-
-from typing import Dict
-from random import SystemRandom
-from openmdao.utils.units import convert_units
 
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
+from openmdao.utils.units import convert_units
 
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 

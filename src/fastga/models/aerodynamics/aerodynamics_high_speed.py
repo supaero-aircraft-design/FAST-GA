@@ -12,20 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from openmdao.core.group import Group
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
-from fastoad.module_management.constants import ModelDomain
-
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     _ComputeSlipstreamOpenvsp,
 )
-
+from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from .constants import (
     SUBMODEL_CD0,
     SUBMODEL_CL_ALPHA_VT,

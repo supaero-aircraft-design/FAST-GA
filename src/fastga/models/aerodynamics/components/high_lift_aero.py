@@ -13,17 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import math
-
 from typing import Union, Tuple
 
 import numpy as np
-
+from fastoad.module_management.service_registry import RegisterSubmodel
 from scipy import interpolate
 
-from fastoad.module_management.service_registry import RegisterSubmodel
-
 from .figure_digitization import FigureDigitization
-
 from ..constants import SUBMODEL_DELTA_HIGH_LIFT
 
 

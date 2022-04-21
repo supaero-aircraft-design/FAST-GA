@@ -13,11 +13,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
+
 import numpy as np
 import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
-
 from stdatm import Atmosphere
 
 from ..constants import SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER

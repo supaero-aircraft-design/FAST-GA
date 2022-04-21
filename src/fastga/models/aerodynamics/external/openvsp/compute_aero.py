@@ -21,8 +21,8 @@ import numpy as np
 from openmdao.core.group import Group
 
 from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 from ...components.compute_reynolds import ComputeUnitReynolds
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 _LOGGER = logging.getLogger(__name__)
 

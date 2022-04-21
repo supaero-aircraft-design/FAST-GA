@@ -12,13 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from platform import system
+
+import numpy as np
 import pytest
 
-from platform import system
-import numpy as np
-
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
-
 from .test_functions import (
     xfoil_path,
     compute_reynolds,
