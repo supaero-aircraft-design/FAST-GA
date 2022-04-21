@@ -16,11 +16,11 @@
 import os.path as pth
 import logging
 import math
-import numpy as np
 from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d, interp1d
 from scipy.optimize import fsolve
 from pandas import read_csv
+import numpy as np
 
 from fastoad.model_base import FlightPoint, Atmosphere
 from fastoad.constants import EngineSetting
@@ -224,6 +224,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         # Declare sub-components attribute
         self.engine = Engine(power_SL=power_design)
+        self.engine.mass = None
+        self.engine.length = None
+        self.engine.width = None
+        self.engine.height = None
         self.nacelle = None
         self.propeller = None
 
@@ -248,9 +252,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
             a_45,
             a_8,
             eta_compress,
-            mc,
+            m_c,
             t_4t,
-            t_41t,
+            _,
             t_45t,
             opr_2_opr_1,
         ) = self.turboprop_geometry_calculation()
@@ -262,7 +266,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.a_45 = a_45
         self.a_8 = a_8
         self.eta_compress_design = eta_compress
-        self.mc_dp = mc
+        self.m_c_dp = m_c
         self.t_4t_dp = t_4t
         self.t_45t_dp = t_45t
         self.opr_2_opr_1_dp = (
@@ -298,11 +302,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """
 
         file = pth.join(resources.__path__[0], "T_Cv_Cp.csv")
-        db = read_csv(file)
+        database = read_csv(file)
 
-        temp = db["T"]
-        cv_n = db["CV"]
-        cp_n = db["CP"]
+        temp = database["T"]
+        cv_n = database["CV"]
+        cp_n = database["CP"]
 
         cv_t_coefficients = np.polyfit(temp, cv_n, 15)
         cp_t_coefficients = np.polyfit(temp, cp_n, 15)
@@ -367,11 +371,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return cabin_pressure
 
-    def air_renewal(self, h, bleed_control):
+    def air_renewal(self, altitude, bleed_control):
         """
         Computes the airflow used for cabin air renewal
 
-        :param h: The flight altitude in meters [m]
+        :param altitude: The flight altitude in meters [m]
         :param bleed_control: The air packs setting "high" or "low"
 
         :return m_air: The cabin airflow in [kg/s]
@@ -385,7 +389,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         renovation_time = 2.0  # in minutes
 
-        h_cab = self.cabin_pressure(h)
+        h_cab = self.cabin_pressure(altitude)
 
         t_cab = 20.0 + 273.0
         atmosphere = Atmosphere(h_cab, altitude_in_feet=False)
@@ -415,7 +419,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         :param var_to_solve: an array containing the values used to solve the system of
         thermodynamic equation, contains :
-        mc : the mass flow of fuel,
+        m_c : the mass flow of fuel,
         t_4t : the turbine entry temperature,
         t_45t : the inter-turbine temperature,
         p_45t : the inter-turbine pressure,
@@ -435,7 +439,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :return f: an array containing the application of the thermodynamic equation written as
         differences to set to 0
         """
-        mc = var_to_solve[0]
+        m_c = var_to_solve[0]
         t_4t = var_to_solve[1]
         t_45t = var_to_solve[2]
         t_5t = var_to_solve[3]
@@ -450,7 +454,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
         cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
         cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
-        cp_4, cv_4, gamma4 = self.compute_cp_cv_gamma(t_4t)
+        cp_4, _, gamma4 = self.compute_cp_cv_gamma(t_4t)
         cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
         f1_41, _, function_gamma_41 = self.compute_gamma_functions(gamma41)
         cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
@@ -458,30 +462,30 @@ class BasicTPEngine(AbstractFuelPropulsion):
         cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
         f1_5, f2_5, function_gamma_5 = self.compute_gamma_functions(gamma5)
 
-        fuel_air_ratio = mc / m0
+        fuel_air_ratio = m_c / m0
         icb = self.inter_compressor_bleed / m0
 
-        f = np.zeros(7)
+        return_array = np.zeros(7)
         # Temperature change after through the combustion chamber
-        f[0] = (cp_4 * t_4t - cp_3 * t_3t) * (
+        return_array[0] = (cp_4 * t_4t - cp_3 * t_3t) * (
             1 + fuel_air_ratio - g - self.c - icb
         ) - self.eta_q * fuel_air_ratio
         # Mixing of hot air from the compressor with the hot gases from the combustion chamber
-        f[1] = t_41t - (
+        return_array[1] = t_41t - (
             (t_4t * (1 + fuel_air_ratio - g - self.c - icb) + t_3t * self.c)
             / (1 + fuel_air_ratio - g - icb)
         )
         # Mechanic equilibrium on the high pressure axis
-        f[2] = (
+        return_array[2] = (
             (1 + fuel_air_ratio - g - icb) * (cp_41 * t_41t - cp_45 * t_45t) * self.eta_axe
             - self.hp_shaft_power_out / m0
             - (cp_3 * t_3t - cp_25 * t_25t) * (1 - icb)
             - (cp_25 * t_25t - cp_2 * t_2t)
         )
         # Expansion in the high pressure turbine
-        f[3] = p_45t - (p4t * (t_45t / t_41t) ** (f1_41 / self.eta_445))
+        return_array[3] = p_45t - (p4t * (t_45t / t_41t) ** (f1_41 / self.eta_445))
         # Power given to the propeller
-        f[4] = (
+        return_array[4] = (
             m0 * 1000.0
             - (
                 ((power * 1000.0 / self.gearbox_efficiency) / (cp_45 * t_45t - cp_5 * t_5t))
@@ -490,10 +494,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
             * 1000.0
         )
         # Expansion in the power turbine
-        f[5] = t_5t - t_45t * ((p_5t / p_45t) ** (f2_45 * self.eta_455))
-        f[6] = p_5t - (p_0 * (1 + (gamma5 - 1) / 2 * exhaust_mach ** 2) ** f1_5)
+        return_array[5] = t_5t - t_45t * ((p_5t / p_45t) ** (f2_45 * self.eta_455))
+        return_array[6] = p_5t - (p_0 * (1 + (gamma5 - 1) / 2 * exhaust_mach ** 2) ** f1_5)
 
-        return f
+        return return_array
 
     def turboprop_geometry_calculation(self):
 
@@ -505,7 +509,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         read the documentation of the turboprop model). Other, non-constant values,
         such us temperatures or compression ratios are also obtained.
         """
-        rg = 287.0
+        r_g = 287.0
 
         design_point_mach = self.design_point_mach
         h_0 = self.design_point_altitude
@@ -539,7 +543,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         p_3t = p_25t * opr_2
 
         cp_25, cv_25, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        f1_25, f2_25, f_gamma_25 = self.compute_gamma_functions(gamma25)
+        _, f2_25, f_gamma_25 = self.compute_gamma_functions(gamma25)
 
         # After the compressor
         t_3t = t_25t * opr_2 ** (f2_25 / self.eta_253)
@@ -576,7 +580,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 "check the input parameters "
             )
 
-        mc = solution_vector[0]
+        m_c = solution_vector[0]
         t_4t = solution_vector[1]
         t_45t = solution_vector[2]
         t_5t = solution_vector[3]
@@ -584,24 +588,24 @@ class BasicTPEngine(AbstractFuelPropulsion):
         p_5t = solution_vector[5]
         airflow_design = solution_vector[6]
 
-        f = mc / airflow_design
-        g = cab_bleed / airflow_design
+        f = m_c / airflow_design
+        g_r = cab_bleed / airflow_design
         icb = self.inter_compressor_bleed / airflow_design
 
-        cp_3, cv_3, gamma3 = self.compute_cp_cv_gamma(t_3t)
-        cp_41, cv_41, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        f1_41, f2_41, f_gamma_41 = self.compute_gamma_functions(gamma41)
+        cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
+        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
+        _, f2_41, f_gamma_41 = self.compute_gamma_functions(gamma41)
         cp_45, cv_45, gamma45 = self.compute_cp_cv_gamma(t_45t)
         f1_45, f2_45, f_gamma_45 = self.compute_gamma_functions(gamma45)
-        cp_5, cv_5, gamma5 = self.compute_cp_cv_gamma(t_5t)
+        cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
 
         alfa = t_45t / t_41t
         alfa_p = p_45t / p_41t
 
         # Computing the turboprop sections
-        a_41 = airflow_design * (1 + f - g - icb) * np.sqrt(t_41t * rg) / p4t / f_gamma_41
-        a_45 = airflow_design * (1 + f - g - icb) * np.sqrt(t_45t * rg) / p_45t / f_gamma_45
-        a_8_1 = airflow_design * (1 + f - g - icb) * np.sqrt(t_5t * rg) / p_5t
+        a_41 = airflow_design * (1 + f - g_r - icb) * np.sqrt(t_41t * r_g) / p4t / f_gamma_41
+        a_45 = airflow_design * (1 + f - g_r - icb) * np.sqrt(t_45t * r_g) / p_45t / f_gamma_45
+        a_8_1 = airflow_design * (1 + f - g_r - icb) * np.sqrt(t_5t * r_g) / p_5t
         a_8_2 = (
             np.sqrt(gamma5)
             * exhaust_mach
@@ -614,7 +618,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         opr_check = (
             cp_2 / cp_3 / (1 - icb)
             + self.eta_axe
-            * (1 + f - g - icb)
+            * (1 + f - g_r - icb)
             / (1 - icb)
             * (cp_41 - cp_45 * alfa)
             / cp_3
@@ -628,7 +632,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             (cp_45 * t_45t - cp_5 * t_5t)
             * airflow_design
             / 1000.0
-            * (1 - g + f - icb)
+            * (1 - g_r + f - icb)
             * self.gearbox_efficiency
         )
 
@@ -643,9 +647,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 "parameters "
             )
 
-        return alfa, alfa_p, a_41, a_45, a_8, eta_compress, mc, t_4t, t_41t, t_45t, opr_2 / opr_1
+        return alfa, alfa_p, a_41, a_45, a_8, eta_compress, m_c, t_4t, t_41t, t_45t, opr_2 / opr_1
 
-    def turboshaft_performance_solver_real_gas(self, var_to_solve, mc, p_2t, t_2t, m_air):
+    def turboshaft_performance_solver_real_gas(self, var_to_solve, m_c, p_2t, t_2t, m_air):
 
         """
 
@@ -659,7 +663,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         t_41t : the temperature after the mixing of cold air, in K,
         m : the total airflow, in kg/s,
         p_3t : the total pressure after the radial compressor in Pa
-        :param mc: the fuel mass flow, in kg/s
+        :param m_c: the fuel mass flow, in kg/s
         :param p_2t: the total pressure before the compressor stage, in Pa
         :param t_2t: the total temperature before the compressor stage, in K
         :param m_air: the bleed air mass flow, in kg/s
@@ -672,21 +676,21 @@ class BasicTPEngine(AbstractFuelPropulsion):
         t_25t = var_to_solve[0]
         t_3t = var_to_solve[1]
         t_41t = var_to_solve[2]
-        m = var_to_solve[3]
+        air_mass_flow = var_to_solve[3]
         p_3t = var_to_solve[4]
         t_45t = t_41t * self.alfa
 
         self.t_41t_int = t_41t
-        self.m_int = m
+        self.m_int = air_mass_flow
         self.t_45t_int = t_45t
 
         rg = 287.0
-        g = m_air / m
+        g_r = m_air / air_mass_flow
 
-        self.g_int = g
+        self.g_int = g_r
 
-        f_fuel_ratio = mc / m
-        icb = self.inter_compressor_bleed / m
+        f_fuel_ratio = m_c / air_mass_flow
+        icb = self.inter_compressor_bleed / air_mass_flow
 
         self.f_fuel_ratio_int = f_fuel_ratio
 
@@ -704,8 +708,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         opr_1 = p_25t / p_2t
         opr = opr_1 * opr_2
 
-        t_4t = (t_41t * (1 + f_fuel_ratio - g - icb) - t_3t * self.c) / (
-            1 + f_fuel_ratio - g - self.c - icb
+        t_4t = (t_41t * (1 + f_fuel_ratio - g_r - icb) - t_3t * self.c) / (
+            1 + f_fuel_ratio - g_r - self.c - icb
         )
 
         cp_4, cv_4, gamma4 = self.compute_cp_cv_gamma(t_4t)
@@ -714,13 +718,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         f = np.zeros(5)
         # Temperature change through the combustion chamber
-        f[0] = 1.0 - m * (1 + f_fuel_ratio - g - self.c - icb) * (cp_4 * t_4t - cp_3 * t_3t) / (
-            mc * self.eta_q
+        f[0] = 1.0 - air_mass_flow * (1 + f_fuel_ratio - g_r - self.c - icb) * (cp_4 * t_4t - cp_3 * t_3t) / (
+            m_c * self.eta_q
         )
         f[1] = (
             1.0
-            - m
-            * (1 + f_fuel_ratio - g - icb)
+            - air_mass_flow
+            * (1 + f_fuel_ratio - g_r - icb)
             * np.sqrt(t_41t * rg)
             / p_41t
             / f_gamma_41
@@ -737,13 +741,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 * (
                     cp_2 / cp_3 / (1 - icb)
                     + self.eta_axe
-                    * (1 + f_fuel_ratio - g - icb)
+                    * (1 + f_fuel_ratio - g_r - icb)
                     / (1 - icb)
                     * (cp_41 - cp_45 * self.alfa)
                     / cp_3
                     * t_41t
                     / t_2t
-                    - self.hp_shaft_power_out / (cp_3 * m * (1 - icb) * t_2t)
+                    - self.hp_shaft_power_out / (cp_3 * air_mass_flow * (1 - icb) * t_2t)
                     - t_25t / t_2t * cp_25 / cp_3 * (1 / (1 - icb) - 1)
                 )
             )
@@ -797,15 +801,15 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return function_minimize
 
-    def turboshaft_performance_real_gas(self, h, flight_mach, mc):
+    def turboshaft_performance_real_gas(self, altitude, flight_mach, m_c):
 
         """
         Computes the characteristics of the engine when a certain fuel flow is injected into the
         turboprop in certain flight conditions.
 
-        :param h: the flight altitude, in m
+        :param altitude: the flight altitude, in m
         :param flight_mach: the flight mach
-        :param mc: the fuel flow injected in the turboprop, in kg/s
+        :param m_c: the fuel flow injected in the turboprop, in kg/s
 
         :return t_4t: the turbine entry temperature, in K
         :return m: the air mass flow, in kg/s
@@ -818,7 +822,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :return m: the air flow, in m/s.
         """
 
-        performance_atmosphere = Atmosphere(h, altitude_in_feet=False)
+        performance_atmosphere = Atmosphere(altitude, altitude_in_feet=False)
 
         p_0 = performance_atmosphere.pressure
         t_0 = performance_atmosphere.temperature
@@ -826,7 +830,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             bleed_control = "high"
         else:
             bleed_control = "low"
-        m_air = self.air_renewal(h, bleed_control)
+        m_air = self.air_renewal(altitude, bleed_control)
         rg = 287.0
 
         # Computing atmospheric conditions
@@ -842,7 +846,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         fsolve(
             self.turboshaft_performance_solver_real_gas,
             initial_values,
-            (mc, p_2t, t_2t, m_air),
+            (m_c, p_2t, t_2t, m_air),
             xtol=1e-8,
         )
 
@@ -853,10 +857,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         opr = self.opr_int
         g = self.g_int
         f_fuel_ratio = self.f_fuel_ratio_int
-        m = self.m_int
+        air_mass_flow = self.m_int
 
         p_45t = p_41t * self.alfa_p
-        icb = self.inter_compressor_bleed / m
+        icb = self.inter_compressor_bleed / air_mass_flow
 
         # Solving the exhaust equation
         t_5t_0 = np.array([[900]])
@@ -872,7 +876,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         # Computing the shaft power output
         power = (
-            m
+            air_mass_flow
             * (1 - g + f_fuel_ratio - icb)
             * (cp_45 * t_45t - cp_5 * t_5t)
             * self.gearbox_efficiency
@@ -883,7 +887,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         # Computing the exhaust thrust
         thrust_exhaust = (
-            m * (1 + f_fuel_ratio - icb - g) * (v_8 - flight_mach * np.sqrt(t_0 * 287.0 * 1.4))
+            air_mass_flow * (1 + f_fuel_ratio - icb - g) * (v_8 - flight_mach * np.sqrt(t_0 * 287.0 * 1.4))
         )
 
         power_sol = power / 1000.0
@@ -893,10 +897,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.power_sol = power_sol
         self.thrust_sol = thrust_exhaust
 
-        return t_4t, m, power_sol, f_fuel_ratio, p_41t, opr, t_41t, t_45t
+        return t_4t, air_mass_flow, power_sol, f_fuel_ratio, p_41t, opr, t_41t, t_45t
 
     def turboshaft_performance_envelope_solver_real_gas(
-        self, fuel_flow, limit_name, limit_value, h, mach_vol
+        self, fuel_flow, limit_name, limit_value, altitude, mach_vol
     ):
         """
         Function that computes the turboprop performance when one of the engine limits is reached
@@ -906,51 +910,51 @@ class BasicTPEngine(AbstractFuelPropulsion):
         can be "opr", "t_45t" or "power"
         :param limit_value: the value of the limit, no unit for the opr, K for the t_45t and kW for
         the power
-        :param h: the flight altitude, in m
+        :param altitude: the flight altitude, in m
         :param mach_vol: the flight mach number
 
         :return f_value: for the given fuel flow, the difference between the limit and the
         computed value
         """
-        mc = fuel_flow[0]
+        m_c = fuel_flow[0]
 
         if limit_name == "opr":
             (
                 t_4t,
-                m,
+                _,
                 power,
-                f_fuel_ratio,
-                p_41t,
+                _,
+                _,
                 opr,
                 t_41t,
                 t_45t,
-            ) = self.turboshaft_performance_real_gas(h, mach_vol, mc)
+            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = opr
 
         elif limit_name == "t_45t":
             (
                 t_4t,
-                m,
+                _,
                 power,
-                f_fuel_ratio,
-                p_41t,
+                _,
+                _,
                 opr,
                 t_41t,
                 t_45t,
-            ) = self.turboshaft_performance_real_gas(h, mach_vol, mc)
+            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = t_45t
 
         elif limit_name == "power":
             (
                 t_4t,
-                m,
+                _,
                 power,
-                f_fuel_ratio,
-                p_41t,
+                _,
+                _,
                 opr,
                 t_41t,
                 t_45t,
-            ) = self.turboshaft_performance_real_gas(h, mach_vol, mc)
+            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = power
 
         else:
@@ -962,7 +966,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return f_value
 
-    def turboshaft_performance_envelope_limits_real_gas(self, limit_name, limit_value, h, mach_vol):
+    def turboshaft_performance_envelope_limits_real_gas(self, limit_name, limit_value, altitude,
+                                                        mach_vol):
 
         """
         Function that finds the fuel flow which leads to the desired engine limit
@@ -971,19 +976,19 @@ class BasicTPEngine(AbstractFuelPropulsion):
          "opr", "t_45t" or "power"
         :param limit_value: the value of the limit, no unit for the opr, K for the t_45t and kW for
         the power
-        :param h: the flight altitude, in m
+        :param altitude: the flight altitude, in m
         :param mach_vol: the flight mach number
 
         :return fuel_flow: the fuel flow that constrains the engine to the desired limit
         """
 
-        fuel_flow_0 = np.array([0.046 * (1 - h / 29000)])
+        fuel_flow_0 = np.array([0.046 * (1 - altitude / 29000)])
 
         z = np.array(
             fsolve(
                 self.turboshaft_performance_envelope_solver_real_gas,
                 fuel_flow_0,
-                (limit_name, limit_value, h, mach_vol),
+                (limit_name, limit_value, altitude, mach_vol),
             )
         )
         fuel_flow = z[0]
@@ -1114,7 +1119,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param flight_points.mach: Mach number
         :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
         :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used 
+        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used
         (works element-wise)
         :param flight_points.thrust_rate: thrust rate (unit=none)
         :param flight_points.thrust: required thrust (unit=N)
@@ -1327,7 +1332,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         h_vol = flight_points.altitude
         mach_vol = flight_points.mach
-        fuel, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
+        _, power_out, _ = self.turboshaft_compute_within_limits(
             self.max_power_avail, h_vol, mach_vol
         )
 
@@ -1361,10 +1366,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 h_vol_point = atmosphere.get_altitude(altitude_in_feet=False)
                 mach_vol_point = atmosphere.mach
 
-                power_in_kW = power_shaft / 1000.0
+                power_in_kw = power_shaft / 1000.0
 
                 fuel_point, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                    power_in_kW, h_vol_point, mach_vol_point
+                    power_in_kw, h_vol_point, mach_vol_point
                 )
                 power_out_watts = power_out * 1000.0
 
@@ -1446,8 +1451,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         else:
             max_power = np.zeros(len(altitudes_to_evaluate))
             exhaust_thrust_at_max_power = np.zeros(len(altitudes_to_evaluate))
-            for idx in range(len(altitudes_to_evaluate)):
-                h_vol = altitudes_to_evaluate[idx]
+            for idx, h_vol in enumerate(altitudes_to_evaluate):
                 mach_vol = atmosphere.mach[idx]
                 fuel, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
                     self.max_power_avail, h_vol, mach_vol

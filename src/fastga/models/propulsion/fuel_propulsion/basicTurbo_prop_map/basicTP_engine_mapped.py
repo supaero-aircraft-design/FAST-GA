@@ -260,7 +260,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
     def reformat_table(self, thrust_table, sfc_table):
-
+        """Reformat to fit the OpenMDAO formalism"""
         valid_idx_array = np.where(thrust_table != 0.0)[0]
         last_valid_idx = max(valid_idx_array)
         thrust_table = thrust_table[:last_valid_idx]
@@ -269,7 +269,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         return thrust_table, sfc_table
 
     def compute_flight_points(self, flight_points: FlightPoint):
-        # pylint: disable=too-many-arguments  # they define the trajectory
+        # pylint: disable=too-many-arguments
+        # they define the trajectory
         self.specific_shape = np.shape(flight_points.mach)
         if isinstance(flight_points.mach, float):
             sfc, thrust_rate, thrust = self._compute_flight_points(
@@ -335,18 +336,8 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
-        """
-        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
 
-        :param flight_points.mach: Mach number
-        :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
-        :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used 
-        (works element-wise)
-        :param flight_points.thrust_rate: thrust rate (unit=none)
-        :param flight_points.thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
+        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
         """
 
         # Treat inputs (with check on thrust rate <=1.0)
@@ -604,19 +595,17 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def compute_weight(self) -> float:
         """
-        Computes weight of uninstalled propulsion depending on maximum power.
-        Uses model described in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-        Butterworth-Heinemann, 2013. Equation (6-44)
-
+        Computes weight of uninstalled propulsion depending on maximum power. Uses model
+        described in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
+        Procedures. Butterworth-Heinemann, 2013. Equation (6-44).
         """
 
         return self.turboprop.compute_weight()
 
     def compute_dimensions(self) -> (float, float, float, float):
         """
-        Computes propulsion dimensions (engine/nacelle) from maximum power.
-        Model from a regression on the PT6 family
-
+        Computes propulsion dimensions (engine/nacelle) from maximum power. Model from a
+        regression on the PT6 family.
         """
 
         return self.turboprop.compute_dimensions()

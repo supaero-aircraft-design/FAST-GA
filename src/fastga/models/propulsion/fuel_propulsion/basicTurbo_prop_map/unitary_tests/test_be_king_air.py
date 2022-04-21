@@ -15,6 +15,7 @@ Test module for basicTP_engine_constructor.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import pytest
 import numpy as np
 
 from ..basicTP_engine_constructor import ComputeTurbopropMap
@@ -35,8 +36,13 @@ from .data.dummy_maps import (
 )
 
 XML_FILE = "input_be_king_air.xml"
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (turboprop map creation)
 
 
+@pytest.mark.skipif(
+    SKIP_STEPS,
+    reason="Skipping test because it is too long",
+)
 def test_table_construction():
     """Tests the construction of the table"""
 
