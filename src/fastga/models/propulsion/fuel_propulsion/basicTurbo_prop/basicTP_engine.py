@@ -230,7 +230,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.engine.length = None
         self.engine.width = None
         self.engine.height = None
-        self.nacelle = None
+        self.nacelle.wet_area = None
+        self.nacelle.height = None
+        self.nacelle.length = None
+        self.nacelle.width = None
         self.propeller = None
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
@@ -597,7 +600,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         g_r = cab_bleed / airflow_design
         icb = self.inter_compressor_bleed / airflow_design
 
-        cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
+        cp_3, _, _ = self.compute_cp_cv_gamma(t_3t)
         cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
         _, _, f_gamma_41 = self.compute_gamma_functions(gamma41)
         cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
@@ -888,7 +891,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         mach_8 = self.mach_8_int
 
-        cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
+        cp_45, _, _ = self.compute_cp_cv_gamma(t_45t)
         cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
 
         # Computing the shaft power output
