@@ -19,14 +19,14 @@ import warnings
 import numpy as np
 import openmdao.api as om
 import scipy.optimize as optimize
-from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
+from scipy import interpolate
+from scipy.constants import g, knot, foot, lbf
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from scipy import interpolate
-from scipy.constants import g
-from scipy.constants import knot, foot, lbf
+from fastoad.constants import EngineSetting
+from fastoad.model_base import FlightPoint
+
 from stdatm import Atmosphere
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain

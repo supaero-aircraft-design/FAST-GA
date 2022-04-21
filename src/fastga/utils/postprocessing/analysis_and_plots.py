@@ -21,10 +21,11 @@ import matplotlib.colors as colour
 import numpy as np
 import plotly
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 from fastoad.io import VariableIO
 from fastoad.openmdao.variables import VariableList
 from openmdao.utils.units import convert_units
-from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 
