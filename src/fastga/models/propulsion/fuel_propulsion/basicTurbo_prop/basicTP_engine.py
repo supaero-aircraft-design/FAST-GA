@@ -362,10 +362,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """
 
         file = pth.join(resources.__path__[0], "cabin_pressurisation.csv")
-        db = read_csv(file)
+        database = read_csv(file)
 
-        h_flight = db["FLIGHT_ALTITUDE"]
-        h_cab = db["CABIN_ALTITUDE"]
+        h_flight = database["FLIGHT_ALTITUDE"]
+        h_cab = database["CABIN_ALTITUDE"]
 
         cabin_pressure = interp1d(h_flight, h_cab)
 
@@ -445,40 +445,40 @@ class BasicTPEngine(AbstractFuelPropulsion):
         t_5t = var_to_solve[3]
         p_45t = var_to_solve[4]
         p_5t = var_to_solve[5]
-        m0 = var_to_solve[6]
+        m_0 = var_to_solve[6]
 
-        g = self.air_renewal(h_0, bleed_control) / m0
+        g_r = self.air_renewal(h_0, bleed_control) / m_0
 
         p4t = p_3t * self.pi_cc
 
-        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
+        cp_2, _, _ = self.compute_cp_cv_gamma(t_2t)
+        cp_25, _, _ = self.compute_cp_cv_gamma(t_25t)
         cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
         cp_4, _, gamma4 = self.compute_cp_cv_gamma(t_4t)
         cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        f1_41, _, function_gamma_41 = self.compute_gamma_functions(gamma41)
+        f1_41, _, _ = self.compute_gamma_functions(gamma41)
         cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        _, f2_45, function_gamma_45 = self.compute_gamma_functions(gamma45)
+        _, f2_45, _ = self.compute_gamma_functions(gamma45)
         cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
-        f1_5, f2_5, function_gamma_5 = self.compute_gamma_functions(gamma5)
+        f1_5, _, _ = self.compute_gamma_functions(gamma5)
 
-        fuel_air_ratio = m_c / m0
-        icb = self.inter_compressor_bleed / m0
+        fuel_air_ratio = m_c / m_0
+        icb = self.inter_compressor_bleed / m_0
 
         return_array = np.zeros(7)
         # Temperature change after through the combustion chamber
         return_array[0] = (cp_4 * t_4t - cp_3 * t_3t) * (
-            1 + fuel_air_ratio - g - self.c - icb
+            1 + fuel_air_ratio - g_r - self.c - icb
         ) - self.eta_q * fuel_air_ratio
         # Mixing of hot air from the compressor with the hot gases from the combustion chamber
         return_array[1] = t_41t - (
-            (t_4t * (1 + fuel_air_ratio - g - self.c - icb) + t_3t * self.c)
-            / (1 + fuel_air_ratio - g - icb)
+            (t_4t * (1 + fuel_air_ratio - g_r - self.c - icb) + t_3t * self.c)
+            / (1 + fuel_air_ratio - g_r - icb)
         )
         # Mechanic equilibrium on the high pressure axis
         return_array[2] = (
-            (1 + fuel_air_ratio - g - icb) * (cp_41 * t_41t - cp_45 * t_45t) * self.eta_axe
-            - self.hp_shaft_power_out / m0
+            (1 + fuel_air_ratio - g_r - icb) * (cp_41 * t_41t - cp_45 * t_45t) * self.eta_axe
+            - self.hp_shaft_power_out / m_0
             - (cp_3 * t_3t - cp_25 * t_25t) * (1 - icb)
             - (cp_25 * t_25t - cp_2 * t_2t)
         )
@@ -486,10 +486,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         return_array[3] = p_45t - (p4t * (t_45t / t_41t) ** (f1_41 / self.eta_445))
         # Power given to the propeller
         return_array[4] = (
-            m0 * 1000.0
+            m_0 * 1000.0
             - (
                 ((power * 1000.0 / self.gearbox_efficiency) / (cp_45 * t_45t - cp_5 * t_5t))
-                / (1 - g + fuel_air_ratio - icb)
+                / (1 - g_r + fuel_air_ratio - icb)
             )
             * 1000.0
         )
@@ -534,16 +534,16 @@ class BasicTPEngine(AbstractFuelPropulsion):
         p_2t = p_0t * self.pi_02
         t_2t = t_0t
 
-        cp_2, cv_2, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        f1_2, f2_2, f_gamma_2 = self.compute_gamma_functions(gamma2)
+        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
+        f1_2, f2_2, _ = self.compute_gamma_functions(gamma2)
 
         # Inter compressor stage
         t_25t = t_2t * opr_1 ** (f2_2 / self.eta_225)
         p_25t = p_2t * opr_1
         p_3t = p_25t * opr_2
 
-        cp_25, cv_25, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        _, f2_25, f_gamma_25 = self.compute_gamma_functions(gamma25)
+        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
+        _, f2_25, _ = self.compute_gamma_functions(gamma25)
 
         # After the compressor
         t_3t = t_25t * opr_2 ** (f2_25 / self.eta_253)
@@ -595,8 +595,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         cp_3, _, gamma3 = self.compute_cp_cv_gamma(t_3t)
         cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
         _, f2_41, f_gamma_41 = self.compute_gamma_functions(gamma41)
-        cp_45, cv_45, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        f1_45, f2_45, f_gamma_45 = self.compute_gamma_functions(gamma45)
+        cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
+        _, _, f_gamma_45 = self.compute_gamma_functions(gamma45)
         cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
 
         alfa = t_45t / t_41t
@@ -684,7 +684,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.m_int = air_mass_flow
         self.t_45t_int = t_45t
 
-        rg = 287.0
+        r_g = 287.0
         g_r = m_air / air_mass_flow
 
         self.g_int = g_r
@@ -694,14 +694,14 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         self.f_fuel_ratio_int = f_fuel_ratio
 
-        cp_2, cv_2, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        f1_2, f2_2, f_gamma_2 = self.compute_gamma_functions(gamma2)
-        cp_25, cv_25, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        f1_25, f2_25, f_gamma_25 = self.compute_gamma_functions(gamma25)
-        cp_3, cv_3, gamma3 = self.compute_cp_cv_gamma(t_3t)
-        cp_41, cv_41, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        f1_41, f2_41, f_gamma_41 = self.compute_gamma_functions(gamma41)
-        cp_45, cv_45, gamma45 = self.compute_cp_cv_gamma(t_45t)
+        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
+        f1_2, _, _ = self.compute_gamma_functions(gamma2)
+        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
+        f1_25, _, _ = self.compute_gamma_functions(gamma25)
+        cp_3, _, _ = self.compute_cp_cv_gamma(t_3t)
+        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
+        _, _, f_gamma_41 = self.compute_gamma_functions(gamma41)
+        cp_45, _, _ = self.compute_cp_cv_gamma(t_45t)
 
         p_25t = p_2t * (t_25t / t_2t) ** (f1_2 * self.eta_225)
         opr_2 = p_3t / p_25t
@@ -712,29 +712,29 @@ class BasicTPEngine(AbstractFuelPropulsion):
             1 + f_fuel_ratio - g_r - self.c - icb
         )
 
-        cp_4, cv_4, gamma4 = self.compute_cp_cv_gamma(t_4t)
+        cp_4, _, _ = self.compute_cp_cv_gamma(t_4t)
 
         p_41t = p_3t * self.pi_cc
 
-        f = np.zeros(5)
+        return_array = np.zeros(5)
         # Temperature change through the combustion chamber
-        f[0] = 1.0 - air_mass_flow * (1 + f_fuel_ratio - g_r - self.c - icb) * (
+        return_array[0] = 1.0 - air_mass_flow * (1 + f_fuel_ratio - g_r - self.c - icb) * (
             cp_4 * t_4t - cp_3 * t_3t
         ) / (m_c * self.eta_q)
-        f[1] = (
+        return_array[1] = (
             1.0
             - air_mass_flow
             * (1 + f_fuel_ratio - g_r - icb)
-            * np.sqrt(t_41t * rg)
+            * np.sqrt(t_41t * r_g)
             / p_41t
             / f_gamma_41
             / self.a_41
         )
         # Pressure change through the compressors
-        f[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
-        f[3] = 1.0 - self.opr_2_opr_1_dp / (opr_2 / opr_1)
+        return_array[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
+        return_array[3] = 1.0 - self.opr_2_opr_1_dp / (opr_2 / opr_1)
         # Temperature change through the compressor
-        f[4] = (
+        return_array[4] = (
             1.0
             - (
                 t_2t
@@ -760,7 +760,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.p_41t_int = p_41t
         self.opr_int = opr
 
-        return f
+        return return_array
 
     def exhaust_mach_solver_real_gas(self, t_5t, t_45t, p_45t, p_0):
 
@@ -779,10 +779,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         """
 
-        cp_5, cv_5, gamma5 = self.compute_cp_cv_gamma(t_5t)
-        f1_5, f2_5, f_gamma_5 = self.compute_gamma_functions(gamma5)
-        cp_45, cv_45, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        f1_45, f2_45, f_gamma_45 = self.compute_gamma_functions(gamma45)
+        _, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
+        f1_5, _, f_gamma_5 = self.compute_gamma_functions(gamma5)
+        _, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
+        _, f2_45, _ = self.compute_gamma_functions(gamma45)
 
         mach_8 = (
             f_gamma_5
@@ -922,39 +922,39 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         if limit_name == "opr":
             (
-                t_4t,
+                _,
                 _,
                 power,
                 _,
                 _,
                 opr,
-                t_41t,
+                _,
                 t_45t,
             ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = opr
 
         elif limit_name == "t_45t":
             (
-                t_4t,
+                _,
                 _,
                 power,
                 _,
                 _,
                 opr,
-                t_41t,
+                _,
                 t_45t,
             ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = t_45t
 
         elif limit_name == "power":
             (
-                t_4t,
+                _,
                 _,
                 power,
                 _,
                 _,
                 opr,
-                t_41t,
+                _,
                 t_45t,
             ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
             var_2_return = power
@@ -987,14 +987,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         fuel_flow_0 = np.array([0.046 * (1 - altitude / 29000)])
 
-        z = np.array(
+        fuel_flow = np.array(
             fsolve(
                 self.turboshaft_performance_envelope_solver_real_gas,
                 fuel_flow_0,
                 (limit_name, limit_value, altitude, mach_vol),
             )
-        )
-        fuel_flow = z[0]
+        )[0]
 
         return fuel_flow
 
@@ -1115,18 +1114,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param thrust_rate: thrust rate (unit=none)
         :param thrust: required thrust (unit=N)
         :return: SFC (in kg/s/N), thrust rate, thrust (in N)
-        """
-        """
-        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
 
-        :param flight_points.mach: Mach number
-        :param flight_points.altitude: (unit=m) altitude w.r.t. to sea level
-        :param flight_points.engine_setting: define
-        :param flight_points.thrust_is_regulated: tells if thrust_rate or thrust should be used
-        (works element-wise)
-        :param flight_points.thrust_rate: thrust rate (unit=none)
-        :param flight_points.thrust: required thrust (unit=N)
-        :return: SFC (in kg/s/N), thrust rate, thrust (in N)
+        Computes the Specific Fuel Consumption based on aircraft trajectory conditions.
         """
 
         # Treat inputs (with check on thrust rate <=1.0)
@@ -1629,8 +1618,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         cf_nac = 0.455 / (
             (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds)) ** 2.58
         )  # 100% turbulent
-        f = self.nacelle.length / math.sqrt(4 * self.nacelle.height * self.nacelle.width / math.pi)
-        ff_nac = 1 + 0.35 / f  # Raymer (seen in Gudmunsson)
+        fineness = self.nacelle.length / math.sqrt(
+            4 * self.nacelle.height * self.nacelle.width / math.pi
+        )
+        ff_nac = 1 + 0.35 / fineness  # Raymer (seen in Gudmunsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 

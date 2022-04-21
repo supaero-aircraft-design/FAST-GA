@@ -1,4 +1,4 @@
-"""Parametric turboprop engine map."""
+"""Parametric turboprop engine map constructor."""
 # -*- coding: utf-8 -*-
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
@@ -277,7 +277,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             max_thrust_array_sl,
         ) = self.construct_table(0.0, inputs, engine)
 
-        sfc_general_sl, thrust_preliminary_intersect_sl = self.format_table(
+        sfc_general_sl, thrust_preliminary_intersect_sl = format_table(
             sfc_general_sl, thrust_preliminary_intersect_sl
         )
 
@@ -293,7 +293,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             max_thrust_array_cl,
         ) = self.construct_table(cruise_altitude, inputs, engine)
 
-        sfc_general_cl, thrust_preliminary_intersect_cl = self.format_table(
+        sfc_general_cl, thrust_preliminary_intersect_cl = format_table(
             sfc_general_cl, thrust_preliminary_intersect_cl
         )
 
@@ -314,7 +314,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             max_thrust_array_il,
         ) = self.construct_table(intermediate_altitude, inputs, engine)
 
-        sfc_general_il, thrust_preliminary_intersect_il = self.format_table(
+        sfc_general_il, thrust_preliminary_intersect_il = format_table(
             sfc_general_il, thrust_preliminary_intersect_il
         )
 
@@ -330,7 +330,6 @@ class ComputeTurbopropMap(om.ExplicitComponent):
 
     def construct_table(self, altitude, inputs, engine):
         """Construct the sfc table for the given engine at the given altitude."""
-
         nb_of_mach = MACH_PTS_NB_TURBOPROP
         nb_of_thrust = self.options["number_of_thrust_subdivision"]
 
@@ -460,19 +459,19 @@ class ComputeTurbopropMap(om.ExplicitComponent):
 
         return mach_array, thrust_preliminary_intersect, sfc_general, max_thrust_array
 
-    def format_table(self, sfc_table, thrust_table):
-        """Reformat the sfc table to fit the OpenMDAO formalism."""
 
-        nb_of_mach = MACH_PTS_NB_TURBOPROP
-        nb_of_thrust = np.size(thrust_table)
+def format_table(sfc_table, thrust_table):
+    """Reformat the sfc table to fit the OpenMDAO formalism."""
+    nb_of_mach = MACH_PTS_NB_TURBOPROP
+    nb_of_thrust = np.size(thrust_table)
 
-        formatted_sfc_table = np.zeros((nb_of_mach, THRUST_PTS_NB_TURBOPROP))
-        formatted_thrust_table = np.zeros(THRUST_PTS_NB_TURBOPROP)
+    formatted_sfc_table = np.zeros((nb_of_mach, THRUST_PTS_NB_TURBOPROP))
+    formatted_thrust_table = np.zeros(THRUST_PTS_NB_TURBOPROP)
 
-        formatted_sfc_table[:, 0:nb_of_thrust] = sfc_table
-        formatted_thrust_table[0:nb_of_thrust] = thrust_table
+    formatted_sfc_table[:, 0:nb_of_thrust] = sfc_table
+    formatted_thrust_table[0:nb_of_thrust] = thrust_table
 
-        # print("\n", formatted_sfc_table)
-        # print("\n", formatted_thrust_table)
+    # print("\n", formatted_sfc_table)
+    # print("\n", formatted_thrust_table)
 
-        return formatted_sfc_table, formatted_thrust_table
+    return formatted_sfc_table, formatted_thrust_table

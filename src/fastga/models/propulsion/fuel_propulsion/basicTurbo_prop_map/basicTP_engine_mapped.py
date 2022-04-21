@@ -52,6 +52,7 @@ NACELLE_LABELS = {
 
 
 class BasicTPEngineMapped(AbstractFuelPropulsion):
+
     """Mapped version of the turboprop, need the constructed table beforehand to work."""
 
     def __init__(
@@ -106,7 +107,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         exhaust_mach_design=0.4,
         pr_1_ratio_design=0.25,
     ):
-
         """
         Parametric turboprop engine reading a map computed beforehand. Based on the basic turboprop
         engine, but post treatment is done beforehand to save computation time on the sfc estimation
@@ -213,26 +213,20 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         self.thrust_limit_CL = thrust_limit_CL
         self.efficiency_CL = efficiency_CL
 
-        formatted_turbo_thrust_SL, formatted_sfc_SL = self.reformat_table(
-            turbo_thrust_SL, turbo_sfc_SL
-        )
+        formatted_turbo_thrust_SL, formatted_sfc_SL = reformat_table(turbo_thrust_SL, turbo_sfc_SL)
         self.turbo_mach_SL = turbo_mach_SL
         self.turbo_thrust_SL = formatted_turbo_thrust_SL
         self.turbo_thrust_max_SL = turbo_thrust_max_SL
         self.turbo_sfc_SL = formatted_sfc_SL
 
-        formatted_turbo_thrust_CL, formatted_sfc_CL = self.reformat_table(
-            turbo_thrust_CL, turbo_sfc_CL
-        )
+        formatted_turbo_thrust_CL, formatted_sfc_CL = reformat_table(turbo_thrust_CL, turbo_sfc_CL)
         self.turbo_mach_CL = turbo_mach_CL
         self.turbo_thrust_CL = formatted_turbo_thrust_CL
         self.turbo_thrust_max_CL = turbo_thrust_max_CL
         self.turbo_sfc_CL = formatted_sfc_CL
         self.cruise_altitude_propeller = float(cruise_altitude_propeller)
 
-        formatted_turbo_thrust_IL, formatted_sfc_IL = self.reformat_table(
-            turbo_thrust_IL, turbo_sfc_IL
-        )
+        formatted_turbo_thrust_IL, formatted_sfc_IL = reformat_table(turbo_thrust_IL, turbo_sfc_IL)
         self.turbo_mach_IL = turbo_mach_IL
         self.turbo_thrust_IL = formatted_turbo_thrust_IL
         self.turbo_thrust_max_IL = turbo_thrust_max_IL
@@ -258,15 +252,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values.keys()]
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
-
-    def reformat_table(self, thrust_table, sfc_table):
-        """Reformat to fit the OpenMDAO formalism"""
-        valid_idx_array = np.where(thrust_table != 0.0)[0]
-        last_valid_idx = max(valid_idx_array)
-        thrust_table = thrust_table[:last_valid_idx]
-        sfc_table = sfc_table[:, :last_valid_idx]
-
-        return thrust_table, sfc_table
 
     def compute_flight_points(self, flight_points: FlightPoint):
         # pylint: disable=too-many-arguments
@@ -473,7 +458,7 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         return self.turboprop.compute_max_power(flight_points)
 
     def read_sfc_table(self, thrust: float, atmosphere: float) -> float:
-
+        """Reads the turboprop table and gives corresponding sfc."""
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         if altitude > self.intermediate_altitude:
             sfc_interp_IL = interp2d(self.turbo_thrust_IL, self.turbo_mach_IL, self.turbo_sfc_IL)
@@ -666,3 +651,13 @@ class Nacelle(DynamicAttributeDict):
 
     Similar to :class:`Engine`.
     """
+
+
+def reformat_table(thrust_table, sfc_table):
+    """Reformat to fit the OpenMDAO formalism."""
+    valid_idx_array = np.where(thrust_table != 0.0)[0]
+    last_valid_idx = max(valid_idx_array)
+    thrust_table = thrust_table[:last_valid_idx]
+    sfc_table = sfc_table[:, :last_valid_idx]
+
+    return thrust_table, sfc_table

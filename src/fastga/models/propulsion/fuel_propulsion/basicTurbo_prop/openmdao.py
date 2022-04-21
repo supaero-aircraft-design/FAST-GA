@@ -27,6 +27,7 @@ from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_
 
 @RegisterPropulsion("fastga.wrapper.propulsion.basicTurboprop")
 class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
+
     """
     Wrapper class of for basic IC engine model.
     It is made to allow a direct call to :class:`~.basicIC_engine.BasicICEngine` in an OpenMDAO
