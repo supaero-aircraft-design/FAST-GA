@@ -59,11 +59,11 @@ class MissionVector(om.Group):
             promotes_outputs=[],
         )
 
-        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.nonlinear_solver = om.BroydenSolver()
         self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 20
+        self.nonlinear_solver.options["maxiter"] = 50
         self.nonlinear_solver.options["rtol"] = 1e-5
-        self.linear_solver = om.LinearBlockGS()
+        self.linear_solver = om.DirectSolver()
 
         self.connect(
             "initialization.initialize_engine_setting.engine_setting",
