@@ -33,6 +33,7 @@ from fastga.models.performances.mission.mission import (
 )
 from fastga.models.performances.mission.mission import Mission
 from fastga.models.performances.mission.mission_builder_prep import PrepareMissionBuilder
+from fastga.models.performances.mission_vector.mission_vector import MissionVector
 from ..payload_range.payload_range import ComputePayloadRange
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -283,6 +284,25 @@ def test_loop_cruise_distance():
     total_distance = problem.get_val("data:TLAR:range", units="NM")
     error_distance = total_distance - (climb_distance + cruise_distance + descent_distance)
     assert error_distance == pytest.approx(0.0, abs=1e-1)
+
+
+def test_mission_vector():
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(MissionVector(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(
+        MissionVector(propulsion_id=ENGINE_WRAPPER),
+        ivc,
+    )
+    sizing_fuel = problem.get_val("data:mission:sizing:fuel", units="kg")
+    assert sizing_fuel == pytest.approx(179.9656, abs=1e-4)
+    sizing_energy = problem.get_val("data:mission:sizing:energy", units="kW*h")
+    assert sizing_energy == pytest.approx(0.0, abs=1e-4)
 
 
 def test_payload_range():
