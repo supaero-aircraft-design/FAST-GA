@@ -115,3 +115,6 @@ settings:propulsion:turboprop:efficiency:second_compressor_stage || second compr
 settings:propulsion:turboprop:electric_power_offtake || power used for electrical generation obtained from the HP shaft
 settings:propulsion:turboprop:pressure_loss:combustion_chamber || combustion chamber pressure loss
 settings:propulsion:turboprop:pressure_loss:inlet || inlet total pressure loss
+
+data:aerodynamics:cooling:cruise:CD0 || profile drag due to cooling in cruise conditions
+data:aerodynamics:cooling:low_speed:CD0 || profile drag due to cooling in low speed conditions
