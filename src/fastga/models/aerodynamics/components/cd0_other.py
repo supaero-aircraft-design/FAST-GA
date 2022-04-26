@@ -37,8 +37,12 @@ class Cd0Other(ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         if self.options["low_speed_aero"]:
+            # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
+            self.add_input("data:aerodynamics:cooling:low_speed:CD0", val=0.0005525)
             self.add_output("data:aerodynamics:other:low_speed:CD0")
         else:
+            # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
+            self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525)
             self.add_output("data:aerodynamics:other:cruise:CD0")
 
         self.declare_partials("*", "*", method="fd")
@@ -54,19 +58,18 @@ class Cd0Other(ExplicitComponent):
         else:
             cd0_cowling = 0.0
         # Cooling (piston engine only)
-        # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
-        cd0_cooling = (
-            0.0005525  # (7.054E-6 / wing_area * mtow) FIXME: should come from propulsion model...
-        )
         # Gudmundsson p739. Sum of other components (not calculated here), cx_other*wing_area
         # assumed typical
         cd0_components = 0.0253 / wing_area
 
         if self.options["low_speed_aero"]:
+            # FIXME: should come from propulsion model...
+            cd0_cooling = inputs["data:aerodynamics:cooling:low_speed:CD0"]
             outputs["data:aerodynamics:other:low_speed:CD0"] = (
                 cd0_cowling + cd0_cooling + cd0_components
             )
         else:
+            cd0_cooling = inputs["data:aerodynamics:cooling:cruise:CD0"]
             outputs["data:aerodynamics:other:cruise:CD0"] = (
                 cd0_cowling + cd0_cooling + cd0_components
             )
