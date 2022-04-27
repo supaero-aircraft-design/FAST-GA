@@ -27,6 +27,7 @@ SUBMODEL_CD0_OTHER = "submodel.aerodynamics.other.cd0"
 SUBMODEL_CD0_SUM = "submodel.aerodynamics.sum.cd0"
 SUBMODEL_AIRFOIL_LIFT_SLOPE = "submodel.aerodynamics.airfoil.all.lift_curve_slope"
 SUBMODEL_DELTA_HIGH_LIFT = "submodel.aerodynamics.high_lift.delta"
+SUBMODEL_DELTA_ELEVATOR = "submodel.aerodynamics.elevator.delta"
 SUBMODEL_CL_EXTREME = "submodel.aerodynamics.aircraft.extreme_lift_coefficient"
 SUBMODEL_CL_EXTREME_CLEAN_WING = "submodel.aerodynamics.wing.extreme_lift_coefficient.clean"
 SUBMODEL_CL_EXTREME_CLEAN_HT = (

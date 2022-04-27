@@ -34,6 +34,7 @@ from fastga.models.aerodynamics.components import (
     ComputeCnBetaFuselage,
     ComputeLDMax,
     ComputeDeltaHighLift,
+    ComputeDeltaElevator,
     Compute2DHingeMomentsTail,
     Compute3DHingeMomentsTail,
     ComputeHingeMomentsTail,
@@ -649,6 +650,25 @@ def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
     ) == pytest.approx(ch_delta, abs=1e-4)
 
 
+def elevator(
+    XML_FILE: str,
+    cl_delta_elev: float,
+    cd_delta_elev: float,
+):
+
+    ivc = get_indep_var_comp(list_inputs(ComputeDeltaElevator()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeDeltaElevator(), ivc)
+
+    assert problem.get_val(
+        "data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1"
+    ) == pytest.approx(cl_delta_elev, abs=1e-4)
+    assert problem.get_val(
+        "data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2"
+    ) == pytest.approx(cd_delta_elev, abs=1e-4)
+
+
 def high_lift(
     XML_FILE: str,
     delta_cl0_landing: float,
@@ -665,8 +685,6 @@ def high_lift(
     delta_cm_takeoff_2d: float,
     delta_cd_takeoff: float,
     delta_cd_takeoff_2d: float,
-    cl_delta_elev: float,
-    cd_delta_elev: float,
 ):
     """Tests high-lift contribution!"""
     # Research independent input value in .xml file
@@ -716,12 +734,6 @@ def high_lift(
     assert problem["data:aerodynamics:flaps:takeoff:CD_2D"] == pytest.approx(
         delta_cd_takeoff_2d, abs=1e-4
     )
-    assert problem.get_val(
-        "data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1"
-    ) == pytest.approx(cl_delta_elev, abs=1e-4)
-    assert problem.get_val(
-        "data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2"
-    ) == pytest.approx(cd_delta_elev, abs=1e-4)
 
 
 def wing_extreme_cl_clean(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float):

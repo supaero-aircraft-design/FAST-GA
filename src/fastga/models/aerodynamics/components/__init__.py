@@ -26,6 +26,7 @@ from .compute_non_equilibrated_polar import ComputeNonEquilibratedPolar
 from .compute_reynolds import ComputeUnitReynolds
 from .compute_vn import ComputeVNAndVH, ComputeVN
 from .high_lift_aero import ComputeDeltaHighLift
+from .elevator_aero import ComputeDeltaElevator
 from .hinge_moments_elevator import (
     Compute2DHingeMomentsTail,
     Compute3DHingeMomentsTail,

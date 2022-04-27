@@ -27,6 +27,7 @@ from .constants import (
     SUBMODEL_CD0,
     SUBMODEL_AIRFOIL_LIFT_SLOPE,
     SUBMODEL_DELTA_HIGH_LIFT,
+    SUBMODEL_DELTA_ELEVATOR,
     SUBMODEL_CL_EXTREME_CLEAN_HT,
     SUBMODEL_CL_EXTREME_CLEAN_WING,
     SUBMODEL_CL_EXTREME,
@@ -108,6 +109,10 @@ class AerodynamicsLowSpeed(Group):
             "airfoil_lift_slope",
             RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
             promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "elevator", RegisterSubmodel.get_submodel(SUBMODEL_DELTA_ELEVATOR), promotes=["*"]
         )
 
         self.add_subsystem(

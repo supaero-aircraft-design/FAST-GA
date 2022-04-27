@@ -51,6 +51,7 @@ from .test_functions import (
     propeller,
     non_equilibrated_cl_cd_polar,
     equilibrated_cl_cd_polar,
+    elevator,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -546,6 +547,15 @@ def test_all_hinge_moment():
     hinge_moments(XML_FILE, ch_alpha=-0.2625, ch_delta=-0.6822)
 
 
+def test_elevator():
+    """Tests elevator contribution."""
+    elevator(
+        XML_FILE,
+        cl_delta_elev=0.5115,
+        cd_delta_elev=0.0680,
+    )
+
+
 def test_high_lift():
     """Tests high-lift contribution."""
     high_lift(
@@ -564,8 +574,6 @@ def test_high_lift():
         delta_cm_takeoff_2d=-0.0920,
         delta_cd_takeoff=0.0004,
         delta_cd_takeoff_2d=0.0006,
-        cl_delta_elev=0.5115,
-        cd_delta_elev=0.0680,
     )
 
 

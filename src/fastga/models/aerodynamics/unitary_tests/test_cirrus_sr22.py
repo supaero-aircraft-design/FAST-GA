@@ -32,6 +32,7 @@ from .test_functions import (
     hinge_moment_3d,
     hinge_moments,
     high_lift,
+    elevator,
     extreme_cl,
     wing_extreme_cl_clean,
     htp_extreme_cl_clean,
@@ -545,6 +546,15 @@ def test_all_hinge_moment():
     hinge_moments(XML_FILE, ch_alpha=-0.2594, ch_delta=-0.6216)
 
 
+def test_elevator():
+    """Tests elevator contribution."""
+    elevator(
+        XML_FILE,
+        cl_delta_elev=0.4686,
+        cd_delta_elev=0.06226,
+    )
+
+
 def test_high_lift():
     """Tests high-lift contribution."""
     high_lift(
@@ -563,8 +573,6 @@ def test_high_lift():
         delta_cm_takeoff_2d=-0.1055,
         delta_cd_takeoff=0.0011,
         delta_cd_takeoff_2d=0.0020,
-        cl_delta_elev=0.4686,
-        cd_delta_elev=0.06226,
     )
 
 
