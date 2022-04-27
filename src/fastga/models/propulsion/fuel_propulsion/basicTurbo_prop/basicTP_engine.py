@@ -38,8 +38,6 @@ from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-PROPELLER_EFFICIENCY = 0.83  # Used to be 0.8 maybe make it an xml parameter
-
 # Set of dictionary keys that are mapped to instance attributes.
 ENGINE_LABELS = {
     "power_SL": dict(doc="power at sea level in watts."),

@@ -32,8 +32,6 @@ from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-PROPELLER_EFFICIENCY = 0.83  # Used to be 0.8 maybe make it an xml parameter
-
 # Set of dictionary keys that are mapped to instance attributes.
 ENGINE_LABELS = {
     "power_SL": dict(doc="power at sea level in watts."),
@@ -578,6 +576,19 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
             )
 
         return max_thrust
+
+    def propeller_efficiency(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+    ) -> Union[float, Sequence]:
+        """
+        Compute the propeller efficiency. Should only take the thrust of one propeller.
+
+        :param thrust: Thrust (in N)
+        :param atmosphere: Atmosphere instance at intended altitude
+        :return: efficiency
+        """
+
+        return self.turboprop.propeller_efficiency(thrust, atmosphere)
 
     def compute_weight(self) -> float:
         """
