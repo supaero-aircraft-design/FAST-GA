@@ -30,6 +30,7 @@ class UpdateMLWandMZFW(ExplicitComponent):
         self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
+        self.add_input("settings:weight:aircraft:MLW_MZFW_ratio", val=1.06)
 
         self.add_output("data:weight:aircraft:MZFW", units="kg")
         self.add_output("data:weight:aircraft:ZFW", units="kg")
@@ -47,7 +48,7 @@ class UpdateMLWandMZFW(ExplicitComponent):
         zfw = owe + pl
 
         if cruise_ktas > 250.0:
-            mlw = 1.06 * mzfw
+            mlw = inputs["settings:weight:aircraft:MLW_MZFW_ratio"] * mzfw
         else:
             mlw = mtow
 
