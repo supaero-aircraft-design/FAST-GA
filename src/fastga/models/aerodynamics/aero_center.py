@@ -13,8 +13,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from stdatm import Atmosphere
@@ -82,7 +80,7 @@ class ComputeAeroCenter(ExplicitComponent):
 
         sos = Atmosphere(alt_cruise).speed_of_sound
         mach = v_cruise / sos
-        beta = math.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach ** 2.0)
         cl_delta_ht_cruise = cl_delta_ht / beta
 
         # The cl_alpha_ht in the formula for the free_elevator_factor is defined with respect to
@@ -90,7 +88,7 @@ class ComputeAeroCenter(ExplicitComponent):
         # downwash, as a consequence we must correct it influence for this specific calculation.
         # We will use the formula for elliptical wing as it is well known
 
-        downwash_effect = 1.0 - 2.0 * cl_alpha_wing / (math.pi * aspect_ratio)
+        downwash_effect = 1.0 - 2.0 * cl_alpha_wing / (np.pi * aspect_ratio)
         cl_alpha_ht_ht = cl_alpha_ht / downwash_effect
         free_elevator_factor = 1.0 - (cl_delta_ht_cruise / cl_alpha_ht_ht) * (
             ch_alpha_3d / ch_delta_3d

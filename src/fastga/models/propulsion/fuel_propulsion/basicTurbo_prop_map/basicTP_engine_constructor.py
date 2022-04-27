@@ -78,7 +78,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         self.add_input("data:propulsion:turboprop:off_design:opr_limit", np.nan)
         self.add_input("data:TLAR:v_cruise", np.nan, units="m/s")
         self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        self.add_input("data:geometry:propulsion:layout", np.nan)
+        self.add_input("data:geometry:propulsion:engine:layout", np.nan)
         self.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
@@ -223,7 +223,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             ],
             "design_altitude": inputs["data:propulsion:turboprop:design_point:altitude"],
             "design_mach": inputs["data:propulsion:turboprop:design_point:mach"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
             "bleed_control": inputs["data:propulsion:turboprop:off_design:bleed_usage"],
             "itt_limit": inputs["data:propulsion:turboprop:off_design:itt_limit"],
             "power_limit": inputs["data:propulsion:turboprop:off_design:power_limit"],

@@ -80,7 +80,7 @@ class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
         component.add_input("data:propulsion:turboprop:off_design:power_limit", np.nan, units="kW")
         component.add_input("data:propulsion:turboprop:off_design:opr_limit", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
-        component.add_input("data:geometry:propulsion:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -239,7 +239,7 @@ class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
             ],
             "design_altitude": inputs["data:propulsion:turboprop:design_point:altitude"],
             "design_mach": inputs["data:propulsion:turboprop:design_point:mach"],
-            "prop_layout": inputs["data:geometry:propulsion:layout"],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
             "bleed_control": inputs["data:propulsion:turboprop:off_design:bleed_usage"],
             "itt_limit": inputs["data:propulsion:turboprop:off_design:itt_limit"],
             "power_limit": inputs["data:propulsion:turboprop:off_design:power_limit"],
@@ -315,7 +315,8 @@ class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
         ),  # turbine entry
         # temperature validity for design point
         "data:propulsion:turboprop:design_point:OPR": (1.1, 42.0),  # opr validity for design point
-        "data:geometry:propulsion:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
+        "data:geometry:propulsion:engine:layout": [1.0, 3.0],  # propulsion position (3.0=Nose,
+        # 1.0=Wing)
         "data:propulsion:turboprop:off_design:bleed_usage": [
             0.0,
             1.0,

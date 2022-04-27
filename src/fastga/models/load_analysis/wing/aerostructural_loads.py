@@ -399,7 +399,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         # Each station of the shear diagram is equal to the integral of the forces on all
         # subsequent station
-        for i in range(len(y_vector)):
+        for i, _ in enumerate(y_vector):
             shear_force_diagram[i] = trapz(force_array[i:], y_vector[i:])
 
         return shear_force_diagram
@@ -422,7 +422,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         # Each station of the shear diagram is equal to the root bending moment created by all
         # subsequent stations
-        for i in range(len(y_vector)):
+        for i, _ in enumerate(y_vector):
             lever_arm = y_vector - y_vector[i]
             bending_moment_diagram[i] = trapz(force_array[i:] * lever_arm[i:], y_vector[i:])
 

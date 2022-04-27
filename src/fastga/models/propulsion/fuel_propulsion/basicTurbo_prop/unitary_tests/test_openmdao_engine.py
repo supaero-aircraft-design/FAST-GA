@@ -814,7 +814,7 @@ def test_OMBasicTPEngineComponent():
     ivc.add_output("data:propulsion:turboprop:off_design:power_limit", val=700.0, units="hp")
     ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0)
     ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 9000.0, units="m")
-    ivc.add_output("data:geometry:propulsion:layout", 1.0)
+    ivc.add_output("data:geometry:propulsion:engine:layout", 1.0)
     ivc.add_output("data:geometry:propulsion:engine:count", 1.0)
     ivc.add_output("data:aerodynamics:propeller:sea_level:speed", SPEED, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:sea_level:thrust", THRUST_SL, units="N")

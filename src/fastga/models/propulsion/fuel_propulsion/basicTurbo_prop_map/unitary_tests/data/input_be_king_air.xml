@@ -62,9 +62,11 @@
         <twist_vect units="deg" is_input="True">[59.9549991, 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]</twist_vect>
       </propeller>
       <propulsion>
-        <count is_input="True">2.0<!--number of engine--></count>
-        <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
-        <y_ratio is_input="True">[0.32, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0]<!--engine position along wing span (if layout=1-2)--></y_ratio>
+        <engine>
+          <count is_input="True">2.0<!--number of engine--></count>
+          <layout is_input="True">1.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+          <y_ratio is_input="True">0.32<!--engine position along wing span (if layout=1-2)--></y_ratio>
+        </engine>
       </propulsion>
       <vertical_tail>
         <aspect_ratio is_input="True">3.14<!--aspect ratio of vertical tail--></aspect_ratio>
