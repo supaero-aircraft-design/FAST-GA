@@ -460,18 +460,20 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         """Reads the turboprop table and gives corresponding sfc."""
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
         if altitude > self.intermediate_altitude:
+            mach_il = np.clip(atmosphere.mach, 1e-5, max(self.turbo_mach_IL))
+            mach_cl = np.clip(atmosphere.mach, 1e-5, max(self.turbo_mach_CL))
             sfc_interp_IL = interp2d(self.turbo_thrust_IL, self.turbo_mach_IL, self.turbo_sfc_IL)
             max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             sfc_interp_CL = interp2d(self.turbo_thrust_CL, self.turbo_mach_CL, self.turbo_sfc_CL)
             max_thrust_interp_CL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)
             thrust_interp_IL = np.clip(
-                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(max(1e-5, atmosphere.mach))
+                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(mach_il)
             )
             thrust_interp_CL = np.clip(
-                thrust, min(self.turbo_thrust_CL), max_thrust_interp_CL(max(1e-5, atmosphere.mach))
+                thrust, min(self.turbo_thrust_CL), max_thrust_interp_CL(mach_cl)
             )
-            lower_bound = float(sfc_interp_IL(thrust_interp_IL, max(1e-5, atmosphere.mach)))
-            upper_bound = float(sfc_interp_CL(thrust_interp_CL, max(1e-5, atmosphere.mach)))
+            lower_bound = float(sfc_interp_IL(thrust_interp_IL, mach_il))
+            upper_bound = float(sfc_interp_CL(thrust_interp_CL, mach_cl))
             sfc = float(
                 interp1d(
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
@@ -479,18 +481,20 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
                 )(max(float(altitude), 0.0))
             )
         else:
+            mach_sl = np.clip(atmosphere.mach, 1e-5, max(self.turbo_mach_SL))
+            mach_il = np.clip(atmosphere.mach, 1e-5, max(self.turbo_mach_IL))
             sfc_interp_SL = interp2d(self.turbo_thrust_SL, self.turbo_mach_SL, self.turbo_sfc_SL)
             max_thrust_interp_SL = interp1d(self.turbo_mach_SL, self.turbo_thrust_max_SL)
             sfc_interp_IL = interp2d(self.turbo_thrust_IL, self.turbo_mach_IL, self.turbo_sfc_IL)
             max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             thrust_interp_SL = np.clip(
-                thrust, min(self.turbo_thrust_SL), max_thrust_interp_SL(max(1e-5, atmosphere.mach))
+                thrust, min(self.turbo_thrust_SL), max_thrust_interp_SL(mach_sl)
             )
             thrust_interp_IL = np.clip(
-                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(max(1e-5, atmosphere.mach))
+                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(mach_il)
             )
-            lower_bound = float(sfc_interp_SL(thrust_interp_SL, max(1e-5, atmosphere.mach)))
-            upper_bound = float(sfc_interp_IL(thrust_interp_IL, max(1e-5, atmosphere.mach)))
+            lower_bound = float(sfc_interp_SL(thrust_interp_SL, mach_sl))
+            upper_bound = float(sfc_interp_IL(thrust_interp_IL, mach_il))
             sfc = float(
                 interp1d([0.0, self.intermediate_altitude], [lower_bound, upper_bound])(
                     max(float(altitude), 0.0)
@@ -556,8 +560,12 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         if altitude > self.intermediate_altitude:
             max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             max_thrust_interp_CL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)
-            max_thrust_IL = float(max_thrust_interp_IL(max(1e-5, mach)))
-            max_thrust_CL = float(max_thrust_interp_CL(max(1e-5, mach)))
+            max_thrust_IL = float(
+                max_thrust_interp_IL(np.clip(mach, 1e-5, max(self.turbo_mach_IL)))
+            )
+            max_thrust_CL = float(
+                max_thrust_interp_CL(np.clip(mach, 1e-5, max(self.turbo_mach_CL)))
+            )
             max_thrust = float(
                 interp1d(
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
@@ -567,8 +575,12 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         else:
             max_thrust_interp_SL = interp1d(self.turbo_mach_SL, self.turbo_thrust_max_SL)
             max_thrust_interp_IL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)
-            max_thrust_SL = float(max_thrust_interp_SL(max(1e-5, mach)))
-            max_thrust_IL = float(max_thrust_interp_IL(max(1e-5, mach)))
+            max_thrust_SL = float(
+                max_thrust_interp_SL(np.clip(mach, 1e-5, max(self.turbo_mach_SL)))
+            )
+            max_thrust_IL = float(
+                max_thrust_interp_IL(np.clip(mach, 1e-5, max(self.turbo_mach_IL)))
+            )
             max_thrust = float(
                 interp1d([0.0, self.intermediate_altitude], [max_thrust_SL, max_thrust_IL])(
                     max(float(altitude), 0.0)
