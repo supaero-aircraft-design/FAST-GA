@@ -115,7 +115,7 @@ class ComputeVTMacPositionFL(ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -136,12 +136,12 @@ class ComputeVTMacPositionFL(ExplicitComponent):
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
         x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
 
-        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt / 180.0 * math.pi) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt) - tip_chord * 0.25
 
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
 
         vt_lp = (x_vt + x0_vt) - x_wing25
-        x_tip = b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + x_wing25 + (vt_lp - x0_vt)
+        x_tip = b_v * math.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
 
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:tip:x"] = x_tip
