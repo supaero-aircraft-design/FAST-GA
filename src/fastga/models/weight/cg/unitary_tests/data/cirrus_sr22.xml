@@ -697,6 +697,9 @@
       </propulsion>
       <systems>
         <mass units="kg" is_input="False">210.144909722453<!--Mass of aircraft systems--></mass>
+        <recording>
+          <mass units="kg">0.0</mass>
+        </recording>
         <avionics>
           <mass units="lbm" is_input="False">132.0<!--navigation (C3): mass--></mass>
           <CG>
