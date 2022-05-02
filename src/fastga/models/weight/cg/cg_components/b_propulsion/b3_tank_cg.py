@@ -29,16 +29,37 @@ class ComputeTankCG(ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
+        self.add_input(
+            "settings:weight:propulsion:tank:CG:from_wingMAC25",
+            val=0.25,
+            desc="distance between the tank CG and 25 percent of wing MAC as a ratio of the wing "
+            "MAC",
+        )
+
         self.add_output("data:weight:propulsion:tank:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
 
-        cg_tank = (0.35 + 0.65) / 2 * l0_wing
-        cg_b3 = fa_length - 0.25 * l0_wing + cg_tank
+        distance_from_25_mac_ratio = inputs["settings:weight:propulsion:tank:CG:from_wingMAC25"]
+
+        cg_b3 = fa_length + distance_from_25_mac_ratio * l0_wing
 
         outputs["data:weight:propulsion:tank:CG:x"] = cg_b3
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        distance_from_25_mac_ratio = inputs["settings:weight:propulsion:tank:CG:from_wingMAC25"]
+        l0_wing = inputs["data:geometry:wing:MAC:length"]
+
+        partials["data:weight:propulsion:tank:CG:x", "data:geometry:wing:MAC:at25percent:x"] = 1.0
+        partials[
+            "data:weight:propulsion:tank:CG:x", "data:geometry:wing:MAC:length"
+        ] = distance_from_25_mac_ratio
+        partials[
+            "data:weight:propulsion:tank:CG:x", "settings:weight:propulsion:tank:CG:from_wingMAC25"
+        ] = l0_wing
