@@ -49,6 +49,8 @@ from ..geom_components.vt.components import (
     ComputeVTChords,
     ComputeVTMacFD,
     ComputeVTMacFL,
+    ComputeVTMacPositionFD,
+    ComputeVTMacPositionFL,
     ComputeVTSweep,
     ComputeVTWetArea,
 )
@@ -111,14 +113,38 @@ def test_compute_vt_mac_fl():
     problem = run_system(ComputeVTMacFL(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(0.871, abs=1e-3)
-    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
-    assert vt_x0 == pytest.approx(0.193, abs=1e-3)
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.747, abs=1e-3)
+
+
+def test_compute_vt_mac_position():
+    """Tests computation of the vertical tail mac position"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFD()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTMacPositionFD(), ivc)
+    lp_vt = problem.get_val(
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
+    )
+    assert lp_vt == pytest.approx(4.0, abs=1e-3)
+
+
+def test_compute_vt_mac_position_fl():
+    """Tests computation of the vertical tail mac position"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFL()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTMacPositionFL(), ivc)
     lp_vt = problem.get_val(
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_vt == pytest.approx(4.255, abs=1e-3)
+    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+    assert vt_x0 == pytest.approx(0.193, abs=1e-3)
 
 
 def test_compute_vt_sweep():

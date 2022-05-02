@@ -20,7 +20,13 @@ import openmdao.api as om
 from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .components import ComputeVTMacFD, ComputeVTMacFL
-from .constants import SUBMODEL_VT_CHORD, SUBMODEL_VT_SWEEP, SUBMODEL_VT_WET_AREA
+from .constants import (
+    SUBMODEL_VT_CHORD,
+    SUBMODEL_VT_SWEEP,
+    SUBMODEL_VT_WET_AREA,
+    SUBMODEL_VT_POSITION_FD,
+    SUBMODEL_VT_POSITION_FL,
+)
 
 
 class ComputeVerticalTailGeometryFD(om.Group):
@@ -32,6 +38,9 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_chords", RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
+        self.add_subsystem(
+            "vt_position", RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD), promotes=["*"]
+        )
         self.add_subsystem(
             "vt_sweep", RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
         )
@@ -48,6 +57,9 @@ class ComputeVerticalTailGeometryFL(om.Group):
             "vt_chords", RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
+        self.add_subsystem(
+            "vt_position", RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL), promotes=["*"]
+        )
         self.add_subsystem(
             "vt_sweep", RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
         )

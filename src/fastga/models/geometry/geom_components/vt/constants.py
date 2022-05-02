@@ -13,5 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_VT_CHORD = "submodel.geometry.vertical_tail.chord"
+SUBMODEL_VT_POSITION_FD = "submodel.geometry.vertical_tail.position.fd"
+SUBMODEL_VT_POSITION_FL = "submodel.geometry.vertical_tail.position.fl"
 SUBMODEL_VT_SWEEP = "submodel.geometry.vertical_tail.sweep"
 SUBMODEL_VT_WET_AREA = "submodel.geometry.vertical_tail.wet_area"
