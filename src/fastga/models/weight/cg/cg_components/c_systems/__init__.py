@@ -14,3 +14,4 @@
 from .c1_power_systems_cg import ComputePowerSystemsCG
 from .c2_life_support_systems_cg import ComputeLifeSupportCG
 from .c3_navigation_systems_cg import ComputeNavigationSystemsCG
+from .c4_recording_systems_cg import ComputeRecordingSystemsCG

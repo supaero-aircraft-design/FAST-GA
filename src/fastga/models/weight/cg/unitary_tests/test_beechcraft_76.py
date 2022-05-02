@@ -34,6 +34,7 @@ from ..cg_components.c_systems import (
     ComputePowerSystemsCG,
     ComputeLifeSupportCG,
     ComputeNavigationSystemsCG,
+    ComputeRecordingSystemsCG,
 )
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
 from ..cg_components.payload import ComputePayloadCG
@@ -181,6 +182,17 @@ def test_compute_cg_navigation_systems():
     problem = run_system(ComputeNavigationSystemsCG(), ivc)
     x_cg_c3 = problem.get_val("data:weight:systems:avionics:CG:x", units="m")
     assert x_cg_c3 == pytest.approx(2.22, abs=1e-2)
+
+
+def test_compute_cg_recording_systems():
+    """Tests computation of navigation systems center of gravity."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeRecordingSystemsCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeRecordingSystemsCG(), ivc)
+    x_cg_c3 = problem.get_val("data:weight:systems:recording:CG:x", units="m")
+    assert x_cg_c3 == pytest.approx(6.88, abs=1e-2)
 
 
 def test_compute_cg_passenger_seats():

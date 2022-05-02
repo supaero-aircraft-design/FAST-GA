@@ -19,8 +19,6 @@ import openmdao.api as om
 
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from .constants import SUBMODEL_AIRCRAFT_X_CG, SUBMODEL_AIRCRAFT_X_CG_RATIO, SUBMODEL_AIRCRAFT_Z_CG
-
 from ..cg_components.constants import (
     SUBMODEL_WING_CG,
     SUBMODEL_FUSELAGE_CG,
@@ -31,7 +29,11 @@ from ..cg_components.constants import (
     SUBMODEL_POWER_SYSTEMS_CG,
     SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
     SUBMODEL_NAVIGATION_SYSTEMS_CG,
+    SUBMODEL_RECORDING_SYSTEMS_CG,
     SUBMODEL_SEATS_CG,
+    SUBMODEL_AIRCRAFT_X_CG,
+    SUBMODEL_AIRCRAFT_X_CG_RATIO,
+    SUBMODEL_AIRCRAFT_Z_CG,
 )
 
 
@@ -88,6 +90,11 @@ class ComputeCGRatioAircraftEmpty(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
+            "recording_systems_cg",
+            RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
             "passenger_seats_cg", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG), promotes=["*"]
         )
         self.add_subsystem(
@@ -128,6 +135,7 @@ class ComputeCG(om.ExplicitComponent):
                 "data:weight:systems:power:hydraulic_systems:CG:x",
                 "data:weight:systems:life_support:air_conditioning:CG:x",
                 "data:weight:systems:avionics:CG:x",
+                "data:weight:systems:recording:CG:x",
                 "data:weight:furniture:passenger_seats:CG:x",
             ],
         )
@@ -148,6 +156,7 @@ class ComputeCG(om.ExplicitComponent):
                 "data:weight:systems:power:hydraulic_systems:mass",
                 "data:weight:systems:life_support:air_conditioning:mass",
                 "data:weight:systems:avionics:mass",
+                "data:weight:systems:recording:mass",
                 "data:weight:furniture:passenger_seats:mass",
             ],
         )
