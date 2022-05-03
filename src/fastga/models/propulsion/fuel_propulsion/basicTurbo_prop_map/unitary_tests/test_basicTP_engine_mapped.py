@@ -153,7 +153,7 @@ def test_engine_weight():
         turbo_sfc_IL=SFC_IL,
         level_IL=3048,
     )
-    np.testing.assert_allclose(engine.compute_weight(), 293, atol=1)
+    np.testing.assert_allclose(engine.compute_weight(), 415, atol=1)
 
 
 def test_engine_dim():

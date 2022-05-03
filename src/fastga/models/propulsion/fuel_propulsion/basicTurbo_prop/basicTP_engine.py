@@ -1569,13 +1569,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
     def compute_weight(self) -> float:
         """
-        Computes weight of uninstalled propulsion depending on maximum power. Uses model
-        described in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and
-        Procedures. Butterworth-Heinemann, 2013. Equation (6-44).
+        Computes weight of uninstalled propulsion depending on maximum power. Uses a regression
+        based on the PT6A family which data have been taken according to :
+        https://www.easa.europa.eu/downloads/7787/en.
         """
 
-        power_sl = self.design_point_power * 1000.0  # conversion to watts
-        uninstalled_weight = (power_sl / 353.2) ** 0.993 / 9.81 * 2.2046  # In lbf
+        # Design point power in kW, uninstalled weight in lbf
+        uninstalled_weight = (1.53833774e2 + 8.61372333e-2 * self.max_power_avail) * 2.2046
         self.engine.mass = uninstalled_weight
 
         return uninstalled_weight

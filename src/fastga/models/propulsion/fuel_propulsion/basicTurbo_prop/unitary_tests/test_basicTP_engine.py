@@ -895,7 +895,7 @@ def test_engine_weight():
         exhaust_mach_design=0.4,
         pr_1_ratio_design=0.25,
     )
-    np.testing.assert_allclose(_745_kW_engine.compute_weight(), 449, atol=1)
+    np.testing.assert_allclose(_745_kW_engine.compute_weight(), 438, atol=1)
     _1342kw_engine = BasicTPEngine(
         power_design=1342.26,
         t_41t_design=1600.0,
@@ -934,7 +934,7 @@ def test_engine_weight():
         exhaust_mach_design=0.4,
         pr_1_ratio_design=0.25,
     )
-    np.testing.assert_allclose(_1342kw_engine.compute_weight(), 806, atol=1)
+    np.testing.assert_allclose(_1342kw_engine.compute_weight(), 438, atol=1)
 
 
 def test_engine_dim():
