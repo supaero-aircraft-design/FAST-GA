@@ -23,6 +23,10 @@ class ComputeFloor(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
 
+        self.add_input(
+            "settings:weight:airframe:fuselage:floor:area_density", units="kg/m**2", val=4.62
+        )
+
         self.add_output("data:weight:airframe:fuselage:floor:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -30,8 +34,9 @@ class ComputeFloor(om.ExplicitComponent):
         # Floor width is not exactly equal to the fuselage max width
         floor_width = inputs["data:geometry:fuselage:maximum_width"] * 0.9
         cabin_length = inputs["data:geometry:cabin:length"]
+        floor_density = inputs["settings:weight:airframe:fuselage:floor:area_density"]
 
         floor_area = floor_width * cabin_length
-        floor_weight = 4.62 * floor_area ** 1.045
+        floor_weight = floor_density * floor_area ** 1.045
 
         outputs["data:weight:airframe:fuselage:floor:mass"] = floor_weight
