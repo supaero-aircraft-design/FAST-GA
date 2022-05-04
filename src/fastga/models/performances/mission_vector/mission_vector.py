@@ -59,7 +59,7 @@ class MissionVector(om.Group):
             promotes_outputs=[],
         )
 
-        self.nonlinear_solver = om.BroydenSolver()
+        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
         self.nonlinear_solver.options["iprint"] = 0
         self.nonlinear_solver.options["maxiter"] = 50
         self.nonlinear_solver.options["rtol"] = 1e-5
