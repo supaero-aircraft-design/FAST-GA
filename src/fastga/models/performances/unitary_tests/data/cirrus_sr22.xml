@@ -808,5 +808,14 @@
         </landing_gear>
       </airframe>
     </weight>
+    <mission>
+        <sizing>
+            <main_route>
+                <reserve>
+                    <k_factor>1.0</k_factor>
+                </reserve>
+            </main_route>
+        </sizing>
+    </mission>
   </settings>
 </FASTOAD_model>

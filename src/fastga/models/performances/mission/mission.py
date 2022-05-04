@@ -134,6 +134,8 @@ class _compute_reserve(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:reserve:duration", np.nan, units="s")
 
+        self.add_input("settings:mission:sizing:main_route:reserve:k_factor", val=1.0)
+
         self.add_output("data:mission:sizing:main_route:reserve:fuel", units="kg")
 
         self.declare_partials("*", "*", method="fd")
@@ -146,7 +148,7 @@ class _compute_reserve(om.ExplicitComponent):
             / max(
                 1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]
             )  # avoid 0 division
-        )
+        ) * inputs["settings:mission:sizing:main_route:reserve:k_factor"]
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
 
 
