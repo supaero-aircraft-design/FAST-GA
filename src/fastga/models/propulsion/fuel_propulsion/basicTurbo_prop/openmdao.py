@@ -240,7 +240,7 @@ class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
             1.0,
         ],  # bleed usage at the design point (0.0="low",
         # 1.0="high")
-        "data:propulsion:turboprop:off_design:itt_limit": (500.0, 1000.0),  # turbine entry
+        "data:propulsion:turboprop:off_design:itt_limit": (500.0, 1500.0),  # turbine entry
         # temperature validity for off design
         "data:propulsion:turboprop:off_design:power_limit": (
             180,
