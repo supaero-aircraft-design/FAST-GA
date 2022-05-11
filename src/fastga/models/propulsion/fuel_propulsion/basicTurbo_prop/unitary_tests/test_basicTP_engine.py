@@ -19,6 +19,7 @@ import numpy as np
 
 from fastoad.model_base import FlightPoint
 from fastoad.constants import EngineSetting
+from stdatm import Atmosphere
 
 from ..basicTP_engine import BasicTPEngine
 
@@ -783,6 +784,73 @@ EFFICIENCY_CL = np.array(
         ],
     ]
 )
+
+
+def test_compute_flight_points_tbm_700():
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    altitude_array = np.array([0, 5000, 10000, 15000, 20000, 25000, 30000]) * 0.3048  # ft in m
+    speed_array = np.array([230, 241, 253, 267, 281, 298, 298]) * 0.5144  # kts in m/s
+    atm = Atmosphere(altitude_array, altitude_in_feet=False)
+    atm.true_airspeed = speed_array
+    mach_array = atm.mach
+    thrust_rate = np.full_like(altitude_array, 1.0)
+    engine_settings = [
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+        EngineSetting.TAKEOFF,
+    ]
+
+    flight_points = FlightPoint(
+        mach=mach_array,
+        altitude=altitude_array,
+        engine_setting=engine_settings,
+        thrust_rate=thrust_rate,
+    )
+
+    engine.compute_flight_points(flight_points)
+    print(flight_points.sfc * flight_points.thrust * 3600.0)
 
 
 def test_compute_flight_points():

@@ -39,6 +39,7 @@ model:
         performance:
             id: fastga.performances.mission
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            out_file: D:/tmp/cirrus_sr22.csv
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing
@@ -49,3 +50,7 @@ model:
             id: fastga.loop.wing_position
         wing_area:
             id: fastga.loop.wing_area
+
+submodels:
+    submodel.geometry.vertical_tail.position.fd: null
+    submodel.geometry.fuselage.wet_area: fastga.submodel.geometry.fuselage.wet_area.flops

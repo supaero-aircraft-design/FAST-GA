@@ -60,6 +60,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         fuel_type: float,
         strokes_nb: float,
         prop_layout: float,
+        k_factor_sfc: float,
         speed_SL,
         thrust_SL,
         thrust_limit_SL,
@@ -110,6 +111,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01
+        self.k_factor_sfc = k_factor_sfc
         self.speed_SL = speed_SL
         self.thrust_SL = thrust_SL
         self.thrust_limit_SL = thrust_limit_SL
@@ -513,7 +515,7 @@ class BasicICEngine(AbstractFuelPropulsion):
                 thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
             )
             torque = real_power / (rpm_values * np.pi / 30.0)
-            sfc = ICE_sfc(torque, rpm_values) * mixture_values
+            sfc = ICE_sfc(torque, rpm_values) * mixture_values * self.k_factor_sfc
         else:
             for idx in range(np.size(thrust)):
                 local_atmosphere = Atmosphere(
@@ -526,7 +528,9 @@ class BasicICEngine(AbstractFuelPropulsion):
                     / self.propeller_efficiency(thrust[idx], local_atmosphere)
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
-                sfc[idx] = ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx]
+                sfc[idx] = (
+                    ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx] * self.k_factor_sfc
+                )
         return sfc, real_power
 
     def max_thrust(
@@ -716,7 +720,12 @@ class BasicICEngine(AbstractFuelPropulsion):
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
-        return drag_force
+        # Roskam part 6 chapter 4.5.2.1 with no incidence
+        interference_drag = 0.036 * wing_mac * self.nacelle.width * 0.2 ** 2.0
+
+        # The interference drag is for the nacelle/wing interference, since for fuselage mounted
+        # engine the nacelle drag is not taken into account we can do like so
+        return drag_force + interference_drag
 
 
 @AddKeyAttributes(ENGINE_LABELS)

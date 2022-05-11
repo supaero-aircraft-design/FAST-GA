@@ -74,14 +74,14 @@ def test_cd0_high_speed():
     cd0_high_speed(
         XML_FILE,
         ENGINE_WRAPPER,
-        cd0_wing=0.00541,
+        cd0_wing=0.00657,
         cd0_fus=0.00490,
         cd0_ht=0.00119,
         cd0_vt=0.00066,
         cd0_nac=0.00209,
         cd0_lg=0.0,
         cd0_other=0.00205,
-        cd0_total=0.02040,
+        cd0_total=0.02185,
     )
 
 
@@ -90,14 +90,14 @@ def test_cd0_low_speed():
     cd0_low_speed(
         XML_FILE,
         ENGINE_WRAPPER,
-        cd0_wing=0.00587,
+        cd0_wing=0.00707,
         cd0_fus=0.00543,
         cd0_ht=0.00129,
         cd0_vt=0.00074,
         cd0_nac=0.00229,
         cd0_lg=0.01459,
         cd0_other=0.00205,
-        cd0_total=0.04036,
+        cd0_total=0.04185,
     )
 
 

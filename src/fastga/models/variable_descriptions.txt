@@ -120,3 +120,5 @@ data:aerodynamics:cooling:cruise:CD0 || profile drag due to cooling in cruise co
 data:aerodynamics:cooling:low_speed:CD0 || profile drag due to cooling in low speed conditions
 
 settings:mission:sizing:main_route:reserve:k_factor || fudge factor on the reserve computation, can be used to adjust the model mainly to take into account different speed and altitudes
+
+settings:propulsion:IC_engine:k_factor_sfc || fudge factor to replicate engine installation effect, multiplies the fuel consumption
