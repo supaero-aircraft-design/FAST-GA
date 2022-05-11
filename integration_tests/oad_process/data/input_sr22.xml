@@ -3,9 +3,9 @@
     <TLAR>
       <NPAX_design>2.0<!--design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)--></NPAX_design>
       <luggage_mass_design units="kg">55.0<!--luggage design mass--></luggage_mass_design>
-      <range units="NM">880.0<!--top-level requirement: design range--></range>
+      <range units="NM">971.0<!--top-level requirement: design range--></range>
       <v_approach units="kn">79.0<!--approach speed--></v_approach>
-      <v_cruise units="kn">171.0<!--cruise speed--></v_cruise>
+      <v_cruise units="kn">160.0<!--cruise speed--></v_cruise>
       <v_max_sl units="kn" is_input="True">186.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -182,8 +182,8 @@
           </reserve>
           <climb>
             <climb_rate>
-              <cruise_level units="ft/min">790.0<!--target climb rate at the end of climb--></cruise_level>
-              <sea_level units="ft/min">1250.0<!--target climb rate at sea level--></sea_level>
+              <cruise_level units="ft/min">750.0<!--target climb rate at the end of climb--></cruise_level>
+              <sea_level units="ft/min">1200.0<!--target climb rate at sea level--></sea_level>
             </climb_rate>
           </climb>
         </main_route>
