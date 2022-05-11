@@ -2,10 +2,10 @@
   <data>
     <TLAR>
       <NPAX_design>2.0<!--design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)--></NPAX_design>
-      <luggage_mass_design units="kg">70.0<!--luggage design mass--></luggage_mass_design>
-      <range units="NM">840.0<!--top-level requirement: design range--></range>
+      <luggage_mass_design units="kg">60.0<!--luggage design mass--></luggage_mass_design>
+      <range units="NM">711.0<!--top-level requirement: design range--></range>
       <v_approach units="kn">78.0<!--approach speed--></v_approach>
-      <v_cruise units="kn">160.0<!--cruise speed--></v_cruise>
+      <v_cruise units="kn">158.0<!--cruise speed--></v_cruise>
       <v_max_sl units="kn">171.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -30,8 +30,8 @@
         </seats>
       </cabin>
       <flap>
-        <chord_ratio>0.1<!--mean value of (flap chord)/(section chord)--></chord_ratio>
-        <span_ratio>0.65<!--ratio (width of flaps)/(total span)--></span_ratio>
+        <chord_ratio>0.11<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        <span_ratio>0.67<!--ratio (width of flaps)/(total span)--></span_ratio>
       </flap>
       <fuselage>
         <rear_length units="m">4.0<!--length of rear non-cylindrical part of the fuselage--></rear_length>
@@ -39,7 +39,7 @@
       <horizontal_tail>
         <area units="m**2">3.44<!--horizontal tail area--></area>
         <aspect_ratio is_input="False">3.84<!--aspect ratio of horizontal tail--></aspect_ratio>
-        <elevator_chord_ratio is_input="True">0.3<!--elevator chord ratio--></elevator_chord_ratio>
+        <elevator_chord_ratio is_input="True">0.34<!--elevator chord ratio--></elevator_chord_ratio>
         <sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
         <taper_ratio>1.0<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio>0.125<!--thickness ratio of horizontal tail--></thickness_ratio>
@@ -139,18 +139,18 @@
           <thrust_rate>1.0<!--thrust rate during takeoff phase--></thrust_rate>
         </takeoff>
         <taxi_in>
-          <duration units="s">300.0<!--duration of taxi-in phase in sizing mission--></duration>
+          <duration units="s">860.0<!--duration of taxi-in phase in sizing mission--></duration>
           <speed units="kn">20.0<!--speed during taxi-in phase in sizing mission--></speed>
-          <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
+          <thrust_rate>0.5<!--thrust rate (between 0.0 and 1.0) during taxi-in phase in sizing mission--></thrust_rate>
         </taxi_in>
         <taxi_out>
-          <duration units="s">300.0<!--duration of taxi-out phase in sizing mission--></duration>
+          <duration units="s">860.0<!--duration of taxi-out phase in sizing mission--></duration>
           <speed units="kn">20.0<!--speed during taxi-out phase in sizing mission--></speed>
-          <thrust_rate>0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
+          <thrust_rate>0.5<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <main_route>
           <cruise>
-            <altitude units="ft">8000.0<!--altitude during cruise phase in sizing mission--></altitude>
+            <altitude units="ft">10000.0<!--altitude during cruise phase in sizing mission--></altitude>
           </cruise>
           <descent>
             <descent_rate units="ft/min">-300.0<!--target descent rate for the aircraft--></descent_rate>
@@ -160,8 +160,8 @@
           </reserve>
           <climb>
             <climb_rate>
-              <cruise_level units="ft/min">700.0<!--target climb rate at the end of climb--></cruise_level>
-              <sea_level units="ft/min">1200.0<!--target climb rate at sea level--></sea_level>
+              <cruise_level units="ft/min">500.0<!--target climb rate at the end of climb--></cruise_level>
+              <sea_level units="ft/min">1250.0<!--target climb rate at sea level--></sea_level>
             </climb_rate>
           </climb>
         </main_route>
@@ -176,6 +176,14 @@
       </IC_engine>
     </propulsion>
     <aerodynamics>
+      <cooling>
+          <cruise>
+            <CD0 is_input="True">0.001624<!--profile drag due to cooling in cruise conditions--></CD0>
+          </cruise>
+          <low_speed>
+            <CD0 is_input="True">0.001624<!--profile drag due to cooling in low speed conditions--></CD0>
+          </low_speed>
+      </cooling>
       <propeller>
         <cruise_level>
           <altitude units="ft">8000.0<!--altitude at which the cruise level propeller efficiency map was computed--></altitude>
@@ -228,10 +236,15 @@
       <airframe>
         <landing_gear>
           <front>
-            <weight_ratio>0.23<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <weight_ratio>0.15<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
           </front>
         </landing_gear>
       </airframe>
     </weight>
+    <propulsion>
+      <IC_engine>
+        <k_factor_sfc>1.10</k_factor_sfc>
+      </IC_engine>
+    </propulsion>
   </settings>
 </FASTOAD_model>

@@ -66,6 +66,12 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input(
+            "settings:propulsion:IC_engine:k_factor_sfc",
+            1.0,
+            desc="k_factor that can be used to adjust the consumption on engine level to the "
+            "aircraft level",
+        )
+        component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
             units="m/s",
@@ -134,6 +140,7 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
+            "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"],
             "speed_SL": inputs["data:aerodynamics:propeller:sea_level:speed"],
             "thrust_SL": inputs["data:aerodynamics:propeller:sea_level:thrust"],
             "thrust_limit_SL": inputs["data:aerodynamics:propeller:sea_level:thrust_limit"],
