@@ -16,6 +16,7 @@ import copy
 import logging
 import time
 import numpy as np
+import openmdao.api as om
 
 from scipy.constants import g
 
@@ -29,7 +30,7 @@ from stdatm import Atmosphere
 
 
 from ..dynamic_equilibrium import DynamicEquilibrium
-from ..constants import SUBMODEL_DESCENT
+from ..constants import SUBMODEL_DESCENT, SUBMODEL_DESCENT_SPEED
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +40,9 @@ MAX_CALCULATION_TIME = 15  # time in seconds
 RegisterSubmodel.active_models[
     SUBMODEL_DESCENT
 ] = "fastga.submodel.performances.mission.descent.legacy"
+RegisterSubmodel.active_models[
+    SUBMODEL_DESCENT_SPEED
+] = "fastga.submodel.performances.mission.descent_speed.legacy"
 
 
 @RegisterSubmodel(SUBMODEL_DESCENT, "fastga.submodel.performances.mission.descent.legacy")
@@ -64,7 +68,6 @@ class ComputeDescent(DynamicEquilibrium):
         self._engine_wrapper.setup(self)
 
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
-        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
@@ -78,6 +81,7 @@ class ComputeDescent(DynamicEquilibrium):
         self.add_input("data:mission:sizing:main_route:cruise:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:main_route:descent:v_cas", np.nan, units="m/s")
 
         self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:descent:distance", 0.0, units="m")
@@ -89,15 +93,13 @@ class ComputeDescent(DynamicEquilibrium):
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         descent_rate = inputs["data:mission:sizing:main_route:descent:descent_rate"]
-        cl = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
         m_cr = inputs["data:mission:sizing:main_route:cruise:fuel"]
+        v_cas = inputs["data:mission:sizing:main_route:descent:v_cas"]
 
         # Define initial conditions
         t_start = time.time()
@@ -112,8 +114,6 @@ class ComputeDescent(DynamicEquilibrium):
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be
         # FIXME: an input!
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
-        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
-        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
         v_tas = atm.true_airspeed
         gamma = np.arcsin(descent_rate / v_tas)
@@ -223,3 +223,53 @@ class ComputeDescent(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:distance"] = distance_t
         outputs["data:mission:sizing:main_route:descent:duration"] = time_t
+
+
+@RegisterSubmodel(SUBMODEL_DESCENT_SPEED,
+                  "fastga.submodel.performances.mission.descent_speed.legacy")
+class ComputeDescentSpeed(om.ExplicitComponent):
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+
+        self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+
+        self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:main_route:climb:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
+
+        self.add_output("data:mission:sizing:main_route:descent:v_cas", units="m/s")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        m_to = inputs["data:mission:sizing:taxi_out:fuel"]
+        m_tk = inputs["data:mission:sizing:takeoff:fuel"]
+        m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
+        m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
+        m_cr = inputs["data:mission:sizing:main_route:cruise:fuel"]
+
+        cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+
+        cl = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]
+        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        wing_area = inputs["data:geometry:wing:area"]
+
+        mass_t = mtow - (m_to + m_tk + m_ic + m_cl + m_cr)
+
+        altitude_t = copy.deepcopy(cruise_altitude)
+
+        atm = Atmosphere(altitude_t, altitude_in_feet=False)
+        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
+        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
+
+        outputs["data:mission:sizing:main_route:descent:v_cas"] = v_cas

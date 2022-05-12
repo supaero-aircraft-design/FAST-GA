@@ -532,6 +532,7 @@
             <fuel units="kg" is_input="False">208.19877202774606<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
           </cruise>
           <descent>
+            <v_cas units="knot">99.47</v_cas>
             <descent_rate units="ft/min" is_input="True">-300.0<!--target descent rate for the aircraft--></descent_rate>
             <distance units="m" is_input="False">75202.4025503226<!--covered ground distance during descent phase--></distance>
             <duration units="s" is_input="False">1506.9542966085064<!--duration of descent phase in sizing mission--></duration>

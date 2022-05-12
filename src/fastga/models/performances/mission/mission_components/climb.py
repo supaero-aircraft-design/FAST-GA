@@ -16,6 +16,7 @@ import os
 import logging
 import time
 import numpy as np
+import openmdao.api as om
 
 from scipy.constants import g
 from scipy.interpolate import interp1d
@@ -31,7 +32,7 @@ from stdatm import Atmosphere
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT
 
 from ..dynamic_equilibrium import DynamicEquilibrium
-from ..constants import SUBMODEL_CLIMB
+from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
 RegisterSubmodel.active_models[SUBMODEL_CLIMB] = "fastga.submodel.performances.mission.climb.legacy"
+RegisterSubmodel.active_models[SUBMODEL_CLIMB_SPEED] = \
+    "fastga.submodel.performances.mission.climb_speed.legacy"
 
 
 @RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
@@ -74,11 +77,11 @@ class ComputeClimb(DynamicEquilibrium):
         self.add_input(
             "data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s"
         )
+        self.add_input("data:mission:sizing:main_route:climb:v_cas", val=np.nan, units="m/s")
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:distance", units="m")
         self.add_output("data:mission:sizing:main_route:climb:duration", units="s")
-        self.add_output("data:mission:sizing:main_route:climb:v_cas", units="m/s")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -94,14 +97,11 @@ class ComputeClimb(DynamicEquilibrium):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
-        coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        wing_area = inputs["data:geometry:wing:area"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
+        v_cas = inputs["data:mission:sizing:main_route:climb:v_cas"]
         climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
         climb_rate_cl = float(
             inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]
@@ -117,12 +117,7 @@ class ComputeClimb(DynamicEquilibrium):
         previous_step = ()
 
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
-        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be
-        # FIXME: an input!
-        cl = np.sqrt(3 * cd0 / coef_k_wing)
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
-        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
-        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
         atm.calibrated_airspeed = v_cas
         v_tas = atm.true_airspeed
         gamma = np.arcsin(climb_rate_sl / v_tas)
@@ -223,4 +218,46 @@ class ComputeClimb(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
         outputs["data:mission:sizing:main_route:climb:duration"] = time_t
+
+
+@RegisterSubmodel(SUBMODEL_CLIMB_SPEED, "fastga.submodel.performances.mission.climb_speed.legacy")
+class ComputeClimbSpeed(om.ExplicitComponent):
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+
+        self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
+
+        self.add_input("data:weight:aircraft:MTOW", np.nan, units="kg")
+
+        self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
+
+        self.add_output("data:mission:sizing:main_route:climb:v_cas", units="m/s")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        altitude_t = SAFETY_HEIGHT  # conversion to m
+
+        cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
+        coeff_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
+        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        wing_area = inputs["data:geometry:wing:area"]
+
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        m_to = inputs["data:mission:sizing:taxi_out:fuel"]
+        m_tk = inputs["data:mission:sizing:takeoff:fuel"]
+        m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
+
+        mass_t = mtow - (m_to + m_tk + m_ic)
+
+        cl = np.sqrt(3 * cd0 / coeff_k_wing)
+        atm = Atmosphere(altitude_t, altitude_in_feet=False)
+        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
+        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
+
         outputs["data:mission:sizing:main_route:climb:v_cas"] = v_cas

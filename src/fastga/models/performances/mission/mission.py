@@ -26,9 +26,11 @@ from fastga.models.performances.mission.takeoff import TakeOffPhase
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 from .constants import (
     SUBMODEL_TAXI,
+    SUBMODEL_CLIMB_SPEED,
     SUBMODEL_CLIMB,
     SUBMODEL_CRUISE,
     SUBMODEL_DESCENT,
+    SUBMODEL_DESCENT_SPEED,
     SUBMODEL_RESERVES,
 )
 
@@ -74,6 +76,11 @@ class Mission(om.Group):
             "out_file": self.options["out_file"],
         }
         self.add_subsystem(
+            "climb_speed",
+            RegisterSubmodel.get_submodel(SUBMODEL_CLIMB_SPEED),
+            promotes=["*"],
+        )
+        self.add_subsystem(
             "climb",
             RegisterSubmodel.get_submodel(SUBMODEL_CLIMB, options=options_mission),
             promotes=["*"],
@@ -85,6 +92,11 @@ class Mission(om.Group):
         )
         self.add_subsystem(
             "reserve", RegisterSubmodel.get_submodel(SUBMODEL_RESERVES), promotes=["*"]
+        )
+        self.add_subsystem(
+            "descent_speed",
+            RegisterSubmodel.get_submodel(SUBMODEL_DESCENT_SPEED),
+            promotes=["*"],
         )
         self.add_subsystem(
             "descent",

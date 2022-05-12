@@ -13,7 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_TAXI = "submodel.performances.mission.taxi"
+SUBMODEL_CLIMB_SPEED = "submodel.performances.mission.climb_speed"
 SUBMODEL_CLIMB = "submodel.performances.mission.climb"
 SUBMODEL_CRUISE = "submodel.performances.mission.cruise"
 SUBMODEL_DESCENT = "submodel.performances.mission.descent"
+SUBMODEL_DESCENT_SPEED = "submodel.performances.mission.descent_speed"
 SUBMODEL_RESERVES = "submodel.performances.mission.reserves"

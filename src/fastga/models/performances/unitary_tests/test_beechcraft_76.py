@@ -28,8 +28,10 @@ from fastga.models.performances.mission.takeoff import (
 from fastga.models.performances.mission.mission_components import (
     ComputeTaxi,
     ComputeClimb,
+    ComputeClimbSpeed,
     ComputeCruise,
     ComputeDescent,
+    ComputeDescentSpeed,
     ComputeReserve,
 )
 from fastga.models.performances.mission.mission import Mission
@@ -199,6 +201,20 @@ def test_mission_builder_prep():
     assert v_holding == pytest.approx(61.73, abs=1e-2)
 
 
+def test_compute_climb_speed():
+    """Tests climb phase"""
+
+    # Research independent input value in .xml file
+    group = Group()
+    group.add_subsystem("climb", ComputeClimbSpeed(), promotes=["*"])
+    ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(group, ivc)
+    v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
+    assert v_cas == pytest.approx(87.7, abs=1)
+
+
 def test_compute_climb():
     """Tests climb phase"""
 
@@ -237,6 +253,20 @@ def test_compute_cruise():
     assert fuel_mass == pytest.approx(116, abs=1)
     duration = problem.get_val("data:mission:sizing:main_route:cruise:duration", units="h")
     assert duration == pytest.approx(4.85, abs=1e-2)
+
+
+def test_compute_descent_speed():
+    """Tests climb phase"""
+
+    # Research independent input value in .xml file
+    group = Group()
+    group.add_subsystem("climb", ComputeDescentSpeed(), promotes=["*"])
+    ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(group, ivc)
+    v_cas = problem.get_val("data:mission:sizing:main_route:descent:v_cas", units="kn")
+    assert v_cas == pytest.approx(104.35, abs=1)
 
 
 def test_compute_descent():
