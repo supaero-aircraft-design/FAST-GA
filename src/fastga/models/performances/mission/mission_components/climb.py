@@ -40,8 +40,9 @@ POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
 RegisterSubmodel.active_models[SUBMODEL_CLIMB] = "fastga.submodel.performances.mission.climb.legacy"
-RegisterSubmodel.active_models[SUBMODEL_CLIMB_SPEED] = \
-    "fastga.submodel.performances.mission.climb_speed.legacy"
+RegisterSubmodel.active_models[
+    SUBMODEL_CLIMB_SPEED
+] = "fastga.submodel.performances.mission.climb_speed.legacy"
 
 
 @RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
@@ -222,7 +223,6 @@ class ComputeClimb(DynamicEquilibrium):
 
 @RegisterSubmodel(SUBMODEL_CLIMB_SPEED, "fastga.submodel.performances.mission.climb_speed.legacy")
 class ComputeClimbSpeed(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")

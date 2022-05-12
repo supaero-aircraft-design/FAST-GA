@@ -225,10 +225,10 @@ class ComputeDescent(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:descent:duration"] = time_t
 
 
-@RegisterSubmodel(SUBMODEL_DESCENT_SPEED,
-                  "fastga.submodel.performances.mission.descent_speed.legacy")
+@RegisterSubmodel(
+    SUBMODEL_DESCENT_SPEED, "fastga.submodel.performances.mission.descent_speed.legacy"
+)
 class ComputeDescentSpeed(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
