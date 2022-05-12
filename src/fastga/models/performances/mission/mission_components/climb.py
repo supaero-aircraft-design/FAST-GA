@@ -1,4 +1,4 @@
-"""Simple module for taxi computation."""
+"""Simple module for climb computation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ from stdatm import Atmosphere
 
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT
 
-from ..dynamic_equilibrium import DynamicEquilibrium
+from ..dynamic_equilibrium import DynamicEquilibrium, save_df
 from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class ComputeClimb(DynamicEquilibrium):
         # Delete previous .csv results
         if self.options["out_file"] != "":
             # noinspection PyBroadException
-            df = None
+            flight_point_df = None
             try:
                 os.remove(self.options["out_file"])
             except:
@@ -164,7 +164,7 @@ class ComputeClimb(DynamicEquilibrium):
 
             # Save results
             if self.options["out_file"] != "":
-                df = self.save_df(
+                flight_point_df = save_df(
                     time_t,
                     altitude_t,
                     distance_t,
@@ -177,7 +177,7 @@ class ComputeClimb(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:climb",
-                    df,
+                    flight_point_df,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -203,7 +203,7 @@ class ComputeClimb(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            df = self.save_df(
+            flight_point_df = save_df(
                 time_t,
                 altitude_t,
                 distance_t,
@@ -216,9 +216,9 @@ class ComputeClimb(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:climb",
-                df,
+                flight_point_df,
             )
-            self.save_csv(df)
+            self.save_csv(flight_point_df)
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
@@ -249,7 +249,7 @@ class ComputeClimbSpeed(om.ExplicitComponent):
 
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coeff_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        c_l_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         wing_area = inputs["data:geometry:wing:area"]
 
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -259,9 +259,9 @@ class ComputeClimbSpeed(om.ExplicitComponent):
 
         mass_t = mtow - (m_to + m_tk + m_ic)
 
-        cl = np.sqrt(3 * cd0 / coeff_k_wing)
+        c_l = np.sqrt(3 * cd0 / coeff_k_wing)
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
-        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
-        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
+        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * c_l_max_clean))
+        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * c_l)), 1.3 * vs1)
 
         outputs["data:mission:sizing:main_route:climb:v_cas"] = v_cas

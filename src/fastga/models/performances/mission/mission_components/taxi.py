@@ -33,9 +33,7 @@ RegisterSubmodel.active_models[SUBMODEL_TAXI] = "fastga.submodel.performances.mi
 
 @RegisterSubmodel(SUBMODEL_TAXI, "fastga.submodel.performances.mission.taxi.legacy")
 class ComputeTaxi(om.ExplicitComponent):
-    """
-    Compute the fuel consumption for taxi based on speed and duration.
-    """
+    """Compute the fuel consumption for taxi based on speed and duration."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

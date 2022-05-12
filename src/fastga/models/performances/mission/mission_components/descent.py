@@ -1,4 +1,4 @@
-"""Simple module for taxi computation."""
+"""Simple module for descent computation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@ from fastoad.model_base import FlightPoint
 from stdatm import Atmosphere
 
 
-from ..dynamic_equilibrium import DynamicEquilibrium
+from ..dynamic_equilibrium import DynamicEquilibrium, save_df
 from ..constants import SUBMODEL_DESCENT, SUBMODEL_DESCENT_SPEED
 
 _LOGGER = logging.getLogger(__name__)
@@ -93,7 +93,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         if self.options["out_file"] != "":
             # noinspection PyBroadException
-            df = None
+            flight_point_df = None
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -165,7 +165,7 @@ class ComputeDescent(DynamicEquilibrium):
             propulsion_model.compute_flight_points(flight_point)
             # Save results
             if self.options["out_file"] != "":
-                df = self.save_df(
+                flight_point_df = save_df(
                     time_t
                     + inputs["data:mission:sizing:main_route:climb:duration"]
                     + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -182,7 +182,7 @@ class ComputeDescent(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:descent",
-                    df,
+                    flight_point_df,
                 )
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
@@ -207,7 +207,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            df = self.save_df(
+            flight_point_df = save_df(
                 time_t
                 + inputs["data:mission:sizing:main_route:climb:duration"]
                 + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -224,9 +224,9 @@ class ComputeDescent(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:descent",
-                df,
+                flight_point_df,
             )
-            self.save_csv(df)
+            self.save_csv(flight_point_df)
 
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:distance"] = distance_t
@@ -268,8 +268,8 @@ class ComputeDescentSpeed(om.ExplicitComponent):
 
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
-        cl = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        c_l = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]
+        c_l_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         wing_area = inputs["data:geometry:wing:area"]
 
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl + m_cr)
@@ -277,7 +277,7 @@ class ComputeDescentSpeed(om.ExplicitComponent):
         altitude_t = copy.deepcopy(cruise_altitude)
 
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
-        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
-        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
+        vs1 = np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * c_l_max_clean))
+        v_cas = max(np.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * c_l)), 1.3 * vs1)
 
         outputs["data:mission:sizing:main_route:descent:v_cas"] = v_cas

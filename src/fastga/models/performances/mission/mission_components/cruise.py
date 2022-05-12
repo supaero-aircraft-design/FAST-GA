@@ -1,4 +1,4 @@
-"""Simple module for taxi computation."""
+"""Simple module for cruise computation."""
 #  This file is part of FAST : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2020  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
-from ..dynamic_equilibrium import DynamicEquilibrium
+from ..dynamic_equilibrium import DynamicEquilibrium, save_df
 from ..constants import SUBMODEL_CRUISE
 
 _LOGGER = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class ComputeCruise(DynamicEquilibrium):
 
         if self.options["out_file"] != "":
             # noinspection PyBroadException
-            df = None
+            flight_point_df = None
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
         v_tas = inputs["data:TLAR:v_cruise"]
@@ -144,7 +144,7 @@ class ComputeCruise(DynamicEquilibrium):
 
             # Save results
             if self.options["out_file"] != "":
-                df = self.save_df(
+                flight_point_df = save_df(
                     time_t + inputs["data:mission:sizing:main_route:climb:duration"],
                     cruise_altitude,
                     distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
@@ -157,7 +157,7 @@ class ComputeCruise(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:cruise",
-                    df,
+                    flight_point_df,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -180,7 +180,7 @@ class ComputeCruise(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            df = self.save_df(
+            flight_point_df = save_df(
                 time_t + inputs["data:mission:sizing:main_route:climb:duration"],
                 cruise_altitude,
                 distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
@@ -193,9 +193,9 @@ class ComputeCruise(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:cruise",
-                df,
+                flight_point_df,
             )
-            self.save_csv(df)
+            self.save_csv(flight_point_df)
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:distance"] = distance_t
