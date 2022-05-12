@@ -78,6 +78,11 @@ class ComputeCruise(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        if self.options["out_file"] != "":
+            # noinspection PyBroadException
+            df = None
+
         propulsion_model = self._engine_wrapper.get_model(inputs)
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_distance = max(
@@ -139,7 +144,7 @@ class ComputeCruise(DynamicEquilibrium):
 
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                df = self.save_df(
                     time_t + inputs["data:mission:sizing:main_route:climb:duration"],
                     cruise_altitude,
                     distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
@@ -152,6 +157,7 @@ class ComputeCruise(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:cruise",
+                    df,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -174,7 +180,7 @@ class ComputeCruise(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(
+            df = self.save_df(
                 time_t + inputs["data:mission:sizing:main_route:climb:duration"],
                 cruise_altitude,
                 distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
@@ -187,7 +193,9 @@ class ComputeCruise(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:cruise",
+                df,
             )
+            self.save_csv(df)
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:distance"] = distance_t

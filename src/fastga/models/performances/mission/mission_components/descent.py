@@ -90,6 +90,11 @@ class ComputeDescent(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        if self.options["out_file"] != "":
+            # noinspection PyBroadException
+            df = None
+
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         descent_rate = inputs["data:mission:sizing:main_route:descent:descent_rate"]
@@ -160,7 +165,7 @@ class ComputeDescent(DynamicEquilibrium):
             propulsion_model.compute_flight_points(flight_point)
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                df = self.save_df(
                     time_t
                     + inputs["data:mission:sizing:main_route:climb:duration"]
                     + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -177,6 +182,7 @@ class ComputeDescent(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:descent",
+                    df,
                 )
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
@@ -201,7 +207,7 @@ class ComputeDescent(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(
+            df = self.save_df(
                 time_t
                 + inputs["data:mission:sizing:main_route:climb:duration"]
                 + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -218,7 +224,9 @@ class ComputeDescent(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:descent",
+                df,
             )
+            self.save_csv(df)
 
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:distance"] = distance_t

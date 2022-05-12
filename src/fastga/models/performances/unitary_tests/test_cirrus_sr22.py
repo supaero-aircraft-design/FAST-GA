@@ -227,8 +227,6 @@ def test_compute_climb():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
-    v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
-    assert v_cas == pytest.approx(88.9, abs=1e-1)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:climb:fuel", units="kg")
     assert fuel_mass == pytest.approx(4.2, abs=1e-1)
     distance = (

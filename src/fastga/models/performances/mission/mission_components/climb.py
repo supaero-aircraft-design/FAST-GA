@@ -91,6 +91,7 @@ class ComputeClimb(DynamicEquilibrium):
         # Delete previous .csv results
         if self.options["out_file"] != "":
             # noinspection PyBroadException
+            df = None
             try:
                 os.remove(self.options["out_file"])
             except:
@@ -163,7 +164,7 @@ class ComputeClimb(DynamicEquilibrium):
 
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                df = self.save_df(
                     time_t,
                     altitude_t,
                     distance_t,
@@ -176,6 +177,7 @@ class ComputeClimb(DynamicEquilibrium):
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:climb",
+                    df,
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -201,7 +203,7 @@ class ComputeClimb(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(
+            df = self.save_df(
                 time_t,
                 altitude_t,
                 distance_t,
@@ -214,7 +216,9 @@ class ComputeClimb(DynamicEquilibrium):
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:climb",
+                df,
             )
+            self.save_csv(df)
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t

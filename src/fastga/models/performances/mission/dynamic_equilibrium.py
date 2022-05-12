@@ -267,7 +267,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return cl_wing_return, cl_htp_return, error
 
-    def save_point(
+    def save_df(
         self,
         time,
         altitude,
@@ -281,9 +281,10 @@ class DynamicEquilibrium(om.ExplicitComponent):
         thrust_rate,
         sfc,
         name: str,
+        df: pd.DataFrame = None,
     ):
         """
-        Method to save mission point to .csv file for further post-processing
+        Method to save mission point to a pandas dataframe file for further post-processing
 
         :param time: mission time in seconds
         :param altitude: flight altitude in meters
@@ -297,6 +298,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         :param thrust_rate: thrust rate at flight point
         :param sfc: sfc at flight point
         :param name: phase name
+        :param df: Dataframe
         """
 
         alpha = float(equilibrium_result[0]) * 180.0 / math.pi
@@ -305,7 +307,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         cl_htp = float(equilibrium_result[3])
         atm = Atmosphere(altitude, altitude_in_feet=False)
         mach = v_tas / atm.speed_of_sound
-        if not os.path.exists(self.options["out_file"]):
+        if df is None:
             df = pd.DataFrame(columns=CSV_DATA_LABELS)
             df.loc[0] = [
                 float(time),
@@ -325,10 +327,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 float(sfc),
                 name,
             ]
-            df.to_csv(self.options["out_file"])
         else:
-            df = pd.read_csv(self.options["out_file"])
-            del df["Unnamed: 0"]
             data = [
                 float(time),
                 float(altitude),
@@ -349,7 +348,29 @@ class DynamicEquilibrium(om.ExplicitComponent):
             ]
             row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
             df = pd.concat([df, row])
+
+        return df
+
+    def save_csv(
+        self,
+        df: pd.DataFrame,
+    ):
+        """
+        Method to save mission point to .csv file for further post-processing
+
+        :param df: Dataframe
+        """
+
+        if not os.path.exists(self.options["out_file"]):
+            df.index = range(len(df))
             df.to_csv(self.options["out_file"])
+        else:
+            df_existing = pd.read_csv(self.options["out_file"])
+            if "Unnamed: 0" in df_existing.columns:
+                df_existing = df_existing.drop("Unnamed: 0", axis=1)
+            df.index = range(max(df_existing.index), max(df_existing.index) + len(df))
+            df_existing = pd.concat([df_existing, df])
+            df_existing.to_csv(self.options["out_file"])
 
     def equation_outer(
         self,
