@@ -40,3 +40,5 @@ data:payload_range:specific_range_array || specific range values at the points A
 
 data:mission:sizing:cs23:min_climb_speed || minimum true airspeed with which the aircraft can climb and descent, computed at MTOW in clear configuration with a 1.3 safety margin
 data:mission:sizing:holding:v_holding || airspeed at which the holding is done
+
+data:mission:sizing:main_route:descent:v_cas || calibrated airspeed at which the descent is made, remains constant during the whole phase

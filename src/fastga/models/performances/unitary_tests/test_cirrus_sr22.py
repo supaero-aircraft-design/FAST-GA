@@ -25,11 +25,14 @@ from fastga.models.performances.mission.takeoff import (
     _v_lift_off_from_v2,
     _simulate_takeoff,
 )
-from fastga.models.performances.mission.mission import (
-    _compute_taxi,
-    _compute_climb,
-    _compute_cruise,
-    _compute_descent,
+from fastga.models.performances.mission.mission_components import (
+    ComputeTaxi,
+    ComputeClimb,
+    ComputeClimbSpeed,
+    ComputeCruise,
+    ComputeDescent,
+    ComputeDescentSpeed,
+    ComputeReserve,
 )
 from fastga.models.performances.mission.mission import Mission
 from fastga.models.performances.mission.mission_builder_prep import PrepareMissionBuilder
@@ -160,11 +163,11 @@ def test_compute_taxi():
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True)), __file__, XML_FILE
+        list_inputs(ComputeTaxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True)), __file__, XML_FILE
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True), ivc)
+    problem = run_system(ComputeTaxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_out:fuel", units="kg")
     assert fuel_mass == pytest.approx(
         0.13, abs=1e-2
@@ -172,11 +175,11 @@ def test_compute_taxi():
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False)), __file__, XML_FILE
+        list_inputs(ComputeTaxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False)), __file__, XML_FILE
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False), ivc)
+    problem = run_system(ComputeTaxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_in:fuel", units="kg")
     assert fuel_mass == pytest.approx(
         0.13, abs=1e-2
@@ -199,19 +202,31 @@ def test_mission_builder_prep():
     assert v_holding == pytest.approx(61.73, abs=1e-2)
 
 
+def test_compute_climb_speed():
+    """Tests climb phase"""
+
+    # Research independent input value in .xml file
+    group = Group()
+    group.add_subsystem("climb", ComputeClimbSpeed(), promotes=["*"])
+    ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(group, ivc)
+    v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
+    assert v_cas == pytest.approx(88.9, abs=1)
+
+
 def test_compute_climb():
     """Tests climb phase"""
 
     # Research independent input value in .xml file
     group = Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
-    group.add_subsystem("descent", _compute_climb(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
+    group.add_subsystem("descent", ComputeClimb(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(group, ivc)
-    v_cas = problem.get_val("data:mission:sizing:main_route:climb:v_cas", units="kn")
-    assert v_cas == pytest.approx(88.9, abs=1e-1)
     fuel_mass = problem.get_val("data:mission:sizing:main_route:climb:fuel", units="kg")
     assert fuel_mass == pytest.approx(4.2, abs=1e-1)
     distance = (
@@ -228,7 +243,7 @@ def test_compute_cruise():
     # Research independent input value in .xml file
     group = Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
-    group.add_subsystem("cruise", _compute_cruise(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
+    group.add_subsystem("cruise", ComputeCruise(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -243,13 +258,27 @@ def test_compute_cruise():
     assert duration == pytest.approx(5.85, abs=1e-2)
 
 
+def test_compute_descent_speed():
+    """Tests climb phase"""
+
+    # Research independent input value in .xml file
+    group = Group()
+    group.add_subsystem("climb", ComputeDescentSpeed(), promotes=["*"])
+    ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(group, ivc)
+    v_cas = problem.get_val("data:mission:sizing:main_route:descent:v_cas", units="kn")
+    assert v_cas == pytest.approx(99.47, abs=1)
+
+
 def test_compute_descent():
     """Tests descent phase"""
 
     # Research independent input value in .xml file
     group = Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
-    group.add_subsystem("descent", _compute_descent(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
+    group.add_subsystem("descent", ComputeDescent(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -262,6 +291,20 @@ def test_compute_descent():
     assert distance == pytest.approx(87, abs=1)
     duration = problem.get_val("data:mission:sizing:main_route:descent:duration", units="min")
     assert duration == pytest.approx(27, abs=1)
+
+
+def test_compute_reserve():
+    """Tests reserve phase"""
+
+    # Research independent input value in .xml file
+    group = Group()
+    group.add_subsystem("reserve", ComputeReserve(), promotes=["*"])
+    ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(group, ivc)
+    fuel_mass = problem.get_val("data:mission:sizing:main_route:reserve:fuel", units="kg")
+    assert fuel_mass == pytest.approx(26.93, abs=1e-2)
 
 
 def test_loop_cruise_distance():

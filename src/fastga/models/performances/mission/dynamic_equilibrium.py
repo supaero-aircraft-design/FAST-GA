@@ -132,7 +132,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
         x_cg=None,
     ):
         """
-        Method that finds the regulated thrust and aircraft to air angle to obtain dynamic equilibrium
+        Method that finds the regulated thrust and aircraft to air angle to obtain dynamic
+        equilibrium
 
         :param inputs: inputs derived from aero and mass models
         :param gamma: path angle (in rad.) equal to climb rate c=dh/dt over air speed V,
@@ -267,89 +268,28 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return cl_wing_return, cl_htp_return, error
 
-    def save_point(
+    def save_csv(
         self,
-        time,
-        altitude,
-        distance,
-        mass,
-        v_tas,
-        v_cas,
-        rho,
-        gamma,
-        equilibrium_result,
-        thrust_rate,
-        sfc,
-        name: str,
+        dataframe_to_add: pd.DataFrame,
     ):
         """
         Method to save mission point to .csv file for further post-processing
 
-        :param time: mission time in seconds
-        :param altitude: flight altitude in meters
-        :param distance: flight distance in meters
-        :param mass: aircraft current mass
-        :param v_tas: true air speed in m/s
-        :param v_cas: calibrated air speed in m/s
-        :param rho: air density in kg/m3
-        :param gamma: slope angle in degree
-        :param equilibrium_result: result vector of dynamic equilibrium
-        :param thrust_rate: thrust rate at flight point
-        :param sfc: sfc at flight point
-        :param name: phase name
+        :param dataframe_to_add: Dataframe to add to the csv
         """
 
-        alpha = float(equilibrium_result[0]) * 180.0 / math.pi
-        thrust = float(equilibrium_result[1])
-        cl_wing = float(equilibrium_result[2])
-        cl_htp = float(equilibrium_result[3])
-        atm = Atmosphere(altitude, altitude_in_feet=False)
-        mach = v_tas / atm.speed_of_sound
         if not os.path.exists(self.options["out_file"]):
-            df = pd.DataFrame(columns=CSV_DATA_LABELS)
-            df.loc[0] = [
-                float(time),
-                float(altitude),
-                float(distance),
-                float(mass),
-                float(v_tas),
-                float(v_cas),
-                float(mach),
-                float(rho),
-                float(gamma),
-                alpha,
-                cl_wing,
-                cl_htp,
-                thrust,
-                float(thrust_rate),
-                float(sfc),
-                name,
-            ]
-            df.to_csv(self.options["out_file"])
+            dataframe_to_add.index = range(len(dataframe_to_add))
+            dataframe_to_add.to_csv(self.options["out_file"])
         else:
-            df = pd.read_csv(self.options["out_file"])
-            del df["Unnamed: 0"]
-            data = [
-                float(time),
-                float(altitude),
-                float(distance),
-                float(mass),
-                float(v_tas),
-                float(v_cas),
-                float(mach),
-                float(rho),
-                float(gamma),
-                alpha,
-                cl_wing,
-                cl_htp,
-                thrust,
-                float(thrust_rate),
-                float(sfc),
-                name,
-            ]
-            row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
-            df = pd.concat([df, row])
-            df.to_csv(self.options["out_file"])
+            dataframe_existing = pd.read_csv(self.options["out_file"])
+            if "Unnamed: 0" in dataframe_existing.columns:
+                dataframe_existing = dataframe_existing.drop("Unnamed: 0", axis=1)
+            dataframe_to_add.index = range(
+                max(dataframe_existing.index), max(dataframe_existing.index) + len(dataframe_to_add)
+            )
+            dataframe_existing = pd.concat([dataframe_existing, dataframe_to_add])
+            dataframe_existing.to_csv(self.options["out_file"])
 
     def equation_outer(
         self,
@@ -451,3 +391,87 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.delta_e_sol = delta_e
 
         return np.array([f1, f2])
+
+
+def save_df(
+    time,
+    altitude,
+    distance,
+    mass,
+    v_tas,
+    v_cas,
+    rho,
+    gamma,
+    equilibrium_result,
+    thrust_rate,
+    sfc,
+    name: str,
+    existing_dataframe: pd.DataFrame = None,
+):
+    """
+    Method to save mission point to a pandas dataframe file for further post-processing
+
+    :param time: mission time in seconds
+    :param altitude: flight altitude in meters
+    :param distance: flight distance in meters
+    :param mass: aircraft current mass
+    :param v_tas: true air speed in m/s
+    :param v_cas: calibrated air speed in m/s
+    :param rho: air density in kg/m3
+    :param gamma: slope angle in degree
+    :param equilibrium_result: result vector of dynamic equilibrium
+    :param thrust_rate: thrust rate at flight point
+    :param sfc: sfc at flight point
+    :param name: phase name
+    :param existing_dataframe: Dataframe
+    """
+
+    alpha = float(equilibrium_result[0]) * 180.0 / math.pi
+    thrust = float(equilibrium_result[1])
+    cl_wing = float(equilibrium_result[2])
+    cl_htp = float(equilibrium_result[3])
+    atm = Atmosphere(altitude, altitude_in_feet=False)
+    mach = v_tas / atm.speed_of_sound
+    if existing_dataframe is None:
+        existing_dataframe = pd.DataFrame(columns=CSV_DATA_LABELS)
+        existing_dataframe.loc[0] = [
+            float(time),
+            float(altitude),
+            float(distance),
+            float(mass),
+            float(v_tas),
+            float(v_cas),
+            float(mach),
+            float(rho),
+            float(gamma),
+            alpha,
+            cl_wing,
+            cl_htp,
+            thrust,
+            float(thrust_rate),
+            float(sfc),
+            name,
+        ]
+    else:
+        data = [
+            float(time),
+            float(altitude),
+            float(distance),
+            float(mass),
+            float(v_tas),
+            float(v_cas),
+            float(mach),
+            float(rho),
+            float(gamma),
+            alpha,
+            cl_wing,
+            cl_htp,
+            thrust,
+            float(thrust_rate),
+            float(sfc),
+            name,
+        ]
+        row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
+        existing_dataframe = pd.concat([existing_dataframe, row])
+
+    return existing_dataframe
