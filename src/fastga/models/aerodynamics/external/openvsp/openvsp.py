@@ -23,11 +23,7 @@ import pandas as pd
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
-from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
 
-# noinspection PyProtectedMember
-from fastoad.module_management._bundle_loader import BundleLoader
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 from stdatm import Atmosphere
@@ -108,7 +104,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         Function that perform a complete calculation of aerodynamic parameters under OpenVSP and
         returns only the cl_alpha_aircraft parameter.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coef(
+        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coeff(
             inputs, outputs, altitude, mach, aoa_angle
         )
         return float(cl_alpha_wing + cl_alpha_htp)
@@ -133,7 +129,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return mach_interp, cl_alpha_interp
 
-    def compute_aero_coef(self, inputs, outputs, altitude, mach, aoa_angle):
+    def compute_aero_coeff(self, inputs, outputs, altitude, mach, aoa_angle):
         """
         Function that computes in OpenVSP environment all the aerodynamic parameters @0° and
         aoa_angle and calculate the associated derivatives.
@@ -143,18 +139,18 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
+        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
-        coef_k_htp parameters.
+        coeff_k_htp parameters.
         """
 
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
 
         # Get inputs necessary to define global geometry
-        sref_wing = float(inputs["data:geometry:wing:area"])
-        sref_htp = float(inputs["data:geometry:horizontal_tail:area"])
-        area_ratio = sref_htp / sref_wing
+        s_ref_wing = float(inputs["data:geometry:wing:area"])
+        s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
+        area_ratio = s_ref_htp / s_ref_wing
         sweep25_wing = float(inputs["data:geometry:wing:sweep_25"])
         taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
         aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
@@ -224,14 +220,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
             # piAe) -> e' = e/1.05^2
-            coef_e = float(wing_aoa["coef_e"] * k_fus / 1.05 ** 2)
-            coef_k_wing = float(1.0 / (math.pi * span_wing ** 2 / sref_wing * coef_e))
+            coeff_e = float(wing_aoa["coeff_e"] * k_fus / 1.05 ** 2)
+            coeff_k_wing = float(1.0 / (math.pi * span_wing ** 2 / s_ref_wing * coeff_e))
 
             # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"])
             cl_aoa_htp = float(htp_aoa["cl"])
             cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
-            coef_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2
+            coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2
             y_vector_htp = htp_aoa["y_vector"]
             cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
@@ -277,15 +273,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     y_vector_wing,
                     cl_vector_wing,
                     chord_vector_wing,
-                    coef_k_wing,
+                    coeff_k_wing,
                     cl_0_htp,
                     cl_aoa_htp,
                     cl_alpha_htp,
                     cl_alpha_htp_isolated,
                     y_vector_htp,
                     cl_vector_htp,
-                    coef_k_htp,
-                    sref_wing,
+                    coeff_k_htp,
+                    s_ref_wing,
                 ]
                 self.save_results(result_file_path, results)
 
@@ -299,14 +295,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
                 [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            ) * math.sqrt(sref_wing / saved_area_wing)
+            ) * math.sqrt(s_ref_wing / saved_area_wing)
             cl_vector_wing = np.array(
                 [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
             )
             chord_vector_wing = np.array(
                 [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            ) * math.sqrt(sref_wing / saved_area_wing)
-            coef_k_wing = float(data.loc["coef_k_wing", 0])
+            ) * math.sqrt(s_ref_wing / saved_area_wing)
+            coeff_k_wing = float(data.loc["coeff_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
@@ -319,7 +315,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_vector_htp = np.array(
                 [float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")]
             ) * (area_ratio / saved_area_ratio)
-            coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
+            coeff_k_htp = float(data.loc["coeff_k_htp", 0]) * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -328,14 +324,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coef_k_wing,
+            coeff_k_wing,
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
-            coef_k_htp,
+            coeff_k_htp,
         )
 
     def compute_wing(self, inputs, outputs, altitude, mach, aoa_angle):
@@ -349,14 +345,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to wing (degree)
         @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e
+        cm_vector, cl, cdi, cm, coeff_e
         """
 
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
 
         # Get inputs (and calculate missing ones)
-        sref_wing = float(inputs["data:geometry:wing:area"])
+        s_ref_wing = float(inputs["data:geometry:wing:area"])
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
@@ -491,7 +487,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
             parser.mark_anchor("Sref")
-            parser.transfer_var(float(sref_wing), 0, 3)
+            parser.transfer_var(float(s_ref_wing), 0, 3)
             parser.mark_anchor("Cref")
             parser.transfer_var(float(l0_wing), 0, 3)
             parser.mark_anchor("Bref")
@@ -564,7 +560,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "cl": cl_wing,
             "cdi": cdi_wing,
             "cm": cm_wing,
-            "coef_e": wing_e,
+            "coeff_e": wing_e,
         }
         return wing
 
@@ -579,14 +575,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to htp (degree)
         @return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e
+        cm_vector, cl, cdi, cm, coeff_e
         """
 
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
 
         # Get inputs (and calculate missing ones)
-        sref_htp = float(inputs["data:geometry:horizontal_tail:area"])
+        s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
@@ -712,7 +708,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
             parser.mark_anchor("Sref")
-            parser.transfer_var(float(sref_htp), 0, 3)
+            parser.transfer_var(float(s_ref_htp), 0, 3)
             parser.mark_anchor("Cref")
             parser.transfer_var(float(l0_htp), 0, 3)
             parser.mark_anchor("Bref")
@@ -782,7 +778,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "cl": cl_htp,
             "cdi": cdi_htp,
             "cm": cm_htp,
-            "coef_e": htp_e,
+            "coeff_e": htp_e,
         }
         return htp
 
@@ -805,7 +801,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         ############################################################################################
 
         # Get inputs (and calculate missing ones)
-        sref_wing = float(inputs["data:geometry:wing:area"])
+        s_ref_wing = float(inputs["data:geometry:wing:area"])
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
@@ -971,7 +967,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
             parser.mark_anchor("Sref")
-            parser.transfer_var(float(sref_wing), 0, 3)
+            parser.transfer_var(float(s_ref_wing), 0, 3)
             parser.mark_anchor("Cref")
             parser.transfer_var(float(l0_wing), 0, 3)
             parser.mark_anchor("Bref")
@@ -1076,7 +1072,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "cl": aircraft_cl,
             "cd0": aircraft_cd0,
             "cdi": aircraft_cdi,
-            "coef_e": aircraft_e,
+            "coeff_e": aircraft_e,
         }
         return wing, htp, aircraft
 
@@ -1155,14 +1151,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "y_vector_wing",
             "cl_vector_wing",
             "chord_vector_wing",
-            "coef_k_wing",
+            "coeff_k_wing",
             "cl_0_htp",
             "cl_X_htp",
             "cl_alpha_htp",
             "cl_alpha_htp_isolated",
             "y_vector_htp",
             "cl_vector_htp",
-            "coef_k_htp",
+            "coeff_k_htp",
             "saved_ref_area",
         ]
         data = pd.DataFrame(results, index=labels)
@@ -1191,8 +1187,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 
     def setup(self):
         super().setup()
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:propulsion:IC_engine:max_rpm", val=np.nan, units="1/min")
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
@@ -1202,7 +1198,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             shape_by_conn=True,
         )
 
-    def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust_rate):
+    def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust, power):
         """
         Function that computes in OpenVSP environment the wing with a rotor and returns the
         different aerodynamic parameters.
@@ -1212,9 +1208,12 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to wing (degree)
-        @param thrust_rate: thrust rate for computation of the power and thrust coefficient
+        @param thrust: total aircraft thrust for computation of thrust coefficient (will be divided
+        by engine count)
+        @param power: total aircraft power for computation of power coefficient (will be divided
+        by engine count)
         @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e
+        cm_vector, cl, cdi, cm, coeff_e
         """
 
         # TODO : Check for rules that would allow the scaling of these results i.e, same D/span
@@ -1223,7 +1222,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         ############################################################################################
 
         # Get inputs (and calculate missing ones)
-        sref_wing = float(inputs["data:geometry:wing:area"])
+        s_ref_wing = float(inputs["data:geometry:wing:area"])
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
@@ -1262,20 +1261,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # STEP 1.5/XX - COMPUTE THE PARAMETERS RELATED TO THE COMPUTATION OF THE SLIPSTREAM ########
         # EFFECTS ON THE WING ######################################################################
 
-        propulsion_model = self._engine_wrapper.get_model(inputs)
-        flight_point = FlightPoint(
-            mach=mach,
-            altitude=altitude,
-            engine_setting=EngineSetting.CLIMB,
-            thrust_rate=thrust_rate,
-        )
-        propulsion_model.compute_flight_points(flight_point)
-        thrust = float(flight_point.thrust)
         thrust_one_prop = thrust / engine_count
-        propeller_efficiency = float(
-            propulsion_model.engine.propeller_efficiency(thrust_one_prop, atm)
-        )
-        shaft_power_one_prop = thrust_one_prop * v_inf / propeller_efficiency
+        shaft_power_one_prop = power / engine_count
         engine_rps = engine_rpm / 60.0
         # For now thrust is distributed equally on each engine
         thrust_coefficient = round(
@@ -1475,7 +1462,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
             parser.mark_anchor("Sref")
-            parser.transfer_var(float(sref_wing), 0, 3)
+            parser.transfer_var(float(s_ref_wing), 0, 3)
             parser.mark_anchor("Cref")
             parser.transfer_var(float(l0_wing), 0, 3)
             parser.mark_anchor("Bref")
@@ -1573,7 +1560,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             "cl": cl_wing,
             "cdi": cdi_wing,
             "cm": cm_wing,
-            "coef_e": wing_e,
+            "coeff_e": wing_e,
             "ct": thrust_coefficient,
         }
         return wing_rotor

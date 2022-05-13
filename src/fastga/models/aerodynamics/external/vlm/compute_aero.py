@@ -272,7 +272,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-        ) = self.compute_aero_coef(inputs, altitude, mach, INPUT_AOA)
+        ) = self.compute_aero_coeff(inputs, altitude, mach, INPUT_AOA)
 
         if self.options["low_speed_aero"]:
             pass

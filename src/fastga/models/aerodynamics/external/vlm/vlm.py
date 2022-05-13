@@ -103,7 +103,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param mach: mach number used for the computation
         :param aoa_angle: angle of attack used in the aoa derivative computation, in deg.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coef(
+        _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coeff(
             inputs, altitude, mach, aoa_angle
         )
         return float(cl_alpha_wing + cl_alpha_htp)
@@ -128,7 +128,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return mach_interp, cl_alpha_interp
 
-    def compute_aero_coef(self, inputs, altitude, mach, aoa_angle):
+    def compute_aero_coeff(self, inputs, altitude, mach, aoa_angle):
         """
         Function that computes in VLM environment all the aerodynamic parameters @0° and
         aoa_angle and calculate the associated derivatives.

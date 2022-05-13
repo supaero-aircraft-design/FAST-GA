@@ -26,12 +26,19 @@ from scipy.constants import g, knot, foot, lbf
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 from fastoad.model_base import FlightPoint
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from stdatm import Atmosphere
+
+from ..constants import SUBMODEL_VH
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)
+
+RegisterSubmodel.active_models[
+    SUBMODEL_VH
+] = "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy"
 
 
 class ComputeVNAndVH(om.Group):
@@ -41,8 +48,11 @@ class ComputeVNAndVH(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
-            "compute_vh", ComputeVh(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
+            "compute_vh",
+            RegisterSubmodel.get_submodel(SUBMODEL_VH, options=propulsion_option),
+            promotes=["*"],
         )
         self.add_subsystem(
             "compute_vn_diagram",
@@ -51,6 +61,7 @@ class ComputeVNAndVH(om.Group):
         )
 
 
+@RegisterSubmodel(SUBMODEL_VH, "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy")
 class ComputeVh(om.ExplicitComponent):
     """
     Computes the maximum level velocity of the aircraft at sea level

@@ -15,15 +15,25 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.group import Group
+import openmdao.api as om
 from stdatm import Atmosphere
+
+# noinspection PyProtectedMember
+from fastoad.module_management._bundle_loader import BundleLoader
+from fastoad.constants import EngineSetting
+from fastoad.model_base import FlightPoint
+from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT
+from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
+
+RegisterSubmodel.active_models[
+    SUBMODEL_THRUST_POWER_SLIPSTREAM
+] = "fastga.submodel.aerodynamics.wing.slipstream.thrust_power_computation.via_id"
 
 
-class ComputeSlipstreamOpenvsp(Group):
+class ComputeSlipstreamOpenvsp(om.Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
@@ -40,6 +50,26 @@ class ComputeSlipstreamOpenvsp(Group):
             promotes=["*"],
         )
         self.add_subsystem(
+            "comp_flight_conditions",
+            FlightConditionsForDPComputation(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*"],
+        )
+
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
+        self.add_subsystem(
+            "comp_thrust_power",
+            RegisterSubmodel.get_submodel(
+                SUBMODEL_THRUST_POWER_SLIPSTREAM, options=propulsion_option
+            ),
+            promotes=["data:*"],
+        )
+        self.connect("comp_flight_conditions.mach", "comp_thrust_power.mach")
+        self.connect("comp_flight_conditions.altitude", "comp_thrust_power.altitude")
+
+        self.connect("comp_thrust_power.thrust", "aero_slipstream_openvsp.thrust")
+        self.connect("comp_thrust_power.shaft_power", "aero_slipstream_openvsp.shaft_power")
+
+        self.add_subsystem(
             "aero_slipstream_openvsp",
             _ComputeSlipstreamOpenvsp(
                 propulsion_id=self.options["propulsion_id"],
@@ -48,7 +78,7 @@ class ComputeSlipstreamOpenvsp(Group):
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 low_speed_aero=self.options["low_speed_aero"],
             ),
-            promotes=["*"],
+            promotes=["data:*"],
         )
 
 
@@ -67,8 +97,12 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="deg**-1")
+
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
+
+        self.add_input("thrust", val=np.nan, units="N")
+        self.add_input("shaft_power", val=np.nan, units="W")
 
         if self.options["low_speed_aero"]:
             self.add_output(
@@ -155,7 +189,9 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
 
         alpha_max = (cl_max_clean - cl0) / cl_alpha
 
-        wing_rotor = self.compute_wing_rotor(inputs, outputs, altitude, mach, alpha_max, 1.0)
+        wing_rotor = self.compute_wing_rotor(
+            inputs, outputs, altitude, mach, alpha_max, inputs["thrust"], inputs["shaft_power"]
+        )
         wing = self.compute_wing(inputs, outputs, altitude, mach, alpha_max)
 
         cl_vector_prop_on = wing_rotor["cl_vector"]
@@ -208,3 +244,77 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
             ] = cl_vector_prop_off
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:CL"] = wing["cl"]
             outputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"] = cl_diff
+
+
+class FlightConditionsForDPComputation(om.ExplicitComponent):
+    def initialize(self):
+
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+
+        if self.options["low_speed_aero"]:
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        else:
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+            self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
+
+        self.add_output("mach")
+        self.add_output("altitude", units="m")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        if self.options["low_speed_aero"]:
+            mach = inputs["data:aerodynamics:low_speed:mach"]
+            altitude = 0.0
+        else:
+            mach = inputs["data:aerodynamics:cruise:mach"]
+            altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+
+        outputs["mach"] = mach
+        outputs["altitude"] = altitude
+
+
+@RegisterSubmodel(
+    SUBMODEL_THRUST_POWER_SLIPSTREAM,
+    "fastga.submodel.aerodynamics.wing.slipstream.thrust_power_computation.via_id",
+)
+class PropulsionForDPComputation(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper.setup(self)
+        self.add_input("mach", val=np.nan)
+        self.add_input("altitude", val=np.nan, units="m")
+
+        self.add_output("thrust", val=0, units="N")
+        self.add_output("shaft_power", val=1)
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+        flight_point = FlightPoint(
+            mach=inputs["mach"],
+            altitude=inputs["altitude"],
+            engine_setting=EngineSetting.CLIMB,
+            thrust_rate=1.0,
+        )
+        propulsion_model.compute_flight_points(flight_point)
+        thrust = float(flight_point.thrust)
+
+        thrust_one_prop = thrust / inputs["data:geometry:propulsion:engine:count"]
+        atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
+        atm.mach = inputs["mach"]
+
+        propeller_efficiency = float(
+            propulsion_model.engine.propeller_efficiency(thrust_one_prop, atm)
+        )
+
+        outputs["thrust"] = thrust
+        outputs["shaft_power"] = thrust * atm.true_airspeed / propeller_efficiency

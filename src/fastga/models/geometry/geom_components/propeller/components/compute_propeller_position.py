@@ -70,7 +70,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         y4_wing = float(inputs["data:geometry:wing:tip:y"])
         l4_wing = float(inputs["data:geometry:wing:tip:chord"])
         nacelle_length = float(inputs["data:geometry:propulsion:nacelle:length"])
-        nacelle_x = np.array(inputs["data:geometry:propulsion:nacelle:length"])
+        nacelle_x = np.array(inputs["data:geometry:propulsion:nacelle:x"])
 
         if prop_layout == 1.0:
             y_nacelle_array = y_ratio * span / 2
