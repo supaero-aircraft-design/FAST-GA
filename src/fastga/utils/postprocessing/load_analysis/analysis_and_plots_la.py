@@ -39,8 +39,8 @@ def force_repartition_diagram(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -68,8 +68,8 @@ def force_repartition_diagram(
     index = len(y_vector) + 1
     wing_weight = wing_weight_tmp[: int(index)]
     fuel_weight = fuel_weight_tmp[: int(index)]
-    # We have to readjust the point mass since because of the way we represented it (finite over a small interval) the value
-    # of the array is artificially high
+    # We have to readjust the point mass since because of the way we represented it (finite over
+    # a small interval) the value of the array is artificially high
     point_weight = readjust_point * point_weight_tmp[: int(index)]
     lift = lift_tmp[0 : int(index)]
 
@@ -121,8 +121,8 @@ def shear_diagram(
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -192,8 +192,8 @@ def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None)
     :param aircraft_file_path: path of data file
     :param name: name to give to the trace added to the figure
     :param fig: existing figure to which add the plot
-    :param file_formatter: the formatter that defines the format of data file. If not provided, default format will
-                           be assumed.
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
     :return: force repartition diagram.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()

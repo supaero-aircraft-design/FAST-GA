@@ -199,5 +199,10 @@
         </landing_gear>
       </airframe>
     </weight>
+    <propulsion>
+      <IC_engine>
+        <k_factor_sfc>1.10</k_factor_sfc>
+      </IC_engine>
+    </propulsion>
   </settings>
 </FASTOAD_model>

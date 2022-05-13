@@ -110,6 +110,14 @@
       </propulsion>
     </geometry>
     <aerodynamics>
+      <cooling>
+          <cruise>
+            <CD0 is_input="True">0.001624<!--profile drag due to cooling in cruise conditions--></CD0>
+          </cruise>
+          <low_speed>
+            <CD0 is_input="True">0.001624<!--profile drag due to cooling in low speed conditions--></CD0>
+          </low_speed>
+      </cooling>
       <propeller>
         <mach is_input="True">0.0<!--mach number used to compute the polar of the airfoil used in the propeller computation--></mach>
         <reynolds is_input="True">1000000.0<!--reynolds number used to compute the polar of the airfoil used in the propeller computation--></reynolds>
@@ -224,5 +232,10 @@
         </landing_gear>
       </airframe>
     </weight>
+    <propulsion>
+      <IC_engine>
+        <k_factor_sfc>1.10</k_factor_sfc>
+      </IC_engine>
+    </propulsion>
   </settings>
 </FASTOAD_model>
