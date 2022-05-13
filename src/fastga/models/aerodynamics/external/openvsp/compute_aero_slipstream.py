@@ -50,6 +50,30 @@ class ComputeSlipstreamOpenvsp(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
+            "aero_slipstream_openvsp_subgroup",
+            ComputeSlipstreamOpenvspSubGroup(
+                propulsion_id=self.options["propulsion_id"],
+                result_folder_path=self.options["result_folder_path"],
+                openvsp_exe_path=self.options["openvsp_exe_path"],
+                wing_airfoil_file=self.options["wing_airfoil_file"],
+                low_speed_aero=self.options["low_speed_aero"],
+            ),
+            promotes=["data:*"],
+        )
+
+
+class ComputeSlipstreamOpenvspSubGroup(om.Group):
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare(
+            "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
+        )
+
+    def setup(self):
+        self.add_subsystem(
             "comp_flight_conditions",
             FlightConditionsForDPComputation(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
