@@ -16,7 +16,7 @@ Estimation of geometry components.
 
 from .compute_total_area import ComputeTotalArea
 from .ht import ComputeHorizontalTailGeometryFD, ComputeHorizontalTailGeometryFL
-from .nacelle import ComputeNacelleGeometry
+from .nacelle import ComputeNacelleDimension, ComputeNacellePosition
 from .landing_gears import ComputeLGGeometry
 from .vt import ComputeVerticalTailGeometryFD, ComputeVerticalTailGeometryFL
 from .wing import ComputeWingGeometry

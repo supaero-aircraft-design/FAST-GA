@@ -54,7 +54,7 @@ from ..geom_components.vt.components import (
     ComputeVTSweep,
     ComputeVTWetArea,
 )
-from ..geom_components.nacelle.compute_nacelle import ComputeNacelleGeometry
+from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
 from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
@@ -545,16 +545,16 @@ def test_geometry_wing_mfw_advanced():
     assert mfw == pytest.approx(231.26, abs=1e-2)
 
 
-def test_geometry_nacelle():
+def test_dimension_nacelle():
     """Tests computation of the nacelle and pylons component"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeNacelleGeometry(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(ComputeNacelleDimension(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeNacelleGeometry(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeNacelleDimension(propulsion_id=ENGINE_WRAPPER), ivc)
     nacelle_length = problem.get_val("data:geometry:propulsion:nacelle:length", units="m")
     assert nacelle_length == pytest.approx(1.1488, abs=1e-3)
     nacelle_height = problem.get_val("data:geometry:propulsion:nacelle:height", units="m")
@@ -567,6 +567,16 @@ def test_geometry_nacelle():
         "data:geometry:propulsion:nacelle:master_cross_section", units="m**2"
     )
     assert nacelle_master_cross_section == pytest.approx(0.849, abs=1e-3)
+
+
+def test_position_nacelle():
+    """Tests computation of the nacelle and pylons component"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeNacellePosition()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNacellePosition(), ivc)
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
     y_nacelle_result = 0.0
     assert abs(y_nacelle - y_nacelle_result) < 1e-3
