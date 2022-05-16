@@ -34,6 +34,12 @@ RegisterSubmodel.active_models[
 
 
 class ComputeSlipstreamOpenvsp(om.Group):
+    """
+    Computes the impact of the slipstream effects on the lift repartition of the aircraft by
+    computing the difference between two OpenVSP runs, one with slipstream effects, one without.
+    This group is meant to be used on its own, not with any other slipstream computation,
+    hence why there is a computation of the Reynolds number.
+    """
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
@@ -63,6 +69,12 @@ class ComputeSlipstreamOpenvsp(om.Group):
 
 
 class ComputeSlipstreamOpenvspSubGroup(om.Group):
+    """
+    Computes the impact of the slipstream effects on the lift repartition of the aircraft by
+    computing the difference between two OpenVSP runs, one with slipstream effects, one without.
+    This group is meant called in the AerodynamicsLowSpeed and AerodynamicsHighSpeed if the
+    compute_slipstream option is set to True.
+    """
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
@@ -271,6 +283,10 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
 
 
 class FlightConditionsForDPComputation(om.ExplicitComponent):
+    """
+    Makes the flight conditions for the thrust and power computation locally available for the
+    slipstream computation.
+    """
     def initialize(self):
 
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -304,6 +320,7 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
     "fastga.submodel.aerodynamics.wing.slipstream.thrust_power_computation.via_id",
 )
 class PropulsionForDPComputation(om.ExplicitComponent):
+    """Computes thrust and shaft power for slisptream computation."""
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
