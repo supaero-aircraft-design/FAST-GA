@@ -40,6 +40,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
     This group is meant to be used on its own, not with any other slipstream computation,
     hence why there is a computation of the Reynolds number.
     """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
@@ -75,6 +76,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
     This group is meant called in the AerodynamicsLowSpeed and AerodynamicsHighSpeed if the
     compute_slipstream option is set to True.
     """
+
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
@@ -287,6 +289,7 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
     Makes the flight conditions for the thrust and power computation locally available for the
     slipstream computation.
     """
+
     def initialize(self):
 
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -321,6 +324,7 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
 )
 class PropulsionForDPComputation(om.ExplicitComponent):
     """Computes thrust and shaft power for slisptream computation."""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
