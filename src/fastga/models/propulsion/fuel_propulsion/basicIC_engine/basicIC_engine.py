@@ -126,7 +126,11 @@ class BasicICEngine(AbstractFuelPropulsion):
         self.specific_shape = None
 
         # Evaluate engine volume based on max power @ 0.0m
-        rpm_vect, _, pme_limit_vect, _ = self.read_map(self.map_file_path)
+        rpm_vect, pme_vect, pme_limit_vect, sfc_matrix = self.read_map(self.map_file_path)
+        self.rpm_vect_ref = rpm_vect
+        self.pme_vect_ref = pme_vect
+        self.pme_limit_vect_ref = pme_limit_vect
+        self.sfc_matrix_ref = sfc_matrix
         volume = self.max_power / np.max(
             pme_limit_vect * 1e5 * rpm_vect / 240.0
         )  # conversion rpm to rad/s included
@@ -490,7 +494,9 @@ class BasicICEngine(AbstractFuelPropulsion):
         :return: SFC (in g/kw) and Power (in W)
         """
         # Load engine map and save interpolation formula
-        rpm_vect, pme_vect, _, sfc_matrix = self.read_map(self.map_file_path)
+        rpm_vect = self.rpm_vect_ref
+        pme_vect = self.pme_vect_ref
+        sfc_matrix = self.sfc_matrix_ref
         torque_vect = pme_vect * 1e5 * self.volume / (8.0 * np.pi)
         ICE_sfc = interp2d(torque_vect, rpm_vect, sfc_matrix, kind="cubic")
 
@@ -565,7 +571,8 @@ class BasicICEngine(AbstractFuelPropulsion):
         )
 
         # Calculate engine max power @ given RPM & altitude
-        rpm_vect, _, pme_limit_vect, _ = self.read_map(self.map_file_path)
+        rpm_vect = self.rpm_vect_ref
+        pme_limit_vect = self.pme_limit_vect_ref
         torque_vect = pme_limit_vect * 1e5 * self.volume / (8.0 * np.pi)
         power_max_vect = torque_vect * rpm_vect * (np.pi / 30.0)
         if np.size(engine_setting) == 1:

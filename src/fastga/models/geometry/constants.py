@@ -13,7 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_WING_GEOMETRY = "submodel.geometry.wing"
-SUBMODEL_NACELLE_GEOMETRY = "submodel.geometry.nacelle"
+SUBMODEL_NACELLE_DIMENSION = "submodel.geometry.nacelle.dimension"
+SUBMODEL_NACELLE_POSITION = "submodel.geometry.nacelle.position"
 SUBMODEL_PROPELLER_GEOMETRY = "submodel.geometry.propeller.geometry"
 SUBMODEL_LANDING_GEAR_GEOMETRY = "submodel.geometry.landing_gear"
 SUBMODEL_MFW = "submodel.geometry.mfw"

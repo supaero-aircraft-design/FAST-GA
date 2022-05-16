@@ -12,4 +12,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_nacelle import ComputeNacelleGeometry
+from .compute_nacelle_dimension import ComputeNacelleDimension
+from .compute_nacelle_position import ComputeNacellePosition

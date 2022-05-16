@@ -161,7 +161,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-        ) = self.compute_aero_coef(inputs, outputs, altitude, mach, INPUT_AOA)
+        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, INPUT_AOA)
 
         if not self.options["low_speed_aero"] and self.options["compute_mach_interpolation"]:
             mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(

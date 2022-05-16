@@ -19,11 +19,6 @@ import numpy as np
 import math
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-# noinspection PyProtectedMember
-from fastoad.module_management._bundle_loader import BundleLoader
-
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
 
 class ComputeFuselageGeometryBasic(ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -68,8 +63,6 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
 
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
@@ -93,6 +86,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
 
         self.add_output("data:geometry:cabin:NPAX")
         self.add_output("data:geometry:aircraft:length", units="m")
@@ -111,7 +106,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
+        nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
@@ -153,8 +148,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
-            _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length + spinner_length
+            lav = nacelle_length + spinner_length
         else:
             lav = 1.40 * h_f
             # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76
@@ -195,8 +189,6 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
 
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
@@ -207,6 +199,8 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:geometry:fuselage:rear_length", units="m")
+        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
 
         self.add_output("data:geometry:cabin:NPAX")
         self.add_output("data:geometry:fuselage:length", val=10.0, units="m")
@@ -223,7 +217,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
+        nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
@@ -257,8 +251,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length
         if prop_layout == 3.0:  # engine located in nose
-            _, _, propulsion_length, _ = propulsion_model.compute_dimensions()
-            lav = propulsion_length
+            lav = nacelle_length
         else:
             lav = 1.7 * h_f
             # Calculate fuselage length

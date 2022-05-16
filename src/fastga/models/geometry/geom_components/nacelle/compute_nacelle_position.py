@@ -17,30 +17,17 @@ import numpy as np
 import warnings
 import openmdao.api as om
 
-# noinspection PyProtectedMember
-from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-
-from ...constants import SUBMODEL_NACELLE_GEOMETRY
+from ...constants import SUBMODEL_NACELLE_POSITION
 
 
-@RegisterSubmodel(SUBMODEL_NACELLE_GEOMETRY, "fastga.submodel.geometry.nacelle.legacy")
-class ComputeNacelleGeometry(om.ExplicitComponent):
+@RegisterSubmodel(SUBMODEL_NACELLE_POSITION, "fastga.submodel.geometry.nacelle.position.legacy")
+class ComputeNacellePosition(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._engine_wrapper = None
-
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
     def setup(self):
-        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
-        self._engine_wrapper.setup(self)
 
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -53,15 +40,13 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
         )
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
 
-        self.add_output("data:geometry:propulsion:nacelle:length", units="m")
-        self.add_output("data:geometry:propulsion:nacelle:height", units="m")
-        self.add_output("data:geometry:propulsion:nacelle:width", units="m")
-        self.add_output("data:geometry:propulsion:nacelle:wet_area", units="m**2")
-        self.add_output("data:geometry:propulsion:nacelle:master_cross_section", units="m**2")
         self.add_output(
             "data:geometry:propulsion:nacelle:y",
             units="m",
@@ -79,7 +64,8 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
+        nac_width = inputs["data:geometry:propulsion:nacelle:width"]
+        nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
@@ -92,9 +78,6 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
         fa_length = float(inputs["data:geometry:wing:MAC:at25percent:x"])
         x4_wing = float(inputs["data:geometry:wing:tip:leading_edge:x:local"])
         y4_wing = float(inputs["data:geometry:wing:tip:y"])
-
-        nac_height, nac_width, nac_length, nac_wet_area = propulsion_model.compute_dimensions()
-        master_cross_section = nac_height * nac_width
 
         if prop_layout == 1.0:
             y_nacelle_array = y_ratio * span / 2
@@ -123,10 +106,5 @@ class ComputeNacelleGeometry(om.ExplicitComponent):
                 )
             )
 
-        outputs["data:geometry:propulsion:nacelle:length"] = nac_length
-        outputs["data:geometry:propulsion:nacelle:height"] = nac_height
-        outputs["data:geometry:propulsion:nacelle:width"] = nac_width
-        outputs["data:geometry:propulsion:nacelle:wet_area"] = nac_wet_area
-        outputs["data:geometry:propulsion:nacelle:master_cross_section"] = master_cross_section
         outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array
         outputs["data:geometry:propulsion:nacelle:x"] = x_nacelle_array

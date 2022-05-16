@@ -32,7 +32,8 @@ from fastga.models.options import CABIN_SIZING_OPTION
 
 from .constants import (
     SUBMODEL_WING_GEOMETRY,
-    SUBMODEL_NACELLE_GEOMETRY,
+    SUBMODEL_NACELLE_DIMENSION,
+    SUBMODEL_NACELLE_POSITION,
     SUBMODEL_LANDING_GEAR_GEOMETRY,
     SUBMODEL_MFW,
     SUBMODEL_AIRCRAFT_WET_AREA,
@@ -58,7 +59,12 @@ class GeometryFixedFuselage(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
+        self.add_subsystem(
+            "compute_engine_nacelle_dimension",
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_DIMENSION, options=propulsion_option),
+            promotes=["*"],
+        )
         self.add_subsystem(
             "compute_fuselage",
             ComputeFuselageAlternate(
@@ -72,10 +78,10 @@ class GeometryFixedFuselage(om.Group):
         self.add_subsystem(
             "compute_wing", RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY), promotes=["*"]
         )
-        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
+
         self.add_subsystem(
-            "compute_engine_nacelle",
-            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
+            "compute_engine_nacelle_position",
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -117,6 +123,12 @@ class GeometryFixedTailDistance(om.Group):
 
     def setup(self):
 
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
+        self.add_subsystem(
+            "compute_engine_nacelle_dimension",
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_DIMENSION, options=propulsion_option),
+            promotes=["*"],
+        )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFD(), promotes=["*"])
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFD(), promotes=["*"])
         self.add_subsystem(
@@ -130,10 +142,9 @@ class GeometryFixedTailDistance(om.Group):
         self.add_subsystem(
             "compute_wing", RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY), promotes=["*"]
         )
-        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle",
-            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
+            RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(

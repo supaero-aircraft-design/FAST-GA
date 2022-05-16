@@ -21,7 +21,7 @@ from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
-    _ComputeSlipstreamOpenvsp,
+    ComputeSlipstreamOpenvspSubGroup,
 )
 from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
 from .constants import (
@@ -171,12 +171,12 @@ class AerodynamicsHighSpeed(Group):
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp",
-                _ComputeSlipstreamOpenvsp(
+                ComputeSlipstreamOpenvspSubGroup(
                     propulsion_id=self.options["propulsion_id"],
                     result_folder_path=self.options["result_folder_path"],
                     openvsp_exe_path=self.options["openvsp_exe_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     low_speed_aero=False,
                 ),
-                promotes=["*"],
+                promotes=["data:*"],
             )
