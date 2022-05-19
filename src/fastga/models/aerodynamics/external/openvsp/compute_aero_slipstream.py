@@ -340,7 +340,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
         self.add_input("altitude", val=np.nan, units="m")
 
         self.add_output("thrust", val=0, units="N")
-        self.add_output("shaft_power", val=1)
+        self.add_output("shaft_power", val=1, units="W")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
