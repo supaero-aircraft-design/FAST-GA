@@ -10,6 +10,10 @@ authors = [
     "Aurelien REYSSET <Aurelien.REYSSET@isae-supaero.fr>",
     "Florent LUTZ <Florent.LUTZ2@isae-supaero.fr>"
 ]
+packages = [
+    { include = "fastga", from = "src" },
+]
+exclude = ["**/unitary_tests/**"]
 
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 keywords = [
