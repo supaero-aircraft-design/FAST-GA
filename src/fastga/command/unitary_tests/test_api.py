@@ -159,13 +159,14 @@ def test_empty_xml():
         right_error = False
 
     except Exception as error:
-
+        print(error.args[0])
         function_generated = False
 
         if (
             error.args[0]
             == "Input .xml file not found, a default file has been created with default NaN values, "
             "but no function is returned!\nConsider defining proper values before second execution!"
+            or ("File" in error.args[0] and " is unavailable for reading." in error.args[0])
         ):
             right_error = True
         else:
