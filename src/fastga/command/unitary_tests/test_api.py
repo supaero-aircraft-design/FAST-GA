@@ -162,11 +162,10 @@ def test_empty_xml():
         print(error.args[0])
         function_generated = False
 
-        if (
-            error.args[0]
-            == "Input .xml file not found, a default file has been created with default NaN values, "
-            "but no function is returned!\nConsider defining proper values before second execution!"
-            or ("File" in error.args[0] and " is unavailable for reading." in error.args[0])
+        if error.args[
+            0
+        ] == "Input .xml file not found, a default file has been created with default NaN values, but no function is returned!\nConsider defining proper values before second execution!" or (
+            "File" in error.args[0] and " is unavailable for reading." in error.args[0]
         ):
             right_error = True
         else:
@@ -178,7 +177,8 @@ def test_empty_xml():
     if os.path.exists(missing_xml):
         os.remove(missing_xml)
 
-    # Then test with empty xml file but var_inputs is contains all the necessary data, should succeed
+    # Then test with empty xml file but var_inputs is contains all the necessary data,
+    # should succeed
 
     var_inputs = [
         "data:geometry:variable_1",
