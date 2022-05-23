@@ -2052,8 +2052,8 @@ jupyterlab = []
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.7, <=3.9"
-content-hash = "c9325996b0c333e4d12efc8935d5593f01113820c7a8e818ee3492ad333721e6"
+python-versions = "^3.7, <3.10"
+content-hash = "38c8c7fce4f9bc527dd2d4338d1b06a119de01a7591ef5cf7c9f9a5661a644ce"
 
 [metadata.files]
 aenum = [
