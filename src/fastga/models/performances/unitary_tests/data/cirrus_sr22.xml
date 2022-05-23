@@ -191,6 +191,7 @@
           <y_ratio is_input="True">0.34<!--engine position with respect to total span--></y_ratio>
         </engine>
         <nacelle>
+          <from_LE units="m">2.5</from_LE>
           <height units="m" is_input="False">0.7546659597502833<!--height of the nacelle--></height>
           <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
           <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
@@ -473,6 +474,7 @@
           <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
         </holding>
         <initial_climb>
+          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <fuel units="kg" is_input="False">0.08009891683094206<!--mass of consumed fuel during initial climb phase in sizing mission--></fuel>
         </initial_climb>
         <landing>
@@ -481,6 +483,7 @@
           <target_sideslip units="deg" is_input="True">15.0</target_sideslip>
         </landing>
         <takeoff>
+          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <TOFL units="m" is_input="False">585.5442477035833<!--TakeOff Field Length in sizing mission--></TOFL>
           <V2 units="m/s" is_input="False">43.50504291268329<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <VLOF units="m/s" is_input="False">41.12259008039237<!--lift-off speed in sizing mission--></VLOF>

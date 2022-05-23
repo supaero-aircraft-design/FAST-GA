@@ -33,9 +33,9 @@ ENGINE_WRAPPER_BE76 = "test.wrapper.performances.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.performances.cirrus.dummy_engine"
 
 
-########################################################################################################################
-########################### Beechcraft BE76 dummy engine ###############################################################
-########################################################################################################################
+####################################################################################################
+########################### Beechcraft BE76 dummy engine ###########################################
+####################################################################################################
 
 
 class DummyEngineBE76(AbstractFuelPropulsion):
@@ -61,24 +61,41 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
 
-        altitude = float(
-            Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
-        )
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
-        sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
+        sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
         max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
-        max_thrust = min(
+        max_thrust = np.minimum(
             self.max_thrust * sigma ** (1.0 / 3.0),
-            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20),
+            max_power
+            * 0.8
+            / np.maximum(mach * Atmosphere(flight_points.altitude).speed_of_sound, 1e-20),
         )
         if flight_points.thrust_rate is None:
-            flight_points.thrust = min(max_thrust, float(thrust))
-            flight_points.thrust_rate = float(thrust) / max_thrust
-        else:
+            flight_points.thrust = min(max_thrust, thrust)
+            flight_points.thrust_rate = thrust / max_thrust
+        elif flight_points.thrust is None:
             flight_points.thrust = max_thrust * np.array(flight_points.thrust_rate)
+        else:
+            flight_points.thrust_rate = np.where(
+                flight_points.thrust_is_regulated,
+                np.maximum(thrust, np.full_like(thrust, max_thrust))
+                / np.full_like(thrust, max_thrust),
+                flight_points.thrust_rate,
+            )
+            flight_points.thrust = np.where(
+                flight_points.thrust_is_regulated,
+                flight_points.thrust,
+                max_thrust * np.array(flight_points.thrust_rate),
+            )
+
         sfc_pmax = 7.96359441e-08  # fixed whatever the thrust ratio, sfc for ONE 130kW engine !
-        sfc = sfc_pmax * flight_points.thrust_rate * mach * Atmosphere(altitude).speed_of_sound
+        sfc = (
+            sfc_pmax
+            * flight_points.thrust_rate
+            * mach
+            * Atmosphere(flight_points.altitude).speed_of_sound
+        )
         flight_points.sfc = sfc
 
     def compute_weight(self) -> float:
@@ -121,9 +138,9 @@ class DummyEngineWrapperBE76(IOMPropulsionWrapper):
         )
 
 
-########################################################################################################################
-########################### Cirrus SR22 dummy engine ###################################################################
-########################################################################################################################
+####################################################################################################
+########################### Cirrus SR22 dummy engine ###############################################
+####################################################################################################
 
 
 class DummyEngineSR22(AbstractFuelPropulsion):
@@ -138,24 +155,40 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 
     def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
 
-        altitude = float(
-            Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
-        )
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
-        sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
+        sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
         max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
-        max_thrust = min(
+        max_thrust = np.minimum(
             self.max_thrust * sigma ** (1.0 / 3.0),
-            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20),
+            max_power
+            * 0.8
+            / np.maximum(mach * Atmosphere(flight_points.altitude).speed_of_sound, 1e-20),
         )
         if flight_points.thrust_rate is None:
-            flight_points.thrust = min(max_thrust, float(thrust))
-            flight_points.thrust_rate = float(thrust) / max_thrust
-        else:
+            flight_points.thrust = min(max_thrust, thrust)
+            flight_points.thrust_rate = thrust / max_thrust
+        elif flight_points.thrust is None:
             flight_points.thrust = max_thrust * np.array(flight_points.thrust_rate)
+        else:
+            flight_points.thrust_rate = np.where(
+                flight_points.thrust_is_regulated,
+                np.maximum(thrust, np.full_like(thrust, max_thrust))
+                / np.full_like(thrust, max_thrust),
+                flight_points.thrust_rate,
+            )
+            flight_points.thrust = np.where(
+                flight_points.thrust_is_regulated,
+                flight_points.thrust,
+                max_thrust * np.array(flight_points.thrust_rate),
+            )
         sfc_pmax = 8.5080e-08  # fixed whatever the thrust ratio, sfc for ONE 130kW engine !
-        sfc = sfc_pmax * flight_points.thrust_rate * mach * Atmosphere(altitude).speed_of_sound
+        sfc = (
+            sfc_pmax
+            * flight_points.thrust_rate
+            * mach
+            * Atmosphere(flight_points.altitude).speed_of_sound
+        )
         flight_points.sfc = sfc
 
     def compute_weight(self) -> float:

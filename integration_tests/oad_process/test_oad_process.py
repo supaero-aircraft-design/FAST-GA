@@ -122,6 +122,46 @@ def test_oad_process_vlm_be76(cleanup):
     assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1107.0, atol=1)
 
 
+def test_oad_process_vlm_mission_vector(cleanup):
+    """Test the overall aircraft design process with wing positioning under VLM method."""
+    logging.basicConfig(level=logging.WARNING)
+
+    # Define used files depending on options
+    xml_file_name = "input_sr22.xml"
+    process_file_name = "oad_process_sr22_mission_vector.yml"
+
+    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+
+    # Create inputs
+    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
+    configurator.write_needed_inputs(ref_inputs)
+
+    # Create problems with inputs
+    problem = configurator.get_problem(read_inputs=True)
+    problem.setup()
+    problem.run_model()
+    problem.write_outputs()
+
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+    om.view_connections(
+        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+    )
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+
+    # Check that weight-performances loop correctly converged
+    _check_weight_performance_loop(problem)
+
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 239.0, atol=1)
+    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1605, atol=1)
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1005.0, atol=1)
+
+
 @pytest.mark.skipif(system() != "Windows", reason="OPENVSP is windows dependent platform")
 def test_oad_process_openvsp(cleanup):
     """

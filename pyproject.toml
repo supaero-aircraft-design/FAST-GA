@@ -10,6 +10,10 @@ authors = [
     "Aurelien REYSSET <Aurelien.REYSSET@isae-supaero.fr>",
     "Florent LUTZ <Florent.LUTZ2@isae-supaero.fr>"
 ]
+packages = [
+    { include = "fastga", from = "src" },
+]
+exclude = ["**/unitary_tests/**"]
 
 homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
 keywords = [
@@ -40,11 +44,9 @@ classifiers = [
 # of poetry.lock file will modify docs/requirements.txt and make
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
-python = "^3.7"
-fast-oad-core = "~1.3.1"
+python = "^3.7, <3.10"
+fast-oad-core = "~1.3.3"
 stdatm = "0.2.0"
-matplotlib = "^3.5"
-openmdao = "<=3.16.0"
 
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]
@@ -65,6 +67,7 @@ sphinx-rtd-theme = "^1.0"
 sphinxcontrib-bibtex = "^2.3.0"
 flake8 = "^4.0.1"
 matplotlib = "^3.1.2"
+click = "8.0.4"
 
 [build-system]
 requires = ["poetry>=0.12"]

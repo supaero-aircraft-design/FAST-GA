@@ -145,7 +145,11 @@
           <elevator_angle units="deg">-25.0<!--position of the elevator during landing--></elevator_angle>
           <target_sideslip units="deg">15.0</target_sideslip>
         </landing>
+        <initial_climb>
+          <energy units="W*h">0.0</energy>
+        </initial_climb>
         <takeoff>
+          <energy units="W*h">0.0</energy>
           <altitude units="m">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <elevator_angle units="deg">-25.0<!--position of the elevator during takeoff--></elevator_angle>
           <flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
