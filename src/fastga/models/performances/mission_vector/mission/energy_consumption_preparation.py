@@ -41,11 +41,11 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
 
         self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
         self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
-        self.add_input("data:mission:sizing:taxi_out:thrust", np.nan, units="N")
+        self.add_input("data:mission:sizing:taxi_out:thrust", 1500, units="N")
 
         self.add_input("data:mission:sizing:taxi_in:speed", np.nan, units="m/s")
         self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
-        self.add_input("data:mission:sizing:taxi_in:thrust", np.nan, units="N")
+        self.add_input("data:mission:sizing:taxi_in:thrust", 1500, units="N")
 
         self.add_input("thrust", shape=n, val=np.full(n, np.nan), units="N")
         self.add_input("altitude", shape=n, val=np.full(n, np.nan), units="m")

@@ -32,10 +32,14 @@ from ..wing_area_component.wing_area_loop_geom_adv import (
     UpdateWingAreaGeomAdvanced,
     ConstraintWingAreaGeomAdvanced,
 )
+from ..wing_area_component.wing_area_cl_equilibrium import (
+    UpdateWingAreaLiftEquilibrium,
+    ConstraintWingAreaLiftEquilibrium,
+)
 from ..wing_area_component.update_wing_area import UpdateWingArea
 from ..update_wing_area_group import UpdateWingAreaGroup
 
-from tests.testing_utilities import run_system
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
@@ -200,6 +204,53 @@ def test_advanced_geom():
 
     problem_cons = run_system(ConstraintWingAreaGeomAdvanced(), ivc_cons)
     assert_allclose(problem_cons["data:constraints:wing:additional_fuel_capacity"], 0.0, atol=1)
+
+
+def test_advanced_cl():
+
+    xml_file = "beechcraft_76.xml"
+
+    inputs_list = list_inputs(
+        UpdateWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine")
+    )
+    # Research independent input value in .xml file
+    ivc_loop = get_indep_var_comp(
+        inputs_list,
+        __file__,
+        xml_file,
+    )
+    ivc_loop.add_output("data:mission:sizing:taxi_in:thrust", val=1500, units="N")
+    ivc_loop.add_output("data:mission:sizing:taxi_out:thrust", val=1500, units="N")
+
+    problem_loop = run_system(
+        UpdateWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+        ivc_loop,
+    )
+    assert_allclose(problem_loop["wing_area"], 17.39, atol=1e-2)
+
+    inputs_list = list_inputs(
+        ConstraintWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine")
+    )
+
+    inputs_list.remove("data:geometry:wing:area")
+    # Research independent input value in .xml file
+    ivc_cons = get_indep_var_comp(
+        inputs_list,
+        __file__,
+        xml_file,
+    )
+    ivc_cons.add_output("data:mission:sizing:taxi_in:thrust", val=1500, units="N")
+    ivc_cons.add_output("data:mission:sizing:taxi_out:thrust", val=1500, units="N")
+    ivc_cons.add_output("data:geometry:wing:area", val=17.39, units="m**2")
+    problem_cons = run_system(
+        ConstraintWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+        ivc_cons,
+    )
+    assert_allclose(
+        problem_cons.get_val("data:constraints:wing:additional_CL_capacity"),
+        0.0,
+        atol=1e-2,
+    )
 
 
 def test_update_wing_area():
