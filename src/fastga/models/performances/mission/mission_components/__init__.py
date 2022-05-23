@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .taxi import ComputeTaxi
-from .climb import ComputeClimb, ComputeClimbSpeed
-from .cruise import ComputeCruise
-from .descent import ComputeDescent, ComputeDescentSpeed
+from .climb import ComputeClimb, ComputeClimbSpeed, POINTS_NB_CLIMB
+from .cruise import ComputeCruise, POINTS_NB_CRUISE
+from .descent import ComputeDescent, ComputeDescentSpeed, POINTS_NB_DESCENT
 from .reserve import ComputeReserve

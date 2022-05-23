@@ -21,7 +21,7 @@ import pandas as pd
 
 from stdatm import Atmosphere
 
-from fastga.models.performances.mission.mission import (
+from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CRUISE,
     POINTS_NB_CLIMB,
     POINTS_NB_DESCENT,

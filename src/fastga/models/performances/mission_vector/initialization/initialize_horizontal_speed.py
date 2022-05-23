@@ -16,12 +16,6 @@
 import openmdao.api as om
 import numpy as np
 
-from fastga.models.performances.mission.mission import (
-    POINTS_NB_CLIMB,
-    POINTS_NB_CRUISE,
-    POINTS_NB_DESCENT,
-)
-
 
 class InitializeHorizontalSpeed(om.ExplicitComponent):
     """Computes the fuel consumed at each time step."""
