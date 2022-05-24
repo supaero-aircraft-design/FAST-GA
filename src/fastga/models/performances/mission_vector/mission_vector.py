@@ -20,11 +20,10 @@ from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
-from fastga.models.weight.cg.cg_variation import InFlightCGVariation
-
 from fastga.models.performances.mission_vector.initialization.initialize import Initialize
 from fastga.models.performances.mission_vector.mission.mission_core import MissionCore
 from fastga.models.performances.mission_vector.to_csv import ToCSV
+from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 
 class MissionVector(om.Group):

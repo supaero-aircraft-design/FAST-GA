@@ -13,14 +13,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
+import openmdao.api as om
+from fastoad.model_base.flight_point import FlightPoint
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base.flight_point import FlightPoint
 from fastoad.module_management.service_registry import RegisterSubmodel
-
 from stdatm import Atmosphere
 
 from fastga.models.performances.mission_vector.constants import SUBMODEL_ENERGY_CONSUMPTION

@@ -14,12 +14,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
-from .mission_vector import MissionVector
 from fastga.models.performances.mission.takeoff import TakeOffPhase
+from .mission_vector import MissionVector
 
 
 @RegisterOpenMDAOSystem("fastga.performances.mission_vector", domain=ModelDomain.OTHER)

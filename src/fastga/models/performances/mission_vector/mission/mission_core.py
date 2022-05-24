@@ -14,17 +14,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from ..mission.update_mass import UpdateMass
+from ..constants import SUBMODEL_EQUILIBRIUM
+from ..mission.compute_time_step import ComputeTimeStep
 from ..mission.performance_per_phase import PerformancePerPhase
 from ..mission.reserve_energy import ReserveEnergy
 from ..mission.sizing_energy import SizingEnergy
 from ..mission.thrust_taxi import ThrustTaxi
-from ..mission.compute_time_step import ComputeTimeStep
-
-from ..constants import SUBMODEL_EQUILIBRIUM
+from ..mission.update_mass import UpdateMass
 
 
 class MissionCore(om.Group):

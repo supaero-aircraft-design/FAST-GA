@@ -13,22 +13,21 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CLIMB,
     POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
-
-from ..initialization.initialize_altitude import InitializeAltitude
+from ..initialization.initialize_CoG import InitializeCoG
 from ..initialization.initialize_airspeed import InitializeAirspeed
+from ..initialization.initialize_airspeed_derivatives import InitializeAirspeedDerivatives
+from ..initialization.initialize_altitude import InitializeAltitude
 from ..initialization.initialize_gamma import InitializeGamma
 from ..initialization.initialize_horizontal_speed import InitializeHorizontalSpeed
 from ..initialization.initialize_time_and_distance import InitializeTimeAndDistance
-from ..initialization.initialize_airspeed_derivatives import InitializeAirspeedDerivatives
-from ..initialization.initialize_CoG import InitializeCoG
 
 
 class Initialize(om.Group):

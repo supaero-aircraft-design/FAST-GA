@@ -15,10 +15,9 @@
 
 import os
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 import pandas as pd
-
 from stdatm import Atmosphere
 
 from fastga.models.performances.mission.mission_components import (

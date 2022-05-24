@@ -14,13 +14,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from ..mission.equilibrium import Equilibrium
-from ..mission.energy_consumption_preparation import PrepareForEnergyConsumption
-
 from ..constants import SUBMODEL_DEP_EFFECT, SUBMODEL_EQUILIBRIUM, SUBMODEL_ENERGY_CONSUMPTION
+from ..mission.energy_consumption_preparation import PrepareForEnergyConsumption
+from ..mission.equilibrium import Equilibrium
 
 
 @RegisterSubmodel(SUBMODEL_EQUILIBRIUM, "fastga.submodel.performances.equilibrium.legacy")
