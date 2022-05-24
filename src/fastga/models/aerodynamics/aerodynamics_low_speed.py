@@ -155,7 +155,7 @@ class AerodynamicsLowSpeed(Group):
 
         if self.options["compute_slipstream"]:
             self.add_subsystem(
-                "aero_slipstream_openvsp",
+                "aero_slipstream_openvsp_ls",
                 ComputeSlipstreamOpenvspSubGroup(
                     propulsion_id=self.options["propulsion_id"],
                     result_folder_path=self.options["result_folder_path"],
