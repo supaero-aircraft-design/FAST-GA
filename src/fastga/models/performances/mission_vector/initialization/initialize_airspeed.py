@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
-from stdatm import Atmosphere
+import openmdao.api as om
 from scipy.constants import g
+from stdatm import Atmosphere
 
 from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CLIMB,
@@ -26,7 +23,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeAirspeed(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes the airspeeds at each time step."""
 
     def initialize(self):
 
@@ -36,7 +33,7 @@ class InitializeAirspeed(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -47,11 +44,15 @@ class InitializeAirspeed(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
 
-        self.add_input("mass", val=np.full(n, np.nan), shape=n, units="kg")
-        self.add_input("altitude", val=np.full(n, np.nan), shape=n, units="m")
+        self.add_input(
+            "mass", val=np.full(number_of_points, np.nan), shape=number_of_points, units="kg"
+        )
+        self.add_input(
+            "altitude", val=np.full(number_of_points, np.nan), shape=number_of_points, units="m"
+        )
 
-        self.add_output("true_airspeed", val=np.full(n, 50.0), units="m/s")
-        self.add_output("equivalent_airspeed", val=np.full(n, 50.0), units="m/s")
+        self.add_output("true_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
+        self.add_output("equivalent_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -73,13 +74,13 @@ class InitializeAirspeed(om.ExplicitComponent):
         # Computes the airspeed that gives the best climb rate
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration,
         # FIXME: could be an input!
-        cl = np.sqrt(3 * cd0 / coeff_k_wing)
+        c_l = np.sqrt(3 * cd0 / coeff_k_wing)
         atm_climb = Atmosphere(altitude_climb, altitude_in_feet=False)
 
         vs1 = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * cl_max_clean))
         # Using the denomination in Gudmundsson
-        vy = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * cl))
-        v_eas_climb = max(vy, 1.3 * vs1)
+        v_y = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * c_l))
+        v_eas_climb = max(v_y, 1.3 * vs1)
         atm_climb.equivalent_airspeed = np.full_like(altitude_climb, v_eas_climb)
 
         true_airspeed_climb = atm_climb.true_airspeed

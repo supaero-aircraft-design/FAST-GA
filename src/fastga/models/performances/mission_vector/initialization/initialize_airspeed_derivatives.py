@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,9 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
+import openmdao.api as om
 from stdatm import Atmosphere
 
 from fastga.models.performances.mission.mission_components import (
@@ -35,14 +32,30 @@ class InitializeAirspeedDerivatives(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("true_airspeed", val=np.full(n, np.nan), shape=n, units="m/s")
-        self.add_input("equivalent_airspeed", val=np.full(n, np.nan), shape=n, units="m/s")
-        self.add_input("altitude", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("gamma", shape=n, val=np.full(n, np.nan), units="deg")
+        self.add_input(
+            "true_airspeed",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="m/s",
+        )
+        self.add_input(
+            "equivalent_airspeed",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="m/s",
+        )
+        self.add_input(
+            "altitude", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "gamma", shape=number_of_points, val=np.full(number_of_points, np.nan), units="deg"
+        )
 
-        self.add_output("d_vx_dt", shape=n, val=np.full(n, 0.0), units="m/s**2")
+        self.add_output(
+            "d_vx_dt", shape=number_of_points, val=np.full(number_of_points, 0.0), units="m/s**2"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

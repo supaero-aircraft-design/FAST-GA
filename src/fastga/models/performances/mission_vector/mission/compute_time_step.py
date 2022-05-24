@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeTimeStep(om.ExplicitComponent):
@@ -28,11 +26,13 @@ class ComputeTimeStep(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("time", val=np.full(n, np.nan), shape=n, units="s")
+        self.add_input(
+            "time", val=np.full(number_of_points, np.nan), shape=number_of_points, units="s"
+        )
 
-        self.add_output("time_step", shape=n, units="s")
+        self.add_output("time_step", shape=number_of_points, units="s")
 
     def setup_partials(self):
 
@@ -49,10 +49,10 @@ class ComputeTimeStep(om.ExplicitComponent):
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        middle_diagonal = -np.eye(n)
-        upper_diagonal = np.diagflat(np.full(n - 1, 1), 1)
+        middle_diagonal = -np.eye(number_of_points)
+        upper_diagonal = np.diagflat(np.full(number_of_points - 1, 1), 1)
         d_ts_dt = middle_diagonal + upper_diagonal
         d_ts_dt[-1, -1] = 1.0
         d_ts_dt[-1, -2] = -1.0

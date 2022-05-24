@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,12 +12,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
-from .mission_vector import MissionVector
 from fastga.models.performances.mission.takeoff import TakeOffPhase
+from .mission_vector import MissionVector
 
 
 @RegisterOpenMDAOSystem("fastga.performances.mission_vector", domain=ModelDomain.OTHER)

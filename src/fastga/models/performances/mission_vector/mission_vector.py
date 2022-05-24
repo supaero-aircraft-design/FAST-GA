@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,15 +18,24 @@ from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CRUISE,
     POINTS_NB_DESCENT,
 )
-from fastga.models.weight.cg.cg_variation import InFlightCGVariation
-
 from fastga.models.performances.mission_vector.initialization.initialize import Initialize
 from fastga.models.performances.mission_vector.mission.mission_core import MissionCore
 from fastga.models.performances.mission_vector.to_csv import ToCSV
+from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 
 class MissionVector(om.Group):
     """Find the conditions necessary for the aircraft equilibrium."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 50
+        self.nonlinear_solver.options["rtol"] = 1e-5
+        self.linear_solver = om.DirectSolver()
 
     def initialize(self):
 
@@ -37,33 +44,29 @@ class MissionVector(om.Group):
 
     def setup(self):
 
-        n = POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT
+        number_of_points = POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT
 
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
         self.add_subsystem(
             "initialization",
-            Initialize(number_of_points=n),
+            Initialize(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "solve_equilibrium",
-            MissionCore(number_of_points=n, propulsion_id=self.options["propulsion_id"]),
+            MissionCore(
+                number_of_points=number_of_points, propulsion_id=self.options["propulsion_id"]
+            ),
             promotes_inputs=["data:*"],
             promotes_outputs=["data:*"],
         )
         self.add_subsystem(
             "to_csv",
-            ToCSV(number_of_points=n, out_file=self.options["out_file"]),
+            ToCSV(number_of_points=number_of_points, out_file=self.options["out_file"]),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
-
-        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 50
-        self.nonlinear_solver.options["rtol"] = 1e-5
-        self.linear_solver = om.DirectSolver()
 
         self.connect(
             "initialization.initialize_engine_setting.engine_setting",

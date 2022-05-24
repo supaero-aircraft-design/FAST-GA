@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CLIMB,
@@ -23,7 +21,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeTimeAndDistance(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes time and ground distance at each time step."""
 
     def initialize(self):
 
@@ -33,7 +31,7 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         # Cannot use the vertical speed vector previously computed since it is gonna be
         # initialized at 0.0 which will cause a problem for the time computation
@@ -47,12 +45,24 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         )
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
 
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("horizontal_speed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("altitude", val=np.full(n, np.nan), shape=n, units="m")
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "horizontal_speed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "altitude", val=np.full(number_of_points, np.nan), shape=number_of_points, units="m"
+        )
 
-        self.add_output("time", val=np.linspace(0.0, 7200.0, n), units="s")
-        self.add_output("position", val=np.linspace(0.0, 926000.0, n), units="m")
+        self.add_output("time", val=np.linspace(0.0, 7200.0, number_of_points), units="s")
+        self.add_output("position", val=np.linspace(0.0, 926000.0, number_of_points), units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

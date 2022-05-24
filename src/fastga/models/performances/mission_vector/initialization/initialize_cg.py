@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class InitializeCoG(om.ExplicitComponent):
@@ -28,9 +26,14 @@ class InitializeCoG(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("fuel_consumed_t", shape=n, val=np.full(n, np.nan), units="kg")
+        self.add_input(
+            "fuel_consumed_t",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="kg",
+        )
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
@@ -46,7 +49,7 @@ class InitializeCoG(om.ExplicitComponent):
             "data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", val=np.nan, units="kg"
         )
 
-        self.add_output("x_cg", shape=n, units="m")
+        self.add_output("x_cg", shape=number_of_points, units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -69,9 +72,11 @@ class InitializeCoG(om.ExplicitComponent):
 
         fuel = np.where(fuel >= 0.0, fuel, np.zeros_like(fuel))
 
-        c1 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"]
+        equivalent_moment = inputs[
+            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
+        ]
         cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
-        c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
-        x_cg = (c1 + cg_tank * fuel) / (c3 + fuel)
+        equivalent_mass = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
+        x_cg = (equivalent_moment + cg_tank * fuel) / (equivalent_mass + fuel)
 
         outputs["x_cg"] = x_cg

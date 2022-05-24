@@ -2,8 +2,8 @@
 Computation of wing area update and constraints based on the lift required in low speed
 conditions with an equilibrium computation.
 """
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,9 +15,10 @@ conditions with an equilibrium computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
+
 import numpy as np
 import openmdao.api as om
-import logging
 
 from scipy.constants import g
 
@@ -291,7 +292,14 @@ def compute_wing_area(inputs, propulsion_id):
 
 
 def zip_equilibrium_input(propulsion_id):
+    """
+    Returns a list of the variables needed for the computation of the equilibrium. Based on
+    the submodel currently registered and the propulsion_id required.
 
+    :param propulsion_id: ID of propulsion wrapped to be used for computation of equilibrium.
+    :return inputs_zip: a zip containing a list of name, a list of units, a list of shapes,
+    a list of shape_by_conn boolean and a list of copy_shape str.
+    """
     new_component = AutoUnitsDefaultGroup()
     option_equilibrium = {
         "number_of_points": 2,
@@ -306,5 +314,6 @@ def zip_equilibrium_input(propulsion_id):
     )
 
     name, unit, shape, shape_by_conn, copy_shape = list_inputs_metadata(new_component)
+    inputs_zip = zip(name, unit, shape, shape_by_conn, copy_shape)
 
-    return zip(name, unit, shape, shape_by_conn, copy_shape)
+    return inputs_zip

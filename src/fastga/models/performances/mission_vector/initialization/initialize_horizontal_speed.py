@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,12 +11,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class InitializeHorizontalSpeed(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes the horizontal airspeed at each time step."""
 
     def initialize(self):
 
@@ -28,12 +26,19 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("gamma", shape=n, val=np.full(n, 0.0), units="deg")
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "gamma", shape=number_of_points, val=np.full(number_of_points, 0.0), units="deg"
+        )
 
-        self.add_output("horizontal_speed", val=np.full(n, 50.0), units="m/s")
+        self.add_output("horizontal_speed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def setup_partials(self):
 

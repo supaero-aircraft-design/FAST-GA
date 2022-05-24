@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +11,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
-from stdatm import Atmosphere
+import openmdao.api as om
 from scipy.constants import g
+from stdatm import Atmosphere
 
 
 class Equilibrium(om.ImplicitComponent):
@@ -36,14 +33,14 @@ class Equilibrium(om.ImplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("d_vx_dt", val=np.full(n, 0.0), units="m/s**2")
-        self.add_input("mass", val=np.full(n, 1500.0), units="kg")
-        self.add_input("x_cg", val=np.full(n, 5.0), units="m")
-        self.add_input("gamma", val=np.full(n, 0.0), units="deg")
-        self.add_input("altitude", val=np.full(n, 0.0), units="m")
-        self.add_input("true_airspeed", val=np.full(n, 50.0), units="m/s")
+        self.add_input("d_vx_dt", val=np.full(number_of_points, 0.0), units="m/s**2")
+        self.add_input("mass", val=np.full(number_of_points, 1500.0), units="kg")
+        self.add_input("x_cg", val=np.full(number_of_points, 5.0), units="m")
+        self.add_input("gamma", val=np.full(number_of_points, 0.0), units="deg")
+        self.add_input("altitude", val=np.full(number_of_points, 0.0), units="m")
+        self.add_input("true_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -74,13 +71,13 @@ class Equilibrium(om.ImplicitComponent):
             self.add_input("data:aerodynamics:flaps:landing:CD", val=np.nan)
             self.add_input("data:aerodynamics:flaps:landing:CM", val=np.nan)
 
-        self.add_input("delta_Cl", val=np.full(n, 0.0))
-        self.add_input("delta_Cd", val=np.full(n, 0.0))
-        self.add_input("delta_Cm", val=np.full(n, 0.0))
+        self.add_input("delta_Cl", val=np.full(number_of_points, 0.0))
+        self.add_input("delta_Cd", val=np.full(number_of_points, 0.0))
+        self.add_input("delta_Cm", val=np.full(number_of_points, 0.0))
 
-        self.add_output("alpha", val=np.full(n, 5.0), units="deg")
-        self.add_output("thrust", val=np.full(n, 1000.0), units="N")
-        self.add_output("delta_m", val=np.full(n, -5.0), units="deg")
+        self.add_output("alpha", val=np.full(number_of_points, 5.0), units="deg")
+        self.add_output("thrust", val=np.full(number_of_points, 1000.0), units="N")
+        self.add_output("delta_m", val=np.full(number_of_points, -5.0), units="deg")
 
         self.declare_partials(
             of="alpha",
@@ -187,7 +184,7 @@ class Equilibrium(om.ImplicitComponent):
 
     def linearize(self, inputs, outputs, partials):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         mass = inputs["mass"]
         d_vx_dt = inputs["d_vx_dt"]
@@ -241,7 +238,7 @@ class Equilibrium(om.ImplicitComponent):
         cl_wing = cl0_wing + cl_alpha_wing * alpha + delta_cl + delta_cl_flaps
         cl_htp = cl0_htp + cl_alpha_htp * alpha + cl_delta_m * delta_m
 
-        cd = (
+        cd_tot = (
             cd0
             + delta_cd
             + delta_cd_flaps
@@ -254,11 +251,13 @@ class Equilibrium(om.ImplicitComponent):
 
         # ------------------ Derivatives wrt alpha residuals ------------------ #
 
-        partials["alpha", "data:aerodynamics:wing:cruise:CL0_clean"] = np.ones(n)
+        partials["alpha", "data:aerodynamics:wing:cruise:CL0_clean"] = np.ones(number_of_points)
         partials["alpha", "data:aerodynamics:wing:cruise:CL_alpha"] = alpha
-        partials["alpha", "data:aerodynamics:horizontal_tail:cruise:CL0"] = np.ones(n)
+        partials["alpha", "data:aerodynamics:horizontal_tail:cruise:CL0"] = np.ones(
+            number_of_points
+        )
         partials["alpha", "data:aerodynamics:horizontal_tail:cruise:CL_alpha"] = alpha
-        partials["alpha", "delta_Cl"] = np.identity(n)
+        partials["alpha", "delta_Cl"] = np.identity(number_of_points)
         partials["alpha", "data:aerodynamics:elevator:low_speed:CL_delta"] = delta_m
         d_alpha_d_mass_vector = -g * np.cos(gamma) / (dynamic_pressure * wing_area)
         partials["alpha", "mass"] = np.diag(d_alpha_d_mass_vector)
@@ -278,11 +277,11 @@ class Equilibrium(om.ImplicitComponent):
             cl_alpha_wing + cl_alpha_htp + thrust * np.cos(alpha) / (dynamic_pressure * wing_area)
         )
         partials["alpha", "alpha"] = np.diag(d_alpha_d_alpha_vector) * np.pi / 180.0
-        partials["alpha", "delta_m"] = np.identity(n) * cl_delta_m * np.pi / 180.0
+        partials["alpha", "delta_m"] = np.identity(number_of_points) * cl_delta_m * np.pi / 180.0
         if self.options["flaps_position"] == "takeoff":
-            partials["alpha", "data:aerodynamics:flaps:takeoff:CL"] = np.ones(n)
+            partials["alpha", "data:aerodynamics:flaps:takeoff:CL"] = np.ones(number_of_points)
         if self.options["flaps_position"] == "landing":
-            partials["alpha", "data:aerodynamics:flaps:landing:CL"] = np.ones(n)
+            partials["alpha", "data:aerodynamics:flaps:landing:CL"] = np.ones(number_of_points)
 
         # ------------------ Derivatives wrt thrust residuals ------------------ #
 
@@ -296,8 +295,8 @@ class Equilibrium(om.ImplicitComponent):
         partials["thrust", "d_vx_dt"] = np.diag(-mass)
         partials["thrust", "gamma"] = np.diag(-mass * g * np.cos(gamma) * np.pi / 180.0)
         partials["thrust", "mass"] = np.diag(-d_vx_dt - g * np.sin(gamma))
-        partials["thrust", "true_airspeed"] = -np.diag(wing_area * cd * d_q_d_airspeed)
-        partials["thrust", "data:geometry:wing:area"] = -dynamic_pressure * cd
+        partials["thrust", "true_airspeed"] = -np.diag(wing_area * cd_tot * d_q_d_airspeed)
+        partials["thrust", "data:geometry:wing:area"] = -dynamic_pressure * cd_tot
         partials["thrust", "data:aerodynamics:aircraft:cruise:CD0"] = -dynamic_pressure * wing_area
         partials["thrust", "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"] = (
             -dynamic_pressure * wing_area * cl_htp ** 2.0
@@ -347,13 +346,17 @@ class Equilibrium(om.ImplicitComponent):
 
         # ------------------ Derivatives wrt delta_m residuals ------------------ #
 
-        partials["delta_m", "data:aerodynamics:wing:cruise:CM0_clean"] = l0_wing * np.ones(n)
+        partials["delta_m", "data:aerodynamics:wing:cruise:CM0_clean"] = l0_wing * np.ones(
+            number_of_points
+        )
         partials["delta_m", "data:aerodynamics:fuselage:cm_alpha"] = l0_wing * alpha
         partials["delta_m", "data:aerodynamics:wing:cruise:CL0_clean"] = x_cg - x_wing
-        partials["delta_m", "data:aerodynamics:wing:cruise:CM0_clean"] = l0_wing * np.ones(n)
+        partials["delta_m", "data:aerodynamics:wing:cruise:CM0_clean"] = l0_wing * np.ones(
+            number_of_points
+        )
         partials["delta_m", "data:aerodynamics:horizontal_tail:cruise:CL0"] = (
             x_cg - x_htp
-        ) * np.ones(n)
+        ) * np.ones(number_of_points)
         partials["delta_m", "delta_Cl"] = np.diag(x_cg - x_wing)
         partials["delta_m", "delta_Cm"] = np.diag(l0_wing)
         d_delta_m_d_alpha = (
@@ -367,11 +370,11 @@ class Equilibrium(om.ImplicitComponent):
             x_cg - x_htp
         ) * delta_m
         partials["delta_m", "delta_m"] = (
-            np.identity(n) * (x_cg - x_htp) * cl_delta_m * np.pi / 180.0
+            np.identity(number_of_points) * (x_cg - x_htp) * cl_delta_m * np.pi / 180.0
         )
-        partials["delta_m", "x_cg"] = (cl_wing + cl_htp) * np.identity(n)
+        partials["delta_m", "x_cg"] = (cl_wing + cl_htp) * np.identity(number_of_points)
         partials["delta_m", "data:geometry:wing:MAC:at25percent:x"] = -(cl_wing + cl_htp) * np.ones(
-            n
+            number_of_points
         )
         partials[
             "delta_m", "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
@@ -381,9 +384,13 @@ class Equilibrium(om.ImplicitComponent):
         )
         partials["delta_m", "data:aerodynamics:wing:cruise:CL_alpha"] = (x_cg - x_wing) * alpha
         if self.options["flaps_position"] == "takeoff":
-            partials["delta_m", "data:aerodynamics:flaps:takeoff:CM"] = l0_wing * np.ones(n)
+            partials["delta_m", "data:aerodynamics:flaps:takeoff:CM"] = l0_wing * np.ones(
+                number_of_points
+            )
         if self.options["flaps_position"] == "landing":
-            partials["delta_m", "data:aerodynamics:flaps:landing:CM"] = l0_wing * np.ones(n)
+            partials["delta_m", "data:aerodynamics:flaps:landing:CM"] = l0_wing * np.ones(
+                number_of_points
+            )
 
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
@@ -444,7 +451,7 @@ class Equilibrium(om.ImplicitComponent):
         cl_wing = cl_wing_clean + delta_cl_flaps + delta_cl
         cl_htp = cl0_htp + cl_alpha_htp * alpha + cl_delta_m * delta_m
 
-        cd = (
+        cd_tot = (
             cd0
             + delta_cd
             + delta_cd_flaps
@@ -460,7 +467,7 @@ class Equilibrium(om.ImplicitComponent):
         )
         residuals["thrust"] = (
             thrust * np.cos(alpha)
-            - dynamic_pressure * wing_area * cd
+            - dynamic_pressure * wing_area * cd_tot
             - mass * g * np.sin(gamma)
             - mass * d_vx_dt
         )

@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,17 +12,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 from fastoad.module_management.service_registry import RegisterSubmodel
 
-from ..mission.update_mass import UpdateMass
+from ..constants import SUBMODEL_EQUILIBRIUM
+from ..mission.compute_time_step import ComputeTimeStep
 from ..mission.performance_per_phase import PerformancePerPhase
 from ..mission.reserve_energy import ReserveEnergy
 from ..mission.sizing_energy import SizingEnergy
 from ..mission.thrust_taxi import ThrustTaxi
-from ..mission.compute_time_step import ComputeTimeStep
-
-from ..constants import SUBMODEL_EQUILIBRIUM
+from ..mission.update_mass import UpdateMass
 
 
 class MissionCore(om.Group):
@@ -39,7 +35,7 @@ class MissionCore(om.Group):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_subsystem(
             "compute_taxi_thrust",
@@ -48,12 +44,12 @@ class MissionCore(om.Group):
         )
         self.add_subsystem(
             "compute_time_step",
-            ComputeTimeStep(number_of_points=n),
+            ComputeTimeStep(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=[],
         )
         options_equilibrium = {
-            "number_of_points": n,
+            "number_of_points": number_of_points,
             "propulsion_id": self.options["propulsion_id"],
         }
         self.add_subsystem(
@@ -64,7 +60,7 @@ class MissionCore(om.Group):
         )
         self.add_subsystem(
             "performance_per_phase",
-            PerformancePerPhase(number_of_points=n),
+            PerformancePerPhase(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=["data:*"],
         )
@@ -72,7 +68,7 @@ class MissionCore(om.Group):
         self.add_subsystem("sizing_fuel", SizingEnergy(), promotes=["*"])
         self.add_subsystem(
             "update_mass",
-            UpdateMass(number_of_points=n),
+            UpdateMass(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )

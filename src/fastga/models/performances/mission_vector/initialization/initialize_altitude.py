@@ -1,7 +1,5 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
-#  This file is part of FAST : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2020  ONERA & ISAE-SUPAERO
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,8 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 from fastga.models.performances.mission.mission_components import (
     POINTS_NB_CLIMB,
@@ -24,7 +22,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeAltitude(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Intializes the altitude at each time step."""
 
     def initialize(self):
 
@@ -34,11 +32,11 @@ class InitializeAltitude(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        self.add_output("altitude", shape=n, units="m")
+        self.add_output("altitude", shape=number_of_points, units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
