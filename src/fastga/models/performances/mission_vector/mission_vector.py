@@ -29,6 +29,16 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 class MissionVector(om.Group):
     """Find the conditions necessary for the aircraft equilibrium."""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 50
+        self.nonlinear_solver.options["rtol"] = 1e-5
+        self.linear_solver = om.DirectSolver()
+
     def initialize(self):
 
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
@@ -59,12 +69,6 @@ class MissionVector(om.Group):
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
-
-        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 50
-        self.nonlinear_solver.options["rtol"] = 1e-5
-        self.linear_solver = om.DirectSolver()
 
         self.connect(
             "initialization.initialize_engine_setting.engine_setting",

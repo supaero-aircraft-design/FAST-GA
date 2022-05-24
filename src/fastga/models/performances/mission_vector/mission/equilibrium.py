@@ -240,7 +240,7 @@ class Equilibrium(om.ImplicitComponent):
         cl_wing = cl0_wing + cl_alpha_wing * alpha + delta_cl + delta_cl_flaps
         cl_htp = cl0_htp + cl_alpha_htp * alpha + cl_delta_m * delta_m
 
-        cd = (
+        cd_tot = (
             cd0
             + delta_cd
             + delta_cd_flaps
@@ -297,8 +297,8 @@ class Equilibrium(om.ImplicitComponent):
         partials["thrust", "d_vx_dt"] = np.diag(-mass)
         partials["thrust", "gamma"] = np.diag(-mass * g * np.cos(gamma) * np.pi / 180.0)
         partials["thrust", "mass"] = np.diag(-d_vx_dt - g * np.sin(gamma))
-        partials["thrust", "true_airspeed"] = -np.diag(wing_area * cd * d_q_d_airspeed)
-        partials["thrust", "data:geometry:wing:area"] = -dynamic_pressure * cd
+        partials["thrust", "true_airspeed"] = -np.diag(wing_area * cd_tot * d_q_d_airspeed)
+        partials["thrust", "data:geometry:wing:area"] = -dynamic_pressure * cd_tot
         partials["thrust", "data:aerodynamics:aircraft:cruise:CD0"] = -dynamic_pressure * wing_area
         partials["thrust", "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"] = (
             -dynamic_pressure * wing_area * cl_htp ** 2.0
@@ -453,7 +453,7 @@ class Equilibrium(om.ImplicitComponent):
         cl_wing = cl_wing_clean + delta_cl_flaps + delta_cl
         cl_htp = cl0_htp + cl_alpha_htp * alpha + cl_delta_m * delta_m
 
-        cd = (
+        cd_tot = (
             cd0
             + delta_cd
             + delta_cd_flaps
@@ -469,7 +469,7 @@ class Equilibrium(om.ImplicitComponent):
         )
         residuals["thrust"] = (
             thrust * np.cos(alpha)
-            - dynamic_pressure * wing_area * cd
+            - dynamic_pressure * wing_area * cd_tot
             - mass * g * np.sin(gamma)
             - mass * d_vx_dt
         )
