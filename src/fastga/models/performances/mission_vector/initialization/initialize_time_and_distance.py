@@ -23,7 +23,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeTimeAndDistance(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes time and ground distance at each time step."""
 
     def initialize(self):
 

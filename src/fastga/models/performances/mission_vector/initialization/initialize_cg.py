@@ -74,9 +74,11 @@ class InitializeCoG(om.ExplicitComponent):
 
         fuel = np.where(fuel >= 0.0, fuel, np.zeros_like(fuel))
 
-        c1 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"]
+        equivalent_moment = inputs[
+            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
+        ]
         cg_tank = inputs["data:weight:propulsion:tank:CG:x"]
-        c3 = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
-        x_cg = (c1 + cg_tank * fuel) / (c3 + fuel)
+        equivalent_mass = inputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"]
+        x_cg = (equivalent_moment + cg_tank * fuel) / (equivalent_mass + fuel)
 
         outputs["x_cg"] = x_cg

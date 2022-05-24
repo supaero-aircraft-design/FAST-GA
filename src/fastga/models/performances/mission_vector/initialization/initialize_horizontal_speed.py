@@ -18,7 +18,7 @@ import openmdao.api as om
 
 
 class InitializeHorizontalSpeed(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes the horizontal airspeed at each time step."""
 
     def initialize(self):
 

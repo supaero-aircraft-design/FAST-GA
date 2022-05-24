@@ -18,7 +18,7 @@ import openmdao.api as om
 
 
 class UpdateMass(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Update mass for next iteration."""
 
     def initialize(self):
 

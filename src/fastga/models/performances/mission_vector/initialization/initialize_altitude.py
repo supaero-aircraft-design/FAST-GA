@@ -24,7 +24,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeAltitude(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Intializes the altitude at each time step."""
 
     def initialize(self):
 

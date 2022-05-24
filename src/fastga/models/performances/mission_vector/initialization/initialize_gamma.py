@@ -1,5 +1,3 @@
-"""FAST - Copyright (c) 2021 ONERA ISAE."""
-
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -23,7 +21,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeGamma(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes the climb angle at each time step."""
 
     def initialize(self):
 

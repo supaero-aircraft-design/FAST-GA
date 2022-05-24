@@ -25,7 +25,7 @@ from fastga.models.performances.mission.mission_components import (
 
 
 class InitializeAirspeed(om.ExplicitComponent):
-    """Computes the fuel consumed at each time step."""
+    """Initializes the airspeeds at each time step."""
 
     def initialize(self):
 
@@ -76,13 +76,13 @@ class InitializeAirspeed(om.ExplicitComponent):
         # Computes the airspeed that gives the best climb rate
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration,
         # FIXME: could be an input!
-        cl = np.sqrt(3 * cd0 / coeff_k_wing)
+        c_l = np.sqrt(3 * cd0 / coeff_k_wing)
         atm_climb = Atmosphere(altitude_climb, altitude_in_feet=False)
 
         vs1 = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * cl_max_clean))
         # Using the denomination in Gudmundsson
-        vy = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * cl))
-        v_eas_climb = max(vy, 1.3 * vs1)
+        v_y = np.sqrt((mass[0] * g) / (0.5 * atm_climb.density[0] * wing_area * c_l))
+        v_eas_climb = max(v_y, 1.3 * vs1)
         atm_climb.equivalent_airspeed = np.full_like(altitude_climb, v_eas_climb)
 
         true_airspeed_climb = atm_climb.true_airspeed

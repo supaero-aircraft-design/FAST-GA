@@ -26,7 +26,7 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
 class ThrustTaxi(om.ExplicitComponent):
-    """Computes the fuel consumed during the reserve phase."""
+    """Computes the fuel consumed during the taxi phases."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
