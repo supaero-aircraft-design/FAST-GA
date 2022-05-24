@@ -23,7 +23,7 @@ import openmdao.api as om
 import pytest
 from numpy.testing import assert_allclose
 
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+import fastoad.api as oad
 from fastga.models.performances.mission import resources
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
@@ -50,7 +50,7 @@ def test_oad_process_vlm_sr22(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
@@ -90,7 +90,7 @@ def test_oad_process_vlm_be76(cleanup):
     xml_file_name = "input_be76.xml"
     process_file_name = "oad_process_be76.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
@@ -130,7 +130,7 @@ def test_oad_process_vlm_mission_vector(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_mission_vector.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
@@ -174,7 +174,7 @@ def test_oad_process_openvsp(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_openvsp.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
@@ -226,7 +226,7 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     xml_file_name = "input_sr22.xml"
     process_file_name = "oad_process_sr22_mission_builder.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
@@ -278,7 +278,7 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     xml_file_name = "input_be76.xml"
     process_file_name = "oad_process_be76_mission_builder.yml"
 
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
