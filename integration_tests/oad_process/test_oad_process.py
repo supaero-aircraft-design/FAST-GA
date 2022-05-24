@@ -42,6 +42,28 @@ def cleanup():
     rmtree("D:/tmp", ignore_errors=True)
 
 
+def test_n2(cleanup):
+    # Define used files depending on options
+    xml_file_name = "input_sr22.xml"
+    process_file_name = "oad_process_sr22.yml"
+
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+    oad.write_n2(pth.join(DATA_FOLDER_PATH, process_file_name), pth.join(RESULTS_FOLDER_PATH,
+                                                                         "n2_fastoad.html"))
+
+    # Create inputs
+    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
+    configurator.write_needed_inputs(ref_inputs)
+
+    # Create problems with inputs
+    problem = configurator.get_problem(read_inputs=True)
+    problem.setup()
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2_openmdao_before_run.html"))
+    problem.run_model()
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2_openmdao_after_run.html"))
+
+
 def test_oad_process_vlm_sr22(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
