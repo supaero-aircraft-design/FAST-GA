@@ -66,19 +66,47 @@ class ToCSV(om.ExplicitComponent):
         self.options.declare("out_file", default="", types=str)
 
     def setup(self):
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("d_vx_dt", shape=n, val=np.full(n, np.nan), units="m/s**2")
-        self.add_input("time", shape=n, val=np.full(n, np.nan), units="s")
-        self.add_input("x_cg", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("altitude", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("position", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("mass", val=np.full(n, np.nan), shape=n, units="kg")
-        self.add_input("true_airspeed", val=np.full(n, np.nan), shape=n, units="m/s")
-        self.add_input("equivalent_airspeed", val=np.full(n, np.nan), shape=n, units="m/s")
-        self.add_input("gamma", val=np.full(n, np.nan), shape=n, units="deg")
-        self.add_input("alpha", val=np.full(n, np.nan), shape=n, units="deg")
-        self.add_input("delta_m", val=np.full(n, np.nan), shape=n, units="deg")
+        self.add_input(
+            "d_vx_dt", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m/s**2"
+        )
+        self.add_input(
+            "time", shape=number_of_points, val=np.full(number_of_points, np.nan), units="s"
+        )
+        self.add_input(
+            "x_cg", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "altitude", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "position", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "mass", val=np.full(number_of_points, np.nan), shape=number_of_points, units="kg"
+        )
+        self.add_input(
+            "true_airspeed",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="m/s",
+        )
+        self.add_input(
+            "equivalent_airspeed",
+            val=np.full(number_of_points, np.nan),
+            shape=number_of_points,
+            units="m/s",
+        )
+        self.add_input(
+            "gamma", val=np.full(number_of_points, np.nan), shape=number_of_points, units="deg"
+        )
+        self.add_input(
+            "alpha", val=np.full(number_of_points, np.nan), shape=number_of_points, units="deg"
+        )
+        self.add_input(
+            "delta_m", val=np.full(number_of_points, np.nan), shape=number_of_points, units="deg"
+        )
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
@@ -90,17 +118,35 @@ class ToCSV(om.ExplicitComponent):
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:elevator:low_speed:CD_delta", val=np.nan, units="rad**-2")
-        self.add_input("delta_Cl", val=np.full(n, np.nan))
-        self.add_input("delta_Cd", val=np.full(n, np.nan))
-        self.add_input("delta_Cm", val=np.full(n, np.nan))
-        self.add_input("thrust", val=np.full(n, np.nan), shape=n, units="N")
-        self.add_input("thrust_rate_t", val=np.full(n, np.nan), shape=n)
-        self.add_input("engine_setting", val=np.full(n, np.nan))
-        self.add_input("fuel_consumed_t", shape=n, val=np.full(n, np.nan), units="kg")
-        self.add_input("non_consumable_energy_t", shape=n, val=np.full(n, np.nan), units="W*h")
-        self.add_input("time_step", shape=n, val=np.full(n, np.nan), units="s")
+        self.add_input("delta_Cl", val=np.full(number_of_points, np.nan))
+        self.add_input("delta_Cd", val=np.full(number_of_points, np.nan))
+        self.add_input("delta_Cm", val=np.full(number_of_points, np.nan))
+        self.add_input(
+            "thrust", val=np.full(number_of_points, np.nan), shape=number_of_points, units="N"
+        )
+        self.add_input(
+            "thrust_rate_t", val=np.full(number_of_points, np.nan), shape=number_of_points
+        )
+        self.add_input("engine_setting", val=np.full(number_of_points, np.nan))
+        self.add_input(
+            "fuel_consumed_t",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="kg",
+        )
+        self.add_input(
+            "non_consumable_energy_t",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="W*h",
+        )
+        self.add_input(
+            "time_step", shape=number_of_points, val=np.full(number_of_points, np.nan), units="s"
+        )
 
-        self.add_output("tsfc", shape=n, val=np.full(n, 7e-6), units="kg/s/N")
+        self.add_output(
+            "tsfc", shape=number_of_points, val=np.full(number_of_points, 7e-6), units="kg/s/N"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

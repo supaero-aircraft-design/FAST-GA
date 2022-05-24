@@ -52,22 +52,27 @@ class DEPEquilibrium(om.Group):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         if self.options["promotes_all_variables"]:
             self.add_subsystem(
                 "preparation_for_energy_consumption",
-                PrepareForEnergyConsumption(number_of_points=n),
+                PrepareForEnergyConsumption(number_of_points=number_of_points),
                 promotes_inputs=["*"],
                 promotes_outputs=["*"],
             )
             self.add_subsystem(
                 "compute_equilibrium",
-                Equilibrium(number_of_points=n, flaps_position=self.options["flaps_position"]),
+                Equilibrium(
+                    number_of_points=number_of_points, flaps_position=self.options["flaps_position"]
+                ),
                 promotes_inputs=["*"],
                 promotes_outputs=["*"],
             )
-            options_dep = {"number_of_points": n, "flaps_position": self.options["flaps_position"]}
+            options_dep = {
+                "number_of_points": number_of_points,
+                "flaps_position": self.options["flaps_position"],
+            }
             self.add_subsystem(
                 "compute_dep_effect",
                 RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
@@ -75,7 +80,7 @@ class DEPEquilibrium(om.Group):
                 promotes_outputs=["*"],
             )
             options_propulsion = {
-                "number_of_points": n,
+                "number_of_points": number_of_points,
                 "propulsion_id": self.options["propulsion_id"],
             }
             self.add_subsystem(
@@ -89,17 +94,22 @@ class DEPEquilibrium(om.Group):
         else:
             self.add_subsystem(
                 "preparation_for_energy_consumption",
-                PrepareForEnergyConsumption(number_of_points=n),
+                PrepareForEnergyConsumption(number_of_points=number_of_points),
                 promotes_inputs=["data:*"],
                 promotes_outputs=[],
             )
             self.add_subsystem(
                 "compute_equilibrium",
-                Equilibrium(number_of_points=n, flaps_position=self.options["flaps_position"]),
+                Equilibrium(
+                    number_of_points=number_of_points, flaps_position=self.options["flaps_position"]
+                ),
                 promotes_inputs=["data:*"],
                 promotes_outputs=[],
             )
-            options_dep = {"number_of_points": n, "flaps_position": self.options["flaps_position"]}
+            options_dep = {
+                "number_of_points": number_of_points,
+                "flaps_position": self.options["flaps_position"],
+            }
             self.add_subsystem(
                 "compute_dep_effect",
                 RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
@@ -107,7 +117,7 @@ class DEPEquilibrium(om.Group):
                 promotes_outputs=[],
             )
             options_propulsion = {
-                "number_of_points": n,
+                "number_of_points": number_of_points,
                 "propulsion_id": self.options["propulsion_id"],
             }
             self.add_subsystem(

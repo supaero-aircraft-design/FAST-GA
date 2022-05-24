@@ -28,12 +28,19 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("gamma", shape=n, val=np.full(n, 0.0), units="deg")
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "gamma", shape=number_of_points, val=np.full(number_of_points, 0.0), units="deg"
+        )
 
-        self.add_output("horizontal_speed", val=np.full(n, 50.0), units="m/s")
+        self.add_output("horizontal_speed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def setup_partials(self):
 

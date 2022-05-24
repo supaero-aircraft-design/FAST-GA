@@ -37,7 +37,7 @@ class MissionCore(om.Group):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_subsystem(
             "compute_taxi_thrust",
@@ -46,12 +46,12 @@ class MissionCore(om.Group):
         )
         self.add_subsystem(
             "compute_time_step",
-            ComputeTimeStep(number_of_points=n),
+            ComputeTimeStep(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=[],
         )
         options_equilibrium = {
-            "number_of_points": n,
+            "number_of_points": number_of_points,
             "propulsion_id": self.options["propulsion_id"],
         }
         self.add_subsystem(
@@ -62,7 +62,7 @@ class MissionCore(om.Group):
         )
         self.add_subsystem(
             "performance_per_phase",
-            PerformancePerPhase(number_of_points=n),
+            PerformancePerPhase(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=["data:*"],
         )
@@ -70,7 +70,7 @@ class MissionCore(om.Group):
         self.add_subsystem("sizing_fuel", SizingEnergy(), promotes=["*"])
         self.add_subsystem(
             "update_mass",
-            UpdateMass(number_of_points=n),
+            UpdateMass(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )

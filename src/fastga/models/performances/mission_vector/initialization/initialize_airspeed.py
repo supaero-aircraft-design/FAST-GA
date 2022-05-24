@@ -35,7 +35,7 @@ class InitializeAirspeed(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
@@ -46,11 +46,15 @@ class InitializeAirspeed(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
 
-        self.add_input("mass", val=np.full(n, np.nan), shape=n, units="kg")
-        self.add_input("altitude", val=np.full(n, np.nan), shape=n, units="m")
+        self.add_input(
+            "mass", val=np.full(number_of_points, np.nan), shape=number_of_points, units="kg"
+        )
+        self.add_input(
+            "altitude", val=np.full(number_of_points, np.nan), shape=number_of_points, units="m"
+        )
 
-        self.add_output("true_airspeed", val=np.full(n, 50.0), units="m/s")
-        self.add_output("equivalent_airspeed", val=np.full(n, 50.0), units="m/s")
+        self.add_output("true_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
+        self.add_output("equivalent_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

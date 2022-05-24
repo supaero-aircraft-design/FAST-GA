@@ -34,11 +34,11 @@ class InitializeAltitude(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        self.add_output("altitude", shape=n, units="m")
+        self.add_output("altitude", shape=number_of_points, units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

@@ -36,24 +36,26 @@ class MissionVector(om.Group):
 
     def setup(self):
 
-        n = POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT
+        number_of_points = POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT
 
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
         self.add_subsystem(
             "initialization",
-            Initialize(number_of_points=n),
+            Initialize(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "solve_equilibrium",
-            MissionCore(number_of_points=n, propulsion_id=self.options["propulsion_id"]),
+            MissionCore(
+                number_of_points=number_of_points, propulsion_id=self.options["propulsion_id"]
+            ),
             promotes_inputs=["data:*"],
             promotes_outputs=["data:*"],
         )
         self.add_subsystem(
             "to_csv",
-            ToCSV(number_of_points=n, out_file=self.options["out_file"]),
+            ToCSV(number_of_points=number_of_points, out_file=self.options["out_file"]),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )

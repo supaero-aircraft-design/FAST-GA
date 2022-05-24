@@ -50,29 +50,51 @@ class FuelConsumed(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("thrust_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="N")
-        self.add_input("altitude_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="m")
-        self.add_input("time_step_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="s")
-        self.add_input("true_airspeed_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="m/s")
-        self.add_input("engine_setting_econ", shape=n + 2, val=np.full(n + 2, 1))
+        self.add_input(
+            "thrust_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="N",
+        )
+        self.add_input(
+            "altitude_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="m",
+        )
+        self.add_input(
+            "time_step_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="s",
+        )
+        self.add_input(
+            "true_airspeed_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "engine_setting_econ", shape=number_of_points + 2, val=np.full(number_of_points + 2, 1)
+        )
 
         self.add_output(
             "fuel_consumed_t_econ",
-            val=np.full(n + 2, 0.0),
+            val=np.full(number_of_points + 2, 0.0),
             desc="fuel consumed at each time step",
             units="kg",
         )
         self.add_output(
             "non_consumable_energy_t_econ",
-            val=np.full(n + 2, 0.0),
+            val=np.full(number_of_points + 2, 0.0),
             desc="fuel consumed at each time step",
             units="W*h",
         )
         self.add_output(
             "thrust_rate_t_econ",
-            val=np.full(n + 2, 0.5),
+            val=np.full(number_of_points + 2, 0.5),
             desc="thrust ratio at each time step",
         )
 

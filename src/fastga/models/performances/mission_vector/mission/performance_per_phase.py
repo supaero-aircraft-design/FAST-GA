@@ -37,15 +37,31 @@ class PerformancePerPhase(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("time", shape=n, val=np.full(n, np.nan), units="s")
-        self.add_input("position", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("fuel_consumed_t_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="kg")
         self.add_input(
-            "non_consumable_energy_t_econ", shape=n + 2, val=np.full(n + 2, np.nan), units="W*h"
+            "time", shape=number_of_points, val=np.full(number_of_points, np.nan), units="s"
         )
-        self.add_input("thrust_rate_t_econ", shape=n + 2, val=np.full(n + 2, np.nan))
+        self.add_input(
+            "position", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "fuel_consumed_t_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="kg",
+        )
+        self.add_input(
+            "non_consumable_energy_t_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+            units="W*h",
+        )
+        self.add_input(
+            "thrust_rate_t_econ",
+            shape=number_of_points + 2,
+            val=np.full(number_of_points + 2, np.nan),
+        )
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:energy", units="W*h")
@@ -67,9 +83,9 @@ class PerformancePerPhase(om.ExplicitComponent):
         self.add_output("data:mission:sizing:taxi_in:fuel", units="kg")
         self.add_output("data:mission:sizing:taxi_in:energy", units="W*h")
 
-        self.add_output("fuel_consumed_t", shape=n, units="kg")
-        self.add_output("non_consumable_energy_t", shape=n, units="W*h")
-        self.add_output("thrust_rate_t", shape=n)
+        self.add_output("fuel_consumed_t", shape=number_of_points, units="kg")
+        self.add_output("non_consumable_energy_t", shape=number_of_points, units="W*h")
+        self.add_output("thrust_rate_t", shape=number_of_points)
 
     def setup_partials(self):
 
@@ -203,7 +219,7 @@ class PerformancePerPhase(om.ExplicitComponent):
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         partials[
             "data:mission:sizing:main_route:climb:fuel", "fuel_consumed_t_econ"
@@ -254,39 +270,39 @@ class PerformancePerPhase(om.ExplicitComponent):
             )
         )
 
-        d_taxi_out_d_fuel = np.zeros(n + 2)
+        d_taxi_out_d_fuel = np.zeros(number_of_points + 2)
         d_taxi_out_d_fuel[-2] = 1
         partials["data:mission:sizing:taxi_out:fuel", "fuel_consumed_t_econ"] = d_taxi_out_d_fuel
         partials[
             "data:mission:sizing:taxi_out:energy", "non_consumable_energy_t_econ"
         ] = d_taxi_out_d_fuel
 
-        d_taxi_in_d_fuel = np.zeros(n + 2)
+        d_taxi_in_d_fuel = np.zeros(number_of_points + 2)
         d_taxi_in_d_fuel[-1] = 1
         partials["data:mission:sizing:taxi_in:fuel", "fuel_consumed_t_econ"] = d_taxi_in_d_fuel
         partials[
             "data:mission:sizing:taxi_in:energy", "non_consumable_energy_t_econ"
         ] = d_taxi_in_d_fuel
 
-        d_fc_d_fc_t = np.zeros((n, n + 2))
-        d_fc_d_fc_t[:, :n] = np.eye(n)
+        d_fc_d_fc_t = np.zeros((number_of_points, number_of_points + 2))
+        d_fc_d_fc_t[:, :number_of_points] = np.eye(number_of_points)
         partials["fuel_consumed_t", "fuel_consumed_t_econ"] = d_fc_d_fc_t
         partials["non_consumable_energy_t", "non_consumable_energy_t_econ"] = d_fc_d_fc_t
 
-        d_tr_d_tr_t = np.zeros((n, n + 2))
-        d_tr_d_tr_t[:, :n] = np.eye(n)
+        d_tr_d_tr_t = np.zeros((number_of_points, number_of_points + 2))
+        d_tr_d_tr_t[:, :number_of_points] = np.eye(number_of_points)
         partials["thrust_rate_t", "thrust_rate_t_econ"] = d_tr_d_tr_t
 
-        d_climb_d_d_pos = np.zeros(n)
+        d_climb_d_d_pos = np.zeros(number_of_points)
         d_climb_d_d_pos[POINTS_NB_CLIMB - 1] = 1.0
         partials["data:mission:sizing:main_route:climb:distance", "position"] = d_climb_d_d_pos
 
-        d_cruise_d_d_pos = np.zeros(n)
+        d_cruise_d_d_pos = np.zeros(number_of_points)
         d_cruise_d_d_pos[POINTS_NB_CLIMB + POINTS_NB_CRUISE - 1] = 1.0
         d_cruise_d_d_pos[POINTS_NB_CLIMB - 1] = -1.0
         partials["data:mission:sizing:main_route:cruise:distance", "position"] = d_cruise_d_d_pos
 
-        d_descent_d_d_pos = np.zeros(n)
+        d_descent_d_d_pos = np.zeros(number_of_points)
         d_descent_d_d_pos[-1] = 1.0
         d_cruise_d_d_pos[POINTS_NB_CLIMB + POINTS_NB_CRUISE - 1] = -1.0
         partials["data:mission:sizing:main_route:descent:distance", "position"] = d_descent_d_d_pos

@@ -33,7 +33,7 @@ class InitializeGamma(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input(
@@ -43,11 +43,18 @@ class InitializeGamma(om.ExplicitComponent):
             "data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s"
         )
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
-        self.add_input("altitude", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
+        self.add_input(
+            "altitude", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
 
-        self.add_output("vertical_speed", val=np.full(n, 0.0), units="m/s")
-        self.add_output("gamma", val=np.full(n, 0.0), units="deg")
+        self.add_output("vertical_speed", val=np.full(number_of_points, 0.0), units="m/s")
+        self.add_output("gamma", val=np.full(number_of_points, 0.0), units="deg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

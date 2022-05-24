@@ -28,9 +28,14 @@ class InitializeCoG(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        self.add_input("fuel_consumed_t", shape=n, val=np.full(n, np.nan), units="kg")
+        self.add_input(
+            "fuel_consumed_t",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="kg",
+        )
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_out:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
@@ -46,7 +51,7 @@ class InitializeCoG(om.ExplicitComponent):
             "data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", val=np.nan, units="kg"
         )
 
-        self.add_output("x_cg", shape=n, units="m")
+        self.add_output("x_cg", shape=number_of_points, units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]

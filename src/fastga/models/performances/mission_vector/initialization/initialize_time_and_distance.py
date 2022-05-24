@@ -33,7 +33,7 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         # Cannot use the vertical speed vector previously computed since it is gonna be
         # initialized at 0.0 which will cause a problem for the time computation
@@ -47,12 +47,24 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         )
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
 
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("horizontal_speed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("altitude", val=np.full(n, np.nan), shape=n, units="m")
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "horizontal_speed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "altitude", val=np.full(number_of_points, np.nan), shape=number_of_points, units="m"
+        )
 
-        self.add_output("time", val=np.linspace(0.0, 7200.0, n), units="s")
-        self.add_output("position", val=np.linspace(0.0, 926000.0, n), units="m")
+        self.add_output("time", val=np.linspace(0.0, 7200.0, number_of_points), units="s")
+        self.add_output("position", val=np.linspace(0.0, 926000.0, number_of_points), units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

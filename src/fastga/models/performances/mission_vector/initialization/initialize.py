@@ -41,7 +41,7 @@ class Initialize(om.Group):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
         engine_setting = np.concatenate(
             (
                 np.full(POINTS_NB_CLIMB, 2),
@@ -50,48 +50,50 @@ class Initialize(om.Group):
             )
         )
         ivc_engine_setting = om.IndepVarComp()
-        ivc_engine_setting.add_output("engine_setting", val=engine_setting, units=None, shape=n)
+        ivc_engine_setting.add_output(
+            "engine_setting", val=engine_setting, units=None, shape=number_of_points
+        )
 
         self.add_subsystem("initialize_engine_setting", subsys=ivc_engine_setting, promotes=[])
         self.add_subsystem(
             "initialize_altitude",
-            InitializeAltitude(number_of_points=n),
+            InitializeAltitude(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_airspeed",
-            InitializeAirspeed(number_of_points=n),
+            InitializeAirspeed(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_gamma",
-            InitializeGamma(number_of_points=n),
+            InitializeGamma(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_horizontal_speed",
-            InitializeHorizontalSpeed(number_of_points=n),
+            InitializeHorizontalSpeed(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_time_and_distance",
-            InitializeTimeAndDistance(number_of_points=n),
+            InitializeTimeAndDistance(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_airspeed_time_derivatives",
-            InitializeAirspeedDerivatives(number_of_points=n),
+            InitializeAirspeedDerivatives(number_of_points=number_of_points),
             promotes_inputs=[],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "initialize_center_of_gravity",
-            InitializeCoG(number_of_points=n),
+            InitializeCoG(number_of_points=number_of_points),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )

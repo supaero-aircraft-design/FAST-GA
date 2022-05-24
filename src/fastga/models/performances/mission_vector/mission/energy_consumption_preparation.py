@@ -37,7 +37,7 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
 
     def setup(self):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
         self.add_input("data:mission:sizing:taxi_out:duration", np.nan, units="s")
@@ -47,20 +47,33 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         self.add_input("data:mission:sizing:taxi_in:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:taxi_in:thrust", 1500, units="N")
 
-        self.add_input("thrust", shape=n, val=np.full(n, np.nan), units="N")
-        self.add_input("altitude", shape=n, val=np.full(n, np.nan), units="m")
-        self.add_input("time_step", shape=n, val=np.full(n, np.nan), units="s")
-        self.add_input("true_airspeed", shape=n, val=np.full(n, np.nan), units="m/s")
-        self.add_input("engine_setting", shape=n, val=np.full(n, np.nan))
+        self.add_input(
+            "thrust", shape=number_of_points, val=np.full(number_of_points, np.nan), units="N"
+        )
+        self.add_input(
+            "altitude", shape=number_of_points, val=np.full(number_of_points, np.nan), units="m"
+        )
+        self.add_input(
+            "time_step", shape=number_of_points, val=np.full(number_of_points, np.nan), units="s"
+        )
+        self.add_input(
+            "true_airspeed",
+            shape=number_of_points,
+            val=np.full(number_of_points, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "engine_setting", shape=number_of_points, val=np.full(number_of_points, np.nan)
+        )
 
         # Econ stands for Energy Consumption, this way we separate the vectors used for the
         # computation of the equilibrium from the one used for the computation of the energy
         # consumption
-        self.add_output("thrust_econ", shape=n + 2, units="N")
-        self.add_output("altitude_econ", shape=n + 2, units="m")
-        self.add_output("time_step_econ", shape=n + 2, units="s")
-        self.add_output("true_airspeed_econ", shape=n + 2, units="m/s")
-        self.add_output("engine_setting_econ", shape=n + 2)
+        self.add_output("thrust_econ", shape=number_of_points + 2, units="N")
+        self.add_output("altitude_econ", shape=number_of_points + 2, units="m")
+        self.add_output("time_step_econ", shape=number_of_points + 2, units="s")
+        self.add_output("true_airspeed_econ", shape=number_of_points + 2, units="m/s")
+        self.add_output("engine_setting_econ", shape=number_of_points + 2)
 
     def setup_partials(self):
 
@@ -103,7 +116,7 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         thrust_taxi_out = float(inputs["data:mission:sizing:taxi_out:thrust"])
         thrust_taxi_in = float(inputs["data:mission:sizing:taxi_in:thrust"])
@@ -126,7 +139,7 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         # Though it is a clumsy way to do it, we will check that n = POINTS_NB_CLIMB +
         # POINTS_NB_CRUISE + POINTS_NB_DESCENT and only perform the change above if it is the case.
         time_step = inputs["time_step"]
-        if n == POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT:
+        if number_of_points == POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT:
             time_step[POINTS_NB_CLIMB - 1] = time_step[POINTS_NB_CLIMB - 2]
         outputs["time_step_econ"] = np.concatenate(
             (time_step, np.array([time_step_taxi_out, time_step_taxi_in]))
@@ -144,47 +157,47 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
-        d_thrust_econ_d_thrust = np.zeros((n + 2, n))
-        d_thrust_econ_d_thrust[:n, :] = np.eye(n)
+        d_thrust_econ_d_thrust = np.zeros((number_of_points + 2, number_of_points))
+        d_thrust_econ_d_thrust[:number_of_points, :] = np.eye(number_of_points)
         partials["thrust_econ", "thrust"] = d_thrust_econ_d_thrust
 
-        d_thrust_econ_d_thrust_to = np.zeros(n + 2)
+        d_thrust_econ_d_thrust_to = np.zeros(number_of_points + 2)
         d_thrust_econ_d_thrust_to[-2] = 1.0
         partials["thrust_econ", "data:mission:sizing:taxi_out:thrust"] = d_thrust_econ_d_thrust_to
 
-        d_thrust_econ_d_thrust_ti = np.zeros(n + 2)
+        d_thrust_econ_d_thrust_ti = np.zeros(number_of_points + 2)
         d_thrust_econ_d_thrust_ti[-1] = 1.0
         partials["thrust_econ", "data:mission:sizing:taxi_in:thrust"] = d_thrust_econ_d_thrust_ti
 
-        d_altitude_econ_d_altitude = np.zeros((n + 2, n))
-        d_altitude_econ_d_altitude[:n, :] = np.eye(n)
+        d_altitude_econ_d_altitude = np.zeros((number_of_points + 2, number_of_points))
+        d_altitude_econ_d_altitude[:number_of_points, :] = np.eye(number_of_points)
         partials["altitude_econ", "altitude"] = d_altitude_econ_d_altitude
 
-        d_ts_econ_d_ts = np.zeros((n + 2, n))
-        d_ts_econ_d_ts[:n, :] = np.eye(n)
-        if n == POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT:
+        d_ts_econ_d_ts = np.zeros((number_of_points + 2, number_of_points))
+        d_ts_econ_d_ts[:number_of_points, :] = np.eye(number_of_points)
+        if number_of_points == POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT:
             d_ts_econ_d_ts[POINTS_NB_CLIMB - 1, POINTS_NB_CLIMB - 1] = 0.0
             d_ts_econ_d_ts[POINTS_NB_CLIMB - 1, POINTS_NB_CLIMB - 2] = 0.0
         partials["time_step_econ", "time_step"] = d_ts_econ_d_ts
 
-        d_ts_econ_d_ts_to = np.zeros(n + 2)
+        d_ts_econ_d_ts_to = np.zeros(number_of_points + 2)
         d_ts_econ_d_ts_to[-2] = 1.0
         partials["time_step_econ", "data:mission:sizing:taxi_out:duration"] = d_ts_econ_d_ts_to
 
-        d_ts_econ_d_ts_ti = np.zeros(n + 2)
+        d_ts_econ_d_ts_ti = np.zeros(number_of_points + 2)
         d_ts_econ_d_ts_ti[-1] = 1.0
         partials["time_step_econ", "data:mission:sizing:taxi_in:duration"] = d_ts_econ_d_ts_ti
 
-        d_tas_econ_d_tas = np.zeros((n + 2, n))
-        d_tas_econ_d_tas[:n, :] = np.eye(n)
+        d_tas_econ_d_tas = np.zeros((number_of_points + 2, number_of_points))
+        d_tas_econ_d_tas[:number_of_points, :] = np.eye(number_of_points)
         partials["true_airspeed_econ", "true_airspeed"] = d_tas_econ_d_tas
 
-        d_tas_econ_d_tas_to = np.zeros(n + 2)
+        d_tas_econ_d_tas_to = np.zeros(number_of_points + 2)
         d_tas_econ_d_tas_to[-2] = 1.0
         partials["true_airspeed_econ", "data:mission:sizing:taxi_out:speed"] = d_tas_econ_d_tas_to
 
-        d_tas_econ_d_tas_ti = np.zeros(n + 2)
+        d_tas_econ_d_tas_ti = np.zeros(number_of_points + 2)
         d_tas_econ_d_tas_ti[-1] = 1.0
         partials["true_airspeed_econ", "data:mission:sizing:taxi_in:speed"] = d_tas_econ_d_tas_ti

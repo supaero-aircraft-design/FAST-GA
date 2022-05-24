@@ -42,7 +42,7 @@ class NoDEPEffect(om.ExplicitComponent):
         )
 
     def setup(self):
-        n = self.options["number_of_points"]
+        number_of_points = self.options["number_of_points"]
 
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -83,15 +83,15 @@ class NoDEPEffect(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
 
-        self.add_input("altitude", val=np.full(n, np.nan), units="m")
-        self.add_input("true_airspeed", val=np.full(n, np.nan), units="m/s")
+        self.add_input("altitude", val=np.full(number_of_points, np.nan), units="m")
+        self.add_input("true_airspeed", val=np.full(number_of_points, np.nan), units="m/s")
 
-        self.add_input("alpha", val=np.full(n, np.nan), units="deg")
-        self.add_input("thrust", val=np.full(n, np.nan), units="N")
+        self.add_input("alpha", val=np.full(number_of_points, np.nan), units="deg")
+        self.add_input("thrust", val=np.full(number_of_points, np.nan), units="N")
 
-        self.add_output("delta_Cl", val=np.full(n, 0.0))
-        self.add_output("delta_Cd", val=np.full(n, 0.0))
-        self.add_output("delta_Cm", val=np.full(n, 0.0))
+        self.add_output("delta_Cl", val=np.full(number_of_points, 0.0))
+        self.add_output("delta_Cd", val=np.full(number_of_points, 0.0))
+        self.add_output("delta_Cm", val=np.full(number_of_points, 0.0))
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
