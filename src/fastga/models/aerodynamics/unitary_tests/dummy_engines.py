@@ -27,6 +27,7 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.propulsion.propulsion import IPropulsion
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.aerodynamics.beechcraft.dummy_engine"
+ENGINE_WRAPPER_TBM900 = "test.wrapper.aerodynamics.daher.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.aerodynamics.cirrus.dummy_engine"
 
 
@@ -185,4 +186,75 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
 
         return FuelEngineSet(
             DummyEngineSR22(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
+
+
+# Daher TBM900 dummy engine ###############################################################
+###########################################################################################
+
+
+class DummyEngineTBM900(AbstractFuelPropulsion):
+    def __init__(
+        self,
+        max_power: float,
+        design_altitude_propeller: float,
+        prop_layout: float,
+    ):
+        """
+        Dummy engine model returning nacelle aerodynamic drag force.
+
+        """
+        super().__init__()
+        self.prop_layout = prop_layout
+        self.max_power = max_power
+        self.design_altitude_propeller = design_altitude_propeller
+
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+        flight_points.thrust = 3000.0
+        flight_points.sfc = 0.0
+
+    def compute_weight(self) -> float:
+        return 0.0
+
+    def compute_dimensions(self) -> (float, float, float, float, float, float):
+        return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
+        if mach < 0.15:
+            return 0.01934377
+        else:
+            return 0.01771782
+
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        return 0.0
+
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+        return 0.0
+
+    def propeller_efficiency(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+    ) -> Union[float, Sequence]:
+        return 0.85
+
+
+@RegisterPropulsion(ENGINE_WRAPPER_TBM900)
+class DummyEngineWrapperTBM900(IOMPropulsionWrapper):
+    def setup(self, component: Component):
+        component.add_input("data:propulsion:turboprop:off_design:power_limit", np.nan, units="W")
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+
+    @staticmethod
+    def get_model(inputs) -> IPropulsion:
+        engine_params = {
+            "max_power": inputs["data:propulsion:turboprop:off_design:power_limit"],
+            "design_altitude_propeller": inputs[
+                "data:aerodynamics:propeller:cruise_level:altitude"
+            ],
+            "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
+        }
+
+        return FuelEngineSet(
+            DummyEngineTBM900(**engine_params), inputs["data:geometry:propulsion:engine:count"]
         )
