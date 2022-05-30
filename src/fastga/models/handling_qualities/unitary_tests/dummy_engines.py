@@ -28,6 +28,7 @@ from fastoad.constants import EngineSetting
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
+ENGINE_WRAPPER_TBM900 = "test.wrapper.handling_qualities.daher.dummy_engine"
 
 ####################################################################################################
 # Beechcraft BE76 dummy engine #####################################################################
@@ -166,3 +167,61 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
     def get_model(inputs) -> IPropulsion:
 
         return DummyEngineSR22()
+
+
+####################################################################################################
+########################### Daher TBM900 dummy engine ##############################################
+####################################################################################################
+
+
+class DummyEngineTBM900(AbstractFuelPropulsion):
+    def __init__(self):
+        """
+        Dummy engine model returning nacelle dimensions height-width-length-wet_area.
+
+        """
+        super().__init__()
+
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+        if flight_points.engine_setting == EngineSetting.TAKEOFF:
+            flight_points.thrust = 8000.0
+        elif flight_points.engine_setting == EngineSetting.CLIMB:
+            flight_points.thrust = 4000.0
+        elif flight_points.engine_setting == EngineSetting.IDLE:
+            flight_points.thrust = 1000.0
+        else:
+            flight_points.thrust = 0.0
+        flight_points.sfc = 0.0
+
+    def compute_weight(self) -> float:
+        return 0.0
+
+    def compute_dimensions(self) -> (float, float, float, float):
+        return [0.0, 0.0, 0.0, 0.0]
+
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
+        return 0.0
+
+    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+        return 0.0
+
+    # noinspection PyMethodMayBeStatic
+    def compute_sl_thrust(self) -> float:
+        return 8000.0
+
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+        return 0.0
+
+
+@RegisterPropulsion(ENGINE_WRAPPER_TBM900)
+class DummyEngineWrapperTBM900(IOMPropulsionWrapper):
+    def setup(self, component: Component):
+        component.add_input("data:propulsion:fuel_type", np.nan)
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+
+    @staticmethod
+    def get_model(inputs) -> IPropulsion:
+
+        return DummyEngineTBM900()
