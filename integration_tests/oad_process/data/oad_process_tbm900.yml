@@ -12,10 +12,10 @@ output_file: ../results/oad_process_outputs.xml
 driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
 model:
-#    propeller:
-#        id: fastga.aerodynamics.propeller
-#    turboprop_sizing:
-#        id: fastga.propulsion.turboprop_construction
+    propeller:
+        id: fastga.aerodynamics.propeller
+    turboprop_sizing:
+        id: fastga.propulsion.turboprop_construction
     aircraft_sizing:
         nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-3, debug_print=True,
             reraise_child_analysiserror=True)
