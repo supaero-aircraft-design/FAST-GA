@@ -803,7 +803,7 @@ def test_OMBasicICEngineComponent():
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:IC_engine:max_power", 130000, units="W")
-    ivc.add_output("data:propulsion:IC_engine:fuel_type", 1)
+    ivc.add_output("data:propulsion:fuel_type", 1)
     ivc.add_output("data:propulsion:IC_engine:strokes_nb", 4)
     ivc.add_output("data:TLAR:v_cruise", 158.0, units="kn")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 8000.0, units="ft")

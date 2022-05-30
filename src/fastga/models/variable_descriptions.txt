@@ -51,9 +51,9 @@ data:mission:sizing:taxi_out:duration || duration of taxi out phase
 data:mission:sizing:taxi_out:speed || ground velocity during taxi out phase
 data:mission:sizing:taxi_out:thrust_rate || thrust rate during taxi out phase
 
-data:propulsion:IC_engine:fuel_type || engine fuel type (1.0 - gasoline, 2.0 - gasoil)
+data:propulsion:fuel_type || engine fuel type (1.0 - gasoline, 2.0 - gasoil)
 data:propulsion:IC_engine:max_power || maximum power of the engine
-data:propulsion:IC_engine:max_rpm || maximum number of rotation per minute on the engine
+data:propulsion:max_rpm || maximum number of rotation per minute on the engine
 data:propulsion:IC_engine:strokes_nb || number of strokes on the engine
 
 data:TLAR:category || aircraft certification category

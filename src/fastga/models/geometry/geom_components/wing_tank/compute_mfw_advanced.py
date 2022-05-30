@@ -44,7 +44,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -74,7 +74,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
+        fuel_type = inputs["data:propulsion:fuel_type"]
         y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
         span = inputs["data:geometry:wing:span"]

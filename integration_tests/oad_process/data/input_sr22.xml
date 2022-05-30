@@ -114,6 +114,14 @@
         </tank>
       </propulsion>
     </geometry>
+    <propulsion>
+      <fuel_type>1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W">231000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb>4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <propeller>
         <mach is_input="True">0.0<!--mach number used to compute the polar of the airfoil used in the propeller computation--></mach>
@@ -141,17 +149,17 @@
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
+        <initial_climb>
+          <energy units="W*h">0.0</energy>
+        </initial_climb>
         <landing>
           <elevator_angle units="deg">-25.0<!--position of the elevator during landing--></elevator_angle>
           <target_sideslip units="deg">15.0</target_sideslip>
         </landing>
-        <initial_climb>
-          <energy units="W*h">0.0</energy>
-        </initial_climb>
         <takeoff>
-          <energy units="W*h">0.0</energy>
           <altitude units="m">0.0<!--altitude at takeoff in sizing mission--></altitude>
           <elevator_angle units="deg">-25.0<!--position of the elevator during takeoff--></elevator_angle>
+          <energy units="W*h">0.0</energy>
           <flap_angle units="deg">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
           <friction_coefficient_no_brake>0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
           <thrust_rate>1.0<!--thrust rate during takeoff phase--></thrust_rate>
@@ -193,14 +201,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type>1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W">231000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb>4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <airframe>
         <wing>

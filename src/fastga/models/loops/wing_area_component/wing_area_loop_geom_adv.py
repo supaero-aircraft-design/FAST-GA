@@ -61,7 +61,7 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
         self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
@@ -128,7 +128,7 @@ class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
         self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
@@ -179,7 +179,7 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     fus_width = float(inputs["data:geometry:fuselage:maximum_width"])
     kink_span_ratio = float(inputs["data:geometry:wing:kink:span_ratio"])
 
-    fuel_type = float(inputs["data:propulsion:IC_engine:fuel_type"])
+    fuel_type = float(inputs["data:propulsion:fuel_type"])
     root_tc = float(inputs["data:geometry:wing:root:thickness_ratio"])
     tip_tc = float(inputs["data:geometry:wing:tip:thickness_ratio"])
     flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
@@ -285,7 +285,7 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     # difference to solve for the right wing_area
 
     var_inputs_compute_mfw = [
-        "data:propulsion:IC_engine:fuel_type",
+        "data:propulsion:fuel_type",
         "data:geometry:wing:root:chord",
         "data:geometry:wing:tip:chord",
         "data:geometry:wing:root:y",
@@ -310,7 +310,7 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     compute_mfw = generate_block_analysis(ComputeMFWAdvanced(), var_inputs_compute_mfw, "", False)
 
     var_dict_compute_root_chord = {
-        "data:propulsion:IC_engine:fuel_type": (fuel_type, None),
+        "data:propulsion:fuel_type": (fuel_type, None),
         "data:geometry:wing:root:chord": (root_chord, "m"),
         "data:geometry:wing:tip:chord": (tip_chord, "m"),
         "data:geometry:wing:root:y": (root_y, "m"),

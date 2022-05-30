@@ -88,7 +88,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
 class DummyEngineWrapperBE76(IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
@@ -156,7 +156,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
 class DummyEngineWrapperSR22(IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)

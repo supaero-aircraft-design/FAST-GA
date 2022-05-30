@@ -138,6 +138,25 @@
         </tank>
       </propulsion>
     </geometry>
+    <propulsion>
+      <fuel_type is_input="True">3.0<!--1=Avgas ICE engine / 2=Diesel ICE engine / 3=Jet A1--></fuel_type>
+      <max_rpm units="min**-1" is_input="True">2000.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <turboprop>
+        <design_point>
+          <OPR is_input="True">12.0<!--overall pressure ratio at the turboprop design point--></OPR>
+          <altitude units="m" is_input="True">0.0<!--altitude of the turboprop design point--></altitude>
+          <mach is_input="True">0.0<!--mach number at the turboprop design point--></mach>
+          <power units="hp" is_input="True">1825.0<!--desired turboprop thermodynamic power at the design point--></power>
+          <turbine_entry_temperature units="degK" is_input="True">1400.0<!--turboprop turbine entry temperature at the design point--></turbine_entry_temperature>
+        </design_point>
+        <off_design>
+          <bleed_usage is_input="True">1.0<!--usage of the bleed in off-design point, 0 for "low" or 1 for "high"--></bleed_usage>
+          <itt_limit units="degK" is_input="True">1125.0<!--inter turbine temperature limitation in off-design point--></itt_limit>
+          <opr_limit is_input="True">12.5<!--pressure ratio limitation in off-design point--></opr_limit>
+          <power_limit units="W" is_input="True">634000.0<!--mechanical power limitation in off-design point--></power_limit>
+        </off_design>
+      </turboprop>
+    </propulsion>
     <aerodynamics>
       <propeller>
         <mach is_input="True">0.0<!--mach number used to compute the polar of the airfoil used in the propeller computation--></mach>
@@ -170,27 +189,6 @@
         <target is_input="True">0.23<!--aircraft static margin--></target>
       </static_margin>
     </handling_qualities>
-    <propulsion>
-      <IC_engine>
-        <fuel_type is_input="True">3.0<!--1=Avgas ICE engine / 2=Diesel ICE engine / 3=Jet A1--></fuel_type>
-        <max_rpm units="min**-1" is_input="True">2000.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-      </IC_engine>
-      <turboprop>
-        <design_point>
-          <OPR is_input="True">12.0<!--overall pressure ratio at the turboprop design point--></OPR>
-          <altitude units="m" is_input="True">0.0<!--altitude of the turboprop design point--></altitude>
-          <mach is_input="True">0.0<!--mach number at the turboprop design point--></mach>
-          <power units="hp" is_input="True">1825.0<!--desired turboprop thermodynamic power at the design point--></power>
-          <turbine_entry_temperature units="degK" is_input="True">1400.0<!--turboprop turbine entry temperature at the design point--></turbine_entry_temperature>
-        </design_point>
-        <off_design>
-          <bleed_usage is_input="True">1.0<!--usage of the bleed in off-design point, 0 for "low" or 1 for "high"--></bleed_usage>
-          <itt_limit units="degK" is_input="True">1125.0<!--inter turbine temperature limitation in off-design point--></itt_limit>
-          <opr_limit is_input="True">12.5<!--pressure ratio limitation in off-design point--></opr_limit>
-          <power_limit units="W" is_input="True">634000.0<!--mechanical power limitation in off-design point--></power_limit>
-        </off_design>
-      </turboprop>
-    </propulsion>
     <weight>
       <aircraft>
         <max_payload is_input="True">650.0<!--max payload weight--></max_payload>
