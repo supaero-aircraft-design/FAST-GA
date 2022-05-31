@@ -221,6 +221,14 @@
         <target is_input="True">0.15<!--static margin we want to achieve--></target>
       </static_margin>
     </handling_qualities>
+    <propulsion>
+      <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <cruise>
         <mach is_input="False">0.24882140127923863<!--mach number representative of high speed aerodynamics--></mach>
@@ -484,8 +492,8 @@
           <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
         </holding>
         <initial_climb>
-          <fuel units="kg" is_input="False">0.0832965411485764<!--mass of consumed fuel during initial climb phase in sizing mission--></fuel>
           <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
+          <fuel units="kg" is_input="False">0.0832965411485764<!--mass of consumed fuel during initial climb phase in sizing mission--></fuel>
         </initial_climb>
         <landing>
           <elevator_angle units="deg" is_input="True">-25.0<!--position of the elevator during landing--></elevator_angle>
@@ -493,7 +501,6 @@
           <target_sideslip units="deg" is_input="True">12.0</target_sideslip>
         </landing>
         <takeoff>
-          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <TOFL units="m" is_input="False">570.1134866852472<!--TakeOff Field Length in sizing mission--></TOFL>
           <V2 units="m/s" is_input="False">43.98630090155949<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <VLOF units="m/s" is_input="False">42.25016227583799<!--lift-off speed in sizing mission--></VLOF>
@@ -501,6 +508,7 @@
           <climb_gradient is_input="False">0.15536675706297198<!--maximum climb gradient possible at V2--></climb_gradient>
           <duration units="s" is_input="False">22.60000000000005<!--duration of takeoff phase in sizing mission--></duration>
           <elevator_angle units="deg" is_input="True">-25.0<!--position of the elevator during takeoff--></elevator_angle>
+          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
           <friction_coefficient_no_brake is_input="True">0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
           <fuel units="kg" is_input="False">0.43947453097207145<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
@@ -545,11 +553,11 @@
             <fuel units="kg" is_input="False">189.72706626359863<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
           </cruise>
           <descent>
-            <v_cas units="knot">104.35</v_cas>
             <descent_rate units="ft/min" is_input="True">-300.0<!--target descent rate for the aircraft--></descent_rate>
             <distance units="m" is_input="False">78932.47788602494<!--covered ground distance during descent phase--></distance>
             <duration units="s" is_input="False">1507.0131880557774<!--duration of descent phase in sizing mission--></duration>
             <fuel units="kg" is_input="False">7.660470157501762<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+            <v_cas units="knot">104.35</v_cas>
           </descent>
           <reserve>
             <duration units="min" is_input="True">45.0<!--duration of the reserve segment--></duration>
@@ -558,14 +566,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <aircraft>
         <MFW units="kg" is_input="False">300.0<!--maximum fuel weight--></MFW>

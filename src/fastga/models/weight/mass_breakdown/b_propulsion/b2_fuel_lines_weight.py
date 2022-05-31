@@ -44,7 +44,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
 
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
-        self.add_input("data:propulsion:IC_engine:fuel_type", val=np.nan)
+        self.add_input("data:propulsion:fuel_type", val=np.nan)
 
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
@@ -57,7 +57,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
-        fuel_type = inputs["data:propulsion:IC_engine:fuel_type"]
+        fuel_type = inputs["data:propulsion:fuel_type"]
 
         # The 0.5**0.363 refers to the ratio between the total fuel quantity and the total fuel
         # quantity plus the quantity in integral tanks. We will assume that we only have integral

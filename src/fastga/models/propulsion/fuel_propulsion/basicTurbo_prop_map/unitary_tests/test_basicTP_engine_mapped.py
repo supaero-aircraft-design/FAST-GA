@@ -79,7 +79,7 @@ def test_compute_flight_points():
     machs = [0.06, 0.12, 0.18, 0.22, 0.375]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [6669.186802, 3393.845802, 2692.754792, 1840.264733, 1983.763756]
+    thrusts = [8723.73643444, 4352.43513423, 3670.56367899, 2378.52672608, 2754.44695866]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -87,7 +87,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [7.333304e-06, 1.131453e-05, 1.472396e-05, 1.881981e-05, 2.204333e-05]
+    expected_sfc = [7.11080994e-06, 1.14707988e-05, 1.40801854e-05, 1.75188296e-05, 1.82845376e-05]
 
     flight_points = FlightPoint(
         mach=machs + machs,
@@ -111,8 +111,8 @@ def test_compute_flight_points():
         thrust=0.0,
     )
     engine.compute_flight_points(solo_flight_point)
-    np.testing.assert_allclose(solo_flight_point.thrust, 1983.76, rtol=1e-2)
-    np.testing.assert_allclose(solo_flight_point.sfc, 2.204333e-05, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.thrust, 2754.446958660104, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.sfc, 1.828453757365673e-05, rtol=1e-2)
 
 
 def test_engine_weight():
@@ -264,17 +264,17 @@ def test_compare_with_direct_computation():
     random_generator = SystemRandom()
 
     mapped_engine = BasicTPEngineMapped(
-        power_design=485.429,
-        t_41t_design=1200,
-        opr_design=8.0,
-        cruise_altitude_propeller=cruise_altitude_propeller,
+        power_design=1342.285,
+        t_41t_design=1400,
+        opr_design=12.0,
+        cruise_altitude_propeller=8534.4,
         design_altitude=0.0,
-        design_mach=0.2,
+        design_mach=0.0,
         prop_layout=1.0,
-        bleed_control=0.0,
-        itt_limit=1000.0,
-        power_limit=404.524,
-        opr_limit=11.0,
+        bleed_control=1.0,
+        itt_limit=1125.0,
+        power_limit=634,
+        opr_limit=12.0,
         speed_SL=SPEED,
         thrust_SL=THRUST_SL,
         thrust_limit_SL=THRUST_SL_LIMIT,
@@ -302,17 +302,17 @@ def test_compare_with_direct_computation():
     )
 
     direct_engine = BasicTPEngine(
-        power_design=485.429,
-        t_41t_design=1200,
-        opr_design=8.0,
-        cruise_altitude_propeller=cruise_altitude_propeller,
+        power_design=1342.285,
+        t_41t_design=1400,
+        opr_design=12.0,
+        cruise_altitude_propeller=8534.4,
         design_altitude=0.0,
-        design_mach=0.2,
+        design_mach=0.0,
         prop_layout=1.0,
-        bleed_control=0.0,
-        itt_limit=1000.0,
-        power_limit=404.524,
-        opr_limit=11.0,
+        bleed_control=1.0,
+        itt_limit=1125.0,
+        power_limit=634,
+        opr_limit=12.0,
         speed_SL=SPEED_KA,
         thrust_SL=THRUST_SL_KA,
         thrust_limit_SL=THRUST_SL_LIMIT_KA,
@@ -330,11 +330,11 @@ def test_compare_with_direct_computation():
     mach_max = cruise_speed / atm.speed_of_sound
 
     machs = [
+        0.70 * mach_max,
         0.75 * mach_max,
         0.80 * mach_max,
         0.85 * mach_max,
         0.90 * mach_max,
-        mach_max,
     ]
     altitudes = [
         cruise_altitude_propeller,

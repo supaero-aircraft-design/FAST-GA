@@ -210,6 +210,14 @@
         <target is_input="True">0.15<!--static margin we want to achieve--></target>
       </static_margin>
     </handling_qualities>
+    <propulsion>
+      <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <cruise>
         <mach is_input="False">0.24882140127923863<!--mach number representative of high speed aerodynamics--></mach>
@@ -544,14 +552,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <aircraft>
         <MFW units="kg" is_input="False">583.5281528366742<!--maximum fuel weight--></MFW>

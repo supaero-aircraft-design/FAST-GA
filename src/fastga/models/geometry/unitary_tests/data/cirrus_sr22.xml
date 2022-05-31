@@ -43,11 +43,11 @@
         <front_length units="m" is_input="False">1.4488495352179351<!--length of front non-cylindrical part of the fuselage--></front_length>
         <length units="m" is_input="False">7.492217776363194<!--total fuselage length--></length>
         <luggage_length units="m" is_input="False">0.4118916746684661<!--length of the luggage compartment--></luggage_length>
+        <master_cross_section units="m**2" is_input="False">1.41<!--fuselage wet area--></master_cross_section>
         <maximum_height units="m" is_input="False">1.4120000000000004<!--maximum fuselage height--></maximum_height>
         <maximum_width units="m" is_input="False">1.2720000000000002<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">3.1814765664767926<!--length of rear non-cylindrical part of the fuselage--></rear_length>
         <wet_area units="m**2" is_input="False">21.952067466091645<!--fuselage wet area--></wet_area>
-        <master_cross_section units="m**2" is_input="False">1.410<!--fuselage wet area--></master_cross_section>
       </fuselage>
       <horizontal_tail>
         <area units="m**2" is_input="False">2.674064426651461<!--horizontal tail area--></area>
@@ -199,9 +199,9 @@
           <y_ratio is_input="True">0.34<!--engine position with respect to total span--></y_ratio>
         </engine>
         <nacelle>
-          <master_cross_section units="m**2" is_input="False">0.849<!--fuselage wet area--></master_cross_section>
           <height units="m" is_input="False">0.7546659597502833<!--height of the nacelle--></height>
           <length units="m" is_input="False">1.148849535217935<!--nacelle length--></length>
+          <master_cross_section units="m**2" is_input="False">0.849<!--fuselage wet area--></master_cross_section>
           <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
           <width units="m" is_input="False">1.1253790627855103<!--width of the nacelle--></width>
           <y units="m" is_input="False">0.0<!--Y-position of nacelle center--></y>
@@ -225,6 +225,14 @@
         <target is_input="True">0.1<!--static margin we want to achieve--></target>
       </static_margin>
     </handling_qualities>
+    <propulsion>
+      <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W" is_input="True">231000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <cruise>
         <mach is_input="False">0.24882140127923863<!--mach number representative of high speed aerodynamics--></mach>
@@ -559,14 +567,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W" is_input="True">231000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <aircraft>
         <MFW units="kg" is_input="False">296.5610797282422<!--maximum fuel weight--></MFW>

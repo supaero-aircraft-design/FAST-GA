@@ -104,6 +104,14 @@
         </engine>
       </propulsion>
     </geometry>
+    <propulsion>
+      <fuel_type>1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W">130000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb>4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <handling_qualities>
       <static_margin>
         <target>0.25<!--static margin we want to achieve--></target>
@@ -159,14 +167,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type>1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W">130000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb>4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <airframe>
         <fuselage>
@@ -185,6 +185,11 @@
     </weight>
   </data>
   <settings>
+    <propulsion>
+      <IC_engine>
+        <k_factor_sfc>1.1</k_factor_sfc>
+      </IC_engine>
+    </propulsion>
     <weight>
       <aircraft>
         <CG>
@@ -199,10 +204,5 @@
         </landing_gear>
       </airframe>
     </weight>
-    <propulsion>
-      <IC_engine>
-        <k_factor_sfc>1.10</k_factor_sfc>
-      </IC_engine>
-    </propulsion>
   </settings>
 </FASTOAD_model>

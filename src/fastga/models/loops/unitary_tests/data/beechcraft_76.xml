@@ -554,10 +554,10 @@
       </sizing>
     </mission>
     <propulsion>
+      <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
       <IC_engine>
-        <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
         <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
         <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
       </IC_engine>
     </propulsion>

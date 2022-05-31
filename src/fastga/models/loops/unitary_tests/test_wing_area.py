@@ -48,7 +48,7 @@ def test_update_wing_area_group():
 
     # Driven by fuel
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:IC_engine:fuel_type", 1.0)
+    ivc.add_output("data:propulsion:fuel_type", 1.0)
     ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
@@ -69,7 +69,7 @@ def test_update_wing_area_group():
 
     # Driven by CL max
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:IC_engine:fuel_type", 1.0)
+    ivc.add_output("data:propulsion:fuel_type", 1.0)
     ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
     ivc.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
@@ -91,7 +91,7 @@ def test_update_wing_area_group():
 def test_simple_geom():
 
     ivc_loop = om.IndepVarComp()
-    ivc_loop.add_output("data:propulsion:IC_engine:fuel_type", 1.0)
+    ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:chord", 1.549, units="m")
     ivc_loop.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
     ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
@@ -148,7 +148,7 @@ def test_simple_cl():
 def test_advanced_geom():
 
     ivc_loop = om.IndepVarComp()
-    ivc_loop.add_output("data:propulsion:IC_engine:fuel_type", 1.0)
+    ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
     ivc_loop.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
     ivc_loop.add_output("data:geometry:wing:kink:span_ratio", 0.0)
@@ -177,7 +177,7 @@ def test_advanced_geom():
     assert_allclose(problem_loop["wing_area"], 21.72, atol=1e-2)
 
     ivc_cons = om.IndepVarComp()
-    ivc_cons.add_output("data:propulsion:IC_engine:fuel_type", 1.0)
+    ivc_cons.add_output("data:propulsion:fuel_type", 1.0)
     ivc_cons.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
     ivc_cons.add_output("data:geometry:wing:tip:thickness_ratio", 0.103)
     ivc_cons.add_output("data:geometry:wing:kink:span_ratio", 0.0)

@@ -62,7 +62,7 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
 
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
-        component.add_input("data:propulsion:IC_engine:fuel_type", np.nan)
+        component.add_input("data:propulsion:fuel_type", np.nan)
         component.add_input("data:propulsion:IC_engine:strokes_nb", np.nan)
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input(
@@ -137,7 +137,7 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
             "cruise_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
             ],
-            "fuel_type": inputs["data:propulsion:IC_engine:fuel_type"],
+            "fuel_type": inputs["data:propulsion:fuel_type"],
             "strokes_nb": inputs["data:propulsion:IC_engine:strokes_nb"],
             "prop_layout": inputs["data:geometry:propulsion:engine:layout"],
             "k_factor_sfc": inputs["settings:propulsion:IC_engine:k_factor_sfc"],
@@ -168,7 +168,7 @@ class OMBasicICEngineWrapper(IOMPropulsionWrapper):
 @ValidityDomainChecker(
     {
         "data:propulsion:IC_engine:max_power": (50000, 250000),  # power range validity
-        "data:propulsion:IC_engine:fuel_type": [1.0, 2.0],  # fuel list
+        "data:propulsion:fuel_type": [1.0, 2.0],  # fuel list
         "data:propulsion:IC_engine:strokes_nb": [2.0, 4.0],  # architecture list
         "data:geometry:propulsion:engine:layout": [
             1.0,

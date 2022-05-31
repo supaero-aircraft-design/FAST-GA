@@ -211,6 +211,14 @@
         <target is_input="True">0.1<!--static margin we want to achieve--></target>
       </static_margin>
     </handling_qualities>
+    <propulsion>
+      <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
+      <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <IC_engine>
+        <max_power units="W" is_input="True">231000.0<!--maximum power of the engine--></max_power>
+        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <cruise>
         <mach is_input="False">0.24882140127923863<!--mach number representative of high speed aerodynamics--></mach>
@@ -483,7 +491,6 @@
           <target_sideslip units="deg" is_input="True">15.0</target_sideslip>
         </landing>
         <takeoff>
-          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <TOFL units="m" is_input="False">585.5442477035833<!--TakeOff Field Length in sizing mission--></TOFL>
           <V2 units="m/s" is_input="False">43.50504291268329<!--safety speed before reaching 35 feet height in sizing mission--></V2>
           <VLOF units="m/s" is_input="False">41.12259008039237<!--lift-off speed in sizing mission--></VLOF>
@@ -491,6 +498,7 @@
           <climb_gradient is_input="False">0.15240943870675647<!--maximum climb gradient possible at V2--></climb_gradient>
           <duration units="s" is_input="False">23.90000000000007<!--duration of takeoff phase in sizing mission--></duration>
           <elevator_angle units="deg" is_input="True">-25.0<!--position of the elevator during takeoff--></elevator_angle>
+          <energy units="W*h" is_input="False">0.0<!--mass of consumed fuel during initial climb phase in sizing mission--></energy>
           <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
           <friction_coefficient_no_brake is_input="True">0.03<!--ground friction coefficient with no brake in sizing mission--></friction_coefficient_no_brake>
           <fuel units="kg" is_input="False">0.4116003852232667<!--mass of consumed fuel during takeoff phase in sizing mission--></fuel>
@@ -535,11 +543,11 @@
             <fuel units="kg" is_input="False">208.19877202774606<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
           </cruise>
           <descent>
-            <v_cas units="knot">99.47</v_cas>
             <descent_rate units="ft/min" is_input="True">-300.0<!--target descent rate for the aircraft--></descent_rate>
             <distance units="m" is_input="False">75202.4025503226<!--covered ground distance during descent phase--></distance>
             <duration units="s" is_input="False">1506.9542966085064<!--duration of descent phase in sizing mission--></duration>
             <fuel units="kg" is_input="False">5.99372114117938<!--mass of consumed fuel during descent phase in sizing mission--></fuel>
+            <v_cas units="knot">99.47</v_cas>
           </descent>
           <reserve>
             <duration units="min" is_input="True">45.0<!--duration of the reserve segment--></duration>
@@ -548,14 +556,6 @@
         </main_route>
       </sizing>
     </mission>
-    <propulsion>
-      <IC_engine>
-        <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-        <max_power units="W" is_input="True">231000.0<!--maximum power of the engine--></max_power>
-        <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
-        <strokes_nb is_input="True">4.0<!--number of strokes on the engine--></strokes_nb>
-      </IC_engine>
-    </propulsion>
     <weight>
       <aircraft>
         <MFW units="kg" is_input="False">296.5610797282422<!--maximum fuel weight--></MFW>
@@ -813,13 +813,13 @@
       </airframe>
     </weight>
     <mission>
-        <sizing>
-            <main_route>
-                <reserve>
-                    <k_factor>1.0</k_factor>
-                </reserve>
-            </main_route>
-        </sizing>
+      <sizing>
+        <main_route>
+          <reserve>
+            <k_factor>1.0</k_factor>
+          </reserve>
+        </main_route>
+      </sizing>
     </mission>
   </settings>
 </FASTOAD_model>
