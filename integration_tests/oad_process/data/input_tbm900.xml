@@ -247,7 +247,11 @@
           <elevator_angle units="deg" is_input="True">-30.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
           <target_sideslip units="deg" is_input="True">15.0</target_sideslip>
         </landing>
+        <initial_climb>
+          <energy units="W*h" is_input="False">0.0</energy>
+        </initial_climb>
         <takeoff>
+          <energy units="W*h" is_input="False">0.0</energy>
           <elevator_angle units="deg" is_input="True">-30.0<!--elevator maximum angle during takeoff phase in sizing mission--></elevator_angle>
           <friction_coefficient_no_brake is_input="True">0.03<!--friction coefficient used during the computation of the takeoff phase--></friction_coefficient_no_brake>
           <thrust_rate is_input="True">1.0<!--thrust rate during takeoff phase--></thrust_rate>

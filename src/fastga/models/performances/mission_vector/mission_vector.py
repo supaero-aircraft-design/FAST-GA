@@ -58,7 +58,7 @@ class MissionVector(om.Group):
             MissionCore(
                 number_of_points=number_of_points, propulsion_id=self.options["propulsion_id"]
             ),
-            promotes_inputs=["data:*"],
+            promotes_inputs=["data:*", "settings:*"],
             promotes_outputs=["data:*"],
         )
         self.add_subsystem(
