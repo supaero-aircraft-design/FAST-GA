@@ -32,7 +32,7 @@ def test_OMBasicTPEngineMappedComponent():
     machs = [0.06, 0.12, 0.18, 0.22, 0.375]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [6669.186802, 3393.845802, 2692.754792, 1840.264733, 1983.763756]
+    thrusts = [8723.73643444, 4352.43513423, 3670.56367899, 2378.52672608, 2754.44695866]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -40,21 +40,21 @@ def test_OMBasicTPEngineMappedComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [7.333304e-06, 1.131453e-05, 1.472396e-05, 1.881981e-05, 2.204333e-05]
+    expected_sfc = [7.11080994e-06, 1.14707988e-05, 1.40801854e-05, 1.75188296e-05, 1.82845376e-05]
 
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:turboprop:design_point:power", 485.429, units="kW")
+    ivc.add_output("data:propulsion:turboprop:design_point:power", 1342.285, units="kW")
     ivc.add_output(
-        "data:propulsion:turboprop:design_point:turbine_entry_temperature", 1200, units="K"
+        "data:propulsion:turboprop:design_point:turbine_entry_temperature", 1400, units="K"
     )
-    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 8.0)
+    ivc.add_output("data:propulsion:turboprop:design_point:OPR", 12.0)
     ivc.add_output("data:propulsion:turboprop:design_point:altitude", 0.0, units="ft")
-    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.2)
-    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=0.0)
-    ivc.add_output("data:propulsion:turboprop:off_design:itt_limit", val=1000.0, units="K")
-    ivc.add_output("data:propulsion:turboprop:off_design:power_limit", val=404.524, units="kW")
-    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=11.0)
-    ivc.add_output("data:TLAR:v_cruise", 125.524, units="m/s")
+    ivc.add_output("data:propulsion:turboprop:design_point:mach", 0.0)
+    ivc.add_output("data:propulsion:turboprop:off_design:bleed_usage", val=1.0)
+    ivc.add_output("data:propulsion:turboprop:off_design:itt_limit", val=1125.0, units="K")
+    ivc.add_output("data:propulsion:turboprop:off_design:power_limit", val=634.0, units="kW")
+    ivc.add_output("data:propulsion:turboprop:off_design:opr_limit", val=12.0)
+    ivc.add_output("data:TLAR:v_cruise", 164.622, units="m/s")
     ivc.add_output("data:aerodynamics:propeller:cruise_level:altitude", 6096.0, units="m")
     ivc.add_output("data:geometry:propulsion:engine:layout", val=1.0)
     ivc.add_output("data:geometry:propulsion:engine:count", 1.0)

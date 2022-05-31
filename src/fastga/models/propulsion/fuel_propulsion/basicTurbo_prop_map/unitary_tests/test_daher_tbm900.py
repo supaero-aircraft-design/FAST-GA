@@ -35,7 +35,7 @@ from .data.dummy_maps import (
     SFC_IL,
 )
 
-XML_FILE = "input_be_king_air.xml"
+XML_FILE = "daher_tbm900.xml"
 SKIP_STEPS = True  # avoid some tests to accelerate validation process (turboprop map creation)
 
 
