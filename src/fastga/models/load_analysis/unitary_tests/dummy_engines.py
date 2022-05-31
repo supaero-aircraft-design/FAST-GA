@@ -28,6 +28,7 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.load_analysis.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.load_analysis.cirrus.dummy_engine"
+ENGINE_WRAPPER_TBM900 = "test.wrapper.load_analysis.daher.dummy_engine"
 
 
 # Beechcraft BE76 dummy engine ###############################################################
@@ -165,3 +166,69 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
     @staticmethod
     def get_model(inputs) -> IPropulsion:
         return FuelEngineSet(DummyEngineSR22(), inputs["data:geometry:propulsion:engine:count"])
+
+
+# Daher TBM 900 dummy engine #################################################################
+##############################################################################################
+
+
+class DummyEngineTBM900(AbstractFuelPropulsion):
+    def __init__(self):
+        """
+        Dummy engine model returning thrust in particular conditions defined for htp/vtp areas.
+
+        """
+        super().__init__()
+        self.max_power = 634000.0
+        self.max_thrust = 30000.0
+
+    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+
+        altitude = float(
+            Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
+        )
+        mach = np.array(flight_points.mach)
+        thrust = np.array(flight_points.thrust)
+        sigma = Atmosphere(altitude).density / Atmosphere(0.0).density
+        max_power = self.max_power * (sigma - (1 - sigma) / 7.55)
+        max_thrust = min(
+            self.max_thrust * sigma ** (1.0 / 3.0),
+            max_power * 0.8 / np.maximum(mach * Atmosphere(altitude).speed_of_sound, 1e-20),
+        )
+        if flight_points.thrust_rate is None:
+            flight_points.thrust = min(max_thrust, float(thrust))
+            flight_points.thrust_rate = float(thrust) / max_thrust
+        else:
+            flight_points.thrust = max_thrust * np.array(flight_points.thrust_rate)
+        sfc_p_max = 1.5e-5  # fixed whatever the thrust ratio, sfc for ONE 130kW engine !
+        sfc = sfc_p_max * flight_points.thrust_rate * mach * Atmosphere(altitude).speed_of_sound
+        flight_points.sfc = sfc
+
+    def compute_weight(self) -> float:
+        return 0.0
+
+    def compute_dimensions(self) -> (float, float, float, float):
+        return [0.0, 0.0, 0.0, 0.0]
+
+    def compute_drag(self, mach, unit_reynolds, wing_mac):
+        return 0.0
+
+    # noinspection PyMethodMayBeStatic
+    def compute_sl_thrust(self) -> float:
+        return 30000.0
+
+    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+        return 0.0
+
+
+@RegisterPropulsion(ENGINE_WRAPPER_TBM900)
+class DummyEngineWrapperTBM900(IOMPropulsionWrapper):
+    def setup(self, component: Component):
+        component.add_input("data:propulsion:fuel_type", np.nan)
+        component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
+
+    @staticmethod
+    def get_model(inputs) -> IPropulsion:
+        return FuelEngineSet(DummyEngineTBM900(), inputs["data:geometry:propulsion:engine:count"])
