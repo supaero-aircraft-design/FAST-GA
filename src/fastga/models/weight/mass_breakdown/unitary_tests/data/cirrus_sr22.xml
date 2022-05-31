@@ -15,12 +15,18 @@
         <wet_area units="m**2" is_input="False">59.300124140468796<!--aircraft total wet area--></wet_area>
       </aircraft>
       <cabin>
+        <max_differential_pressure units="Pa">0.0<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <NPAX is_input="False">3.0<!--maximum number of passenger that can be seated in the aircraft assuming a constant number of seats per row--></NPAX>
         <aisle_width units="m" is_input="True">0.0<!--width of aisles--></aisle_width>
         <length units="m" is_input="False">2.8618916746684664<!--cabin length--></length>
         <luggage>
           <mass_max units="kg" is_input="True">60.0<!--maximum luggage mass--></mass_max>
         </luggage>
+        <windows>
+          <height units="m">0.25</height>
+          <number>6.0</number>
+          <width units="m">0.2</width>
+        </windows>
         <seats>
           <passenger>
             <NPAX_max is_input="True">2.0<!--maximum number of passengers in the aircraft--></NPAX_max>
@@ -81,6 +87,7 @@
       </horizontal_tail>
       <landing_gear>
         <height units="m" is_input="False">0.8118<!--height of landing gear--></height>
+        <y units="m" is_input="False">1.0<!--height of landing gear--></y>
         <type is_input="True">0.0<!--0=non-retractable / 1=retractable--></type>
       </landing_gear>
       <plane>
@@ -156,6 +163,11 @@
             </x>
           </leading_edge>
         </MAC>
+        <aileron>
+          <chord_ratio>0.2</chord_ratio>
+          <span_ratio>0.7</span_ratio>
+          <max_deflection units="deg">20</max_deflection>
+        </aileron>
         <kink>
           <chord units="m" is_input="False">1.4744312836772349<!--chord length at wing kink--></chord>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
@@ -185,6 +197,12 @@
         </tip>
       </wing>
       <propulsion>
+        <tank>
+          <LE_chord_percentage>0.1</LE_chord_percentage>
+          <TE_chord_percentage>0.1</TE_chord_percentage>
+          <y_ratio_tank_beginning>0.0</y_ratio_tank_beginning>
+          <y_ratio_tank_end>1.0</y_ratio_tank_end>
+        </tank>
         <engine>
           <count is_input="True">1.0<!--number of engines--></count>
           <layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
@@ -202,6 +220,12 @@
           <diameter units="m" is_input="False">1.0<!--diameter of the propeller--></diameter>
         </propeller>
       </propulsion>
+      <cockpit>
+        <windows>
+          <height units="m">0.4</height>
+          <width units="m">1.0</width>
+        </windows>
+      </cockpit>
     </geometry>
     <handling_qualities>
       <stick_fixed_static_margin is_input="False">0.10069617073725057<!--stick fixed static margin--></stick_fixed_static_margin>
@@ -404,6 +428,9 @@
         </sea_level>
       </propeller>
       <rudder>
+        <cruise>
+          <Cy_delta_r units="1/rad" is_input="False">2.0<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </cruise>
         <low_speed>
           <Cy_delta_r units="1/rad" is_input="False">1.8858689633082573<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
         </low_speed>
@@ -455,6 +482,44 @@
           </low_speed>
         </tip>
       </wing>
+      <slipstream>
+        <wing>
+          <cruise>
+            <only_prop>
+              <CL_vector is_input="False">[-0.0008, -0.0007, -0.0007, -0.0006, -0.0006, -0.0007, -0.0007, -0.0007, -0.0007, -0.0007, -0.0007, -0.0006, -0.0006, -0.0006, -0.0006, -0.0006, -0.0006, -0.0005, -0.0005, -0.0005, -0.0005, -0.0004, -0.0004, -0.0004, -0.0004, -0.0003, -0.0003, -0.0003, -0.0003, -0.0002, -0.0002, -0.0002, -0.0002, -0.0001, -0.0001, -0.0001, -0.0, 0.0, 0.0005, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient of the wing due to the slipstream effect only at the station along the wing span in Y_vector--></CL_vector>
+            </only_prop>
+            <prop_off>
+              <CL is_input="False">1.43492<!--wing lift coefficient without slipstream effect, used as a reference value for scaling--></CL>
+              <CL_vector is_input="False">[1.47107, 1.44748, 1.44727, 1.44606, 1.4444, 1.44109, 1.43679, 1.43904, 1.4429, 1.46305, 1.47884, 1.49023, 1.49044, 1.4938, 1.4993, 1.50713, 1.50974, 1.51429, 1.51515, 1.5171, 1.51274, 1.51331, 1.51137, 1.50951, 1.49986, 1.49399, 1.48246, 1.47201, 1.45465, 1.4422, 1.42215, 1.40122, 1.36636, 1.33047, 1.27124, 1.20098, 1.09653, 0.94532, 0.82102, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient without slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL--></CL_vector>
+              <Y_vector units="m" is_input="False">[0.04857, 0.14571, 0.24286, 0.34, 0.43714, 0.53429, 0.63143, 0.76486, 0.93543, 1.10696, 1.27934, 1.45249, 1.62628, 1.80063, 1.97542, 2.15054, 2.32589, 2.50136, 2.67684, 2.85221, 3.02737, 3.20221, 3.37663, 3.55051, 3.72375, 3.89624, 4.06789, 4.2386, 4.40826, 4.57679, 4.74408, 4.91005, 5.07462, 5.23769, 5.39919, 5.55905, 5.71718, 5.87353, 6.02801, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--station along the wing span at which lift is sampled--></Y_vector>
+            </prop_off>
+            <prop_on>
+              <CL is_input="False">1.43448<!--wing lift coefficient with slipstream effect, used as a reference value for scaling--></CL>
+              <CL_vector is_input="False">[1.47028, 1.44682, 1.44662, 1.44541, 1.44375, 1.44044, 1.43614, 1.43839, 1.44225, 1.46239, 1.47819, 1.4896, 1.48982, 1.4932, 1.49871, 1.50655, 1.50919, 1.51376, 1.51465, 1.51662, 1.51229, 1.51288, 1.51097, 1.50913, 1.4995, 1.49365, 1.48215, 1.47172, 1.45439, 1.44196, 1.42193, 1.40103, 1.36619, 1.33033, 1.27113, 1.20091, 1.09651, 0.94537, 0.82149, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient with slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL--></CL_vector>
+              <CT_ref is_input="False">0.21711<!--thrust coefficient of the propeller used in the computation of the slipstream effect--></CT_ref>
+              <Y_vector units="m" is_input="False">[0.04857, 0.14571, 0.24286, 0.34, 0.43714, 0.53429, 0.63143, 0.76486, 0.93543, 1.10696, 1.27934, 1.45249, 1.62628, 1.80063, 1.97542, 2.15054, 2.32589, 2.50136, 2.67684, 2.85221, 3.02737, 3.20221, 3.37663, 3.55051, 3.72375, 3.89624, 4.06789, 4.2386, 4.40826, 4.57679, 4.74408, 4.91005, 5.07462, 5.23769, 5.39919, 5.55905, 5.71718, 5.87353, 6.02801, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--station along the wing span at which lift is sampled--></Y_vector>
+              <velocity units="m/s" is_input="False">84.0<!--velocity at which the slipstream effect were computed in cruise conditions--></velocity>
+            </prop_on>
+          </cruise>
+          <low_speed>
+            <only_prop>
+              <CL_vector is_input="False">[-0.007, -0.0056, -0.0056, -0.0056, -0.0055, -0.0055, -0.0055, -0.0055, -0.0055, -0.0056, -0.0055, -0.0053, -0.0052, -0.005, -0.0049, -0.0048, -0.0046, -0.0043, -0.0041, -0.0039, -0.0037, -0.0035, -0.0033, -0.003, -0.0028, -0.0026, -0.0024, -0.0022, -0.002, -0.0019, -0.0016, -0.0014, -0.0011, -0.0009, -0.0005, -0.0001, 0.0005, 0.0014, 0.0067, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient of the wing due to the slipstream effect only at the station along the wing span in Y_vector--></CL_vector>
+            </only_prop>
+            <prop_off>
+              <CL is_input="False">1.42057<!--wing lift coefficient without slipstream effect, used as a reference value for scaling--></CL>
+              <CL_vector is_input="False">[1.45593, 1.4307, 1.43068, 1.42949, 1.42796, 1.42483, 1.42091, 1.4231, 1.42653, 1.44497, 1.46059, 1.47156, 1.47175, 1.47526, 1.48039, 1.48797, 1.49028, 1.4949, 1.49583, 1.49789, 1.49342, 1.49414, 1.49245, 1.49078, 1.48127, 1.47576, 1.46491, 1.45465, 1.437, 1.42544, 1.40728, 1.38844, 1.35522, 1.32335, 1.26994, 1.20485, 1.10886, 0.96407, 0.85482, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient without slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL--></CL_vector>
+              <Y_vector units="m" is_input="False">[0.04857, 0.14571, 0.24286, 0.34, 0.43714, 0.53429, 0.63143, 0.76486, 0.93543, 1.10696, 1.27934, 1.45249, 1.62628, 1.80063, 1.97542, 2.15054, 2.32589, 2.50136, 2.67684, 2.85221, 3.02737, 3.20221, 3.37663, 3.55051, 3.72375, 3.89624, 4.06789, 4.2386, 4.40826, 4.57679, 4.74408, 4.91005, 5.07462, 5.23769, 5.39919, 5.55905, 5.71718, 5.87353, 6.02801, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--station along the wing span at which lift is sampled--></Y_vector>
+            </prop_off>
+            <prop_on>
+              <CL is_input="False">1.41704<!--wing lift coefficient with slipstream effect, used as a reference value for scaling--></CL>
+              <CL_vector is_input="False">[1.4489, 1.4251, 1.42511, 1.42393, 1.42243, 1.4193, 1.41537, 1.4176, 1.42104, 1.4394, 1.45509, 1.46624, 1.46657, 1.47022, 1.47546, 1.48321, 1.48572, 1.49055, 1.4917, 1.49399, 1.48973, 1.49065, 1.48916, 1.48773, 1.47843, 1.47312, 1.46248, 1.45245, 1.43498, 1.42359, 1.40566, 1.38708, 1.35412, 1.3225, 1.26944, 1.20475, 1.10935, 0.96543, 0.8615, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--lift coefficient with slipstream effect of the wing at the station along the wing span in Y_vector, the total corresponding wing lift coefficient is equal to CL--></CL_vector>
+              <CT_ref is_input="False">0.23435<!--thrust coefficient of the propeller used in the computation of the slipstream effect--></CT_ref>
+              <Y_vector units="m" is_input="False">[0.04857, 0.14571, 0.24286, 0.34, 0.43714, 0.53429, 0.63143, 0.76486, 0.93543, 1.10696, 1.27934, 1.45249, 1.62628, 1.80063, 1.97542, 2.15054, 2.32589, 2.50136, 2.67684, 2.85221, 3.02737, 3.20221, 3.37663, 3.55051, 3.72375, 3.89624, 4.06789, 4.2386, 4.40826, 4.57679, 4.74408, 4.91005, 5.07462, 5.23769, 5.39919, 5.55905, 5.71718, 5.87353, 6.02801, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--station along the wing span at which lift is sampled--></Y_vector>
+              <velocity units="m/s" is_input="False">43.72777777777778<!--velocity at which the slipstream effect were computed in low speed conditions--></velocity>
+            </prop_on>
+          </low_speed>
+        </wing>
+      </slipstream>
     </aerodynamics>
     <constraints>
       <horizontal_tail>
@@ -514,11 +579,22 @@
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
+          <safety_factor>1.5</safety_factor>
           <characteristic_speed>
+            <va units="m/s">64.75</va>
+            <vc units="m/s">78.63</vc>
             <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
           </characteristic_speed>
           <sizing_factor>
-            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+            <ultimate_aircraft>5.7</ultimate_aircraft>
+            <ultimate_mtow>
+              <negative>-2.28</negative>
+              <positive>5.7</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative>-2.28</negative>
+              <positive>5.7</positive>
+            </ultimate_mzfw>
           </sizing_factor>
         </cs23>
         <main_route>
@@ -641,6 +717,10 @@
           <CG>
             <x units="m" is_input="False">2.988551198231612<!--wing (A1): X-position of center of gravity--></x>
           </CG>
+          <punctual_mass>
+            <mass>0.0</mass>
+            <y_ratio>0.0</y_ratio>
+          </punctual_mass>
         </wing>
         <landing_gear>
           <front>
@@ -775,6 +855,32 @@
     </wing>
   </xfoil>
   <settings>
+    <materials>
+      <insulation>
+        <area_density units="kg/m**2">0.45</area_density>
+      </insulation>
+      <fuselage>
+        <skin>
+          <density units="kg/m**3">2780.0</density>
+          <max_shear_stress units="Pa">105000000.0</max_shear_stress>
+          <sigma_02 units="MPa">110.0<!--elasticity limit of the material--></sigma_02>
+          <sigma_max units="MPa">180.0<!--ultimate tensile strength of the material--></sigma_max>
+          <young_modulus units="GPa">69.5</young_modulus>
+        </skin>
+        <stringer>
+          <density units="kg/m**3">2780.0</density>
+          <young_modulus units="GPa">68.0</young_modulus>
+        </stringer>
+      </fuselage>
+    </materials>
+    <geometry>
+      <fuselage>
+          <min_skin_thickness units="m">0.0005</min_skin_thickness>
+      </fuselage>
+      <fuel_tanks>
+        <depth>0.4</depth>
+      </fuel_tanks>
+    </geometry>
     <handling_qualities>
       <rudder>
         <safety_margin is_input="True">0.2</safety_margin>
@@ -801,6 +907,11 @@
         </payload>
       </aircraft>
       <airframe>
+        <fuselage>
+          <reinforcements>
+            <mass_fraction>0.2</mass_fraction>
+          </reinforcements>
+        </fuselage>
         <landing_gear>
           <front>
             <weight_ratio is_input="True">0.075<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
