@@ -12,7 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_EQUILIBRIUM
 from ..mission.compute_time_step import ComputeTimeStep
@@ -54,7 +54,7 @@ class MissionCore(om.Group):
         }
         self.add_subsystem(
             "compute_dep_equilibrium",
-            RegisterSubmodel.get_submodel(SUBMODEL_EQUILIBRIUM, options=options_equilibrium),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_EQUILIBRIUM, options=options_equilibrium),
             promotes_inputs=["data:*"],
             promotes_outputs=[],
         )

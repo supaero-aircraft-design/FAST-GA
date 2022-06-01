@@ -17,7 +17,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .components import ComputeVTMacFD, ComputeVTMacFL
 from .constants import (
@@ -35,17 +35,19 @@ class ComputeVerticalTailGeometryFD(om.Group):
     def setup(self):
 
         self.add_subsystem(
-            "vt_chords", RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
         self.add_subsystem(
-            "vt_position", RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD), promotes=["*"]
+            "vt_position",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "vt_sweep", RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
+            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
+            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
         )
 
 
@@ -54,15 +56,17 @@ class ComputeVerticalTailGeometryFL(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "vt_chords", RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
         self.add_subsystem(
-            "vt_position", RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL), promotes=["*"]
+            "vt_position",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "vt_sweep", RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
+            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
+            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
         )

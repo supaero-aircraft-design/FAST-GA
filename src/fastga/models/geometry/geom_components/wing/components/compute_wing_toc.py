@@ -15,13 +15,13 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_THICKNESS_RATIO
 
 
 # TODO: computes relative thickness and generates profiles --> decompose
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_THICKNESS_RATIO, "fastga.submodel.geometry.wing.thickness_ratio.legacy"
 )
 class ComputeWingToc(om.ExplicitComponent):

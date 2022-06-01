@@ -17,7 +17,7 @@ Test module for basicIC_engine.py
 
 import numpy as np
 
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
@@ -842,7 +842,7 @@ def test_compute_flight_points_tbm_700():
         EngineSetting.TAKEOFF,
     ]
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=mach_array,
         altitude=altitude_array,
         engine_setting=engine_settings,
@@ -911,7 +911,7 @@ def test_compute_flight_points():
     ]  # mix EngineSetting with integers
     expected_sfc = [1.471528e-05, 1.831423e-05, 1.831423e-05, 2.576356e-05, 1.766113e-05]
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs + machs,
         altitude=altitudes + altitudes,
         engine_setting=engine_settings + engine_settings,
@@ -1130,21 +1130,21 @@ def test_compute_max_power():
         pr_1_ratio_design=0.25,
     )
     # At design point
-    flight_points = FlightPoint(altitude=0, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=0, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 521.99, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=3000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=3000, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 521.99, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=6000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=6000, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 521.99, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=9000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 337.57, atol=1)
 
     # At higher altitude, higher mach
-    flight_points = FlightPoint(altitude=9000, mach=0.8)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.8)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 502.70, atol=1)

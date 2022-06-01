@@ -16,15 +16,15 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_INSTALLED_ENGINE_MASS
 ] = "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
 )
 class ComputeEngineWeight(ExplicitComponent):
@@ -61,7 +61,7 @@ class ComputeEngineWeight(ExplicitComponent):
         outputs["data:weight:propulsion:engine:mass"] = b1
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.raymer"
 )
 class ComputeEngineWeightRaymer(ExplicitComponent):

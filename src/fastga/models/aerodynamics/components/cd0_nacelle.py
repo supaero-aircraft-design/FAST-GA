@@ -18,14 +18,14 @@ import numpy as np
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from ..constants import SUBMODEL_CD0_NACELLE
 
 
-@RegisterSubmodel(SUBMODEL_CD0_NACELLE, "fastga.submodel.aerodynamics.nacelle.cd0.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CD0_NACELLE, "fastga.submodel.aerodynamics.nacelle.cd0.legacy")
 class Cd0Nacelle(ExplicitComponent):
     """
     Profile drag estimation for the engine nacelle

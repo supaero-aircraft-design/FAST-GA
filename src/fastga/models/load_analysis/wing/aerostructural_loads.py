@@ -21,7 +21,7 @@ from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
@@ -36,7 +36,7 @@ POINT_MASS_SPAN_RATIO = 0.01
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AEROSTRUCTURAL_LOADS, "fastga.submodel.loads.wings.aerostructural.legacy"
 )
 class AerostructuralLoad(om.ExplicitComponent):

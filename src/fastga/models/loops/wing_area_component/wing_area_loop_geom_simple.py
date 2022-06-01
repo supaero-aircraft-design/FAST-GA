@@ -20,19 +20,21 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_WING_AREA_GEOM_LOOP
 ] = "fastga.submodel.loop.wing_area.update.geom.simple"
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_WING_AREA_GEOM_CONS
 ] = "fastga.submodel.loop.wing_area.constraint.geom.simple"
 
 
-@RegisterSubmodel(SUBMODEL_WING_AREA_GEOM_LOOP, "fastga.submodel.loop.wing_area.update.geom.simple")
+@oad.RegisterSubmodel(
+    SUBMODEL_WING_AREA_GEOM_LOOP, "fastga.submodel.loop.wing_area.update.geom.simple"
+)
 class UpdateWingAreaGeomSimple(om.ExplicitComponent):
     """
     Computes needed wing area to be able to load enough fuel to achieve the sizing mission.
@@ -127,7 +129,7 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_CONS, "fastga.submodel.loop.wing_area.constraint.geom.simple"
 )
 class ConstraintWingAreaGeomSimple(om.ExplicitComponent):

@@ -18,12 +18,12 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_HT_WET_EFFICIENCY
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_HT_WET_EFFICIENCY, "fastga.submodel.geometry.horizontal_tail.efficiency.legacy"
 )
 class ComputeHTEfficiency(ExplicitComponent):

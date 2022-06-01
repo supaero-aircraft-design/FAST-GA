@@ -18,10 +18,9 @@ import openmdao.api as om
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
-from fastoad.model_base import FlightPoint
-
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
@@ -180,7 +179,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
 
         mach_r = vr / sos
 
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=mach_r, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )
         propulsion_model.compute_flight_points(flight_point)

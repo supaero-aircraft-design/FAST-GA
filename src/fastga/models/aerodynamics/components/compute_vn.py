@@ -25,8 +25,7 @@ from scipy.constants import g, knot, foot, lbf
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from stdatm import Atmosphere
 
@@ -36,7 +35,7 @@ DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_VH
 ] = "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy"
 
@@ -51,7 +50,7 @@ class ComputeVNAndVH(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_vh",
-            RegisterSubmodel.get_submodel(SUBMODEL_VH, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VH, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -61,7 +60,7 @@ class ComputeVNAndVH(om.Group):
         )
 
 
-@RegisterSubmodel(SUBMODEL_VH, "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy")
+@oad.RegisterSubmodel(SUBMODEL_VH, "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy")
 class ComputeVh(om.ExplicitComponent):
     """
     Computes the maximum level velocity of the aircraft at sea level
@@ -113,7 +112,7 @@ class ComputeVh(om.ExplicitComponent):
 
         # Get the available thrust from propulsion system
         atm = Atmosphere(altitude, altitude_in_feet=False)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=air_speed / atm.speed_of_sound,
             altitude=altitude,
             engine_setting=EngineSetting.TAKEOFF,

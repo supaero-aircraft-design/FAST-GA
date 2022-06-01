@@ -23,8 +23,8 @@ import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+import fastoad.api as oad
 from fastoad.io import VariableIO
-from fastoad.openmdao.variables import VariableList
 from openmdao.utils.units import convert_units
 
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -706,7 +706,7 @@ def cg_lateral_diagram(
 
 
 def _get_variable_values_with_new_units(
-    variables: VariableList, var_names_and_new_units: Dict[str, str]
+    variables: oad.VariableList, var_names_and_new_units: Dict[str, str]
 ):
     """
     Returns the value of the requested variable names with respect to their new units in the order
@@ -729,7 +729,7 @@ def _get_variable_values_with_new_units(
     return new_values
 
 
-def _data_weight_decomposition(variables: VariableList, owe=None):
+def _data_weight_decomposition(variables: oad.VariableList, owe=None):
     """
     Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
     subcategories.

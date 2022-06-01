@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 import openmdao.api as om
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
 from ..external.xfoil.xfoil_polar import XfoilPolar
@@ -29,7 +29,7 @@ ALPHA_END_LINEAR = 10.0
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AIRFOIL_LIFT_SLOPE, "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.xfoil"
 )
 class ComputeAirfoilLiftCurveSlope(om.Group):

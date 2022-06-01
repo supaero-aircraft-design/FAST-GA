@@ -14,9 +14,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from openmdao.api import Group
+
+import fastoad.api as oad
+from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import (
     ComputeEquilibratedPolar,
@@ -26,7 +27,7 @@ from fastga.models.aerodynamics.components.compute_non_equilibrated_polar import
 )
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.cl_cd_polar", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.cl_cd_polar", domain=ModelDomain.AERODYNAMICS)
 class ComputePolar(Group):
     def initialize(self):
         self.options.declare("cg_ratio", default=-0.0, types=float)

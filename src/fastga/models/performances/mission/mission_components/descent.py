@@ -22,9 +22,8 @@ from scipy.constants import g
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterSubmodel
-from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
@@ -37,15 +36,15 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_DESCENT = 50
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_DESCENT
 ] = "fastga.submodel.performances.mission.descent.legacy"
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_DESCENT_SPEED
 ] = "fastga.submodel.performances.mission.descent_speed.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_DESCENT, "fastga.submodel.performances.mission.descent.legacy")
+@oad.RegisterSubmodel(SUBMODEL_DESCENT, "fastga.submodel.performances.mission.descent.legacy")
 class ComputeDescent(DynamicEquilibrium):
     """
     Compute the fuel consumption on descent segment with constant VCAS and descent
@@ -155,7 +154,7 @@ class ComputeDescent(DynamicEquilibrium):
 
             # Compute consumption
             # FIXME: DESCENT setting on engine does not exist, replaced by CLIMB for test
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=mach,
                 altitude=altitude_t,
                 engine_setting=EngineSetting.CLIMB,
@@ -233,7 +232,7 @@ class ComputeDescent(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:descent:duration"] = time_t
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_DESCENT_SPEED, "fastga.submodel.performances.mission.descent_speed.legacy"
 )
 class ComputeDescentSpeed(om.ExplicitComponent):

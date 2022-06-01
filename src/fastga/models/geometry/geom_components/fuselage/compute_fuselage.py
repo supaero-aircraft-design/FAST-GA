@@ -14,7 +14,7 @@
 
 from openmdao.core.group import Group
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .components import (
     ComputeFuselageGeometryBasic,
@@ -45,7 +45,7 @@ class ComputeFuselageAlternate(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
             promotes=["*"],
         )
 
@@ -68,6 +68,6 @@ class ComputeFuselageLegacy(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
             promotes=["*"],
         )

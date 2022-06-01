@@ -13,7 +13,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import (
@@ -23,21 +23,21 @@ from .constants import (
 )
 
 
-@RegisterOpenMDAOSystem("fastga.loads.wing", domain=ModelDomain.OTHER)
+@oad.RegisterOpenMDAOSystem("fastga.loads.wing", domain=ModelDomain.OTHER)
 class WingLoads(om.Group):
     def setup(self):
         self.add_subsystem(
             "aerostructural_loads",
-            RegisterSubmodel.get_submodel(SUBMODEL_AEROSTRUCTURAL_LOADS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AEROSTRUCTURAL_LOADS),
             promotes=["*"],
         )
         self.add_subsystem(
             "structural_loads",
-            RegisterSubmodel.get_submodel(SUBMODEL_STRUCTURAL_LOADS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_STRUCTURAL_LOADS),
             promotes=["*"],
         )
         self.add_subsystem(
             "aerodynamic_loads",
-            RegisterSubmodel.get_submodel(SUBMODEL_AERODYNAMIC_LOADS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AERODYNAMIC_LOADS),
             promotes=["*"],
         )

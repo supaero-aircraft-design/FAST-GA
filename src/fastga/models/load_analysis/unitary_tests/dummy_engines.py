@@ -17,10 +17,8 @@ from openmdao.core.component import Component
 from typing import Union
 import numpy as np
 
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from stdatm import Atmosphere
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
@@ -46,7 +44,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.max_power = 130000.0
         self.max_thrust = 5800.0 / 2.0
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
 
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
@@ -81,12 +79,12 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 5800.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_BE76)
-class DummyEngineWrapperBE76(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_BE76)
+class DummyEngineWrapperBE76(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:fuel_type", np.nan)
@@ -114,7 +112,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.max_power = 231000.0
         self.max_thrust = 5417.0
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
 
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
@@ -149,12 +147,12 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 5417.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_SR22)
-class DummyEngineWrapperSR22(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_SR22)
+class DummyEngineWrapperSR22(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:fuel_type", np.nan)
@@ -182,7 +180,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.max_power = 634000.0
         self.max_thrust = 30000.0
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
 
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
@@ -217,12 +215,12 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
     def compute_sl_thrust(self) -> float:
         return 30000.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_TBM900)
-class DummyEngineWrapperTBM900(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_TBM900)
+class DummyEngineWrapperTBM900(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:fuel_type", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")

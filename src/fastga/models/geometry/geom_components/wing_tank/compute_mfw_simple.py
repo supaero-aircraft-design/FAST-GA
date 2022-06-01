@@ -18,14 +18,14 @@ import warnings
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ...constants import SUBMODEL_MFW
 
-RegisterSubmodel.active_models[SUBMODEL_MFW] = "fastga.submodel.geometry.mfw.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_MFW] = "fastga.submodel.geometry.mfw.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.legacy")
+@oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.legacy")
 class ComputeMFWSimple(ExplicitComponent):
     """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 

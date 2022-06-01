@@ -19,16 +19,16 @@ import openmdao.api as om
 import math
 
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import SUBMODEL_TAIL_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_TAIL_MASS
 ] = "fastga.submodel.weight.mass.airframe.tail.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
 class ComputeTailWeight(om.ExplicitComponent):
     """
     Weight estimation for tail weight
@@ -121,7 +121,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.gd")
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.gd")
 class ComputeTailWeightGD(om.ExplicitComponent):
     """
     Weight estimation for tail weight
@@ -257,7 +257,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.torenbeek_gd")
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.torenbeek_gd")
 class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
     """
     Weight estimation for tail weight

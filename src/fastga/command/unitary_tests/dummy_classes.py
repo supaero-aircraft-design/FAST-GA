@@ -14,7 +14,7 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 
@@ -55,7 +55,7 @@ class Disc2(om.Group):
         self.add_subsystem("disc1", Disc1(), promotes=["*"])
 
 
-@RegisterOpenMDAOSystem("test.dummy_module.disc3", domain=ModelDomain.OTHER)
+@oad.RegisterOpenMDAOSystem("test.dummy_module.disc3", domain=ModelDomain.OTHER)
 class Disc3(om.Group):
     """An OpenMDAO component to encapsulate Disc1, an IVC and option"""
 

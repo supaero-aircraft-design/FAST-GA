@@ -16,7 +16,7 @@ Main components for mass breakdown.
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import (
     SUBMODEL_AIRFRAME_MASS,
@@ -33,7 +33,7 @@ from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWand
 from fastga.models.options import PAYLOAD_FROM_NPAX
 
 
-@RegisterSubmodel(SUBMODEL_MASS_BREAKDOWN, "fastga.submodel.weight.mass_breakdown.legacy")
+@oad.RegisterSubmodel(SUBMODEL_MASS_BREAKDOWN, "fastga.submodel.weight.mass_breakdown.legacy")
 class MassBreakdown(om.Group):
     """
     Computes analytically the mass of each part of the aircraft, and the resulting sum,
@@ -64,12 +64,12 @@ class MassBreakdown(om.Group):
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
             self.add_subsystem(
-                "payload", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_MASS), promotes=["*"]
+                "payload", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_MASS), promotes=["*"]
             )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "owe",
-            RegisterSubmodel.get_submodel(SUBMODEL_OWE, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_OWE, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
@@ -85,7 +85,7 @@ class MassBreakdown(om.Group):
         self.linear_solver.options["maxiter"] = 10
 
 
-@RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
+@oad.RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
 class ComputeOperatingWeightEmpty(om.Group):
     """Operating Empty Weight (OEW) estimation
 
@@ -98,20 +98,24 @@ class ComputeOperatingWeightEmpty(om.Group):
     def setup(self):
         # Airframe
         self.add_subsystem(
-            "airframe_weight", RegisterSubmodel.get_submodel(SUBMODEL_AIRFRAME_MASS), promotes=["*"]
+            "airframe_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRFRAME_MASS),
+            promotes=["*"],
         )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "propulsion_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_MASS, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_MASS, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
-            "systems_weight", RegisterSubmodel.get_submodel(SUBMODEL_SYSTEMS_MASS), promotes=["*"]
+            "systems_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_SYSTEMS_MASS),
+            promotes=["*"],
         )
         self.add_subsystem(
             "furniture_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_FURNITURE_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FURNITURE_MASS),
             promotes=["*"],
         )
 

@@ -15,9 +15,7 @@
 import numpy as np
 from openmdao.core.component import Component
 
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
+import fastoad.api as oad
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
@@ -25,8 +23,8 @@ from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
 
 
-@RegisterPropulsion("fastga.wrapper.propulsion.basicTurboprop")
-class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
+@oad.RegisterPropulsion("fastga.wrapper.propulsion.basicTurboprop")
+class OMBasicTurbopropWrapper(oad.IOMPropulsionWrapper):
 
     """
     Wrapper class of for basic IC engine model.
@@ -221,7 +219,7 @@ class OMBasicTurbopropWrapper(IOMPropulsionWrapper):
         )
 
 
-@ValidityDomainChecker(
+@oad.ValidityDomainChecker(
     {
         "data:propulsion:turboprop:max_power": (
             180,

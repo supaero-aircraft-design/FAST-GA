@@ -17,7 +17,8 @@ import math
 import numpy as np
 import openmdao.api as om
 import scipy.interpolate as inter
-from fastoad.module_management.service_registry import RegisterSubmodel
+
+import fastoad.api as oad
 from stdatm import Atmosphere
 
 from .figure_digitization import FigureDigitization
@@ -28,24 +29,24 @@ from ..constants import (
 )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_HINGE_MOMENTS_TAIL, "fastga.submodel.aerodynamics.tail.hinge_moments.legacy"
 )
 class ComputeHingeMomentsTail(om.Group):
     def setup(self):
         self.add_subsystem(
             "two_d_hinge_moments",
-            RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_2D),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_2D),
             promotes=["*"],
         )
         self.add_subsystem(
             "three_d_hinge_moments",
-            RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_3D),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL_3D),
             promotes=["*"],
         )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_HINGE_MOMENTS_TAIL_2D, "fastga.submodel.aerodynamics.tail.hinge_moments.2d.legacy"
 )
 class Compute2DHingeMomentsTail(FigureDigitization):
@@ -204,7 +205,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"] = ch_delta_fin
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_HINGE_MOMENTS_TAIL_3D, "fastga.submodel.aerodynamics.tail.hinge_moments.3d.legacy"
 )
 class Compute3DHingeMomentsTail(FigureDigitization):

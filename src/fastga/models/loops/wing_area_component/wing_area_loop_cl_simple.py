@@ -20,19 +20,21 @@ import openmdao.api as om
 
 from scipy.constants import g
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_WING_AREA_AERO_LOOP
 ] = "fastga.submodel.loop.wing_area.update.aero.simple"
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_WING_AREA_AERO_CONS
 ] = "fastga.submodel.loop.wing_area.constraint.aero.simple"
 
 
-@RegisterSubmodel(SUBMODEL_WING_AREA_AERO_LOOP, "fastga.submodel.loop.wing_area.update.aero.simple")
+@oad.RegisterSubmodel(
+    SUBMODEL_WING_AREA_AERO_LOOP, "fastga.submodel.loop.wing_area.update.aero.simple"
+)
 class UpdateWingAreaLiftSimple(om.ExplicitComponent):
     """
     Computes needed wing area to have enough lift at required approach speed.
@@ -85,7 +87,7 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_AERO_CONS, "fastga.submodel.loop.wing_area.constraint.aero.simple"
 )
 class ConstraintWingAreaLiftSimple(om.ExplicitComponent):

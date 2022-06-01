@@ -21,14 +21,15 @@ from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterSubmodel
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from .constants import SUBMODEL_VT_AREA
 
 
-@RegisterSubmodel(SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.legacy"
+)
 class UpdateVTArea(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
@@ -264,7 +265,7 @@ class VTPConstraints(om.ExplicitComponent):
         )  # Flights mechanics from GA - Serge Bonnet CS23, and CS 23.65
         mach_cl = speed_cl / speed_of_sound_cl
         # Calculation of engine power for given conditions
-        flight_point_cl = FlightPoint(
+        flight_point_cl = oad.FlightPoint(
             mach=mach_cl,
             altitude=failure_altitude_cl,
             engine_setting=EngineSetting.CLIMB,
@@ -334,7 +335,7 @@ class VTPConstraints(om.ExplicitComponent):
         vmc_to = 1.2 * stall_speed_to  # CS 23.149 (a)
         mc_mach_to = vmc_to / speed_of_sound_to
         # Calculation of engine power for given conditions
-        flight_point_to = FlightPoint(
+        flight_point_to = oad.FlightPoint(
             mach=mc_mach_to,
             altitude=failure_altitude_to,
             engine_setting=EngineSetting.CLIMB,
@@ -411,7 +412,7 @@ class VTPConstraints(om.ExplicitComponent):
         vmc_ldg = 1.2 * stall_speed_ldg  # CS 23.149 (a)
         mc_mach_ldg = vmc_ldg / speed_of_sound_ldg
         # Calculation of engine power for given conditions
-        flight_point_ldg = FlightPoint(
+        flight_point_ldg = oad.FlightPoint(
             mach=mc_mach_ldg,
             altitude=failure_altitude_ldg,
             engine_setting=EngineSetting.CLIMB,

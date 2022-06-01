@@ -20,17 +20,17 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
+import fastoad.api as oad
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
 ] = "fastga.submodel.weight.mass.system.life_support_system.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
     "fastga.submodel.weight.mass.system.life_support_system.legacy",
 )
@@ -167,7 +167,7 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
     "fastga.submodel.weight.mass.system.life_support_system.flops",
 )

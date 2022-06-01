@@ -15,7 +15,7 @@ its components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.group import Group
 
 from ..constants import (
@@ -31,7 +31,7 @@ from ..constants import (
 )
 
 
-@RegisterSubmodel(SUBMODEL_CD0, "fastga.submodel.aerodynamics.aircraft.cd0.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CD0, "fastga.submodel.aerodynamics.aircraft.cd0.legacy")
 class Cd0(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -48,14 +48,14 @@ class Cd0(Group):
         }
         self.add_subsystem(
             "cd0_wing",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_WING, options=options_wing),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_WING, options=options_wing),
             promotes=["*"],
         )
 
         low_speed_option = {"low_speed_aero": self.options["low_speed_aero"]}
         self.add_subsystem(
             "cd0_fuselage",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_FUSELAGE, options=low_speed_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_FUSELAGE, options=low_speed_option),
             promotes=["*"],
         )
 
@@ -65,13 +65,13 @@ class Cd0(Group):
         }
         self.add_subsystem(
             "cd0_ht",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_HT, options=options_htp),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_HT, options=options_htp),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "cd0_vt",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_VT, options=low_speed_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_VT, options=low_speed_option),
             promotes=["*"],
         )
 
@@ -81,24 +81,24 @@ class Cd0(Group):
         }
         self.add_subsystem(
             "cd0_nacelle",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_NACELLE, options=options_nacelle),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_NACELLE, options=options_nacelle),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "cd0_l_gear",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_LANDING_GEAR, options=low_speed_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_LANDING_GEAR, options=low_speed_option),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "cd0_other",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_OTHER, options=low_speed_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_OTHER, options=low_speed_option),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "cd0_total",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0_SUM, options=low_speed_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_SUM, options=low_speed_option),
             promotes=["*"],
         )

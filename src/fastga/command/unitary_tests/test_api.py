@@ -17,7 +17,7 @@ import os
 import pytest
 import warnings
 
-from fastoad.io.configuration.configuration import FASTOADProblemConfigurator
+import fastoad.api as oad
 
 from fastga.command import api
 from fastga.command.unitary_tests.dummy_classes import Disc1, Disc2, Disc3
@@ -57,7 +57,7 @@ def test_id_working():
     var_inputs = ["data:geometry:variable_2"]
 
     # Create a temporary configurator so the modules are registered and their ID are available
-    configurator = FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, "blank.yml"))
 
     # Test if there were no issues with the configurator
     assert configurator is not None

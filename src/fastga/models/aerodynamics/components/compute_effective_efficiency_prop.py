@@ -16,13 +16,13 @@ import warnings
 
 import numpy as np
 import openmdao.api as om
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from stdatm import Atmosphere
 
 from ..constants import SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
     "fastga.submodel.aerodynamics.propeller.effective_efficiency.legacy",
 )

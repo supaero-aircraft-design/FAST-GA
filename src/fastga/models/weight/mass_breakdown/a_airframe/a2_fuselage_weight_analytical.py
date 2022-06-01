@@ -14,7 +14,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .fuselage_components.compute_shell_mass import ComputeShell
 from .fuselage_components.compute_cone_mass import ComputeTailCone
@@ -37,7 +37,7 @@ from .fuselage_components.update_fuselage_mass import UpdateFuselageMass
 from .constants import SUBMODEL_FUSELAGE_MASS
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.analytical"
 )
 class ComputeFuselageMassAnalytical(om.Group):

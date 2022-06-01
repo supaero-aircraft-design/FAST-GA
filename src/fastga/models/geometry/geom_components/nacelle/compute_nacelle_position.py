@@ -17,12 +17,12 @@ import numpy as np
 import warnings
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ...constants import SUBMODEL_NACELLE_POSITION
 
 
-@RegisterSubmodel(SUBMODEL_NACELLE_POSITION, "fastga.submodel.geometry.nacelle.position.legacy")
+@oad.RegisterSubmodel(SUBMODEL_NACELLE_POSITION, "fastga.submodel.geometry.nacelle.position.legacy")
 class ComputeNacellePosition(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""

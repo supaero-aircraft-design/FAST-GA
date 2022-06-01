@@ -19,11 +19,9 @@ import openmdao.api as om
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
-from fastoad.model_base import FlightPoint
-
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
@@ -33,7 +31,7 @@ from .constants import SUBMODEL_HT_AREA
 _ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
 )
 class UpdateHTArea(om.Group):
@@ -186,7 +184,7 @@ class HTPConstraints(om.ExplicitComponent):
         # Definition of horizontal tail global position
         x_ht = x_wing_aero_center + lp_ht
         # Calculation of wheel factor
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=v_r / atm.speed_of_sound,
             altitude=0.0,
             engine_setting=EngineSetting.TAKEOFF,
@@ -261,7 +259,7 @@ class HTPConstraints(om.ExplicitComponent):
         # Rotation speed requirement from FAR 23.73
         v_r = vs0 * 1.3
         # Calculation of wheel factor
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=v_r / atm.speed_of_sound,
             altitude=0.0,
             engine_setting=EngineSetting.IDLE,

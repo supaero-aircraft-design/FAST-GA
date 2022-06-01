@@ -16,12 +16,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_MAC
 
 
-@RegisterSubmodel(SUBMODEL_WING_MAC, "fastga.submodel.geometry.wing.mac.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_MAC, "fastga.submodel.geometry.wing.mac.legacy")
 class ComputeWingMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing mean aerodynamic chord estimation."""

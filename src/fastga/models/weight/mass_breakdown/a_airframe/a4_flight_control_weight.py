@@ -15,17 +15,17 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from stdatm import Atmosphere
 
 from .constants import SUBMODEL_FLIGHT_CONTROLS_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_FLIGHT_CONTROLS_MASS
 ] = "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_FLIGHT_CONTROLS_MASS, "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
 )
 class ComputeFlightControlsWeight(om.ExplicitComponent):
@@ -94,7 +94,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_FLIGHT_CONTROLS_MASS, "fastga.submodel.weight.mass.airframe.flight_controls.flops"
 )
 class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):

@@ -20,9 +20,9 @@ import openmdao.api as om
 
 from scipy.optimize import fsolve
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
-from fastoad.openmdao.problem import AutoUnitsDefaultGroup, FASTOADProblem
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 
 from fastga.command import api as api_cs23
 from fastga.models.performances.mission.mission import Mission
@@ -30,7 +30,7 @@ from fastga.models.performances.mission.mission import Mission
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterOpenMDAOSystem("fastga.performances.payload_range", domain=ModelDomain.PERFORMANCE)
+@oad.RegisterOpenMDAOSystem("fastga.performances.payload_range", domain=ModelDomain.PERFORMANCE)
 class ComputePayloadRange(om.ExplicitComponent):
     """
     Payload Range. The minimal payload which defines point E is taken as two pilots. This class uses a blank xml
@@ -191,7 +191,7 @@ class ComputePayloadRange(om.ExplicitComponent):
         ivc.add_output(name="data:TLAR:range", val=range_parameter, units="m")
         ivc.add_output(name="data:weight:aircraft:MTOW", val=mass, units="kg")
 
-        problem = FASTOADProblem()
+        problem = oad.FASTOADProblem()
         model = problem.model
 
         model.add_subsystem("ivc", ivc, promotes_outputs=["*"])

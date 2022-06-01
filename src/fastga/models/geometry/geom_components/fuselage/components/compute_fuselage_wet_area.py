@@ -17,16 +17,19 @@ import math
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastoad.module_management.service_registry import RegisterSubmodel
+
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_WET_AREA
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_FUSELAGE_WET_AREA
 ] = "fastga.submodel.geometry.fuselage.wet_area.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy"
+)
 class ComputeFuselageWetArea(ExplicitComponent):
 
     """
@@ -69,7 +72,9 @@ class ComputeFuselageWetArea(ExplicitComponent):
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
 
 
-@RegisterSubmodel(SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops")
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops"
+)
 class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
     """

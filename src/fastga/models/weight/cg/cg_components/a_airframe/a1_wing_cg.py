@@ -17,12 +17,12 @@ import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_CG
 
 
-@RegisterSubmodel(SUBMODEL_WING_CG, "fastga.submodel.weight.cg.airframe.wing.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_CG, "fastga.submodel.weight.cg.airframe.wing.legacy")
 class ComputeWingCG(ExplicitComponent):
     """
     Wing center of gravity estimation

@@ -16,14 +16,16 @@ import openmdao.api as om
 import numpy as np
 
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.performances.mission.takeoff import TakeOffPhase
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 
-@RegisterOpenMDAOSystem("fastga.performances.mission_builder_prep", domain=ModelDomain.PERFORMANCE)
+@oad.RegisterOpenMDAOSystem(
+    "fastga.performances.mission_builder_prep", domain=ModelDomain.PERFORMANCE
+)
 class PrepareMissionBuilder(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)

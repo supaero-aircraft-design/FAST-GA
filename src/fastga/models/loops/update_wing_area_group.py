@@ -15,7 +15,7 @@
 import openmdao.api as om
 import logging
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from .wing_area_component.update_wing_area import UpdateWingArea
@@ -30,7 +30,7 @@ from .constants import (
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterOpenMDAOSystem("fastga.loop.wing_area", domain=ModelDomain.OTHER)
+@oad.RegisterOpenMDAOSystem("fastga.loop.wing_area", domain=ModelDomain.OTHER)
 class UpdateWingAreaGroup(om.Group):
     """
     Groups that gather the computation of the updated wing area, chooses the biggest one and
@@ -45,13 +45,15 @@ class UpdateWingAreaGroup(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "loop_wing_area_geom",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_LOOP),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_LOOP),
             promotes_inputs=["*"],
             promotes_outputs=[],
         )
         self.add_subsystem(
             "loop_wing_area_aero",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_LOOP, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_WING_AREA_AERO_LOOP, options=propulsion_option
+            ),
             promotes_inputs=["*"],
             promotes_outputs=[],
         )
@@ -63,13 +65,15 @@ class UpdateWingAreaGroup(om.Group):
         )
         self.add_subsystem(
             "constraint_wing_area_geom",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_CONS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_GEOM_CONS),
             promotes_inputs=["*"],
             promotes_outputs=["*"],
         )
         self.add_subsystem(
             "constraint_wing_area_aero",
-            RegisterSubmodel.get_submodel(SUBMODEL_WING_AREA_AERO_CONS, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_WING_AREA_AERO_CONS, options=propulsion_option
+            ),
             promotes_inputs=["*"],
             promotes_outputs=["*"],
         )

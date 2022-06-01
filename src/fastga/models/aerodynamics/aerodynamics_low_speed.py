@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from openmdao.core.group import Group
 
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
@@ -37,7 +37,7 @@ from .constants import (
 )
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsLowSpeed(Group):
     """Models for low speed aerodynamics."""
 
@@ -87,14 +87,14 @@ class AerodynamicsLowSpeed(Group):
         }
         self.add_subsystem(
             "Cd0_all",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
 
         option_low_speed = {"low_speed_aero": True}
         self.add_subsystem(
             "Effective_efficiency_propeller",
-            RegisterSubmodel.get_submodel(
+            oad.RegisterSubmodel.get_submodel(
                 SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER, options=option_low_speed
             ),
             promotes=["*"],
@@ -107,22 +107,22 @@ class AerodynamicsLowSpeed(Group):
         }
         self.add_subsystem(
             "airfoil_lift_slope",
-            RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRFOIL_LIFT_SLOPE, options=options_airfoil),
             promotes=["*"],
         )
 
         self.add_subsystem(
-            "elevator", RegisterSubmodel.get_submodel(SUBMODEL_DELTA_ELEVATOR), promotes=["*"]
+            "elevator", oad.RegisterSubmodel.get_submodel(SUBMODEL_DELTA_ELEVATOR), promotes=["*"]
         )
 
         self.add_subsystem(
-            "high_lift", RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
+            "high_lift", oad.RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
         )
 
         option_wing_airfoil = {"wing_airfoil_file": self.options["wing_airfoil"]}
         self.add_subsystem(
             "wing_extreme_cl_clean",
-            RegisterSubmodel.get_submodel(
+            oad.RegisterSubmodel.get_submodel(
                 SUBMODEL_CL_EXTREME_CLEAN_WING, options=option_wing_airfoil
             ),
             promotes=["*"],
@@ -131,25 +131,27 @@ class AerodynamicsLowSpeed(Group):
         option_htp_airfoil = {"htp_airfoil_file": self.options["htp_airfoil"]}
         self.add_subsystem(
             "htp_extreme_cl_clean",
-            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME_CLEAN_HT, options=option_htp_airfoil),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_CL_EXTREME_CLEAN_HT, options=option_htp_airfoil
+            ),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "aircraft_extreme_cl",
-            RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_EXTREME),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "clAlpha_vt",
-            RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_low_speed),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_low_speed),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "Cy_Delta_rudder",
-            RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_low_speed),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_low_speed),
             promotes=["*"],
         )
 

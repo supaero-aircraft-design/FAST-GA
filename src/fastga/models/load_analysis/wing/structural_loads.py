@@ -19,13 +19,13 @@ to aero-structural loads.
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 from .constants import SUBMODEL_STRUCTURAL_LOADS
 
 
-@RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
+@oad.RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
 class StructuralLoads(om.ExplicitComponent):
     def setup(self):
 

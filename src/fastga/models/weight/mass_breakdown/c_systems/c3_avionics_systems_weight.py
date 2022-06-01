@@ -15,16 +15,16 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import SUBMODEL_AVIONICS_SYSTEM_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_AVIONICS_SYSTEM_MASS
 ] = "fastga.submodel.weight.mass.system.avionics_systems.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AVIONICS_SYSTEM_MASS,
     "fastga.submodel.weight.mass.system.avionics_systems.legacy",
 )
@@ -67,7 +67,7 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
         outputs["data:weight:systems:avionics:mass"] = c3
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AVIONICS_SYSTEM_MASS,
     "fastga.submodel.weight.mass.system.avionics_systems.from_uninstalled",
 )

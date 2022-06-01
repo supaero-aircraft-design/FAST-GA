@@ -14,10 +14,10 @@
 import numpy as np
 import openmdao.api as om
 from fastoad.constants import EngineSetting
-from fastoad.model_base.flight_point import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
@@ -58,7 +58,7 @@ class ThrustTaxi(om.ExplicitComponent):
         mach_ti = inputs["data:mission:sizing:taxi_in:speed"] / Atmosphere(0.0).speed_of_sound
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
-        flight_point_to = FlightPoint(
+        flight_point_to = oad.FlightPoint(
             mach=mach_to,
             altitude=0.0,
             engine_setting=EngineSetting.TAKEOFF,
@@ -67,7 +67,7 @@ class ThrustTaxi(om.ExplicitComponent):
         propulsion_model.compute_flight_points(flight_point_to)
         thrust_to = flight_point_to.thrust
 
-        flight_point_ti = FlightPoint(
+        flight_point_ti = oad.FlightPoint(
             mach=mach_ti,
             altitude=0.0,
             engine_setting=EngineSetting.TAKEOFF,

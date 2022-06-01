@@ -17,7 +17,7 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..cg_components.constants import (
     SUBMODEL_WING_CG,
@@ -37,7 +37,7 @@ from ..cg_components.constants import (
 )
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AIRCRAFT_X_CG_RATIO, "fastga.submodel.weight.cg.aircraft_empty.x_ratio.legacy"
 )
 class ComputeCGRatioAircraftEmpty(om.Group):
@@ -51,57 +51,59 @@ class ComputeCGRatioAircraftEmpty(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "wing_cg", RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
+            "wing_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "fuselage_cg", RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
+            "fuselage_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "tail_cg", RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
+            "tail_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
         )
         self.add_subsystem(
             "flight_control_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "landing_gear_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "propulsion_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "power_systems_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "life_support_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "navigation_systems_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEMS_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_NAVIGATION_SYSTEMS_CG),
             promotes=["*"],
         )
         self.add_subsystem(
             "recording_systems_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEMS_CG),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEMS_CG),
             promotes=["*"],
         )
         self.add_subsystem(
-            "passenger_seats_cg", RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG), promotes=["*"]
+            "passenger_seats_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_SEATS_CG),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "x_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG), promotes=["*"]
+            "x_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "z_cg", RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
+            "z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
         )
         self.add_subsystem("cg_ratio", CGRatio(), promotes=["*"])
 
@@ -116,7 +118,7 @@ class ComputeCGRatioAircraftEmpty(om.Group):
         self.linear_solver.options["maxiter"] = 10
 
 
-@RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")
+@oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")
 class ComputeCG(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(
@@ -201,7 +203,7 @@ class CGRatio(om.ExplicitComponent):
         ) / mac
 
 
-@RegisterSubmodel(SUBMODEL_AIRCRAFT_Z_CG, "fastga.submodel.weight.cg.aircraft_empty.z.legacy")
+@oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_Z_CG, "fastga.submodel.weight.cg.aircraft_empty.z.legacy")
 class ComputeZCG(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(

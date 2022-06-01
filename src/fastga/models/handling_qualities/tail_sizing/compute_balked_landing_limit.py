@@ -21,10 +21,9 @@ import scipy.interpolate as inter
 from scipy.constants import g
 import openmdao.api as om
 
-from fastoad.model_base import FlightPoint
-
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
@@ -278,7 +277,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
             + coeff_k_htp * (cl_AOA_htp + cl_elevator) ** 2.0
         )
 
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=v_ref / sos, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)

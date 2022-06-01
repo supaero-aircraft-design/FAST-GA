@@ -12,14 +12,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_DEP_EFFECT, SUBMODEL_EQUILIBRIUM, SUBMODEL_ENERGY_CONSUMPTION
 from ..mission.energy_consumption_preparation import PrepareForEnergyConsumption
 from ..mission.equilibrium import Equilibrium
 
 
-@RegisterSubmodel(SUBMODEL_EQUILIBRIUM, "fastga.submodel.performances.equilibrium.legacy")
+@oad.RegisterSubmodel(SUBMODEL_EQUILIBRIUM, "fastga.submodel.performances.equilibrium.legacy")
 class DEPEquilibrium(om.Group):
     """Find the conditions necessary for the aircraft equilibrium."""
 
@@ -73,7 +73,7 @@ class DEPEquilibrium(om.Group):
             }
             self.add_subsystem(
                 "compute_dep_effect",
-                RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
                 promotes_inputs=["*"],
                 promotes_outputs=["*"],
             )
@@ -83,7 +83,7 @@ class DEPEquilibrium(om.Group):
             }
             self.add_subsystem(
                 "compute_energy_consumed",
-                RegisterSubmodel.get_submodel(
+                oad.RegisterSubmodel.get_submodel(
                     SUBMODEL_ENERGY_CONSUMPTION, options=options_propulsion
                 ),
                 promotes_inputs=["*"],
@@ -110,7 +110,7 @@ class DEPEquilibrium(om.Group):
             }
             self.add_subsystem(
                 "compute_dep_effect",
-                RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_DEP_EFFECT, options=options_dep),
                 promotes_inputs=["data:*"],
                 promotes_outputs=[],
             )
@@ -120,7 +120,7 @@ class DEPEquilibrium(om.Group):
             }
             self.add_subsystem(
                 "compute_energy_consumed",
-                RegisterSubmodel.get_submodel(
+                oad.RegisterSubmodel.get_submodel(
                     SUBMODEL_ENERGY_CONSUMPTION, options=options_propulsion
                 ),
                 promotes_inputs=["data:*"],

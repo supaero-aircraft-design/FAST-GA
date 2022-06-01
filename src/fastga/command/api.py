@@ -36,15 +36,11 @@ from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.group import Group
 from openmdao.core.system import System
 
-
-from fastoad.openmdao.variables import VariableList
+import fastoad.api as oad
 from fastoad.cmd.exceptions import FastPathExistsError
-from fastoad.openmdao.problem import FASTOADProblem
-from fastoad.io import DataFile, IVariableIOFormatter
+from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.xml import VariableXmlStandardFormatter
-from fastoad.io import VariableIO
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 
 # noinspection PyProtectedMember
 from fastoad.cmd.api import _get_simple_system_list
@@ -89,7 +85,7 @@ def file_temporary_transfer(file_path: str):
     lines = lines.split("\n")
     idx_to_remove = []
     for idx, _ in enumerate(lines):
-        if "@RegisterOpenMDAOSystem" in lines[idx]:
+        if "@oad.RegisterOpenMDAOSystem" in lines[idx]:
             idx_to_remove.append(idx)
     for idx in sorted(idx_to_remove, reverse=True):
         del lines[idx]
@@ -222,7 +218,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                             _LOGGER.info(
                                 "Trying to load %s, but it is not a module!", pth.join(root, name)
                             )
-                        if "RegisterOpenMDAOSystem" in dir(module):
+                        if "oad.RegisterOpenMDAOSystem" in dir(module):
                             tmp_folder = file_temporary_transfer(pth.join(root, name))
                         spec.loader.exec_module(module)
                         total_class_list = [
@@ -445,7 +441,7 @@ def generate_xml_file(xml_file_path: str, overwrite: bool = False):
 
 
 def write_needed_inputs(
-    problem: FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
+    problem: oad.FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
 ):
     """
     Writes the input file of the problem with unconnected inputs of the configured problem.
@@ -457,13 +453,13 @@ def write_needed_inputs(
     :param source_formatter: the class that defines format of input file. if
                              not provided, expected format will be the default one.
     """
-    variables = DataFile(xml_file_path)
+    variables = oad.DataFile(xml_file_path)
     variables.update(
-        VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+        oad.VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
         add_variables=True,
     )
     if xml_file_path:
-        ref_vars = DataFile(xml_file_path, source_formatter)
+        ref_vars = oad.DataFile(xml_file_path, source_formatter)
         variables.update(ref_vars)
         for var in variables:
             var.is_input = True
@@ -477,7 +473,7 @@ def list_ivc_outputs_name(local_system: Union[ExplicitComponent, ImplicitCompone
     """
     group = AutoUnitsDefaultGroup()
     group.add_subsystem("system", local_system, promotes=["*"])
-    problem = FASTOADProblem()
+    problem = oad.FASTOADProblem()
     problem.model = group
     try:
         problem.setup()
@@ -519,7 +515,7 @@ def generate_block_analysis(
 
     # If a valid ID is provided, build a system based on that ID
     if isinstance(local_system, str):
-        local_system = RegisterOpenMDAOSystem.get_system(local_system, options=options)
+        local_system = oad.RegisterOpenMDAOSystem.get_system(local_system, options=options)
 
     # Search what are the component/group outputs
     variables = list_variables(local_system)
@@ -542,7 +538,7 @@ def generate_block_analysis(
         # If no input file and some inputs are missing, generate it and return None
         group = AutoUnitsDefaultGroup()
         group.add_subsystem("system", local_system, promotes=["*"])
-        problem = FASTOADProblem()
+        problem = oad.FASTOADProblem()
         problem.model = group
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
@@ -582,7 +578,7 @@ def generate_block_analysis(
                 group = AutoUnitsDefaultGroup()
                 group.add_subsystem("system", local_system, promotes=["*"])
                 group.add_subsystem("ivc", ivc, promotes=["*"])
-                problem = FASTOADProblem()
+                problem = oad.FASTOADProblem()
                 problem.model = group
                 problem.input_file_path = xml_file_path
                 problem.output_file_path = xml_file_path
@@ -620,7 +616,7 @@ def generate_block_analysis(
                 group_local = AutoUnitsDefaultGroup()
                 group_local.add_subsystem("ivc", ivc_local, promotes=["*"])
                 group_local.add_subsystem("system", local_system, promotes=["*"])
-                problem_local = FASTOADProblem()
+                problem_local = oad.FASTOADProblem()
                 model_local = problem_local.model
                 model_local.add_subsystem("local_system", group_local, promotes=["*"])
                 problem_local.setup()
@@ -662,9 +658,9 @@ def get_type(model):
     return model_type
 
 
-class VariableListLocal(VariableList):
+class VariableListLocal(oad.VariableList):
     @classmethod
-    def from_system(cls, local_system: System) -> "VariableList":
+    def from_system(cls, local_system: System) -> "oad.VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
@@ -679,7 +675,7 @@ class VariableListLocal(VariableList):
         :return: VariableList instance.
         """
 
-        problem = FASTOADProblem()
+        problem = oad.FASTOADProblem()
         if isinstance(local_system, om.Group):
             problem.model = deepcopy(local_system)
         else:
@@ -733,7 +729,7 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
         prob_copy.setup()
     except RuntimeError:
         # noinspection PyProtectedMember
-        vars_metadata = FASTOADProblem()._get_undetermined_dynamic_vars_metadata(prob_copy)
+        vars_metadata = oad.FASTOADProblem()._get_undetermined_dynamic_vars_metadata(prob_copy)
         if vars_metadata:
             # If vars_metadata is empty, it means the RuntimeError was not because
             # of dynamic shapes, and the incoming self.setup() will raise it.

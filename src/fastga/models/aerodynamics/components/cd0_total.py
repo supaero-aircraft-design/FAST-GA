@@ -13,13 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_CD0_SUM
 
 
-@RegisterSubmodel(SUBMODEL_CD0_SUM, "fastga.submodel.aerodynamics.sum.cd0.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CD0_SUM, "fastga.submodel.aerodynamics.sum.cd0.legacy")
 class Cd0Total(ExplicitComponent):
     """
     Profile drag estimation for the whole aircraft. It is the simple sum of all the profile drag

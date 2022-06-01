@@ -15,14 +15,14 @@
 import math
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ..constants import SUBMODEL_CD0_HT
 
 
-@RegisterSubmodel(SUBMODEL_CD0_HT, "fastga.submodel.aerodynamics.horizontal_tail.cd0.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CD0_HT, "fastga.submodel.aerodynamics.horizontal_tail.cd0.legacy")
 class Cd0HorizontalTail(ExplicitComponent):
     """
     Profile drag estimation for the horizontal tail.

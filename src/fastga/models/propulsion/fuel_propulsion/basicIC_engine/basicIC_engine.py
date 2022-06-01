@@ -20,11 +20,10 @@ from scipy.interpolate import interp2d
 import os.path as pth
 import numpy as np
 
-from stdatm import Atmosphere
-
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
@@ -196,7 +195,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return rpm_vect, pme_vect, pme_limit_vect, sfc_matrix
 
-    def compute_flight_points(self, flight_points: FlightPoint):
+    def compute_flight_points(self, flight_points: oad.FlightPoint):
         # pylint: disable=too-many-arguments
         # they define the trajectory
         self.specific_shape = np.shape(flight_points.mach)
@@ -466,7 +465,7 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         return propeller_efficiency
 
-    def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
         """
         Compute the ICE maximum power @ given flight-point.
 
@@ -767,7 +766,7 @@ class Engine(DynamicAttributeDict):
         42
 
     This class is especially useful for generating pandas DataFrame: a pandas
-    DataFrame can be generated from a list of dict... or a list of FlightPoint
+    DataFrame can be generated from a list of dict... or a list of oad.FlightPoint
     instances.
 
     The set of dictionary keys that are mapped to instance attributes is given by

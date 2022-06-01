@@ -26,14 +26,15 @@ from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
 
 
-@RegisterSubmodel(SUBMODEL_LOADCASE_GROUND_X, "fastga.submodel.weight.cg.loadcase.ground.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_LOADCASE_GROUND_X, "fastga.submodel.weight.cg.loadcase.ground.legacy"
+)
 class ComputeGroundCGCase(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Center of gravity estimation for all load cases on ground."""
@@ -105,7 +106,9 @@ class ComputeGroundCGCase(ExplicitComponent):
         outputs["data:weight:aircraft:CG:ground_condition:min:MAC_position"] = cg_fwd_ratio_pl
 
 
-@RegisterSubmodel(SUBMODEL_LOADCASE_FLIGHT_X, "fastga.submodel.weight.cg.loadcase.flight.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_LOADCASE_FLIGHT_X, "fastga.submodel.weight.cg.loadcase.flight.legacy"
+)
 class ComputeFlightCGCase(ExplicitComponent):
     """Center of gravity estimation for all load cases in flight"""
 
@@ -240,7 +243,7 @@ class ComputeFlightCGCase(ExplicitComponent):
         vh = self.max_speed(inputs, 0.0, mtow)
 
         atm = Atmosphere(0.0, altitude_in_feet=False)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=vh / atm.speed_of_sound,
             altitude=0.0,
             engine_setting=EngineSetting.TAKEOFF,
@@ -269,7 +272,7 @@ class ComputeFlightCGCase(ExplicitComponent):
 
         # Get the available thrust from propulsion system
         atm = Atmosphere(altitude, altitude_in_feet=False)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=air_speed / atm.speed_of_sound,
             altitude=altitude,
             engine_setting=EngineSetting.TAKEOFF,
