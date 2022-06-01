@@ -14,13 +14,13 @@
 
 import numpy as np
 import openmdao.api as om
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_HT
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_CL_EXTREME_CLEAN_HT,
     "fastga.submodel.aerodynamics.horizontal_tail.extreme_lift_coefficient.clean.legacy",
 )

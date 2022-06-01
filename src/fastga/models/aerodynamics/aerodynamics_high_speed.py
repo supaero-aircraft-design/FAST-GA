@@ -12,9 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
 from openmdao.core.group import Group
+
+import fastoad.api as oad
+from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
@@ -36,7 +37,7 @@ from .constants import (
 )
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsHighSpeed(Group):
     """Models for high speed aerodynamics."""
 
@@ -129,44 +130,46 @@ class AerodynamicsHighSpeed(Group):
         }
         self.add_subsystem(
             "Cd0_all",
-            RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0, options=options_cd0),
             promotes=["*"],
         )
 
         option_high_speed = {"low_speed_aero": False}
         self.add_subsystem(
             "Effective_efficiency_propeller",
-            RegisterSubmodel.get_submodel(
+            oad.RegisterSubmodel.get_submodel(
                 SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER, options=option_high_speed
             ),
             promotes=["*"],
         )
 
         self.add_subsystem(
-            "L_D_max", RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
+            "L_D_max", oad.RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
         )
         self.add_subsystem(
-            "cnBeta_fuse", RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE), promotes=["*"]
+            "cnBeta_fuse",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE),
+            promotes=["*"],
         )
         self.add_subsystem(
             "cmAlpha_fuse",
-            RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "clAlpha_vt",
-            RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_VT, options=option_high_speed),
             promotes=["*"],
         )
         self.add_subsystem(
             "Cy_Delta_rudder",
-            RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_high_speed),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_high_speed),
             promotes=["*"],
         )
 
         self.add_subsystem(
-            "ch_ht", RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
+            "ch_ht", oad.RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
         )
         if self.options["compute_slipstream"]:
             self.add_subsystem(

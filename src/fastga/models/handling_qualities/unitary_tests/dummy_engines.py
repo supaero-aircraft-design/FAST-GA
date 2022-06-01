@@ -12,19 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-from openmdao.core.component import Component
 from typing import Union
 import numpy as np
+import pandas as pd
 
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
+from openmdao.core.component import Component
+
+import fastoad.api as oad
+from fastoad.constants import EngineSetting
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.propulsion import IPropulsion
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastoad.constants import EngineSetting
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.handling_qualities.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.handling_qualities.cirrus.dummy_engine"
@@ -55,7 +54,7 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 5800.0 / 2.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -75,15 +74,15 @@ class DummyEngineBE76(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+    def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_BE76)
-class DummyEngineWrapperBE76(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_BE76)
+class DummyEngineWrapperBE76(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:fuel_type", np.nan)
@@ -122,7 +121,7 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         """
         super().__init__()
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 5417.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -142,19 +141,19 @@ class DummyEngineSR22(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+    def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
     # noinspection PyMethodMayBeStatic
     def compute_sl_thrust(self) -> float:
         return 5417.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_SR22)
-class DummyEngineWrapperSR22(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_SR22)
+class DummyEngineWrapperSR22(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:IC_engine:max_power", np.nan, units="W")
         component.add_input("data:propulsion:fuel_type", np.nan)
@@ -170,7 +169,7 @@ class DummyEngineWrapperSR22(IOMPropulsionWrapper):
 
 
 ####################################################################################################
-########################### Daher TBM900 dummy engine ##############################################
+# Daher TBM900 dummy engine ########################################################################
 ####################################################################################################
 
 
@@ -182,7 +181,7 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         """
         super().__init__()
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         if flight_points.engine_setting == EngineSetting.TAKEOFF:
             flight_points.thrust = 8000.0
         elif flight_points.engine_setting == EngineSetting.CLIMB:
@@ -202,19 +201,19 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
     def compute_drag(self, mach, unit_reynolds, wing_mac):
         return 0.0
 
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+    def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return 0.0
 
     # noinspection PyMethodMayBeStatic
     def compute_sl_thrust(self) -> float:
         return 8000.0
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]) -> float:
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]) -> float:
         return 0.0
 
 
-@RegisterPropulsion(ENGINE_WRAPPER_TBM900)
-class DummyEngineWrapperTBM900(IOMPropulsionWrapper):
+@oad.RegisterPropulsion(ENGINE_WRAPPER_TBM900)
+class DummyEngineWrapperTBM900(oad.IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:fuel_type", np.nan)
         component.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")

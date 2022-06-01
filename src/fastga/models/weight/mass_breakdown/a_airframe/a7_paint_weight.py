@@ -15,16 +15,16 @@
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import SUBMODEL_PAINT_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_PAINT_MASS
 ] = "fastga.submodel.weight.mass.airframe.paint.no_paint"
 
 
-@RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
+@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
 class ComputeNoPaintWeight(om.IndepVarComp):
     """
     Paint weight estimation.
@@ -46,7 +46,7 @@ class ComputeNoPaintWeight(om.IndepVarComp):
         outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
 
 
-@RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
+@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
 class ComputePaintWeight(om.IndepVarComp):
     """
     Paint weight estimation.

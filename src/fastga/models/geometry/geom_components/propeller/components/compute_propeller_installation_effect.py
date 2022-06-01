@@ -17,13 +17,12 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
-# noinspection PyProtectedMember
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_PROPELLER_INSTALLATION
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_PROPELLER_INSTALLATION, "fastga.submodel.geometry.propeller.installation_effect.legacy"
 )
 class ComputePropellerInstallationEffect(om.ExplicitComponent):

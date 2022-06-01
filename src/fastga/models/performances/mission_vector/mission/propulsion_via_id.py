@@ -13,21 +13,20 @@
 
 import numpy as np
 import openmdao.api as om
-from fastoad.model_base.flight_point import FlightPoint
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from stdatm import Atmosphere
 
 from fastga.models.performances.mission_vector.constants import SUBMODEL_ENERGY_CONSUMPTION
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_ENERGY_CONSUMPTION
 ] = "fastga.submodel.performances.energy_consumption.ICE"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_ENERGY_CONSUMPTION, "fastga.submodel.performances.energy_consumption.ICE"
 )
 class FuelConsumed(om.ExplicitComponent):
@@ -107,7 +106,7 @@ class FuelConsumed(om.ExplicitComponent):
         engine_setting = inputs["engine_setting_econ"]
 
         # TODO : Change the EngineSetting based on the phase we are in
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=atm.mach,
             altitude=inputs["altitude_econ"],
             engine_setting=engine_setting,

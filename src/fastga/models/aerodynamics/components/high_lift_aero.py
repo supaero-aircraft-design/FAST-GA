@@ -16,14 +16,16 @@ import math
 from typing import Union, Tuple
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from scipy import interpolate
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_HIGH_LIFT
 
 
-@RegisterSubmodel(SUBMODEL_DELTA_HIGH_LIFT, "fastga.submodel.aerodynamics.high_lift.delta.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_DELTA_HIGH_LIFT, "fastga.submodel.aerodynamics.high_lift.delta.legacy"
+)
 class ComputeDeltaHighLift(FigureDigitization):
     """
     Provides lift and drag increments due to high-lift devices.

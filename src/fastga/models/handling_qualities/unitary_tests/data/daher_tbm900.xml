@@ -693,8 +693,8 @@
         <MZFW units="kg" is_input="False">2765.0739468171187<!--maximum zero fuel weight--></MZFW>
         <OWE units="kg" is_input="False">2115.0739468171187<!--Mass of aircraft--></OWE>
         <ZFW units="kg" is_input="False">2595.0739468171187<!--aircraft mass with payload, without fuel--></ZFW>
-        <max_payload is_input="True">650.0<!--max payload weight--></max_payload>
-        <payload is_input="True">480.0<!--design payload weight--></payload>
+        <max_payload is_input="True" units="kg">650.0<!--max payload weight--></max_payload>
+        <payload is_input="True" units="kg">480.0<!--design payload weight--></payload>
         <CG>
           <aft>
             <MAC_position is_input="False">0.48289041641614955<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>

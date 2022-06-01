@@ -13,13 +13,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_CD0_LANDING_GEAR
 
 
-@RegisterSubmodel(SUBMODEL_CD0_LANDING_GEAR, "fastga.submodel.aerodynamics.landing_gear.cd0.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_CD0_LANDING_GEAR, "fastga.submodel.aerodynamics.landing_gear.cd0.legacy"
+)
 class Cd0LandingGear(ExplicitComponent):
     """
     Profile drag estimation for the landing gear

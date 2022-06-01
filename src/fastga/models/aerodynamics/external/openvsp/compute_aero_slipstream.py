@@ -18,17 +18,17 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
+import fastoad.api as oad
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
-from fastoad.model_base import FlightPoint
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_THRUST_POWER_SLIPSTREAM
 ] = "fastga.submodel.aerodynamics.wing.slipstream.thrust_power_computation.via_id"
 
@@ -96,7 +96,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "comp_thrust_power",
-            RegisterSubmodel.get_submodel(
+            oad.RegisterSubmodel.get_submodel(
                 SUBMODEL_THRUST_POWER_SLIPSTREAM, options=propulsion_option
             ),
             promotes=["data:*"],
@@ -318,7 +318,7 @@ class FlightConditionsForDPComputation(om.ExplicitComponent):
         outputs["altitude"] = altitude
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_THRUST_POWER_SLIPSTREAM,
     "fastga.submodel.aerodynamics.wing.slipstream.thrust_power_computation.via_id",
 )
@@ -344,7 +344,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=inputs["mach"],
             altitude=inputs["altitude"],
             engine_setting=EngineSetting.CLIMB,

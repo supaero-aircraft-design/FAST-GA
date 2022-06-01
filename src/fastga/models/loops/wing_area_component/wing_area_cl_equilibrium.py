@@ -22,7 +22,7 @@ import openmdao.api as om
 
 from scipy.constants import g
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from fastoad.constants import EngineSetting
 
@@ -38,7 +38,7 @@ from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CO
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_AERO_LOOP, "fastga.submodel.loop.wing_area.update.aero.equilibrium"
 )
 class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
@@ -109,7 +109,7 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
         outputs["wing_area"] = wing_area_approach
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_AERO_CONS, "fastga.submodel.loop.wing_area.constraint.aero.equilibrium"
 )
 class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
@@ -309,7 +309,7 @@ def zip_equilibrium_input(propulsion_id):
     }
     new_component.add_subsystem(
         "system",
-        RegisterSubmodel.get_submodel(SUBMODEL_EQUILIBRIUM, options=option_equilibrium),
+        oad.RegisterSubmodel.get_submodel(SUBMODEL_EQUILIBRIUM, options=option_equilibrium),
         promotes=["*"],
     )
 

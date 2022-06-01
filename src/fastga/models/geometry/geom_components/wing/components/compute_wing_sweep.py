@@ -18,12 +18,12 @@ import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_SWEEP
 
 
-@RegisterSubmodel(SUBMODEL_WING_SWEEP, "fastga.submodel.geometry.wing.sweep.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_SWEEP, "fastga.submodel.geometry.wing.sweep.legacy")
 class ComputeWingSweep(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing sweeps estimation."""

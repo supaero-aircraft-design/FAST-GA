@@ -17,11 +17,11 @@ Estimation of passenger seats weight.
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from .constants import SUBMODEL_SEATS_MASS
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_SEATS_MASS, "fastga.submodel.weight.mass.furniture.passenger_seats.legacy"
 )
 class ComputePassengerSeatsWeight(om.ExplicitComponent):

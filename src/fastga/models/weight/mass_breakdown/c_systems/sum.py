@@ -14,7 +14,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import (
     SUBMODEL_POWER_SYSTEM_MASS,
@@ -26,7 +26,7 @@ from .constants import (
 from ..constants import SUBMODEL_SYSTEMS_MASS
 
 
-@RegisterSubmodel(SUBMODEL_SYSTEMS_MASS, "fastga.submodel.weight.mass.systems.legacy")
+@oad.RegisterSubmodel(SUBMODEL_SYSTEMS_MASS, "fastga.submodel.weight.mass.systems.legacy")
 class SystemsWeight(om.Group):
     """Computes mass of systems."""
 
@@ -41,22 +41,22 @@ class SystemsWeight(om.Group):
     def setup(self):
         self.add_subsystem(
             "power_systems_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEM_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEM_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "life_support_systems_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "navigation_systems_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "recording_systems_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEM_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEM_MASS),
             promotes=["*"],
         )
 

@@ -21,7 +21,7 @@ from scipy.integrate import trapz
 from scipy.interpolate import interp1d
 
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
@@ -36,7 +36,7 @@ POINT_MASS_SPAN_RATIO = 0.01
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_AEROSTRUCTURAL_LOADS, "fastga.submodel.loads.wings.aerostructural.legacy"
 )
 class AerostructuralLoad(om.ExplicitComponent):
@@ -166,27 +166,13 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
-        self.add_input(
-            "data:mission:sizing:cs23:flight_domain:mtow:velocity",
-            units="m/s",
-            shape_by_conn=True,
-        )
-        self.add_input(
-            "data:mission:sizing:cs23:flight_domain:mtow:load_factor",
-            shape_by_conn=True,
-            copy_shape="data:mission:sizing:cs23:flight_domain:mtow:velocity",
-        )
 
-        self.add_input(
-            "data:mission:sizing:cs23:flight_domain:mzfw:velocity",
-            units="m/s",
-            shape_by_conn=True,
-        )
-        self.add_input(
-            "data:mission:sizing:cs23:flight_domain:mzfw:load_factor",
-            shape_by_conn=True,
-            copy_shape="data:mission:sizing:cs23:flight_domain:mzfw:velocity",
-        )
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", val=np.nan)
 
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
@@ -225,8 +211,9 @@ class AerostructuralLoad(om.ExplicitComponent):
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
         cruise_v_tas = inputs["data:TLAR:v_cruise"]
+        v_c = inputs["data:mission:sizing:cs23:characteristic_speed:vc"]
 
-        factor_of_safety = 1.5
+        factor_of_safety = float(inputs["data:mission:sizing:cs23:safety_factor"])
         shear_max_conditions = []
         rbm_max_conditions = []
 
@@ -285,16 +272,20 @@ class AerostructuralLoad(om.ExplicitComponent):
 
             if mass_tag == "mtow":
                 mass = mtow
-                load_factor_array = inputs[
-                    "data:mission:sizing:cs23:flight_domain:mtow:load_factor"
+                load_factor_list = [
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"])
+                    / factor_of_safety,
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"])
+                    / factor_of_safety,
                 ]
-                velocity_array = inputs["data:mission:sizing:cs23:flight_domain:mtow:velocity"]
             else:
                 mass = min(mzfw, mtow)
-                load_factor_array = inputs[
-                    "data:mission:sizing:cs23:flight_domain:mzfw:load_factor"
+                load_factor_list = [
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"])
+                    / factor_of_safety,
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"])
+                    / factor_of_safety,
                 ]
-                velocity_array = inputs["data:mission:sizing:cs23:flight_domain:mzfw:velocity"]
 
             if abs(mtow - mzfw) < 5.0:
                 fuel_mass = 0.0
@@ -305,10 +296,6 @@ class AerostructuralLoad(om.ExplicitComponent):
                 inputs, y_vector_orig, chord_vector, wing_mass, fuel_mass
             )
             atm.true_airspeed = cruise_v_tas
-
-            v_c = float(velocity_array[6])
-
-            load_factor_list = np.array([max(load_factor_array), min(load_factor_array)])
 
             atm.equivalent_airspeed = v_c
             v_c_tas = atm.true_airspeed

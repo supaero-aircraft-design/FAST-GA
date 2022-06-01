@@ -16,12 +16,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_FLIGHT_CONTROLS_CG
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_FLIGHT_CONTROLS_CG, "fastga.submodel.weight.cg.airframe.flight_controls.legacy"
 )
 class ComputeFlightControlCG(ExplicitComponent):

@@ -24,7 +24,7 @@ from openmdao.utils.units import convert_units
 
 from scipy.optimize import fsolve
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from fastga.command.api import generate_block_analysis
 
@@ -42,7 +42,7 @@ from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CO
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_LOOP, "fastga.submodel.loop.wing_area.update.geom.advanced"
 )
 class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
@@ -110,7 +110,7 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
         outputs["wing_area"] = wing_area_mission
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_CONS, "fastga.submodel.loop.wing_area.constraint.geom.advanced"
 )
 class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):

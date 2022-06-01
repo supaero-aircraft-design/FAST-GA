@@ -17,16 +17,16 @@ import math
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_VT_POSITION_FL, SUBMODEL_VT_POSITION_FD
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_VT_POSITION_FD
 ] = "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_VT_POSITION_FD, "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
 )
 class ComputeVTMacPositionFD(ExplicitComponent):
@@ -97,12 +97,12 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         )
 
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_VT_POSITION_FL
 ] = "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_VT_POSITION_FL, "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
 )
 class ComputeVTMacPositionFL(ExplicitComponent):

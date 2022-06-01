@@ -23,9 +23,8 @@ from scipy.interpolate import interp1d
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterSubmodel
-from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
@@ -39,13 +38,15 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-RegisterSubmodel.active_models[SUBMODEL_CLIMB] = "fastga.submodel.performances.mission.climb.legacy"
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_CLIMB
+] = "fastga.submodel.performances.mission.climb.legacy"
+oad.RegisterSubmodel.active_models[
     SUBMODEL_CLIMB_SPEED
 ] = "fastga.submodel.performances.mission.climb_speed.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
 class ComputeClimb(DynamicEquilibrium):
     """
     Compute the fuel consumption on climb segment with constant VCAS and fixed thrust ratio.
@@ -151,7 +152,7 @@ class ComputeClimb(DynamicEquilibrium):
             thrust = float(previous_step[1])
 
             # Compute consumption
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=mach,
                 altitude=altitude_t,
                 engine_setting=EngineSetting.CLIMB,
@@ -225,7 +226,9 @@ class ComputeClimb(DynamicEquilibrium):
         outputs["data:mission:sizing:main_route:climb:duration"] = time_t
 
 
-@RegisterSubmodel(SUBMODEL_CLIMB_SPEED, "fastga.submodel.performances.mission.climb_speed.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_CLIMB_SPEED, "fastga.submodel.performances.mission.climb_speed.legacy"
+)
 class ComputeClimbSpeed(om.ExplicitComponent):
     def setup(self):
 

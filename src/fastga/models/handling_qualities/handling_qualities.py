@@ -17,6 +17,9 @@ Estimation of static margin.
 
 import openmdao.api as om
 
+import fastoad.api as oad
+from fastoad.module_management.constants import ModelDomain
+
 from fastga.models.aerodynamics.aero_center import ComputeAeroCenter
 from fastga.models.handling_qualities.compute_static_margin import _ComputeStaticMargin
 from fastga.models.handling_qualities.tail_sizing.compute_to_rotation_limit import (
@@ -27,11 +30,7 @@ from fastga.models.handling_qualities.tail_sizing.compute_balked_landing_limit i
 )
 
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
-from fastoad.module_management.constants import ModelDomain
-
-
-@RegisterOpenMDAOSystem(
+@oad.RegisterOpenMDAOSystem(
     "fastga.handling_qualities.all_handling_qualities", domain=ModelDomain.HANDLING_QUALITIES
 )
 class ComputeHandlingQualities(om.Group):

@@ -22,9 +22,10 @@ from scipy.optimize import fsolve
 from pandas import read_csv
 import numpy as np
 
-from fastoad.model_base import FlightPoint, Atmosphere
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop import resources
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import (
@@ -1065,7 +1066,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return fuel, power_sol[0], thrust_sol[0]
 
-    def compute_flight_points(self, flight_points: FlightPoint):
+    def compute_flight_points(self, flight_points: oad.FlightPoint):
         # pylint: disable=too-many-arguments
         # they define the trajectory
         self.specific_shape = np.shape(flight_points.mach)
@@ -1333,7 +1334,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return propeller_efficiency
 
-    def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
         """
         Compute the turboprop maximum power @ given flight-point.
 
@@ -1679,7 +1680,7 @@ class Engine(DynamicAttributeDict):
         42
 
     This class is especially useful for generating pandas DataFrame: a pandas
-    DataFrame can be generated from a list of dict... or a list of FlightPoint
+    DataFrame can be generated from a list of dict... or a list of oad.FlightPoint
     instances.
 
     The set of dictionary keys that are mapped to instance attributes is given by

@@ -18,10 +18,10 @@ import logging
 import numpy as np
 import openmdao.api as om
 
-from fastoad.model_base import FlightPoint, Atmosphere
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
@@ -50,7 +50,9 @@ NACELLE_LABELS = {
 }
 
 
-@RegisterOpenMDAOSystem("fastga.propulsion.turboprop_construction", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem(
+    "fastga.propulsion.turboprop_construction", domain=ModelDomain.AERODYNAMICS
+)
 class ComputeTurbopropMap(om.ExplicitComponent):
     def initialize(self):
         self.options.declare(
@@ -398,7 +400,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             atm.mach = mach
             for thrust in thrust_preliminary_intersect:
                 thrust = np.array([thrust])
-                flight_points = FlightPoint(
+                flight_points = oad.FlightPoint(
                     mach=mach,
                     altitude=altitude,
                     engine_setting=EngineSetting.CRUISE,

@@ -15,16 +15,16 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import SUBMODEL_RECORDING_SYSTEM_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_RECORDING_SYSTEM_MASS
 ] = "fastga.submodel.weight.mass.system.recording_systems.minimum"
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_RECORDING_SYSTEM_MASS,
     "fastga.submodel.weight.mass.system.recording_systems.minimum",
 )

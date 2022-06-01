@@ -18,9 +18,8 @@ import numpy as np
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterSubmodel
-from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
@@ -32,12 +31,12 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CRUISE = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_CRUISE
 ] = "fastga.submodel.performances.mission.cruise.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_CRUISE, "fastga.submodel.performances.mission.cruise.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CRUISE, "fastga.submodel.performances.mission.cruise.legacy")
 class ComputeCruise(DynamicEquilibrium):
     """
     Compute the fuel consumption on cruise segment with constant VTAS and altitude.
@@ -131,7 +130,7 @@ class ComputeCruise(DynamicEquilibrium):
             thrust = float(previous_step[1])
 
             # Compute consumption
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=mach,
                 altitude=cruise_altitude,
                 engine_setting=EngineSetting.CRUISE,

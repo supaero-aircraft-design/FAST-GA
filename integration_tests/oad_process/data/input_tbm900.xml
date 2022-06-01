@@ -191,8 +191,8 @@
     </handling_qualities>
     <weight>
       <aircraft>
-        <max_payload is_input="True">650.0<!--max payload weight--></max_payload>
-        <payload is_input="True">480.0<!--design payload weight--></payload>
+        <max_payload is_input="True" units="kg">650.0<!--max payload weight--></max_payload>
+        <payload is_input="True" units="kg">480.0<!--design payload weight--></payload>
       </aircraft>
       <airframe>
         <horizontal_tail>

@@ -13,13 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_CM_ALPHA_FUSELAGE
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment.legacy"
 )
 class ComputeFuselagePitchingMoment(FigureDigitization):

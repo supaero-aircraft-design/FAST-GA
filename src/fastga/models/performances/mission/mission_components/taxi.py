@@ -18,9 +18,8 @@ import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
-from fastoad.module_management.service_registry import RegisterSubmodel
-from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
@@ -28,10 +27,12 @@ from ..constants import SUBMODEL_TAXI
 
 _LOGGER = logging.getLogger(__name__)
 
-RegisterSubmodel.active_models[SUBMODEL_TAXI] = "fastga.submodel.performances.mission.taxi.legacy"
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_TAXI
+] = "fastga.submodel.performances.mission.taxi.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_TAXI, "fastga.submodel.performances.mission.taxi.legacy")
+@oad.RegisterSubmodel(SUBMODEL_TAXI, "fastga.submodel.performances.mission.taxi.legacy")
 class ComputeTaxi(om.ExplicitComponent):
     """Compute the fuel consumption for taxi based on speed and duration."""
 
@@ -76,7 +77,7 @@ class ComputeTaxi(om.ExplicitComponent):
             mach = inputs["data:mission:sizing:taxi_in:speed"] / Atmosphere(0.0).speed_of_sound
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=mach, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=thrust_rate
         )
         propulsion_model.compute_flight_points(flight_point)

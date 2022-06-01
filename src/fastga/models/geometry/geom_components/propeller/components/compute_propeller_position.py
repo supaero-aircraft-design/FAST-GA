@@ -17,13 +17,14 @@ import warnings
 import numpy as np
 import openmdao.api as om
 
-# noinspection PyProtectedMember
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_PROPELLER_POSITION
 
 
-@RegisterSubmodel(SUBMODEL_PROPELLER_POSITION, "fastga.submodel.geometry.propeller.position.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_PROPELLER_POSITION, "fastga.submodel.geometry.propeller.position.legacy"
+)
 class ComputePropellerPosition(om.ExplicitComponent):
     """Propeller position with respect to the leading edge estimation."""
 

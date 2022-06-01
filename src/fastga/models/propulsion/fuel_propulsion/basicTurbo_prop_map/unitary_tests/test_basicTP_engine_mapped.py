@@ -15,19 +15,19 @@ Test module for basicIC_engine.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from random import SystemRandom
+import copy
 
-from .data.dummy_maps import *
-
-from fastoad.model_base import FlightPoint, Atmosphere
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import (
     BasicTPEngineMapped,
 )
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 
-import copy
+from .data.dummy_maps import *
 
 INVALID_SFC = 0.0
 
@@ -89,7 +89,7 @@ def test_compute_flight_points():
     ]  # mix EngineSetting with integers
     expected_sfc = [7.11080994e-06, 1.14707988e-05, 1.40801854e-05, 1.75188296e-05, 1.82845376e-05]
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs + machs,
         altitude=altitudes + altitudes,
         engine_setting=engine_settings + engine_settings,
@@ -102,7 +102,7 @@ def test_compute_flight_points():
     np.testing.assert_allclose(flight_points.thrust, thrusts + thrusts, rtol=1e-2)
     np.testing.assert_allclose(flight_points.sfc, expected_sfc + expected_sfc, rtol=1e-2)
 
-    solo_flight_point = FlightPoint(
+    solo_flight_point = oad.FlightPoint(
         mach=0.375,
         altitude=2400,
         engine_setting=EngineSetting.CRUISE,
@@ -236,23 +236,23 @@ def test_compute_max_power():
         level_IL=3048,
     )
     # At design point
-    flight_points = FlightPoint(altitude=0, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=0, mach=0.5)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=3000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=3000, mach=0.5)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=6000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=6000, mach=0.5)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = FlightPoint(altitude=9000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.5)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 356.46, atol=1)
 
     # At higher altitude, higher mach
-    flight_points = FlightPoint(altitude=9000, mach=0.8)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.8)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
 
@@ -260,8 +260,6 @@ def test_compare_with_direct_computation():
 
     cruise_altitude_propeller = 6096.0
     cruise_speed = 125.524
-
-    random_generator = SystemRandom()
 
     mapped_engine = BasicTPEngineMapped(
         power_design=1342.285,
@@ -352,7 +350,7 @@ def test_compare_with_direct_computation():
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs,
         altitude=altitudes,
         engine_setting=engine_settings + engine_settings,
@@ -394,7 +392,7 @@ def test_compare_with_direct_computation():
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs,
         altitude=altitudes,
         engine_setting=engine_settings + engine_settings,
@@ -436,7 +434,7 @@ def test_compare_with_direct_computation():
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs,
         altitude=altitudes,
         engine_setting=engine_settings + engine_settings,

@@ -17,11 +17,11 @@ Main component for mass breakdown.
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 
-@RegisterOpenMDAOSystem("fastga.loop.mtow", domain=ModelDomain.OTHER)
+@oad.RegisterOpenMDAOSystem("fastga.loop.mtow", domain=ModelDomain.OTHER)
 class UpdateMTOW(ExplicitComponent):
     """
     Computes Maximum Take-Off Weight from Maximum Zero Fuel Weight and fuel weight.

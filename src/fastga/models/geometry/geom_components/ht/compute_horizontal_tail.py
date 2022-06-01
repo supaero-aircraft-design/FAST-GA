@@ -16,7 +16,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .components import ComputeHTMacFD, ComputeHTMacFL
 from .constants import (
@@ -33,20 +33,22 @@ class ComputeHorizontalTailGeometryFD(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "ht_chord", RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
         )
         self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
         self.add_subsystem(
-            "ht_sweep", RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_distance", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE), promotes=["*"]
+            "ht_distance",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "ht_eff", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+            "ht_eff", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
         )
 
 
@@ -55,18 +57,20 @@ class ComputeHorizontalTailGeometryFL(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "ht_chord", RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
         )
         self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
         self.add_subsystem(
-            "ht_sweep", RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_distance", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE), promotes=["*"]
+            "ht_distance",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "ht_eff", RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+            "ht_eff", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
         )

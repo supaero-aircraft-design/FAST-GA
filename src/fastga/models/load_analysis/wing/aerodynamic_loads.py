@@ -19,14 +19,14 @@ according to aerostructural loads.
 import numpy as np
 import openmdao.api as om
 
+import fastoad.api as oad
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .aerostructural_loads import AerostructuralLoad, SPAN_MESH_POINT_LOADS
 from .constants import SUBMODEL_AERODYNAMIC_LOADS
 
 
-@RegisterSubmodel(SUBMODEL_AERODYNAMIC_LOADS, "fastga.submodel.loads.wings.aerodynamic.legacy")
+@oad.RegisterSubmodel(SUBMODEL_AERODYNAMIC_LOADS, "fastga.submodel.loads.wings.aerodynamic.legacy")
 class AerodynamicLoads(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")

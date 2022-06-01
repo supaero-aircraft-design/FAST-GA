@@ -13,13 +13,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_CY_RUDDER
 
 
-@RegisterSubmodel(SUBMODEL_CY_RUDDER, "fastga.submodel.aerodynamics.rudder.yawing_moment.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_CY_RUDDER, "fastga.submodel.aerodynamics.rudder.yawing_moment.legacy"
+)
 class ComputeCyDeltaRudder(FigureDigitization):
     """
     Yawing moment due to rudder estimated based on the methodology in section 10.3.8 of Roskam

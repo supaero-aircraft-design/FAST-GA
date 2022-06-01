@@ -21,13 +21,12 @@ import logging
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
 
-from stdatm import Atmosphere
-
-from fastoad.model_base import FlightPoint
-
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
+from stdatm import Atmosphere
+
 
 ALPHA_LIMIT = 13.5 * math.pi / 180.0  # Limit angle to touch tail on ground in rad
 ALPHA_RATE = 3.0 * math.pi / 180.0  # Angular rotation speed in rad/s
@@ -185,7 +184,7 @@ class _v2(om.ExplicitComponent):
             v2 = math.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
             mach = v2 / atm.speed_of_sound
 
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=mach,
                 altitude=SAFETY_HEIGHT,
                 engine_setting=EngineSetting.CLIMB,
@@ -301,7 +300,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
             v_lift_off[i] = math.sqrt((mtow * g) / (0.5 * atm_0.density * wing_area * cl))
             while rel_error > 0.05:
                 # Update thrust with v_lift_off
-                flight_point = FlightPoint(
+                flight_point = oad.FlightPoint(
                     mach=v_lift_off[i] / atm_0.speed_of_sound,
                     altitude=0.0,
                     engine_setting=EngineSetting.TAKEOFF,
@@ -332,7 +331,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
             while altitude_t < SAFETY_HEIGHT:
                 # Estimation of thrust
                 atm = Atmosphere(altitude_t, altitude_in_feet=False)
-                flight_point = FlightPoint(
+                flight_point = oad.FlightPoint(
                     mach=v_t / atm.speed_of_sound,
                     altitude=altitude_t,
                     engine_setting=EngineSetting.TAKEOFF,
@@ -459,7 +458,7 @@ class _vr_from_v2(om.ExplicitComponent):
         # speed rotation we will get the AOA computed for v_lift_off at v_lift_off
         while (alpha_t != 0.0) and (v_t != 0.0):
             # Estimation of thrust
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=v_t / atm.speed_of_sound,
                 altitude=0.0,
                 engine_setting=EngineSetting.TAKEOFF,
@@ -581,7 +580,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         while altitude_t < SAFETY_HEIGHT:
             # Estimation of thrust
             atm = Atmosphere(altitude_t, altitude_in_feet=False)
-            flight_point = FlightPoint(
+            flight_point = oad.FlightPoint(
                 mach=max(v_t, vr) / atm.speed_of_sound,
                 altitude=altitude_t,
                 engine_setting=EngineSetting.TAKEOFF,

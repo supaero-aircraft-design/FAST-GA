@@ -16,7 +16,7 @@ FAST - Copyright (c) 2016 ONERA ISAE.
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
@@ -27,7 +27,7 @@ from .cg_components.constants import (
 )
 
 
-@RegisterSubmodel(SUBMODEL_CENTER_OF_GRAVITY, "fastga.submodel.weight.cg.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CENTER_OF_GRAVITY, "fastga.submodel.weight.cg.legacy")
 class CG(om.Group):
     """Model that computes the global center of gravity."""
 
@@ -44,15 +44,17 @@ class CG(om.Group):
 
     def setup(self):
         self.add_subsystem(
-            "tank_cg", RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
+            "tank_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "payload_cg", RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
+            "payload_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
         )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_CG_EXTREME, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_AIRCRAFT_CG_EXTREME, options=propulsion_option
+            ),
             promotes=["*"],
         )
 

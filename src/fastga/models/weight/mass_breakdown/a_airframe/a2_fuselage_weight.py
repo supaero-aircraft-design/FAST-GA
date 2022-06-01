@@ -16,17 +16,19 @@ import numpy as np
 import openmdao.api as om
 import math
 
+import fastoad.api as oad
 from stdatm import Atmosphere
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_FUSELAGE_MASS
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_FUSELAGE_MASS
 ] = "fastga.submodel.weight.mass.airframe.fuselage.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.legacy"
+)
 class ComputeFuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation
@@ -75,7 +77,9 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         )
 
 
-@RegisterSubmodel(SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.raymer")
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.raymer"
+)
 class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     """
     Fuselage weight estimation

@@ -17,7 +17,7 @@ import logging
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.performances.mission.takeoff import TakeOffPhase
@@ -39,7 +39,7 @@ MAX_CALCULATION_TIME = 15  # time in seconds
 _LOGGER = logging.getLogger(__name__)
 
 
-@RegisterOpenMDAOSystem("fastga.performances.mission", domain=ModelDomain.PERFORMANCE)
+@oad.RegisterOpenMDAOSystem("fastga.performances.mission", domain=ModelDomain.PERFORMANCE)
 class Mission(om.Group):
     """
     Computes analytically the fuel mass necessary for each part of the flight cycle.
@@ -65,7 +65,7 @@ class Mission(om.Group):
         taxi_out_options = {"taxi_out": True, "propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "taxi_out",
-            RegisterSubmodel.get_submodel(SUBMODEL_TAXI, options=taxi_out_options),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAXI, options=taxi_out_options),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -77,36 +77,36 @@ class Mission(om.Group):
         }
         self.add_subsystem(
             "climb_speed",
-            RegisterSubmodel.get_submodel(SUBMODEL_CLIMB_SPEED),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CLIMB_SPEED),
             promotes=["*"],
         )
         self.add_subsystem(
             "climb",
-            RegisterSubmodel.get_submodel(SUBMODEL_CLIMB, options=options_mission),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CLIMB, options=options_mission),
             promotes=["*"],
         )
         self.add_subsystem(
             "cruise",
-            RegisterSubmodel.get_submodel(SUBMODEL_CRUISE, options=options_mission),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CRUISE, options=options_mission),
             promotes=["*"],
         )
         self.add_subsystem(
-            "reserve", RegisterSubmodel.get_submodel(SUBMODEL_RESERVES), promotes=["*"]
+            "reserve", oad.RegisterSubmodel.get_submodel(SUBMODEL_RESERVES), promotes=["*"]
         )
         self.add_subsystem(
             "descent_speed",
-            RegisterSubmodel.get_submodel(SUBMODEL_DESCENT_SPEED),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DESCENT_SPEED),
             promotes=["*"],
         )
         self.add_subsystem(
             "descent",
-            RegisterSubmodel.get_submodel(SUBMODEL_DESCENT, options=options_mission),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DESCENT, options=options_mission),
             promotes=["*"],
         )
         taxi_out_options = {"taxi_out": False, "propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "taxi_in",
-            RegisterSubmodel.get_submodel(SUBMODEL_TAXI, options=taxi_out_options),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAXI, options=taxi_out_options),
             promotes=["*"],
         )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])

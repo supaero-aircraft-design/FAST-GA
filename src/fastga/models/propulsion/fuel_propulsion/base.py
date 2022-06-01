@@ -17,7 +17,7 @@ from typing import Union
 
 import pandas as pd
 
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 
 from fastga.models.propulsion.propulsion import IPropulsionCS23
 
@@ -30,7 +30,7 @@ class AbstractFuelPropulsion(IPropulsionCS23, ABC):
     "sfc" and "thrust" in computed FlightPoint instances.
     """
 
-    def get_consumed_mass(self, flight_point: FlightPoint, time_step: float) -> float:
+    def get_consumed_mass(self, flight_point: oad.FlightPoint, time_step: float) -> float:
         return time_step * flight_point.sfc * flight_point.thrust
 
     @abstractmethod
@@ -54,14 +54,14 @@ class FuelEngineSet(AbstractFuelPropulsion):
         self.engine = engine
         self.engine_count = engine_count
 
-    def compute_flight_points(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         if flight_points.thrust is not None:
             flight_points.thrust = flight_points.thrust / self.engine_count
 
         self.engine.compute_flight_points(flight_points)
         flight_points.thrust = flight_points.thrust * self.engine_count
 
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
 
         return self.engine.compute_max_power(flight_points)
 

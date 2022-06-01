@@ -15,13 +15,13 @@
 import math
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_CD0_FUSELAGE
 
 
-@RegisterSubmodel(SUBMODEL_CD0_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.cd0.legacy")
+@oad.RegisterSubmodel(SUBMODEL_CD0_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.cd0.legacy")
 class Cd0Fuselage(ExplicitComponent):
     """
     Profile drag estimation for the fuselage

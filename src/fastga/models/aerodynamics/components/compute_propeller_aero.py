@@ -16,10 +16,13 @@ import logging
 import math
 
 import numpy as np
-import openmdao.api as om
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from scipy.optimize import fsolve
+
+import openmdao.api as om
+
+import fastoad.api as oad
+from fastoad.module_management.constants import ModelDomain
+
 from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar, POLAR_POINT_COUNT
@@ -30,7 +33,7 @@ THRUST_PTS_NB = 30
 SPEED_PTS_NB = 10
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
 class ComputePropellerPerformance(om.Group):
 
     """Computes propeller profiles aerodynamic coefficient and propeller behaviour."""

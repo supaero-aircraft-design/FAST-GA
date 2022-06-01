@@ -20,14 +20,14 @@ from scipy.integrate import trapz
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ...constants import SUBMODEL_MFW
 
 POINTS_NB_WING = 50
 
 
-@RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
+@oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
 class ComputeMFWAdvanced(ExplicitComponent):
     """
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering

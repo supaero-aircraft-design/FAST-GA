@@ -14,13 +14,13 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem, RegisterSubmodel
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import SUBMODEL_HT_AREA, SUBMODEL_VT_AREA
 
 
-@RegisterOpenMDAOSystem(
+@oad.RegisterOpenMDAOSystem(
     "fastga.handling_qualities.tail_sizing", domain=ModelDomain.HANDLING_QUALITIES
 )
 class UpdateTailAreas(om.Group):
@@ -40,11 +40,11 @@ class UpdateTailAreas(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "horizontal_tail",
-            RegisterSubmodel.get_submodel(SUBMODEL_HT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_AREA, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "vertical_tail",
-            RegisterSubmodel.get_submodel(SUBMODEL_VT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_AREA, options=propulsion_option),
             promotes=["*"],
         )

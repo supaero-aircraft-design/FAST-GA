@@ -14,15 +14,17 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.group import Group
+
+import fastoad.api as oad
+from fastoad.module_management.constants import ModelDomain
 
 from .components.compute_vn import ComputeVNAndVH, DOMAIN_PTS_NB
 
 
-@RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
+@oad.RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
 class LoadFactor(Group):
     """
     Models for computing the loads and characteristic speed and load factor of the aircraft

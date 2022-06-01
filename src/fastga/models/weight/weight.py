@@ -16,14 +16,13 @@ Weight computation (mass and CG).
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from .constants import SUBMODEL_MASS_BREAKDOWN, SUBMODEL_CENTER_OF_GRAVITY
 
 
-@RegisterOpenMDAOSystem("fastga.weight.legacy", domain=ModelDomain.WEIGHT)
+@oad.RegisterOpenMDAOSystem("fastga.weight.legacy", domain=ModelDomain.WEIGHT)
 class Weight(om.Group):
     """
     Computes masses and Centers of Gravity for each part of the empty operating aircraft, among
@@ -44,11 +43,13 @@ class Weight(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "mass_breakdown",
-            RegisterSubmodel.get_submodel(SUBMODEL_MASS_BREAKDOWN, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_MASS_BREAKDOWN, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "cg",
-            RegisterSubmodel.get_submodel(SUBMODEL_CENTER_OF_GRAVITY, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_CENTER_OF_GRAVITY, options=propulsion_option
+            ),
             promotes=["*"],
         )

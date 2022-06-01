@@ -15,9 +15,7 @@
 import numpy as np
 from openmdao.core.component import Component
 
-from fastoad.model_base.propulsion import IOMPropulsionWrapper
-from fastoad.module_management.service_registry import RegisterPropulsion
-from fastoad.openmdao.validity_checker import ValidityDomainChecker
+import fastoad.api as oad
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_mapped import (
     BasicTPEngineMapped,
@@ -32,8 +30,8 @@ from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine
 )
 
 
-@RegisterPropulsion("fastga.wrapper.propulsion.basicTurbopropMapped")
-class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
+@oad.RegisterPropulsion("fastga.wrapper.propulsion.basicTurbopropMapped")
+class OMBasicTurbopropMapWrapper(oad.IOMPropulsionWrapper):
     """
     Wrapper class for basic Turboprop model using precalculated maps.
     It is made to allow a direct call to :class:`~.basicIC_engine.BasicTPEngineMapped` in an
@@ -303,7 +301,7 @@ class OMBasicTurbopropMapWrapper(IOMPropulsionWrapper):
         )
 
 
-@ValidityDomainChecker(
+@oad.ValidityDomainChecker(
     {
         "data:propulsion:turboprop:max_power": (
             180,

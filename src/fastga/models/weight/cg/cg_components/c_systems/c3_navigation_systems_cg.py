@@ -15,12 +15,12 @@
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_NAVIGATION_SYSTEMS_CG, "fastga.submodel.weight.cg.system.navigation_system.legacy"
 )
 class ComputeNavigationSystemsCG(ExplicitComponent):

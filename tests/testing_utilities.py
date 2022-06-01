@@ -16,19 +16,21 @@ Convenience functions for helping tests
 
 import logging
 import os.path as pth
-import openmdao.api as om
+from copy import deepcopy
 from typing import Union, List
 import time
+
+import numpy as np
+
+import openmdao.api as om
 from openmdao.core.system import System
-from copy import deepcopy
 
 
 # noinspection PyProtectedMember
 from fastoad.module_management.service_registry import _RegisterOpenMDAOService
-from fastoad.openmdao.problem import FASTOADProblem
+import fastoad.api as oad
 
 from fastoad.io import VariableIO
-from fastoad.openmdao.variables import VariableList
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,7 +44,7 @@ def run_system(
     check=False,
 ):
     """Runs and returns an OpenMDAO problem with provided component and data"""
-    problem = FASTOADProblem()
+    problem = oad.FASTOADProblem()
     model = problem.model
     model.add_subsystem("inputs", input_vars, promotes=["*"])
     model.add_subsystem("component", component, promotes=["*"])
@@ -55,8 +57,12 @@ def run_system(
         print("\n")
 
     problem.setup(mode=setup_mode, check=check)
-    variables = VariableList.from_unconnected_inputs(problem)
-    assert not variables, "These inputs are not provided: %s" % variables.names()
+    variables = [
+        var.name
+        for var in oad.VariableList.from_problem(problem, io_status="inputs")
+        if np.any(np.isnan(var.val))
+    ]
+    assert not variables, "These inputs are not provided: %s" % variables
 
     problem.run_model()
 
@@ -83,9 +89,9 @@ def get_indep_var_comp(var_names: List[str], test_file: str, xml_file_name: str)
     return ivc
 
 
-class VariableListLocal(VariableList):
+class VariableListLocal(oad.VariableList):
     @classmethod
-    def from_system(cls, system: System) -> "VariableList":
+    def from_system(cls, system: System) -> "oad.VariableList":
         """
         Creates a VariableList instance containing inputs and outputs of a an OpenMDAO System.
         The inputs (is_input=True) correspond to the variables of IndepVarComp
@@ -100,7 +106,7 @@ class VariableListLocal(VariableList):
         :return: VariableList instance.
         """
 
-        problem = FASTOADProblem()
+        problem = oad.FASTOADProblem()
         if isinstance(system, om.Group):
             problem.model = deepcopy(system)
         else:

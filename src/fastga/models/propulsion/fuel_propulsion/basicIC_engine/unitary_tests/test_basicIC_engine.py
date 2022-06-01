@@ -14,7 +14,7 @@
 
 import numpy as np
 
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from ..basicIC_engine import BasicICEngine
@@ -803,7 +803,7 @@ def test_compute_flight_points():
     )  # load a 4-strokes 130kW gasoline engine
 
     # Test with scalars
-    flight_point = FlightPoint(
+    flight_point = oad.FlightPoint(
         mach=0.3,
         altitude=0.0,
         engine_setting=EngineSetting.CLIMB.value,
@@ -813,7 +813,7 @@ def test_compute_flight_points():
     np.testing.assert_allclose(flight_point.thrust_rate, 0.5, rtol=1e-2)
     np.testing.assert_allclose(flight_point.sfc, 1.398174e-05, rtol=1e-2)
 
-    flight_point = FlightPoint(
+    flight_point = oad.FlightPoint(
         mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=0.8
     )  # with engine_setting as EngineSetting
     engine.compute_flight_points(flight_point)
@@ -838,7 +838,7 @@ def test_compute_flight_points():
     ]  # mix EngineSetting with integers
     expected_sfc = [2.488831e-16, 1.398174e-05, 1.398174e-05, 2.040742e-05, 1.553841e-05]
 
-    flight_points = FlightPoint(
+    flight_points = oad.FlightPoint(
         mach=machs + machs,
         altitude=altitudes + altitudes,
         engine_setting=engine_settings + engine_settings,

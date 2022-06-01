@@ -19,8 +19,8 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 
-from fastoad.model_base import FlightPoint
-from fastoad.model_base.propulsion import IPropulsion, IOMPropulsionWrapper
+import fastoad.api as oad
+from fastoad.model_base.propulsion import IPropulsion
 
 
 class IPropulsionCS23(IPropulsion):
@@ -37,7 +37,7 @@ class IPropulsionCS23(IPropulsion):
         """
 
     @abstractmethod
-    def compute_max_power(self, flight_points: Union[FlightPoint, pd.DataFrame]):
+    def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         """
         Computes max available power on one engine.
 
@@ -97,7 +97,7 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wrapper = self.get_wrapper().get_model(inputs)
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=inputs["data:propulsion:mach"],
             altitude=inputs["data:propulsion:altitude"],
             engine_setting=inputs["data:propulsion:engine_setting"],
@@ -114,7 +114,7 @@ class BaseOMPropulsionComponent(om.ExplicitComponent, ABC):
 
     @staticmethod
     @abstractmethod
-    def get_wrapper() -> IOMPropulsionWrapper:
+    def get_wrapper() -> oad.IOMPropulsionWrapper:
         """
         This method defines the used :class:`IOMPropulsionWrapper` instance.
 

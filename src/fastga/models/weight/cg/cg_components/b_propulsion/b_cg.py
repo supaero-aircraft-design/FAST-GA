@@ -15,15 +15,15 @@
 import openmdao.api as om
 import numpy as np
 
+import fastoad.api as oad
+
 from .b1_engine_cg import ComputeEngineCG
 from .b2_fuel_lines_cg import ComputeFuelLinesCG
-
-from fastoad.module_management.service_registry import RegisterSubmodel
 
 from ..constants import SUBMODEL_PROPULSION_CG
 
 
-@RegisterSubmodel(SUBMODEL_PROPULSION_CG, "fastga.submodel.weight.cg.propulsion.legacy")
+@oad.RegisterSubmodel(SUBMODEL_PROPULSION_CG, "fastga.submodel.weight.cg.propulsion.legacy")
 class FuelPropulsionCG(om.Group):
     def setup(self):
         self.add_subsystem("engine_cg", ComputeEngineCG(), promotes=["*"])

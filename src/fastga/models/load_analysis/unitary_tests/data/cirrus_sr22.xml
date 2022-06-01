@@ -526,11 +526,21 @@
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
         <cs23>
+          <safety_factor is_input="True">1.5</safety_factor>
           <characteristic_speed>
             <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+            <vc units="m/s" is_input="True">83.95891627547779<!--limit speed--></vc>
           </characteristic_speed>
           <sizing_factor>
             <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+            <ultimate_mtow>
+              <negative is_input="True">-3.208113917044951</negative>
+              <positive is_input="True">6.20811391704495</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative is_input="True">-3.431253132553543</negative>
+              <positive is_input="True">6.431253132553544</positive>
+            </ultimate_mzfw>
           </sizing_factor>
           <flight_domain>
             <mtow>

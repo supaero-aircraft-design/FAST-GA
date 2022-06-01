@@ -18,12 +18,12 @@ import numpy as np
 
 from openmdao import api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import SUBMODEL_PAYLOAD_MASS
 
 
-@RegisterSubmodel(SUBMODEL_PAYLOAD_MASS, "fastga.submodel.weight.mass.payload.legacy")
+@oad.RegisterSubmodel(SUBMODEL_PAYLOAD_MASS, "fastga.submodel.weight.mass.payload.legacy")
 class ComputePayload(om.ExplicitComponent):
     """Computes payload from NPAX."""
 

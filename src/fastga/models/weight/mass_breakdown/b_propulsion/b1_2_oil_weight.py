@@ -17,7 +17,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 
@@ -47,7 +47,7 @@ class ComputeOilWeight(ExplicitComponent):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
-        flight_point = FlightPoint(
+        flight_point = oad.FlightPoint(
             mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
         )  # with engine_setting as EngineSetting
         propulsion_model.compute_flight_points(flight_point)

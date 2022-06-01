@@ -14,7 +14,7 @@
 
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import (
     SUBMODEL_WING_MASS,
@@ -28,35 +28,37 @@ from .constants import (
 from ..constants import SUBMODEL_AIRFRAME_MASS
 
 
-@RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
+@oad.RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
 class AirframeWeight(om.Group):
     """Computes mass of airframe."""
 
     def setup(self):
         self.add_subsystem(
-            "wing_weight", RegisterSubmodel.get_submodel(SUBMODEL_WING_MASS), promotes=["*"]
+            "wing_weight", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MASS), promotes=["*"]
         )
         self.add_subsystem(
-            "fuselage_weight", RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MASS), promotes=["*"]
+            "fuselage_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MASS),
+            promotes=["*"],
         )
         self.add_subsystem(
             "empennage_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_TAIL_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "flight_controls_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FLIGHT_CONTROLS_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "landing_gear_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "paint_weight",
-            RegisterSubmodel.get_submodel(SUBMODEL_PAINT_MASS),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PAINT_MASS),
             promotes=["*"],
         )
 

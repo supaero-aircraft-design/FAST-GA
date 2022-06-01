@@ -17,11 +17,11 @@ Estimation of power systems weight.
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 from .constants import SUBMODEL_POWER_SYSTEM_MASS
 
 
-@RegisterSubmodel(
+@oad.RegisterSubmodel(
     SUBMODEL_POWER_SYSTEM_MASS, "fastga.submodel.weight.mass.system.power_system.legacy"
 )
 class ComputePowerSystemsWeight(ExplicitComponent):

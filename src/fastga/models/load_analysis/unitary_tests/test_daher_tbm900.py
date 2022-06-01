@@ -38,13 +38,13 @@ def test_compute_shear_stress():
     shear_max_mass_condition = problem.get_val("data:loads:max_shear:mass", units="kg")
     assert shear_max_mass_condition == pytest.approx(3358.7, abs=1e-1)
     shear_max_lf_condition = problem.get_val("data:loads:max_shear:load_factor")
-    assert shear_max_lf_condition == pytest.approx(3.47, abs=1e-2)
+    assert shear_max_lf_condition == pytest.approx(3.8, abs=1e-2)
     lift_shear_diagram = problem.get_val("data:loads:max_shear:lift_shear", units="N")
     lift_root_shear = lift_shear_diagram[0]
-    assert lift_root_shear == pytest.approx(90144.47, abs=1)
+    assert lift_root_shear == pytest.approx(98467.47, abs=1)
     weight_shear_diagram = problem.get_val("data:loads:max_shear:weight_shear", units="N")
     weight_root_shear = weight_shear_diagram[0]
-    assert weight_root_shear == pytest.approx(-27480, abs=1)
+    assert weight_root_shear == pytest.approx(-30016, abs=1)
 
 
 def test_compute_root_bending_moment():
@@ -56,13 +56,13 @@ def test_compute_root_bending_moment():
     max_rbm_mass_condition = problem.get_val("data:loads:max_rbm:mass", units="kg")
     assert max_rbm_mass_condition == pytest.approx(2765.07, abs=1e-1)
     max_rbm_lf_condition = problem.get_val("data:loads:max_rbm:load_factor")
-    assert max_rbm_lf_condition == pytest.approx(3.47, abs=1e-2)
+    assert max_rbm_lf_condition == pytest.approx(3.8, abs=1e-2)
     lift_rbm_diagram = problem.get_val("data:loads:max_rbm:lift_rbm", units="N*m")
     lift_rbm = lift_rbm_diagram[0]
-    assert lift_rbm == pytest.approx(200847, abs=1)
+    assert lift_rbm == pytest.approx(219390, abs=1)
     weight_rbm_diagram = problem.get_val("data:loads:max_rbm:weight_rbm", units="N*m")
     weight_rbm = weight_rbm_diagram[0]
-    assert weight_rbm == pytest.approx(-31426, abs=1)
+    assert weight_rbm == pytest.approx(-34326, abs=1)
 
 
 def test_compute_mass_distribution():
@@ -940,4 +940,4 @@ def test_load_group():
 
     lift_shear_diagram = problem.get_val("data:loads:max_shear:lift_shear", units="N")
     lift_root_shear = lift_shear_diagram[0]
-    assert lift_root_shear == pytest.approx(90144, abs=1)
+    assert lift_root_shear == pytest.approx(98467, abs=1)

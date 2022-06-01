@@ -16,8 +16,7 @@ import logging
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
-
+import fastoad.api as oad
 from ..constants import SUBMODEL_RESERVES
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,12 +24,12 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-RegisterSubmodel.active_models[
+oad.RegisterSubmodel.active_models[
     SUBMODEL_RESERVES
 ] = "fastga.submodel.performances.mission.reserves.legacy"
 
 
-@RegisterSubmodel(SUBMODEL_RESERVES, "fastga.submodel.performances.mission.reserves.legacy")
+@oad.RegisterSubmodel(SUBMODEL_RESERVES, "fastga.submodel.performances.mission.reserves.legacy")
 class ComputeReserve(om.ExplicitComponent):
     def setup(self):
 

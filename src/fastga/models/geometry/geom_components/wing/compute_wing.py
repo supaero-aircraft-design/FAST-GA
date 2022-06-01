@@ -14,7 +14,7 @@
 
 from openmdao.api import Group
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .constants import (
     SUBMODEL_WING_THICKNESS_RATIO,
@@ -30,36 +30,40 @@ from .constants import (
 from ...constants import SUBMODEL_WING_GEOMETRY
 
 
-@RegisterSubmodel(SUBMODEL_WING_GEOMETRY, "fastga.submodel.geometry.wing.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_GEOMETRY, "fastga.submodel.geometry.wing.legacy")
 class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
     """Wing geometry estimation."""
 
     def setup(self):
         self.add_subsystem(
-            "wing_toc", RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO), promotes=["*"]
+            "wing_toc",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "wing_y", RegisterSubmodel.get_submodel(SUBMODEL_WING_SPAN), promotes=["*"]
+            "wing_y", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SPAN), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_l1l4", RegisterSubmodel.get_submodel(SUBMODEL_WING_L1_L4), promotes=["*"]
+            "wing_l1l4", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L1_L4), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_l2l3", RegisterSubmodel.get_submodel(SUBMODEL_WING_L2_L3), promotes=["*"]
+            "wing_l2l3", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L2_L3), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_x", RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]
+            "wing_x", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_b50", RegisterSubmodel.get_submodel(SUBMODEL_WING_B50), promotes=["*"]
+            "wing_b50", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_B50), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_mac", RegisterSubmodel.get_submodel(SUBMODEL_WING_MAC), promotes=["*"]
+            "wing_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MAC), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_sweep", RegisterSubmodel.get_submodel(SUBMODEL_WING_SWEEP), promotes=["*"]
+            "wing_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_wet_area", RegisterSubmodel.get_submodel(SUBMODEL_WING_WET_AREA), promotes=["*"]
+            "wing_wet_area",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_WET_AREA),
+            promotes=["*"],
         )

@@ -20,12 +20,12 @@ import math
 import numpy as np
 import openmdao.api as om
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_TAIL_CG
 
 
-@RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
+@oad.RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
 class ComputeTailCG(om.Group):
     def setup(self):
         self.add_subsystem("compute_ht", ComputeHTcg(), promotes=["*"])

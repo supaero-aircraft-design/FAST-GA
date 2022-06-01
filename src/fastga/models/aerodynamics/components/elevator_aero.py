@@ -16,13 +16,13 @@ import math
 from typing import Union
 
 import numpy as np
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_ELEVATOR
 
 
-@RegisterSubmodel(SUBMODEL_DELTA_ELEVATOR, "fastga.submodel.aerodynamics.elevator.delta.legacy")
+@oad.RegisterSubmodel(SUBMODEL_DELTA_ELEVATOR, "fastga.submodel.aerodynamics.elevator.delta.legacy")
 class ComputeDeltaElevator(FigureDigitization):
     """
     Provides lift and drag increments due to high-lift devices.

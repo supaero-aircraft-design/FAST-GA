@@ -14,7 +14,7 @@
 
 from openmdao.api import Group
 
-from fastoad.module_management.service_registry import RegisterSubmodel
+import fastoad.api as oad
 
 from .max_cg_ratio import ComputeMaxMinCGRatio
 
@@ -26,7 +26,7 @@ from .constants import (
 )
 
 
-@RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")
+@oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")
 class ComputeGlobalCG(Group):
     # TODO: Document equations. Cite sources
     """Global center of gravity estimation."""
@@ -37,18 +37,20 @@ class ComputeGlobalCG(Group):
     def setup(self):
         self.add_subsystem(
             "cg_ratio_aft",
-            RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG_RATIO),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG_RATIO),
             promotes=["*"],
         )
         self.add_subsystem(
             "cg_ratio_lc_ground",
-            RegisterSubmodel.get_submodel(SUBMODEL_LOADCASE_GROUND_X),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LOADCASE_GROUND_X),
             promotes=["*"],
         )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "cg_ratio_lc_flight",
-            RegisterSubmodel.get_submodel(SUBMODEL_LOADCASE_FLIGHT_X, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_LOADCASE_FLIGHT_X, options=propulsion_option
+            ),
             promotes=["*"],
         )
         self.add_subsystem("cg_ratio_extrema", ComputeMaxMinCGRatio(), promotes=["*"])
