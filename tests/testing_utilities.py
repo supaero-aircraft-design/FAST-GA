@@ -62,7 +62,7 @@ def run_system(
         for var in oad.VariableList.from_problem(problem, io_status="inputs")
         if np.any(np.isnan(var.val))
     ]
-    assert not variables, "These inputs are not provided: %s" % variables.names()
+    assert not variables, "These inputs are not provided: %s" % variables
 
     problem.run_model()
 
