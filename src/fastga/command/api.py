@@ -454,8 +454,17 @@ def write_needed_inputs(
                              not provided, expected format will be the default one.
     """
     variables = oad.DataFile(xml_file_path)
+
+    unconnected_inputs = oad.VariableList.from_problem(
+        problem,
+        use_initial_values=True,
+        get_promoted_names=True,
+        promoted_only=True,
+        io_status="inputs",
+    )
+
     variables.update(
-        oad.VariableList.from_unconnected_inputs(problem, with_optional_inputs=True),
+        unconnected_inputs,
         add_variables=True,
     )
     if xml_file_path:

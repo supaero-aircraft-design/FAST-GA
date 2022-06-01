@@ -16,11 +16,14 @@ Convenience functions for helping tests
 
 import logging
 import os.path as pth
-import openmdao.api as om
+from copy import deepcopy
 from typing import Union, List
 import time
+
+import numpy as np
+
+import openmdao.api as om
 from openmdao.core.system import System
-from copy import deepcopy
 
 
 # noinspection PyProtectedMember
@@ -54,7 +57,11 @@ def run_system(
         print("\n")
 
     problem.setup(mode=setup_mode, check=check)
-    variables = oad.VariableList.from_unconnected_inputs(problem)
+    variables = [
+        var.name
+        for var in oad.VariableList.from_problem(problem, io_status="inputs")
+        if np.any(np.isnan(var.val))
+    ]
     assert not variables, "These inputs are not provided: %s" % variables.names()
 
     problem.run_model()
