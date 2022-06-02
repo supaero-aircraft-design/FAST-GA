@@ -15,7 +15,7 @@ packages = [
 ]
 exclude = ["**/unitary_tests/**"]
 
-homepage = "https://github.com/fast-aircraft-design/FAST-OAD"
+homepage = "https://github.com/supaero-aircraft-design/FAST-GA"
 keywords = [
     "aircraft",
     "design",
