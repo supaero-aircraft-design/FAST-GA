@@ -3,7 +3,7 @@ line-length = 100
 
 [tool.poetry]
 name = "FAST-OAD-CS23"
-version = "1.0.1"
+version = "1.0.0"
 description = "FAST-OAD-CS23 is a framework for performing rapid Overall Aircraft Design for General Aircraft"
 readme = "README.md"
 authors = [
