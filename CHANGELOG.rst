@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.0.3
+==================
+
+- Removed unnecessary use of matplotlib in post_processing functions
+
 Version 1.0.2
 ==================
 
