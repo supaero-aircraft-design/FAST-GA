@@ -25,7 +25,7 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 
 class MissionVector(om.Group):
-    """Find the conditions necessary for the aircraft equilibrium."""
+    """Computes and potentially save mission based on options."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
