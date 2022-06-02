@@ -22,7 +22,7 @@ from .mission_vector import MissionVector
 
 @oad.RegisterOpenMDAOSystem("fastga.performances.mission_vector", domain=ModelDomain.OTHER)
 class FullMission(om.Group):
-    """Find the conditions necessary for the aircraft equilibrium."""
+    """Computes and potentially save mission and takeoff based on options."""
 
     def initialize(self):
 
