@@ -7,8 +7,8 @@ version = "1.0.0"
 description = "FAST-OAD-CS23 is a framework for performing rapid Overall Aircraft Design for General Aircraft"
 readme = "README.md"
 authors = [
-    "Aurelien REYSSET <Aurelien.REYSSET@isae-supaero.fr>",
-    "Florent LUTZ <Florent.LUTZ2@isae-supaero.fr>"
+    "Florent LUTZ <Florent.LUTZ2@isae-supaero.fr>",
+    "Aurelien REYSSET <Aurelien.REYSSET@isae-supaero.fr>"
 ]
 packages = [
     { include = "fastga", from = "src" },
