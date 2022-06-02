@@ -17,7 +17,6 @@ Defines the analysis and plotting functions for postprocessing.
 from random import SystemRandom
 from typing import Dict
 
-import matplotlib.colors as colour
 import numpy as np
 import plotly
 import plotly.graph_objects as go
@@ -192,9 +191,8 @@ def aircraft_geometry_plot(
     if plot_nacelle:
         if prop_layout == 1.0:
 
-            all_colour = colour.CSS4_COLORS.keys()
             random_generator = SystemRandom()
-            trace_colour = list(all_colour)[random_generator.randrange(0, len(list(all_colour)))]
+            trace_colour = COLS[random_generator.randrange(0, len(COLS))]
             show_legend = True
 
             for y_nacelle_local, x_nacelle_local in zip(pos_y_nacelle, pos_x_nacelle):
@@ -204,35 +202,30 @@ def aircraft_geometry_plot(
                 x_nacelle = x_nacelle_local - x_nacelle_plot
 
                 if show_legend:
-                    scatter = go.Scatter(
+                    scatter_right = go.Scatter(
                         x=y_nacelle_right,
                         y=x_nacelle,
+                        name="right nacelle",
+                        legendgroup=name + "nacelle",
                         mode="lines+markers",
                         line=dict(color=trace_colour),
-                        name=name + " nacelle + propeller",
+                        legendgrouptitle_text=name + " nacelle + propeller",
                     )
+
+                    fig.add_trace(scatter_right)
+
+                    scatter_left = go.Scatter(
+                        x=y_nacelle_left,
+                        y=x_nacelle,
+                        name="left nacelle",
+                        legendgroup=name + "nacelle",
+                        mode="lines+markers",
+                        line=dict(color=trace_colour),
+                    )
+
+                    fig.add_trace(scatter_left)
+
                     show_legend = False
-
-                else:
-                    scatter = go.Scatter(
-                        x=y_nacelle_right,
-                        y=x_nacelle,
-                        mode="lines+markers",
-                        line=dict(color=trace_colour),
-                        showlegend=False,
-                    )
-
-                fig.add_trace(scatter)
-
-                scatter = go.Scatter(
-                    x=y_nacelle_left,
-                    y=x_nacelle,
-                    mode="lines+markers",
-                    line=dict(color=trace_colour),
-                    showlegend=False,
-                )
-
-                fig.add_trace(scatter)
         else:
             scatter = go.Scatter(
                 x=y_nacelle_plot,
