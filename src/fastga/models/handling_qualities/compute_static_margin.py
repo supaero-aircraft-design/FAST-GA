@@ -38,7 +38,7 @@ class ComputeStaticMargin(om.Group):
 class _ComputeStaticMargin(om.ExplicitComponent):
     """
     Computation of static margin i.e. difference between CG ratio and neutral
-    point.
+    point as function of MAC.
     """
 
     def setup(self):

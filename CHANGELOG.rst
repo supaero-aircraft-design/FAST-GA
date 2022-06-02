@@ -2,6 +2,21 @@
 Changelog
 =========
 
+Version 1.0.0
+==================
+
+- Added an analytical model for wing mass estimation
+- Most models are now registered using the submodel feature from FAST-OAD-core
+- Added an analytical model for fuselage mass estimation
+- Dependencies were updated to reflected the separation between core and models in FAST-OAD
+- Generalized the usage of shape_by_conn option when possible
+- Added propeller installation effects
+- Added link to Binder-hosted notebooks
+- Sped up the computation of propeller performances, of aircraft performances and of IC engine fuel consumption
+- Added a model for turboprop fuel consumption computation
+- Added a new mission modules solves all the FlightPoints at once instead of using a time step approach
+- Added Daher TBM900 as a reference aircraft
+
 Version 0.1.4-beta
 ==================
 
