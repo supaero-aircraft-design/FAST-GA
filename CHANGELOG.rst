@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.0.1
+==================
+
+- Changed the homepage address in the `pyproject.toml`
+
 Version 1.0.0
 ==================
 
