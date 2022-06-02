@@ -45,4 +45,4 @@ environment ([conda](https://docs.conda.io/en/latest/),
 
 The FAST-(OAD)-GA is not registered for a direct pip install.
 Yet an installation using pip command is possible. To do so, use command:
-**pip install git+https://github.com/supaero-aircraft-design/FAST-GA.git@vxxx**, where xxx is the version number (ex: 0.1.2-beta).
+**pip install fast-oad-cs23**, where xxx is the version number (ex: 0.1.2-beta).
