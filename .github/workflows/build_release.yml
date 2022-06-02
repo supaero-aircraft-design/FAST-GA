@@ -1,0 +1,71 @@
+name: Build PyPI package and Binder image
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  release:
+    types: [ published ]
+
+jobs:
+  move-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move tag
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              await github.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: "tags/latest-release",
+              })
+            } catch (e) {
+              console.log("Tag does not exist." + e)
+            }
+            await github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: "refs/tags/latest-release",
+              sha: context.sha
+            })
+
+  build-binder-image:
+    needs: move-tag
+    uses: ./.github/workflows/build_for_Binder.yml
+
+  build-publish-package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        python-version: [ 3.8 ]
+        os: [ ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+        shell: bash
+
+      - name: Poetry path
+        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
+        shell: bash
+
+      - name: Set version and build FAST-OAD-core
+        run: |
+          poetry version $( echo ${{ github.ref }} | sed 's%refs/tags/%%' )
+          poetry build
+        shell: bash
+
+      - name: publish to PyPI
+        env:
+          TOKEN: ${{ secrets.PyPI }} # do not use the secret directly in run command, it would write it plainly in the log
+        run: |
+          poetry config pypi-token.pypi "$TOKEN"
+          poetry publish
