@@ -52,7 +52,7 @@ from fastga.models.aerodynamics.components import (
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
-from fastga.models.aerodynamics.components.compute_propeller_aero import ComputePropellerPerformance
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import ComputePropellerPerformance
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
