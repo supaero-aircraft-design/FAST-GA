@@ -23,7 +23,10 @@ from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine
 
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    THRUST_PTS_NB,
+    SPEED_PTS_NB,
+)
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine_constructor import (
     THRUST_PTS_NB_TURBOPROP,
     MACH_PTS_NB_TURBOPROP,
