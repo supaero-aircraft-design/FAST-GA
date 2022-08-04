@@ -26,7 +26,7 @@ import fastoad.api as oad
 from fastoad.io import VariableIO
 from openmdao.utils.units import convert_units
 
-from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
+from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -341,18 +341,33 @@ def evolution_diagram(
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + " - maneuver"
+        x=x_maneuver_line,
+        y=y_maneuver_line,
+        mode="lines",
+        name=name + " - maneuver",
+        legendgroup=name,
+        legendgrouptitle_text=name + " Evolution diagram",
     )
 
     fig.add_trace(scatter)
 
     scatter = go.Scatter(
-        x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + " - maneuver [points]"
+        x=x_maneuver_pts,
+        y=y_maneuver_pts,
+        mode="markers",
+        name=name + " - maneuver [points]",
+        legendgroup=name,
     )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + " - gust")
+    scatter = go.Scatter(
+        x=x_gust,
+        y=y_gust,
+        mode="lines+markers",
+        name=name + " - gust",
+        legendgroup=name,
+    )
 
     fig.add_trace(scatter)
 

@@ -71,8 +71,6 @@ class PropellerCoreModule(om.ExplicitComponent):
             copy_shape="data:geometry:propeller:radius_ratio_vect",
         )
         self.add_input("data:geometry:propeller:radius_ratio_vect", val=np.nan, shape_by_conn=True)
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
-        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         for profile in self.options["sections_profile_name_list"]:
             self.add_input(

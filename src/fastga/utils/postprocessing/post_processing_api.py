@@ -1,4 +1,3 @@
-"""Constants for wing loads models."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,10 +11,29 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-NB_POINTS_POINT_MASS = 5
-# MUST BE AN EVEN NUMBER
-POINT_MASS_SPAN_RATIO = 0.01
+# pylint: disable=unused-import
+from .analysis_and_plots import (
+    aircraft_geometry_plot,
+    evolution_diagram,
+    compressibility_effects_diagram,
+    cl_wing_diagram,
+    drag_breakdown_diagram,
+    aircraft_polar,
+    cg_lateral_diagram,
+    mass_breakdown_bar_plot,
+    mass_breakdown_sun_plot,
+    payload_range,
+)
 
-SUBMODEL_AEROSTRUCTURAL_LOADS = "submodel.loads.wings.aerostructural"
-SUBMODEL_STRUCTURAL_LOADS = "submodel.loads.wings.structural"
-SUBMODEL_AERODYNAMIC_LOADS = "submodel.loads.wings.aerodynamic"
+# pylint: disable=unused-import
+from .load_analysis.analysis_and_plots_la import (
+    force_repartition_diagram,
+    rbm_diagram,
+    shear_diagram,
+)
+
+# pylint: disable=unused-import
+from .propeller.analysis_and_plots_propeller import (
+    propeller_efficiency_map_plot,
+    propeller_coeff_map_plot,
+)

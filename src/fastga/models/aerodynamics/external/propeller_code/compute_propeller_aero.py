@@ -53,10 +53,10 @@ class ComputePropellerPerformance(om.Group):
         ivc = om.IndepVarComp()
         ivc.add_output("data:aerodynamics:propeller:mach", val=0.0)
         ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
-        self.add_subsystem("propeller_aero_conditions", ivc, promotes=["*"])
+        self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
             self.add_subsystem(
-                profile + "_polar",
+                profile + "_polar_efficiency",
                 XfoilPolar(
                     airfoil_file=profile + ".af",
                     alpha_end=30.0,
@@ -64,8 +64,14 @@ class ComputePropellerPerformance(om.Group):
                 ),
                 promotes=[],
             )
-            self.connect("data:aerodynamics:propeller:mach", profile + "_polar.xfoil:mach")
-            self.connect("data:aerodynamics:propeller:reynolds", profile + "_polar.xfoil:reynolds")
+            self.connect(
+                "data:aerodynamics:propeller:mach",
+                profile + "_polar_efficiency.xfoil:mach",
+            )
+            self.connect(
+                "data:aerodynamics:propeller:reynolds",
+                profile + "_polar_efficiency.xfoil:reynolds",
+            )
         self.add_subsystem(
             "propeller_aero",
             _ComputePropellerPerformance(
@@ -79,10 +85,15 @@ class ComputePropellerPerformance(om.Group):
 
         for profile in self.options["sections_profile_name_list"]:
             self.connect(
-                profile + "_polar.xfoil:alpha", "propeller_aero." + profile + "_polar:alpha"
+                profile + "_polar_efficiency.xfoil:alpha",
+                "propeller_aero." + profile + "_polar:alpha",
             )
-            self.connect(profile + "_polar.xfoil:CL", "propeller_aero." + profile + "_polar:CL")
-            self.connect(profile + "_polar.xfoil:CD", "propeller_aero." + profile + "_polar:CD")
+            self.connect(
+                profile + "_polar_efficiency.xfoil:CL", "propeller_aero." + profile + "_polar:CL"
+            )
+            self.connect(
+                profile + "_polar_efficiency.xfoil:CD", "propeller_aero." + profile + "_polar:CD"
+            )
 
 
 class _ComputePropellerPerformance(PropellerCoreModule):
@@ -95,6 +106,8 @@ class _ComputePropellerPerformance(PropellerCoreModule):
     def setup(self):
 
         super().setup()
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         self.add_output(
             "data:aerodynamics:propeller:sea_level:efficiency", shape=(SPEED_PTS_NB, THRUST_PTS_NB)

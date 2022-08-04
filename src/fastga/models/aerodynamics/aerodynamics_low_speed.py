@@ -12,9 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from openmdao.core.group import Group
+
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
-from openmdao.core.group import Group
 
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 

@@ -17,8 +17,8 @@ from openmdao.core.group import Group
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.components import ComputeMachInterpolation
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components import ComputeMachInterpolation
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (

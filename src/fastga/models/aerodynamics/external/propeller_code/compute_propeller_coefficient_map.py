@@ -54,12 +54,12 @@ class ComputePropellerCoefficientMap(om.Group):
 
     def setup(self):
         ivc = om.IndepVarComp()
-        ivc.add_output("data:aerodynamics:propeller:mach", val=0.0)
-        ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
-        self.add_subsystem("propeller_aero_conditions", ivc, promotes=["*"])
+        ivc.add_output("data:aerodynamics:propeller:coefficient_map:mach", val=0.0)
+        ivc.add_output("data:aerodynamics:propeller:coefficient_map:reynolds", val=1e6)
+        self.add_subsystem("propeller_coeff_map_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
             self.add_subsystem(
-                profile + "_polar",
+                profile + "_polar_coeff_map",
                 XfoilPolar(
                     airfoil_file=profile + ".af",
                     alpha_end=30.0,
@@ -67,8 +67,14 @@ class ComputePropellerCoefficientMap(om.Group):
                 ),
                 promotes=[],
             )
-            self.connect("data:aerodynamics:propeller:mach", profile + "_polar.xfoil:mach")
-            self.connect("data:aerodynamics:propeller:reynolds", profile + "_polar.xfoil:reynolds")
+            self.connect(
+                "data:aerodynamics:propeller:coefficient_map:mach",
+                profile + "_polar_coeff_map.xfoil:mach",
+            )
+            self.connect(
+                "data:aerodynamics:propeller:coefficient_map:reynolds",
+                profile + "_polar_coeff_map.xfoil:reynolds",
+            )
         self.add_subsystem(
             "propeller_coeff_map",
             _ComputePropellerCoefficientMap(
@@ -82,13 +88,16 @@ class ComputePropellerCoefficientMap(om.Group):
 
         for profile in self.options["sections_profile_name_list"]:
             self.connect(
-                profile + "_polar.xfoil:alpha", "propeller_coeff_map." + profile + "_polar:alpha"
+                profile + "_polar_coeff_map.xfoil:alpha",
+                "propeller_coeff_map." + profile + "_polar:alpha",
             )
             self.connect(
-                profile + "_polar.xfoil:CL", "propeller_coeff_map." + profile + "_polar:CL"
+                profile + "_polar_coeff_map.xfoil:CL",
+                "propeller_coeff_map." + profile + "_polar:CL",
             )
             self.connect(
-                profile + "_polar.xfoil:CD", "propeller_coeff_map." + profile + "_polar:CD"
+                profile + "_polar_coeff_map.xfoil:CD",
+                "propeller_coeff_map." + profile + "_polar:CD",
             )
 
 
@@ -108,6 +117,12 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
         )
         self.add_input(
             "data:aerodynamics:propeller:coefficient_map:altitude", units="m", val=np.nan
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:coefficient_map:max_speed", units="m/s", val=np.nan
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:coefficient_map:min_speed", units="m/s", val=np.nan
         )
 
         self.add_output(
@@ -132,8 +147,8 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
         omega = inputs["data:geometry:propeller:average_rpm"]
         altitude = inputs["data:aerodynamics:propeller:coefficient_map:altitude"]
         atm = Atmosphere(altitude, altitude_in_feet=False)
-        v_min = 5.0
-        v_max = inputs["data:TLAR:v_cruise"] * 1.2
+        v_min = inputs["data:aerodynamics:propeller:coefficient_map:min_speed"]
+        v_max = inputs["data:aerodynamics:propeller:coefficient_map:max_speed"]
         speed_interp = np.linspace(v_min, v_max, J_POINTS_NUMBER)
         ct_list = np.zeros_like(speed_interp)
         cp_list = np.zeros_like(speed_interp)
@@ -193,9 +208,6 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
             j_list[idx] = j_local
 
         _LOGGER.debug("Finishing propeller computation")
-
-        plt.plot(j_list, cp_list)
-        plt.show()
 
         # Save results
         outputs["data:aerodynamics:propeller:coefficient_map:advance_ratio"] = j_list
