@@ -20,7 +20,10 @@ import fastoad.api as oad
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
 from fastga.models.propulsion.fuel_propulsion.basicIC_engine.basicIC_engine import BasicICEngine
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
-from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    THRUST_PTS_NB,
+    SPEED_PTS_NB,
+)
 
 
 @oad.RegisterPropulsion("fastga.wrapper.propulsion.basicIC_engine")

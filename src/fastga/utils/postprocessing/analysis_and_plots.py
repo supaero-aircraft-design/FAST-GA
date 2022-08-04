@@ -26,7 +26,7 @@ import fastoad.api as oad
 from fastoad.io import VariableIO
 from openmdao.utils.units import convert_units
 
-from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
+from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -341,18 +341,33 @@ def evolution_diagram(
         fig = go.Figure()
 
     scatter = go.Scatter(
-        x=x_maneuver_line, y=y_maneuver_line, mode="lines", name=name + " - maneuver"
+        x=x_maneuver_line,
+        y=y_maneuver_line,
+        mode="lines",
+        name=name + " - maneuver",
+        legendgroup=name,
+        legendgrouptitle_text=name + " Evolution diagram",
     )
 
     fig.add_trace(scatter)
 
     scatter = go.Scatter(
-        x=x_maneuver_pts, y=y_maneuver_pts, mode="markers", name=name + " - maneuver [points]"
+        x=x_maneuver_pts,
+        y=y_maneuver_pts,
+        mode="markers",
+        name=name + " - maneuver [points]",
+        legendgroup=name,
     )
 
     fig.add_trace(scatter)
 
-    scatter = go.Scatter(x=x_gust, y=y_gust, mode="lines+markers", name=name + " - gust")
+    scatter = go.Scatter(
+        x=x_gust,
+        y=y_gust,
+        mode="lines+markers",
+        name=name + " - gust",
+        legendgroup=name,
+    )
 
     fig.add_trace(scatter)
 
@@ -825,8 +840,6 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
-    Different designs can be superposed by providing an existing fig.
-    Each design can be provided a name.
 
     :param aircraft_file_path: path of data file
     :param file_formatter: the formatter that defines the format of data file. If not provided,
@@ -848,6 +861,8 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     )
 
     # TODO: Deal with this in a more generic manner ?
+    # Looks like if the precise value are not equal then nothing will be displayed which can
+    # happen when an OAD process is not ran with sufficient accuracy hence this line.
     if round(mtow, 0) == round(owe + payload + onboard_fuel_at_takeoff, 0):
         mtow = owe + payload + onboard_fuel_at_takeoff
 
@@ -902,11 +917,14 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
-                sub_categories_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
-                )
-                sub_categories_parent.append(categories_labels[categories_names.index(parent_name)])
-                sub_categories_names.append(variable_name)
+                if variable_name != "unusable_fuel":
+                    sub_categories_values.append(
+                        convert_units(variables[variable].value[0], variables[variable].units, "kg")
+                    )
+                    sub_categories_parent.append(
+                        categories_labels[categories_names.index(parent_name)]
+                    )
+                    sub_categories_names.append(variable_name)
 
     # Define figure data
     figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]

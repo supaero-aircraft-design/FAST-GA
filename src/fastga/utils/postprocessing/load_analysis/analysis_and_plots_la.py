@@ -19,8 +19,7 @@ import plotly
 import plotly.graph_objects as go
 from fastoad.io import VariableIO
 
-from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
-from fastga.models.load_analysis.wing.aerostructural_loads import (
+from fastga.models.load_analysis.wing.constants import (
     POINT_MASS_SPAN_RATIO,
     NB_POINTS_POINT_MASS,
 )
@@ -64,7 +63,7 @@ def force_repartition_diagram(
     point_weight_tmp = np.array(point_weight)
     lift_tmp = np.array(lift)
 
-    y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
+    y_vector = _delete_additional_zeros(y_vector_tmp)
     index = len(y_vector) + 1
     wing_weight = wing_weight_tmp[: int(index)]
     fuel_weight = fuel_weight_tmp[: int(index)]
@@ -139,7 +138,7 @@ def shear_diagram(
     point_shear_tmp = np.array(point_shear)
     lift_shear_tmp = np.array(lift_shear)
 
-    y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
+    y_vector = _delete_additional_zeros(y_vector_tmp)
     index = len(y_vector) + 1
     wing_shear = wing_shear_tmp[: int(index)]
     fuel_shear = fuel_shear_tmp[: int(index)]
@@ -210,7 +209,7 @@ def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None)
     point_rbm_tmp = np.array(point_rbm)
     lift_rbm_tmp = np.array(lift_rbm)
 
-    y_vector = AerostructuralLoad.delete_additional_zeros(y_vector_tmp)
+    y_vector = _delete_additional_zeros(y_vector_tmp)
     index = len(y_vector) + 1
     wing_rbm = wing_rbm_tmp[: int(index)]
     fuel_rbm = fuel_rbm_tmp[: int(index)]
@@ -221,25 +220,25 @@ def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None)
         fig = go.Figure()
 
     wing_rbm_scatter = go.Scatter(
-        x=y_vector, y=wing_rbm, mode="lines", name=name + " - wing weight root bending moment"
+        x=y_vector, y=wing_rbm, mode="lines", name=name + " - wing weight bending moment"
     )
 
     fig.add_trace(wing_rbm_scatter)
 
     fuel_rbm_scatter = go.Scatter(
-        x=y_vector, y=fuel_rbm, mode="lines", name=name + " - fuel weight root bending moment"
+        x=y_vector, y=fuel_rbm, mode="lines", name=name + " - fuel weight bending moment"
     )
 
     fig.add_trace(fuel_rbm_scatter)
 
     point_rbm_scatter = go.Scatter(
-        x=y_vector, y=point_rbm, mode="lines", name=name + " - point masses root bending moment"
+        x=y_vector, y=point_rbm, mode="lines", name=name + " - point masses bending moment"
     )
 
     fig.add_trace(point_rbm_scatter)
 
     lift_scatter = go.Scatter(
-        x=y_vector, y=lift_rbm, mode="lines", name=name + " - lift root bending moment"
+        x=y_vector, y=lift_rbm, mode="lines", name=name + " - lift bending moment"
     )
 
     fig.add_trace(lift_scatter)
@@ -247,10 +246,30 @@ def rbm_diagram(aircraft_file_path: str, name="", fig=None, file_formatter=None)
     fig = go.FigureWidget(fig)
 
     fig.update_layout(
-        title_text="Root bending moments on the wing",
+        title_text="Bending moments on the wing",
         title_x=0.5,
         xaxis_title="spanwise position [m]",
         yaxis_title="Root bending moment [Nm]",
     )
 
     return fig
+
+
+def _delete_additional_zeros(array, length: int = None):
+    """
+    Function that delete the additional zeros we had to add to fit the format imposed by
+    OpenMDAO
+
+    @param array: an array with additional zeros we want to delete
+    @param length: if len is specified leave zeros up until the length of the array is len
+    @return: final_array an array containing the same elements of the initial array but with
+    the additional zeros deleted
+    """
+
+    last_zero = np.amax(np.where(array != 0.0)) + 1
+    if length is not None:
+        final_array = array[: max(int(last_zero), length)]
+    else:
+        final_array = array[: int(last_zero)]
+
+    return final_array

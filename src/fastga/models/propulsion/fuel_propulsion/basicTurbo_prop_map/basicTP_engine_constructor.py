@@ -24,7 +24,10 @@ from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
 
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
-from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    THRUST_PTS_NB,
+    SPEED_PTS_NB,
+)
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)

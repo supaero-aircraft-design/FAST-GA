@@ -15,6 +15,7 @@ POLAR_POINT_COUNT = 150
 SPAN_MESH_POINT = 50
 MACH_NB_PTS = 5
 ENGINE_COUNT = 10
+FIRST_INVALID_COEFF = 100.0
 
 SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
 SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"
