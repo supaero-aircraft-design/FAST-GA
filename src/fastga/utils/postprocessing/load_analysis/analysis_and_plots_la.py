@@ -1,5 +1,5 @@
 """
-Defines the analysis and plotting functions for postprocessing of load analysis.
+Defines the analysis and plotting functions for postprocessing of propeller performances.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
