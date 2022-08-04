@@ -27,6 +27,15 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 def propeller_efficiency_map_plot(
     aircraft_file_path: str, file_formatter=None, sea_level=False
 ) -> go.FigureWidget:
+    """
+    Returns a contour plot of the propeller efficiency maps as they are used in FAST-OAD-GA.
+
+    :param aircraft_file_path: path of data file
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
+    :param sea_level: boolean to choose whether to plot the sea level maps or the cruise level map.
+    :return: propeller efficiency map.
+    """
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
@@ -78,20 +87,32 @@ def propeller_efficiency_map_plot(
 def propeller_coeff_map_plot(
     aircraft_file_path: str, name="", fig=None, file_formatter=None
 ) -> go.FigureWidget:
+    """
+    Returns a two subplot figure of the thrust and power coefficient of the propeller.
+    Different figure can be superposed by providing an existing fig.
+    Each figure can be provided a name.
+
+    :param aircraft_file_path: path of data file
+    :param name: name to give to the trace added to the figure
+    :param fig: existing figure to which add the plot
+    :param file_formatter: the formatter that defines the format of data file. If not provided,
+    default format will be assumed.
+    :return: thrust and power coefficient graphs
+    """
 
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     advance_ratio = variables["data:aerodynamics:propeller:coefficient_map:advance_ratio"].value
-    cp = variables["data:aerodynamics:propeller:coefficient_map:power_coefficient"].value
-    ct = variables["data:aerodynamics:propeller:coefficient_map:thrust_coefficient"].value
+    c_p = variables["data:aerodynamics:propeller:coefficient_map:power_coefficient"].value
+    c_t = variables["data:aerodynamics:propeller:coefficient_map:thrust_coefficient"].value
 
     if fig is None:
         fig = make_subplots(
             rows=1, cols=2, subplot_titles=("Power coefficient", "Thrust coefficient")
         )
 
-    trace_cp = go.Scatter(x=advance_ratio, y=cp, mode="lines+markers", name=name + " - Cp")
-    trace_ct = go.Scatter(x=advance_ratio, y=ct, mode="lines+markers", name=name + " - Ct")
+    trace_cp = go.Scatter(x=advance_ratio, y=c_p, mode="lines+markers", name=name + " - Cp")
+    trace_ct = go.Scatter(x=advance_ratio, y=c_t, mode="lines+markers", name=name + " - Ct")
 
     fig.add_trace(trace_cp, row=1, col=1)
     fig.update_xaxes(title_text="Advance ratio J [-]", row=1, col=1)

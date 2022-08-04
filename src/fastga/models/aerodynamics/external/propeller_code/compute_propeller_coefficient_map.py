@@ -17,7 +17,6 @@ import logging
 import numpy as np
 
 import openmdao.api as om
-import matplotlib.pyplot as plt
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -102,12 +101,6 @@ class ComputePropellerCoefficientMap(om.Group):
 
 
 class _ComputePropellerCoefficientMap(PropellerCoreModule):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
 
         super().setup()

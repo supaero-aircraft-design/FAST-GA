@@ -97,12 +97,6 @@ class ComputePropellerPerformance(om.Group):
 
 
 class _ComputePropellerPerformance(PropellerCoreModule):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def initialize(self):
-        super().initialize()
-
     def setup(self):
 
         super().setup()
@@ -151,19 +145,10 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         # Construct table for init of climb
         altitude = 0.0
         thrust_vect, _, eta_vect = self.construct_table(inputs, speed_interp, altitude, omega)
-        # plt.show()
+
         # Reformat table
         thrust_limit, thrust_interp, efficiency_interp = self.reformat_table(thrust_vect, eta_vect)
-        # # Plot graphs
-        # X, Y = np.meshgrid(speed_interp, thrust_interp)
-        # fig, ax = plt.subplots(1, 1)
-        # cp = ax.contourf(X, Y, np.transpose(efficiency_interp))
-        # fig.colorbar(cp)  # Add a colorbar to a plot
-        # ax.set_title('Efficiency map @ 0m')
-        # ax.set_xlabel('Air speed [m/s]')
-        # ax.set_ylabel('Thrust [N]')
-        # plt.plot(speed_interp, thrust_limit)
-        # plt.show()
+
         # Save results
         outputs["data:aerodynamics:propeller:sea_level:efficiency"] = efficiency_interp
         outputs["data:aerodynamics:propeller:sea_level:thrust"] = thrust_interp
