@@ -41,18 +41,20 @@ def propeller_efficiency_map_plot(
 
     # Maps parameter
     if sea_level:
-        efficiency = variables["data:aerodynamics:propeller:sea_level:efficiency"].value
-        speed = variables["data:aerodynamics:propeller:sea_level:speed"].value
-        thrust = variables["data:aerodynamics:propeller:sea_level:thrust"].value
+        efficiency = np.array(variables["data:aerodynamics:propeller:sea_level:efficiency"].value)
+        speed = np.array(variables["data:aerodynamics:propeller:sea_level:speed"].value)
+        thrust = np.array(variables["data:aerodynamics:propeller:sea_level:thrust"].value)
     else:
-        efficiency = variables["data:aerodynamics:propeller:cruise_level:efficiency"].value
-        speed = variables["data:aerodynamics:propeller:cruise_level:speed"].value
-        thrust = variables["data:aerodynamics:propeller:cruise_level:thrust"].value
+        efficiency = np.array(
+            variables["data:aerodynamics:propeller:cruise_level:efficiency"].value
+        )
+        speed = np.array(variables["data:aerodynamics:propeller:cruise_level:speed"].value)
+        thrust = np.array(variables["data:aerodynamics:propeller:cruise_level:thrust"].value)
 
     fig = go.Figure()
     prop_scatter = go.Contour(
-        x=speed,
-        y=thrust,
+        x=thrust,
+        y=speed,
         z=efficiency,
         line_smoothing=0.85,
         ncontours=40,
@@ -66,16 +68,16 @@ def propeller_efficiency_map_plot(
         fig.update_layout(
             title_text="Propeller efficiency map at sea level",
             title_x=0.5,
-            xaxis_title="True airspeed [m/s]",
-            yaxis_title="Thrust [N]",
+            yaxis_title="True airspeed [m/s]",
+            xaxis_title="Thrust [N]",
             font_size=15,
         )
     else:
         fig.update_layout(
             title_text="Propeller efficiency map at cruise level",
             title_x=0.5,
-            xaxis_title="True airspeed [m/s]",
-            yaxis_title="Thrust [N]",
+            yaxis_title="True airspeed [m/s]",
+            xaxis_title="Thrust [N]",
             font_size=15,
         )
 
