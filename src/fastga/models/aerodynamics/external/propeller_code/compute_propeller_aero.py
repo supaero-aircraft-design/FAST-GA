@@ -94,6 +94,7 @@ class ComputePropellerPerformance(om.Group):
             self.connect(
                 profile + "_polar_efficiency.xfoil:CD", "propeller_aero." + profile + "_polar:CD"
             )
+        self.connect("data:aerodynamics:propeller:reynolds", "propeller_aero.reference_reynolds")
 
 
 class _ComputePropellerPerformance(PropellerCoreModule):

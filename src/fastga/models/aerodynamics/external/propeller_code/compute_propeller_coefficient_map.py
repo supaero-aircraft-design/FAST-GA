@@ -98,6 +98,10 @@ class ComputePropellerCoefficientMap(om.Group):
                 profile + "_polar_coeff_map.xfoil:CD",
                 "propeller_coeff_map." + profile + "_polar:CD",
             )
+        self.connect(
+            "data:aerodynamics:propeller:coefficient_map:reynolds",
+            "propeller_coeff_map.reference_reynolds",
+        )
 
 
 class _ComputePropellerCoefficientMap(PropellerCoreModule):
