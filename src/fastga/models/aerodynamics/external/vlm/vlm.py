@@ -103,12 +103,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param mach: mach number used for the computation
         :param aoa_angle: angle of attack used in the aoa derivative computation, in deg.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coeff(
+        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coeff(
             inputs, altitude, mach, aoa_angle
         )
         return float(cl_alpha_wing + cl_alpha_htp)
 
-    def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
+    def compute_cl_alpha_mach(self, inputs, aoa_angle, altitude, cruise_mach):
         """
         Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
         function of Mach for later use in the computation of the V-n diagram.

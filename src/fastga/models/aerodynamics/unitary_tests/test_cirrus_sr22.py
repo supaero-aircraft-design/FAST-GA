@@ -163,7 +163,7 @@ def test_vlm_comp_high_speed():
         cl_alpha_htp=0.5928,
         cl_alpha_htp_isolated=0.8839,
         coeff_k_htp=0.3267,
-        cl_alpha_vector=np.array([5.238, 5.238, 5.301, 5.384, 5.487, 5.609]),
+        cl_alpha_vector=np.array([5.73, 5.73, 5.79, 5.88, 5.99, 6.12]),
         mach_vector=np.array([0.0, 0.15, 0.214, 0.274, 0.331, 0.385]),
     )
 

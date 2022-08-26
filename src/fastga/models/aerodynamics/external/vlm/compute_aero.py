@@ -279,7 +279,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         else:
             if self.options["compute_mach_interpolation"]:
                 mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                    inputs, outputs, INPUT_AOA, altitude, mach
+                    inputs, INPUT_AOA, altitude, mach
                 )
 
         # Defining outputs
