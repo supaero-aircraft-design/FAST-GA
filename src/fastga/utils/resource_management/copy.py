@@ -13,7 +13,6 @@
 
 import os.path as pth
 import shutil
-from importlib.resources import path
 
 # noinspection PyProtectedMember
 from fastoad._utils.files import make_parent_dir
