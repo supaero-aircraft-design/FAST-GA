@@ -27,6 +27,7 @@ from ..external.xfoil.xfoil_polar import XfoilPolar
 
 class ComputeMachInterpolation(om.Group):
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -42,6 +43,7 @@ class ComputeMachInterpolation(om.Group):
         self.add_subsystem(
             "wing_airfoil",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["wing_airfoil_file"],
                 activate_negative_angle=True,
@@ -51,6 +53,7 @@ class ComputeMachInterpolation(om.Group):
         self.add_subsystem(
             "htp_airfoil",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,

@@ -22,12 +22,13 @@ import logging
 import os.path as pth
 from .profile import Profile
 
-from fastga.models.aerodynamics import resources
+from fastga.models.aerodynamics import airfoil_folder
 
 _LOGGER = logging.getLogger(__name__)
 
 
 def get_profile(
+    airfoil_folder_path: str = None,
     file_name: str = None,
     thickness_ratio=None,
     chord_length=None,
@@ -42,14 +43,17 @@ def get_profile(
     """
 
     profile = Profile()
-    x_z = genfromtxt(pth.join(resources.__path__[0], file_name))
+    if airfoil_folder_path is None:
+        x_z = genfromtxt(pth.join(airfoil_folder.__path__[0], file_name))
+    else:
+        x_z = genfromtxt(pth.join(airfoil_folder_path, file_name))
     profile.set_points(x_z["x"], x_z["z"])
 
     if thickness_ratio:
         if abs(profile.thickness_ratio - thickness_ratio) / thickness_ratio > 0.01:
             warnings.warn(
                 "The airfoil thickness ratio from file "
-                + pth.join(resources.__path__[0], file_name)
+                + pth.join(airfoil_folder.__path__[0], file_name)
                 + " differs from user defined input data:geometry:wing:thickness_ratio!"
             )
         profile.thickness_ratio = thickness_ratio
@@ -61,7 +65,7 @@ def get_profile(
 
 
 def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(pth.join(resources.__path__[0], file_name), "r") as lf:
+    with open(pth.join(airfoil_folder.__path__[0], file_name), "r") as lf:
         data = lf.readlines()
         # Extract data
         x_data = []
@@ -80,7 +84,7 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                     if line[0] != "NACA" and line[0] != "AIRFOIL":
                         _LOGGER.info(
                             "Problem occurred while reading %s file!",
-                            pth.join(resources.__path__[0], file_name),
+                            pth.join(airfoil_folder.__path__[0], file_name),
                         )
                     else:
                         # Skipping to next line

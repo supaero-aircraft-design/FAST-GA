@@ -37,6 +37,7 @@ class ComputePropellerPerformance(om.Group):
     """Computes propeller profiles aerodynamic coefficient and propeller behaviour."""
 
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "sections_profile_position_list",
             default=[0.0, 0.25, 0.28, 0.35, 0.40, 0.45],
@@ -58,6 +59,7 @@ class ComputePropellerPerformance(om.Group):
             self.add_subsystem(
                 profile + "_polar_efficiency",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=profile + ".af",
                     alpha_end=30.0,
                     activate_negative_angle=True,

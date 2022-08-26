@@ -38,6 +38,7 @@ class Aerodynamics(Group):
         self.options.declare("compute_slipstream_cruise", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
@@ -53,6 +54,7 @@ class Aerodynamics(Group):
                 compute_slipstream=self.options["compute_slipstream_low_speed"],
                 result_folder_path=self.options["result_folder_path"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil=self.options["wing_airfoil"],
                 htp_airfoil=self.options["htp_airfoil"],
                 vtp_airfoil=self.options["vtp_airfoil"],
@@ -70,6 +72,7 @@ class Aerodynamics(Group):
                 compute_slipstream=self.options["compute_slipstream_cruise"],
                 result_folder_path=self.options["result_folder_path"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil=self.options["wing_airfoil"],
                 htp_airfoil=self.options["htp_airfoil"],
                 vtp_airfoil=self.options["vtp_airfoil"],
