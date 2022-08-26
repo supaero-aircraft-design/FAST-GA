@@ -48,6 +48,7 @@ class AerodynamicsLowSpeed(Group):
         self.options.declare("compute_slipstream", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
@@ -61,6 +62,7 @@ class AerodynamicsLowSpeed(Group):
                     low_speed_aero=True,
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
                 ),
@@ -74,6 +76,7 @@ class AerodynamicsLowSpeed(Group):
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
                     openvsp_exe_path=self.options["openvsp_exe_path"],
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
                 ),
@@ -81,6 +84,7 @@ class AerodynamicsLowSpeed(Group):
             )
 
         options_cd0 = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": True,
             "wing_airfoil_file": self.options["wing_airfoil"],
             "htp_airfoil_file": self.options["htp_airfoil"],
@@ -102,6 +106,7 @@ class AerodynamicsLowSpeed(Group):
         )
 
         options_airfoil = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
             "wing_airfoil_file": self.options["wing_airfoil"],
             "htp_airfoil_file": self.options["htp_airfoil"],
             "vtp_airfoil_file": self.options["vtp_airfoil"],
@@ -162,6 +167,7 @@ class AerodynamicsLowSpeed(Group):
                 ComputeSlipstreamOpenvspSubGroup(
                     propulsion_id=self.options["propulsion_id"],
                     result_folder_path=self.options["result_folder_path"],
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     openvsp_exe_path=self.options["openvsp_exe_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     low_speed_aero=True,

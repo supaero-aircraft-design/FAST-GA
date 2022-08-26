@@ -30,9 +30,10 @@ from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory
+from fastga.utils.resource_management.copy import copy_resource_from_path
 from . import openvsp3201
 from . import resources as local_resources
-from ... import resources
+from ... import airfoil_folder
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
@@ -56,6 +57,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
     def initialize(self):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -396,7 +398,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
         # noinspection PyTypeChecker
-        copy_resource(resources, self.options["wing_airfoil_file"], target_directory)
+        if self.options["airfoil_folder_path"] is None:
+            copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
+        else:
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["wing_airfoil_file"],
+                target_directory,
+            )
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
         batch_file = open(self.options["command"][0], "w+")
@@ -623,7 +632,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
         # noinspection PyTypeChecker
-        copy_resource(resources, self.options["htp_airfoil_file"], target_directory)
+        if self.options["airfoil_folder_path"] is None:
+            copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
+        else:
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["htp_airfoil_file"],
+                target_directory,
+            )
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
         batch_file = open(self.options["command"][0], "w+")
@@ -854,10 +870,24 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
-        # noinspection PyTypeChecker
-        copy_resource(resources, self.options["wing_airfoil_file"], target_directory)
-        # noinspection PyTypeChecker
-        copy_resource(resources, self.options["htp_airfoil_file"], target_directory)
+        if self.options["airfoil_folder_path"] is None:
+            # noinspection PyTypeChecker
+            copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
+            # noinspection PyTypeChecker
+            copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
+        else:
+            # noinspection PyTypeChecker
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["wing_airfoil_file"],
+                target_directory,
+            )
+            # noinspection PyTypeChecker
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["htp_airfoil_file"],
+                target_directory,
+            )
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
         batch_file = open(self.options["command"][0], "w+")
@@ -1364,7 +1394,14 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
         # noinspection PyTypeChecker
-        copy_resource(resources, self.options["wing_airfoil_file"], target_directory)
+        if self.options["airfoil_folder_path"] is None:
+            copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
+        else:
+            copy_resource_from_path(
+                self.options["airfoil_folder_path"],
+                self.options["wing_airfoil_file"],
+                target_directory,
+            )
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
         batch_file = open(self.options["command"][0], "w+")

@@ -69,6 +69,7 @@ class XfoilPolar(ExternalCodeComp):
     def initialize(self):
 
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str)
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default="polar_result.txt", types=str)
@@ -236,6 +237,7 @@ class XfoilPolar(ExternalCodeComp):
             # profile file
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
             profile = get_profile(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 file_name=self.options["airfoil_file"],
             ).get_sides()
             # noinspection PyTypeChecker

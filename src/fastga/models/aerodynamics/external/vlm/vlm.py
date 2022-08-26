@@ -53,6 +53,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -103,12 +104,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param mach: mach number used for the computation
         :param aoa_angle: angle of attack used in the aoa derivative computation, in deg.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _, _ = self.compute_aero_coeff(
+        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coeff(
             inputs, altitude, mach, aoa_angle
         )
         return float(cl_alpha_wing + cl_alpha_htp)
 
-    def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
+    def compute_cl_alpha_mach(self, inputs, aoa_angle, altitude, cruise_mach):
         """
         Function that performs multiple run of OpenVSP to get an interpolation of Cl_alpha as a
         function of Mach for later use in the computation of the V-n diagram.
@@ -840,7 +841,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         z_panel = np.zeros(self.n_x + 1)
         rootchord = x_panel[self.n_x, 0] - x_panel[0, 0]
         # Calculation of panelangle_vect
-        profile = get_profile(file_name=file_name)
+        profile = get_profile(
+            airfoil_folder_path=self.options["airfoil_folder_path"], file_name=file_name
+        )
         mean_line = profile.get_mean_line()
         for i in range(self.n_x + 1):
             xred = (x_panel[i, 0] - x_panel[0, 0]) / rootchord

@@ -39,6 +39,7 @@ class ComputePropellerCoefficientMap(om.Group):
     the form Ct=f(J) and Cp=f(J) for various pitches."""
 
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "sections_profile_position_list",
             default=[0.0, 0.25, 0.28, 0.35, 0.40, 0.45],
@@ -60,6 +61,7 @@ class ComputePropellerCoefficientMap(om.Group):
             self.add_subsystem(
                 profile + "_polar_coeff_map",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=profile + ".af",
                     alpha_end=30.0,
                     activate_negative_angle=True,
@@ -98,6 +100,10 @@ class ComputePropellerCoefficientMap(om.Group):
                 profile + "_polar_coeff_map.xfoil:CD",
                 "propeller_coeff_map." + profile + "_polar:CD",
             )
+        self.connect(
+            "data:aerodynamics:propeller:coefficient_map:reynolds",
+            "propeller_coeff_map.reference_reynolds",
+        )
 
 
 class _ComputePropellerCoefficientMap(PropellerCoreModule):

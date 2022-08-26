@@ -30,6 +30,13 @@ SPEED_PTS_NB = 10
 
 
 class PropellerCoreModule(om.ExplicitComponent):
+    """
+    Core component for the computation of the propeller performance.
+
+    Compressibility correction are taken from :cite:`hoyos:2022` for subsonic corrections.
+    Reynolds effects correction are taken from yamauchi:1983.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.theta_min = 0.0
@@ -41,6 +48,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.options.declare("elements_number", default=20, types=int)
 
     def setup(self):
+        self.add_input("reference_reynolds", val=1e6)
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:hub_diameter", val=np.nan, units="m")
         self.add_input("data:geometry:propeller:blades_number", val=np.nan)
@@ -125,6 +133,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         chord_vect = inputs["data:geometry:propeller:chord_vect"]
         twist_vect = inputs["data:geometry:propeller:twist_vect"]
         radius_ratio_vect = inputs["data:geometry:propeller:radius_ratio_vect"]
+        reference_reynolds = inputs["reference_reynolds"]
         length = radius_max - radius_min
         element_length = length / self.options["elements_number"]
         omega = omega * np.pi / 30.0
@@ -168,6 +177,7 @@ class PropellerCoreModule(om.ExplicitComponent):
                     cl_list[idx, :],
                     cd_list[idx, :],
                     atm,
+                    reference_reynolds,
                 ),
                 xtol=1e-3,
             )
@@ -186,6 +196,7 @@ class PropellerCoreModule(om.ExplicitComponent):
                 cl_list[idx, :],
                 cd_list[idx, :],
                 atm,
+                reference_reynolds,
             )
             out_of_polars = results[3]
             if out_of_polars:
@@ -217,6 +228,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         cl_element: np.array,
         cd_element: np.array,
         atm: Atmosphere,
+        reference_reynolds: float,
     ):
         """
         The core of the Propeller code. Given the geometry of a propeller element,
@@ -235,6 +247,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         :param cl_element: cl vector for element [-]
         :param cd_element: cd vector for element [-]
         :param atm: atmosphere properties
+        :param reference_reynolds: Reynolds number at which the aerodynamic properties were computed
 
         :return: The calculated dT/(rho*dr) and dQ/(rho*dr) increments with BEM method.
         """
@@ -259,13 +272,20 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         c_l = np.interp(alpha, alpha_element, cl_element)
         c_d = np.interp(alpha, alpha_element, cd_element)
+
         if mach_local < 1:
             beta = np.sqrt(1 - mach_local ** 2.0)
-            c_l = c_l / beta
+            c_l = c_l / (beta + c_l * mach_local ** 2.0 / (2.0 + 2.0 * beta))
+            c_d = c_d / (beta + c_d * mach_local ** 2.0 / (2.0 + 2.0 * beta))
         else:
             beta = np.sqrt(mach_local ** 2.0 - 1)
             c_l = c_l / beta
             c_d = c_d / beta
+
+        reynolds = chord * atm.unitary_reynolds
+        f_re = (3.46 * np.log(reynolds) - 5.6) ** -2
+        f_re_t = (3.46 * np.log(reference_reynolds) - 5.6) ** -2
+        c_d = c_d * f_re / f_re_t
 
         # Calculate force and momentum
         thrust_element = (
@@ -391,6 +411,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         cl_element: np.array,
         cd_element: np.array,
         atm: Atmosphere,
+        reference_reynolds: float,
     ):
         """
         The core of the Propeller code. Given the geometry of a propeller element,
@@ -411,6 +432,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         :param cl_element: cl vector for element [-]
         :param cd_element: cd vector for element [-]
         :param atm: atmosphere properties
+        :param reference_reynolds: Reynolds number at which the aerodynamic properties were computed
 
         :return: The difference between BEM dual methods for dT/(rho*dr) and dQ/ increments.
         """
@@ -428,6 +450,7 @@ class PropellerCoreModule(om.ExplicitComponent):
             cl_element,
             cd_element,
             atm,
+            reference_reynolds,
         )
 
         adt_result = self.disk_theory(

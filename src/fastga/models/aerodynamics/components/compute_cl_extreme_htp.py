@@ -34,6 +34,7 @@ class ComputeExtremeCLHtp(om.Group):
     """
 
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
@@ -53,6 +54,7 @@ class ComputeExtremeCLHtp(om.Group):
         self.add_subsystem(
             "htp_root_polar",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,
@@ -62,6 +64,7 @@ class ComputeExtremeCLHtp(om.Group):
         self.add_subsystem(
             "htp_tip_polar",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,

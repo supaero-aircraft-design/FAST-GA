@@ -33,6 +33,7 @@ class Cd0Wing(ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -82,7 +83,10 @@ class Cd0Wing(ExplicitComponent):
             unit_reynolds = inputs["data:aerodynamics:cruise:unit_reynolds"]
 
         # Sear max thickness position ratio
-        profile = get_profile(file_name=self.options["wing_airfoil_file"])
+        profile = get_profile(
+            airfoil_folder_path=self.options["airfoil_folder_path"],
+            file_name=self.options["wing_airfoil_file"],
+        )
         relative_thickness = profile.get_relative_thickness()
         index = int(
             np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]

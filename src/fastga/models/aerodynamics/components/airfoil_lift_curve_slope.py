@@ -34,6 +34,7 @@ _LOGGER = logging.getLogger(__name__)
 )
 class ComputeAirfoilLiftCurveSlope(om.Group):
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -61,6 +62,7 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
         self.add_subsystem(
             "wing_airfoil_slope",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["wing_airfoil_file"],
                 activate_negative_angle=True,
                 alpha_end=20.0,
@@ -70,6 +72,7 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
         self.add_subsystem(
             "htp_airfoil_slope",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,
                 alpha_end=20.0,
@@ -79,6 +82,7 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
         self.add_subsystem(
             "vtp_airfoil_slope",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["vtp_airfoil_file"],
                 activate_negative_angle=True,
                 alpha_end=20.0,
