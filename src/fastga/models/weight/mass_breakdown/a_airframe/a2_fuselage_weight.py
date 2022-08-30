@@ -129,7 +129,6 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         atm_cruise = Atmosphere(cruise_alt)
         rho_cruise = atm_cruise.density
         pressure_cruise = atm_cruise.pressure
-
         atm_sl = Atmosphere(0.0)
         pressure_sl = atm_sl.pressure
 
@@ -155,3 +154,58 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         outputs["data:weight:airframe:fuselage:mass_raymer"] = (
             a2 * inputs["data:weight:airframe:fuselage:k_factor"]
         )
+
+
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.roskam"
+)
+class ComputeFuselageWeightRoskam(om.ExplicitComponent):
+    """
+    Fuselage weight estimation
+
+    Based on : Roskam. Airplane design - Part 5: component weight estimation
+
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="ft")
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
+        self.add_input("data:geometry:wing:wing_configuration", val=np.nan)
+
+        self.add_output("data:weight:airframe:fuselage:mass", units="lb")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        maximum_width = inputs["data:geometry:fuselage:maximum_width"]
+        maximum_height = inputs["data:geometry:fuselage:maximum_height"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        npax_max = (
+            inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
+        )  # addition of 2 pilots
+        wing_config = inputs["data:geometry:wing:wing_configuration"]
+
+        fus_dia = (maximum_height + maximum_width) / 2.0
+        p_max = 2 * math.pi * (fus_dia / 2)  # maximum perimeter of the fuselage
+
+        if wing_config == 1.0:
+
+            a2 = 0.04682 * (mtow ** 0.692 * npax_max ** 0.374 * (fus_length - lav) ** 0.590) / 100
+
+        elif wing_config == 3.0:
+
+            a2 = 14.86 * (
+                mtow ** 0.144
+                * ((fus_length - lav) / p_max) ** 0.778
+                * (fus_length - lav) ** 0.383
+                * npax_max ** 0.455
+            )
+
+        outputs["data:weight:airframe:fuselage:mass"] = a2
