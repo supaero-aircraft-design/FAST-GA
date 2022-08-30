@@ -78,6 +78,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:dihedral_angle", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:twist", val=np.nan, units="deg")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
@@ -364,6 +366,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        twist = inputs["data:geometry:wing:twist"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
@@ -437,6 +441,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
@@ -811,6 +819,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
@@ -900,6 +910,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[-2].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
@@ -1233,6 +1247,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
@@ -1407,6 +1423,10 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
