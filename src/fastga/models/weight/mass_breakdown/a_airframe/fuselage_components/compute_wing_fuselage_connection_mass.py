@@ -28,6 +28,7 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
             val=0.0,
             desc="Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization",
         )
+        self.add_input("data:geometry:wing:wing_configuration", val=np.nan)
 
         self.add_output("data:weight:airframe:fuselage:wing_fuselage_connection:mass", units="kg")
 
@@ -36,6 +37,7 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
         n_ult_flight = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult_landing = inputs["data:mission:landing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult = max(n_ult_flight, n_ult_landing)
+        wing_config = inputs["data:geometry:wing:wing_configuration"]
 
         mtow = inputs["data:weight:aircraft:MTOW"]
 
@@ -45,6 +47,9 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
             mass_wing_fuselage_connection = 20.4 + 0.907e-3 * n_ult * mtow
         else:
             mass_wing_fuselage_connection = 0.4e-3 * (n_ult * mtow) ** 1.185
+
+        if wing_config == 3.0:
+            mass_wing_fuselage_connection *= 1.66
 
         outputs[
             "data:weight:airframe:fuselage:wing_fuselage_connection:mass"
