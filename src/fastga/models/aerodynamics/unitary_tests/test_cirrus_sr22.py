@@ -54,7 +54,7 @@ from .test_functions import (
 )
 
 XML_FILE = "cirrus_sr22.xml"
-SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
+SKIP_STEPS = False  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
 def test_compute_reynolds():
@@ -587,7 +587,6 @@ def test_extreme_cl_wing_clean():
         cl_max_clean_wing=1.56,
         cl_min_clean_wing=-1.26,
     )
-
 
 @pytest.mark.skipif(
     system() != "Windows",
