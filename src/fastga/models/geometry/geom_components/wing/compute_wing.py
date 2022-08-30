@@ -26,6 +26,7 @@ from .constants import (
     SUBMODEL_WING_MAC,
     SUBMODEL_WING_SWEEP,
     SUBMODEL_WING_WET_AREA,
+    SUBMODEL_WING_LOCATION,
 )
 from ...constants import SUBMODEL_WING_GEOMETRY
 
@@ -66,4 +67,7 @@ class ComputeWingGeometry(Group):
             "wing_wet_area",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_WET_AREA),
             promotes=["*"],
+        )
+        self.add_subsystem(
+            "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_LOCATION), promotes=["*"]
         )
