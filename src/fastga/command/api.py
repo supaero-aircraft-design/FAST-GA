@@ -394,7 +394,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
 @deprecated(
     version="0.2.0",
     reason="Will be removed in version 1.0. Please use the generate_configuration_file from "
-    'fast-oad-core api with the distribution_name="fastga" instead',
+    'fast-oad-core api with the distribution_name="fast-oad-cs23" instead',
 )
 def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
     """

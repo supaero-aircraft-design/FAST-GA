@@ -26,6 +26,8 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
+from fastga.command.api import list_inputs, list_outputs
+
 from .constants import SUBMODEL_HT_AREA
 
 _ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
@@ -98,27 +100,21 @@ class UpdateHTArea(om.Group):
     def get_io_names(
         component: om.ExplicitComponent,
         excludes: Optional[Union[str, List[str]]] = None,
-        iotypes: Optional[Union[str, Tuple[str]]] = ("inputs", "outputs"),
+        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
         prob = om.Problem(model=component)
         prob.setup()
-        data = []
+        list_names = []
         if isinstance(iotypes, tuple):
-            data.extend(prob.model.list_inputs(out_stream=None))
-            data.extend(prob.model.list_outputs(out_stream=None))
+            list_names.extend(list_inputs(component))
+            list_names.extend(list_outputs(component))
         else:
             if iotypes == "inputs":
-                data.extend(prob.model.list_inputs(out_stream=None))
+                list_names.extend(list_inputs(component))
             else:
-                data.extend(prob.model.list_outputs(out_stream=None))
-        list_names = []
-        for idx in range(len(data)):
-            variable_name = data[idx][0]
-            if excludes is None:
-                list_names.append(variable_name)
-            else:
-                if variable_name not in list(excludes):
-                    list_names.append(variable_name)
+                list_names.extend(list_outputs(component))
+        if excludes is not None:
+            list_names = [x for x in list_names if x not in excludes]
 
         return list_names
 

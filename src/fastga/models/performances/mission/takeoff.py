@@ -27,6 +27,7 @@ import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
+from fastga.command.api import list_inputs, list_outputs
 
 ALPHA_LIMIT = 13.5 * math.pi / 180.0  # Limit angle to touch tail on ground in rad
 ALPHA_RATE = 3.0 * math.pi / 180.0  # Angular rotation speed in rad/s
@@ -101,23 +102,17 @@ class TakeOffPhase(om.Group):
     ) -> List[str]:
         prob = om.Problem(model=component)
         prob.setup()
-        data = []
+        list_names = []
         if isinstance(iotypes, tuple):
-            data.extend(prob.model.list_inputs(out_stream=None))
-            data.extend(prob.model.list_outputs(out_stream=None))
+            list_names.extend(list_inputs(component))
+            list_names.extend(list_outputs(component))
         else:
             if iotypes == "inputs":
-                data.extend(prob.model.list_inputs(out_stream=None))
+                list_names.extend(list_inputs(component))
             else:
-                data.extend(prob.model.list_outputs(out_stream=None))
-        list_names = []
-        for idx in range(len(data)):
-            variable_name = data[idx][0]
-            if excludes is None:
-                list_names.append(variable_name)
-            else:
-                if variable_name not in list(excludes):
-                    list_names.append(variable_name)
+                list_names.extend(list_outputs(component))
+        if excludes is not None:
+            list_names = [x for x in list_names if x not in excludes]
 
         return list_names
 
