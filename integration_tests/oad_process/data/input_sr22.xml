@@ -84,8 +84,11 @@
         <area units="m**2">13.46<!--wing reference area--></area>
         <aspect_ratio>10.12<!--wing aspect ratio--></aspect_ratio>
         <sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <dihedral_angle units="deg">0.0<!--dihedral angle of the wing--></dihedral_angle>
+        <wing_configuration>1.0<!--location of the wing 1.0-low, 2.0-mid, 3.0-high--></wing_configuration>
         <taper_ratio>0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.12<!--mean thickness ratio of wing--></thickness_ratio>
+        <twist units="deg">0.0<!--twist angle for the wing (negative is tip down)--></twist>
         <aileron>
           <chord_ratio>0.25<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="deg">30.0</max_deflection>
