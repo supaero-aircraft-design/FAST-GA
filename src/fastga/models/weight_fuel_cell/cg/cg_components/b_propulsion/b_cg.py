@@ -17,7 +17,6 @@ import numpy as np
 
 from .b1_engine_cg import ComputeEngineCG
 from .b2_fuel_lines_cg import ComputeFuelLinesCG
-# from .b3_tank_cg import ComputeTankCG
 from .b4_battery_cg import ComputeBatteryCG
 from .b5_fuel_cell_cg import ComputeFuelCellCG
 # from .b6_h2_storage_cg import ComputeH2StorageCG

@@ -61,7 +61,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
     """
 
     def setup(self, component: Component):
-        component.add_input("data:propulsion:HE_engine:max_power", np.nan, units="W")
+        component.add_input("data:propulsion:hybrid_powertrain:motor:max_power", np.nan, units="W")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
@@ -126,7 +126,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         :return: an :class:`BasicHEEngine` instance
         """
         engine_params = {
-            "max_power": inputs["data:propulsion:HE_engine:max_power"],
+            "max_power": inputs["data:propulsion:hybrid_powertrain:motor:max_power"],
             "cruise_altitude_propeller": inputs[
                 "data:aerodynamics:propeller:cruise_level:altitude"
             ],
@@ -159,7 +159,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
 
 @ValidityDomainChecker(
     {
-        "data:propulsion:HE_engine:max_power": (10000, 250000),  # power range validity
+        "data:propulsion:hybrid_powertrain:motormax_power": (10000, 250000),  # power range validity
         "data:geometry:propulsion:engine:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
     }
 )

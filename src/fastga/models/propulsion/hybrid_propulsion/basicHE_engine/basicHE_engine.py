@@ -92,9 +92,9 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.ref = {  # PIPISTREL E-811-268MVLC
             # https://www.pipistrel-aircraft.com/aircraft/electric-flight/e-811/#tab-id-2
             "max_power": 57600,
-            "length": 0.206,
-            "height": 0.274,
-            "width": 0.091,
+            "length": 0.187, #Total length including motor mount
+            "height": 0.268,
+            "width": 0.268,
             "mass": 22.7,
         }
         # self.map_file_path = pth.join(resources.__path__[0], "FourCylindersAtmospheric.csv")
@@ -625,7 +625,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.engine.width = self.ref["width"] * (self.max_power / self.ref["max_power"]) ** (1 / 3)
 
         if self.prop_layout == 3.0:
-            nacelle_length = 4.0 * self.engine.length
+            nacelle_length = 5. * self.engine.length
             # Based on the length between nose and firewall for TB20 and SR22
         else:
             nacelle_length = 1.5 * self.engine.length

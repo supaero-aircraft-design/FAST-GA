@@ -12,6 +12,7 @@ driver: om.ScipyOptimizeDriver(tol=1e-1, optimizer='COBYLA')
 
 submodels:
     submodel.geometry.propeller.position : null
+    submodel.geometry.mfw: null
     submodel.weight.mass.propulsion : fastga.submodel.weight.mass.propulsion.hybrid.fuelcell
     submodel.weight.cg.propulsion : fastga.submodel.weight.cg.propulsion.hybrid.fuelcell
     submodel.weight.cg.propulsion.tank: fastga.submodel.weight.cg.propulsion.tank.gh2
@@ -28,6 +29,7 @@ model:
         linear_solver: om.DirectSolver()
         hybrid_powertain:
             id: fastga.hybrid_powertrain.legacy
+            H2_storage_model: legacy
         geometry:
             id: fastga.geometry.legacy
             propulsion_id: fastga.wrapper.propulsion.basicHE_engine

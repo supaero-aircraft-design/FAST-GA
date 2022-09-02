@@ -43,7 +43,7 @@ class ComputeBatteries(om.ExplicitComponent):
         # self.add_input("data:propulsion:hybrid_powertrain:battery:cutoff_voltage", val=np.nan, units="V")
         self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", val=np.nan, units="V")
         self.add_input("data:propulsion:hybrid_powertrain:motor:efficiency", val=np.nan, units=None)
-        self.add_input("data:propulsion:hybrid_powertrain:motor:TO_power", val=np.nan, units="W")
+        self.add_input("data:propulsion:hybrid_powertrain:motor:max_power", val=np.nan, units="W")
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_power", val=np.nan, units='W')
         self.add_input("data:mission:sizing:takeoff:duration", val=np.nan, units='s')
         self.add_input("data:mission:sizing:main_route:climb:battery_energy", val=np.nan, units='W*h')
@@ -74,7 +74,7 @@ class ComputeBatteries(om.ExplicitComponent):
         # cutoff_V = inputs['data:propulsion:hybrid_powertrain:battery:cutoff_voltage']
         nom_V = inputs['data:propulsion:hybrid_powertrain:battery:sys_nom_voltage']
         motor_eff = inputs['data:propulsion:hybrid_powertrain:motor:efficiency']
-        TO_power = inputs['data:propulsion:hybrid_powertrain:motor:TO_power']
+        TO_power = inputs['data:propulsion:hybrid_powertrain:motor:max_power']
         fc_power = inputs['data:propulsion:hybrid_powertrain:fuel_cell:design_power']
         TO_time = inputs['data:mission:sizing:takeoff:duration']
         climb_energy = inputs['data:mission:sizing:main_route:climb:battery_energy']

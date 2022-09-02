@@ -830,7 +830,7 @@ def test_OMBasicHEEngineComponent():
     ])
 
     ivc = om.IndepVarComp()
-    ivc.add_output("data:propulsion:HE_engine:max_power", 130000, units="W")
+    ivc.add_output("data:propulsion:hybrid_powertrain:motormax_power", 130000, units="W")
     ivc.add_output("data:TLAR:v_cruise", 158.0, units="kn")
     ivc.add_output("data:mission:sizing:main_route:cruise:altitude", 8000.0, units="ft")
     ivc.add_output("data:geometry:propulsion:engine:layout", 1.0)

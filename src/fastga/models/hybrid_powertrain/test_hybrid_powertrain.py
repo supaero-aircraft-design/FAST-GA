@@ -11,6 +11,11 @@ from .components import (
     ComputeIntakes,
     ComputeInverter
 )
+from fastga.models.weight_fuel_cell.mass_breakdown.b_propulsion.b12_h2_storage_weight import (
+    ComputeH2StorageWeightPhysical,
+    ComputeH2StorageWeightLegacy
+)
+
 
 XML_FILE = "hybrid_aircraft.xml"
 
@@ -159,17 +164,56 @@ def test_h2_storage():
     """ Tests computation of the hydrogen storage """
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeH2Storage()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeH2Storage(H2_storage_model='physical')), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeH2Storage(), ivc)
+    problem = run_system(ComputeH2Storage(H2_storage_model='physical'), ivc)
     vol = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:total_tanks_volume", units='m**3')
-    assert vol == pytest.approx(0.401, abs=1e-3)
+    assert vol == pytest.approx(0.373, abs=1e-3)
     R = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:tank_internal_radius", units='m')
     assert R == pytest.approx(0.2725, abs=1e-3)
     L = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:tank_internal_length", units='m')
     assert L == pytest.approx(0.8177, abs=1e-3)
     t = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:wall_thickness", units='m')
     assert t == pytest.approx(0.02018, abs=1e-4)
-    mass = problem.get_val("data:weight:hybrid_powertrain:h2_storage:single_tank_mass", units='kg')
-    assert mass == pytest.approx(97.02, abs=1e-1)
+    volume = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:single_tank_liner_volume", units='m**3')
+    assert volume == pytest.approx(0.00711, abs=1e-4)
+
+def test_h2_storage_legacy():
+    """ Tests computation of the hydrogen storage """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeH2Storage(H2_storage_model='legacy')), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeH2Storage(H2_storage_model='legacy'), ivc)
+    vol = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:total_tanks_volume", units='m**3')
+    assert vol == pytest.approx(0.456, abs=1e-3)
+    R = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume", units='m**3')
+    assert R == pytest.approx(0.148, abs=1e-3)
+    L = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:tank_ext_length", units='m')
+    assert L == pytest.approx(0.943, abs=1e-3)
+    t = problem.get_val("data:geometry:hybrid_powertrain:h2_storage:tank_ext_diameter", units='m')
+    assert t == pytest.approx(0.629, abs=1e-4)
+
+def test_h2_storage_weight_legacy():
+    """ Tests computation of the hydrogen storage """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeH2StorageWeightLegacy()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeH2StorageWeightLegacy(), ivc)
+    vol = problem.get_val("data:weight:hybrid_powertrain:h2_storage:mass", units='kg')
+    assert vol == pytest.approx(250, abs=1e-3)
+
+def test_h2_storage_weight_physical():
+    """ Tests computation of the hydrogen storage """
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeH2StorageWeightPhysical()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeH2StorageWeightPhysical(), ivc)
+    vol = problem.get_val("data:weight:hybrid_powertrain:h2_storage:mass", units='kg')
+    assert vol == pytest.approx(199.05, abs=1e-1)

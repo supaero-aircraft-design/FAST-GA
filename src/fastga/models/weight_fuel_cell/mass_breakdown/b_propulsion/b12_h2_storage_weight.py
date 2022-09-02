@@ -16,6 +16,7 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.module_management.service_registry import RegisterSubmodel
 from .constants import SUBMODEL_PROPULSION_H2STORAGE_MASS
+from fastga.models.hybrid_powertrain.components.resources.h2_storage import GH2_storage
 
 @RegisterSubmodel(SUBMODEL_PROPULSION_H2STORAGE_MASS, "fastga.submodel.weight.mass.propulsion.hybrid.fuelcell.h2storage.legacy")
 class ComputeH2StorageWeightLegacy(ExplicitComponent):
@@ -39,16 +40,9 @@ class ComputeH2StorageWeightLegacy(ExplicitComponent):
         pressure = inputs["data:propulsion:hybrid_powertrain:h2_storage:pressure"]
         fuel_weight = inputs["data:mission:sizing:fuel"]
 
-        # Interpolation
-        if pressure < 35:
-            grav_cap = grav_cap_350
-        elif pressure > 70:
-            grav_cap = grav_cap_700
-        else:
-            grav_cap = np.interp(pressure,[35,70],np.concatenate((grav_cap_350,grav_cap_700)))
+        storage_syst = GH2_storage(grav_cap_350=grav_cap_350,grav_cap_700=grav_cap_700,storage_pressure=pressure)
 
-        b12 = fuel_weight / grav_cap
-
+        b12 = storage_syst.compute_weight_gravimetric_model(fuel_weight)
 
         outputs['data:weight:hybrid_powertrain:h2_storage:mass'] = b12
 
@@ -82,8 +76,11 @@ class ComputeH2StorageWeightPhysical(ExplicitComponent):
             liner_volum = inputs["data:geometry:hybrid_powertrain:h2_storage:single_tank_liner_volume"]
             int_volume = inputs['data:geometry:hybrid_powertrain:h2_storage:tank_internal_volume']
 
-            tank_mass = ((tank_volume - liner_volum - int_volume) * density_cfp + liner_volum * density_liner) * bop_factor  # [kg]
+            storage_syst = GH2_storage(density_cfp=density_cfp, density_liner=density_liner,
+                                       bop_factor=bop_factor)
 
+            tank_mass = storage_syst.compute_weight_physical_model(tank_volume=tank_volume, liner_volume=liner_volum,
+                                                                   int_volume=int_volume)
             b12 = nb_tanks * tank_mass
 
             outputs['data:weight:hybrid_powertrain:h2_storage:mass'] = b12

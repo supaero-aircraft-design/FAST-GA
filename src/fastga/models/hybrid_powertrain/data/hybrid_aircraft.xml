@@ -142,6 +142,8 @@
         <h2_storage>
           <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
           <gravimetric_capacity_700b is_input="True">0.048</gravimetric_capacity_700b>
+          <volumetric_capacity_350b is_input="True" units="kg/m**3">17.6</volumetric_capacity_350b>
+          <volumetric_capacity_700b is_input="True" units="kg/m**3">26.3</volumetric_capacity_700b>
           <nb_tanks is_input="True">2</nb_tanks>
           <length_radius_ratio is_input="True">3</length_radius_ratio>
           <fos is_input="True">2.25</fos>
@@ -152,6 +154,9 @@
           <liner_thickness is_input="True" units='mm'>5.0</liner_thickness>
           <liner_density is_input="True" units="kg/m**3">1000.</liner_density>
           <bop_factor is_input="True">1.3</bop_factor>
+          <tank_internal_volume is_input="True" units="m**3">0.148</tank_internal_volume>
+          <single_tank_liner_volume is_input="True" units="m**3">0.00711</single_tank_liner_volume>
+          <single_tank_volume is_input="True" units="m**3">0.2005</single_tank_volume>
         </h2_storage>
         <hex>
           <radiator_surface_density units="g/cm**2" is_input="True">1.97</radiator_surface_density>
@@ -648,7 +653,7 @@
         </inverter>
         <motor>
           <nominal_torque units="N*m" is_input="True">250</nominal_torque>
-          <TO_power units="W" is_input="False">44000</TO_power>
+          <max_power units="W" is_input="False">44000</max_power>
           <efficiency is_input="true">0.95</efficiency>
           <max_torque units="N*m" is_input="True">500</max_torque>
           <speed units="rpm" is_input="True">2500</speed>
@@ -658,9 +663,6 @@
           <n_conv is_input="True">0.90</n_conv>
         </power_electronics>
       </hybrid_powertrain>
-      <HE_engine>
-        <max_power units="W" is_input="False">45000</max_power>
-      </HE_engine>
     </propulsion>
     <weight>
       <aircraft>

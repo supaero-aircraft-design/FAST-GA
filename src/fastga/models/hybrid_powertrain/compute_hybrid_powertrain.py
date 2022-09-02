@@ -32,6 +32,9 @@ from .components import (
 @RegisterOpenMDAOSystem("fastga.hybrid_powertrain.legacy", domain=ModelDomain.GEOMETRY)
 class ComputeHybridPowertrain(om.Group):
 
+    def initialize(self):
+        self.options.declare('H2_storage_model', types=str, default='legacy')
+
     def setup(self):
         self.add_subsystem("compute_fuel_cells", ComputeFuelCells(), promotes=["*"])
         self.add_subsystem("compute_compressor", ComputeCompressor(), promotes=["*"])
