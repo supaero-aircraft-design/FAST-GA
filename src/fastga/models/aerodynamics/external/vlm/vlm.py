@@ -752,7 +752,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panelspan = y_panel[1:] - y_panel[:-1]
         panelspan[self.n_y :] = panelspan[: self.n_y]
 
-        # Calculate characteristic points (Right side)
+        # Calculate characteristic points (Right and left side)
         for i in range(self.n_x):
             panelchord[i * self.n_y : (i + 1) * self.n_y] = 0.5 * (
                 (x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y])
@@ -761,26 +761,28 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             panelsurf[i * self.n_y : (i + 1) * self.n_y] = (
                 panelspan[: self.n_y] * panelchord[i * self.n_y : (i + 1) * self.n_y]
             )
+
             x_c[i * self.n_y : (i + 1) * self.n_y] = (
                 x_panel[i, : self.n_y] + x_panel[i, 1 : self.n_y + 1]
             ) * 0.5 + 0.75 * panelchord[i * self.n_y : (i + 1) * self.n_y]
+
             y_c[i * self.n_y : (i + 1) * self.n_y] = (
                 y_panel[: self.n_y] + y_panel[1 : self.n_y + 1]
             ) * 0.5
+
             x_1[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, : self.n_y] + 0.25 * (
                 x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y]
             )
+            x_1[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = x_panel[i, self.n_y + 1 : 2 * self.n_y + 1] + 0.25 * (
+                x_panel[i + 1, self.n_y + 1 : 2 * self.n_y + 1]
+                - x_panel[i, self.n_y + 1 : 2 * self.n_y + 1]
+            )
+
             x_2[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, 1 : self.n_y + 1] + 0.25 * (
                 x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1]
             )
-            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
-            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
-        # Calculate characteristic points (Left side)
-        for i in range(self.n_x):
-            y_1[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
-
             x_2[
                 self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
             ] = np.concatenate(
@@ -796,6 +798,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     )[1:],
                 )
             )
+
+            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
+            y_1[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
+
+            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
             y_2[
                 self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
             ] = np.concatenate(
@@ -804,6 +813,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     y_panel[self.n_y + 1 : 2 * self.n_y],
                 )
             )
+        # Calculate remaining characteristic points (Left side)
 
         x_c[self.n_x * self.n_y :] = x_c[: self.n_x * self.n_y]
         y_c[self.n_x * self.n_y :] = -y_c[: self.n_x * self.n_y]
