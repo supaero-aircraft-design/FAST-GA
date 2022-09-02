@@ -649,35 +649,51 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Initial data (zero matrix/array)
         y_panel = self.wing["y_panel"]
-        chord = self.wing["chord"]
         x_le = self.wing["x_le"]
         y_endflaps = y2_wing + flap_span_ratio * (semi_span - y2_wing)
         # Definition of x_panel, y_panel, x_le and chord (Right side)
-        for j in range(self.n_y + 1):
-            if j < self.ny1:
-                y_panel[j] = y2_wing * j / self.ny1
-                chord[j] = root_chord
-            elif (j >= self.ny1) and (j < (self.ny1 + self.ny2)):
-                y_panel[j] = y2_wing + (y_endflaps - y2_wing) * (j - self.ny1) / self.ny2
-                y_tapered_section = y_panel[j] - y2_wing
-                chord[j] = root_chord + (tip_chord - root_chord) * y_tapered_section / (
-                    semi_span - y2_wing
-                )
-                x_le[j] = y_tapered_section * (root_chord - tip_chord) / (4 * (semi_span - y2_wing))
-            else:
-                y_panel[j] = (
-                    y_endflaps + (semi_span - y_endflaps) * (j - (self.ny1 + self.ny2)) / self.ny3
-                )
-                y_tapered_section = y_panel[j] - y2_wing
-                chord[j] = root_chord + (tip_chord - root_chord) * y_tapered_section / (
-                    semi_span - y2_wing
-                )
-                x_le[j] = y_tapered_section * (root_chord - tip_chord) / (4 * (semi_span - y2_wing))
-        # Definition of Left side (symmetry)
-        for j in range(1, self.n_y + 1):
-            y_panel[self.n_y + j] = -y_panel[j]
-            chord[self.n_y + j] = chord[j]
-            x_le[self.n_y + j] = x_le[j]
+
+        indices = np.indices(y_panel.shape)[0].astype(float)
+
+        y_panel = y2_wing * indices / self.ny1
+
+        y_panel = np.where(
+            indices >= self.ny1,
+            y2_wing + (y_endflaps - y2_wing) * (indices - self.ny1) / self.ny2,
+            y_panel,
+        )
+        y_tapered_section = y_panel - y2_wing
+        chord = np.where(
+            indices >= self.ny1,
+            root_chord + (tip_chord - root_chord) * y_tapered_section / (semi_span - y2_wing),
+            np.full_like(indices, root_chord),
+        )
+        x_le = np.where(
+            indices >= self.ny1,
+            y_tapered_section * (root_chord - tip_chord) / (4 * (semi_span - y2_wing)),
+            x_le,
+        )
+
+        y_panel = np.where(
+            indices >= self.ny1 + self.ny2,
+            y_endflaps + (semi_span - y_endflaps) * (indices - (self.ny1 + self.ny2)) / self.ny3,
+            y_panel,
+        )
+        y_tapered_section = y_panel - y2_wing
+        chord = np.where(
+            indices >= self.ny1 + self.ny2,
+            root_chord + (tip_chord - root_chord) * y_tapered_section / (semi_span - y2_wing),
+            chord,
+        )
+        x_le = np.where(
+            indices >= self.ny1 + self.ny2,
+            y_tapered_section * (root_chord - tip_chord) / (4 * (semi_span - y2_wing)),
+            x_le,
+        )
+
+        y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
+        chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
+        x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
         # Save data
         self.wing["y_panel"] = y_panel
         self.wing["chord"] = chord
@@ -693,18 +709,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Initial data (zero matrix/array)
         y_panel = self.htp["y_panel"]
-        chord = self.htp["chord"]
-        x_le = self.htp["x_le"]
         # Definition of x_panel, y_panel, x_le and chord (Right side)
-        for j in range(self.n_y + 1):
-            y_panel[j] = semi_span * j / self.n_y
-            chord[j] = root_chord + (tip_chord - root_chord) * y_panel[j] / semi_span
-            x_le[j] = y_panel[j] * (root_chord - tip_chord) / (4 * semi_span)
-        # Definition of Left side (symmetry)
-        for j in range(1, self.n_y + 1):
-            y_panel[self.n_y + j] = -y_panel[j]
-            chord[self.n_y + j] = chord[j]
-            x_le[self.n_y + j] = x_le[j]
+
+        indices = np.indices(y_panel.shape)[0].astype(float)
+        y_panel = semi_span * indices / self.n_y
+        chord = root_chord + (tip_chord - root_chord) * y_panel / semi_span
+        x_le = y_panel * (root_chord - tip_chord) / (4 * semi_span)
+
+        y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
+        chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
+        x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
+
         # Save data
         self.htp["y_panel"] = y_panel
         self.htp["chord"] = chord
@@ -719,7 +734,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord = dictionary["chord"]
         x_panel = dictionary["x_panel"]
         y_panel = dictionary["y_panel"]
-        panelspan = dictionary["panel_span"]
         panelchord = dictionary["panel_chord"]
         panelsurf = dictionary["panel_surf"]
         x_c = dictionary["x_c"]
@@ -732,49 +746,68 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aic_wake = dictionary["aic_wake"]
         # Calculate panel corners x-coordinate
         for i in range(self.n_x + 1):
-            for j in range(2 * self.n_y + 1):
-                x_panel[i, j] = x_le[j] + chord[j] * i / self.n_x
+            x_panel[i, :] = x_le + chord * i / self.n_x
+
         # Calculate panel span with symmetry
-        for j in range(self.n_y):
-            panelspan[j] = y_panel[j + 1] - y_panel[j]
-            panelspan[self.n_y + j] = panelspan[j]
+        panelspan = y_panel[1:] - y_panel[:-1]
+        panelspan[self.n_y :] = panelspan[: self.n_y]
+
         # Calculate characteristic points (Right side)
         for i in range(self.n_x):
-            for j in range(self.n_y):
-                panelchord[i * self.n_y + j] = 0.5 * (
-                    (x_panel[i + 1, j] - x_panel[i, j])
-                    + (x_panel[i + 1, j + 1] - x_panel[i, j + 1])
-                )
-                panelsurf[i * self.n_y + j] = panelspan[j] * panelchord[i * self.n_y + j]
-                x_c[i * self.n_y + j] = (
-                    x_panel[i, j] + x_panel[i, j + 1]
-                ) * 0.5 + 0.75 * panelchord[i * self.n_y + j]
-                y_c[i * self.n_y + j] = (y_panel[j] + y_panel[j + 1]) * 0.5
-                x_1[i * self.n_y + j] = x_panel[i, j] + 0.25 * (x_panel[i + 1, j] - x_panel[i, j])
-                y_1[i * self.n_y + j] = y_panel[j]
-                x_2[i * self.n_y + j] = x_panel[i, j + 1] + 0.25 * (
-                    x_panel[i + 1, j + 1] - x_panel[i, j + 1]
-                )
-                y_2[i * self.n_y + j] = y_panel[j + 1]
+            panelchord[i * self.n_y : (i + 1) * self.n_y] = 0.5 * (
+                (x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y])
+                + (x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1])
+            )
+            panelsurf[i * self.n_y : (i + 1) * self.n_y] = (
+                panelspan[: self.n_y] * panelchord[i * self.n_y : (i + 1) * self.n_y]
+            )
+            x_c[i * self.n_y : (i + 1) * self.n_y] = (
+                x_panel[i, : self.n_y] + x_panel[i, 1 : self.n_y + 1]
+            ) * 0.5 + 0.75 * panelchord[i * self.n_y : (i + 1) * self.n_y]
+            y_c[i * self.n_y : (i + 1) * self.n_y] = (
+                y_panel[: self.n_y] + y_panel[1 : self.n_y + 1]
+            ) * 0.5
+            x_1[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, : self.n_y] + 0.25 * (
+                x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y]
+            )
+            x_2[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, 1 : self.n_y + 1] + 0.25 * (
+                x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1]
+            )
+            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
+            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
         # Calculate characteristic points (Left side)
         for i in range(self.n_x):
-            for j in range(self.n_y):
-                x_c[self.n_x * self.n_y + (i * self.n_y + j)] = x_c[i * self.n_y + j]
-                y_c[self.n_x * self.n_y + (i * self.n_y + j)] = -y_c[i * self.n_y + j]
-                x_1[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
-                    i, self.n_y + j + 1
-                ] + 0.25 * (x_panel[i + 1, self.n_y + j + 1] - x_panel[i, self.n_y + j + 1])
-                y_1[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j + 1]
-                if j == 0:
-                    y_2[self.n_x * self.n_y + (i * self.n_y + j)] = 0
-                    x_2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[i, 0] + 0.25 * (
-                        x_panel[i + 1, 0] - x_panel[i, 0]
-                    )
-                else:
-                    x_2[self.n_x * self.n_y + (i * self.n_y + j)] = x_panel[
-                        i, self.n_y + j
-                    ] + 0.25 * (x_panel[i + 1, self.n_y + j] - x_panel[i, self.n_y + j])
-                    y_2[self.n_x * self.n_y + (i * self.n_y + j)] = y_panel[self.n_y + j]
+            y_1[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
+
+            x_2[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = np.concatenate(
+                (
+                    np.array([x_panel[i, 0] + 0.25 * (x_panel[i + 1, 0] - x_panel[i, 0])]),
+                    (
+                        x_panel[i, self.n_y : 2 * self.n_y]
+                        + 0.25
+                        * (
+                            x_panel[i + 1, self.n_y : 2 * self.n_y]
+                            - x_panel[i, self.n_y : 2 * self.n_y]
+                        )
+                    )[1:],
+                )
+            )
+            y_2[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = np.concatenate(
+                (
+                    np.array([0.0]),
+                    y_panel[self.n_y + 1 : 2 * self.n_y],
+                )
+            )
+
+        x_c[self.n_x * self.n_y :] = x_c[: self.n_x * self.n_y]
+        y_c[self.n_x * self.n_y :] = -y_c[: self.n_x * self.n_y]
+
         # Aerodynamic coefficients computation (Right side)
         for i in range(self.n_x * self.n_y):
             for j in range(self.n_x * self.n_y):
