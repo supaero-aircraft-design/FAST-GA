@@ -585,9 +585,10 @@ class BasicICEngine(AbstractFuelPropulsion):
         sigma = atmosphere.density / Atmosphere(0.0).density
         max_power = max_power_SL * (sigma - (1 - sigma) / 7.55)
 
-        # Found thrust relative to ICE maximum power @ given altitude and speed:
-        # calculates first thrust interpolation vector (between min and max of propeller table) and associated
-        # efficiency, then calculates power and found thrust (interpolation limits to max propeller thrust)
+        # Found thrust relative to ICE maximum power @ given altitude and speed: calculates first
+        # thrust interpolation vector (between min and max of propeller table) and associated
+        # efficiency, then calculates power and found thrust (interpolation limits to max
+        # propeller thrust)
         thrust_interp = np.linspace(
             np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
             thrust_max_propeller,
@@ -657,9 +658,9 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     def compute_weight(self) -> float:
         """
-        Computes weight of installed propulsion (engine, nacelle and propeller) depending on maximum power.
-        Uses model described in : Gudmundsson, Snorri. General aviation aircraft design: Applied Methods and Procedures.
-        Butterworth-Heinemann, 2013. Equation (6-44)
+        Computes weight of installed propulsion (engine, nacelle and propeller) depending on
+        maximum power. Uses model described in : Gudmundsson, Snorri. General aviation aircraft
+        design: Applied Methods and Procedures. Butterworth-Heinemann, 2013. Equation (6-44)
 
         """
         power_sl = self.max_power / 745.7  # conversion to european hp

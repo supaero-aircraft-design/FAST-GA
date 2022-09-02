@@ -32,6 +32,11 @@ def test_efficiency_map_plot():
     # The test will fail if an error is raised by the following line
     fig = propeller_efficiency_map_plot(filename)
 
+    # Second plot with sea_level option
+    # This is a rudimentary test as plot are difficult to verify
+    # The test will fail if an error is raised by the following line
+    fig = propeller_efficiency_map_plot(filename, sea_level=True)
+
 
 def test_coefficient_map_plot():
     """Basic tests for testing the plotting."""

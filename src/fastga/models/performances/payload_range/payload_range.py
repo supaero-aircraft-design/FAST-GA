@@ -33,9 +33,9 @@ _LOGGER = logging.getLogger(__name__)
 @oad.RegisterOpenMDAOSystem("fastga.performances.payload_range", domain=ModelDomain.PERFORMANCE)
 class ComputePayloadRange(om.ExplicitComponent):
     """
-    Payload Range. The minimal payload which defines point E is taken as two pilots. This class uses a blank xml
-    file for the execution of the mission class. All the input quantities of the mission are created in a dict.
-    generate_block_analysis still needs a xml file to be processed.
+    Payload Range. The minimal payload which defines point E is taken as two pilots. This class
+    uses a blank xml file for the execution of the mission class. All the input quantities of the
+    mission are created in a dict. generate_block_analysis still needs a xml file to be processed.
     """
 
     def initialize(self):

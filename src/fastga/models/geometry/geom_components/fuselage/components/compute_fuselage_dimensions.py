@@ -21,9 +21,8 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeFuselageGeometryBasic(ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
-    Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing)
+    Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing).
     """
 
     def setup(self):

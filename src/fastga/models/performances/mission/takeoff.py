@@ -100,8 +100,7 @@ class TakeOffPhase(om.Group):
         excludes: Optional[Union[str, List[str]]] = None,
         iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
-        prob = om.Problem(model=component)
-        prob.setup()
+
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
