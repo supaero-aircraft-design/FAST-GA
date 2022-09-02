@@ -49,7 +49,8 @@ oad.RegisterSubmodel.active_models[
 @oad.RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
 class ComputeClimb(DynamicEquilibrium):
     """
-    Compute the fuel consumption on climb segment with constant VCAS and fixed thrust ratio.
+    Compute the fuel consumption on climb segment with constant VCAS and a climb rate which
+    varies linearly with the altitude.
     The hypothesis of small alpha/gamma angles is done.
     """
 

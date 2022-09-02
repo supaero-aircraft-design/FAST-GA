@@ -145,7 +145,8 @@ class ComputeHTMacFD(ExplicitComponent):
 class ComputeHTMacFL(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP distance computed).
+    Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP
+    distance computed).
     """
 
     def setup(self):
