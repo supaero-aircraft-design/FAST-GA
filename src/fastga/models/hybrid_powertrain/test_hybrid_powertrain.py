@@ -114,16 +114,21 @@ def test_compute_battery():
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeBatteries()), __file__, XML_FILE)
 
+    ivc.add_output("data:propulsion:hybrid_powertrain:battery:cell_current_limit", val=10, units='A')
+    ivc.add_output('data:mission:sizing:end_of_mission:SOC', val=0.2)
+    ivc.add_output('data:mission:sizing:total_battery_energy', val=24, units='kW*h')
+    ivc.add_output('data:mission:sizing:battery_max_current', val=100)
+
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBatteries(), ivc)
     N_ser = problem.get_val("data:geometry:hybrid_powertrain:battery:N_series", units=None)
-    assert N_ser == pytest.approx(181, abs=3)
+    assert N_ser == pytest.approx(181, abs=1.0)
     N_par = problem.get_val("data:geometry:hybrid_powertrain:battery:N_parallel", units=None)
-    assert N_par == pytest.approx(4.0, abs=3)
+    assert N_par == pytest.approx(16.0, abs=1.0)
     vol = problem.get_val("data:geometry:hybrid_powertrain:battery:pack_volume", units='m**3')
-    assert vol == pytest.approx(0.022, abs=1e-3)
+    assert vol == pytest.approx(0.044, abs=1e-3)
     tot_vol = problem.get_val("data:geometry:hybrid_powertrain:battery:tot_volume", units='m**3')
-    assert tot_vol == pytest.approx(0.044, abs=1e-3)
+    assert tot_vol == pytest.approx(0.088, abs=1e-3)
 
 
 def test_compute_inverter():
@@ -205,7 +210,7 @@ def test_h2_storage_weight_legacy():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeH2StorageWeightLegacy(), ivc)
     vol = problem.get_val("data:weight:hybrid_powertrain:h2_storage:mass", units='kg')
-    assert vol == pytest.approx(250, abs=1e-3)
+    assert vol == pytest.approx(238, abs=1e-3)
 
 def test_h2_storage_weight_physical():
     """ Tests computation of the hydrogen storage """

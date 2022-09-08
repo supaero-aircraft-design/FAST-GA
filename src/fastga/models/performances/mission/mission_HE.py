@@ -120,9 +120,12 @@ class _compute_reserve(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:reserve:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:main_route:reserve:hybridization_rate", np.nan,
+                       desc="The degree of hybridization of the energy source, 1: full battery, 0: full fuel")
 
-        self.add_input("data:mission:sizing:main_route:reserve:battery_power", np.nan, units="kW")
+        # self.add_input("data:mission:sizing:main_route:reserve:battery_power", np.nan, units="kW")
         self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", units="W")
 
         self.add_output("data:mission:sizing:main_route:reserve:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:reserve:battery_capacity", units="A*h")
@@ -131,18 +134,22 @@ class _compute_reserve(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        k_hybrid = inputs["data:mission:sizing:main_route:reserve:hybridization_rate"]
+
+        # Usage of fuel:
         m_reserve = (
                 inputs["data:mission:sizing:main_route:cruise:fuel"]
                 * inputs["data:mission:sizing:main_route:reserve:duration"]
-                / max(
-            1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]
-        )  # Avoid 0 division
-        )
+                / max(1e-6, inputs["data:mission:sizing:main_route:cruise:duration"]) *
+                (1-k_hybrid)
+            )
 
+        # Usage of battery
         energy_reserve = (
-                inputs["data:mission:sizing:main_route:reserve:battery_power"]
-                * inputs["data:mission:sizing:main_route:reserve:duration"] / 3600
-        )
+                inputs["data:mission:sizing:main_route:cruise:power_fuel_cell"]
+                * inputs["data:mission:sizing:main_route:reserve:duration"] / 3600 / 1000
+        ) * (k_hybrid)
 
         capacity_reserve = (
                 energy_reserve * 1000
@@ -258,7 +265,7 @@ class UpdateResources(om.ExplicitComponent):
         energy_initial_climb = inputs["data:mission:sizing:initial_climb:battery_energy"]
         energy_climb = inputs["data:mission:sizing:main_route:climb:battery_energy"]
         # energy_cruise = inputs["data:mission:sizing:main_route:cruise:battery_energy"]
-        # energy_reserve = inputs["data:mission:sizing:main_route:reserve:battery_energy"]
+        energy_reserve = inputs["data:mission:sizing:main_route:reserve:battery_energy"]
         energy_descent = inputs["data:mission:sizing:main_route:descent:battery_energy"]
         energy_taxi_in = inputs["data:mission:sizing:taxi_in:battery_energy"]
 
@@ -271,7 +278,7 @@ class UpdateResources(om.ExplicitComponent):
                 + energy_initial_climb
                 + energy_climb
                 # + energy_cruise
-                # + energy_reserve
+                + energy_reserve
                 + energy_descent
                 + energy_taxi_in
         )
@@ -310,17 +317,8 @@ class UpdateResources(om.ExplicitComponent):
         outputs["data:mission:sizing:battery_max_current"] = max_current
         outputs["data:mission:sizing:battery_min_current"] = min_current
         outputs["data:mission:sizing:total_battery_capacity"] = capacity_total
+        outputs["data:mission:sizing:total_battery_energy"] = energy_total
 
-        # Battery energy computation based on the design choice for the user
-        # Choice 1 --> x% battery energy to be remaining at the end of mission for battery safety is included within
-        # the reserve phase
-        # Choice 0 --> x% battery energy to be remaining at the end of mission for battery safety is not included
-        # within the reserve phase
-
-        if SOC_choice == 1:
-            outputs["data:mission:sizing:total_battery_energy"] = energy_total
-        else:
-            outputs["data:mission:sizing:total_battery_energy"] = (1 + SOC_remaining) * energy_total
 
 
 class _Atmosphere(Atmosphere):
@@ -665,6 +663,8 @@ class _compute_climb(DynamicEquilibrium):
             emotor_power_input = max(emotor_power_input, flight_point.emotor_input_power)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
+
+            l_d_ratio = (thrust / (mass_t*9.81) - np.tan(gamma))**(-1)
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -674,6 +674,7 @@ class _compute_climb(DynamicEquilibrium):
                     mass_t,
                     v_tas,
                     v_cas,
+                    l_d_ratio,
                     atm.density,
                     gamma * 180.0 / math.pi,
                     previous_step,
@@ -728,6 +729,7 @@ class _compute_climb(DynamicEquilibrium):
             climb_time.append(0)
             climb_capacity.append(0)
 
+
         # Save results
         if self.options["out_file"] != "":
             self.save_point(
@@ -737,6 +739,7 @@ class _compute_climb(DynamicEquilibrium):
                 mass_t,
                 v_tas,
                 v_cas,
+                l_d_ratio,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
@@ -886,6 +889,7 @@ class _compute_cruise(DynamicEquilibrium):
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
+            l_d_ratio = ( thrust / (mass_t*9.81) )**(-1)
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -895,6 +899,7 @@ class _compute_cruise(DynamicEquilibrium):
                     mass_t,
                     v_tas,
                     atm.calibrated_airspeed,
+                    l_d_ratio,
                     atm.density,
                     0.0,
                     previous_step,
@@ -919,7 +924,6 @@ class _compute_cruise(DynamicEquilibrium):
 
             # # Estimate the battery energy consumption, capacity, current and update cruise duration
             cruise_power.append(flight_point.powertrain_power_input)
-            power_cruise = max(cruise_power)
             #
             # cruise_current.append(flight_point.battery_power / system_voltage)
             # current_cruise = max(cruise_current)
@@ -942,6 +946,8 @@ class _compute_cruise(DynamicEquilibrium):
                         MAX_CALCULATION_TIME
                     )
                 )
+        # Extract the cruise power to size the FC
+        power_cruise = max(cruise_power)
 
         # Add additional zeros in the power array to meet the plot requirements during post-processing
         # while len(cruise_power) < POINTS_POWER_COUNT:
@@ -1126,6 +1132,8 @@ class _compute_descent(DynamicEquilibrium):
             flight_point.add_field("emotor_input_power", annotation_type=float)
             flight_point.add_field("powertrain_power_input", annotation_type=float)
             propulsion_model.compute_flight_points(flight_point)
+
+            l_d_ratio = (thrust / (mass_t * 9.81) - np.tan(gamma)) ** (-1)
             # Save results
             if self.options["out_file"] != "":
                 self.save_point(
@@ -1139,6 +1147,7 @@ class _compute_descent(DynamicEquilibrium):
                     mass_t,
                     v_tas,
                     v_cas,
+                    l_d_ratio,
                     atm.density,
                     gamma * 180.0 / np.pi,
                     previous_step,
@@ -1204,6 +1213,7 @@ class _compute_descent(DynamicEquilibrium):
                 mass_t,
                 v_tas,
                 v_cas,
+                l_d_ratio,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,

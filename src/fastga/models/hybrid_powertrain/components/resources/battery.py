@@ -55,7 +55,6 @@ class Battery(object):
 
     def __init__(
             self,
-            in_current: float,
             cell_diameter: float,
             cell_length: float,
             cell_capacity: float,
@@ -63,17 +62,9 @@ class Battery(object):
             cell_mass: float,
             max_C_rate: float,
             int_resistance: float,
-            TO_time: float,
-            climb_energy: float,
-            descent_energy: float,
-            reserve_energy: float,
-            SOC: float,
-            # current_limit: float,
-            # cutoff_voltage: float,
+            SOC_end_of_flight: float,
+            current_limit: float,
             sys_nom_voltage: float,
-            motor_TO_power: float,
-            motor_eff: float,
-            fc_power: float,
             battery_type: int,
     ):
 
@@ -83,7 +74,7 @@ class Battery(object):
             self.cell_c = cell_capacity
             self.cell_m = cell_mass
             self.cell_nom_V = cell_nom_volt
-            # self.i_cr = current_limit
+            self.i_max = current_limit
             # self.co_V = cutoff_voltage
         else:  # Type '1' is LG-HG2 cells
             self.data = CellTypes['LG-HG2']
@@ -92,39 +83,87 @@ class Battery(object):
             self.cell_c = self.data['RATED_CAPACITY'] * 1e-3  # [Ah]
             self.cell_m = self.data['CELL_MASS'] * 1e-3  # [kg]
             self.cell_nom_V = self.data['V_NOM']  # [V]
-            # self.i_cr = data['I_MAX']
+            self.i_max = self.data['I_MAX']
             # self.co_V = data['V_CUT_OFF']
 
-        self.i_in = in_current
         self.max_C_rate = max_C_rate
         self.int_resistance = int_resistance
-        self.TO_time = TO_time
-        self.descent_energy = descent_energy
-        self.climb_energy = climb_energy
-        self.reserve_energy = reserve_energy
-        self.SOC = SOC
+        self.SOC_end_of_flight = SOC_end_of_flight
         self.nom_voltage = sys_nom_voltage
-        self.motor_TO_power = motor_TO_power
-        self.motor_eff = motor_eff
-        self.fc_power = fc_power
 
-    def compute_required_power(self):
-        # Required power is computed considering additional power needed during take-off
-        return self.motor_TO_power / self.motor_eff - self.fc_power
 
-    def compute_voltage(self):
+    def compute_voltage(self, SOC):
         # Computes battery voltage considering cell voltage : for now cell voltage computation considers a
         # simplified method to compute voltage ('compute_voltage') instead of a more complex one
         # ('compute_V_cell_shepherd')
 
-        return self.compute_V_cell() * self.compute_nb_cells_ser()
+        return self.compute_V_cell(SOC) * self.compute_nb_cells_ser()
 
-    def compute_V_cell_shepherd(self, time: float):
+    def compute_V_cell(self, SOC):
+        # Using a linear approximation between 500 mAh and 2750 mAh to compute cell voltage given State of Charge
+        # (See https://commons.erau.edu/cgi/viewcontent.cgi?article=1392&context=edt)
+
+        V0 = 4.14  # [V] - Battery cell voltage when battery at full capacity with a 0 discharging current
+        V_soc = 0.94  # [V]
+
+        # This function is used to size the battery, assumes max current is drawn.
+        return V0 - V_soc * (1-SOC) - self.int_resistance * self.i_max
+
+    def compute_nb_cells_ser(self):
+        # Number of cells in series is computed considering nominal voltage of the battery system and
+        # cell voltage at the end of the flight when maximum current is drawn.
+        # Check conditions : Ns·VCellMin ≥ VMotorMin and Ns·VCellMax ≤ VMotorMax
+
+        return math.ceil(self.nom_voltage / self.compute_V_cell(self.SOC_end_of_flight))
+
+    def compute_nb_cells_par(self, total_energy, max_current):
+        # Number of cells in parallel is sized for energy or for max current demand
+
+        # Compute the battery energy using the SOC_end_of_flight
+        battery_energy = total_energy / (1-self.SOC_end_of_flight)
+        nb_cells_energy = math.ceil(battery_energy / (self.cell_c * self.nom_voltage))
+
+        nb_cells_power = math.ceil(max_current / self.i_max)
+
+        return max(nb_cells_power, nb_cells_energy)
+
+    def compute_pack_volume(self, n_serie, n_par):
+        # Computes the volume of a single battery pack.
+        # Assuming :
+        #     - hexagonal packing for our calculation (and using a formula found in sources specified above)
+        #     - identical packs if there are more than 1
+
+        BATT_OVERHEAD = 0.60  # Overhead factor - Considering 40% of the battery pack consists of overhead components
+        eta = 0.907  # Hexagonal packing density
+
+        V_pack = math.pi * self.cell_d ** 2 * self.cell_l * n_serie * n_par\
+                 / (4 * eta * BATT_OVERHEAD)  # [m**3]
+        return V_pack
+
+'''
+    def compute_required_power(self):
+        # Required power is computed considering additional power needed during take-off
+        return self.motor_TO_power / self.motor_eff - self.fc_power
+
+    def compute_discharge_current(self):
+        # Computing battery system output current
+        return self.compute_required_power() / self.compute_voltage()
+        
+    def compute_capacity(self):
+        # Computes battery system capacity - does not consider Sheferd model for cell voltage modelisation for now
+        return self.compute_required_power() / self.nom_voltage
+    
+    def compute_V_cell_shepherd(self, time: float, current: float):
         # Considering Shepherd's empirical model for battery modelling. Equations and reference data can be found here :
         # https://repository.tudelft.nl/islandora/object/uuid%3A6e274095-9920-4d20-9e11-d5b76363e709
         # https://www.sciencedirect.com/science/article/pii/S0360319914031218
         # This method computes the voltage of a cell given its time in operation.
         # Not used for now but may be more accurate than 'compute_V_cell'.
+
+        """
+        :param time: total time of operation in s
+        :param current: constant current drawn from the battery
+        """
 
         # Defining constants - Considering nominal battery parameters
         V0 = self.cell_nom_V  # [V] - Nominal voltage
@@ -139,69 +178,6 @@ class Battery(object):
         p3 = -9.331E-5  # [mAh**2]
         B = p3 * C ** 3 + p2 * C ** 2 + p1 * C + p0  # [1/Ah] - Exponential capacity
 
-        V = V0 - K * Q / (Q - self.i_in * time) + A * np.exp(-B * self.i_in * time) - R * self.i_in
+        V = V0 - K * Q / (Q - current * time) + A * np.exp(-B * current * time) - R * current
         return V
-
-    def compute_V_cell(self):
-        # Using a linear approximation between 500 mAh and 2750 mAh to compute cell voltage given State of Charge
-        # (See https://commons.erau.edu/cgi/viewcontent.cgi?article=1392&context=edt)
-
-        V0 = self.cell_nom_V  # [V] - Battery cell voltage when battery at full capacity with a 0 discharging current
-        V_soc = 0.94  # [V]
-        # R_i = 0.039  # [Ohm] - Internal resistance of the battery
-
-        return V0 - V_soc * self.SOC - self.int_resistance * self.cell_c * self.max_C_rate
-
-    def compute_capacity(self):
-        # Computes battery system capacity - does not consider Sheferd model for cell voltage modelisation for now
-        return self.compute_required_power() / self.nom_voltage
-
-    def compute_nb_cells_ser(self):
-        # Number of cells in series is computed considering nominal voltage of the battery system
-        # Check conditions : Ns·VCellMin ≥ VMotorMin and Ns·VCellMax ≤ VMotorMax
-        return math.ceil(self.nom_voltage / self.compute_V_cell())
-
-    def compute_nb_cells_par(self):
-        # Number of cells in parallel is sized in endurance.
-        # Battery packs are designed :
-        #   - to provide required additional power during all phases except cruise (operation energy)
-        #   - to provide fuel cell cruise power for 18 minutes in case of failure of the fuel cell system (back-up case)
-
-        BACKUP_TIME = 0.5  # [h]
-        # backup_energy = BACKUP_TIME * self.fc_power  # [Wh]
-        backup_energy = 0  # [Wh] - considering backup energy already taken in account in 'reserve' phase
-
-        operation_energy = self.compute_required_power() * self.TO_time / 3600 + self.climb_energy + self.descent_energy  # [Wh]
-
-        # To stay close to reference aircraft battery is sized considering reserve energy only
-        # Hence 0 for backup energy and operation energy set to reserve energy
-        # operation_energy = self.reserve_energy
-
-        total_energy = backup_energy + operation_energy
-        nb_cells = math.ceil(total_energy / (self.cell_c * self.nom_voltage))
-        return nb_cells
-
-    def compute_discharge_current(self):
-        # Computing battery system output current
-        return self.compute_required_power() / self.compute_voltage()
-
-    def compute_pack_volume(self):
-        # Computes the volume of a single battery pack.
-        # Assuming :
-        #     - hexagonal packing for our calculation (and using a formula found in sources specified above)
-        #     - identical packs if there are more than 1
-
-        BATT_OVERHEAD = 0.60  # Overhead factor - Considering 40% of the battery pack consists of overhead components
-        eta = 0.907  # Hexagonal packing density
-
-        V_pack = math.pi * self.cell_d ** 2 * self.cell_l * self.compute_nb_cells_ser() * self.compute_nb_cells_par() / (4 * eta * BATT_OVERHEAD)  # [m**3]
-        return V_pack
-
-    def compute_weight(self):
-        # Based on https://commons.erau.edu/edt/393
-
-        # CELL_WEIGHT_FRACTION = 0.58  # Cell weight fraction used for the computation of weight - Empirical parameter
-        return self.compute_nb_cells_par() * self.compute_nb_cells_ser() * self.cell_m / CELL_WEIGHT_FRACTION  # [kg]
-
-    def depth_of_discharge(self):
-        return 1 - self.SOC
+'''

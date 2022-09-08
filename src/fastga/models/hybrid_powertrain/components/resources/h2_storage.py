@@ -65,7 +65,7 @@ class GH2_storage:
         else:
             grav_cap = np.interp(self.storage_pressure, [35, 70], np.concatenate((self.grav_cap_350, self.grav_cap_700)))
 
-        return fuel_weight / grav_cap
+        return fuel_weight / grav_cap - fuel_weight
 
     def compute_weight_physical_model(self, tank_volume : float,
                                       int_volume : float,

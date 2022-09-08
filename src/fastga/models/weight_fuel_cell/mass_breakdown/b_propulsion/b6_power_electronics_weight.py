@@ -25,14 +25,14 @@ class ComputePowerElecWeight(ExplicitComponent):
     """
     def setup(self):
 
-        self.add_input("data:propulsion:hybrid_powertrain:motormax_power", units="W")
+        self.add_input("data:propulsion:hybrid_powertrain:motor:max_power", units="W")
         self.add_input("data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power", val=np.nan, units="W/kg")
 
         self.add_output("data:weight:hybrid_powertrain:power_electronics:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        max_power = inputs["data:propulsion:hybrid_powertrain:motormax_power"]
+        max_power = inputs["data:propulsion:hybrid_powertrain:motor:max_power"]
         pe_spec_power = inputs["data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power"]
 
         b6 = max_power / pe_spec_power

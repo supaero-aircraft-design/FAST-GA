@@ -101,14 +101,12 @@
           <stack_width units="m" is_input="True">0.155</stack_width>
         </fuel_cell>
         <h2_storage>
-          <fos is_input="True">2.25<!--Factor of safety defined by industry standard specifications--></fos>
           <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
           <gravimetric_capacity_700b is_input="True">0.048</gravimetric_capacity_700b>
           <length_radius_ratio is_input="True">3.0</length_radius_ratio>
-          <liner_thickness units="mm" is_input="True">5.0</liner_thickness>
-          <maximum_stress units="MPa" is_input="True">1900.0<!--Maximum stress allowed by the chosen material--></maximum_stress>
           <nb_tanks is_input="True">2.0</nb_tanks>
-          <thickness_fitting_factor is_input="True">1.754<!--Parameter to adjust the thickness of the fuel tanks (too low)--></thickness_fitting_factor>
+          <volumetric_capacity_350b units="kg/m**3" is_input="True">17.6</volumetric_capacity_350b>
+          <volumetric_capacity_700b units="kg/m**3" is_input="True">26.3</volumetric_capacity_700b>
         </h2_storage>
         <hex>
           <radiator_surface_density units="kg/cm**2" is_input="True">0.004</radiator_surface_density>
@@ -182,7 +180,7 @@
         </inverter>
         <motor>
           <efficiency is_input="True">0.95</efficiency>
-          <max_power units="W" is_input="True">130000.0</max_power>
+          <max_power units="W" is_input="True">nan</max_power>
           <max_torque units="N*m" is_input="True">1500.0</max_torque>
           <nominal_torque units="N*m" is_input="True">1400.0</nominal_torque>
         </motor>

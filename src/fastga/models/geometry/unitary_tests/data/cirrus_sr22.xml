@@ -4,9 +4,9 @@
       <NPAX_design is_input="True">2.0<!--design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)--></NPAX_design>
       <luggage_mass_design units="kg" is_input="True">35.0<!--luggage design mass--></luggage_mass_design>
       <range units="nmi" is_input="True">1000.0<!--top-level requirement: design range--></range>
-      <v_approach units="knot" is_input="True">79.0<!--approach speed--></v_approach>
-      <v_cruise units="knot" is_input="True">160.0<!--cruise speed--></v_cruise>
-      <v_max_sl units="knot" is_input="True">186.0<!--maximum speed at sea level--></v_max_sl>
+      <v_approach units="m/s" is_input="True">40.6<!--approach speed--></v_approach>
+      <v_cruise units="m/s" is_input="True">82.3<!--cruise speed--></v_cruise>
+      <v_max_sl units="m/s" is_input="True">95.<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
       <flap_type is_input="True">1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>

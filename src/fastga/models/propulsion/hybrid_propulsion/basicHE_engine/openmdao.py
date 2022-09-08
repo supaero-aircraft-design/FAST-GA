@@ -159,7 +159,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
 
 @ValidityDomainChecker(
     {
-        "data:propulsion:hybrid_powertrain:motormax_power": (10000, 250000),  # power range validity
+        "data:propulsion:hybrid_powertrain:motor:max_power": (10000, 250000),  # power range validity
         "data:geometry:propulsion:engine:layout": [1.0, 3.0],  # propulsion position (3.0=Nose, 1.0=Wing)
     }
 )

@@ -605,11 +605,11 @@
           <type is_input="True">0</type>
           <required_energy units="W*h" is_input="True">10000</required_energy>
           <input_current units="A" is_input="False">110</input_current>
-          <max_C_rate units="h**-1" is_input="True">2</max_C_rate>
+          <max_C_rate units="h**-1" is_input="True">10</max_C_rate>
           <int_resistance units="ohm" is_input="True">0.039</int_resistance>
           <SOC is_input="True">0.5</SOC>
           <cell_nom_voltage units="V" is_input="True">3.7</cell_nom_voltage>
-          <cell_capacity units="A*h" is_input="True">3</cell_capacity>
+          <cell_capacity units="A*h" is_input="True">3.5</cell_capacity>
           <sys_nom_voltage units="V" is_input="False">540</sys_nom_voltage>
           <max_power units="W" is_input="False">20</max_power>
         </battery>
