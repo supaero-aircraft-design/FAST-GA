@@ -570,6 +570,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 max_thrust = np.interp(max_power, mechanical_power, thrust_interp[0])
         else:  # Calculate for array
             max_thrust = np.zeros(np.size(altitude))
+            max_power = np.ones(np.size(altitude)) * self.max_power
             for idx in range(np.size(altitude)):
                 local_atmosphere = Atmosphere(altitude[idx] * np.ones(np.size(thrust_interp[idx])),
                                               altitude_in_feet=False)
@@ -582,13 +583,13 @@ class BasicHEEngine(AbstractHybridPropulsion):
                     local_atmosphere.mach = atmosphere.mach[idx]
                     propeller_efficiency = propeller_efficiency[0]
                     while efficiency_relative_error > 1e-2:
-                        max_thrust[idx] = max_power * propeller_efficiency / atmosphere.true_airspeed[idx]
+                        max_thrust[idx] = max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
                         propeller_efficiency_new = self.propeller_efficiency(max_thrust[idx], local_atmosphere)
                         efficiency_relative_error = np.abs((propeller_efficiency_new - propeller_efficiency)
                                                            / efficiency_relative_error)
                         propeller_efficiency = propeller_efficiency_new
                 else:
-                    max_thrust[idx] = max(np.interp(max_power, mechanical_power, thrust_interp[idx]))
+                    max_thrust[idx] = max(np.interp(max_power[idx], mechanical_power, thrust_interp[idx]))
 
         return max_thrust
 

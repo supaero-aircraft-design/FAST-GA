@@ -28,14 +28,18 @@ class ComputeFuelCells(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current", val=np.nan, units='A')
-        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:required_power", val=np.nan, units='W')
+        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current", val=np.nan, units='A',
+                       desc='Baseline stack current, is used to determine FC nominal efficiency with stack area.'
+                            'Large current -> compact FC but low efficiency')
+        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:required_power", val=np.nan, units='W',
+                       desc="User defined output FC power, used if higher than cruise power need.")
         self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", val=22000, units='W')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure", val=np.nan, units='Pa')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure", val=np.nan, units='Pa')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=759.50, units='cm**2')
         self.add_input("data:propulsion:hybrid_powertrain:compressor:power", val=0, units='W')
-        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=2)
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=2,
+                       desc = 'Used only in the determination of the geometry of the FC')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:fc_type", val=0, units=None,
                        desc="Optional type of fuel cell - 0 is None and 1 is default fuel cell")
 

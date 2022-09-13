@@ -804,7 +804,6 @@ def test_compute_flight_points():
         130000.0,
         2400.0,
         81.0,
-        1.0,
         SPEED,
         THRUST_SL,
         THRUST_SL_LIMIT,

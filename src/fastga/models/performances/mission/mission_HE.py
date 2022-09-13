@@ -178,7 +178,7 @@ class UpdateResources(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:climb:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:reserve:fuel", np.nan, units="kg")
-        # self.add_input("data:mission:sizing:main_route:descent:fuel", np.nan, units="kg")
+        self.add_input("data:mission:sizing:main_route:descent:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_in:fuel", np.nan, units="kg")
 
         self.add_input("data:mission:sizing:taxi_out:battery_current", np.nan, units="A")
@@ -226,7 +226,7 @@ class UpdateResources(om.ExplicitComponent):
         m_climb = inputs["data:mission:sizing:main_route:climb:fuel"]
         m_cruise = inputs["data:mission:sizing:main_route:cruise:fuel"]
         m_reserve = inputs["data:mission:sizing:main_route:reserve:fuel"]
-        # m_descent = inputs["data:mission:sizing:main_route:descent:fuel"]
+        m_descent = inputs["data:mission:sizing:main_route:descent:fuel"]
         m_taxi_in = inputs["data:mission:sizing:taxi_in:fuel"]
 
         m_total = (
@@ -236,7 +236,7 @@ class UpdateResources(om.ExplicitComponent):
                 + m_climb
                 + m_cruise
                 + m_reserve
-                # + m_descent
+                + m_descent
                 + m_taxi_in
         )
 
@@ -1031,8 +1031,10 @@ class _compute_descent(DynamicEquilibrium):
         self.add_input("data:mission:sizing:main_route:cruise:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:main_route:descent:battery_setting", val=0.,
+                       desc="Battery use setting, 0: unused, 1: full battery usage")
 
-        # self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg")
+        self.add_output("data:mission:sizing:main_route:descent:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:descent:battery_capacity", units='A*h')
         self.add_output("data:mission:sizing:main_route:descent:battery_current", units='A')
         self.add_output("data:mission:sizing:main_route:descent:battery_power", units="W")
@@ -1061,6 +1063,7 @@ class _compute_descent(DynamicEquilibrium):
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
         m_cr = inputs["data:mission:sizing:main_route:cruise:fuel"]
         system_voltage = inputs["settings:electrical_system:system_voltage"]
+        battery_usage = inputs["data:mission:sizing:descent:battery_usage"]
 
         # Define initial conditions
         t_start = time.time()
@@ -1079,8 +1082,13 @@ class _compute_descent(DynamicEquilibrium):
         current_descent = 0.0
         bat_capacity_descent = 0.0
         bat_energy_descent = 0.0
-        # atm_0 = Atmosphere(0.0)
-        # warning = False
+
+        if battery_usage == 0.0:
+            # Battery is not used
+            engine_setting = EngineSetting.CRUISE
+        elif battery_usage == 1.0:
+            # Full battery
+            engine_setting = EngineSetting.IDLE
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
@@ -1124,7 +1132,7 @@ class _compute_descent(DynamicEquilibrium):
             flight_point = FlightPoint(
                 mach=mach,
                 altitude=altitude_t,
-                engine_setting=EngineSetting.IDLE,
+                engine_setting=engine_setting,
                 thrust_is_regulated=True,
                 thrust=thrust,
             )
@@ -1167,11 +1175,10 @@ class _compute_descent(DynamicEquilibrium):
             distance_t += v_x * time_step
             altitude_t += v_z * time_step
 
-            # Estimate mass evolution and update time - no variation in descent phase under the assumption of battery
-            # power only
-            # mass_fuel_t += consumed_mass_1s * time_step
-            # mass_t = mass_t - consumed_mass_1s *
-            # time_step time_t += time_step
+            # Estimate mass evolution and update time
+            mass_fuel_t += consumed_mass_1s * time_step
+            mass_t = mass_t - mass_fuel_t
+            time_t += time_step
 
             # Estimate battery energy consumption, capacity, current and update descent duration
             descent_power.append(flight_point.battery_power)
@@ -1225,7 +1232,7 @@ class _compute_descent(DynamicEquilibrium):
                 flight_point.powertrain_power_input,
             )
 
-        # outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
+        outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:battery_power"] = power_descent
         outputs["data:mission:sizing:main_route:descent:battery_current"] = current_descent
         outputs["data:mission:sizing:main_route:descent:battery_capacity"] = bat_capacity_descent
