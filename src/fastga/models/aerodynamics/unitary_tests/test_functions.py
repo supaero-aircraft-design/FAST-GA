@@ -852,8 +852,10 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCnBetaFuselage(), ivc)
     assert problem["data:aerodynamics:fuselage:cruise:CnBeta"] == pytest.approx(
-        cn_beta_fus, abs=1e-4
+        cn_beta_fus, rel=1e-3
     )
+
+    problem.check_partials(compact_print=True)
 
 
 def slipstream_openvsp(
@@ -976,9 +978,9 @@ def cl_alpha_vt(
     problem = run_system(ComputeClAlphaVT(low_speed_aero=True), ivc)
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1"
-    ) == pytest.approx(cl_alpha_vt_ls, abs=1e-4)
+    ) == pytest.approx(cl_alpha_vt_ls, rel=1e-3)
     assert problem.get_val("data:aerodynamics:vertical_tail:k_ar_effective") == pytest.approx(
-        k_ar_effective, abs=1e-4
+        k_ar_effective, rel=1e-3
     )
 
     # Research independent input value in .xml file
@@ -988,7 +990,7 @@ def cl_alpha_vt(
     problem = run_system(ComputeClAlphaVT(), ivc)
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1"
-    ) == pytest.approx(cl_alpha_vt_cruise, abs=1e-4)
+    ) == pytest.approx(cl_alpha_vt_cruise, rel=1e-3)
 
 
 def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):

@@ -47,6 +47,8 @@
         <maximum_width units="m" is_input="False">1.2720000000000002<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">3.1814765664767926<!--length of rear non-cylindrical part of the fuselage--></rear_length>
         <wet_area units="m**2" is_input="False">21.952067466091645<!--fuselage wet area--></wet_area>
+        <average_depth units="m">0.235</average_depth>
+        <volume units="m**3">7.711</volume>
       </fuselage>
       <horizontal_tail>
         <area units="m**2" is_input="False">2.674064426651461<!--horizontal tail area--></area>

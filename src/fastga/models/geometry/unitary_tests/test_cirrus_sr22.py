@@ -21,8 +21,8 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
-)
-from ..geom_components.fuselage.components.compute_fuselage_wet_area import (
+    ComputeFuselageDepth,
+    ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
 )
@@ -372,6 +372,36 @@ def test_fuselage_wet_area_flops():
     assert fuselage_wet_area == pytest.approx(21.952, abs=1e-3)
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.410, abs=1e-3)
+
+
+def test_fuselage_depth():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageDepth()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageDepth(), ivc)
+    avg_fuselage_depth = problem.get_val("data:geometry:fuselage:average_depth", units="m")
+    assert avg_fuselage_depth == pytest.approx(0.235, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_fuselage_volume():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageVolume()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageVolume(), ivc)
+    avg_fuselage_depth = problem.get_val("data:geometry:fuselage:volume", units="m**3")
+    assert avg_fuselage_depth == pytest.approx(7.711, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_toc():

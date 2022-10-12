@@ -13,3 +13,5 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 SUBMODEL_FUSELAGE_WET_AREA = "submodel.geometry.fuselage.wet_area"
+SUBMODEL_FUSELAGE_DEPTH = "submodel.geometry.fuselage.depth"
+SUBMODEL_FUSELAGE_VOLUME = "submodel.geometry.fuselage.volume"

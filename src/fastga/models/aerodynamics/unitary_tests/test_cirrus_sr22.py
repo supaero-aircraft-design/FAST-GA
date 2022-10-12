@@ -624,7 +624,7 @@ def test_l_d_max():
 
 def test_cnbeta():
     """Tests cn beta fuselage."""
-    cnbeta(XML_FILE, cn_beta_fus=-0.0684)
+    cnbeta(XML_FILE, cn_beta_fus=-0.0685)
 
 
 @pytest.mark.skipif(

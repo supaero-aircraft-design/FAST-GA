@@ -51,13 +51,10 @@ class ComputeClAlphaVT(FigureDigitization):
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
@@ -81,14 +78,9 @@ class ComputeClAlphaVT(FigureDigitization):
         span_vt = inputs["data:geometry:vertical_tail:span"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        root_chord_vt = inputs["data:geometry:vertical_tail:root:chord"]
         area_ht = inputs["data:geometry:horizontal_tail:area"]
 
-        l_ar = inputs["data:geometry:fuselage:rear_length"]
-        w_max = inputs["data:geometry:fuselage:maximum_width"]
-        h_max = inputs["data:geometry:fuselage:maximum_height"]
-
-        avg_fus_depth = np.sqrt(w_max * h_max) * root_chord_vt / (2.0 * l_ar)
+        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective
         # aspect ratio

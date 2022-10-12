@@ -59,6 +59,8 @@
         <rear_length units="m" is_input="True">3.74<!--length of the rear cone of the aircraft--></rear_length>
         <skin_thickness units="m" is_input="False">0.0005753841597384978</skin_thickness>
         <wet_area units="m**2" is_input="False">42.31167906245041<!--fuselage wet area--></wet_area>
+        <average_depth units="m">0.404</average_depth>
+        <volume units="m**3">13.784</volume>
       </fuselage>
       <horizontal_tail>
         <area units="m**2" is_input="False">4.9452272131838155<!--horizontal tail area--></area>

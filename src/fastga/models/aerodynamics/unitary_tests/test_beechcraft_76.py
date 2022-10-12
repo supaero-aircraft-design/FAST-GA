@@ -625,7 +625,7 @@ def test_l_d_max():
 
 def test_cnbeta():
     """Tests cn beta fuselage."""
-    cnbeta(XML_FILE, cn_beta_fus=-0.0557)
+    cnbeta(XML_FILE, cn_beta_fus=-0.0558)
 
 
 @pytest.mark.skipif(
@@ -999,7 +999,7 @@ def test_equilibrated_cl_cd_polar():
 
 def test_cl_alpha_vt():
     """Tests Cl alpha vt."""
-    cl_alpha_vt(XML_FILE, cl_alpha_vt_ls=2.6812, k_ar_effective=1.8630, cl_alpha_vt_cruise=2.7321)
+    cl_alpha_vt(XML_FILE, cl_alpha_vt_ls=2.6814, k_ar_effective=1.8632, cl_alpha_vt_cruise=2.7322)
 
 
 def test_cy_delta_r():
