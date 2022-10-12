@@ -31,7 +31,6 @@ from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpe
 from fastga.models.aerodynamics.components import (
     ComputeAircraftMaxCl,
     ComputeUnitReynolds,
-    ComputeCnBetaFuselage,
     ComputeLDMax,
     ComputeDeltaHighLift,
     ComputeDeltaElevator,
@@ -52,6 +51,10 @@ from fastga.models.aerodynamics.components import (
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
+from fastga.models.aerodynamics.components.fuselage import (
+    ComputeCyBetaFuselage,
+    ComputeCnBetaFuselage,
+)
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
     ComputePropellerPerformance,
 )
@@ -1355,3 +1358,21 @@ def equilibrated_cl_cd_polar(
     polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL"))
     valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
     assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_cruise_, abs=1e-2)
+
+
+def cy_beta_fus(
+    XML_FILE: str,
+    cy_beta_fus_: float,
+):
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaFuselage()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyBetaFuselage(), ivc)
+    assert problem.get_val("data:aerodynamics:fuselage:cy_beta", units="rad**-1") == pytest.approx(
+        cy_beta_fus_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)

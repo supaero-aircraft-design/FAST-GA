@@ -19,7 +19,7 @@ import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from ..constants import SUBMODEL_CN_BETA_FUSELAGE
+from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 
 
 @oad.RegisterSubmodel(

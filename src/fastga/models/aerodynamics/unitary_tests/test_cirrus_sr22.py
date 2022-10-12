@@ -51,6 +51,7 @@ from .test_functions import (
     load_factor,
     equilibrated_cl_cd_polar,
     non_equilibrated_cl_cd_polar,
+    cy_beta_fus,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1097,3 +1098,8 @@ def test_load_factor():
         vc=79.841,
         vd=111.535,
     )
+
+
+def test_cy_beta_fus():
+    """Tests cy beta of the fuselage."""
+    cy_beta_fus(XML_FILE, cy_beta_fus_=-0.2949)

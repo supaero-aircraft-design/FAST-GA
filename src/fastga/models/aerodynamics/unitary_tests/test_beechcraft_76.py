@@ -52,6 +52,7 @@ from .test_functions import (
     non_equilibrated_cl_cd_polar,
     equilibrated_cl_cd_polar,
     elevator,
+    cy_beta_fus,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -1889,3 +1890,8 @@ def test_propeller():
         efficiency_CL=efficiency_CL,
         speed=speed,
     )
+
+
+def test_cy_beta_fus():
+    """Tests cy beta of the fuselage."""
+    cy_beta_fus(XML_FILE, cy_beta_fus_=-0.2105)
