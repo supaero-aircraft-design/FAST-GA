@@ -32,18 +32,53 @@ class ComputeVTSweep(ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
 
         self.add_output("data:geometry:vertical_tail:sweep_0", units="deg")
+        self.add_output("data:geometry:vertical_tail:sweep_50", units="rad")
         self.add_output("data:geometry:vertical_tail:sweep_100", units="deg")
 
-        self.declare_partials("data:geometry:vertical_tail:sweep_0", "*", method="fd")
-        self.declare_partials("data:geometry:vertical_tail:sweep_100", "*", method="fd")
+        self.declare_partials(
+            of="data:geometry:vertical_tail:sweep_0",
+            wrt=[
+                "data:geometry:vertical_tail:span",
+                "data:geometry:vertical_tail:root:chord",
+                "data:geometry:vertical_tail:tip:chord",
+                "data:geometry:vertical_tail:sweep_25",
+            ],
+            method="fd",
+        )
+        self.declare_partials(
+            of="data:geometry:vertical_tail:sweep_50",
+            wrt=[
+                "data:geometry:vertical_tail:span",
+                "data:geometry:vertical_tail:root:chord",
+                "data:geometry:vertical_tail:tip:chord",
+                "data:geometry:vertical_tail:sweep_25",
+                "data:geometry:vertical_tail:aspect_ratio",
+                "data:geometry:vertical_tail:taper_ratio",
+            ],
+            method="fd",
+        )
+        self.declare_partials(
+            of="data:geometry:vertical_tail:sweep_100",
+            wrt=[
+                "data:geometry:vertical_tail:span",
+                "data:geometry:vertical_tail:root:chord",
+                "data:geometry:vertical_tail:tip:chord",
+                "data:geometry:vertical_tail:sweep_25",
+            ],
+            method="fd",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
+        ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
+        taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
 
         sweep_0 = (
             (
@@ -59,6 +94,9 @@ class ComputeVTSweep(ExplicitComponent):
             )
             / math.pi
             * 180.0
+        )
+        sweep_50 = math.atan(
+            math.tan(sweep_0 * math.pi / 180) - 2 / ar_vt * ((1 - taper_vt) / (1 + taper_vt))
         )
         sweep_100 = (
             (
@@ -77,4 +115,5 @@ class ComputeVTSweep(ExplicitComponent):
         )
 
         outputs["data:geometry:vertical_tail:sweep_0"] = sweep_0
+        outputs["data:geometry:vertical_tail:sweep_50"] = sweep_50
         outputs["data:geometry:vertical_tail:sweep_100"] = sweep_100

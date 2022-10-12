@@ -23,6 +23,4 @@ from .compute_wing_toc import ComputeWingToc
 from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_x import ComputeWingX
 from .compute_wing_y import ComputeWingY
-
-# TODO: Determine wether wing drawing shall be included or not
-# from .wing_drawing import WingDrawing
+from .compute_wing_z import ComputeWingZ

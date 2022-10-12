@@ -190,6 +190,7 @@
           <thickness_ratio is_input="True">0.16<!--thickness ratio at wing root--></thickness_ratio>
           <virtual_chord units="m" is_input="False">1.796745523794585<!--virtual chord length at wing root if sweep angle of trailing edge of outer wing part was on the whole wing (no kink)--></virtual_chord>
           <y units="m" is_input="False">0.68<!--Y-position of wing root--></y>
+          <z units="m" is_input="False">0.666<!--Z-position of wing root--></z>
         </root>
         <tip>
           <chord units="m" is_input="False">1.096014769514697<!--chord length at wing tip--></chord>

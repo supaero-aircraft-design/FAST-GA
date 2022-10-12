@@ -35,8 +35,11 @@ class ComputeWingSweep(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
         self.add_output("data:geometry:wing:sweep_0", units="rad")
+        self.add_output("data:geometry:wing:sweep_50", units="rad")
         self.add_output("data:geometry:wing:sweep_100_inner", units="rad")
         self.add_output("data:geometry:wing:sweep_100_outer", units="rad")
 
@@ -46,6 +49,17 @@ class ComputeWingSweep(ExplicitComponent):
                 "data:geometry:wing:tip:leading_edge:x:local",
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:tip:y",
+            ],
+            method="fd",
+        )
+        self.declare_partials(
+            "data:geometry:wing:sweep_50",
+            [
+                "data:geometry:wing:tip:leading_edge:x:local",
+                "data:geometry:wing:root:y",
+                "data:geometry:wing:tip:y",
+                "data:geometry:wing:aspect_ratio",
+                "data:geometry:wing:taper_ratio",
             ],
             method="fd",
         )
@@ -79,8 +93,15 @@ class ComputeWingSweep(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
 
-        outputs["data:geometry:wing:sweep_0"] = math.atan(x4_wing / (y4_wing - y2_wing))
+        sweep_0 = math.atan(x4_wing / (y4_wing - y2_wing))
+
+        outputs["data:geometry:wing:sweep_0"] = sweep_0
+        outputs["data:geometry:wing:sweep_50"] = math.atan(
+            math.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
+        )
         outputs["data:geometry:wing:sweep_100_inner"] = math.atan(
             (x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing)
         )

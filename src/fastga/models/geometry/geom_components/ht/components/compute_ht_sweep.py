@@ -34,28 +34,69 @@ class ComputeHTSweep(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
 
         self.add_output("data:geometry:horizontal_tail:sweep_0", units="rad")
+        self.add_output("data:geometry:horizontal_tail:sweep_50", units="rad")
         self.add_output("data:geometry:horizontal_tail:sweep_100", units="rad")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(
+            of="data:geometry:horizontal_tail:sweep_0",
+            wrt=[
+                "data:geometry:horizontal_tail:span",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:sweep_25",
+            ],
+            method="exact",
+        )
+        # TODO: Too time consuming for now to compute the partial derivative by hand
+        self.declare_partials(
+            of="data:geometry:horizontal_tail:sweep_50",
+            wrt=[
+                "data:geometry:horizontal_tail:span",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:sweep_25",
+                "data:geometry:horizontal_tail:aspect_ratio",
+                "data:geometry:horizontal_tail:taper_ratio",
+            ],
+            method="fd",
+        )
+        self.declare_partials(
+            of="data:geometry:horizontal_tail:sweep_100",
+            wrt=[
+                "data:geometry:horizontal_tail:span",
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:sweep_25",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
+        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
 
         half_span = b_h / 2.0
         # TODO: The unit conversion can be handled by OpenMDAO
         sweep_0 = math.pi / 2 - math.atan(
             half_span / (0.25 * root_chord - 0.25 * tip_chord + half_span * math.tan(sweep_25))
         )
+
+        sweep_50 = math.atan(math.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
+
         sweep_100 = math.pi / 2 - math.atan(
             half_span / (half_span * math.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
         )
 
         outputs["data:geometry:horizontal_tail:sweep_0"] = sweep_0
+        outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
         outputs["data:geometry:horizontal_tail:sweep_100"] = sweep_100
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
