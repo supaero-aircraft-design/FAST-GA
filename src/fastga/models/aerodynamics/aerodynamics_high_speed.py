@@ -38,6 +38,7 @@ from .constants import (
     SUBMODEL_CL_ALPHA_DOT,
     SUBMODEL_CL_Q,
     SUBMODEL_CY_BETA,
+    SUBMODEL_CY_R,
 )
 
 
@@ -205,6 +206,11 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem(
             "cy_beta",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_high_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cy_r",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_R, options=option_high_speed),
             promotes=["*"],
         )
 

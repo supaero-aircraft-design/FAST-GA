@@ -50,6 +50,7 @@ from fastga.models.aerodynamics.components import (
     ComputeCLAlphaDotAircraft,
     ComputeCLPitchVelocityAircraft,
     ComputeCYBetaAircraft,
+    ComputeCyYawRateAircraft,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -1657,5 +1658,37 @@ def side_force_sideslip_aircraft(
     assert problem.get_val(
         "data:aerodynamics:aircraft:low_speed:cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_yaw_rate_aircraft(
+    XML_FILE: str,
+    cy_yaw_rate_low_speed_: float,
+    cy_yaw_rate_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyYawRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cy_r", units="rad**-1"
+    ) == pytest.approx(cy_yaw_rate_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyYawRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cy_r", units="rad**-1"
+    ) == pytest.approx(cy_yaw_rate_cruise_, rel=1e-3)
 
     problem.check_partials(compact_print=True)

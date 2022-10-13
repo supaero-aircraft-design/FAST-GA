@@ -34,3 +34,4 @@ from .mach_interpolation import ComputeMachInterpolation
 from .compute_cl_alpha_dot import ComputeCLAlphaDotAircraft
 from .compute_cl_pitch_rate import ComputeCLPitchVelocityAircraft
 from .compute_cy_beta import ComputeCYBetaAircraft
+from .compute_cy_yaw_rate import ComputeCyYawRateAircraft
