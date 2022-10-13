@@ -20,7 +20,7 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CY_BETA_FUSELAGE
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_CY_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.side_force.legacy"
+    SUBMODEL_CY_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.side_force_beta.legacy"
 )
 class ComputeCyBetaFuselage(om.ExplicitComponent):
     """

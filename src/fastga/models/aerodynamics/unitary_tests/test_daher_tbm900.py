@@ -58,6 +58,9 @@ from .test_functions import (
     lift_pitch_velocity_derivative_ht,
     lift_pitch_velocity_derivative_wing,
     lift_pitch_velocity_derivative_aircraft,
+    side_force_sideslip_derivative_wing,
+    side_force_sideslip_derivative_vt,
+    side_force_sideslip_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -1980,3 +1983,20 @@ def test_cl_q_wing():
 def test_cl_q_aircraft():
     """Tests cl q of the aircraft."""
     lift_pitch_velocity_derivative_aircraft(XML_FILE, cl_q_low_speed_=5.993, cl_q_cruise_=6.535)
+
+
+def test_cy_beta_wing():
+    """Tests cy beta of the wing."""
+    side_force_sideslip_derivative_wing(XML_FILE, cy_beta_wing_=-0.037245)
+
+
+def test_cy_beta_vt():
+    """Tests cy beta of the vertical tail."""
+    side_force_sideslip_derivative_vt(
+        XML_FILE, cy_beta_vt_low_speed_=-0.4218, cy_beta_vt_cruise_=-0.4587
+    )
+
+
+def test_cy_beta_aircraft():
+    """Tests cy beta of the aircraft."""
+    side_force_sideslip_aircraft(XML_FILE, cy_beta_low_speed_=-0.7346)

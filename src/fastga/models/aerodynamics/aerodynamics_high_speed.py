@@ -37,6 +37,7 @@ from .constants import (
     SUBMODEL_DOWNWASH,
     SUBMODEL_CL_ALPHA_DOT,
     SUBMODEL_CL_Q,
+    SUBMODEL_CY_BETA,
 )
 
 
@@ -201,6 +202,12 @@ class AerodynamicsHighSpeed(Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_Q, options=option_high_speed),
             promotes=["*"],
         )
+        self.add_subsystem(
+            "cy_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_high_speed),
+            promotes=["*"],
+        )
+
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp_hs",

@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_CL_Q, SUBMODEL_CL_Q_WING, SUBMODEL_CL_Q_HT
 
 
-@oad.RegisterSubmodel(SUBMODEL_CL_Q, "submodel.aerodynamics.aircraft.cl_pitch_velocity")
+@oad.RegisterSubmodel(SUBMODEL_CL_Q, "submodel.aerodynamics.aircraft.cl_pitch_velocity.legacy")
 class ComputeCLPitchVelocityAircraft(om.Group):
     """
     Computation of the increase in lift due to a a pitch velocity. Assumes the coefficient at

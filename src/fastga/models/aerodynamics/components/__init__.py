@@ -12,7 +12,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
-from .clalpha_vt import ComputeClAlphaVT
 from .compute_L_D_max import ComputeLDMax
 from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_cl_extreme_htp import ComputeExtremeCLHtp
@@ -34,3 +33,4 @@ from .hinge_moments_elevator import (
 from .mach_interpolation import ComputeMachInterpolation
 from .compute_cl_alpha_dot import ComputeCLAlphaDotAircraft
 from .compute_cl_pitch_rate import ComputeCLPitchVelocityAircraft
+from .compute_cy_beta import ComputeCYBetaAircraft

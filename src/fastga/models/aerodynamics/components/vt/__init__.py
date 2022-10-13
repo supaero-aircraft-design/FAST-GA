@@ -11,5 +11,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_cy_beta_fuselage import ComputeCyBetaFuselage
-from .compute_cn_beta_fuselage import ComputeCnBetaFuselage
+from .compute_cl_alpha_vt import ComputeClAlphaVerticalTail
+from .compute_cy_beta_vt import ComputeCyBetaVerticalTail

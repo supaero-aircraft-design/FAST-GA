@@ -57,6 +57,9 @@ from .test_functions import (
     lift_pitch_velocity_derivative_ht,
     lift_pitch_velocity_derivative_wing,
     lift_pitch_velocity_derivative_aircraft,
+    side_force_sideslip_derivative_wing,
+    side_force_sideslip_derivative_vt,
+    side_force_sideslip_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1135,3 +1138,20 @@ def test_cl_q_wing():
 def test_cl_q_aircraft():
     """Tests cl q of the aircraft."""
     lift_pitch_velocity_derivative_aircraft(XML_FILE, cl_q_low_speed_=6.356, cl_q_cruise_=6.512)
+
+
+def test_cy_beta_wing():
+    """Tests cy beta of the wing."""
+    side_force_sideslip_derivative_wing(XML_FILE, cy_beta_wing_=-0.02865)
+
+
+def test_cy_beta_vt():
+    """Tests cy beta of the vertical tail."""
+    side_force_sideslip_derivative_vt(
+        XML_FILE, cy_beta_vt_low_speed_=-0.3445, cy_beta_vt_cruise_=-0.3518
+    )
+
+
+def test_cy_beta_aircraft():
+    """Tests cy beta of the aircraft."""
+    side_force_sideslip_aircraft(XML_FILE, cy_beta_low_speed_=-0.6681)

@@ -98,6 +98,7 @@
         </MAC>
       </vertical_tail>
       <wing>
+        <dihedral units="deg">6.5</dihedral>
         <aspect_ratio is_input="True">8.22<!--wing aspect ratio--></aspect_ratio>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio is_input="True">0.61<!--taper ratio of wing--></taper_ratio>

@@ -18,14 +18,14 @@ import numpy as np
 import scipy.interpolate as interp
 import fastoad.api as oad
 
-from .figure_digitization import FigureDigitization
-from ..constants import SUBMODEL_CL_ALPHA_VT
+from ..figure_digitization import FigureDigitization
+from ...constants import SUBMODEL_CL_ALPHA_VT
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_CL_ALPHA_VT, "fastga.submodel.aerodynamics.vertical_tail.lift_curve_slope.legacy"
 )
-class ComputeClAlphaVT(FigureDigitization):
+class ComputeClAlphaVerticalTail(FigureDigitization):
     """Vertical tail lift coefficient estimation
 
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,

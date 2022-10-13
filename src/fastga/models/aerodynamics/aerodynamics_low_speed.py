@@ -38,6 +38,7 @@ from .constants import (
     SUBMODEL_DOWNWASH,
     SUBMODEL_CL_Q,
     SUBMODEL_CL_ALPHA_DOT,
+    SUBMODEL_CY_BETA,
 )
 
 
@@ -181,6 +182,11 @@ class AerodynamicsLowSpeed(Group):
         self.add_subsystem(
             "cl_q",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_Q, options=option_low_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cy_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_low_speed),
             promotes=["*"],
         )
 

@@ -312,10 +312,12 @@
           <CL_alpha units="1/rad" is_input="False">6.273040823763579<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
+          <cy_beta units="rad**-1">-0.3518</cy_beta>
           <CD0 is_input="False">0.0007253706835482462<!--profile drag coefficient for vertical tail in cruise conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">3.0890157061566423<!--derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions--></CL_alpha>
         </cruise>
         <low_speed>
+          <cy_beta units="rad**-1">-0.3445</cy_beta>
           <CD0 is_input="False">0.0007918600964019703<!--profile drag coefficient for vertical tail in low speed conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">3.025402132612623<!--derivative of the vertical tail side force coefficient with respect to the local sideslip angle in low speed conditions--></CL_alpha>
         </low_speed>
