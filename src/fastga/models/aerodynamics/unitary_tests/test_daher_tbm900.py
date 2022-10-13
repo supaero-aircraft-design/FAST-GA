@@ -62,6 +62,7 @@ from .test_functions import (
     side_force_sideslip_derivative_vt,
     side_force_sideslip_aircraft,
     side_force_yaw_rate_aircraft,
+    side_force_roll_rate_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -2007,4 +2008,11 @@ def test_cy_r_aircraft():
     """Tests cy beta of the aircraft."""
     side_force_yaw_rate_aircraft(
         XML_FILE, cy_yaw_rate_low_speed_=0.3376, cy_yaw_rate_cruise_=0.3671
+    )
+
+
+def test_cy_p_aircraft():
+    """Tests cy beta of the aircraft."""
+    side_force_roll_rate_aircraft(
+        XML_FILE, cy_roll_rate_low_speed_=-0.1335, cy_roll_rate_cruise_=-0.1452
     )

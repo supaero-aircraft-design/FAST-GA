@@ -61,6 +61,7 @@ from .test_functions import (
     side_force_sideslip_derivative_vt,
     side_force_sideslip_aircraft,
     side_force_yaw_rate_aircraft,
+    side_force_roll_rate_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1162,4 +1163,11 @@ def test_cy_r_aircraft():
     """Tests cy beta of the aircraft."""
     side_force_yaw_rate_aircraft(
         XML_FILE, cy_yaw_rate_low_speed_=0.2469, cy_yaw_rate_cruise_=0.2521
+    )
+
+
+def test_cy_p_aircraft():
+    """Tests cy beta of the aircraft."""
+    side_force_roll_rate_aircraft(
+        XML_FILE, cy_roll_rate_low_speed_=-0.09683, cy_roll_rate_cruise_=-0.09888
     )
