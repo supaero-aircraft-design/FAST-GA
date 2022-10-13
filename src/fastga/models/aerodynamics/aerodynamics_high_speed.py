@@ -34,6 +34,9 @@ from .constants import (
     SUBMODEL_CM_ALPHA_FUSELAGE,
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_CL_ALPHA_DOT,
+    SUBMODEL_CL_Q,
 )
 
 
@@ -127,6 +130,16 @@ class AerodynamicsHighSpeed(Group):
                     ),
                     promotes=["*"],
                 )
+
+        options_downwash = {
+            "low_speed_aero": False,
+        }
+        self.add_subsystem(
+            "downwash",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DOWNWASH, options=options_downwash),
+            promotes=["*"],
+        )
+
         options_cd0 = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": False,
@@ -176,6 +189,17 @@ class AerodynamicsHighSpeed(Group):
 
         self.add_subsystem(
             "ch_ht", oad.RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
+        )
+
+        self.add_subsystem(
+            "cl_alpha_dot",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_DOT, options=option_high_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cl_q",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_Q, options=option_high_speed),
+            promotes=["*"],
         )
         if self.options["compute_slipstream"]:
             self.add_subsystem(

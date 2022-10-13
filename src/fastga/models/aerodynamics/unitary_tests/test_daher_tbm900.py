@@ -53,6 +53,11 @@ from .test_functions import (
     equilibrated_cl_cd_polar,
     elevator,
     cy_beta_fus,
+    downwash_gradient,
+    lift_aoa_rate_derivative,
+    lift_pitch_velocity_derivative_ht,
+    lift_pitch_velocity_derivative_wing,
+    lift_pitch_velocity_derivative_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -1948,3 +1953,30 @@ def test_propeller():
 def test_cy_beta_fus():
     """Tests cy beta of the fuselage."""
     cy_beta_fus(XML_FILE, cy_beta_fus_=-0.2755)
+
+
+def test_downwash_gradient():
+    """Tests cy beta of the fuselage."""
+    downwash_gradient(XML_FILE, downwash_gradient_ls_=0.3673, downwash_gradient_cruise_=0.4137)
+
+
+def test_cl_alpha_dot():
+    """Tests cl alpha dot of the aircraft."""
+    lift_aoa_rate_derivative(XML_FILE, cl_aoa_dot_low_speed_=1.700, cl_aoa_dot_cruise_=1.981)
+
+
+def test_cl_q_ht():
+    """Tests cl q of the tail."""
+    lift_pitch_velocity_derivative_ht(XML_FILE, cl_q_ht_low_speed_=4.631, cl_q_ht_cruise_=4.790)
+
+
+def test_cl_q_wing():
+    """Tests cl q of the wing."""
+    lift_pitch_velocity_derivative_wing(
+        XML_FILE, cl_q_wing_low_speed_=1.362, cl_q_wing_cruise_=1.745
+    )
+
+
+def test_cl_q_aircraft():
+    """Tests cl q of the aircraft."""
+    lift_pitch_velocity_derivative_aircraft(XML_FILE, cl_q_low_speed_=5.993, cl_q_cruise_=6.535)

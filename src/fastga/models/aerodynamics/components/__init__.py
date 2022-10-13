@@ -32,3 +32,5 @@ from .hinge_moments_elevator import (
     ComputeHingeMomentsTail,
 )
 from .mach_interpolation import ComputeMachInterpolation
+from .compute_cl_alpha_dot import ComputeCLAlphaDotAircraft
+from .compute_cl_pitch_rate import ComputeCLPitchVelocityAircraft

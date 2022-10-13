@@ -45,6 +45,7 @@ from ..geom_components.ht.components import (
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
+    ComputeHTVolumeCoefficient,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
@@ -268,6 +269,20 @@ def test_compute_ht_wet_area():
     problem = run_system(ComputeHTWetArea(), ivc)
     wet_area = problem.get_val("data:geometry:horizontal_tail:wet_area", units="m**2")
     assert wet_area == pytest.approx(10.38, abs=1e-2)
+
+
+def test_compute_ht_volume_coefficient():
+    """Tests computation of the horizontal tail volume coefficient"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTVolumeCoefficient()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTVolumeCoefficient(), ivc)
+    wet_area = problem.get_val("data:geometry:horizontal_tail:volume_coefficient")
+    assert wet_area == pytest.approx(0.998, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_fuselage_cabin_sizing_fd():

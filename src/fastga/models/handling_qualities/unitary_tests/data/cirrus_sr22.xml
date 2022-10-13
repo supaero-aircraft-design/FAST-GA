@@ -248,6 +248,7 @@
           <CL_alpha units="1/rad" is_input="False">6.273040823763579<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
+          <downwash_gradient>0.3207</downwash_gradient>
           <CD0 is_input="False">0.0014213276231861435<!--profile drag coefficient for horizontal tail in cruise conditions--></CD0>
           <CL0 is_input="False">-0.006719351685827952<!--lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.5304217326991163<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha>
@@ -261,6 +262,7 @@
           </hinge_moment>
         </cruise>
         <low_speed>
+          <downwash_gradient>0.3145</downwash_gradient>
           <CD0 is_input="False">0.0015476061469811312<!--profile drag coefficient for horizontal tail in low speed conditions--></CD0>
           <CL0 is_input="False">-0.006502923129655215<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.5262978645005639<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions--></CL_alpha>

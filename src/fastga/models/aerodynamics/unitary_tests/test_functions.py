@@ -48,6 +48,8 @@ from fastga.models.aerodynamics.components import (
     ComputeExtremeCLWing,
     ComputeExtremeCLHtp,
     ComputeEffectiveEfficiencyPropeller,
+    ComputeCLAlphaDotAircraft,
+    ComputeCLPitchVelocityAircraft,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -55,6 +57,11 @@ from fastga.models.aerodynamics.components.fuselage import (
     ComputeCyBetaFuselage,
     ComputeCnBetaFuselage,
 )
+from fastga.models.aerodynamics.components.ht import (
+    DownWashGradientComputation,
+    ComputeCLPitchVelocityHorizontalTail,
+)
+from fastga.models.aerodynamics.components.wing import ComputeCLPitchVelocityWing
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
     ComputePropellerPerformance,
 )
@@ -1373,6 +1380,173 @@ def cy_beta_fus(
     problem = run_system(ComputeCyBetaFuselage(), ivc)
     assert problem.get_val("data:aerodynamics:fuselage:cy_beta", units="rad**-1") == pytest.approx(
         cy_beta_fus_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def downwash_gradient(
+    XML_FILE: str,
+    downwash_gradient_ls_: float,
+    downwash_gradient_cruise_: float,
+):
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(DownWashGradientComputation(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(DownWashGradientComputation(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient"
+    ) == pytest.approx(downwash_gradient_ls_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(DownWashGradientComputation(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(DownWashGradientComputation(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:downwash_gradient"
+    ) == pytest.approx(downwash_gradient_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_aoa_rate_derivative(
+    XML_FILE: str,
+    cl_aoa_dot_low_speed_: float,
+    cl_aoa_dot_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLAlphaDotAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_alpha_dot") == pytest.approx(
+        cl_aoa_dot_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLAlphaDotAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_alpha_dot") == pytest.approx(
+        cl_aoa_dot_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_ht(
+    XML_FILE: str,
+    cl_q_ht_low_speed_: float,
+    cl_q_ht_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:horizontal_tail:low_speed:CL_q") == pytest.approx(
+        cl_q_ht_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:horizontal_tail:cruise:CL_q") == pytest.approx(
+        cl_q_ht_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_wing(
+    XML_FILE: str,
+    cl_q_wing_low_speed_: float,
+    cl_q_wing_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityWing(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:wing:low_speed:CL_q") == pytest.approx(
+        cl_q_wing_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:CL_q") == pytest.approx(
+        cl_q_wing_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_aircraft(
+    XML_FILE: str,
+    cl_q_low_speed_: float,
+    cl_q_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_q") == pytest.approx(
+        cl_q_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_q") == pytest.approx(
+        cl_q_cruise_, rel=1e-3
     )
 
     problem.check_partials(compact_print=True)

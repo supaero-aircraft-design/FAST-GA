@@ -63,6 +63,7 @@
         <volume units="m**3">13.784</volume>
       </fuselage>
       <horizontal_tail>
+        <volume_coefficient>0.998</volume_coefficient>
         <area units="m**2" is_input="False">4.9452272131838155<!--horizontal tail area--></area>
         <aspect_ratio is_input="True">5.01<!--horizontal tail aspect ratio--></aspect_ratio>
         <elevator_chord_ratio is_input="True">0.39<!--elevator chord ratio--></elevator_chord_ratio>
@@ -308,6 +309,7 @@
           <CL_alpha units="1/rad" is_input="False">6.343836307743419<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
+          <downwash_gradient>0.4137</downwash_gradient>
           <CD0 is_input="False">0.002053791667072846<!--profile drag coefficient for horizontal tail in cruise conditions--></CD0>
           <CL0 is_input="False">-0.024486027695896796<!--lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.7294133840673506<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in cruise conditions--></CL_alpha>
@@ -321,6 +323,7 @@
           </hinge_moment>
         </cruise>
         <low_speed>
+          <downwash_gradient>0.3673</downwash_gradient>
           <CD0 is_input="False">0.0019744264079473058<!--profile drag coefficient for horizontal tail in low speed conditions--></CD0>
           <CL0 is_input="False">-0.019630206992259796<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.7051088258400426<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions--></CL_alpha>

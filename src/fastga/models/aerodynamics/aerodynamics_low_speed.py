@@ -35,6 +35,9 @@ from .constants import (
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_CL_Q,
+    SUBMODEL_CL_ALPHA_DOT,
 )
 
 
@@ -82,6 +85,15 @@ class AerodynamicsLowSpeed(Group):
                 ),
                 promotes=["*"],
             )
+
+        options_downwash = {
+            "low_speed_aero": True,
+        }
+        self.add_subsystem(
+            "downwash",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DOWNWASH, options=options_downwash),
+            promotes=["*"],
+        )
 
         options_cd0 = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
@@ -158,6 +170,17 @@ class AerodynamicsLowSpeed(Group):
         self.add_subsystem(
             "Cy_Delta_rudder",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_low_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cl_alpha_dot",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_DOT, options=option_low_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cl_q",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_Q, options=option_low_speed),
             promotes=["*"],
         )
 
