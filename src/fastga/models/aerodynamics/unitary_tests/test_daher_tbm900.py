@@ -67,6 +67,10 @@ from .test_functions import (
     roll_moment_side_slip_ht,
     roll_moment_side_slip_vt,
     roll_moment_side_slip_aircraft,
+    roll_moment_roll_rate_wing,
+    roll_moment_roll_rate_ht,
+    roll_moment_roll_rate_vt,
+    roll_moment_roll_rate_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -2048,3 +2052,23 @@ def test_cl_beta_aircraft():
     roll_moment_side_slip_aircraft(
         XML_FILE, cl_beta_low_speed_=-0.09187982, cl_beta_cruise_=-0.10683852
     )
+
+
+def test_cl_p_wing():
+    """Test cl p of the wing."""
+    roll_moment_roll_rate_wing(XML_FILE, cl_p_wing_low_speed_=-0.4923, cl_p_wing_cruise_=-0.5348)
+
+
+def test_cl_p_ht():
+    """Test cl p of the ht."""
+    roll_moment_roll_rate_ht(XML_FILE, cl_p_ht_low_speed_=-0.01743478, cl_p_ht_cruise_=-0.01836568)
+
+
+def test_cl_p_vt():
+    """Test cl p of the vt."""
+    roll_moment_roll_rate_vt(XML_FILE, cl_p_vt_low_speed_=-0.03127147, cl_p_vt_cruise_=-0.03400)
+
+
+def test_cl_p():
+    """Test cl p of the aircraft."""
+    roll_moment_roll_rate_aircraft(XML_FILE, cl_p_low_speed_=-0.54109797, cl_p_cruise_=-0.58726067)

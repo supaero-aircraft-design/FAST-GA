@@ -66,6 +66,10 @@ from .test_functions import (
     roll_moment_side_slip_ht,
     roll_moment_side_slip_vt,
     roll_moment_side_slip_aircraft,
+    roll_moment_roll_rate_wing,
+    roll_moment_roll_rate_ht,
+    roll_moment_roll_rate_vt,
+    roll_moment_roll_rate_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1203,3 +1207,25 @@ def test_cl_beta_aircraft():
     roll_moment_side_slip_aircraft(
         XML_FILE, cl_beta_low_speed_=-0.06343, cl_beta_cruise_=-0.06598899
     )
+
+
+def test_cl_p_wing():
+    """Test cl p of the wing."""
+    roll_moment_roll_rate_wing(
+        XML_FILE, cl_p_wing_low_speed_=-0.52850071, cl_p_wing_cruise_=-0.53429479
+    )
+
+
+def test_cl_p_ht():
+    """Test cl p of the ht."""
+    roll_moment_roll_rate_ht(XML_FILE, cl_p_ht_low_speed_=-0.00859419, cl_p_ht_cruise_=-0.0086555)
+
+
+def test_cl_p_vt():
+    """Test cl p of the vt."""
+    roll_moment_roll_rate_vt(XML_FILE, cl_p_vt_low_speed_=-0.02020534, cl_p_vt_cruise_=-0.02063349)
+
+
+def test_cl_p():
+    """Test cl p of the aircraft."""
+    roll_moment_roll_rate_aircraft(XML_FILE, cl_p_low_speed_=-0.55730024, cl_p_cruise_=-0.56358378)

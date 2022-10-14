@@ -37,3 +37,4 @@ from .compute_cy_beta import ComputeCYBetaAircraft
 from .compute_cy_yaw_rate import ComputeCyYawRateAircraft
 from .compute_cy_roll_rate import ComputeCyRollRateAircraft
 from .compute_cl_beta import ComputeCLBetaAircraft
+from .compute_cl_roll_rate import ComputeCLRollRateAircraft

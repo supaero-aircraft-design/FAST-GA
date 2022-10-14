@@ -54,6 +54,8 @@ CL_BETA_AR = "cl_beta_ar_contribution.csv"
 CL_BETA_GAMMA = "cl_beta_dihedral_contribution.csv"
 K_M_GAMMA = "dihedral_compressibility_correction.csv"
 K_TWIST = "twist_correction.csv"
+K_ROLL_DAMPING = "cl_p_roll_damping_parameter.csv"
+K_CDI_ROLL_DAMPING = "cl_p_cdi_roll_damping.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1770,6 +1772,133 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         return float(k_epsilon)
+
+    @staticmethod
+    def cl_p_roll_damping_parameter(taper_ratio, aspect_ratio, mach, sweep_25, k) -> float:
+        """
+        Raymer data to estimate the contribution to the roll moment of the roll damping parameter
+        (figure 10.35).
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :param mach: the mach number
+        :param sweep_25: the sweep angle at 25 percent of the chord of the lifting surface, in deg
+        :param k: the ratio between the airfoil slope and 2*np.pi
+        :return k_roll_damping: the roll damping parameter
+        """
+
+        beta = np.sqrt(1.0 - mach ** 2.0)
+
+        corrected_ar = aspect_ratio * beta / k
+        corrected_sweep = np.arctan(np.tan(sweep_25) / beta)
+        file = pth.join(resources.__path__[0], K_ROLL_DAMPING)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        correct_ar_data = db["CORRECTED_AR"]
+        corrected_sweep_data = db["CORRECTED_SWEEP"]
+        roll_damping_data = db["ROLL_DAMPING_PARAMETER"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(correct_ar_data),
+                np.isnan(corrected_sweep_data),
+                np.isnan(roll_damping_data),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        correct_ar_data = correct_ar_data[np.logical_not(errors)].tolist()
+        corrected_sweep_data = corrected_sweep_data[np.logical_not(errors)].tolist()
+        roll_damping_data = roll_damping_data[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(corrected_ar) != np.clip(
+            float(corrected_ar), min(correct_ar_data), max(correct_ar_data)
+        ):
+            _LOGGER.warning(
+                "Corrected Aspect ratio is outside of the range in Roskam's book, value clipped"
+            )
+        if float(corrected_sweep) != np.clip(
+            float(corrected_sweep), min(corrected_sweep_data), max(corrected_sweep_data)
+        ):
+            _LOGGER.warning(
+                "Corrected Sweep is outside of the range in Roskam's book, value clipped"
+            )
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        k_roll_damping = interpolate.griddata(
+            (taper_ratio_data, correct_ar_data, corrected_sweep_data),
+            roll_damping_data,
+            np.array([taper_ratio, corrected_ar, corrected_sweep]).T,
+            method="linear",
+        )
+        if np.isnan(k_roll_damping):
+            k_roll_damping = interpolate.griddata(
+                (taper_ratio_data, correct_ar_data, corrected_sweep_data),
+                roll_damping_data,
+                np.array([taper_ratio, corrected_ar, corrected_sweep]).T,
+                method="nearest",
+            )
+
+        return float(k_roll_damping)
+
+    @staticmethod
+    def cl_p_cdi_roll_damping(sweep_25, aspect_ratio) -> float:
+        """
+        Raymer data to estimate the contribution to the roll moment damping of the
+        drag-due-to-lift (figure 10.36)
+
+        :param sweep_25: the sweep angle at 25% of the chord of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return k_cdi_roll_damping: the contribution to the roll moment of the aspect ratio of the
+        lifting surface.
+        """
+
+        file = pth.join(resources.__path__[0], K_CDI_ROLL_DAMPING)
+        db = read_csv(file)
+
+        sweep_25_data = db["SWEEP_25"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        cdi_roll_damping_data = db["CDI_ROLL_DAMPING_PARAMETER"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(sweep_25_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(cdi_roll_damping_data),
+            )
+        )
+        sweep_25_data = sweep_25_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        cdi_roll_damping_data = cdi_roll_damping_data[np.logical_not(errors)].tolist()
+
+        if float(sweep_25) != np.clip(float(sweep_25), min(sweep_25_data), max(sweep_25_data)):
+            _LOGGER.warning(
+                "Sweep at 25% of the chord is outside of the range in Roskam's book, value clipped"
+            )
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        k_cdi_roll_damping = interpolate.griddata(
+            (sweep_25_data, aspect_ratio_data),
+            cdi_roll_damping_data,
+            np.array([sweep_25, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(k_cdi_roll_damping):
+            k_cdi_roll_damping = interpolate.griddata(
+                (sweep_25_data, aspect_ratio_data),
+                cdi_roll_damping_data,
+                np.array([sweep_25, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(k_cdi_roll_damping)
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):

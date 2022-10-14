@@ -14,3 +14,4 @@
 from .compute_cl_alpha_vt import ComputeClAlphaVerticalTail
 from .compute_cy_beta_vt import ComputeCyBetaVerticalTail
 from .compute_cl_beta_vt import ComputeClBetaVerticalTail
+from .compute_cl_roll_rate_vt import ComputeClRollRateVerticalTail
