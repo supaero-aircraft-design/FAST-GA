@@ -71,6 +71,7 @@
         <sweep_0 units="rad" is_input="False">0.035209113723666086<!--sweep angle at leading edge of horizontal tail--></sweep_0>
         <sweep_100 units="rad" is_input="False">3.0363123486065233<!--sweep angle at trailing edge of horizontal tail--></sweep_100>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <sweep_50 units="deg" is_input="True">-2.017<!--sweep angle at 25% chord of horizontal tail--></sweep_50>
         <taper_ratio is_input="True">0.7<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--thickness ratio of horizontal tail--></thickness_ratio>
         <wet_area units="m**2" is_input="False">10.508263587147257<!--wet area of horizontal tail--></wet_area>
@@ -118,6 +119,8 @@
         <sweep_0 units="deg" is_input="False">44.84072687880032<!--sweep angle at leading edge of vertical tail--></sweep_0>
         <sweep_100 units="deg" is_input="False">20.45709337458892<!--sweep angle at trailing edge of vertical tail--></sweep_100>
         <sweep_25 units="deg" is_input="True">40.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <sweep_50 units="deg" is_input="True">20.45<!--sweep angle at 25% chord of vertical
+        tail--></sweep_50>
         <taper_ratio is_input="True">0.37<!--taper ratio of vertical tail--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--thickness ratio of vertical tail--></thickness_ratio>
         <wet_area units="m**2" is_input="False">6.058950745077465<!--wet area of vertical tail--></wet_area>
@@ -154,6 +157,7 @@
         <outer_area units="m**2" is_input="False">15.69326888012825<!--wing area outside of fuselage--></outer_area>
         <span units="m" is_input="False">12.210030620529118<!--wing span--></span>
         <sweep_0 units="rad" is_input="False">0.032280431668104036<!--sweep angle at leading edge of wing--></sweep_0>
+        <sweep_50 units="deg" is_input="False">-1.53<!--sweep angle at leading edge of wing--></sweep_50>
         <sweep_100_inner units="rad" is_input="False">-0.09657359194054961<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">-0.09657359194054961<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
@@ -200,6 +204,7 @@
           <y units="m" is_input="False">6.105015310264559<!--Y-position of wing tip--></y>
           <leading_edge>
             <x>
+              <absolute units="m">4.467</absolute>
               <local units="m" is_input="False">0.17518268856997204<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
             </x>
           </leading_edge>

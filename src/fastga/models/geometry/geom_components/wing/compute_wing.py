@@ -23,6 +23,7 @@ from .constants import (
     SUBMODEL_WING_L1_L4,
     SUBMODEL_WING_L2_L3,
     SUBMODEL_WING_X_LOCAL,
+    SUBMODEL_WING_X_ABSOLUTE,
     SUBMODEL_WING_B50,
     SUBMODEL_WING_MAC,
     SUBMODEL_WING_SWEEP,
@@ -62,6 +63,11 @@ class ComputeWingGeometry(Group):
         )
         self.add_subsystem(
             "wing_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MAC), promotes=["*"]
+        )
+        self.add_subsystem(
+            "wing_xabsolute",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_ABSOLUTE),
+            promotes=["*"],
         )
         self.add_subsystem(
             "wing_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SWEEP), promotes=["*"]

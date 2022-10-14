@@ -43,6 +43,7 @@
         <front_length units="m" is_input="False">1.4488495352179351<!--length of front non-cylindrical part of the fuselage--></front_length>
         <length units="m" is_input="False">7.492217776363194<!--total fuselage length--></length>
         <luggage_length units="m" is_input="False">0.4118916746684661<!--length of the luggage compartment--></luggage_length>
+        <master_cross_section units="m**2" is_input="False">1.41<!--fuselage wet area--></master_cross_section>
         <maximum_height units="m" is_input="False">1.4120000000000004<!--maximum fuselage height--></maximum_height>
         <maximum_width units="m" is_input="False">1.2720000000000002<!--maximum fuselage width--></maximum_width>
         <rear_length units="m" is_input="False">3.1814765664767926<!--length of rear non-cylindrical part of the fuselage--></rear_length>
@@ -59,6 +60,7 @@
         <sweep_0 units="deg" is_input="False">6.491701638336776<!--sweep angle at leading edge of horizontal tail--></sweep_0>
         <sweep_100 units="deg" is_input="False">176.47164111047474<!--sweep angle at trailing edge of horizontal tail--></sweep_100>
         <sweep_25 units="deg" is_input="True">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <sweep_50 units="deg" is_input="True">1.49<!--sweep angle at 25% chord of wing--></sweep_50>
         <taper_ratio is_input="True">0.613<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
         <wet_area units="m**2" is_input="False">5.621594428453805<!--wet area of horizontal tail--></wet_area>
@@ -107,6 +109,7 @@
         <sweep_0 units="deg" is_input="False">14.53215736047813<!--sweep angle at leading edge of vertical tail--></sweep_0>
         <sweep_100 units="deg" is_input="False">175.86234737574554<!--sweep angle at trailing edge of vertical tail--></sweep_100>
         <sweep_25 units="deg" is_input="True">10.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <sweep_50 units="deg" is_input="True">-4.13<!--sweep angle at 25% chord of wing--></sweep_50>
         <taper_ratio is_input="True">0.502<!--taper ratio of vertical tail--></taper_ratio>
         <thickness_ratio is_input="True">0.1<!--thickness ratio of vertical tail--></thickness_ratio>
         <wet_area units="m**2" is_input="False">2.9659054566752987<!--wet area of vertical tail--></wet_area>
@@ -145,6 +148,7 @@
         <sweep_100_inner units="rad" is_input="False">-0.10666425745434216<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">-0.10666425745434216<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <sweep_50 units="deg" is_input="True">-1.73<!--sweep angle at 25% chord of wing--></sweep_50>
         <taper_ratio is_input="True">0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--mean thickness ratio of wing--></thickness_ratio>
         <wet_area units="m**2" is_input="False">24.44077908858997<!--wet area of wing--></wet_area>
@@ -184,6 +188,7 @@
           <y units="m" is_input="False">5.7999909951216395<!--Y-position of wing tip--></y>
           <leading_edge>
             <x>
+              <absolute units="m">2.653</absolute>
               <local units="m" is_input="False">0.18430391045965436<!--X-position of leading edge at wing tip w.r.t. leading edge of root chord--></local>
             </x>
           </leading_edge>

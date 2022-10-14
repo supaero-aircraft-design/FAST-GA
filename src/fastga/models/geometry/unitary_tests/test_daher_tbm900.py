@@ -37,6 +37,7 @@ from ..geom_components.wing.components import (
     ComputeWingX,
     ComputeWingY,
     ComputeWingZ,
+    ComputeWingXAbsolute,
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
@@ -514,6 +515,22 @@ def test_geometry_wing_x():
     assert wing_x3 == pytest.approx(0.0, abs=1e-3)
     wing_x4 = problem.get_val("data:geometry:wing:tip:leading_edge:x:local", units="m")
     assert wing_x4 == pytest.approx(0.175, abs=1e-3)
+
+
+def test_geometry_wing_x_absolute():
+    """Tests computation of the wing absolute Xs"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsolute()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingXAbsolute(), ivc)
+    wing_x0_abs = problem.get_val("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
+    assert wing_x0_abs == pytest.approx(4.361, abs=1e-3)
+    wing_x4_abs = problem.get_val("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
+    assert wing_x4_abs == pytest.approx(4.467, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_b50():

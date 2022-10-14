@@ -62,6 +62,10 @@ from .test_functions import (
     side_force_sideslip_aircraft,
     side_force_yaw_rate_aircraft,
     side_force_roll_rate_aircraft,
+    roll_moment_side_slip_wing,
+    roll_moment_side_slip_ht,
+    roll_moment_side_slip_vt,
+    roll_moment_side_slip_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1170,4 +1174,32 @@ def test_cy_p_aircraft():
     """Tests cy beta of the aircraft."""
     side_force_roll_rate_aircraft(
         XML_FILE, cy_roll_rate_low_speed_=-0.09683, cy_roll_rate_cruise_=-0.09888
+    )
+
+
+def test_cl_beta_wing():
+    """Test cl beta of the wing."""
+    roll_moment_side_slip_wing(
+        XML_FILE, cl_beta_wing_low_speed_=-0.01422404, cl_beta_wing_cruise_=-0.01575317
+    )
+
+
+def test_cl_beta_ht():
+    """Test cl beta of the wing."""
+    roll_moment_side_slip_ht(
+        XML_FILE, cl_beta_ht_low_speed_=-0.00079034, cl_beta_ht_cruise_=-0.00079322
+    )
+
+
+def test_cl_beta_vt():
+    """Test cl beta of the vt."""
+    roll_moment_side_slip_vt(
+        XML_FILE, cl_beta_vt_low_speed_=-0.04841665, cl_beta_vt_cruise_=-0.04944261
+    )
+
+
+def test_cl_beta_aircraft():
+    """Test cl beta of the vt."""
+    roll_moment_side_slip_aircraft(
+        XML_FILE, cl_beta_low_speed_=-0.06343, cl_beta_cruise_=-0.06598899
     )

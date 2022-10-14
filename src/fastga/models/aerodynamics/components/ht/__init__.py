@@ -13,3 +13,4 @@
 
 from .downwash_gradient import DownWashGradientComputation
 from .compute_cl_pitch_rate_ht import ComputeCLPitchVelocityHorizontalTail
+from .compute_cl_beta_ht import ComputeClBetaHorizontalTail

@@ -24,3 +24,4 @@ from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_x import ComputeWingX
 from .compute_wing_y import ComputeWingY
 from .compute_wing_z import ComputeWingZ
+from .compute_wing_x_absolute import ComputeWingXAbsolute

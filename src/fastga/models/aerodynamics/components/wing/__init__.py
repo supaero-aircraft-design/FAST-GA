@@ -13,3 +13,4 @@
 
 from .compute_cl_pitch_rate_wing import ComputeCLPitchVelocityWing
 from .compute_cy_beta_wing import ComputeCyBetaWing
+from .compute_cl_beta_wing import ComputeClBetaWing

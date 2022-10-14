@@ -46,8 +46,14 @@ K_CH_ALPHA = "k_ch_alpha.csv"
 CH_ALPHA_TH = "ch_alpha_th.csv"
 K_CH_DELTA = "k_ch_delta.csv"
 CH_DELTA_TH = "ch_delta_th.csv"
-
 K_FUS = "k_fus.csv"
+CL_BETA_SWEEP = "cl_beta_sweep_contribution.csv"
+K_M_LAMBDA = "sweep_compressibility_correction.csv"
+K_FUSELAGE = "cl_beta_fuselage_correction.csv"
+CL_BETA_AR = "cl_beta_ar_contribution.csv"
+CL_BETA_GAMMA = "cl_beta_dihedral_contribution.csv"
+K_M_GAMMA = "dihedral_compressibility_correction.csv"
+K_TWIST = "twist_correction.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1354,6 +1360,416 @@ class FigureDigitization(om.ExplicitComponent):
         )
 
         return k_fus
+
+    @staticmethod
+    def cl_beta_sweep_contribution(taper_ratio, aspect_ratio, sweep_50) -> float:
+        """
+        Raymer data to estimate the contribution to the roll moment of the sweep angle of the
+        lifting surface. (figure 10.20)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :param sweep_50: the sweep angle at 50 percent of the chord of the lifting surface, in deg
+        :return cl_beta_lambda: the contribution to the roll moment of the sweep angle of the
+        lifting surface.
+        """
+
+        file = pth.join(resources.__path__[0], CL_BETA_SWEEP)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        sweep_50_data = db["SWEEP_50"]
+        sweep_contribution = db["SWEEP_CONTRIBUTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(sweep_50_data),
+                np.isnan(sweep_contribution),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        sweep_50_data = sweep_50_data[np.logical_not(errors)].tolist()
+        sweep_contribution = sweep_contribution[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+        if float(sweep_50) != np.clip(float(sweep_50), min(sweep_50_data), max(sweep_50_data)):
+            _LOGGER.warning(
+                "Sweep at 50% chord is outside of the range in Roskam's book, " "value clipped"
+            )
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        cl_beta_lambda = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data, sweep_50_data),
+            sweep_contribution,
+            np.array([taper_ratio, aspect_ratio, sweep_50]).T,
+            method="linear",
+        )
+        if np.isnan(cl_beta_lambda):
+            cl_beta_lambda = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data, sweep_50_data),
+                sweep_contribution,
+                np.array([taper_ratio, aspect_ratio, sweep_50]).T,
+                method="nearest",
+            )
+
+        return float(cl_beta_lambda)
+
+    @staticmethod
+    def cl_beta_sweep_compressibility_correction(swept_aspect_ratio, swept_mach) -> float:
+        """
+        Raymer data to estimate the compressibility correction for the sweep angle. (figure 10.21)
+
+        :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
+        :param swept_mach: mach number multiplied by cos(sweep_50)
+        :return k_m_lambda: compressibility correction for the sweep angle.
+        """
+
+        file = pth.join(resources.__path__[0], K_M_LAMBDA)
+        db = read_csv(file)
+
+        swept_aspect_ratio_data = db["AR_SWEPT"]
+        swept_mach_data = db["M_SWEPT"]
+        k_m_lambda_data = db["SWEEP_COMPRESSIBILITY_CORRECTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(swept_aspect_ratio_data),
+                np.isnan(swept_mach_data),
+                np.isnan(k_m_lambda_data),
+            )
+        )
+        swept_aspect_ratio_data = swept_aspect_ratio_data[np.logical_not(errors)].tolist()
+        swept_mach_data = swept_mach_data[np.logical_not(errors)].tolist()
+        k_m_lambda_data = k_m_lambda_data[np.logical_not(errors)].tolist()
+
+        if float(swept_aspect_ratio) != np.clip(
+            float(swept_aspect_ratio), min(swept_aspect_ratio_data), max(swept_aspect_ratio_data)
+        ):
+            _LOGGER.warning(
+                "Swept aspect ratio is outside of the range in Roskam's book, value clipped"
+            )
+        if float(swept_mach) != np.clip(
+            float(swept_mach), min(swept_mach_data), max(swept_mach_data)
+        ):
+            _LOGGER.warning(
+                "Swept mach number is outside of the range in Roskam's book, value clipped"
+            )
+
+        k_m_lambda = interpolate.griddata(
+            (swept_aspect_ratio_data, swept_mach_data),
+            k_m_lambda_data,
+            np.array([swept_aspect_ratio, swept_mach]).T,
+            method="linear",
+        )
+        if np.isnan(k_m_lambda):
+            k_m_lambda = interpolate.griddata(
+                (swept_aspect_ratio_data, swept_mach_data),
+                k_m_lambda_data,
+                np.array([swept_aspect_ratio, swept_mach]).T,
+                method="nearest",
+            )
+
+        return float(k_m_lambda)
+
+    @staticmethod
+    def cl_beta_fuselage_correction(swept_aspect_ratio, lf_to_b_ratio) -> float:
+        """
+        Raymer data to estimate the fuselage correction factor. (figure 10.22)
+
+        :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
+        :param lf_to_b_ratio: ratio between the distance from nose to root half chord and the
+        wing span
+        :return k_fuselage: fuselage correction factor.
+        """
+
+        file = pth.join(resources.__path__[0], K_FUSELAGE)
+        db = read_csv(file)
+
+        swept_aspect_ratio_data = db["AR_SWEPT"]
+        lf_to_b_data = db["LF_TO_B_RATIO"]
+        k_fuselage_data = db["K_FUSELAGE"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(swept_aspect_ratio_data),
+                np.isnan(lf_to_b_data),
+                np.isnan(k_fuselage_data),
+            )
+        )
+        swept_aspect_ratio_data = swept_aspect_ratio_data[np.logical_not(errors)].tolist()
+        lf_to_b_data = lf_to_b_data[np.logical_not(errors)].tolist()
+        k_fuselage_data = k_fuselage_data[np.logical_not(errors)].tolist()
+
+        if float(swept_aspect_ratio) != np.clip(
+            float(swept_aspect_ratio), min(swept_aspect_ratio_data), max(swept_aspect_ratio_data)
+        ):
+            _LOGGER.warning(
+                "Swept aspect ratio is outside of the range in Roskam's book, value clipped"
+            )
+        if float(lf_to_b_ratio) != np.clip(
+            float(lf_to_b_ratio), min(lf_to_b_data), max(lf_to_b_data)
+        ):
+            _LOGGER.warning(
+                "Ratio between the distance from nose to root half chord and the wing span is "
+                "outside of the range in Roskam's book, value clipped"
+            )
+
+        k_fuselage = interpolate.griddata(
+            (swept_aspect_ratio_data, lf_to_b_data),
+            k_fuselage_data,
+            np.array([swept_aspect_ratio, lf_to_b_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(k_fuselage):
+            k_fuselage = interpolate.griddata(
+                (swept_aspect_ratio_data, lf_to_b_data),
+                k_fuselage_data,
+                np.array([swept_aspect_ratio, lf_to_b_ratio]).T,
+                method="nearest",
+            )
+
+        return float(k_fuselage)
+
+    @staticmethod
+    def cl_beta_ar_contribution(taper_ratio, aspect_ratio) -> float:
+        """
+        Raymer data to estimate the contribution to the roll moment of the aspect ratio of the
+        lifting surface. (figure 10.23)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return cl_beta_ar: the contribution to the roll moment of the aspect ratio of the
+        lifting surface.
+        """
+
+        file = pth.join(resources.__path__[0], CL_BETA_AR)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        ar_contribution = db["ASPECT_RATIO_CONTRIBUTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(ar_contribution),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        ar_contribution = ar_contribution[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        cl_beta_ar = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data),
+            ar_contribution,
+            np.array([taper_ratio, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(cl_beta_ar):
+            cl_beta_ar = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data),
+                ar_contribution,
+                np.array([taper_ratio, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(cl_beta_ar)
+
+    @staticmethod
+    def cl_beta_dihedral_contribution(taper_ratio, aspect_ratio, sweep_50) -> float:
+        """
+        Raymer data to estimate the contribution to the roll moment of the dihedral angle of the
+        lifting surface. (figure 10.24)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :param sweep_50: the sweep angle at 50 percent of the chord of the lifting surface, in deg
+        :return cl_beta_gamma: the contribution to the roll moment of the dihedral angle of the
+        lifting surface.
+        """
+
+        # For this graph, only the absolute value of the sweep angle is necessary
+        sweep_50 = np.abs(sweep_50)
+
+        file = pth.join(resources.__path__[0], CL_BETA_GAMMA)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        sweep_50_data = db["SWEEP_50"]
+        dihedral_contribution = db["DIHEDRAL_CONTRIBUTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(sweep_50_data),
+                np.isnan(dihedral_contribution),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        sweep_50_data = sweep_50_data[np.logical_not(errors)].tolist()
+        dihedral_contribution = dihedral_contribution[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+        if float(sweep_50) != np.clip(float(sweep_50), min(sweep_50_data), max(sweep_50_data)):
+            _LOGGER.warning(
+                "Sweep at 50% chord is outside of the range in Roskam's book, " "value clipped"
+            )
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        cl_beta_gamma = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data, sweep_50_data),
+            dihedral_contribution,
+            np.array([taper_ratio, aspect_ratio, sweep_50]).T,
+            method="linear",
+        )
+        if np.isnan(cl_beta_gamma):
+            cl_beta_gamma = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data, sweep_50_data),
+                dihedral_contribution,
+                np.array([taper_ratio, aspect_ratio, sweep_50]).T,
+                method="nearest",
+            )
+
+        return float(cl_beta_gamma)
+
+    @staticmethod
+    def cl_beta_dihedral_compressibility_correction(swept_aspect_ratio, swept_mach) -> float:
+        """
+        Raymer data to estimate the compressibility correction for the dihedral angle. (figure
+        10.25)
+
+        :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
+        :param swept_mach: mach number multiplied by cos(sweep_50)
+        :return k_m_gamma: compressibility correction for the dihedral angle.
+        """
+
+        file = pth.join(resources.__path__[0], K_M_GAMMA)
+        db = read_csv(file)
+
+        swept_aspect_ratio_data = db["AR_SWEPT"]
+        swept_mach_data = db["M_SWEPT"]
+        k_m_gamma_data = db["DIHEDRAL_COMPRESSIBILITY_CORRECTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(swept_aspect_ratio_data),
+                np.isnan(swept_mach_data),
+                np.isnan(k_m_gamma_data),
+            )
+        )
+        swept_aspect_ratio_data = swept_aspect_ratio_data[np.logical_not(errors)].tolist()
+        swept_mach_data = swept_mach_data[np.logical_not(errors)].tolist()
+        k_m_gamma_data = k_m_gamma_data[np.logical_not(errors)].tolist()
+
+        if float(swept_aspect_ratio) != np.clip(
+            float(swept_aspect_ratio), min(swept_aspect_ratio_data), max(swept_aspect_ratio_data)
+        ):
+            _LOGGER.warning(
+                "Swept aspect ratio is outside of the range in Roskam's book, value clipped"
+            )
+        if float(swept_mach) != np.clip(
+            float(swept_mach), min(swept_mach_data), max(swept_mach_data)
+        ):
+            _LOGGER.warning(
+                "Swept mach number is outside of the range in Roskam's book, value clipped"
+            )
+
+        k_m_gamma = interpolate.griddata(
+            (swept_aspect_ratio_data, swept_mach_data),
+            k_m_gamma_data,
+            np.array([swept_aspect_ratio, swept_mach]).T,
+            method="linear",
+        )
+        if np.isnan(k_m_gamma):
+            k_m_gamma = interpolate.griddata(
+                (swept_aspect_ratio_data, swept_mach_data),
+                k_m_gamma_data,
+                np.array([swept_aspect_ratio, swept_mach]).T,
+                method="nearest",
+            )
+
+        return float(k_m_gamma)
+
+    @staticmethod
+    def cl_beta_twist_correction(taper_ratio, aspect_ratio) -> float:
+        """
+        Raymer data to estimate the correction due to the twist of the lifting surface. (figure
+        10.26)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return k_epsilon: the factor to take into account the twist of the lifting surface for
+        the computation of the rolling moment
+        """
+
+        file = pth.join(resources.__path__[0], K_TWIST)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        twist_correction = db["TWIST_CORRECTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(twist_correction),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        twist_correction = twist_correction[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        k_epsilon = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data),
+            twist_correction,
+            np.array([taper_ratio, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(k_epsilon):
+            k_epsilon = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data),
+                twist_correction,
+                np.array([taper_ratio, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(k_epsilon)
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
