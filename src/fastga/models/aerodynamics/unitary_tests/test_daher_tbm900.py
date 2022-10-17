@@ -80,6 +80,7 @@ from .test_functions import (
     pitch_moment_pitch_rate_ht,
     pitch_moment_pitch_rate_aircraft,
     pitch_moment_aoa_rate_derivative,
+    yaw_moment_sideslip_derivative_vt,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -2131,4 +2132,11 @@ def test_cm_alpha_dot():
     """Tests cm alpha dot of the aircraft."""
     pitch_moment_aoa_rate_derivative(
         XML_FILE, cm_aoa_dot_low_speed_=-6.02497605, cm_aoa_dot_cruise_=-7.0200
+    )
+
+
+def test_cn_beta_vt():
+    """Tests cn beta of the vt."""
+    yaw_moment_sideslip_derivative_vt(
+        XML_FILE, cn_beta_vt_low_speed_=0.1688, cn_beta_vt_cruise_=0.18359
     )

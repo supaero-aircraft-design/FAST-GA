@@ -16,7 +16,6 @@ from .compute_L_D_max import ComputeLDMax
 from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_cl_extreme_htp import ComputeExtremeCLHtp
 from .compute_cl_extreme_wing import ComputeExtremeCLWing
-from .compute_cm_alpha_fus import ComputeFuselagePitchingMoment
 from .compute_cy_rudder import ComputeCyDeltaRudder
 from .compute_effective_efficiency_prop import ComputeEffectiveEfficiencyPropeller
 from .compute_equilibrated_polar import ComputeEquilibratedPolar
@@ -43,3 +42,4 @@ from .compute_cl_aileron import ComputeClDeltaAileron
 from .compute_cl_rudder import ComputeClDeltaRudder
 from .compute_cm_pitch_rate import ComputeCMPitchVelocityAircraft
 from .compute_cm_alpha_dot import ComputeCMAlphaDotAircraft
+from .compute_cn_beta import ComputeCnBetaAircraft

@@ -79,6 +79,8 @@ from .test_functions import (
     pitch_moment_pitch_rate_ht,
     pitch_moment_pitch_rate_aircraft,
     pitch_moment_aoa_rate_derivative,
+    yaw_moment_sideslip_derivative_vt,
+    yaw_moment_sideslip_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1291,3 +1293,15 @@ def test_cm_alpha_dot():
     pitch_moment_aoa_rate_derivative(
         XML_FILE, cm_aoa_dot_low_speed_=-3.4136, cm_aoa_dot_cruise_=-3.5082
     )
+
+
+def test_cn_beta_vt():
+    """Tests cn beta of the vt."""
+    yaw_moment_sideslip_derivative_vt(
+        XML_FILE, cn_beta_vt_low_speed_=0.12348297, cn_beta_vt_cruise_=0.12609959
+    )
+
+
+def test_cn_beta_aircraft():
+    """Tests cn beta of the aircraft."""
+    yaw_moment_sideslip_aircraft(XML_FILE, cn_beta_low_speed_=0.12348297)

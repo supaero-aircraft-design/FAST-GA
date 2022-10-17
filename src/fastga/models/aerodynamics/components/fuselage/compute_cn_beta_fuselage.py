@@ -23,7 +23,7 @@ from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_CN_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.yawing_moment.legacy"
+    SUBMODEL_CN_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.yawing_moment_beta.legacy"
 )
 class ComputeCnBetaFuselage(ExplicitComponent):
     """

@@ -80,6 +80,7 @@ from .test_functions import (
     pitch_moment_pitch_rate_ht,
     pitch_moment_pitch_rate_aircraft,
     pitch_moment_aoa_rate_derivative,
+    yaw_moment_sideslip_derivative_vt,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -2082,4 +2083,11 @@ def test_cm_alpha_dot():
     """Tests cm alpha dot of the aircraft."""
     pitch_moment_aoa_rate_derivative(
         XML_FILE, cm_aoa_dot_low_speed_=-4.479, cm_aoa_dot_cruise_=-4.59664
+    )
+
+
+def test_cn_beta_vt():
+    """Tests cn beta of the vt."""
+    yaw_moment_sideslip_derivative_vt(
+        XML_FILE, cn_beta_vt_low_speed_=0.11432046, cn_beta_vt_cruise_=0.116502
     )

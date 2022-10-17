@@ -41,7 +41,6 @@ from fastga.models.aerodynamics.components import (
     ComputeCyDeltaRudder,
     ComputeAirfoilLiftCurveSlope,
     ComputeVNAndVH,
-    ComputeFuselagePitchingMoment,
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
     ComputeExtremeCLWing,
@@ -59,12 +58,14 @@ from fastga.models.aerodynamics.components import (
     ComputeClDeltaRudder,
     ComputeCMPitchVelocityAircraft,
     ComputeCMAlphaDotAircraft,
+    ComputeCnBetaAircraft,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
 from fastga.models.aerodynamics.components.fuselage import (
     ComputeCyBetaFuselage,
     ComputeCnBetaFuselage,
+    ComputeCmAlphaFuselage,
 )
 from fastga.models.aerodynamics.components.ht import (
     DownWashGradientComputation,
@@ -87,6 +88,7 @@ from fastga.models.aerodynamics.components.vt import (
     ComputeClBetaVerticalTail,
     ComputeClRollRateVerticalTail,
     ComputeClYawRateVerticalTail,
+    ComputeCnBetaVerticalTail,
 )
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
     ComputePropellerPerformance,
@@ -1088,10 +1090,10 @@ def effective_efficiency(
 def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
     """Tests cm alpha of the fuselage"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselagePitchingMoment()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCmAlphaFuselage()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselagePitchingMoment(), ivc)
+    problem = run_system(ComputeCmAlphaFuselage(), ivc)
     assert problem.get_val("data:aerodynamics:fuselage:cm_alpha", units="rad**-1") == pytest.approx(
         cm_alpha_fus_, abs=1e-4
     )
@@ -2226,5 +2228,58 @@ def pitch_moment_aoa_rate_derivative(
     assert problem.get_val("data:aerodynamics:aircraft:cruise:Cm_alpha_dot") == pytest.approx(
         cm_aoa_dot_cruise_, rel=1e-3
     )
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_sideslip_derivative_vt(
+    XML_FILE: str,
+    cn_beta_vt_low_speed_: float,
+    cn_beta_vt_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_sideslip_aircraft(
+    XML_FILE: str,
+    cn_beta_low_speed_: float,
+):
+    # Only testing the low speed case since the high can't run on its own (fuselage is
+    # independent of mach number and are thus only computed at low speed)
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_low_speed_, rel=1e-3)
 
     problem.check_partials(compact_print=True)
