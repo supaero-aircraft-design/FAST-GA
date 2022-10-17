@@ -56,6 +56,9 @@ K_M_GAMMA = "dihedral_compressibility_correction.csv"
 K_TWIST = "twist_correction.csv"
 K_ROLL_DAMPING = "cl_p_roll_damping_parameter.csv"
 K_CDI_ROLL_DAMPING = "cl_p_cdi_roll_damping.csv"
+CL_R_LIFT_PART_A = "cl_r_lift_effect_part_a.csv"
+CL_R_LIFT_PART_B = "cl_r_lift_effect_part_b.csv"
+CL_R_TWIST_EFFECT = "cl_r_twist_effect.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1332,7 +1335,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_fus(root_quarter_chord_position_ratio) -> float:
         """
-        Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14).
+        Roskam data to estimate the empirical pitching moment factor K_fus (figure 16.14).
 
         :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
         wing from the nose.
@@ -1366,7 +1369,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_sweep_contribution(taper_ratio, aspect_ratio, sweep_50) -> float:
         """
-        Raymer data to estimate the contribution to the roll moment of the sweep angle of the
+        Roskam data to estimate the contribution to the roll moment of the sweep angle of the
         lifting surface. (figure 10.20)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1429,7 +1432,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_sweep_compressibility_correction(swept_aspect_ratio, swept_mach) -> float:
         """
-        Raymer data to estimate the compressibility correction for the sweep angle. (figure 10.21)
+        Roskam data to estimate the compressibility correction for the sweep angle. (figure 10.21)
 
         :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
         :param swept_mach: mach number multiplied by cos(sweep_50)
@@ -1485,7 +1488,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_fuselage_correction(swept_aspect_ratio, lf_to_b_ratio) -> float:
         """
-        Raymer data to estimate the fuselage correction factor. (figure 10.22)
+        Roskam data to estimate the fuselage correction factor. (figure 10.22)
 
         :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
         :param lf_to_b_ratio: ratio between the distance from nose to root half chord and the
@@ -1543,7 +1546,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_ar_contribution(taper_ratio, aspect_ratio) -> float:
         """
-        Raymer data to estimate the contribution to the roll moment of the aspect ratio of the
+        Roskam data to estimate the contribution to the roll moment of the aspect ratio of the
         lifting surface. (figure 10.23)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1598,7 +1601,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_dihedral_contribution(taper_ratio, aspect_ratio, sweep_50) -> float:
         """
-        Raymer data to estimate the contribution to the roll moment of the dihedral angle of the
+        Roskam data to estimate the contribution to the roll moment of the dihedral angle of the
         lifting surface. (figure 10.24)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1664,7 +1667,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_dihedral_compressibility_correction(swept_aspect_ratio, swept_mach) -> float:
         """
-        Raymer data to estimate the compressibility correction for the dihedral angle. (figure
+        Roskam data to estimate the compressibility correction for the dihedral angle. (figure
         10.25)
 
         :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
@@ -1721,7 +1724,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_twist_correction(taper_ratio, aspect_ratio) -> float:
         """
-        Raymer data to estimate the correction due to the twist of the lifting surface. (figure
+        Roskam data to estimate the correction due to the twist of the lifting surface. (figure
         10.26)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1776,7 +1779,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_p_roll_damping_parameter(taper_ratio, aspect_ratio, mach, sweep_25, k) -> float:
         """
-        Raymer data to estimate the contribution to the roll moment of the roll damping parameter
+        Roskam data to estimate the contribution to the roll moment of the roll damping parameter
         (figure 10.35).
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1848,7 +1851,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_p_cdi_roll_damping(sweep_25, aspect_ratio) -> float:
         """
-        Raymer data to estimate the contribution to the roll moment damping of the
+        Roskam data to estimate the contribution to the roll moment damping of the
         drag-due-to-lift (figure 10.36)
 
         :param sweep_25: the sweep angle at 25% of the chord of the lifting surface
@@ -1899,6 +1902,223 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         return float(k_cdi_roll_damping)
+
+    @staticmethod
+    def cl_r_lifting_effect(aspect_ratio, taper_ratio, sweep_25):
+        """
+        Roskam data to estimate the slope of the rolling moment due to yaw rate (figure 10.41).
+        The figure is separated into two parts (a and b).
+
+        :param aspect_ratio: wing aspect ratio
+        :param taper_ratio: wing taper ratio
+        :param sweep_25: wing sweep angle at quarter-taper point line in radians
+        :return cl_r_lift: slope of the rolling moment due to yaw rate
+        """
+
+        sweep_25 = sweep_25 * 180.0 / np.pi  # radians to degrees
+
+        # Reading data from the first part (a) relative to the wing taper ratio
+        file = pth.join(resources.__path__[0], CL_R_LIFT_PART_A)
+        db = read_csv(file)
+
+        x_0 = db["TAPER_RATIO_0_X"]
+        y_0 = db["TAPER_RATIO_0_Y"]
+        errors = np.logical_or(np.isnan(x_0), np.isnan(y_0))
+        x_0 = x_0[np.logical_not(errors)].tolist()
+        y_0 = y_0[np.logical_not(errors)].tolist()
+        x_0.sort()
+        y_0.sort()
+
+        x_0_25 = db["TAPER_RATIO_025_X"]
+        y_0_25 = db["TAPER_RATIO_025_Y"]
+        errors = np.logical_or(np.isnan(x_0_25), np.isnan(y_0_25))
+        x_0_25 = x_0_25[np.logical_not(errors)].tolist()
+        y_0_25 = y_0_25[np.logical_not(errors)].tolist()
+        x_0_25.sort()
+        y_0_25.sort()
+
+        x_0_5 = db["TAPER_RATIO_05_X"]
+        y_0_5 = db["TAPER_RATIO_05_Y"]
+        errors = np.logical_or(np.isnan(x_0_5), np.isnan(y_0_5))
+        x_0_5 = x_0_5[np.logical_not(errors)].tolist()
+        y_0_5 = y_0_5[np.logical_not(errors)].tolist()
+        x_0_5.sort()
+        y_0_5.sort()
+
+        x_1_0 = db["TAPER_RATIO_1_X"]
+        y_1_0 = db["TAPER_RATIO_1_Y"]
+        errors = np.logical_or(np.isnan(x_1_0), np.isnan(y_1_0))
+        x_1_0 = x_1_0[np.logical_not(errors)].tolist()
+        y_1_0 = y_1_0[np.logical_not(errors)].tolist()
+        x_1_0.sort()
+        y_1_0.sort()
+
+        k_taper0 = interpolate.interp1d(x_0, y_0)
+        k_taper025 = interpolate.interp1d(x_0_25, y_0_25)
+        k_taper05 = interpolate.interp1d(x_0_5, y_0_5)
+        k_taper1 = interpolate.interp1d(x_1_0, y_1_0)
+
+        if (
+            (aspect_ratio != np.clip(aspect_ratio, min(x_1_0), max(x_1_0)))
+            or (aspect_ratio != np.clip(aspect_ratio, min(x_0_5), max(x_0_5)))
+            or (aspect_ratio != np.clip(aspect_ratio, min(x_0_25), max(x_0_25)))
+            or (aspect_ratio != np.clip(aspect_ratio, min(x_0), max(x_0)))
+        ):
+            _LOGGER.warning(
+                "Aspect ratio value outside of the range in Roskam's book, value clipped"
+            )
+
+        k_taper = [
+            float(k_taper0(np.clip(aspect_ratio, min(x_0), max(x_0)))),
+            float(k_taper025(np.clip(aspect_ratio, min(x_0_25), max(x_0_25)))),
+            float(k_taper05(np.clip(aspect_ratio, min(x_0_5), max(x_0_5)))),
+            float(k_taper1(np.clip(aspect_ratio, min(x_1_0), max(x_1_0)))),
+        ]
+
+        if taper_ratio != np.clip(taper_ratio, 0.0, 1.0):
+            _LOGGER.warning(
+                "Taper ratio value outside of the range in Roskam's book, value clipped"
+            )
+
+        k_intermediate = float(
+            interpolate.interp1d([0.0, 0.25, 0.5, 1.0], k_taper)(np.clip(taper_ratio, 0.0, 1.0))
+        )
+
+        # Reading the second part of the figure (b) relative to the different wing sweep angles.
+        file = pth.join(resources.__path__[0], CL_R_LIFT_PART_B)
+        db = read_csv(file)
+
+        x_sw_0 = db["SWEEP_25_0_X"]
+        y_sw_0 = db["SWEEP_25_0_Y"]
+        errors = np.logical_or(np.isnan(x_sw_0), np.isnan(y_sw_0))
+        x_sw_0 = x_sw_0[np.logical_not(errors)].tolist()
+        y_sw_0 = y_sw_0[np.logical_not(errors)].tolist()
+        x_sw_0.sort()
+        y_sw_0.sort()
+
+        x_sw_15 = db["SWEEP_25_15_X"]
+        y_sw_15 = db["SWEEP_25_15_Y"]
+        errors = np.logical_or(np.isnan(x_sw_15), np.isnan(y_sw_15))
+        x_sw_15 = x_sw_15[np.logical_not(errors)].tolist()
+        y_sw_15 = y_sw_15[np.logical_not(errors)].tolist()
+        x_sw_15.sort()
+        y_sw_15.sort()
+
+        x_sw_30 = db["SWEEP_25_30_X"]
+        y_sw_30 = db["SWEEP_25_30_Y"]
+        errors = np.logical_or(np.isnan(x_sw_30), np.isnan(y_sw_30))
+        x_sw_30 = x_sw_30[np.logical_not(errors)].tolist()
+        y_sw_30 = y_sw_30[np.logical_not(errors)].tolist()
+        x_sw_30.sort()
+        y_sw_30.sort()
+
+        x_sw_45 = db["SWEEP_25_45_X"]
+        y_sw_45 = db["SWEEP_25_45_Y"]
+        errors = np.logical_or(np.isnan(x_sw_45), np.isnan(y_sw_45))
+        x_sw_45 = x_sw_45[np.logical_not(errors)].tolist()
+        y_sw_45 = y_sw_45[np.logical_not(errors)].tolist()
+        x_sw_45.sort()
+        y_sw_45.sort()
+
+        x_sw_60 = db["SWEEP_25_60_X"]
+        y_sw_60 = db["SWEEP_25_60_Y"]
+        errors = np.logical_or(np.isnan(x_sw_60), np.isnan(y_sw_60))
+        x_sw_60 = x_sw_60[np.logical_not(errors)].tolist()
+        y_sw_60 = y_sw_60[np.logical_not(errors)].tolist()
+        x_sw_60.sort()
+        y_sw_60.sort()
+
+        k_sweep0 = interpolate.interp1d(x_sw_0, y_sw_0)
+        k_sweep15 = interpolate.interp1d(x_sw_15, y_sw_15)
+        k_sweep30 = interpolate.interp1d(x_sw_30, y_sw_30)
+        k_sweep45 = interpolate.interp1d(x_sw_45, y_sw_45)
+        k_sweep60 = interpolate.interp1d(x_sw_60, y_sw_60)
+
+        if (
+            (k_intermediate != np.clip(k_intermediate, min(x_sw_45), max(x_sw_45)))
+            or (k_intermediate != np.clip(k_intermediate, min(x_sw_30), max(x_sw_30)))
+            or (k_intermediate != np.clip(k_intermediate, min(x_sw_15), max(x_sw_15)))
+            or (k_intermediate != np.clip(k_intermediate, min(x_sw_0), max(x_sw_0)))
+            or (k_intermediate != np.clip(k_intermediate, min(x_sw_60), max(x_sw_60)))
+        ):
+            _LOGGER.warning(
+                "Intermediate value outside of the range in Roskam's book, value clipped"
+            )
+
+        k_sweep = [
+            float(k_sweep0(np.clip(k_intermediate, min(x_sw_0), max(x_sw_0)))),
+            float(k_sweep15(np.clip(k_intermediate, min(x_sw_15), max(x_sw_15)))),
+            float(k_sweep30(np.clip(k_intermediate, min(x_sw_30), max(x_sw_30)))),
+            float(k_sweep45(np.clip(k_intermediate, min(x_sw_45), max(x_sw_45)))),
+            float(k_sweep60(np.clip(k_intermediate, min(x_sw_60), max(x_sw_60)))),
+        ]
+
+        if sweep_25 != np.clip(sweep_25, 0.0, 60.0):
+            _LOGGER.warning(
+                "Sweep angle value outside of the range in Roskam's book, value clipped"
+            )
+
+        cl_r_lift = float(
+            interpolate.interp1d([0.0, 15.0, 30.0, 45.0, 60.0], k_sweep)(
+                np.clip(sweep_25, 0.0, 60.0)
+            )
+        )
+
+        return cl_r_lift
+
+    @staticmethod
+    def cl_r_twist_effect(taper_ratio, aspect_ratio) -> float:
+        """
+        Roskam data to estimate the contribution to the roll moment coefficient of the twist.
+        (figure 10.42)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return k_twist: contribution to the roll moment coefficient of the twist.
+        """
+
+        file = pth.join(resources.__path__[0], CL_R_TWIST_EFFECT)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        twist_effect_data = db["TWIST_EFFECT"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(twist_effect_data),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        twist_effect_data = twist_effect_data[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        k_twist = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data),
+            twist_effect_data,
+            np.array([taper_ratio, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(k_twist):
+            k_twist = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data),
+                twist_effect_data,
+                np.array([taper_ratio, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(k_twist)
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):

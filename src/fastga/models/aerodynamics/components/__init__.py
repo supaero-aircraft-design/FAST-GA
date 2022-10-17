@@ -36,5 +36,6 @@ from .compute_cl_pitch_rate import ComputeCLPitchVelocityAircraft
 from .compute_cy_beta import ComputeCYBetaAircraft
 from .compute_cy_yaw_rate import ComputeCyYawRateAircraft
 from .compute_cy_roll_rate import ComputeCyRollRateAircraft
-from .compute_cl_beta import ComputeCLBetaAircraft
-from .compute_cl_roll_rate import ComputeCLRollRateAircraft
+from .compute_cl_beta import ComputeClBetaAircraft
+from .compute_cl_roll_rate import ComputeClRollRateAircraft
+from .compute_cl_yaw_rate import ComputeClYawRateAircraft

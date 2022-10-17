@@ -71,6 +71,9 @@ from .test_functions import (
     roll_moment_roll_rate_ht,
     roll_moment_roll_rate_vt,
     roll_moment_roll_rate_aircraft,
+    roll_moment_yaw_rate_wing,
+    roll_moment_yaw_rate_vt,
+    roll_moment_yaw_rate_aircraft,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -2019,3 +2022,20 @@ def test_cl_p_vt():
 def test_cl_p():
     """Test cl p of the aircraft."""
     roll_moment_roll_rate_aircraft(XML_FILE, cl_p_low_speed_=-0.53769672, cl_p_cruise_=-0.54304468)
+
+
+def test_cl_r_wing():
+    """Test cl r of the wing."""
+    roll_moment_yaw_rate_wing(
+        XML_FILE, cl_r_wing_low_speed_=0.18017549, cl_r_wing_cruise_=0.18539909
+    )
+
+
+def test_cl_r_vt():
+    """Test cl r of the vt."""
+    roll_moment_yaw_rate_vt(XML_FILE, cl_r_vt_low_speed_=0.02940615, cl_r_vt_cruise_=0.0299673)
+
+
+def test_cl_r_aircraft():
+    """Test cl r of the aircraft."""
+    roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.20958164, cl_r_cruise_=0.21536639)

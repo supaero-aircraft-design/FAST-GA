@@ -25,7 +25,7 @@ from ..constants import (
 
 
 @oad.RegisterSubmodel(SUBMODEL_CL_BETA, "submodel.aerodynamics.aircraft.roll_moment_beta.legacy")
-class ComputeCLBetaAircraft(om.Group):
+class ComputeClBetaAircraft(om.Group):
     """
     Computation of the increase in roll moment due to a side slip angle. Assumes the coefficient
     at aircraft level can be obtained by summing the contribution of the individual components.
