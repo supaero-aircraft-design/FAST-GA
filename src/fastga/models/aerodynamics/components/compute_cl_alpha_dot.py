@@ -19,7 +19,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_CL_ALPHA_DOT
 
 
-@oad.RegisterSubmodel(SUBMODEL_CL_ALPHA_DOT, "submodel.aerodynamics.aircraft.cl_rate_of_aoa_change")
+@oad.RegisterSubmodel(
+    SUBMODEL_CL_ALPHA_DOT, "fastga.submodel.aerodynamics.aircraft.cl_rate_of_aoa_change.legacy"
+)
 class ComputeCLAlphaDotAircraft(om.ExplicitComponent):
     """
     Computation of the increase in lift due to a rate of change of AoA. Not destined for the

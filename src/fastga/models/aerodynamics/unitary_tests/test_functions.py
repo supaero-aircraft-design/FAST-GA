@@ -58,6 +58,7 @@ from fastga.models.aerodynamics.components import (
     ComputeClDeltaAileron,
     ComputeClDeltaRudder,
     ComputeCMPitchVelocityAircraft,
+    ComputeCMAlphaDotAircraft,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -2192,5 +2193,38 @@ def pitch_moment_pitch_rate_aircraft(
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def pitch_moment_aoa_rate_derivative(
+    XML_FILE: str,
+    cm_aoa_dot_low_speed_: float,
+    cm_aoa_dot_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMAlphaDotAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:Cm_alpha_dot") == pytest.approx(
+        cm_aoa_dot_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMAlphaDotAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:Cm_alpha_dot") == pytest.approx(
+        cm_aoa_dot_cruise_, rel=1e-3
+    )
 
     problem.check_partials(compact_print=True)

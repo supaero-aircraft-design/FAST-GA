@@ -78,6 +78,7 @@ from .test_functions import (
     pitch_moment_pitch_rate_wing,
     pitch_moment_pitch_rate_ht,
     pitch_moment_pitch_rate_aircraft,
+    pitch_moment_aoa_rate_derivative,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1283,3 +1284,10 @@ def test_cm_q_ht():
 def test_cm_q_aircraft():
     """Test cm q of the aircraft."""
     pitch_moment_pitch_rate_aircraft(XML_FILE, cm_q_low_speed_=-12.1733, cm_q_cruise_=-12.32824)
+
+
+def test_cm_alpha_dot():
+    """Tests cm alpha dot of the aircraft."""
+    pitch_moment_aoa_rate_derivative(
+        XML_FILE, cm_aoa_dot_low_speed_=-3.4136, cm_aoa_dot_cruise_=-3.5082
+    )
