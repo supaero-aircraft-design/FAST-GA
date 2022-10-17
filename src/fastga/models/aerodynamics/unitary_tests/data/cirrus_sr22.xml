@@ -193,6 +193,11 @@
             </x>
           </leading_edge>
         </tip>
+        <aileron>
+          <max_deflection units="deg">30.0</max_deflection>
+          <chord_ratio>0.25</chord_ratio>
+          <span_ratio>0.24</span_ratio>
+        </aileron>
       </wing>
       <propulsion>
         <engine>
@@ -422,6 +427,9 @@
         <low_speed>
           <Cy_delta_r units="1/rad" is_input="False">1.8858689633082573<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
         </low_speed>
+        <cruise>
+          <Cy_delta_r units="1/rad" is_input="False">1.9255</Cy_delta_r>
+        </cruise>
       </rudder>
       <wing>
         <airfoil>

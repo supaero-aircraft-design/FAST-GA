@@ -73,6 +73,8 @@ from .test_functions import (
     roll_moment_yaw_rate_wing,
     roll_moment_yaw_rate_vt,
     roll_moment_yaw_rate_aircraft,
+    roll_authority_aileron,
+    roll_moment_rudder,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1249,3 +1251,15 @@ def test_cl_r_vt():
 def test_cl_r_aircraft():
     """Test cl r of the aircraft."""
     roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.17433458, cl_r_cruise_=0.17943935)
+
+
+def test_cl_delta_a_aircraft():
+    """Test roll authority of the aileron."""
+    roll_authority_aileron(
+        XML_FILE, cl_delta_a_low_speed_=0.19643261, cl_delta_a_cruise_=0.20135957
+    )
+
+
+def test_cl_delta_r_aircraft():
+    """Test roll authority of the rudder."""
+    roll_moment_rudder(XML_FILE, cl_delta_r_low_speed_=0.02815446, cl_delta_r_cruise_=0.02874612)

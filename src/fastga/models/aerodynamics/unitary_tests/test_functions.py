@@ -55,6 +55,8 @@ from fastga.models.aerodynamics.components import (
     ComputeClBetaAircraft,
     ComputeClRollRateAircraft,
     ComputeClYawRateAircraft,
+    ComputeClDeltaAileron,
+    ComputeClDeltaRudder,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -2035,4 +2037,65 @@ def roll_moment_yaw_rate_aircraft(
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_authority_aileron(
+    XML_FILE: str,
+    cl_delta_a_low_speed_: float,
+    cl_delta_a_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaAileron(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:low_speed:Cl_delta_a", units="rad**-1"
+    ) == pytest.approx(cl_delta_a_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaAileron(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1"
+    ) == pytest.approx(cl_delta_a_cruise_, rel=1e-3)
+
+
+def roll_moment_rudder(
+    XML_FILE: str,
+    cl_delta_r_low_speed_: float,
+    cl_delta_r_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaRudder(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:low_speed:Cl_delta_r", units="rad**-1"
+    ) == pytest.approx(cl_delta_r_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaRudder(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:cruise:Cl_delta_r", units="rad**-1"
+    ) == pytest.approx(cl_delta_r_cruise_, rel=1e-3)
+
     problem.check_partials(compact_print=True)
