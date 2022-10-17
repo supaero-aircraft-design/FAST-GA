@@ -48,13 +48,13 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input(
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:aircraft:low_speed:Cy_p", units="rad**-1")
         else:
             self.add_input(
-                "data:aerodynamics:vertical_tail:cruise:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
             self.add_output("data:aerodynamics:aircraft:cruise:Cy_p", units="rad**-1")
 
@@ -73,12 +73,12 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
             outputs["data:aerodynamics:aircraft:low_speed:Cy_p"] = (
                 2.0 * cy_beta_vt * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             outputs["data:aerodynamics:aircraft:cruise:Cy_p"] = (
                 2.0 * cy_beta_vt * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
@@ -96,11 +96,11 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
 
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cy_p",
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta",
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
             ] = (
                 2.0 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
@@ -139,11 +139,11 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             )
 
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
 
             partials[
                 "data:aerodynamics:aircraft:cruise:Cy_p",
-                "data:aerodynamics:vertical_tail:cruise:cy_beta",
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
             ] = (
                 2.0 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )

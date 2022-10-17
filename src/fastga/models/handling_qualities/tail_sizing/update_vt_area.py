@@ -99,7 +99,7 @@ class VTPConstraints(om.ExplicitComponent):
         cg_mac_position = float(inputs["data:weight:aircraft:CG:aft:MAC_position"])
 
         cy_delta_r_vtp = float(inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"])
-        cy_beta = float(inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"])
+        cy_beta = float(inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"])
 
         area_vtp = x[0]
         sigma = x[1]
@@ -490,7 +490,7 @@ class _UpdateVTArea(VTPConstraints):
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
         self.add_input(
-            "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+            "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
         )
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 
@@ -622,7 +622,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
         self.add_input(
-            "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+            "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
         )
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 

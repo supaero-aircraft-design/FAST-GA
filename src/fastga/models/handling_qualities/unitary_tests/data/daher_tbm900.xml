@@ -45,8 +45,8 @@
         </seats>
       </cabin>
       <flap>
-        <span_ratio is_input="True">0.75<!--flap chord as a percentage of the wing chord--></span_ratio>
         <chord_ratio is_input="True">0.26<!--flap chord as a percentage of the wing chord--></chord_ratio>
+        <span_ratio is_input="True">0.75<!--flap chord as a percentage of the wing chord--></span_ratio>
       </flap>
       <fuselage>
         <PAX_length units="m" is_input="True">3.2<!--length of the passenger compartment--></PAX_length>
@@ -305,11 +305,11 @@
           <CL_alpha units="1/rad" is_input="False">6.343836307743419<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
-          <downwash_gradient>0.4137</downwash_gradient>
           <CD0 is_input="False">0.002053791667072846<!--profile drag coefficient for horizontal tail in cruise conditions--></CD0>
           <CL0 is_input="False">-0.024486027695896796<!--lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.7294133840673506<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in cruise conditions--></CL_alpha>
           <CL_alpha_isolated units="1/rad" is_input="False">1.3643907155493764<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha_isolated>
+          <downwash_gradient>0.4137</downwash_gradient>
           <induced_drag_coefficient is_input="False">0.31970299522904877<!--coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions--></induced_drag_coefficient>
           <hinge_moment>
             <CH_alpha units="1/rad" is_input="False">-0.38169973122001283<!--derivative of 3D hinge moment coefficient with respect to the local angle of attack in cruise conditions--></CH_alpha>
@@ -319,7 +319,6 @@
           </hinge_moment>
         </cruise>
         <low_speed>
-          <downwash_gradient>0.3673</downwash_gradient>
           <CD0 is_input="False">0.0019744264079473058<!--profile drag coefficient for horizontal tail in low speed conditions--></CD0>
           <CL0 is_input="False">-0.019630206992259796<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.7051088258400426<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions--></CL_alpha>
@@ -329,6 +328,7 @@
           <CL_ref is_input="False">0.10343449896554036<!--reference horizontal tail lift coefficient corresponding to the lift repartition in CL_vector--></CL_ref>
           <CL_vector is_input="False">[0.1540426348557753, 0.10346484784493812, 0.10386214226614478, 0.10610795934157688, 0.106074851473143, 0.1054402839948268, 0.10451602266771406, 0.10638109925615646, 0.1060941643963961, 0.10614934417711926, 0.10772748590580125, 0.10907111356640993, 0.10688875323880942, 0.10646110993820503, 0.10585689133928658, 0.10556167951241772, 0.10475053673578745, 0.10315308208385231, 0.0990366704419055, 0.09535617906767155, 0.09039551678066057, 0.08315041157171127, 0.07223585094467266, 0.061050909392090624, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--horizontal tail lift coefficient repartition along the span corresponding to the lift coefficient in CL_ref--></CL_vector>
           <Y_vector units="m" is_input="False">[0.04653, 0.13979, 0.23306, 0.32632, 0.41958, 0.51284, 0.6061, 0.69936, 0.79262, 0.88588, 0.97915, 1.07241, 1.16567, 1.25893, 1.35219, 1.44545, 1.53871, 1.63197, 1.72523, 1.81849, 1.91175, 2.00501, 2.09827, 2.19153, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--point along the span at which the lift repartition on the horizontal tail is sampled--></Y_vector>
+          <downwash_gradient>0.3673</downwash_gradient>
           <induced_drag_coefficient is_input="False">0.2910752855995616<!--coefficient to multiply by the lift coefficient squared to get induced drag in low speed conditions--></induced_drag_coefficient>
           <clean>
             <alpha_aircraft_max units="deg" is_input="False">24.749932634598757<!--positive aircraft angle of attack that gives a stalled horizontal tail--></alpha_aircraft_max>
@@ -369,14 +369,14 @@
           <CL_alpha units="1/rad" is_input="False">6.343836307743419<!--vertical tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
-          <cy_beta units="rad**-1">-0.4587</cy_beta>
           <CD0 is_input="False">0.0010552714390784557<!--profile drag coefficient for vertical tail in cruise conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">2.5371440765266913<!--derivative of the vertical tail side force coefficient with respect to the local sideslip angle in cruise conditions--></CL_alpha>
+          <Cy_beta units="rad**-1">-0.4587</Cy_beta>
         </cruise>
         <low_speed>
-          <cy_beta units="rad**-1">-0.4218</cy_beta>
           <CD0 is_input="False">0.0010918139880877256<!--profile drag coefficient for vertical tail in low speed conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">2.3329026582795946<!--derivative of the vertical tail side force coefficient with respect to the local sideslip angle in low speed conditions--></CL_alpha>
+          <Cy_beta units="rad**-1">-0.4218</Cy_beta>
         </low_speed>
         <MAC>
           <low_speed>
@@ -697,8 +697,8 @@
         <MZFW units="kg" is_input="False">2765.0739468171187<!--maximum zero fuel weight--></MZFW>
         <OWE units="kg" is_input="False">2115.0739468171187<!--Mass of aircraft--></OWE>
         <ZFW units="kg" is_input="False">2595.0739468171187<!--aircraft mass with payload, without fuel--></ZFW>
-        <max_payload is_input="True" units="kg">650.0<!--max payload weight--></max_payload>
-        <payload is_input="True" units="kg">480.0<!--design payload weight--></payload>
+        <max_payload units="kg" is_input="True">650.0<!--max payload weight--></max_payload>
+        <payload units="kg" is_input="True">480.0<!--design payload weight--></payload>
         <CG>
           <aft>
             <MAC_position is_input="False">0.48289041641614955<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>

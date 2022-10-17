@@ -248,11 +248,11 @@
           <CL_alpha units="1/rad" is_input="False">6.33308507280742<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
-          <downwash_gradient>0.3685</downwash_gradient>
           <CD0 is_input="False">0.0011919885924106283<!--profile drag coefficient for horizontal tail in cruise conditions--></CD0>
           <CL0 is_input="False">-0.008015227894083302<!--lift coefficient of the horizontal tail when aircraft AOA is null in cruise conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.5745838762481046<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha>
           <CL_alpha_isolated units="1/rad" is_input="False">0.8423030470933187<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in cruise conditions--></CL_alpha_isolated>
+          <downwash_gradient>0.3685</downwash_gradient>
           <induced_drag_coefficient is_input="False">0.2035409127653052<!--coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions--></induced_drag_coefficient>
           <hinge_moment>
             <CH_alpha units="1/rad" is_input="False">-0.2625074895500069<!--derivative of 3D hinge moment coefficient with respect to the local angle of attack in cruise conditions--></CH_alpha>
@@ -262,7 +262,6 @@
           </hinge_moment>
         </cruise>
         <low_speed>
-          <downwash_gradient>0.3620</downwash_gradient>
           <CD0 is_input="False">0.001298192410783406<!--profile drag coefficient for horizontal tail in low speed conditions--></CD0>
           <CL0 is_input="False">-0.007762346904283691<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.5700481850859664<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions--></CL_alpha>
@@ -272,6 +271,7 @@
           <CL_ref is_input="False">0.0917298303433978<!--reference horizontal tail lift coefficient corresponding to the lift repartition in CL_vector--></CL_ref>
           <CL_vector is_input="False">[0.1046927297770387, 0.10653986048514018, 0.10565147857314852, 0.10659263564822881, 0.1058559823301169, 0.10568006511982152, 0.1052578638151126, 0.10455639393905977, 0.10374277684144362, 0.10273125288224519, 0.10171972892304675, 0.1003981508807027, 0.09817499713559483, 0.09630807574133508, 0.09389800996028837, 0.09140438350435133, 0.0886029019303974, 0.0853594283655763, 0.08079877468866854, 0.07611937689481141, 0.07063515786385291, 0.06344014396277181, 0.054136322503274846, 0.049188650963717245, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--horizontal tail lift coefficient repartition along the span corresponding to the lift coefficient in CL_ref--></CL_vector>
           <Y_vector units="m" is_input="False">[0.04082, 0.12247, 0.20412, 0.28577, 0.36742, 0.44907, 0.53072, 0.61237, 0.69402, 0.77567, 0.85732, 0.93897, 1.02062, 1.10227, 1.18392, 1.26557, 1.34722, 1.42887, 1.51052, 1.59217, 1.67382, 1.75547, 1.83712, 1.91877, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]<!--point along the span at which the lift repartition on the horizontal tail is sampled--></Y_vector>
+          <downwash_gradient>0.362</downwash_gradient>
           <induced_drag_coefficient is_input="False">0.20258217673883253<!--coefficient to multiply by the lift coefficient squared to get induced drag in cruise conditions--></induced_drag_coefficient>
           <clean>
             <alpha_aircraft_max units="deg" is_input="False">30.414553345646347<!--positive aircraft angle of attack that gives a stalled horizontal tail--></alpha_aircraft_max>
@@ -312,14 +312,14 @@
           <CL_alpha units="1/rad" is_input="False">6.33308507280742<!--horizontal tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
         <cruise>
-          <cy_beta units="rad**-1">-0.3044</cy_beta>
           <CD0 is_input="False">0.0006606326141196488<!--profile drag coefficient for vertical tail in cruise conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">2.732169363232171<!--derivative of lift coefficient of horizontal tail with respect to local "angle of attack" in cruise conditions--></CL_alpha>
+          <Cy_beta units="rad**-1">-0.3044</Cy_beta>
         </cruise>
         <low_speed>
-          <cy_beta units="rad**-1">-0.2987</cy_beta>
           <CD0 is_input="False">0.0007476917052952407<!--profile drag coefficient for vertical tail in low speed conditions--></CD0>
           <CL_alpha units="1/rad" is_input="False">2.6812119729545687<!--derivative of the vertical tail side force coefficient with respect to the local sideslip angle in low speed conditions--></CL_alpha>
+          <Cy_beta units="rad**-1">-0.2987</Cy_beta>
         </low_speed>
         <MAC>
           <low_speed>

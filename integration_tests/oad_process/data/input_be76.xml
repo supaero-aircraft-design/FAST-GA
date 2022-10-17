@@ -77,9 +77,9 @@
         </rudder>
       </vertical_tail>
       <wing>
-        <dihedral units="deg">6.0</dihedral>
         <area units="m**2">16.638<!--wing reference area--></area>
         <aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+        <dihedral units="deg">6.0</dihedral>
         <sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>

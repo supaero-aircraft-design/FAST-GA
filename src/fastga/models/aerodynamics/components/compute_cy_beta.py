@@ -77,69 +77,69 @@ class _SumCYBetaContributions(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:aerodynamics:fuselage:cy_beta", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cy_beta", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:fuselage:Cy_beta", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:wing:Cy_beta", val=np.nan, units="rad**-1")
 
         if self.options["low_speed_aero"]:
 
             self.add_input(
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
 
-            self.add_output("data:aerodynamics:aircraft:low_speed:cy_beta", units="rad**-1")
+            self.add_output("data:aerodynamics:aircraft:low_speed:Cy_beta", units="rad**-1")
 
         else:
 
             self.add_input(
-                "data:aerodynamics:vertical_tail:cruise:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
 
-            self.add_output("data:aerodynamics:aircraft:cruise:cy_beta", units="rad**-1")
+            self.add_output("data:aerodynamics:aircraft:cruise:Cy_beta", units="rad**-1")
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        cy_beta_fus = inputs["data:aerodynamics:fuselage:cy_beta"]
-        cy_beta_wing = inputs["data:aerodynamics:wing:cy_beta"]
+        cy_beta_fus = inputs["data:aerodynamics:fuselage:Cy_beta"]
+        cy_beta_wing = inputs["data:aerodynamics:wing:Cy_beta"]
 
         if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:aircraft:low_speed:cy_beta"] = (
+            outputs["data:aerodynamics:aircraft:low_speed:Cy_beta"] = (
                 cy_beta_wing
                 + cy_beta_fus
-                + inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+                + inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
             )
         else:
-            outputs["data:aerodynamics:aircraft:cruise:cy_beta"] = (
+            outputs["data:aerodynamics:aircraft:cruise:Cy_beta"] = (
                 cy_beta_wing
                 + cy_beta_fus
-                + inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+                + inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         if self.options["low_speed_aero"]:
             partials[
-                "data:aerodynamics:aircraft:low_speed:cy_beta",
-                "data:aerodynamics:wing:cy_beta",
+                "data:aerodynamics:aircraft:low_speed:Cy_beta",
+                "data:aerodynamics:wing:Cy_beta",
             ] = 1.0
             partials[
-                "data:aerodynamics:aircraft:low_speed:cy_beta",
-                "data:aerodynamics:fuselage:cy_beta",
+                "data:aerodynamics:aircraft:low_speed:Cy_beta",
+                "data:aerodynamics:fuselage:Cy_beta",
             ] = 1.0
             partials[
-                "data:aerodynamics:aircraft:low_speed:cy_beta",
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta",
+                "data:aerodynamics:aircraft:low_speed:Cy_beta",
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
             ] = 1.0
         else:
             partials[
-                "data:aerodynamics:aircraft:cruise:cy_beta", "data:aerodynamics:wing:cy_beta"
+                "data:aerodynamics:aircraft:cruise:Cy_beta", "data:aerodynamics:wing:Cy_beta"
             ] = 1.0
             partials[
-                "data:aerodynamics:aircraft:cruise:cy_beta",
-                "data:aerodynamics:fuselage:cy_beta",
+                "data:aerodynamics:aircraft:cruise:Cy_beta",
+                "data:aerodynamics:fuselage:Cy_beta",
             ] = 1.0
             partials[
-                "data:aerodynamics:aircraft:cruise:cy_beta",
-                "data:aerodynamics:vertical_tail:cruise:cy_beta",
+                "data:aerodynamics:aircraft:cruise:Cy_beta",
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
             ] = 1.0

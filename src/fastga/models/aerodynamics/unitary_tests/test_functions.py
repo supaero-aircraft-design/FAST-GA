@@ -1400,7 +1400,7 @@ def cy_beta_fus(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaFuselage(), ivc)
-    assert problem.get_val("data:aerodynamics:fuselage:cy_beta", units="rad**-1") == pytest.approx(
+    assert problem.get_val("data:aerodynamics:fuselage:Cy_beta", units="rad**-1") == pytest.approx(
         cy_beta_fus_, rel=1e-3
     )
 
@@ -1584,7 +1584,7 @@ def side_force_sideslip_derivative_wing(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaWing(), ivc)
-    assert problem.get_val("data:aerodynamics:wing:cy_beta", units="rad**-1") == pytest.approx(
+    assert problem.get_val("data:aerodynamics:wing:Cy_beta", units="rad**-1") == pytest.approx(
         cy_beta_wing_, rel=1e-3
     )
 
@@ -1605,7 +1605,7 @@ def side_force_sideslip_derivative_vt(
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaVerticalTail(low_speed_aero=True), ivc)
     assert problem.get_val(
-        "data:aerodynamics:vertical_tail:low_speed:cy_beta", units="rad**-1"
+        "data:aerodynamics:vertical_tail:low_speed:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_vt_low_speed_, rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -1618,7 +1618,7 @@ def side_force_sideslip_derivative_vt(
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCyBetaVerticalTail(low_speed_aero=False), ivc)
     assert problem.get_val(
-        "data:aerodynamics:vertical_tail:cruise:cy_beta", units="rad**-1"
+        "data:aerodynamics:vertical_tail:cruise:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_vt_cruise_, rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -1638,7 +1638,7 @@ def side_force_sideslip_aircraft(
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCYBetaAircraft(low_speed_aero=True), ivc)
     assert problem.get_val(
-        "data:aerodynamics:aircraft:low_speed:cy_beta", units="rad**-1"
+        "data:aerodynamics:aircraft:low_speed:Cy_beta", units="rad**-1"
     ) == pytest.approx(cy_beta_low_speed_, rel=1e-3)
 
     problem.check_partials(compact_print=True)

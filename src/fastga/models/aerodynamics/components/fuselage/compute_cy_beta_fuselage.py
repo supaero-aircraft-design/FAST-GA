@@ -35,7 +35,7 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:fuselage:cy_beta", units="rad**-1")
+        self.add_output("data:aerodynamics:fuselage:Cy_beta", units="rad**-1")
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
@@ -60,7 +60,7 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
 
         cy_beta_fus = -2.0 * k_i * s_0_fus / wing_area
 
-        outputs["data:aerodynamics:fuselage:cy_beta"] = cy_beta_fus
+        outputs["data:aerodynamics:fuselage:Cy_beta"] = cy_beta_fus
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
@@ -73,15 +73,15 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
         if z2_wing >= 0:
 
             partials[
-                "data:aerodynamics:fuselage:cy_beta", "data:geometry:fuselage:maximum_width"
+                "data:aerodynamics:fuselage:Cy_beta", "data:geometry:fuselage:maximum_width"
             ] = (-np.pi / (2.0 * wing_area) * (h_f + 0.49 * z2_wing / np.sqrt(b_f / h_f)))
             partials[
-                "data:aerodynamics:fuselage:cy_beta", "data:geometry:fuselage:maximum_height"
+                "data:aerodynamics:fuselage:Cy_beta", "data:geometry:fuselage:maximum_height"
             ] = (-np.pi / (2.0 * wing_area) * (b_f + 0.49 * z2_wing / np.sqrt(h_f / b_f)))
-            partials["data:aerodynamics:fuselage:cy_beta", "data:geometry:wing:root:z"] = (
+            partials["data:aerodynamics:fuselage:Cy_beta", "data:geometry:wing:root:z"] = (
                 -0.49 * np.pi * np.sqrt(h_f * b_f) / wing_area
             )
-            partials["data:aerodynamics:fuselage:cy_beta", "data:geometry:wing:area"] = (
+            partials["data:aerodynamics:fuselage:Cy_beta", "data:geometry:wing:area"] = (
                 np.pi
                 / (2.0 * wing_area ** 2.0)
                 * (h_f * b_f + 2.0 * 0.49 * z2_wing * np.sqrt(h_f * b_f))
@@ -90,15 +90,15 @@ class ComputeCyBetaFuselage(om.ExplicitComponent):
         else:
 
             partials[
-                "data:aerodynamics:fuselage:cy_beta", "data:geometry:fuselage:maximum_width"
+                "data:aerodynamics:fuselage:Cy_beta", "data:geometry:fuselage:maximum_width"
             ] = (-np.pi / (2.0 * wing_area) * (h_f - 0.85 * z2_wing / np.sqrt(b_f / h_f)))
             partials[
-                "data:aerodynamics:fuselage:cy_beta", "data:geometry:fuselage:maximum_height"
+                "data:aerodynamics:fuselage:Cy_beta", "data:geometry:fuselage:maximum_height"
             ] = (-np.pi / (2.0 * wing_area) * (b_f + -0.85 * z2_wing / np.sqrt(h_f / b_f)))
-            partials["data:aerodynamics:fuselage:cy_beta", "data:geometry:wing:root:z"] = (
+            partials["data:aerodynamics:fuselage:Cy_beta", "data:geometry:wing:root:z"] = (
                 +0.85 * np.pi * np.sqrt(h_f * b_f) / wing_area
             )
-            partials["data:aerodynamics:fuselage:cy_beta", "data:geometry:wing:area"] = (
+            partials["data:aerodynamics:fuselage:Cy_beta", "data:geometry:wing:area"] = (
                 np.pi
                 / (2.0 * wing_area ** 2.0)
                 * (h_f * b_f - 2.0 * 0.85 * z2_wing * np.sqrt(h_f * b_f))

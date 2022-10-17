@@ -488,6 +488,34 @@
     <mission>
       <sizing>
         <fuel units="kg" is_input="False">252.19391779967108<!--consumed fuel mass during whole mission--></fuel>
+        <cs23>
+          <safety_factor is_input="True">1.5</safety_factor>
+          <characteristic_speed>
+            <vc units="m/s" is_input="True">83.95891627547779<!--limit speed--></vc>
+            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+            <ultimate_mtow>
+              <negative is_input="True">-3.208113917044951</negative>
+              <positive is_input="True">6.20811391704495</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative is_input="True">-3.431253132553543</negative>
+              <positive is_input="True">6.431253132553544</positive>
+            </ultimate_mzfw>
+          </sizing_factor>
+          <flight_domain>
+            <mtow>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.1387426113633, -2.1387426113633006, 3.8, 0.0, 3.31588134646662, -1.31588134646662, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[35.19288484506213, 39.240797280574604, 68.60356219707293, 48.3793040488082, 0.0, 0.0, 83.95891627547779, 83.95891627547779, 83.95891627547779, 117.2874841235803, 117.2874841235803, 117.2874841235803, 117.2874841235803, 105.55873571122227, 83.95891627547779, 0.0, 31.262000542790425, 44.211145154529284, 56.271600977022764]</velocity>
+            </mtow>
+            <mzfw>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.287502088369029, -2.287502088369029, 3.8, 0.0, 3.4082653703551147, -1.4082653703551147, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[33.087876724367646, 36.89366952160302, 64.50014594776054, 45.48557060397588, 0.0, 0.0, 78.93704320816128, 78.93704320816128, 78.93704320816128, 110.27211418096526, 110.27211418096526, 110.27211418096526, 110.27211418096526, 99.24490276286873, 78.93704320816128, 0.0, 29.392112203103423, 41.56672370442061, 52.905801965586164]</velocity>
+            </mzfw>
+          </flight_domain>
+        </cs23>
         <holding>
           <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
         </holding>
@@ -525,34 +553,6 @@
           <speed units="knot" is_input="True">20.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
-        <cs23>
-          <safety_factor is_input="True">1.5</safety_factor>
-          <characteristic_speed>
-            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
-            <vc units="m/s" is_input="True">83.95891627547779<!--limit speed--></vc>
-          </characteristic_speed>
-          <sizing_factor>
-            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
-            <ultimate_mtow>
-              <negative is_input="True">-3.208113917044951</negative>
-              <positive is_input="True">6.20811391704495</positive>
-            </ultimate_mtow>
-            <ultimate_mzfw>
-              <negative is_input="True">-3.431253132553543</negative>
-              <positive is_input="True">6.431253132553544</positive>
-            </ultimate_mzfw>
-          </sizing_factor>
-          <flight_domain>
-            <mtow>
-              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.1387426113633, -2.1387426113633006, 3.8, 0.0, 3.31588134646662, -1.31588134646662, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
-              <velocity units="m/s">[35.19288484506213, 39.240797280574604, 68.60356219707293, 48.3793040488082, 0.0, 0.0, 83.95891627547779, 83.95891627547779, 83.95891627547779, 117.2874841235803, 117.2874841235803, 117.2874841235803, 117.2874841235803, 105.55873571122227, 83.95891627547779, 0.0, 31.262000542790425, 44.211145154529284, 56.271600977022764]</velocity>
-            </mtow>
-            <mzfw>
-              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.287502088369029, -2.287502088369029, 3.8, 0.0, 3.4082653703551147, -1.4082653703551147, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
-              <velocity units="m/s">[33.087876724367646, 36.89366952160302, 64.50014594776054, 45.48557060397588, 0.0, 0.0, 78.93704320816128, 78.93704320816128, 78.93704320816128, 110.27211418096526, 110.27211418096526, 110.27211418096526, 110.27211418096526, 99.24490276286873, 78.93704320816128, 0.0, 29.392112203103423, 41.56672370442061, 52.905801965586164]</velocity>
-            </mzfw>
-          </flight_domain>
-        </cs23>
         <main_route>
           <climb>
             <distance units="m" is_input="False">24114.427039885122<!--covered ground distance during climb phase--></distance>

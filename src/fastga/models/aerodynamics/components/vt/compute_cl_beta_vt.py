@@ -50,13 +50,13 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input(
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:vertical_tail:low_speed:Cl_beta", units="rad**-1")
         else:
             self.add_input(
-                "data:aerodynamics:vertical_tail:cruise:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
             self.add_output("data:aerodynamics:vertical_tail:cruise:Cl_beta", units="rad**-1")
 
@@ -75,12 +75,12 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
             outputs["data:aerodynamics:vertical_tail:low_speed:Cl_beta"] = (
                 cy_beta_vt * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             )
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             outputs["data:aerodynamics:vertical_tail:cruise:Cl_beta"] = (
                 cy_beta_vt * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             )
@@ -98,11 +98,11 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
 
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_beta",
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta",
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
             ] = (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_beta",
@@ -142,11 +142,11 @@ class ComputeClBetaVerticalTail(om.ExplicitComponent):
             )
 
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
 
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_beta",
-                "data:aerodynamics:vertical_tail:cruise:cy_beta",
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
             ] = (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_beta",

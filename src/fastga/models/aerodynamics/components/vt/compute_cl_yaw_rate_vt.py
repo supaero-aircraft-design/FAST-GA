@@ -50,13 +50,13 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input(
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:vertical_tail:low_speed:Cl_r", units="rad**-1")
         else:
             self.add_input(
-                "data:aerodynamics:vertical_tail:cruise:cy_beta", val=np.nan, units="rad**-1"
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
             self.add_output("data:aerodynamics:vertical_tail:cruise:Cl_r", units="rad**-1")
 
@@ -75,7 +75,7 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
             outputs["data:aerodynamics:vertical_tail:low_speed:Cl_r"] = (
                 -2.0
                 * cy_beta_vt
@@ -84,7 +84,7 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
                 / wing_span ** 2.0
             )
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             outputs["data:aerodynamics:vertical_tail:cruise:Cl_r"] = (
                 -2.0
                 * cy_beta_vt
@@ -106,11 +106,11 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         if self.options["low_speed_aero"]:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
 
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:aerodynamics:vertical_tail:low_speed:cy_beta",
+                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
             ] = (
                 -2.0
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
@@ -194,11 +194,11 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
             )
 
         else:
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:cy_beta"]
+            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
 
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:aerodynamics:vertical_tail:cruise:cy_beta",
+                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
             ] = (
                 -2.0
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
