@@ -41,3 +41,4 @@ from .compute_cl_roll_rate import ComputeClRollRateAircraft
 from .compute_cl_yaw_rate import ComputeClYawRateAircraft
 from .compute_cl_aileron import ComputeClDeltaAileron
 from .compute_cl_rudder import ComputeClDeltaRudder
+from .compute_cm_pitch_rate import ComputeCMPitchVelocityAircraft

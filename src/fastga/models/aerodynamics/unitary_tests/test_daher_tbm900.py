@@ -76,6 +76,9 @@ from .test_functions import (
     roll_moment_yaw_rate_aircraft,
     roll_authority_aileron,
     roll_moment_rudder,
+    pitch_moment_pitch_rate_wing,
+    pitch_moment_pitch_rate_ht,
+    pitch_moment_pitch_rate_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -2104,3 +2107,20 @@ def test_cl_delta_a_aircraft():
 def test_cl_delta_r_aircraft():
     """Test roll authority of the rudder."""
     roll_moment_rudder(XML_FILE, cl_delta_r_low_speed_=0.04065428, cl_delta_r_cruise_=0.04421348)
+
+
+def test_cm_q_wing():
+    """Test cm q of the wing."""
+    pitch_moment_pitch_rate_wing(
+        XML_FILE, cm_q_wing_low_speed_=-1.8946773, cm_q_wing_cruise_=-2.5323024
+    )
+
+
+def test_cm_q_ht():
+    """Test cm q of the ht."""
+    pitch_moment_pitch_rate_ht(XML_FILE, cm_q_ht_low_speed_=-16.40341967, cm_q_ht_cruise_=-16.968)
+
+
+def test_cm_q_aircraft():
+    """Test cm q of the aircraft."""
+    pitch_moment_pitch_rate_aircraft(XML_FILE, cm_q_low_speed_=-18.29809697, cm_q_cruise_=-19.5011)

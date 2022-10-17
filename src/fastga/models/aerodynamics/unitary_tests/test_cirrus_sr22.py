@@ -75,6 +75,9 @@ from .test_functions import (
     roll_moment_yaw_rate_aircraft,
     roll_authority_aileron,
     roll_moment_rudder,
+    pitch_moment_pitch_rate_wing,
+    pitch_moment_pitch_rate_ht,
+    pitch_moment_pitch_rate_aircraft,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -1263,3 +1266,20 @@ def test_cl_delta_a_aircraft():
 def test_cl_delta_r_aircraft():
     """Test roll authority of the rudder."""
     roll_moment_rudder(XML_FILE, cl_delta_r_low_speed_=0.02815446, cl_delta_r_cruise_=0.02874612)
+
+
+def test_cm_q_wing():
+    """Test cm q of the wing."""
+    pitch_moment_pitch_rate_wing(
+        XML_FILE, cm_q_wing_low_speed_=-1.31910395, cm_q_wing_cruise_=-1.38898117
+    )
+
+
+def test_cm_q_ht():
+    """Test cm q of the ht."""
+    pitch_moment_pitch_rate_ht(XML_FILE, cm_q_ht_low_speed_=-10.85, cm_q_ht_cruise_=-10.939)
+
+
+def test_cm_q_aircraft():
+    """Test cm q of the aircraft."""
+    pitch_moment_pitch_rate_aircraft(XML_FILE, cm_q_low_speed_=-12.1733, cm_q_cruise_=-12.32824)
