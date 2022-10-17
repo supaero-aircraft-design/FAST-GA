@@ -41,7 +41,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:fuselage:cruise:CnBeta")
+        self.add_output("data:aerodynamics:fuselage:Cn_beta")
 
         self.declare_partials("*", "*", method="exact")
 
@@ -58,7 +58,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         # equation from raymer book eqn. 16.47
         cn_beta = -1.3 * volume_fus / wing_area / span * (l_f / width_max)
 
-        outputs["data:aerodynamics:fuselage:cruise:CnBeta"] = cn_beta
+        outputs["data:aerodynamics:fuselage:Cn_beta"] = cn_beta
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
@@ -71,17 +71,17 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         l_f = math.sqrt(width_max * height_max)
 
         partials[
-            "data:aerodynamics:fuselage:cruise:CnBeta", "data:geometry:fuselage:maximum_width"
+            "data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_width"
         ] = (1.0 / 2.0 * 1.3 * volume_fus / wing_area / span * (l_f / width_max ** 2))
         partials[
-            "data:aerodynamics:fuselage:cruise:CnBeta", "data:geometry:fuselage:maximum_height"
+            "data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_height"
         ] = (-1.0 / 2.0 * 1.3 * volume_fus / wing_area / span / l_f)
-        partials["data:aerodynamics:fuselage:cruise:CnBeta", "data:geometry:wing:area"] = (
+        partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:wing:area"] = (
             1.3 * volume_fus / wing_area ** 2.0 / span * (l_f / width_max)
         )
-        partials["data:aerodynamics:fuselage:cruise:CnBeta", "data:geometry:wing:span"] = (
+        partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:wing:span"] = (
             1.3 * volume_fus / wing_area / span ** 2.0 * (l_f / width_max)
         )
-        partials["data:aerodynamics:fuselage:cruise:CnBeta", "data:geometry:fuselage:volume"] = (
+        partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:volume"] = (
             -1.3 / wing_area / span * (l_f / width_max)
         )

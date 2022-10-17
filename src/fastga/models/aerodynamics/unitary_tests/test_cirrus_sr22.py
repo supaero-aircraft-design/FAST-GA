@@ -1304,4 +1304,4 @@ def test_cn_beta_vt():
 
 def test_cn_beta_aircraft():
     """Tests cn beta of the aircraft."""
-    yaw_moment_sideslip_aircraft(XML_FILE, cn_beta_low_speed_=0.12348297)
+    yaw_moment_sideslip_aircraft(XML_FILE, cn_beta_low_speed_=0.05499728)

@@ -30,7 +30,6 @@ from .constants import (
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_HINGE_MOMENTS_TAIL,
     SUBMODEL_MAX_L_D,
-    SUBMODEL_CN_BETA_FUSELAGE,
     SUBMODEL_CM_ALPHA_FUSELAGE,
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
@@ -47,6 +46,7 @@ from .constants import (
     SUBMODEL_CL_RUDDER,
     SUBMODEL_CM_Q,
     SUBMODEL_CM_ALPHA_DOT,
+    SUBMODEL_CN_BETA,
 )
 
 
@@ -176,11 +176,6 @@ class AerodynamicsHighSpeed(Group):
             "L_D_max", oad.RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
         )
         self.add_subsystem(
-            "cnBeta_fuse",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE),
-            promotes=["*"],
-        )
-        self.add_subsystem(
             "cmAlpha_fuse",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
             promotes=["*"],
@@ -259,6 +254,11 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem(
             "cm_alpha_dot",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_DOT, options=option_high_speed),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cn_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA, options=option_high_speed),
             promotes=["*"],
         )
 

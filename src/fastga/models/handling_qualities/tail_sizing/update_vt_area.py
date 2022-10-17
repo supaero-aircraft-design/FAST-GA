@@ -167,7 +167,7 @@ class VTPConstraints(om.ExplicitComponent):
 
         cg_mac_position = inputs["data:weight:aircraft:CG:aft:MAC_position"]
 
-        cn_beta_fuselage = inputs["data:aerodynamics:fuselage:cruise:CnBeta"]
+        cn_beta_fuselage = inputs["data:aerodynamics:fuselage:Cn_beta"]
         cl_alpha_vt_cruise = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -485,7 +485,7 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:fuselage:cruise:CnBeta", val=np.nan)
+        self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan)
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
@@ -617,7 +617,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:fuselage:cruise:CnBeta", val=np.nan)
+        self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan)
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )

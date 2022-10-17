@@ -164,6 +164,11 @@
             </x>
           </leading_edge>
         </MAC>
+        <aileron>
+          <chord_ratio>0.25</chord_ratio>
+          <max_deflection units="deg">30.0</max_deflection>
+          <span_ratio>0.24</span_ratio>
+        </aileron>
         <kink>
           <chord units="m" is_input="False">1.4744312836772349<!--chord length at wing kink--></chord>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
@@ -193,11 +198,6 @@
             </x>
           </leading_edge>
         </tip>
-        <aileron>
-          <max_deflection units="deg">30.0</max_deflection>
-          <chord_ratio>0.25</chord_ratio>
-          <span_ratio>0.24</span_ratio>
-        </aileron>
       </wing>
       <propulsion>
         <engine>
@@ -248,10 +248,10 @@
         </neutral_point>
       </cruise>
       <fuselage>
+        <Cn_beta is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
         <cm_alpha units="rad**-1">-0.2895<!--derivative of fuselage pitching moment coefficient with respect to angle of attack--></cm_alpha>
         <cruise>
           <CD0 is_input="False">0.005790250893531268<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
-          <CnBeta is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
         </cruise>
         <low_speed>
           <CD0 is_input="False">0.006391135233304502<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
@@ -424,12 +424,12 @@
         </sea_level>
       </propeller>
       <rudder>
-        <low_speed>
-          <Cy_delta_r units="1/rad" is_input="False">1.8858689633082573<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
-        </low_speed>
         <cruise>
           <Cy_delta_r units="1/rad" is_input="False">1.9255</Cy_delta_r>
         </cruise>
+        <low_speed>
+          <Cy_delta_r units="1/rad" is_input="False">1.8858689633082573<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </low_speed>
       </rudder>
       <wing>
         <airfoil>

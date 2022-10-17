@@ -889,7 +889,7 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCnBetaFuselage(), ivc)
-    assert problem["data:aerodynamics:fuselage:cruise:CnBeta"] == pytest.approx(
+    assert problem["data:aerodynamics:fuselage:Cn_beta"] == pytest.approx(
         cn_beta_fus, rel=1e-3
     )
 
