@@ -70,12 +70,12 @@ class ComputeCnBetaFuselage(ExplicitComponent):
 
         l_f = math.sqrt(width_max * height_max)
 
-        partials[
-            "data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_width"
-        ] = (1.0 / 2.0 * 1.3 * volume_fus / wing_area / span * (l_f / width_max ** 2))
-        partials[
-            "data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_height"
-        ] = (-1.0 / 2.0 * 1.3 * volume_fus / wing_area / span / l_f)
+        partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_width"] = (
+            1.0 / 2.0 * 1.3 * volume_fus / wing_area / span * (l_f / width_max ** 2)
+        )
+        partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_height"] = (
+            -1.0 / 2.0 * 1.3 * volume_fus / wing_area / span / l_f
+        )
         partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:wing:area"] = (
             1.3 * volume_fus / wing_area ** 2.0 / span * (l_f / width_max)
         )
