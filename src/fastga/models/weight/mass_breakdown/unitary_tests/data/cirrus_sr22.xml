@@ -257,7 +257,7 @@
         </neutral_point>
       </cruise>
       <fuselage>
-        <Cn_beta is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
+        <Cn_beta units="1/rad" is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
         <cruise>
           <CD0 is_input="False">0.005790250893531268<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
         </cruise>
