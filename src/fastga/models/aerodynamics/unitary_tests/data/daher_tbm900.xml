@@ -286,6 +286,14 @@
       </turboprop>
     </propulsion>
     <aerodynamics>
+      <aileron>
+        <low_speed>
+          <Cl_delta_a units="rad**-1">0.1588271</Cl_delta_a>
+        </low_speed>
+        <cruise>
+          <Cl_delta_a units="rad**-1">0.18690698</Cl_delta_a>
+        </cruise>
+      </aileron>
       <cruise>
         <mach is_input="False">0.5383512168207174<!--mach number representative of high speed aerodynamics--></mach>
         <unit_reynolds units="1/m" is_input="False">5381384.740688567<!--unitary reynolds number representative of high speed aerodynamics--></unit_reynolds>

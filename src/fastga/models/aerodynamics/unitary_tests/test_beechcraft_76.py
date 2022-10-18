@@ -82,6 +82,8 @@ from .test_functions import (
     pitch_moment_aoa_rate_derivative,
     yaw_moment_sideslip_derivative_vt,
     yaw_moment_sideslip_aircraft,
+    yaw_moment_aileron,
+    yaw_moment_rudder,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -2097,3 +2099,13 @@ def test_cn_beta_vt():
 def test_cn_beta_aircraft():
     """Tests cn beta of the aircraft."""
     yaw_moment_sideslip_aircraft(XML_FILE, cn_beta_low_speed_=0.0585625)
+
+
+def test_cn_delta_a_aircraft():
+    """Test yaw moment of the aileron."""
+    yaw_moment_aileron(XML_FILE, cn_delta_a_low_speed_=-0.01853731, cn_delta_a_cruise_=-0.01935423)
+
+
+def test_cn_delta_r_aircraft():
+    """Test yaw moment of the rudder."""
+    yaw_moment_rudder(XML_FILE, cn_delta_r_low_speed_=-0.07595763, cn_delta_r_cruise_=-0.07740018)

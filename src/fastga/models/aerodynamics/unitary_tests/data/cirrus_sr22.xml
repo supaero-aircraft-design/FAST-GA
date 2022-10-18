@@ -423,6 +423,14 @@
           <thrust_limit units="N" is_input="False">[6533.840174009261, 7181.649624427429, 7704.744804457652, 8163.379307607336, 8591.84017293703, 9012.766951506735, 9435.643628430062, 9874.443915635982, 10339.44635971018, 10844.786960869542]<!--maximum thrust output of the propeller at sea level for varying velocities--></thrust_limit>
         </sea_level>
       </propeller>
+      <aileron>
+        <low_speed>
+          <Cl_delta_a units="rad**-1">0.19643261</Cl_delta_a>
+        </low_speed>
+        <cruise>
+          <Cl_delta_a units="rad**-1">0.20135957</Cl_delta_a>
+        </cruise>
+      </aileron>
       <rudder>
         <cruise>
           <Cy_delta_r units="1/rad" is_input="False">1.9255</Cy_delta_r>

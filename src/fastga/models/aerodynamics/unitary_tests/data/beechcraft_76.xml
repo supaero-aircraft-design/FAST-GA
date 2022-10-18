@@ -431,6 +431,14 @@
           <Cy_delta_r units="1/rad" is_input="False">1.888239590256808<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
         </low_speed>
       </rudder>
+      <aileron>
+        <low_speed>
+          <Cl_delta_a units="rad**-1">0.15493201</Cl_delta_a>
+        </low_speed>
+        <cruise>
+          <Cl_delta_a units="rad**-1">0.15884695</Cl_delta_a>
+        </cruise>
+      </aileron>
       <wing>
         <airfoil>
           <CL_alpha units="1/rad" is_input="False">6.446621256426454<!--wing tail airfoil lift curve slope--></CL_alpha>
