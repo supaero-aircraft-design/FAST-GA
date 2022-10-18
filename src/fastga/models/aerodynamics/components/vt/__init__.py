@@ -18,3 +18,4 @@ from .compute_cl_roll_rate_vt import ComputeClRollRateVerticalTail
 from .compute_cl_yaw_rate_vt import ComputeClYawRateVerticalTail
 from .compute_cn_beta_vt import ComputeCnBetaVerticalTail
 from .compute_cn_roll_rate_vt import ComputeCnRollRateVerticalTail
+from .compute_cn_yaw_rate_vt import ComputeCnYawRateVerticalTail

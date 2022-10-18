@@ -61,6 +61,8 @@ CL_R_LIFT_PART_B = "cl_r_lift_effect_part_b.csv"
 CL_R_TWIST_EFFECT = "cl_r_twist_effect.csv"
 CN_DELTA_A_K_A = "cn_delta_a_correlation_cst.csv"
 CN_P_TWIST = "cn_p_twist_contribution.csv"
+CN_R_LIFT_EFFECT = "cn_r_lift_effect.csv"
+CN_R_DRAG_EFFECT = "cn_r_drag_effect.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -2241,6 +2243,141 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         return float(cn_p_twist)
+
+    @staticmethod
+    def cn_r_lift_effect(static_margin, sweep_25, aspect_ratio, taper_ratio) -> float:
+        """
+        Roskam data to estimate the effect of lift for the computation of the yaw moment
+        due yaw rate (yaw damping). (figure 10.48)
+
+        :param static_margin: distance between aft cg and aircraft aerodynamic center divided by MAC
+        :param sweep_25: the sweep at 25% of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :param taper_ratio: the taper ratio of the lifting surface
+        :return lift_effect: the effect of lift fot the computation of the yaw moment due to yaw
+        rate
+        """
+
+        # Only absolute value counts for this coefficient
+        sweep_25 = abs(sweep_25)
+
+        file = pth.join(resources.__path__[0], CN_R_LIFT_EFFECT)
+        db = read_csv(file)
+
+        static_margin_data = db["STATIC_MARGIN"]
+        sweep_25_data = db["SWEEP_25"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        intermediate_coeff_data = db["INTERMEDIATE_COEFF"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(static_margin_data),
+                np.isnan(sweep_25_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(intermediate_coeff_data),
+            )
+        )
+        static_margin_data = static_margin_data[np.logical_not(errors)].tolist()
+        sweep_25_data = sweep_25_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        intermediate_coeff_data = intermediate_coeff_data[np.logical_not(errors)].tolist()
+
+        if float(static_margin) != np.clip(
+            float(static_margin), min(static_margin_data), max(static_margin_data)
+        ):
+            _LOGGER.warning("Static margin is outside of the range in Roskam's book, value clipped")
+        if float(sweep_25) != np.clip(float(sweep_25), min(sweep_25_data), max(sweep_25_data)):
+            _LOGGER.warning(
+                "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
+            )
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        mid_coeff = interpolate.griddata(
+            (static_margin_data, sweep_25_data, aspect_ratio_data),
+            intermediate_coeff_data,
+            np.array([static_margin, sweep_25, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(mid_coeff):
+            mid_coeff = interpolate.griddata(
+                (static_margin_data, sweep_25_data, aspect_ratio_data),
+                intermediate_coeff_data,
+                np.array([static_margin, sweep_25, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        lift_effect = 1.0 / 20.0 * (mid_coeff - 2.7 - 0.3 * taper_ratio)
+
+        return float(lift_effect)
+
+    @staticmethod
+    def cn_r_drag_effect(static_margin, sweep_25, aspect_ratio) -> float:
+        """
+        Roskam data to estimate the effect of drag for the computation of the yaw moment
+        due yaw rate (yaw damping). (figure 10.48)
+
+        :param static_margin: distance between aft cg and aircraft aerodynamic center divided by MAC
+        :param sweep_25: the sweep at 25% of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return drag_effect: the effect of drag for the computation of the yaw moment due to yaw
+        rate
+        """
+
+        # Only absolute value counts for this coefficient
+        sweep_25 = abs(sweep_25)
+
+        file = pth.join(resources.__path__[0], CN_R_DRAG_EFFECT)
+        db = read_csv(file)
+
+        static_margin_data = db["STATIC_MARGIN"]
+        sweep_25_data = db["SWEEP_25"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        drag_effect_data = db["DRAG_EFFECT"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(static_margin_data),
+                np.isnan(sweep_25_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(drag_effect_data),
+            )
+        )
+        static_margin_data = static_margin_data[np.logical_not(errors)].tolist()
+        sweep_25_data = sweep_25_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        drag_effect_data = drag_effect_data[np.logical_not(errors)].tolist()
+
+        if float(static_margin) != np.clip(
+            float(static_margin), min(static_margin_data), max(static_margin_data)
+        ):
+            _LOGGER.warning("Static margin is outside of the range in Roskam's book, value clipped")
+        if float(sweep_25) != np.clip(float(sweep_25), min(sweep_25_data), max(sweep_25_data)):
+            _LOGGER.warning(
+                "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
+            )
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        drag_effect = interpolate.griddata(
+            (static_margin_data, sweep_25_data, aspect_ratio_data),
+            drag_effect_data,
+            np.array([static_margin, sweep_25, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(drag_effect):
+            drag_effect = interpolate.griddata(
+                (static_margin_data, sweep_25_data, aspect_ratio_data),
+                drag_effect_data,
+                np.array([static_margin, sweep_25, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(drag_effect)
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):

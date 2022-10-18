@@ -87,6 +87,9 @@ from .test_functions import (
     yaw_moment_roll_rate_wing,
     yaw_moment_roll_rate_vt,
     yaw_moment_roll_rate_aircraft,
+    yaw_moment_yaw_rate_wing,
+    yaw_moment_yaw_rate_vt,
+    yaw_moment_yaw_rate_aircraft,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -2178,3 +2181,20 @@ def test_cn_p_vt():
 def test_cn_p_aircraft():
     """Tests cn p of the aircraft."""
     yaw_moment_roll_rate_aircraft(XML_FILE, cn_p_low_speed_=0.06315666, cn_p_cruise_=0.06716129)
+
+
+def test_cn_r_wing():
+    """Test cn r of the wing."""
+    yaw_moment_yaw_rate_wing(
+        XML_FILE, cn_r_wing_low_speed_=-0.00724264, cn_r_wing_cruise_=-0.00883515
+    )
+
+
+def test_cn_r_vt():
+    """Test cn r of the vt."""
+    yaw_moment_yaw_rate_vt(XML_FILE, cn_r_vt_low_speed_=-0.13514142, cn_r_vt_cruise_=-0.14696389)
+
+
+def test_cn_r_aircraft():
+    """Tests cn r of the aircraft."""
+    yaw_moment_yaw_rate_aircraft(XML_FILE, cn_r_low_speed_=-0.14238406, cn_r_cruise_=-0.15579904)
