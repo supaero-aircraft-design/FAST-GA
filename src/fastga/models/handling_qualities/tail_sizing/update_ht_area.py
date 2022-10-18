@@ -205,12 +205,12 @@ class HTPConstraints(om.ExplicitComponent):
             * (cm_takeoff / cl_max_takeoff - fact_wheel +\
                cl0_takeoff / cl_max_takeoff * (x_lg - x_wing_aero_center) / wing_mac)
         )
-        # coeff_vol_1 = (
-        #         cl_max_takeoff
-        #         / (n_h * n_q * cl_htp_takeoff)
-        #         * (cm_takeoff / cl_max_takeoff - fact_wheel) + \
-        #            cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
-        # )
+        coeff_vol_1 = (
+                cl_max_takeoff
+                / (n_h * n_q * cl_htp_takeoff)
+                * (cm_takeoff / cl_max_takeoff - fact_wheel) + \
+                   cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
+        )
         # Calculation of equivalent area
         area = coeff_vol * wing_area * wing_mac / lp_ht
 
@@ -383,12 +383,12 @@ class HTPConstraints(om.ExplicitComponent):
                 * (cm_landing / cl_max_landing - fact_wheel +\
                     cl0_landing / cl_max_landing * (x_lg - x_wing_aero_center) / wing_mac)
         )
-        # coeff_vol_1 = (
-        #         cl_max_landing
-        #         / (n_h * n_q * cl_htp_landing)
-        #         * (cm_landing / cl_max_landing - fact_wheel )+ \
-        #            cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
-        # )
+        coeff_vol_1 = (
+                cl_max_landing
+                / (n_h * n_q * cl_htp_landing)
+                * (cm_landing / cl_max_landing - fact_wheel )+ \
+                   cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
+        )
         # Calculation of equivalent area
         area = coeff_vol * wing_area * wing_mac / lp_ht
 
@@ -567,6 +567,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
+        self.add_input("data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)
@@ -621,13 +622,15 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
             alpha = (cl_landing - cl0_landing) / cl_alpha_wing * 180 / math.pi
         else:
             # Define aircraft overall angle (aoa)
-            alpha = 0.61
+            alpha = 0.0
         # Interpolate cl/cm and define with ht reference surface
         cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp ) * wing_area / ht_area + cl_elev
         # Define Cl_alpha with htp reference surface
         cl_alpha_htp_isolated = cl_alpha_htp_isolated * wing_area / ht_area
 
-        outputs["cl_htp"] = cl_htp
+        # outputs["cl_htp"] = cl_htp
+        # outputs["cl_htp"] = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"] * wing_area / ht_area
+        outputs["cl_htp"] = -0.8
         outputs["cl_alpha_htp_isolated"] = cl_alpha_htp_isolated
 
     @staticmethod
