@@ -22,7 +22,7 @@ from fastoad.openmdao.validity_checker import ValidityDomainChecker
 from .basicHE_engine import BasicHEEngine
 
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
-from fastga.models.aerodynamics.components.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
 
 
 @RegisterPropulsion("fastga.wrapper.propulsion.basicHE_engine")

@@ -160,7 +160,7 @@
           <length units="m" is_input="False">1.5180636323537857<!--length of mean aerodynamic chord of wing--></length>
           <y units="m" is_input="False">2.791730279430102<!--Y-position of mean aerodynamic chord of wing--></y>
           <at25percent>
-            <x units="m" is_input="False">4.741464601276201<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
+            <x units="m" is_input="False">4.21464601276201<!--X-position of the 25% of mean aerodynamic chord of wing w.r.t. aircraft nose (drives position of wing along fuselage)--></x>
           </at25percent>
           <leading_edge>
             <x>
@@ -319,7 +319,7 @@
         </cruise>
         <low_speed>
           <CD0 is_input="False">0.0019744264079473058<!--profile drag coefficient for horizontal tail in low speed conditions--></CD0>
-          <CL0 is_input="False">-0.019630206992259796<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
+          <CL0 is_input="False">-0.097<!--lift coefficient of the horizontal tail when aircraft AOA is null in low speed conditions--></CL0>
           <CL_alpha units="1/rad" is_input="False">0.7051088258400426<!--derivative of lift coefficient of horizontal tail with respect to aircraft angle of attack in low speed conditions--></CL_alpha>
           <CL_alpha_isolated units="1/rad" is_input="False">1.2176465113060604<!--derivative of lift coefficient of horizontal tail with respect to local angle of attack in low speed conditions--></CL_alpha_isolated>
           <CL_max_clean is_input="False">0.3045843182152258<!--maximum horizontal tail lift coefficient in low speed altitude--></CL_max_clean>
@@ -697,8 +697,8 @@
         <payload is_input="True" units="kg">480.0<!--design payload weight--></payload>
         <CG>
           <aft>
-            <MAC_position is_input="False">0.48289041641614955<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
-            <x units="m" is_input="False">5.078931826830206<!--most aft X-position of aircraft center of gravity--></x>
+            <MAC_position is_input="False">0.35289041641614955<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
+            <x units="m" is_input="False">4.358931826830206<!--most aft X-position of aircraft center of gravity--></x>
           </aft>
           <fwd>
             <MAC_position is_input="False">0.2528904164161495<!--most fwd X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
@@ -860,7 +860,7 @@
           <main>
             <mass units="lbm" is_input="False">251.75703912620378<!--Mass of the airframe_inp_data:weight:airframe:landing_gear:main:mass--></mass>
             <CG>
-              <x units="m" is_input="False">5.972278719529871<!--X-position of center of gravity of the main landing gear--></x>
+              <x units="m" is_input="False">4.622278719529871<!--X-position of center of gravity of the main landing gear--></x>
             </CG>
           </main>
         </landing_gear>

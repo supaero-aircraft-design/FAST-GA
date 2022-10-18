@@ -41,7 +41,9 @@ class ComputeLandingGearCG(ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:aft:MAC_position", val=np.nan)
-        self.add_input("settings:weight:airframe:landing_gear:front:weight_ratio", val=0.3)
+        self.add_input("settings:weight:airframe:landing_gear:front:weight_ratio", val=0.3, desc="Should not be lower than 0.08. Roskam")
+        self.add_input("settings:weight:airframe:landing_gear:front:front_fuselage_ratio", val=0.75 ,
+                       desc="Position of front landing gear expressed as fuselage front length ratio")
 
         self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
         self.add_output("data:weight:airframe:landing_gear:main:CG:x", units="m")
@@ -64,9 +66,10 @@ class ComputeLandingGearCG(ExplicitComponent):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
         front_lg_weight_ratio = inputs["settings:weight:airframe:landing_gear:front:weight_ratio"]
+        front_lg_fuselage = inputs["settings:weight:airframe:landing_gear:front:front_fuselage_ratio"]
 
         # NLG gravity center
-        x_cg_a52 = lav * 0.75
+        x_cg_a52 = lav * front_lg_fuselage
         # Aft most CG position
         x_cg_aft = fa_length + (cg_ratio - 0.25) * l0_wing
         x_cg_a51 = (x_cg_aft - front_lg_weight_ratio * x_cg_a52) / (1.0 - front_lg_weight_ratio)
@@ -80,19 +83,20 @@ class ComputeLandingGearCG(ExplicitComponent):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         cg_ratio = inputs["data:weight:aircraft:CG:aft:MAC_position"]
+        front_lg_fuselage = inputs["settings:weight:airframe:landing_gear:front:front_fuselage_ratio"]
         # NLG gravity center
-        x_cg_a52 = lav * 0.75
+        x_cg_a52 = lav * front_lg_fuselage
         # Aft most CG position
         x_cg_aft = fa_length + (cg_ratio - 0.25) * l0_wing
         front_lg_weight_ratio = inputs["settings:weight:airframe:landing_gear:front:weight_ratio"]
 
         partials[
             "data:weight:airframe:landing_gear:front:CG:x", "data:geometry:fuselage:front_length"
-        ] = 0.75
+        ] = front_lg_fuselage
 
         partials[
             "data:weight:airframe:landing_gear:main:CG:x", "data:geometry:fuselage:front_length"
-        ] = (-0.75 * front_lg_weight_ratio / (1.0 - front_lg_weight_ratio))
+        ] = (-front_lg_fuselage * front_lg_weight_ratio / (1.0 - front_lg_weight_ratio))
         partials["data:weight:airframe:landing_gear:main:CG:x", "data:geometry:wing:MAC:length"] = (
             cg_ratio - 0.25
         ) / (1.0 - front_lg_weight_ratio)

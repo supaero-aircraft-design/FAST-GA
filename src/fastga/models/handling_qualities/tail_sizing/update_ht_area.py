@@ -202,15 +202,21 @@ class HTPConstraints(om.ExplicitComponent):
         coeff_vol = (
             cl_max_takeoff
             / (n_h * n_q * cl_htp_takeoff)
-            * (cm_takeoff / cl_max_takeoff - fact_wheel)
-            + cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
+            * (cm_takeoff / cl_max_takeoff - fact_wheel +\
+               cl0_takeoff / cl_max_takeoff * (x_lg - x_wing_aero_center) / wing_mac)
         )
+        # coeff_vol_1 = (
+        #         cl_max_takeoff
+        #         / (n_h * n_q * cl_htp_takeoff)
+        #         * (cm_takeoff / cl_max_takeoff - fact_wheel) + \
+        #            cl0_takeoff / cl_htp_takeoff * (x_lg - x_wing_aero_center) / wing_mac
+        # )
         # Calculation of equivalent area
         area = coeff_vol * wing_area * wing_mac / lp_ht
 
         return area
 
-    def landing(self, inputs):
+    def _landing(self, inputs):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -277,9 +283,112 @@ class HTPConstraints(om.ExplicitComponent):
         coeff_vol = (
             cl_max_landing
             / (n_h * n_q * cl_htp_landing)
-            * (cm_landing / cl_max_landing - fact_wheel)
-            + cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
+            * (-cm_landing / cl_max_landing + fact_wheel)
+            - cl0_landing / cl_max_landing * (x_lg - x_wing_aero_center) / wing_mac
         )
+        # Calculation of equivalent area
+        area = coeff_vol * wing_area * wing_mac / lp_ht
+
+        return area
+
+    def landing(self, inputs):
+
+        """
+        Compute HT area landing constraint based on landing flair requirement (assuming the wheels don't touch the ground)
+        """
+        # import copy
+        #
+        # inputs_land = copy.deepcopy(inputs)
+        # inputs_land = {}
+        # for name, val in inputs.items():
+        #     inputs_land[name] = val
+        #
+        # cg_range = inputs_land["settings:weight:aircraft:CG:range"]
+        # x_cg_aft = inputs_land["data:weight:aircraft:CG:aft:x"]
+        # wing_mac = inputs_land["data:geometry:wing:MAC:length"]
+        #
+        # x_cg_aft - cg_range * wing_mac
+
+        # Trick to remove pitch moment due to landing gears on the ground.
+        # inputs_land["data:weight:airframe:landing_gear:main:CG:x"] = x_cg_aft
+
+        # Rest of the equation is correct, call normal landing
+        # return self._landing(inputs_land)
+
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        wing_area = inputs["data:geometry:wing:area"]
+        x_wing_aero_center = inputs["data:geometry:wing:MAC:at25percent:x"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+
+        mlw = inputs["data:weight:aircraft:MLW"]
+        cg_range = inputs["settings:weight:aircraft:CG:range"]
+        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
+        z_cg_aircraft = inputs["data:weight:aircraft_empty:CG:z"]
+        z_cg_engine = inputs["data:weight:propulsion:engine:CG:z"]
+        x_lg = inputs["data:weight:airframe:landing_gear:main:CG:x"]
+
+        cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_max_landing = inputs["data:aerodynamics:aircraft:landing:CL_max"]
+        cl_flaps_landing = inputs["data:aerodynamics:flaps:landing:CL"]
+        tail_efficiency_factor = inputs["data:aerodynamics:horizontal_tail:efficiency"]
+        cl_htp_landing = inputs["landing:cl_htp"]
+        cm_landing = (
+                inputs["data:aerodynamics:wing:low_speed:CM0_clean"]
+                + inputs["data:aerodynamics:flaps:landing:CM"]
+        )
+        cl_alpha_htp_isolated = inputs["low_speed:cl_alpha_htp_isolated"]
+
+        z_eng = z_cg_aircraft - z_cg_engine
+
+        # Conditions for calculation
+        atm = Atmosphere(0.0)
+        rho = atm.density
+
+        # Definition of max forward gravity center position
+        x_cg = x_cg_aft - cg_range * wing_mac
+        # Definition of horizontal tail global position
+        x_ht = x_wing_aero_center + lp_ht
+
+        # Calculation of take-off minimum speed
+        weight = mlw * g
+        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
+        # Rotation speed requirement from FAR 23.73
+        v_r = vs0 * 1.3
+        # Calculation of wheel factor
+        flight_point = oad.FlightPoint(
+            mach=v_r / atm.speed_of_sound,
+            altitude=0.0,
+            engine_setting=EngineSetting.IDLE,
+            thrust_rate=0.1,
+        )  # FIXME: fixed thrust rate (should depend on wished descent rate)
+        propulsion_model.compute_flight_points(flight_point)
+        thrust = float(flight_point.thrust)
+        fact_wheel = (
+                (x_lg - x_cg - z_eng * thrust / weight) / wing_mac * (vs0 / v_r) ** 2
+        )  # FIXME: not clear if vs0 or vs1 should be used in formula
+        # Evaluate aircraft overall angle (aoa)
+        cl0_landing = cl0_clean + cl_flaps_landing
+        # Calculation of correction coefficient n_h and n_q
+        n_h = (
+                (x_ht - x_lg) / lp_ht * tail_efficiency_factor
+        )  # tail_efficiency_factor: dynamic pressure reduction at
+        # tail (typical value)
+        n_q = 1 + cl_alpha_htp_isolated / cl_htp_landing * _ANG_VEL * (x_ht - x_lg) / v_r
+        # Calculation of volume coefficient based on Torenbeek formula
+        coeff_vol = (
+                cl_max_landing
+                / (n_h * n_q * cl_htp_landing)
+                * (cm_landing / cl_max_landing - fact_wheel +\
+                    cl0_landing / cl_max_landing * (x_lg - x_wing_aero_center) / wing_mac)
+        )
+        # coeff_vol_1 = (
+        #         cl_max_landing
+        #         / (n_h * n_q * cl_htp_landing)
+        #         * (cm_landing / cl_max_landing - fact_wheel )+ \
+        #            cl0_landing / cl_htp_landing * (x_lg - x_wing_aero_center) / wing_mac
+        # )
         # Calculation of equivalent area
         area = coeff_vol * wing_area * wing_mac / lp_ht
 
@@ -512,9 +621,9 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
             alpha = (cl_landing - cl0_landing) / cl_alpha_wing * 180 / math.pi
         else:
             # Define aircraft overall angle (aoa)
-            alpha = 0.0
+            alpha = 0.61
         # Interpolate cl/cm and define with ht reference surface
-        cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
+        cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp ) * wing_area / ht_area + cl_elev
         # Define Cl_alpha with htp reference surface
         cl_alpha_htp_isolated = cl_alpha_htp_isolated * wing_area / ht_area
 
