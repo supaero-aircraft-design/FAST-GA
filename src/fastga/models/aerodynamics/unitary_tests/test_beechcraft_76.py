@@ -84,6 +84,9 @@ from .test_functions import (
     yaw_moment_sideslip_aircraft,
     yaw_moment_aileron,
     yaw_moment_rudder,
+    yaw_moment_roll_rate_wing,
+    yaw_moment_roll_rate_vt,
+    yaw_moment_roll_rate_aircraft,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -2109,3 +2112,20 @@ def test_cn_delta_a_aircraft():
 def test_cn_delta_r_aircraft():
     """Test yaw moment of the rudder."""
     yaw_moment_rudder(XML_FILE, cn_delta_r_low_speed_=-0.07595763, cn_delta_r_cruise_=-0.07740018)
+
+
+def test_cn_p_wing():
+    """Test cn p of the wing."""
+    yaw_moment_roll_rate_wing(
+        XML_FILE, cn_p_wing_low_speed_=0.07106144, cn_p_wing_cruise_=0.07175628
+    )
+
+
+def test_cn_p_vt():
+    """Test cn p of the vt."""
+    yaw_moment_roll_rate_vt(XML_FILE, cn_p_vt_low_speed_=-0.00751484, cn_p_vt_cruise_=-0.00765824)
+
+
+def test_cn_p_aircraft():
+    """Tests cn p of the aircraft."""
+    yaw_moment_roll_rate_aircraft(XML_FILE, cn_p_low_speed_=0.0635466, cn_p_cruise_=0.06409804)

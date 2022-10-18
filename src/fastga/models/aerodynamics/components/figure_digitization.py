@@ -60,6 +60,7 @@ CL_R_LIFT_PART_A = "cl_r_lift_effect_part_a.csv"
 CL_R_LIFT_PART_B = "cl_r_lift_effect_part_b.csv"
 CL_R_TWIST_EFFECT = "cl_r_twist_effect.csv"
 CN_DELTA_A_K_A = "cn_delta_a_correlation_cst.csv"
+CN_P_TWIST = "cn_p_twist_contribution.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -2185,6 +2186,61 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         return float(k_a)
+
+    @staticmethod
+    def cn_p_twist_contribution(taper_ratio, aspect_ratio) -> float:
+        """
+        Roskam data to estimate the contribution to the yaw moment of the twist of the
+        lifting surface. (figure 10.37)
+
+        :param taper_ratio: the taper ratio of the lifting surface
+        :param aspect_ratio: the aspect ratio of the lifting surface
+        :return cn_p_twist: the contribution to the yaw moment of the twist of the
+        lifting surface.
+        """
+
+        file = pth.join(resources.__path__[0], CN_P_TWIST)
+        db = read_csv(file)
+
+        taper_ratio_data = db["TAPER_RATIO"]
+        aspect_ratio_data = db["ASPECT_RATIO"]
+        twist_contribution = db["TWIST_CONTRIBUTION"]
+        errors = np.logical_or.reduce(
+            (
+                np.isnan(taper_ratio_data),
+                np.isnan(aspect_ratio_data),
+                np.isnan(twist_contribution),
+            )
+        )
+        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
+        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
+        twist_contribution = twist_contribution[np.logical_not(errors)].tolist()
+
+        if float(taper_ratio) != np.clip(
+            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
+        ):
+            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
+        if float(aspect_ratio) != np.clip(
+            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
+        ):
+            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
+
+        # Linear interpolation is preferred but we put the nearest one as protection
+        cn_p_twist = interpolate.griddata(
+            (taper_ratio_data, aspect_ratio_data),
+            twist_contribution,
+            np.array([taper_ratio, aspect_ratio]).T,
+            method="linear",
+        )
+        if np.isnan(cn_p_twist):
+            cn_p_twist = interpolate.griddata(
+                (taper_ratio_data, aspect_ratio_data),
+                twist_contribution,
+                np.array([taper_ratio, aspect_ratio]).T,
+                method="nearest",
+            )
+
+        return float(cn_p_twist)
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):

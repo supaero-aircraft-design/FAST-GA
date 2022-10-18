@@ -45,3 +45,4 @@ from .compute_cm_alpha_dot import ComputeCMAlphaDotAircraft
 from .compute_cn_beta import ComputeCnBetaAircraft
 from .compute_cn_aileron import ComputeCnDeltaAileron
 from .compute_cn_rudder import ComputeCnDeltaRudder
+from .compute_cn_roll_rate import ComputeCnRollRateAircraft

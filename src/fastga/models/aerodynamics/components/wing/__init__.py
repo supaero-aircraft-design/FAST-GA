@@ -17,3 +17,4 @@ from .compute_cl_beta_wing import ComputeClBetaWing
 from .compute_cl_roll_rate_wing import ComputeClRollRateWing
 from .compute_cl_yaw_rate_wing import ComputeClYawRateWing
 from .compute_cm_pitch_rate_wing import ComputeCMPitchVelocityWing
+from .compute_cn_roll_rate_wing import ComputeCnRollRateWing
