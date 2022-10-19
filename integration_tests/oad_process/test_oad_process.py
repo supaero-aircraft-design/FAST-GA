@@ -16,7 +16,6 @@ import os
 import os.path as pth
 import logging
 import shutil
-import plotly.graph_objects as go
 from shutil import rmtree
 from platform import system
 
@@ -26,9 +25,6 @@ from numpy.testing import assert_allclose
 
 import fastoad.api as oad
 from fastga.models.performances.mission import resources
-from fastga.utils.postprocessing.propeller.analysis_and_plots_propeller import (
-    propeller_coeff_map_plot,
-)
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")

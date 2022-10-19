@@ -90,6 +90,7 @@ from .test_functions import (
     yaw_moment_yaw_rate_wing,
     yaw_moment_yaw_rate_vt,
     yaw_moment_yaw_rate_aircraft,
+    polar_ext_folder,
 )
 
 XML_FILE = "beechcraft_76.xml"
@@ -154,6 +155,24 @@ def test_polar():
         cdp_1_high_speed=0.0046,
         cl_max_2d=1.6965,
         cdp_1_low_speed=0.0049,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available",
+)
+def test_polar_with_ext_folder():
+    """Tests polar execution (XFOIL) @ high and low speed."""
+    polar_ext_folder(
+        XML_FILE,
+        mach_high_speed=0.53835122,
+        reynolds_high_speed=5381384,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        cdp_1_high_speed=0.30059597156398105,
+        cl_max_2d=1.6241,
+        cdp_1_low_speed=0.005250849056603773,
     )
 
 

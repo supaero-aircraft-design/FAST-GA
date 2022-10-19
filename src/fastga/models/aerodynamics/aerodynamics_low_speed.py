@@ -152,7 +152,10 @@ class AerodynamicsLowSpeed(Group):
             "high_lift", oad.RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
         )
 
-        option_wing_airfoil = {"wing_airfoil_file": self.options["wing_airfoil"]}
+        option_wing_airfoil = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
+            "wing_airfoil_file": self.options["wing_airfoil"],
+        }
         self.add_subsystem(
             "wing_extreme_cl_clean",
             oad.RegisterSubmodel.get_submodel(
@@ -161,7 +164,10 @@ class AerodynamicsLowSpeed(Group):
             promotes=["*"],
         )
 
-        option_htp_airfoil = {"htp_airfoil_file": self.options["htp_airfoil"]}
+        option_htp_airfoil = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+        }
         self.add_subsystem(
             "htp_extreme_cl_clean",
             oad.RegisterSubmodel.get_submodel(

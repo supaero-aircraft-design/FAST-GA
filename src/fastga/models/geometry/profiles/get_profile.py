@@ -65,7 +65,7 @@ def get_profile(
 
 
 def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(pth.join(airfoil_folder.__path__[0], file_name), "r") as file:
+    with open(file_name, "r") as file:
         data = file.readlines()
         # Extract data
         x_data = []
