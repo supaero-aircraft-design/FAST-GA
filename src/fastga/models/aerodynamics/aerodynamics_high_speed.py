@@ -102,6 +102,7 @@ class AerodynamicsHighSpeed(Group):
                 self.add_subsystem(
                     "mach_interpolation_roskam",
                     ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
@@ -139,6 +140,7 @@ class AerodynamicsHighSpeed(Group):
                 self.add_subsystem(
                     "mach_interpolation_roskam",
                     ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
