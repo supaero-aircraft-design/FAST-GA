@@ -27,7 +27,7 @@ from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 )
 class ComputeCnBetaFuselage(ExplicitComponent):
     """
-    Yawing moment due to side-slip estimation
+    Yawing moment due to side-slip estimation.
 
     Based on : Raymer, Daniel. Aircraft design: a conceptual approach. American Institute of
     Aeronautics and Astronautics, Inc., 2012. Sixth Edition, equation 16.50.

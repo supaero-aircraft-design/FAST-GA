@@ -23,9 +23,10 @@ from ...constants import SUBMODEL_CN_BETA_VT
 )
 class ComputeCnBetaVerticalTail(om.ExplicitComponent):
     """
-    Class to compute the contribution of the vertical tail to the yawing moment coefficient due to
-    sideslip. Depends on the angle of attack, so the same remark as in ..compute_cy_yaw_rate.py
-    holds.
+    Class to compute the contribution of the vertical tail to the yawing moment coefficient due
+    to sideslip. Depends on the angle of attack, so the same remark as in
+    ..compute_cy_yaw_rate.py holds. The convention from :cite:`roskampart6:1990` are used,
+    meaning that for lateral derivative, the reference length is the wing span.
 
     Based on :cite:`roskampart6:1990` section 10.2.4.1.
     """

@@ -26,7 +26,8 @@ from ...constants import SUBMODEL_CL_ALPHA_VT
     SUBMODEL_CL_ALPHA_VT, "fastga.submodel.aerodynamics.vertical_tail.lift_curve_slope.legacy"
 )
 class ComputeClAlphaVerticalTail(FigureDigitization):
-    """Vertical tail lift coefficient estimation
+    """
+    Vertical tail lift coefficient estimation.
 
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
     Thrust and Power Characteristics. DARcorporation, 1985. Equation (8.22) applied with the

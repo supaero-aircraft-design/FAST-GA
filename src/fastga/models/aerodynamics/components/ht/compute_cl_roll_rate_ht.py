@@ -24,9 +24,13 @@ from ...constants import SUBMODEL_CL_P_HT
 )
 class ComputeClRollRateHorizontalTail(FigureDigitization):
     """
-    Class to compute the contribution of the horizontal tail to the roll moment coefficient due to
-    roll rate (roll damping). Depends on the lift coefficient of the horizontal tail, hence on the
-    reference angle of attack, so the same remark as in ..compute_cy_yaw_rate.py holds.
+    Class to compute the contribution of the horizontal tail to the roll moment coefficient due
+    to roll rate (roll damping). Depends on the lift coefficient of the horizontal tail,
+    hence on the reference angle of attack, so the same remark as in ..compute_cy_yaw_rate.py
+    holds. The convention from :cite:`roskampart6:1990` are used, meaning that for lateral
+    derivative, the reference length is the wing span. Another important point is that,
+    for the derivative with respect to yaw and roll, the rotation speed are made dimensionless by
+    multiplying them by the wing span and dividing them by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.6
     """

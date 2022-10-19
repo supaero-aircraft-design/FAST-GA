@@ -27,7 +27,10 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
     Computation of the increase in pitch moment due to a rate of change of AoA. Not destined for
     the computation of the equilibrium since they are assumed quasi-steady but rather for future
     interface with flight simulator. This coefficient depends on the position of the CG,
-    we will take it halfway between the aft and fwd CG.
+    we will take it halfway between the aft and fwd CG. The convention from
+    :cite:`roskampart6:1990` are used, meaning that, for the derivative with respect to a rate of
+    AOA, this rate is made dimensionless by multiplying it by the MAC and dividing it by 2 times
+    the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.3. The formula uses the lift curve slope of
     the htp with respect to its own area, we will make the change since we have it with respect

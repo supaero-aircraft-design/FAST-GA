@@ -25,7 +25,10 @@ class ComputeCLPitchVelocityAircraft(om.Group):
     Computation of the increase in lift due to a a pitch velocity. Assumes the coefficient at
     aircraft level can be obtained by summing the contribution of the individual components. Not
     destined for the computation of the equilibrium since they are assumed quasi-steady but
-    rather for future interface with flight simulator.
+    rather for future interface with flight simulator. The convention from
+    :cite:`roskampart6:1990` are used, meaning that, for the derivative with respect to a pitch
+    rate, this rate is made dimensionless by multiplying it by the MAC and dividing it by 2 times
+    the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.7
     """

@@ -26,9 +26,11 @@ from ..constants import (
 @oad.RegisterSubmodel(SUBMODEL_CN_BETA, "submodel.aerodynamics.aircraft.yawing_moment_beta.legacy")
 class ComputeCnBetaAircraft(om.Group):
     """
-    Computation of the increase in yawing moment due to a sideslip angle. Assumes the coefficient at
-    aircraft level can be obtained by summing the contribution of the individual components (
-    fuselage and VT). Wing contribution is negligible up until high angles of attack.
+    Computation of the increase in yawing moment due to a sideslip angle. Assumes the coefficient
+    at aircraft level can be obtained by summing the contribution of the individual components (
+    fuselage and VT). Wing contribution is negligible up until high angles of attack. The
+    convention from :cite:`roskampart6:1990` are used, meaning that for lateral derivative,
+    the reference length is the wing span.
 
     Based on :cite:`roskampart6:1990` section 10.2.4.1
     """

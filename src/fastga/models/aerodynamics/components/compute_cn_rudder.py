@@ -24,7 +24,8 @@ class ComputeCnDeltaRudder(om.ExplicitComponent):
     Class to compute the contribution of the rudder to the yawing moment coefficient. Depends on
     the angle of attack, so the same remark as in .compute_cy_yaw_rate.py holds. Cy_delta_r is
     computed with respect to the VTP area, so we need to change the reference surface to that of
-    the wing.
+    the wing. The convention from :cite:`roskampart6:1990` are used, meaning that for lateral
+    derivative, the reference length is the wing span.
 
     Based on :cite:`roskampart6:1990` section 10.3.8
     """

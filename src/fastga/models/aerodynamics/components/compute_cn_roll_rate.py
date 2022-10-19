@@ -26,10 +26,13 @@ from ..constants import (
 @oad.RegisterSubmodel(SUBMODEL_CN_P, "submodel.aerodynamics.aircraft.yaw_moment_roll_rate.legacy")
 class ComputeCnRollRateAircraft(om.Group):
     """
-    Computation of the increase in yaw moment due to a roll rate. Assumes the coefficient
-    at aircraft level can be obtained by summing the contribution of the individual components.
-    Some of these computations depend on the aircraft flying conditions, see the warnings in each
-    file.
+    Computation of the increase in yaw moment due to a roll rate. Assumes the coefficient at
+    aircraft level can be obtained by summing the contribution of the individual components. Some
+    of these computations depend on the aircraft flying conditions, see the warnings in each
+    file. The convention from :cite:`roskampart6:1990` are used, meaning that for lateral
+    derivative, the reference length is the wing span. Another important point is that,
+    for the derivative with respect to yaw and roll, the rotation speed are made dimensionless by
+    multiplying them by the wing span and dividing them by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.6
     """

@@ -24,9 +24,12 @@ from ...constants import SUBMODEL_CM_Q_WING
 )
 class ComputeCMPitchVelocityWing(FigureDigitization):
     """
-    Class to compute the contribution of the wing to the pitch moment coefficient due to pitch rate.
-    The vertical distance between the cg and the aerodynamic center of teh plane is taken equal
-    to the vertical distance between the root chord and the fuselage centerline
+    Class to compute the contribution of the wing to the pitch moment coefficient due to pitch
+    rate. The vertical distance between the cg and the aerodynamic center of teh plane is taken
+    equal to the vertical distance between the root chord and the fuselage centerline. The
+    convention from :cite:`roskampart6:1990` are used, meaning that, for the derivative with
+    respect to a pitch rate, this rate is made dimensionless by multiplying it by the MAC and
+    dividing it by 2 times the airspeed.
 
     Based on :cite:`gudmundsson:2013`.
     """

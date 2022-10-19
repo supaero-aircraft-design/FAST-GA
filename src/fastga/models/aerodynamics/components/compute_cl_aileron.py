@@ -26,7 +26,9 @@ class ComputeClDeltaAileron(FigureDigitization):
     """
     Roll moment due to rudder estimated based on the methodology presented in Gudmundsson. This
     methodology is known to overestimate the coefficient so a correction factor will be added.
-    This coefficient assumes a symmetrical deflection.
+    This coefficient assumes a symmetrical deflection. The convention from
+    :cite:`roskampart6:1990` are used, meaning that for lateral derivative, the reference length
+    is the wing span.
 
     Based on the methodology presented in :cite:`gudmundsson:2013`.
     """

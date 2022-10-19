@@ -30,7 +30,8 @@ class ComputeClBetaAircraft(om.Group):
     Computation of the increase in roll moment due to a side slip angle. Assumes the coefficient
     at aircraft level can be obtained by summing the contribution of the individual components.
     Some of these computations depend on the aircraft flying conditions, see the warnings in each
-    file.
+    file. The convention from :cite:`roskampart6:1990` are used, meaning that for lateral
+    derivative, the reference length is the wing span.
 
     Based on :cite:`roskampart6:1990` section 10.2.4.1.
     """

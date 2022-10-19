@@ -21,9 +21,10 @@ from ..constants import SUBMODEL_CL_RUDDER
 @oad.RegisterSubmodel(SUBMODEL_CL_RUDDER, "fastga.submodel.aerodynamics.rudder.roll_moment.legacy")
 class ComputeClDeltaRudder(om.ExplicitComponent):
     """
-    Class to compute the contribution of the rudder to the roll moment coefficient. Depends on the
-    angle of attack, so the same remark as in ..compute_cy_yaw_rate.py
-    holds.
+    Class to compute the contribution of the rudder to the roll moment coefficient. Depends on
+    the angle of attack, so the same remark as in ..compute_cy_yaw_rate.py holds. The convention
+    from :cite:`roskampart6:1990` are used, meaning that for lateral derivative, the reference
+    length is the wing span.
 
     Based on :cite:`roskampart6:1990` section 10.3.8
     """

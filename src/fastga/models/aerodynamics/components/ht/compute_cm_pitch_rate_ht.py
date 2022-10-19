@@ -24,9 +24,11 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CM_Q_HT
 )
 class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
     """
-    Computation of the contribution of the horizontal tail to the increase in pitch moment due to a
-    pitch velocity. This coefficient depends on the position of the CG, we will take it halfway
-    between the aft and fwd CG.
+    Computation of the contribution of the horizontal tail to the increase in pitch moment due to
+    a pitch velocity. This coefficient depends on the position of the CG, we will take it halfway
+    between the aft and fwd CG. The convention from :cite:`roskampart6:1990` are used,
+    meaning that, for the derivative with respect to a pitch rate, this rate is made
+    dimensionless by multiplying it by the MAC and dividing it by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.7. The formula uses the lift curve slope of
     the htp with respect to its own area, we will make the change since we have it with respect

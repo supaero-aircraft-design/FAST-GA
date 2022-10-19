@@ -23,9 +23,10 @@ class ComputeCyYawRateAircraft(om.ExplicitComponent):
     """
     Computation of the increase in side force due to a yaw rate. Assumes that only the
     contribution of the VTP is relevant for this coefficient. Also, since this coefficient
-    depends on the angle of attack, it is only computed here for information basis. A proper use
-    would be to recompute it at each AoA or to rewrite the expressions so that the dependency in
-    AoA is clear (constant term and linear term).
+    depends on the angle of attack, it is only computed here for information basis. The
+    convention from :cite:`roskampart6:1990` are used, meaning that, for the derivative with
+    respect to yaw and roll, the rotation speed are made dimensionless by multiplying them by the
+    wing span and dividing them by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.8
     """

@@ -25,7 +25,10 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CL_Q_HT
 class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
     """
     Computation of the contribution of the horizontal tail to the increase in lift due to a pitch
-    velocity.
+    velocity. The convention from :cite:`roskampart6:1990` are used, meaning that,
+    for the derivative with respect to yaw and roll, the rotation speed are made dimensionless by
+    multiplying them by the wing span and dividing them by 2 times the airspeed.
+
 
     Based on :cite:`roskampart6:1990` section 10.2.7
     """

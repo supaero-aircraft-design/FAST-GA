@@ -24,7 +24,9 @@ class ComputeCMPitchVelocityAircraft(om.Group):
     """
     Computation of the increase in pitch moment due to a a pitch velocity. Assumes the
     coefficient at aircraft level can be obtained by summing the contribution of the individual
-    components.
+    components. The convention from :cite:`roskampart6:1990` are used, meaning that,
+    for the derivative with respect to a pitch rate, this rate is made dimensionless by
+    multiplying it by the MAC and dividing it by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.7
     """

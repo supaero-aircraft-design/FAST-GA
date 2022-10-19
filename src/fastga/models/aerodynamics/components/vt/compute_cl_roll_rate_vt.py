@@ -24,7 +24,10 @@ from ...constants import SUBMODEL_CL_P_VT
 class ComputeClRollRateVerticalTail(om.ExplicitComponent):
     """
     Class to compute the contribution of the vertical tail to the roll moment coefficient due to
-    roll rate (roll damping).
+    roll rate (roll damping). The convention from :cite:`roskampart6:1990` are used, meaning that
+    for lateral derivative, the reference length is the wing span. Another important point is
+    that, for the derivative with respect to yaw and roll, the rotation speed are made
+    dimensionless by multiplying them by the wing span and dividing them by 2 times the airspeed.
 
     Based on :cite:`roskampart6:1990` section 10.2.6
     """
