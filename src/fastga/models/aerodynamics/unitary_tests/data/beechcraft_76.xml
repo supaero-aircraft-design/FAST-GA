@@ -248,6 +248,7 @@
         </neutral_point>
       </cruise>
       <fuselage>
+        <Cy_beta units="1/rad" is_input="False">-0.2105<!--derivative of side force against sideslip angle for fuselage in cruise conditions--></Cy_beta>
         <Cn_beta units="1/rad" is_input="False">-0.05579626374113451<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
         <cm_alpha units="rad**-1">-0.2018<!--derivative of fuselage pitching moment coefficient with respect to angle of attack--></cm_alpha>
         <cruise>
@@ -440,6 +441,7 @@
         </cruise>
       </aileron>
       <wing>
+        <Cy_beta units="1/rad" is_input="False">-0.03438<!--derivative of side force against sideslip angle for wing in cruise conditions--></Cy_beta>
         <airfoil>
           <CL_alpha units="1/rad" is_input="False">6.446621256426454<!--wing tail airfoil lift curve slope--></CL_alpha>
         </airfoil>
