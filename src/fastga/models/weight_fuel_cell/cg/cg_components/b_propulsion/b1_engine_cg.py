@@ -20,7 +20,6 @@ import numpy as np
 import warnings
 
 from openmdao.core.explicitcomponent import ExplicitComponent
-from fastga.models.aerodynamics.constants import ENGINE_COUNT
 
 
 class ComputeEngineCG(ExplicitComponent):
@@ -37,10 +36,10 @@ class ComputeEngineCG(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input(
-            "data:geometry:propulsion:nacelle:y", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:y", val=np.nan, shape_by_conn=True, units="m"
         )
         self.add_input(
-            "data:geometry:propulsion:nacelle:x", val=np.nan, shape=ENGINE_COUNT, units="m"
+            "data:geometry:propulsion:nacelle:x", val=np.nan, shape_by_conn=True, units="m"
         )
         self.add_input("data:geometry:propeller:depth", val=np.nan, units="m")
 

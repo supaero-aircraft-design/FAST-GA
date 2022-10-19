@@ -42,6 +42,11 @@ CSV_DATA_LABELS = [
     "thrust_rate",
     "tsfc (kg/s/N)",
     "name",
+    "lift_to_drag",
+    "battery power (W)",
+    "motor power input (W)",
+    "powertrain power input (W)"
+
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -406,6 +411,10 @@ def save_df(
     thrust_rate,
     sfc,
     name: str,
+    l_d_ratio = 1.0,
+    battery_power=0,
+    motor_in_power=0,
+    powertrain_in_power=0,
     existing_dataframe: pd.DataFrame = None,
 ):
     """
@@ -451,6 +460,10 @@ def save_df(
             float(thrust_rate),
             float(sfc),
             name,
+            float(l_d_ratio),
+            float(battery_power),
+            float(motor_in_power),
+            float(powertrain_in_power),
         ]
     else:
         data = [
@@ -470,6 +483,10 @@ def save_df(
             float(thrust_rate),
             float(sfc),
             name,
+            float(l_d_ratio),
+            float(battery_power),
+            float(motor_in_power),
+            float(powertrain_in_power),
         ]
         row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
         existing_dataframe = pd.concat([existing_dataframe, row])

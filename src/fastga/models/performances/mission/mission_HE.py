@@ -33,7 +33,7 @@ from fastoad.module_management.service_registry import RegisterOpenMDAOSystem
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.performances.mission.takeoff_HE import SAFETY_HEIGHT, TakeOffPhase
-from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
+from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium, save_df
 
 from fastga.models.propulsion.hybrid_propulsion.base import HybridEngineSet
 from fastga.models.weight.cg.cg_variation import InFlightCGVariation
@@ -434,7 +434,6 @@ class _compute_taxi(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
 
         if self.options["taxi_out"]:
@@ -530,7 +529,6 @@ class _compute_climb(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
         self.add_input("data:aerodynamics:wing:cruise:induced_drag_coefficient", np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient", np.nan)
@@ -611,6 +609,7 @@ class _compute_climb(DynamicEquilibrium):
         battery_power_climb = 0.0
         atm_0 = Atmosphere(0.0)
         previous_step = ()
+        mission_data = None
 
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
@@ -667,23 +666,24 @@ class _compute_climb(DynamicEquilibrium):
             l_d_ratio = (thrust / (mass_t*9.81) - np.tan(gamma))**(-1)
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                mission_data = save_df(
                     time_t,
                     altitude_t,
                     distance_t,
                     mass_t,
                     v_tas,
                     v_cas,
-                    l_d_ratio,
                     atm.density,
-                    gamma * 180.0 / math.pi,
+                    gamma * 180.0 / np.pi,
                     previous_step,
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:climb",
-                    flight_point.battery_power,
-                    flight_point.emotor_input_power,
-                    flight_point.powertrain_power_input,
+                    l_d_ratio=l_d_ratio,
+                    battery_power=flight_point.battery_power,
+                    motor_in_power=flight_point.emotor_input_power,
+                    powertrain_in_power=flight_point.powertrain_power_input,
+                    existing_dataframe=mission_data
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -732,24 +732,27 @@ class _compute_climb(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(
+            mission_data = save_df(
                 time_t,
                 altitude_t,
                 distance_t,
                 mass_t,
                 v_tas,
                 v_cas,
-                l_d_ratio,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
                 flight_point.thrust_rate,
                 flight_point.sfc,
                 "sizing:main_route:climb",
-                flight_point.battery_power,
-                flight_point.emotor_input_power,
-                flight_point.powertrain_power_input,
+                l_d_ratio=l_d_ratio,
+                battery_power=flight_point.battery_power,
+                motor_in_power=flight_point.emotor_input_power,
+                powertrain_in_power=flight_point.powertrain_power_input,
+                existing_dataframe=mission_data
             )
+
+        self.save_csv(mission_data)
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
@@ -785,7 +788,6 @@ class _compute_cruise(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:TLAR:range", np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
@@ -862,6 +864,7 @@ class _compute_cruise(DynamicEquilibrium):
         atm.true_airspeed = v_tas
         mach = atm.mach
         previous_step = ()
+        mission_data = None
 
         while distance_t < cruise_distance:
 
@@ -892,23 +895,24 @@ class _compute_cruise(DynamicEquilibrium):
             l_d_ratio = ( thrust / (mass_t*9.81) )**(-1)
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                mission_data = save_df(
                     time_t + inputs["data:mission:sizing:main_route:climb:duration"],
                     cruise_altitude,
                     distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
                     mass_t,
                     v_tas,
                     atm.calibrated_airspeed,
-                    l_d_ratio,
                     atm.density,
-                    0.0,
+                    0.0 * 180.0 / np.pi,
                     previous_step,
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:cruise",
-                    flight_point.battery_power,
-                    flight_point.emotor_input_power,
-                    flight_point.powertrain_power_input,
+                    l_d_ratio=l_d_ratio,
+                    battery_power=flight_point.battery_power,
+                    motor_in_power=flight_point.emotor_input_power,
+                    powertrain_in_power=flight_point.powertrain_power_input,
+                    existing_dataframe = mission_data
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -957,7 +961,7 @@ class _compute_cruise(DynamicEquilibrium):
 
         # Save results
         # if self.options["out_file"] != "":
-        #     self.save_point(
+        #     mission_data = save_df(
         #         time_t + inputs["data:mission:sizing:main_route:climb:duration"],
         #         cruise_altitude,
         #         distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
@@ -975,6 +979,7 @@ class _compute_cruise(DynamicEquilibrium):
         #         flight_point.powertrain_power_input,
         #     )
 
+        self.save_csv(mission_data)
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:power_fuel_cell"] = power_cruise
         # outputs["data:mission:sizing:main_route:cruise:current"] = current_cruise
@@ -1008,7 +1013,6 @@ class _compute_descent(DynamicEquilibrium):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:mission:sizing:main_route:descent:descent_rate", np.nan, units="m/s")
         self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", np.nan)
@@ -1063,7 +1067,7 @@ class _compute_descent(DynamicEquilibrium):
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
         m_cr = inputs["data:mission:sizing:main_route:cruise:fuel"]
         system_voltage = inputs["settings:electrical_system:system_voltage"]
-        battery_usage = inputs["data:mission:sizing:descent:battery_usage"]
+        battery_usage = inputs["data:mission:sizing:main_route:descent:battery_setting"]
 
         # Define initial conditions
         t_start = time.time()
@@ -1082,6 +1086,7 @@ class _compute_descent(DynamicEquilibrium):
         current_descent = 0.0
         bat_capacity_descent = 0.0
         bat_energy_descent = 0.0
+        mission_data = None
 
         if battery_usage == 0.0:
             # Battery is not used
@@ -1144,7 +1149,7 @@ class _compute_descent(DynamicEquilibrium):
             l_d_ratio = (thrust / (mass_t * 9.81) - np.tan(gamma)) ** (-1)
             # Save results
             if self.options["out_file"] != "":
-                self.save_point(
+                mission_data = save_df(
                     time_t
                     + inputs["data:mission:sizing:main_route:climb:duration"]
                     + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -1155,16 +1160,17 @@ class _compute_descent(DynamicEquilibrium):
                     mass_t,
                     v_tas,
                     v_cas,
-                    l_d_ratio,
                     atm.density,
                     gamma * 180.0 / np.pi,
                     previous_step,
                     flight_point.thrust_rate,
                     flight_point.sfc,
                     "sizing:main_route:descent",
-                    flight_point.battery_power,
-                    flight_point.emotor_input_power,
-                    flight_point.powertrain_power_input,
+                    l_d_ratio=l_d_ratio,
+                    battery_power=flight_point.battery_power,
+                    motor_in_power=flight_point.emotor_input_power,
+                    powertrain_in_power=flight_point.powertrain_power_input,
+                    existing_dataframe = mission_data
                 )
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
@@ -1209,7 +1215,7 @@ class _compute_descent(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            self.save_point(
+            mission_data = save_df(
                 time_t
                 + inputs["data:mission:sizing:main_route:climb:duration"]
                 + inputs["data:mission:sizing:main_route:cruise:duration"],
@@ -1220,18 +1226,20 @@ class _compute_descent(DynamicEquilibrium):
                 mass_t,
                 v_tas,
                 v_cas,
-                l_d_ratio,
                 atm.density,
                 gamma * 180.0 / np.pi,
                 previous_step,
                 flight_point.thrust_rate,
                 flight_point.sfc,
-                "sizing:main_route:descent",
-                flight_point.battery_power,
-                flight_point.emotor_input_power,
-                flight_point.powertrain_power_input,
+                "sizing:main_route:climb",
+                l_d_ratio=l_d_ratio,
+                battery_power=flight_point.battery_power,
+                motor_in_power=flight_point.emotor_input_power,
+                powertrain_in_power=flight_point.powertrain_power_input,
+                existing_dataframe = mission_data
             )
 
+        self.save_csv(mission_data)
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:battery_power"] = power_descent
         outputs["data:mission:sizing:main_route:descent:battery_current"] = current_descent

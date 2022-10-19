@@ -567,7 +567,6 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:flaps:landing:CL", val=np.nan)

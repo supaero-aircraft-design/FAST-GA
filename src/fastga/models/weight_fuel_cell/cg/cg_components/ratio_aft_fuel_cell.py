@@ -38,7 +38,7 @@ class ComputeCGFuelCell(om.ExplicitComponent):
                 "data:weight:systems:power:electric_systems:CG:x",
                 "data:weight:systems:power:hydraulic_systems:CG:x",
                 "data:weight:systems:life_support:air_conditioning:CG:x",
-                "data:weight:systems:navigation:CG:x",
+                "data:weight:systems:avionics:CG:x",
                 "data:weight:furniture:passenger_seats:CG:x",
             ],
         )
@@ -57,7 +57,7 @@ class ComputeCGFuelCell(om.ExplicitComponent):
                 "data:weight:systems:power:electric_systems:mass",
                 "data:weight:systems:power:hydraulic_systems:mass",
                 "data:weight:systems:life_support:air_conditioning:mass",
-                "data:weight:systems:navigation:mass",
+                "data:weight:systems:avionics:mass",
                 "data:weight:furniture:passenger_seats:mass",
             ],
         )

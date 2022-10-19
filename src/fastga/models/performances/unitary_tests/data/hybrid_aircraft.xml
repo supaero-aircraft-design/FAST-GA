@@ -647,8 +647,8 @@
           <nominal_pressure units="Pa" is_input="True">10000</nominal_pressure>
           <operating_temperature units="K" is_input="True">340</operating_temperature>
           <cooling_power units="W" is_input="False">17490</cooling_power>
-          <ox_mass_flow units="kg/s" is_input="False">5.74</ox_mass_flow>
-          <hyd_mass_flow units="kg/s" is_input="False">0.522</hyd_mass_flow>
+          <ox_mass_flow units="kg/s" is_input="False">0.018</ox_mass_flow>
+          <hyd_mass_flow units="kg/s" is_input="False">0.00233</hyd_mass_flow>
         </fuel_cell>
         <h2_storage>
           <pressure units="MPa" is_input="True">70</pressure>

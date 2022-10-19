@@ -19,9 +19,11 @@ from fastoad.model_base.propulsion import IOMPropulsionWrapper
 from fastoad.module_management.service_registry import RegisterPropulsion
 from fastoad.openmdao.validity_checker import ValidityDomainChecker
 
+
 from .basicHE_engine import BasicHEEngine
 
 from fastga.models.propulsion.propulsion import IPropulsion, BaseOMPropulsionComponent
+from fastga.models.propulsion.hybrid_propulsion.base import HybridEngineSet
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import THRUST_PTS_NB, SPEED_PTS_NB
 
 
@@ -63,6 +65,7 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
     def setup(self, component: Component):
         component.add_input("data:propulsion:hybrid_powertrain:motor:max_power", np.nan, units="W")
         component.add_input("data:geometry:propulsion:engine:layout", np.nan)
+        component.add_input("data:geometry:propulsion:engine:count", np.nan)
         component.add_input(
             "data:aerodynamics:propeller:sea_level:speed",
             np.full(SPEED_PTS_NB, np.nan),
@@ -154,7 +157,9 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "prop_red_factor": inputs["settings:weight:hybrid_powertrain:prop_reduction_factor"]
         }
 
-        return BasicHEEngine(**engine_params)
+        return HybridEngineSet(
+            BasicHEEngine(**engine_params), inputs["data:geometry:propulsion:engine:count"]
+        )
 
 
 @ValidityDomainChecker(
