@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 from typing import Union
 
 import numpy as np
@@ -67,8 +66,8 @@ class ComputeDeltaElevator(FigureDigitization):
                 inputs["data:geometry:horizontal_tail:elevator_chord_ratio"],
                 abs(inputs["data:mission:sizing:landing:elevator_angle"]),
             )
-            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * math.pi / 180.0) ** 2.0
-            * math.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
+            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * np.pi / 180.0) ** 2.0
+            * np.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
             * htp_area
             / wing_area
         )

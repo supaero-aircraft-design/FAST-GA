@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -82,35 +81,27 @@ class ComputeVTSweep(ExplicitComponent):
 
         sweep_0 = (
             (
-                math.pi / 2
-                - math.atan(
-                    b_v
-                    / (
-                        0.25 * root_chord
-                        - 0.25 * tip_chord
-                        + b_v * math.tan(sweep_25 / 180.0 * math.pi)
-                    )
+                np.pi / 2
+                - np.arctan2(
+                    b_v,
+                    (0.25 * root_chord - 0.25 * tip_chord + b_v * np.tan(sweep_25 / 180.0 * np.pi)),
                 )
             )
-            / math.pi
+            / np.pi
             * 180.0
         )
-        sweep_50 = math.atan(
-            math.tan(sweep_0 * math.pi / 180) - 2 / ar_vt * ((1 - taper_vt) / (1 + taper_vt))
+        sweep_50 = np.arctan(
+            np.tan(sweep_0 * np.pi / 180) - 2 / ar_vt * ((1 - taper_vt) / (1 + taper_vt))
         )
         sweep_100 = (
             (
-                math.pi / 2
-                - math.atan(
-                    b_v
-                    / (
-                        b_v * math.tan(sweep_25 / 180.0 * math.pi)
-                        - 0.75 * root_chord
-                        + 0.75 * tip_chord
-                    )
+                np.pi / 2
+                - np.arctan2(
+                    b_v,
+                    (b_v * np.tan(sweep_25 / 180.0 * np.pi) - 0.75 * root_chord + 0.75 * tip_chord),
                 )
             )
-            / math.pi
+            / np.pi
             * 180.0
         )
 

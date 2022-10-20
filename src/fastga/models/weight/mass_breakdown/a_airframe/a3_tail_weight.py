@@ -16,7 +16,6 @@ Estimation of tail weight.
 
 import numpy as np
 import openmdao.api as om
-import math
 
 from stdatm import Atmosphere
 import fastoad.api as oad
@@ -85,8 +84,8 @@ class ComputeTailWeight(om.ExplicitComponent):
             (sizing_factor_ultimate * mtow) ** 0.414
             * dynamic_pressure ** 0.168
             * area_ht ** 0.896
-            * (100.0 * t_c_ht / math.cos(sweep_25_ht * math.pi / 180.0)) ** -0.12
-            * (ar_ht / (math.cos(sweep_25_ht * math.pi / 180.0)) ** 2.0) ** 0.043
+            * (100.0 * t_c_ht / np.cos(sweep_25_ht * np.pi / 180.0)) ** -0.12
+            * (ar_ht / (np.cos(sweep_25_ht * np.pi / 180.0)) ** 2.0) ** 0.043
             * taper_ht ** -0.02
         )
         # Mass formula in lb
@@ -109,8 +108,8 @@ class ComputeTailWeight(om.ExplicitComponent):
                 (sizing_factor_ultimate * mtow) ** 0.376
                 * dynamic_pressure ** 0.122
                 * area_vt ** 0.873
-                * (100.0 * t_c_vt / math.cos(sweep_25_vt * math.pi / 180.0)) ** -0.49
-                * (ar_vt / (math.cos(sweep_25_vt * math.pi / 180.0)) ** 2.0) ** 0.357
+                * (100.0 * t_c_vt / np.cos(sweep_25_vt * np.pi / 180.0)) ** -0.49
+                * (ar_vt / (np.cos(sweep_25_vt * np.pi / 180.0)) ** 2.0) ** 0.357
                 * taper_vt ** 0.039
             )
         )
@@ -246,7 +245,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (1 + rudder_chord_ratio) ** 0.217
                 * ar_vt ** 0.337
                 * (1 + taper_vt) ** 0.363
-                * math.cos(sweep_25_vt) ** -0.484
+                * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
         )
@@ -331,7 +330,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         vd = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
 
-        a31 = area_ht * (3.81 * area_ht ** 0.2 * vd / (1000.0 * math.cos(sweep_25)) - 0.287)
+        a31 = area_ht * (3.81 * area_ht ** 0.2 * vd / (1000.0 * np.cos(sweep_25)) - 0.287)
         # Mass formula in lb
 
         outputs["data:weight:airframe:horizontal_tail:mass"] = (
@@ -361,7 +360,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * (1 + rudder_chord_ratio) ** 0.217
                 * ar_vt ** 0.337
                 * (1 + taper_vt) ** 0.363
-                * math.cos(sweep_25_vt) ** -0.484
+                * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
         )

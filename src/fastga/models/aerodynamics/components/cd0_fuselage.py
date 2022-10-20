@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -68,7 +66,7 @@ class Cd0Fuselage(ExplicitComponent):
         # Roots
         x0_turbulent = 36.9 * x_trans ** 0.625 * (1.0 / reynolds) ** 0.375
         cf_fus = 0.074 / reynolds ** 0.2 * (1.0 - (x_trans - x0_turbulent)) ** 0.8
-        f = length / math.sqrt(4 * height * width / math.pi)
+        f = length / np.sqrt(4 * height * width / np.pi)
         ff_fus = 1.0 + 60.0 / (f ** 3.0) + f / 400.0
         # Fuselage
         cd0_fuselage = cf_fus * ff_fus * wet_area_fus / wing_area

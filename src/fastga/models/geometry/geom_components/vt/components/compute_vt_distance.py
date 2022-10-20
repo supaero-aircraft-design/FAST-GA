@@ -13,8 +13,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 import fastoad.api as oad
@@ -63,7 +61,7 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         has_t_tail = inputs["data:geometry:has_T_tail"]
 
-        vt_lp = lp_ht - 0.6 * b_v * math.tan(sweep_25_vt) * has_t_tail
+        vt_lp = lp_ht - 0.6 * b_v * np.tan(sweep_25_vt) * has_t_tail
 
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
 
@@ -81,19 +79,19 @@ class ComputeVTMacPositionFD(ExplicitComponent):
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:span",
         ] = (
-            -0.6 * math.tan(sweep_25_vt) * has_t_tail
+            -0.6 * np.tan(sweep_25_vt) * has_t_tail
         )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:sweep_25",
         ] = (
-            -0.6 * b_v * has_t_tail / math.cos(sweep_25_vt) ** 2.0
+            -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2.0
         )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:has_T_tail",
         ] = (
-            -0.6 * math.tan(sweep_25_vt) * b_v
+            -0.6 * np.tan(sweep_25_vt) * b_v
         )
 
 
@@ -136,12 +134,12 @@ class ComputeVTMacPositionFL(ExplicitComponent):
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
         x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
 
-        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25
 
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
 
         vt_lp = (x_vt + x0_vt) - x_wing25
-        x_tip = b_v * math.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
+        x_tip = b_v * np.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
 
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:tip:x"] = x_tip

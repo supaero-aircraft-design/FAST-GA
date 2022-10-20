@@ -15,7 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -85,14 +84,14 @@ class ComputeHTSweep(ExplicitComponent):
 
         half_span = b_h / 2.0
         # TODO: The unit conversion can be handled by OpenMDAO
-        sweep_0 = math.pi / 2 - math.atan(
-            half_span / (0.25 * root_chord - 0.25 * tip_chord + half_span * math.tan(sweep_25))
+        sweep_0 = np.pi / 2 - np.arctan2(
+            half_span, (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
         )
 
-        sweep_50 = math.atan(math.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
 
-        sweep_100 = math.pi / 2 - math.atan(
-            half_span / (half_span * math.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
+        sweep_100 = np.pi / 2 - np.arctan(
+            half_span / (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
         )
 
         outputs["data:geometry:horizontal_tail:sweep_0"] = sweep_0
@@ -108,26 +107,24 @@ class ComputeHTSweep(ExplicitComponent):
 
         half_span = b_h / 2.0
 
-        tmp_0 = half_span / (0.25 * root_chord - 0.25 * tip_chord + half_span * math.tan(sweep_25))
-        tmp_100 = half_span / (
-            half_span * math.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord
-        )
+        tmp_0 = half_span / (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
+        tmp_100 = half_span / (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
 
         d_tmp_0_d_half_span = (
-            (0.25 * root_chord - 0.25 * tip_chord + half_span * math.tan(sweep_25))
-            - half_span * math.tan(sweep_25)
+            (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
+            - half_span * np.tan(sweep_25)
         ) / tmp_0 ** 2.0
         d_tmp_0_d_rc = -(tmp_0 ** 2.0) / half_span * 0.25
         d_tmp_0_d_tc = (tmp_0 ** 2.0) / half_span * 0.25
-        d_tmp_0_d_sweep = -(tmp_0 ** 2.0) * (1.0 + math.tan(sweep_25) ** 2.0)
+        d_tmp_0_d_sweep = -(tmp_0 ** 2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
 
         d_tmp_100_d_half_span = (
-            (half_span * math.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
-            - half_span * math.tan(sweep_25)
+            (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
+            - half_span * np.tan(sweep_25)
         ) / tmp_100 ** 2.0
         d_tmp_100_d_rc = (tmp_100 ** 2.0) / half_span * 0.75
         d_tmp_100_d_tc = -(tmp_100 ** 2.0) / half_span * 0.75
-        d_tmp_100_d_sweep = -(tmp_100 ** 2.0) * (1.0 + math.tan(sweep_25) ** 2.0)
+        d_tmp_100_d_sweep = -(tmp_100 ** 2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
 
         partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
             -1.0 / (1.0 + tmp_0 ** 2.0) * d_tmp_0_d_half_span / 2.0

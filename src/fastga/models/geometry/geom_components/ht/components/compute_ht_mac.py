@@ -14,7 +14,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-import math
+
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -67,7 +67,7 @@ class ComputeHTMacFD(ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
             (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
@@ -96,11 +96,11 @@ class ComputeHTMacFD(ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
         ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
 
-        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
         d_tmp_d_tc = -0.25
-        d_tmp_d_bh = 0.5 * math.tan(sweep_25_ht)
-        d_tmp_d_sweep = b_h / 2 * (1.0 + math.tan(sweep_25_ht) ** 2.0)
+        d_tmp_d_bh = 0.5 * np.tan(sweep_25_ht)
+        d_tmp_d_sweep = b_h / 2 * (1.0 + np.tan(sweep_25_ht) ** 2.0)
 
         tmp_2 = (root_chord + 2 * tip_chord) / (3 * (root_chord + tip_chord))
         d_tmp_2_d_rc = -tip_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
@@ -214,7 +214,7 @@ class ComputeHTMacFL(ExplicitComponent):
         x_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:absolute"]
         x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
 
-        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
             (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
@@ -250,11 +250,11 @@ class ComputeHTMacFL(ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
         ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
 
-        tmp = root_chord * 0.25 + b_h / 2 * math.tan(sweep_25_ht) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
         d_tmp_d_tc = -0.25
-        d_tmp_d_bh = 0.5 * math.tan(sweep_25_ht)
-        d_tmp_d_sweep = b_h / 2 * (1.0 + math.tan(sweep_25_ht) ** 2.0)
+        d_tmp_d_bh = 0.5 * np.tan(sweep_25_ht)
+        d_tmp_d_sweep = b_h / 2 * (1.0 + np.tan(sweep_25_ht) ** 2.0)
 
         tmp_2 = (root_chord + 2 * tip_chord) / (3 * (root_chord + tip_chord))
         d_tmp_2_d_rc = -tip_chord / (3.0 * (root_chord + tip_chord) ** 2.0)

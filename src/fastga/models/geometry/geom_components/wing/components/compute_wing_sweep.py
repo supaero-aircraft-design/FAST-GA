@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -96,15 +94,15 @@ class ComputeWingSweep(ExplicitComponent):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
 
-        sweep_0 = math.atan(x4_wing / (y4_wing - y2_wing))
+        sweep_0 = np.arctan2(x4_wing, (y4_wing - y2_wing))
 
         outputs["data:geometry:wing:sweep_0"] = sweep_0
-        outputs["data:geometry:wing:sweep_50"] = math.atan(
-            math.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
+        outputs["data:geometry:wing:sweep_50"] = np.arctan(
+            np.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
         )
-        outputs["data:geometry:wing:sweep_100_inner"] = math.atan(
-            (x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing)
+        outputs["data:geometry:wing:sweep_100_inner"] = np.arctan2(
+            (x4_wing + l4_wing - l2_wing), (y4_wing - y2_wing)
         )
-        outputs["data:geometry:wing:sweep_100_outer"] = math.atan(
-            (x4_wing + l4_wing - l2_wing) / (y4_wing - y2_wing)
+        outputs["data:geometry:wing:sweep_100_outer"] = np.arctan2(
+            (x4_wing + l4_wing - l2_wing), (y4_wing - y2_wing)
         )

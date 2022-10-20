@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -59,10 +57,10 @@ class ComputeFuselageVolume(ExplicitComponent):
         lar = inputs["data:geometry:fuselage:rear_length"]
         lav = inputs["data:geometry:fuselage:front_length"]
 
-        l_f = math.sqrt(b_f * h_f)
+        l_f = np.sqrt(b_f * h_f)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = math.pi * l_f ** 2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = np.pi * l_f ** 2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
 
         outputs["data:geometry:fuselage:volume"] = volume_fus
 
@@ -75,17 +73,17 @@ class ComputeFuselageVolume(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
 
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_width"] = (
-            math.pi * h_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * h_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_height"] = (
-            math.pi * b_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * b_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:length"] = (
-            math.pi * b_f * h_f / 4.0
+            np.pi * b_f * h_f / 4.0
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:rear_length"] = (
-            -0.5 * math.pi * b_f * h_f / 4.0
+            -0.5 * np.pi * b_f * h_f / 4.0
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:front_length"] = (
-            -0.3 * math.pi * b_f * h_f / 4.0
+            -0.3 * np.pi * b_f * h_f / 4.0
         )

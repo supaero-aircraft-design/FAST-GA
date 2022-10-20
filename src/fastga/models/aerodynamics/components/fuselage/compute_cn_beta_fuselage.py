@@ -13,8 +13,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -53,7 +51,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         span = inputs["data:geometry:wing:span"]
 
-        l_f = math.sqrt(width_max * height_max)
+        l_f = np.sqrt(width_max * height_max)
         # estimation of fuselage volume
         # equation from raymer book eqn. 16.47
         cn_beta = -1.3 * volume_fus / wing_area / span * (l_f / width_max)
@@ -68,7 +66,7 @@ class ComputeCnBetaFuselage(ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         span = inputs["data:geometry:wing:span"]
 
-        l_f = math.sqrt(width_max * height_max)
+        l_f = np.sqrt(width_max * height_max)
 
         partials["data:aerodynamics:fuselage:Cn_beta", "data:geometry:fuselage:maximum_width"] = (
             1.0 / 2.0 * 1.3 * volume_fus / wing_area / span * (l_f / width_max ** 2)

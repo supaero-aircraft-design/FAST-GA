@@ -14,8 +14,6 @@ Estimation of life support systems weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -276,7 +274,7 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         ) * limit_mach + 0.075 * m_iae
         # mass formula in lb
 
-        c23 = span / math.cos(sweep_25) + 3.8 * nac_diameter * engine_number + 1.5 * fus_width
+        c23 = span / np.cos(sweep_25) + 3.8 * nac_diameter * engine_number + 1.5 * fus_width
 
         c26 = 7.0 * n_occ ** 0.702
 
@@ -348,12 +346,12 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:wing:span",
-        ] = 1.0 / math.cos(sweep_25)
+        ] = 1.0 / np.cos(sweep_25)
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:wing:sweep_25",
         ] = (
-            span * math.sin(sweep_25) / math.cos(sweep_25) ** 2.0
+            span * np.sin(sweep_25) / np.cos(sweep_25) ** 2.0
         )
         partials[
             "data:weight:systems:life_support:de_icing:mass",

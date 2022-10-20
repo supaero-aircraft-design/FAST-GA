@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -116,7 +114,7 @@ class Cd0Wing(ExplicitComponent):
 
         ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
         if mach > 0.2:
-            ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25 * math.pi / 180)) ** 0.28
+            ff = ff * 1.34 * mach ** 0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
         cd0_wing = ff * cf_wing * wet_area_wing / wing_area
 
         if self.options["low_speed_aero"]:

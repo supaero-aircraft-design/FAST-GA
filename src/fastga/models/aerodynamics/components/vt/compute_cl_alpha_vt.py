@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import scipy.interpolate as interp
 import fastoad.api as oad
@@ -67,11 +65,11 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
-            beta = math.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach ** 2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
-            beta = math.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach ** 2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
@@ -105,16 +103,16 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
         cl_alpha_vt = (
             kv
             * 2
-            * math.pi
+            * np.pi
             * lambda_vt
             / (
                 2
-                + math.sqrt(
+                + np.sqrt(
                     4
                     + lambda_vt ** 2
                     * beta ** 2
                     / k ** 2
-                    * (1 + (math.tan(sweep_25_vt / 180.0 * math.pi)) ** 2 / beta ** 2)
+                    * (1 + (np.tan(sweep_25_vt / 180.0 * np.pi)) ** 2 / beta ** 2)
                 )
             )
         )

@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 import os
 import os.path as pth
 import warnings
@@ -215,7 +214,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_0_wing = float(wing_0["cl"] * k_fus)
             cl_aoa_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
-            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * math.pi / 180)
+            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
             chord_vector_wing = wing_0["chord_vector"]
@@ -223,12 +222,12 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
             # piAe) -> e' = e/1.05^2
             coeff_e = float(wing_aoa["coeff_e"] * k_fus / 1.05 ** 2)
-            coeff_k_wing = float(1.0 / (math.pi * span_wing ** 2 / s_ref_wing * coeff_e))
+            coeff_k_wing = float(1.0 / (np.pi * span_wing ** 2 / s_ref_wing * coeff_e))
 
             # Post-process HTP-aircraft data -------------------------------------------------------
             cl_0_htp = float(htp_0["cl"])
             cl_aoa_htp = float(htp_aoa["cl"])
-            cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * math.pi / 180))
+            cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
             coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2
             y_vector_htp = htp_aoa["y_vector"]
             cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
@@ -237,7 +236,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_alpha_htp_isolated = (
                 float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
                 * area_ratio
-                / (aoa_angle * math.pi / 180)
+                / (aoa_angle * np.pi / 180)
             )
 
             # Resize vectors -----------------------------------------------------------------------
@@ -297,13 +296,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
                 [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            ) * math.sqrt(s_ref_wing / saved_area_wing)
+            ) * np.sqrt(s_ref_wing / saved_area_wing)
             cl_vector_wing = np.array(
                 [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
             )
             chord_vector_wing = np.array(
                 [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            ) * math.sqrt(s_ref_wing / saved_area_wing)
+            ) * np.sqrt(s_ref_wing / saved_area_wing)
             coeff_k_wing = float(data.loc["coeff_k_wing", 0])
             cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
             cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
