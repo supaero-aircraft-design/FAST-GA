@@ -578,6 +578,7 @@
             <distance units="m" is_input="False">1752683.1704300398<!--covered ground distance during cruise phase--></distance>
             <duration units="s" is_input="False">20867.52910798186<!--duration of cruise phase in sizing mission--></duration>
             <fuel units="kg" is_input="False">208.19877202774606<!--mass of consumed fuel during cruise phase in sizing mission--></fuel>
+            <power_fuel_cell units="W" is_input="True">40000</power_fuel_cell>
           </cruise>
           <descent>
             <descent_rate units="ft/min" is_input="True">-300.0</descent_rate>
@@ -622,19 +623,21 @@
           <delta is_input="True">70</delta>
           <ref_mass units="kg" is_input="True">3</ref_mass>
           <ref_radius units="m" is_input="True">0.135</ref_radius>
-          <power units="W" is_input="False">2</power>
+          <power units="W" is_input="False">2000</power>
         </compressor>
         <cooling_intake>
           <free_stream_speed units="m/s" is_input="True">28</free_stream_speed>
         </cooling_intake>
         <fuel_cell>
           <fc_type is_input="True">0</fc_type>
-          <design_power units="W" is_input="False">33000</design_power>
-          <stack_pressure units="Pa" is_input="True">20000</stack_pressure>
+          <user_defined_power units="W" is_input="False">33000</user_defined_power>
+          <stack_power units="W" is_input="False">45000</stack_power>
+          <output_power units="W" is_input="False">40000</output_power>
+          <stack_pressure units="Pa" is_input="True">121560</stack_pressure>
           <cell_voltage units="V" is_input="False">0.67</cell_voltage>
           <design_current units="A" is_input="True">110</design_current>
           <required_power units="W" is_input="False">22000</required_power>
-          <nominal_pressure units="Pa" is_input="True">10000</nominal_pressure>
+          <nominal_pressure units="Pa" is_input="True">101300</nominal_pressure>
           <operating_temperature units="K" is_input="True">340</operating_temperature>
           <cooling_power units="W" is_input="False">17490</cooling_power>
           <ox_mass_flow units="kg/s" is_input="False">5.74</ox_mass_flow>

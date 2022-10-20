@@ -153,10 +153,10 @@
         <fuel_cell>
           <design_current units="A" is_input="True">110.0<!--Baseline stack current, is used to determine FC nominal efficiency with stack area.Large current -> compact FC but low efficiency--></design_current>
           <fc_type is_input="True">0.0<!--Optional type of fuel cell - 0 is None and 1 is default fuel cell--></fc_type>
-          <nominal_pressure units="Pa" is_input="True">10000.0</nominal_pressure>
+          <nominal_pressure units="Pa" is_input="True">101300.0</nominal_pressure>
           <operating_temperature units="degK" is_input="True">340.0</operating_temperature>
-          <required_power units="W" is_input="True">75000.0<!--User defined output FC power, used if higher than cruise power need.--></required_power>
-          <stack_pressure units="Pa" is_input="True">20000.0</stack_pressure>
+          <stack_pressure units="Pa" is_input="True">121600.0</stack_pressure>
+          <user_defined_power units="W" is_input="True">75000.0<!--User defined output FC power. Used to size the FC if the cruise power is lower.--></user_defined_power>
         </fuel_cell>
         <h2_storage>
           <pressure units="MPa" is_input="True">70.0</pressure>
@@ -209,13 +209,6 @@
           <thrust_limit units="N" is_input="True">[6533.840174009261, 7181.649624427429, 7704.744804457652, 8163.379307607336, 8591.84017293703, 9012.766951506735, 9435.643628430062, 9874.443915635982, 10339.44635971018, 10844.786960869542]<!--maximum thrust output of the propeller at sea level for varying velocities--></thrust_limit>
         </sea_level>
       </propeller>
-      <horizontal_tail>
-        <low_speed>
-          <tip>
-            <CL_min_2D is_input="True">nan<!--minimum lift coefficient at the tip section of the horizontal tail given with respect to the horizontal tail surface--></CL_min_2D>
-          </tip>
-        </low_speed>
-      </horizontal_tail>
     </aerodynamics>
     <mission>
       <sizing>
@@ -310,14 +303,6 @@
           <mass units="kg" is_input="True">0.5<!--total unusable fuel mass--></mass>
         </unusable_fuel>
       </propulsion>
-      <systems>
-        <navigation>
-          <mass units="kg" is_input="True">nan</mass>
-          <CG>
-            <x units="m" is_input="True">nan</x>
-          </CG>
-        </navigation>
-      </systems>
     </weight>
   </data>
   <settings>

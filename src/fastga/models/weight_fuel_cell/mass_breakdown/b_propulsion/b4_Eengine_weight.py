@@ -38,10 +38,9 @@ class ComputeEEngineWeight(ExplicitComponent):
 
     def setup(self):
 
-        # self.add_input("data:geometry:propulsion:count", val=np.nan)
+        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:hybrid_powertrain:motor:mass", val=np.nan, units="kg")
         self.add_input("data:weight:hybrid_powertrain:power_electronics:mass", val=np.nan, units="kg")
-        self.add_input("data:weight:hybrid_powertrain:cable:mass", val=np.nan, units="kg")
         self.add_input("data:weight:hybrid_powertrain:propeller:mass", val=np.nan, units="kg")
 
         self.add_output("data:weight:hybrid_powertrain:engine:mass", units="kg")
@@ -52,9 +51,9 @@ class ComputeEEngineWeight(ExplicitComponent):
 
         motor_mass = inputs["data:weight:hybrid_powertrain:motor:mass"]
         pe_mass = inputs["data:weight:hybrid_powertrain:power_electronics:mass"]
-        cable_mass = inputs["data:weight:hybrid_powertrain:cable:mass"]
         prop_mass = inputs["data:weight:hybrid_powertrain:propeller:mass"]
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
 
-        b4 = motor_mass + pe_mass + cable_mass + prop_mass
+        b4 = motor_mass + pe_mass + prop_mass
 
-        outputs["data:weight:hybrid_powertrain:engine:mass"] = b4
+        outputs["data:weight:hybrid_powertrain:engine:mass"] = b4 * n_eng

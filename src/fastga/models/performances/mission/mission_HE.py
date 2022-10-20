@@ -462,9 +462,7 @@ class _compute_taxi(om.ExplicitComponent):
         if self.options["taxi_out"]:
             _LOGGER.info("Entering mission computation")
 
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         if self.options["taxi_out"]:
             thrust_rate = inputs["data:mission:sizing:taxi_out:thrust_rate"]
             duration = inputs["data:mission:sizing:taxi_out:duration"]
@@ -572,9 +570,7 @@ class _compute_climb(DynamicEquilibrium):
             except:
                 _LOGGER.info("Failed to remove {} file!".format(self.options["out_file"]))
 
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coef_k_wing = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
@@ -751,8 +747,8 @@ class _compute_climb(DynamicEquilibrium):
                 powertrain_in_power=flight_point.powertrain_power_input,
                 existing_dataframe=mission_data
             )
-
-        self.save_csv(mission_data)
+        if mission_data is not None:
+            self.save_csv(mission_data)
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
@@ -823,9 +819,7 @@ class _compute_cruise(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_distance = max(
             0.0,
@@ -912,7 +906,7 @@ class _compute_cruise(DynamicEquilibrium):
                     battery_power=flight_point.battery_power,
                     motor_in_power=flight_point.emotor_input_power,
                     powertrain_in_power=flight_point.powertrain_power_input,
-                    existing_dataframe = mission_data
+                    existing_dataframe=mission_data
                 )
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
@@ -978,8 +972,9 @@ class _compute_cruise(DynamicEquilibrium):
         #         flight_point.emotor_input_power,
         #         flight_point.powertrain_power_input,
         #     )
+        if mission_data is not None:
+            self.save_csv(mission_data)
 
-        self.save_csv(mission_data)
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:power_fuel_cell"] = power_cruise
         # outputs["data:mission:sizing:main_route:cruise:current"] = current_cruise
@@ -1052,9 +1047,7 @@ class _compute_descent(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         descent_rate = inputs["data:mission:sizing:main_route:descent:descent_rate"]
         cl = inputs["data:aerodynamics:aircraft:cruise:optimal_CL"]
@@ -1236,10 +1229,12 @@ class _compute_descent(DynamicEquilibrium):
                 battery_power=flight_point.battery_power,
                 motor_in_power=flight_point.emotor_input_power,
                 powertrain_in_power=flight_point.powertrain_power_input,
-                existing_dataframe = mission_data
+                existing_dataframe=mission_data
             )
 
-        self.save_csv(mission_data)
+        if mission_data is not None:
+            self.save_csv(mission_data)
+
         outputs["data:mission:sizing:main_route:descent:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:descent:battery_power"] = power_descent
         outputs["data:mission:sizing:main_route:descent:battery_current"] = current_descent

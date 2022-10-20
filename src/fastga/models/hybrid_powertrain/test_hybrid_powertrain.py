@@ -29,17 +29,19 @@ def test_compute_fuel_cells():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuelCells(), ivc)
     nb_cells = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:number_cells", units=None)
-    assert nb_cells == pytest.approx(315, abs=5)
+    assert nb_cells == pytest.approx(627, abs=1)
     ox_flow = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:ox_mass_flow", units='kg/s')
-    assert ox_flow == pytest.approx(0.00287, abs=1e-5)
-    des_power = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:design_power", units='W')
-    assert des_power == pytest.approx(22000, abs=1000)
+    assert ox_flow == pytest.approx(0.00572, abs=1e-5)
+    stack_power = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:stack_power", units='W')
+    assert stack_power == pytest.approx(42000, abs=1)
+    out_power = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:output_power", units='W')
+    assert out_power == pytest.approx(40000, abs=1)
     vol = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", units='m**3')
-    assert vol == pytest.approx(0.02363032, abs=1e-3)
+    assert vol == pytest.approx(0.04, abs=1e-3)
     eff = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:efficiency", units=None)
-    assert eff == pytest.approx(0.5, abs=1e-1)
+    assert eff == pytest.approx(0.511, abs=1e-3)
     P_cooling = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:cooling_power", units='W')
-    assert P_cooling == pytest.approx(21036, abs=1000)
+    assert P_cooling == pytest.approx(40156, abs=1)
 
 
 def test_compute_compressor():
@@ -51,9 +53,9 @@ def test_compute_compressor():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCompressor(), ivc)
     radius = problem.get_val("data:geometry:hybrid_powertrain:compressor:radius", units='m')
-    assert radius == pytest.approx(0.029, abs=1e-3)
-    power = problem.get_val("data:propulsion:hybrid_powertrain:compressor:power", units='kW')
-    assert power == pytest.approx(2, abs=1e-1)
+    assert radius == pytest.approx(0.0508, abs=1e-3)
+    power = problem.get_val("data:propulsion:hybrid_powertrain:compressor:power", units='W')
+    assert power == pytest.approx(1702.8, abs=1)
 
 
 def test_compute_bop():
@@ -140,7 +142,7 @@ def test_compute_inverter():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeInverter(), ivc)
     power = problem.get_val("data:propulsion:hybrid_powertrain:inverter:output_power", units='kW')
-    assert power == pytest.approx(42, abs=2)
+    assert power == pytest.approx(45.1425, abs=1e-3)
     vol = problem.get_val("data:geometry:hybrid_powertrain:inverter:volume", units='m**3')
     assert vol == pytest.approx(0.00096657, abs=1e-3)
 

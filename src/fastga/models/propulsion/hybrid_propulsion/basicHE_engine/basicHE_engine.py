@@ -68,6 +68,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             nominal_torque,
             max_torque,
             eta_pe,
+            eta_inv,
             fc_des_power,
             H2_mass_flow,
             pe_specific_power,
@@ -114,7 +115,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.motor_speed = motor_speed
         self.nominal_torque = nominal_torque
         self.max_torque = max_torque
-        self.eta_pe = eta_pe  # Efficiency of power electronics
+        self.eta_pe = eta_pe * eta_inv  # Efficiency of power chain from FC OUT to motor IN
         self.fc_des_power = fc_des_power
         self.H2_mass_flow = H2_mass_flow
         self.pe_specific_power = pe_specific_power
@@ -474,7 +475,6 @@ class BasicHEEngine(AbstractHybridPropulsion):
     def compute_max_power(self, flight_points: FlightPoint) -> Union[float, Sequence]:
         """
         Compute engine maximum power @ given flight-point.
-        !FIX ME! : why is there a dependency on the air density?
         :param flight_points: current flight point(s)
         :return: maximum power in kW
         """
@@ -509,7 +509,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
             if engine_setting == EngineSetting.IDLE:
                 sfc = 0
             else:
-                sfc = self.H2_mass_flow / real_power  # [kg/s/W]
+                sfc_scaled = self.H2_mass_flow * min(1, real_power/self.eta_pe/self.fc_des_power)
+                sfc = sfc_scaled / real_power  # [kg/s/W]
         else:
             for idx in range(np.size(thrust)):
                 local_atmosphere = Atmosphere(
@@ -525,7 +526,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 if engine_setting[idx] == EngineSetting.IDLE:
                     sfc[idx] = 0
                 else:
-                    sfc[idx] = self.H2_mass_flow / real_power[idx]  # [kg/s/W]
+                    sfc_scaled = self.H2_mass_flow * min(1, real_power[idx] / self.eta_pe / self.fc_des_power)
+                    sfc[idx] = sfc_scaled / real_power[idx]  # [kg/s/W]
         return sfc, real_power  # [kg/Ws], [W]
 
     def max_thrust(

@@ -111,7 +111,8 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:propulsion:hybrid_powertrain:motor:nominal_torque", np.nan, units="N*m")
         component.add_input("data:propulsion:hybrid_powertrain:motor:max_torque", np.nan, units="N*m")
         component.add_input("data:propulsion:hybrid_powertrain:power_electronics:efficiency", np.nan)
-        component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_power", np.nan, units='W')
+        component.add_input("data:propulsion:hybrid_powertrain:inverter:efficiency", np.nan)
+        component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:output_power", np.nan, units='W')
         component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow", np.nan, units='kg/s')
         component.add_input("data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power", np.nan, units='W/kg')
         component.add_input("data:propulsion:hybrid_powertrain:cable:lsw", np.nan, units="kg/m")
@@ -146,8 +147,9 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "nominal_torque": inputs["data:propulsion:hybrid_powertrain:motor:nominal_torque"],
             "max_torque": inputs["data:propulsion:hybrid_powertrain:motor:max_torque"],
             "eta_pe": inputs["data:propulsion:hybrid_powertrain:power_electronics:efficiency"],
-            "fc_des_power": inputs["data:propulsion:hybrid_powertrain:fuel_cell:design_power"],
-            "H2_mass_flow": inputs["data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow"],
+            "eta_inv": inputs["data:propulsion:hybrid_powertrain:inverter:efficiency"],
+            "fc_des_power": inputs["data:propulsion:hybrid_powertrain:fuel_cell:output_power"] / inputs["data:geometry:propulsion:engine:count"],
+            "H2_mass_flow": inputs["data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow"] / inputs["data:geometry:propulsion:engine:count"],
             "pe_specific_power": inputs["data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power"],
             "cables_lsw": inputs["data:propulsion:hybrid_powertrain:cable:lsw"],
             "cables_length": inputs["data:geometry:hybrid_powertrain:cables:length"],

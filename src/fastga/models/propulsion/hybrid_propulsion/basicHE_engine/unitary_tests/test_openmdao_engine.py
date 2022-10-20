@@ -856,7 +856,7 @@ def test_OMBasicHEEngineComponent():
     ivc.add_output("data:propulsion:hybrid_powertrain:motor:nominal_torque", 200, units="N*m")
     ivc.add_output("data:propulsion:hybrid_powertrain:motor:max_torque", 350, units="N*m")
     ivc.add_output("data:propulsion:hybrid_powertrain:power_electronics:n_conv", 0.90)
-    ivc.add_output("data:propulsion:hybrid_powertrain:fuel_cell:design_power", 20000, units='W')
+    ivc.add_output("data:propulsion:hybrid_powertrain:fuel_cell:output_power", 20000, units='W')
     ivc.add_output("data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow", 0.522, units='kg/s')
     ivc.add_output("data:propulsion:hybrid_powertrain:power_electronics:pe_specific_power", 2200, units='W/kg')
     ivc.add_output("data:propulsion:hybrid_powertrain:cable:lsw", 0.2, units="kg/m")
