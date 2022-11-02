@@ -22,9 +22,24 @@ import openmdao.api as om
 from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
+from fastoad.model_base import FlightPoint
+from copy import deepcopy
 
 from stdatm import Atmosphere
 
+# Definition of Fast-ga custom flight point parameters
+FAST_GA_fields = {
+    'gamma': {'name':'gamma','unit':'rad'},
+    "alpha": {'name':'alpha','unit':'deg'},
+    "cl_wing": {'name':'cl_wing','unit':''},
+    "cl_htp": {'name':'cl_htp','unit':''},
+}
+
+# Extending FlightPoint dataclass
+col_name = FlightPoint.__annotations__
+for key in FAST_GA_fields.keys():
+    if FAST_GA_fields[key]['name'] not in col_name:
+        FlightPoint.add_field(name=FAST_GA_fields[key]['name'], unit=FAST_GA_fields[key]['unit'])
 CSV_DATA_LABELS = [
     "time",
     "altitude",
@@ -52,6 +67,7 @@ CSV_DATA_LABELS = [
 _LOGGER = logging.getLogger(__name__)
 
 
+
 class DynamicEquilibrium(om.ExplicitComponent):
     """
     Compute the derivatives and associated lift-drag-thrust decomposition depending if DP model
@@ -64,6 +80,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.cl_tail_sol = 0.0
         self.error_on_pitch_equilibrium = False
         self.delta_e_sol = 0.0
+        self.flight_points = []
 
     def initialize(self):
         self.options.declare("out_file", default="", types=str)
@@ -275,13 +292,24 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
     def save_csv(
         self,
-        dataframe_to_add: pd.DataFrame,
     ):
         """
         Method to save mission point to .csv file for further post-processing
-
-        :param dataframe_to_add: Dataframe to add to the csv
         """
+
+        dataframe_to_add = pd.DataFrame(self.flight_points)
+
+        def as_scalar(value):
+            if isinstance(value, np.ndarray):
+                return value.item()
+            return value
+
+        dataframe_to_add = dataframe_to_add.applymap(as_scalar)
+        rename_dict = {
+            field_name: f"{field_name} [{unit}]"
+            for field_name, unit in FlightPoint.get_units().items()
+        }
+        dataframe_to_add.rename(columns=rename_dict, inplace=True)
 
         if not os.path.exists(self.options["out_file"]):
             dataframe_to_add.index = range(len(dataframe_to_add))
@@ -397,6 +425,44 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
+    def add_flight_point(self, flight_point : FlightPoint = None, equilibrium_result : tuple = (None)):
+
+        """
+        Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
+
+        :param equilibrium_result: result vector of dynamic equilibrium
+        :param flight_point: the flight_point to add
+        """
+
+        if flight_point is not None:
+            if equilibrium_result is not None:
+                flight_point.alpha = float(equilibrium_result[0]) * 180.0 / math.pi
+                flight_point.cl_wing = float(equilibrium_result[2])
+                flight_point.cl_htp = float(equilibrium_result[3])
+
+            self.flight_points.append(deepcopy(flight_point))
+
+    def complete_flight_point(self, flight_point: FlightPoint, mach = None, v_cas = None, v_tas = None, climb_rate = 0.0):
+
+        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+
+        if v_cas is not None:
+            atm.calibrated_airspeed = v_cas
+
+        elif v_tas is not None:
+            atm.true_airspeed = v_tas
+
+        elif mach is not None:
+            atm.mach = mach
+
+        else:
+            raise ValueError('Either v_cas or v_tas must be given to complete flight_point')
+
+        flight_point.mach = atm.mach
+        flight_point.true_airspeed = atm.true_airspeed
+        flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        flight_point.calibrated_airspeed = atm.calibrated_airspeed
+        flight_point.gamma = np.arcsin(climb_rate / atm.true_airspeed)
 
 def save_df(
     time,
@@ -412,10 +478,6 @@ def save_df(
     sfc,
     name: str,
     existing_dataframe: pd.DataFrame = None,
-    l_d_ratio = 1.0,
-    battery_power=0,
-    motor_in_power=0,
-    powertrain_in_power=0,
 ):
     """
     Method to save mission point to a pandas dataframe file for further post-processing
@@ -460,10 +522,6 @@ def save_df(
             float(thrust_rate),
             float(sfc),
             name,
-            float(l_d_ratio),
-            float(battery_power),
-            float(motor_in_power),
-            float(powertrain_in_power),
         ]
     else:
         data = [
@@ -483,10 +541,6 @@ def save_df(
             float(thrust_rate),
             float(sfc),
             name,
-            float(l_d_ratio),
-            float(battery_power),
-            float(motor_in_power),
-            float(powertrain_in_power),
         ]
         row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
         existing_dataframe = pd.concat([existing_dataframe, row])
