@@ -113,6 +113,7 @@ class ComputeDescent(DynamicEquilibrium):
         mass_fuel_t = 0.0
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl + m_cr)
         previous_step = ()
+        self.flight_points = []
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
         # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be
@@ -165,6 +166,7 @@ class ComputeDescent(DynamicEquilibrium):
             flight_point.thrust = thrust
             # Compute consumption
             propulsion_model.compute_flight_points(flight_point)
+
             # Save results
             self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)

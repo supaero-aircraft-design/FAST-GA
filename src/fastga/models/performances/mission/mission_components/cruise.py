@@ -117,6 +117,7 @@ class ComputeCruise(DynamicEquilibrium):
         atm.true_airspeed = v_tas
         mach = atm.mach
         previous_step = ()
+        self.flight_points = []
 
         while distance_t < cruise_distance:
 

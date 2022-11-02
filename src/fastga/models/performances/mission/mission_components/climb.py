@@ -119,6 +119,7 @@ class ComputeClimb(DynamicEquilibrium):
         mass_t = mtow - (m_to + m_tk + m_ic)
         mass_fuel_t = 0.0
         previous_step = ()
+        self.flight_points = []
 
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
@@ -132,7 +133,7 @@ class ComputeClimb(DynamicEquilibrium):
         while altitude_t < cruise_altitude:
 
             flight_point = oad.FlightPoint(altitude=altitude_t,
-                                           time= time_t,
+                                           time=time_t,
                                            ground_distance=distance_t,
                                            engine_setting=EngineSetting.CLIMB,
                                            thrust_is_regulated=True,
@@ -167,7 +168,8 @@ class ComputeClimb(DynamicEquilibrium):
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
-            self.add_flight_point(flight_point= flight_point, equilibrium_result=previous_step)
+            # Save results
+            self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 

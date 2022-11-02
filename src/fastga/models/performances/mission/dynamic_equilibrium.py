@@ -23,6 +23,7 @@ from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
 from fastoad.model_base import FlightPoint
+from copy import deepcopy
 
 from stdatm import Atmosphere
 
@@ -271,17 +272,34 @@ class DynamicEquilibrium(om.ExplicitComponent):
     ):
         """
         Method to save mission point to .csv file for further post-processing
-
-        :param dataframe_to_add: Dataframe to add to the csv
         """
 
+        dataframe_to_add = pd.DataFrame(self.flight_points)
+
+        def as_scalar(value):
+            if isinstance(value, np.ndarray):
+                return value.item()
+            return value
+
+        dataframe_to_add = dataframe_to_add.applymap(as_scalar)
+        rename_dict = {
+            field_name: f"{field_name} [{unit}]"
+            for field_name, unit in FlightPoint.get_units().items()
+        }
+        dataframe_to_add.rename(columns=rename_dict, inplace=True)
+
         if not os.path.exists(self.options["out_file"]):
-            self.fligh_points.to_csv(self.options["out_file"])
+            dataframe_to_add.index = range(len(dataframe_to_add))
+            dataframe_to_add.to_csv(self.options["out_file"])
         else:
-            existing_data = FlightPoint.create_list(pd.read_csv(self.options["out_file"]))
-            for i in range(len(self.flight_points)):
-                existing_data.append(self.flight_points[i])
-            existing_data.to_csv(self.options["out_file"])
+            dataframe_existing = pd.read_csv(self.options["out_file"])
+            if "Unnamed: 0" in dataframe_existing.columns:
+                dataframe_existing = dataframe_existing.drop("Unnamed: 0", axis=1)
+            dataframe_to_add.index = range(
+                max(dataframe_existing.index), max(dataframe_existing.index) + len(dataframe_to_add)
+            )
+            dataframe_existing = pd.concat([dataframe_existing, dataframe_to_add])
+            dataframe_existing.to_csv(self.options["out_file"])
 
     def equation_outer(
         self,
@@ -396,11 +414,10 @@ class DynamicEquilibrium(om.ExplicitComponent):
         if flight_point is not None:
             if equilibrium_result is not None:
                 flight_point.alpha = float(equilibrium_result[0]) * 180.0 / math.pi
-                flight_point.thrust = float(equilibrium_result[1])
                 flight_point.cl_wing = float(equilibrium_result[2])
                 flight_point.cl_htp = float(equilibrium_result[3])
 
-            self.flight_points.append(flight_point)
+            self.flight_points.append(deepcopy(flight_point))
 
     def complete_flight_point(self, flight_point: FlightPoint, mach = None, v_cas = None, v_tas = None, climb_rate = 0.0):
 
