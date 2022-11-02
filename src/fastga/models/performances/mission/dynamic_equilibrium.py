@@ -28,7 +28,7 @@ from copy import deepcopy
 from stdatm import Atmosphere
 
 # Definition of Fast-ga custom flight point parameters
-FAST_GA_fields = {
+HE_MISSION_FIELDS = {
     'gamma': {'name':'gamma','unit':'rad'},
     "alpha": {'name':'alpha','unit':'deg'},
     "cl_wing": {'name':'cl_wing','unit':''},
@@ -37,32 +37,9 @@ FAST_GA_fields = {
 
 # Extending FlightPoint dataclass
 col_name = FlightPoint.__annotations__
-for key in FAST_GA_fields.keys():
-    if FAST_GA_fields[key]['name'] not in col_name:
-        FlightPoint.add_field(name=FAST_GA_fields[key]['name'], unit=FAST_GA_fields[key]['unit'])
-CSV_DATA_LABELS = [
-    "time",
-    "altitude",
-    "ground_distance",
-    "mass",
-    "true_airspeed",
-    "equivalent_airspeed",
-    "mach",
-    "density",
-    "gamma",
-    "alpha",
-    "cl_wing",
-    "cl_htp",
-    "thrust (N)",
-    "thrust_rate",
-    "tsfc (kg/s/N)",
-    "name",
-    "lift_to_drag",
-    "battery power (W)",
-    "motor power input (W)",
-    "powertrain power input (W)"
-
-]
+for key in HE_MISSION_FIELDS.keys():
+    if HE_MISSION_FIELDS[key]['name'] not in col_name:
+        FlightPoint.add_field(name=HE_MISSION_FIELDS[key]['name'], unit=HE_MISSION_FIELDS[key]['unit'])
 
 _LOGGER = logging.getLogger(__name__)
 
