@@ -411,11 +411,11 @@ def save_df(
     thrust_rate,
     sfc,
     name: str,
+    existing_dataframe: pd.DataFrame = None,
     l_d_ratio = 1.0,
     battery_power=0,
     motor_in_power=0,
     powertrain_in_power=0,
-    existing_dataframe: pd.DataFrame = None,
 ):
     """
     Method to save mission point to a pandas dataframe file for further post-processing

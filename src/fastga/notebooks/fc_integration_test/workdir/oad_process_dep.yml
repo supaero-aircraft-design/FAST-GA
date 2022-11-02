@@ -4,8 +4,8 @@ title: Sample OAD Process applied to beechcraft
 module_folders:
 
 # Input and output files
-input_file: ./problem_inputs_sr22_dep.xml
-output_file: ./problem_outputs_sr22_dep.xml
+input_file: ./problem_inputs_sr22_DEP_FC_florian.xml
+output_file: ./problem_outputs_sr22_DEP_FC_florian.xml
 
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
 driver: om.ScipyOptimizeDriver(tol=1e-1, optimizer='COBYLA')

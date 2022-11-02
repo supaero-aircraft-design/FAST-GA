@@ -225,7 +225,7 @@ def aircraft_geometry_plot(
 
                     fig.add_trace(scatter_left)
 
-                    show_legend = False
+                    # show_legend = False
         else:
             scatter = go.Scatter(
                 x=y_nacelle_plot,
