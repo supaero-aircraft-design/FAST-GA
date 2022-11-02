@@ -120,6 +120,15 @@ class ComputeCruise(DynamicEquilibrium):
 
         while distance_t < cruise_distance:
 
+            flight_point = oad.FlightPoint(altitude=cruise_altitude,
+                                           time=time_t,
+                                           ground_distance=distance_t,
+                                           engine_setting=EngineSetting.CRUISE,
+                                           thrust_is_regulated=True,
+                                           mass=mass_t,
+                                           name='sizing:main_route:cruise')
+            self.complete_flight_point(flight_point, v_tas=v_tas)
+
             # Calculate dynamic pressure
             dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
@@ -127,37 +136,15 @@ class ComputeCruise(DynamicEquilibrium):
             previous_step = self.dynamic_equilibrium(
                 inputs, 0.0, dynamic_pressure, 0.0, 0.0, mass_t, "none", previous_step[0:2]
             )
-            thrust = float(previous_step[1])
+            flight_point.thrust = float(previous_step[1])
 
             # Compute consumption
-            flight_point = oad.FlightPoint(
-                mach=mach,
-                altitude=cruise_altitude,
-                engine_setting=EngineSetting.CRUISE,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
             propulsion_model.compute_flight_points(flight_point)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
             # Save results
-            if self.options["out_file"] != "":
-                flight_point_df = save_df(
-                    time_t + inputs["data:mission:sizing:main_route:climb:duration"],
-                    cruise_altitude,
-                    distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
-                    mass_t,
-                    v_tas,
-                    atm.calibrated_airspeed,
-                    atm.density,
-                    0.0,
-                    previous_step,
-                    flight_point.thrust_rate,
-                    flight_point.sfc,
-                    "sizing:main_route:cruise",
-                    flight_point_df,
-                )
+            self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
             # Calculate distance increase
@@ -179,22 +166,7 @@ class ComputeCruise(DynamicEquilibrium):
 
         # Save results
         if self.options["out_file"] != "":
-            flight_point_df = save_df(
-                time_t + inputs["data:mission:sizing:main_route:climb:duration"],
-                cruise_altitude,
-                distance_t + inputs["data:mission:sizing:main_route:climb:distance"],
-                mass_t,
-                v_tas,
-                atm.calibrated_airspeed,
-                atm.density,
-                0.0,
-                previous_step,
-                flight_point.thrust_rate,
-                flight_point.sfc,
-                "sizing:main_route:cruise",
-                flight_point_df,
-            )
-            self.save_csv(flight_point_df)
+            self.save_csv()
 
         outputs["data:mission:sizing:main_route:cruise:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:cruise:distance"] = distance_t

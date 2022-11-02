@@ -22,29 +22,26 @@ import openmdao.api as om
 from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
+from fastoad.model_base import FlightPoint
 
 from stdatm import Atmosphere
 
-CSV_DATA_LABELS = [
-    "time",
-    "altitude",
-    "ground_distance",
-    "mass",
-    "true_airspeed",
-    "equivalent_airspeed",
-    "mach",
-    "density",
-    "gamma",
-    "alpha",
-    "cl_wing",
-    "cl_htp",
-    "thrust (N)",
-    "thrust_rate",
-    "tsfc (kg/s/N)",
-    "name",
-]
+# Definition of Fast-ga custom flight point parameters
+FAST_GA_fields = {
+    'gamma': {'name':'gamma','unit':'rad'},
+    "alpha": {'name':'alpha','unit':'deg'},
+    "cl_wing": {'name':'cl_wing','unit':''},
+    "cl_htp": {'name':'cl_htp','unit':''},
+}
+
+# Extending FlightPoint dataclass
+col_name = FlightPoint.__annotations__
+for key in FAST_GA_fields.keys():
+    if FAST_GA_fields[key]['name'] not in col_name:
+        FlightPoint.add_field(name=FAST_GA_fields[key]['name'], unit=FAST_GA_fields[key]['unit'])
 
 _LOGGER = logging.getLogger(__name__)
+
 
 
 class DynamicEquilibrium(om.ExplicitComponent):
@@ -59,6 +56,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.cl_tail_sol = 0.0
         self.error_on_pitch_equilibrium = False
         self.delta_e_sol = 0.0
+        self.flight_points = []
 
     def initialize(self):
         self.options.declare("out_file", default="", types=str)
@@ -270,7 +268,6 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
     def save_csv(
         self,
-        dataframe_to_add: pd.DataFrame,
     ):
         """
         Method to save mission point to .csv file for further post-processing
@@ -279,17 +276,12 @@ class DynamicEquilibrium(om.ExplicitComponent):
         """
 
         if not os.path.exists(self.options["out_file"]):
-            dataframe_to_add.index = range(len(dataframe_to_add))
-            dataframe_to_add.to_csv(self.options["out_file"])
+            self.fligh_points.to_csv(self.options["out_file"])
         else:
-            dataframe_existing = pd.read_csv(self.options["out_file"])
-            if "Unnamed: 0" in dataframe_existing.columns:
-                dataframe_existing = dataframe_existing.drop("Unnamed: 0", axis=1)
-            dataframe_to_add.index = range(
-                max(dataframe_existing.index), max(dataframe_existing.index) + len(dataframe_to_add)
-            )
-            dataframe_existing = pd.concat([dataframe_existing, dataframe_to_add])
-            dataframe_existing.to_csv(self.options["out_file"])
+            existing_data = FlightPoint.create_list(pd.read_csv(self.options["out_file"]))
+            for i in range(len(self.flight_points)):
+                existing_data.append(self.flight_points[i])
+            existing_data.to_csv(self.options["out_file"])
 
     def equation_outer(
         self,
@@ -392,6 +384,45 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
+    def add_flight_point(self, flight_point : FlightPoint = None, equilibrium_result : tuple = (None)):
+
+        """
+        Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
+
+        :param equilibrium_result: result vector of dynamic equilibrium
+        :param flight_point: the flight_point to add
+        """
+
+        if flight_point is not None:
+            if equilibrium_result is not None:
+                flight_point.alpha = float(equilibrium_result[0]) * 180.0 / math.pi
+                flight_point.thrust = float(equilibrium_result[1])
+                flight_point.cl_wing = float(equilibrium_result[2])
+                flight_point.cl_htp = float(equilibrium_result[3])
+
+            self.flight_points.append(flight_point)
+
+    def complete_flight_point(self, flight_point: FlightPoint, mach = None, v_cas = None, v_tas = None, climb_rate = 0.0):
+
+        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+
+        if v_cas is not None:
+            atm.calibrated_airspeed = v_cas
+
+        elif v_tas is not None:
+            atm.true_airspeed = v_tas
+
+        elif mach is not None:
+            atm.mach = mach
+
+        else:
+            raise ValueError('Either v_cas or v_tas must be given to complete flight_point')
+
+        flight_point.mach = atm.mach
+        flight_point.true_airspeed = atm.true_airspeed
+        flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        flight_point.calibrated_airspeed = atm.calibrated_airspeed
+        flight_point.gamma = np.arcsin(climb_rate / atm.true_airspeed)
 
 def save_df(
     time,

@@ -131,56 +131,43 @@ class ComputeClimb(DynamicEquilibrium):
 
         while altitude_t < cruise_altitude:
 
+            flight_point = oad.FlightPoint(altitude=altitude_t,
+                                           time= time_t,
+                                           ground_distance=distance_t,
+                                           engine_setting=EngineSetting.CLIMB,
+                                           thrust_is_regulated=True,
+                                           mass=mass_t,
+                                           name='sizing:main_route:climb')
+
+            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
+                altitude_t
+            )
+
+            self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=climb_rate)
             # Calculate dynamic pressure
             atm = Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
-            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
-                altitude_t
-            )
+
             gamma = np.arcsin(climb_rate / v_tas)
-            mach = v_tas / atm.speed_of_sound
             atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
-            dvx_dt = dv_tas_dh * v_tas * np.sin(gamma)
+            dvx_dt = dv_tas_dh * v_tas * np.sin(flight_point.gamma)
             dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
-                inputs, gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
             )
-            thrust = float(previous_step[1])
+            flight_point.thrust = float(previous_step[1])
 
             # Compute consumption
-            flight_point = oad.FlightPoint(
-                mach=mach,
-                altitude=altitude_t,
-                engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
             propulsion_model.compute_flight_points(flight_point)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
-            # Save results
-            if self.options["out_file"] != "":
-                flight_point_df = save_df(
-                    time_t,
-                    altitude_t,
-                    distance_t,
-                    mass_t,
-                    v_tas,
-                    v_cas,
-                    atm.density,
-                    gamma * 180.0 / np.pi,
-                    previous_step,
-                    flight_point.thrust_rate,
-                    flight_point.sfc,
-                    "sizing:main_route:climb",
-                    flight_point_df,
-                )
+            self.add_flight_point(flight_point= flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
@@ -203,24 +190,9 @@ class ComputeClimb(DynamicEquilibrium):
                     % MAX_CALCULATION_TIME
                 )
 
-        # Save results
-        if self.options["out_file"] != "":
-            flight_point_df = save_df(
-                time_t,
-                altitude_t,
-                distance_t,
-                mass_t,
-                v_tas,
-                v_cas,
-                atm.density,
-                gamma * 180.0 / np.pi,
-                previous_step,
-                flight_point.thrust_rate,
-                flight_point.sfc,
-                "sizing:main_route:climb",
-                flight_point_df,
-            )
-            self.save_csv(flight_point_df)
+        # Save mission
+        if self.options['out_file'] != '':
+            self.save_csv()
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t
