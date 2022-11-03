@@ -1082,6 +1082,7 @@
         <landing_gear>
           <front>
             <weight_ratio is_input="True">0.24<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <front_fuselage_ratio is_input="True">0.75<!--Position of front landing gear expressed as fuselage front length ratio--> </front_fuselage_ratio>
           </front>
         </landing_gear>
       </airframe>
@@ -1091,6 +1092,7 @@
             <from_wingMAC25 is_input="True">0.0<!--distance between the tank CG and 25 percent of wing MAC as a ratio of the wing MAC--></from_wingMAC25>
           </CG>
         </tank>
+        <k_b1 is_input="True">1.0<!--Engine weight tuning factor--></k_b1>
       </propulsion>
     </weight>
     <wing>
