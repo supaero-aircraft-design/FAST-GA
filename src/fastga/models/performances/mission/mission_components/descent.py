@@ -127,13 +127,15 @@ class ComputeDescent(DynamicEquilibrium):
 
         while altitude_t > 0.0:
 
-            flight_point = oad.FlightPoint(altitude=altitude_t,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CLIMB,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:descent')
+            flight_point = oad.FlightPoint(
+                altitude=altitude_t,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:descent",
+            )
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=descent_rate)
 
@@ -150,13 +152,27 @@ class ComputeDescent(DynamicEquilibrium):
 
             # Find equilibrium, decrease gamma if obtained thrust is negative
             previous_step = self.dynamic_equilibrium(
-                inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs,
+                flight_point.gamma,
+                dynamic_pressure,
+                dvx_dt,
+                0.0,
+                mass_t,
+                "none",
+                previous_step[0:2],
             )
             thrust = previous_step[1]
             while thrust < 0.0:
                 flight_point.gamma = 0.9 * flight_point.gamma
                 previous_step = self.dynamic_equilibrium(
-                    inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                    inputs,
+                    flight_point.gamma,
+                    dynamic_pressure,
+                    dvx_dt,
+                    0.0,
+                    mass_t,
+                    "none",
+                    previous_step[0:2],
                 )
                 thrust = previous_step[1]
 

@@ -130,13 +130,15 @@ class ComputeClimb(DynamicEquilibrium):
 
         while altitude_t < cruise_altitude:
 
-            flight_point = oad.FlightPoint(altitude=altitude_t,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CLIMB,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:climb')
+            flight_point = oad.FlightPoint(
+                altitude=altitude_t,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:climb",
+            )
 
             climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
                 altitude_t
@@ -156,7 +158,14 @@ class ComputeClimb(DynamicEquilibrium):
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
-                inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs,
+                flight_point.gamma,
+                dynamic_pressure,
+                dvx_dt,
+                0.0,
+                mass_t,
+                "none",
+                previous_step[0:2],
             )
             flight_point.thrust = float(previous_step[1])
 
@@ -190,7 +199,7 @@ class ComputeClimb(DynamicEquilibrium):
                 )
 
         # Save mission
-        if self.options['out_file'] != '':
+        if self.options["out_file"] != "":
             self.save_csv()
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t

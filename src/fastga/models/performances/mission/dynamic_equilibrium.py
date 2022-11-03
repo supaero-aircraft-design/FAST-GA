@@ -29,20 +29,19 @@ from stdatm import Atmosphere
 
 # Definition of Fast-ga custom flight point parameters
 FAST_GA_fields = {
-    'gamma': {'name':'gamma','unit':'rad'},
-    "alpha": {'name':'alpha','unit':'deg'},
-    "cl_wing": {'name':'cl_wing','unit':''},
-    "cl_htp": {'name':'cl_htp','unit':''},
+    "gamma": {"name": "gamma", "unit": "rad"},
+    "alpha": {"name": "alpha", "unit": "deg"},
+    "cl_wing": {"name": "cl_wing", "unit": ""},
+    "cl_htp": {"name": "cl_htp", "unit": ""},
 }
 
 # Extending FlightPoint dataclass
 col_name = FlightPoint.__annotations__
 for key in FAST_GA_fields.keys():
-    if FAST_GA_fields[key]['name'] not in col_name:
-        FlightPoint.add_field(name=FAST_GA_fields[key]['name'], unit=FAST_GA_fields[key]['unit'])
+    if FAST_GA_fields[key]["name"] not in col_name:
+        FlightPoint.add_field(name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"])
 
 _LOGGER = logging.getLogger(__name__)
-
 
 
 class DynamicEquilibrium(om.ExplicitComponent):
@@ -421,7 +420,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
             self.flight_points.append(deepcopy(flight_point))
 
-    def complete_flight_point(self, flight_point: FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0):
+    def complete_flight_point(
+        self, flight_point: FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0
+    ):
 
         """
         Method to complete velocity fields in flight_point. Uses ONE of [v_cas, v_tas, mach] velocity to set the others.
@@ -448,11 +449,10 @@ class DynamicEquilibrium(om.ExplicitComponent):
             atm.mach = mach
 
         else:
-            raise ValueError('Either v_cas or v_tas must be given to complete flight_point')
+            raise ValueError("Either v_cas or v_tas must be given to complete flight_point")
 
         flight_point.mach = atm.mach
         flight_point.true_airspeed = atm.true_airspeed
         flight_point.equivalent_airspeed = atm.equivalent_airspeed
         flight_point.calibrated_airspeed = atm.calibrated_airspeed
         flight_point.gamma = np.arcsin(climb_rate / atm.true_airspeed)
-

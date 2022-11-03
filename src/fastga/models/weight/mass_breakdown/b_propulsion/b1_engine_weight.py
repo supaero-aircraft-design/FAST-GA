@@ -46,7 +46,9 @@ class ComputeEngineWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:propulsion:k_b1", val=np.nan, desc='Engine weight tunning factor')
+        self.add_input(
+            "settings:weight:propulsion:k_b1", val=np.nan, desc="Engine weight tunning factor"
+        )
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
@@ -87,7 +89,9 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:propulsion:k_b1", val=np.nan, desc='Engine weight tuning factor')
+        self.add_input(
+            "settings:weight:propulsion:k_b1", val=np.nan, desc="Engine weight tuning factor"
+        )
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 

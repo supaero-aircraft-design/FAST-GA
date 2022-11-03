@@ -121,13 +121,15 @@ class ComputeCruise(DynamicEquilibrium):
 
         while distance_t < cruise_distance:
 
-            flight_point = oad.FlightPoint(altitude=cruise_altitude,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CRUISE,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:cruise')
+            flight_point = oad.FlightPoint(
+                altitude=cruise_altitude,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CRUISE,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:cruise",
+            )
             self.complete_flight_point(flight_point, v_tas=v_tas)
 
             # Calculate dynamic pressure
