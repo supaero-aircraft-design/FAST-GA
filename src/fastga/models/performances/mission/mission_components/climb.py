@@ -30,7 +30,7 @@ from stdatm import Atmosphere
 
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT
 
-from ..dynamic_equilibrium import DynamicEquilibrium, save_df
+from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
 
 _LOGGER = logging.getLogger(__name__)
@@ -124,8 +124,6 @@ class ComputeClimb(DynamicEquilibrium):
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
         atm.calibrated_airspeed = v_cas
-        v_tas = atm.true_airspeed
-        gamma = np.arcsin(climb_rate_sl / v_tas)
 
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate_sl) / float(POINTS_NB_CLIMB)
@@ -150,7 +148,6 @@ class ComputeClimb(DynamicEquilibrium):
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
 
-            gamma = np.arcsin(climb_rate / v_tas)
             atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
@@ -174,8 +171,8 @@ class ComputeClimb(DynamicEquilibrium):
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
             # Calculate distance variation (earth axis)
-            v_z = v_tas * np.sin(gamma)
-            v_x = v_tas * np.cos(gamma)
+            v_z = v_tas * np.sin(flight_point.gamma)
+            v_x = v_tas * np.cos(flight_point.gamma)
             time_step = min(time_step, (cruise_altitude - altitude_t) / v_z)
             altitude_t += v_z * time_step
             distance_t += v_x * time_step

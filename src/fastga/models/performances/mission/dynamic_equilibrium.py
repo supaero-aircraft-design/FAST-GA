@@ -273,9 +273,10 @@ class DynamicEquilibrium(om.ExplicitComponent):
         """
         Method to save mission point to .csv file for further post-processing
         """
-
+        # From flight point list to dataframe
         dataframe_to_add = pd.DataFrame(self.flight_points)
 
+        # Convert array to float
         def as_scalar(value):
             if isinstance(value, np.ndarray):
                 return value.item()
@@ -288,6 +289,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         }
         dataframe_to_add.rename(columns=rename_dict, inplace=True)
 
+        # Save and recycle data if a file is already present.
         if not os.path.exists(self.options["out_file"]):
             dataframe_to_add.index = range(len(dataframe_to_add))
             dataframe_to_add.to_csv(self.options["out_file"])
@@ -402,7 +404,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
-    def add_flight_point(self, flight_point : FlightPoint = None, equilibrium_result : tuple = (None)):
+    def add_flight_point(self, flight_point: FlightPoint = None, equilibrium_result: tuple = None):
 
         """
         Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
@@ -419,7 +421,20 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
             self.flight_points.append(deepcopy(flight_point))
 
-    def complete_flight_point(self, flight_point: FlightPoint, mach = None, v_cas = None, v_tas = None, climb_rate = 0.0):
+    def complete_flight_point(self, flight_point: FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0):
+
+        """
+        Method to complete velocity fields in flight_point. Uses ONE of [v_cas, v_tas, mach] velocity to set the others.
+        Order of priority is as presented in the list.
+
+        :param flight_point: the flight point to complete
+        :param mach: the mach number
+        :param v_cas: the calibrated airspeed
+        :param v_tas: the true airspeed
+        :param climb_rate: the climb rate in m/s used to compute gamma (can be negative).
+
+
+        """
 
         atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
 
@@ -441,85 +456,3 @@ class DynamicEquilibrium(om.ExplicitComponent):
         flight_point.calibrated_airspeed = atm.calibrated_airspeed
         flight_point.gamma = np.arcsin(climb_rate / atm.true_airspeed)
 
-def save_df(
-    time,
-    altitude,
-    distance,
-    mass,
-    v_tas,
-    v_cas,
-    rho,
-    gamma,
-    equilibrium_result,
-    thrust_rate,
-    sfc,
-    name: str,
-    existing_dataframe: pd.DataFrame = None,
-):
-    """
-    Method to save mission point to a pandas dataframe file for further post-processing
-
-    :param time: mission time in seconds
-    :param altitude: flight altitude in meters
-    :param distance: flight distance in meters
-    :param mass: aircraft current mass
-    :param v_tas: true air speed in m/s
-    :param v_cas: calibrated air speed in m/s
-    :param rho: air density in kg/m3
-    :param gamma: slope angle in degree
-    :param equilibrium_result: result vector of dynamic equilibrium
-    :param thrust_rate: thrust rate at flight point
-    :param sfc: sfc at flight point
-    :param name: phase name
-    :param existing_dataframe: Dataframe
-    """
-
-    alpha = float(equilibrium_result[0]) * 180.0 / math.pi
-    thrust = float(equilibrium_result[1])
-    cl_wing = float(equilibrium_result[2])
-    cl_htp = float(equilibrium_result[3])
-    atm = Atmosphere(altitude, altitude_in_feet=False)
-    mach = v_tas / atm.speed_of_sound
-    if existing_dataframe is None:
-        existing_dataframe = pd.DataFrame(columns=CSV_DATA_LABELS)
-        existing_dataframe.loc[0] = [
-            float(time),
-            float(altitude),
-            float(distance),
-            float(mass),
-            float(v_tas),
-            float(v_cas),
-            float(mach),
-            float(rho),
-            float(gamma),
-            alpha,
-            cl_wing,
-            cl_htp,
-            thrust,
-            float(thrust_rate),
-            float(sfc),
-            name,
-        ]
-    else:
-        data = [
-            float(time),
-            float(altitude),
-            float(distance),
-            float(mass),
-            float(v_tas),
-            float(v_cas),
-            float(mach),
-            float(rho),
-            float(gamma),
-            alpha,
-            cl_wing,
-            cl_htp,
-            thrust,
-            float(thrust_rate),
-            float(sfc),
-            name,
-        ]
-        row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
-        existing_dataframe = pd.concat([existing_dataframe, row])
-
-    return existing_dataframe

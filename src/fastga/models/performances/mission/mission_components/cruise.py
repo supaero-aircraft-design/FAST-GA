@@ -23,7 +23,7 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from ..dynamic_equilibrium import DynamicEquilibrium, save_df
+from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CRUISE
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,7 +115,7 @@ class ComputeCruise(DynamicEquilibrium):
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl)
         atm = Atmosphere(cruise_altitude, altitude_in_feet=False)
         atm.true_airspeed = v_tas
-        mach = atm.mach
+
         previous_step = ()
         self.flight_points = []
 
