@@ -244,7 +244,7 @@
         </landing_gear>
       </airframe>
       <propulsion>
-        <k_b1 is_input="True">nan<!--Engine weight tunning factor--></k_b1>
+        <k_b1 is_input="True">1.0<!--Engine weight tunning factor--></k_b1>
       </propulsion>
     </weight>
   </settings>

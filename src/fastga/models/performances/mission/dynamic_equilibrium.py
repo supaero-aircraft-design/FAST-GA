@@ -36,10 +36,10 @@ FAST_GA_fields = {
 }
 
 # Extending FlightPoint dataclass
-col_name = FlightPoint.__annotations__
+col_name = oad.FlightPoint.__annotations__
 for key in FAST_GA_fields.keys():
     if FAST_GA_fields[key]["name"] not in col_name:
-        FlightPoint.add_field(name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"])
+        oad.FlightPoint.add_field(name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"])
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -284,7 +284,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         dataframe_to_add = dataframe_to_add.applymap(as_scalar)
         rename_dict = {
             field_name: f"{field_name} [{unit}]"
-            for field_name, unit in FlightPoint.get_units().items()
+            for field_name, unit in oad.FlightPoint.get_units().items()
         }
         dataframe_to_add.rename(columns=rename_dict, inplace=True)
 
@@ -414,7 +414,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         if flight_point is not None:
             if equilibrium_result is not None:
-                flight_point.alpha = float(equilibrium_result[0]) * 180.0 / math.pi
+                flight_point.alpha = float(equilibrium_result[0]) * 180.0 / np.pi
                 flight_point.cl_wing = float(equilibrium_result[2])
                 flight_point.cl_htp = float(equilibrium_result[3])
 
@@ -449,7 +449,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             atm.mach = mach
 
         else:
-            raise ValueError("Either v_cas or v_tas must be given to complete flight_point")
+            raise ValueError("Either v_cas, v_tas or mach number must be given to complete flight_point")
 
         flight_point.mach = atm.mach
         flight_point.true_airspeed = atm.true_airspeed
