@@ -24,9 +24,9 @@ from ..constants import SUBMODEL_CL_AILERON
 )
 class ComputeClDeltaAileron(FigureDigitization):
     """
-    Roll moment due to rudder estimated based on the methodology presented in Gudmundsson. This
-    methodology is known to overestimate the coefficient so a correction factor will be added.
-    This coefficient assumes a symmetrical deflection. The convention from
+    Roll moment due to aileron deflection estimated based on the methodology presented in
+    Gudmundsson. This methodology is known to overestimate the coefficient so a correction factor
+    will be added. This coefficient assumes a symmetrical deflection. The convention from
     :cite:`roskampart6:1990` are used, meaning that for lateral derivative, the reference length
     is the wing span.
 
@@ -39,7 +39,6 @@ class ComputeClDeltaAileron(FigureDigitization):
 
     def setup(self):
 
-        self.add_input("data:geometry:wing:aileron:max_deflection", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
 
@@ -81,13 +80,14 @@ class ComputeClDeltaAileron(FigureDigitization):
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
 
-        aileron_max_deflection = inputs["data:geometry:wing:aileron:max_deflection"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
 
         aileron_outer_span = wing_span / 2.0
         aileron_inner_span = wing_span * (1.0 - aileron_span_ratio) / 2.0
 
-        alpha_aileron = self.k_prime_single_slotted(aileron_max_deflection, aileron_chord_ratio)
+        # Aileron are most mostly going to be used around delta_a = 0 degree, which is the reason
+        # why the effectiveness is going to be computed around this deflection
+        alpha_aileron = self.k_prime_single_slotted(0.0, aileron_chord_ratio)
         lift_increase_aileron = 2 * np.pi / np.sqrt(1 - mach ** 2) * alpha_aileron
 
         cl_delta_a = (

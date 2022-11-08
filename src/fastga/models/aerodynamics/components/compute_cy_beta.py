@@ -28,7 +28,9 @@ from ..constants import (
 class ComputeCYBetaAircraft(om.Group):
     """
     Computation of the increase in side force due to a sideslip angle. Assumes the coefficient at
-    aircraft level can be obtained by summing the contribution of the individual components.
+    aircraft level can be obtained by summing the contribution of the individual components. Only
+    considers the contribution of wing, VTP and fuselage, does not take into account the effect
+    of nacelles or propeller lateral forces.
 
     Based on :cite:`roskampart6:1990` section 10.2.4.1
     """

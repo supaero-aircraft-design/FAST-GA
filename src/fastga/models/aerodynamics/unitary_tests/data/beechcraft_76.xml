@@ -166,7 +166,7 @@
         </MAC>
         <aileron>
           <chord_ratio is_input="True">0.26<!--aileron chord as a percentage of the wing chord--></chord_ratio>
-          <max_deflection units="rad" is_input="True">40.0</max_deflection>
+          <max_deflection units="deg" is_input="True">20.0</max_deflection>
           <span_ratio is_input="True">0.32</span_ratio>
         </aileron>
         <kink>

@@ -278,8 +278,8 @@ def test_compute_ht_volume_coefficient():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeHTVolumeCoefficient(), ivc)
-    wet_area = problem.get_val("data:geometry:horizontal_tail:volume_coefficient")
-    assert wet_area == pytest.approx(0.726, rel=1e-2)
+    vol_coeff = problem.get_val("data:geometry:horizontal_tail:volume_coefficient")
+    assert vol_coeff == pytest.approx(0.726, rel=1e-2)
 
     problem.check_partials(compact_print=True)
 
