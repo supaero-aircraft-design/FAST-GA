@@ -806,10 +806,14 @@
           <max_mass_per_passenger units="kg" is_input="True">90.0<!--maximum payload mass carried by passenger--></max_mass_per_passenger>
         </payload>
       </aircraft>
+      <propulsion>
+        <k_b1 is_input="True">1.0<!--Engine weight tuning factor--></k_b1>
+      </propulsion>
       <airframe>
         <landing_gear>
           <front>
             <weight_ratio is_input="True">0.23<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <front_fuselage_ratio is_input="True">0.75<!--Position of front landing gear expressed as fuselage front length ratio--> </front_fuselage_ratio>
           </front>
         </landing_gear>
       </airframe>

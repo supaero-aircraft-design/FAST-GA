@@ -18,6 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
+import numpy as np
 
 oad.RegisterSubmodel.active_models[
     SUBMODEL_INSTALLED_ENGINE_MASS
@@ -45,7 +46,7 @@ class ComputeEngineWeight(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:weight:propulsion:k_b1")
+        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0)
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
@@ -57,11 +58,11 @@ class ComputeEngineWeight(ExplicitComponent):
 
         # This should give the UNINSTALLED weight
         uninstalled_engine_weight = propulsion_model.compute_weight()
-        k_b1 = inputs["settings:weight:propulsion:k_b1"]
+        k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
-        b1 = 1.4 * uninstalled_engine_weight * k_b1
+        b1 = 1.4 * uninstalled_engine_weight
 
-        outputs["data:weight:propulsion:engine:mass"] = b1
+        outputs["data:weight:propulsion:engine:mass"] = b1 * k_b1
 
 
 @oad.RegisterSubmodel(
@@ -86,6 +87,8 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
+        self.add_input("settings:weight:propulsion:engine:k_factor", val=1.0)
+
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
@@ -93,11 +96,12 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
-        engine_count = inputs["data:geometry:propulsion:engine:count"]
+
+        k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
         # This should give the UNINSTALLED weight in lbs !
         uninstalled_engine_weight = propulsion_model.compute_weight()
 
-        b1 = 2.575 * uninstalled_engine_weight ** 0.922 * engine_count
+        b1 = 2.575 * uninstalled_engine_weight ** 0.922
 
-        outputs["data:weight:propulsion:engine:mass"] = b1
+        outputs["data:weight:propulsion:engine:mass"] = b1 * k_b1
