@@ -22,7 +22,7 @@ import openmdao.api as om
 from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
-from fastoad.model_base import FlightPoint
+import fastoad.api as oad
 from copy import deepcopy
 
 from stdatm import Atmosphere
