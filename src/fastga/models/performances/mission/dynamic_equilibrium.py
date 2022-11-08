@@ -39,7 +39,9 @@ FAST_GA_fields = {
 col_name = oad.FlightPoint.__annotations__
 for key in FAST_GA_fields.keys():
     if FAST_GA_fields[key]["name"] not in col_name:
-        oad.FlightPoint.add_field(name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"])
+        oad.FlightPoint.add_field(
+            name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"]
+        )
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -403,7 +405,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
-    def add_flight_point(self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None):
+    def add_flight_point(
+        self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None
+    ):
 
         """
         Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
@@ -449,7 +453,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
             atm.mach = mach
 
         else:
-            raise ValueError("Either v_cas, v_tas or mach number must be given to complete flight_point")
+            raise ValueError(
+                "Either v_cas, v_tas or mach number must be given to complete flight_point"
+            )
 
         flight_point.mach = atm.mach
         flight_point.true_airspeed = atm.true_airspeed
