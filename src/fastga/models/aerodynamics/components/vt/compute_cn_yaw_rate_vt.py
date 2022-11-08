@@ -25,12 +25,12 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
     """
     Computation of the increase in yaw rate due to a yaw rate. The coefficient depends on the
     angle of attack so the same remark as in ..compute_cy_yaw_rate. holds. The convention from
-    :cite:`roskampart6:1990` are used, meaning that for lateral derivative, the reference length
+    :cite:`roskampart6:1985` are used, meaning that for lateral derivative, the reference length
     is the wing span. Another important point is that, for the derivative with respect to yaw and
     roll, the rotation speed are made dimensionless by multiplying them by the wing span and
     dividing them by 2 times the airspeed.
 
-    Based on :cite:`roskampart6:1990` section 10.2.8
+    Based on :cite:`roskampart6:1985` section 10.2.8
     """
 
     def initialize(self):

@@ -25,7 +25,7 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CY_BETA_FUSELAGE
 class ComputeCyBetaFuselage(om.ExplicitComponent):
     """
     Class to compute the contribution of the fuselage to the side force coefficient due to sideslip.
-    Based on :cite:`roskampart6:1990` section 10.2.4.1
+    Based on :cite:`roskampart6:1985` section 10.2.4.1
     """
 
     def setup(self):

@@ -24,10 +24,10 @@ class ComputeCnDeltaAileron(FigureDigitization):
     """
     Yaw moment due to aileron deflection (also called adverse aileron yaw). Depends on the wing
     lift, hence on the angle of attack, so the same remark as in ..compute_cy_yaw_rate.py holds.
-    The convention from :cite:`roskampart6:1990` are used, meaning that for lateral derivative,
+    The convention from :cite:`roskampart6:1985` are used, meaning that for lateral derivative,
     the reference length is the wing span.
 
-    Based on :cite:`roskampart6:1990` section 10.3.8.
+    Based on :cite:`roskampart6:1985` section 10.3.8.
     """
 
     def initialize(self):

@@ -32,7 +32,7 @@ class ComputeCYBetaAircraft(om.Group):
     considers the contribution of wing, VTP and fuselage, does not take into account the effect
     of nacelles or propeller lateral forces.
 
-    Based on :cite:`roskampart6:1990` section 10.2.4.1
+    Based on :cite:`roskampart6:1985` section 10.2.4.1
     """
 
     def initialize(self):

@@ -26,11 +26,11 @@ class ComputeCLAlphaDotAircraft(om.ExplicitComponent):
     """
     Computation of the increase in lift due to a rate of change of AoA. Not destined for the
     computation of the equilibrium since they are assumed quasi-steady but rather for future
-    interface with flight simulator.The convention from :cite:`roskampart6:1990` are used,
+    interface with flight simulator.The convention from :cite:`roskampart6:1985` are used,
     meaning that, for the derivative with respect to a rate of AOA, this rate is made
     dimensionless by multiplying it by the MAC and dividing it by 2 times the airspeed.
 
-    Based on :cite:`roskampart6:1990` section 10.2.3
+    Based on :cite:`roskampart6:1985` section 10.2.3
     """
 
     def initialize(self):

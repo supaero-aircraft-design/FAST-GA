@@ -29,11 +29,11 @@ class ComputeCnBetaAircraft(om.Group):
     Computation of the increase in yawing moment due to a sideslip angle. Assumes the coefficient
     at aircraft level can be obtained by summing the contribution of the individual components (
     fuselage and VT). Wing contribution is negligible up until high angles of attack. The
-    convention from :cite:`roskampart6:1990` are used, meaning that for lateral derivative,
+    convention from :cite:`roskampart6:1985` are used, meaning that for lateral derivative,
     the reference length is the wing span. Does not take into account the effect
     of nacelles or propeller lateral forces.
 
-    Based on :cite:`roskampart6:1990` section 10.2.4.1
+    Based on :cite:`roskampart6:1985` section 10.2.4.1
     """
 
     def initialize(self):

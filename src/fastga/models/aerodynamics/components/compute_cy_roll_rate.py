@@ -24,11 +24,11 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
     Computation of the increase in side force due to a roll rate. Assumes that only the
     contribution of the VTP is relevant for this coefficient. Same remark on the dependency on
     the AoA of this coefficient as in .compute_cy_yaw_rate. The convention from
-    :cite:`roskampart6:1990` are used, meaning that, for the derivative with respect to yaw and
+    :cite:`roskampart6:1985` are used, meaning that, for the derivative with respect to yaw and
     roll, the rotation speed are made dimensionless by multiplying them by the wing span and
     dividing them by 2 times the airspeed.
 
-    Based on :cite:`roskampart6:1990` section 10.2.6
+    Based on :cite:`roskampart6:1985` section 10.2.6
     """
 
     def initialize(self):

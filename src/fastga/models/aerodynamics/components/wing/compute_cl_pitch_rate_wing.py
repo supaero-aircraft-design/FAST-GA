@@ -25,11 +25,11 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CL_Q_WING
 class ComputeCLPitchVelocityWing(om.ExplicitComponent):
     """
     Computation of the contribution of the wing to the increase in lift due to a pitch velocity.
-    The convention from :cite:`roskampart6:1990` are used, meaning that, for the derivative with
+    The convention from :cite:`roskampart6:1985` are used, meaning that, for the derivative with
     respect to a pitch rate, this rate is made dimensionless by multiplying it by the MAC and
     dividing it by 2 times the airspeed.
 
-    Based on :cite:`roskampart6:1990` section 10.2.7
+    Based on :cite:`roskampart6:1985` section 10.2.7
     """
 
     def initialize(self):
