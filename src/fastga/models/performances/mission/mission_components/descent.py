@@ -28,7 +28,7 @@ from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
 
-from ..dynamic_equilibrium import DynamicEquilibrium, save_df
+from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_DESCENT, SUBMODEL_DESCENT_SPEED
 
 _LOGGER = logging.getLogger(__name__)
@@ -120,8 +120,6 @@ class ComputeDescent(DynamicEquilibrium):
         # FIXME: an input!
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
         atm.calibrated_airspeed = v_cas
-        v_tas = atm.true_airspeed
-        gamma = np.arcsin(descent_rate / v_tas)
 
         # Define specific time step ~POINTS_NB_DESCENT points for calculation (with ground
         # conditions)
@@ -129,13 +127,15 @@ class ComputeDescent(DynamicEquilibrium):
 
         while altitude_t > 0.0:
 
-            flight_point = oad.FlightPoint(altitude=altitude_t,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CLIMB,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:descent')
+            flight_point = oad.FlightPoint(
+                altitude=altitude_t,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:descent",
+            )
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=descent_rate)
 
@@ -143,23 +143,36 @@ class ComputeDescent(DynamicEquilibrium):
             atm = Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
-            mach = v_tas / atm.speed_of_sound
-            gamma = np.arcsin(descent_rate / v_tas)
+
             atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
-            dvx_dt = dv_tas_dh * v_tas * np.sin(gamma)
+            dvx_dt = dv_tas_dh * v_tas * np.sin(flight_point.gamma)
             dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium, decrease gamma if obtained thrust is negative
             previous_step = self.dynamic_equilibrium(
-                inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs,
+                flight_point.gamma,
+                dynamic_pressure,
+                dvx_dt,
+                0.0,
+                mass_t,
+                "none",
+                previous_step[0:2],
             )
             thrust = previous_step[1]
             while thrust < 0.0:
                 flight_point.gamma = 0.9 * flight_point.gamma
                 previous_step = self.dynamic_equilibrium(
-                    inputs, flight_point.gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                    inputs,
+                    flight_point.gamma,
+                    dynamic_pressure,
+                    dvx_dt,
+                    0.0,
+                    mass_t,
+                    "none",
+                    previous_step[0:2],
                 )
                 thrust = previous_step[1]
 
@@ -172,8 +185,8 @@ class ComputeDescent(DynamicEquilibrium):
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
             # Calculate distance variation (earth axis)
-            v_x = v_tas * np.cos(gamma)
-            v_z = v_tas * np.sin(gamma)
+            v_x = v_tas * np.cos(flight_point.gamma)
+            v_z = v_tas * np.sin(flight_point.gamma)
             time_step = min(time_step, -altitude_t / v_z)
             distance_t += v_x * time_step
             altitude_t += v_z * time_step

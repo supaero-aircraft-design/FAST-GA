@@ -23,7 +23,7 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-from ..dynamic_equilibrium import DynamicEquilibrium, save_df
+from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CRUISE
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,19 +115,21 @@ class ComputeCruise(DynamicEquilibrium):
         mass_t = mtow - (m_to + m_tk + m_ic + m_cl)
         atm = Atmosphere(cruise_altitude, altitude_in_feet=False)
         atm.true_airspeed = v_tas
-        mach = atm.mach
+
         previous_step = ()
         self.flight_points = []
 
         while distance_t < cruise_distance:
 
-            flight_point = oad.FlightPoint(altitude=cruise_altitude,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CRUISE,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:cruise')
+            flight_point = oad.FlightPoint(
+                altitude=cruise_altitude,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CRUISE,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:cruise",
+            )
             self.complete_flight_point(flight_point, v_tas=v_tas)
 
             # Calculate dynamic pressure

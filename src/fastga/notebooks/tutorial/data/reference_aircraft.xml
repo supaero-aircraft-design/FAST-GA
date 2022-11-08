@@ -243,6 +243,11 @@
           </front>
         </landing_gear>
       </airframe>
+      <propulsion>
+        <engine>
+          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
+        </engine>
+      </propulsion>
     </weight>
   </settings>
 </FASTOAD_model>
