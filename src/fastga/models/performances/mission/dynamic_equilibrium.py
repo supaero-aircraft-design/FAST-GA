@@ -27,7 +27,7 @@ from copy import deepcopy
 
 from stdatm import Atmosphere
 
-# Definition of Fast-ga custom flight point parameters
+# Definition of Fast-ga custom fields
 FAST_GA_fields = {
     "gamma": {"name": "gamma", "unit": "rad"},
     "alpha": {"name": "alpha", "unit": "deg"},
@@ -35,7 +35,7 @@ FAST_GA_fields = {
     "cl_htp": {"name": "cl_htp", "unit": ""},
 }
 
-# Extending FlightPoint dataclass
+# Extending FlightPoint dataclass, see FAST-OAD FlightPoint documentation
 col_name = oad.FlightPoint.__annotations__
 for key in FAST_GA_fields.keys():
     if FAST_GA_fields[key]["name"] not in col_name:
@@ -403,7 +403,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
-    def add_flight_point(self, flight_point: FlightPoint = None, equilibrium_result: tuple = None):
+    def add_flight_point(self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None):
 
         """
         Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
@@ -421,7 +421,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             self.flight_points.append(deepcopy(flight_point))
 
     def complete_flight_point(
-        self, flight_point: FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0
+        self, flight_point: oad.FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0
     ):
 
         """

@@ -47,7 +47,7 @@ class ComputeEngineWeight(ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self.add_input(
-            "settings:weight:propulsion:k_b1", val=np.nan, desc="Engine weight tunning factor"
+            "settings:weight:propulsion:engine:k_factor", val=1.0
         )
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
@@ -60,7 +60,7 @@ class ComputeEngineWeight(ExplicitComponent):
 
         # This should give the UNINSTALLED weight
         uninstalled_engine_weight = propulsion_model.compute_weight()
-        k_b1 = inputs["settings:weight:propulsion:k_b1"]
+        k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
         b1 = 1.4 * uninstalled_engine_weight
 
@@ -90,7 +90,7 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
         self._engine_wrapper.setup(self)
 
         self.add_input(
-            "settings:weight:propulsion:k_b1", val=np.nan, desc="Engine weight tuning factor"
+            "settings:weight:propulsion:engine:k_factor", val=1.0
         )
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
@@ -101,7 +101,7 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
-        k_b1 = inputs["settings:weight:propulsion:k_b1"]
+        k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
         # This should give the UNINSTALLED weight in lbs !
         uninstalled_engine_weight = propulsion_model.compute_weight()

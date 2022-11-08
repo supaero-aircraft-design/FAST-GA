@@ -44,12 +44,10 @@ class ComputeLandingGearCG(ExplicitComponent):
         self.add_input(
             "settings:weight:airframe:landing_gear:front:weight_ratio",
             val=0.3,
-            desc="Should not be lower than 0.08. Roskam",
         )
         self.add_input(
             "settings:weight:airframe:landing_gear:front:front_fuselage_ratio",
             val=0.75,
-            desc="Position of front landing gear expressed as fuselage front length ratio",
         )
 
         self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
