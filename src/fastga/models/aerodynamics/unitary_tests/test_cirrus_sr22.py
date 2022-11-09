@@ -1208,49 +1208,49 @@ def test_cy_beta_aircraft():
 def test_cy_r_aircraft():
     """Tests cy beta of the aircraft."""
     side_force_yaw_rate_aircraft(
-        XML_FILE, cy_yaw_rate_low_speed_=0.2469, cy_yaw_rate_cruise_=0.2521
+        XML_FILE, cy_yaw_rate_low_speed_=0.2469, cy_yaw_rate_cruise_=0.24468695
     )
 
 
 def test_cy_p_aircraft():
     """Tests cy beta of the aircraft."""
     side_force_roll_rate_aircraft(
-        XML_FILE, cy_roll_rate_low_speed_=-0.09683, cy_roll_rate_cruise_=-0.09888
+        XML_FILE, cy_roll_rate_low_speed_=-0.09683, cy_roll_rate_cruise_=-0.11623686
     )
 
 
 def test_cl_beta_wing():
     """Test cl beta of the wing."""
     roll_moment_side_slip_wing(
-        XML_FILE, cl_beta_wing_low_speed_=-0.01422404, cl_beta_wing_cruise_=-0.01575317
+        XML_FILE, cl_beta_wing_low_speed_=-0.01422404, cl_beta_wing_cruise_=-0.01499659
     )
 
 
 def test_cl_beta_ht():
     """Test cl beta of the wing."""
     roll_moment_side_slip_ht(
-        XML_FILE, cl_beta_ht_low_speed_=-0.00079034, cl_beta_ht_cruise_=-0.00079322
+        XML_FILE, cl_beta_ht_low_speed_=-0.00079034, cl_beta_ht_cruise_=-5.08832572e-05
     )
 
 
 def test_cl_beta_vt():
     """Test cl beta of the vt."""
     roll_moment_side_slip_vt(
-        XML_FILE, cl_beta_vt_low_speed_=-0.04841665, cl_beta_vt_cruise_=-0.04944261
+        XML_FILE, cl_beta_vt_low_speed_=-0.04841665, cl_beta_vt_cruise_=-0.05811843
     )
 
 
 def test_cl_beta_aircraft():
     """Test cl beta of the vt."""
     roll_moment_side_slip_aircraft(
-        XML_FILE, cl_beta_low_speed_=-0.06343, cl_beta_cruise_=-0.06598899
+        XML_FILE, cl_beta_low_speed_=-0.06343, cl_beta_cruise_=-0.0731659
     )
 
 
 def test_cl_p_wing():
     """Test cl p of the wing."""
     roll_moment_roll_rate_wing(
-        XML_FILE, cl_p_wing_low_speed_=-0.52850071, cl_p_wing_cruise_=-0.53429479
+        XML_FILE, cl_p_wing_low_speed_=-0.52850071, cl_p_wing_cruise_=-0.53237904
     )
 
 
@@ -1266,24 +1266,24 @@ def test_cl_p_vt():
 
 def test_cl_p():
     """Test cl p of the aircraft."""
-    roll_moment_roll_rate_aircraft(XML_FILE, cl_p_low_speed_=-0.55730024, cl_p_cruise_=-0.56358378)
+    roll_moment_roll_rate_aircraft(XML_FILE, cl_p_low_speed_=-0.55730024, cl_p_cruise_=-0.5616597)
 
 
 def test_cl_r_wing():
     """Test cl r of the wing."""
     roll_moment_yaw_rate_wing(
-        XML_FILE, cl_r_wing_low_speed_=0.13962554, cl_r_wing_cruise_=0.14399482
+        XML_FILE, cl_r_wing_low_speed_=0.13962554, cl_r_wing_cruise_=0.05445163
     )
 
 
 def test_cl_r_vt():
     """Test cl r of the vt."""
-    roll_moment_yaw_rate_vt(XML_FILE, cl_r_vt_low_speed_=0.03470904, cl_r_vt_cruise_=0.03544453)
+    roll_moment_yaw_rate_vt(XML_FILE, cl_r_vt_low_speed_=0.03470904, cl_r_vt_cruise_=0.04042303)
 
 
 def test_cl_r_aircraft():
     """Test cl r of the aircraft."""
-    roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.17433458, cl_r_cruise_=0.17943935)
+    roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.17433458, cl_r_cruise_=0.09487465)
 
 
 def test_cl_delta_a_aircraft():
@@ -1293,7 +1293,7 @@ def test_cl_delta_a_aircraft():
 
 def test_cl_delta_r_aircraft():
     """Test roll authority of the rudder."""
-    roll_moment_rudder(XML_FILE, cl_delta_r_low_speed_=0.02815446, cl_delta_r_cruise_=0.02874612)
+    roll_moment_rudder(XML_FILE, cl_delta_r_low_speed_=0.02815446, cl_delta_r_cruise_=0.03379028)
 
 
 def test_cm_q_wing():
@@ -1323,7 +1323,7 @@ def test_cm_alpha_dot():
 def test_cn_beta_vt():
     """Tests cn beta of the vt."""
     yaw_moment_sideslip_derivative_vt(
-        XML_FILE, cn_beta_vt_low_speed_=0.12348297, cn_beta_vt_cruise_=0.12609959
+        XML_FILE, cn_beta_vt_low_speed_=0.12348297, cn_beta_vt_cruise_=0.12234347
     )
 
 
@@ -1334,43 +1334,43 @@ def test_cn_beta_aircraft():
 
 def test_cn_delta_a_aircraft():
     """Test yaw moment of the aileron."""
-    yaw_moment_aileron(XML_FILE, cn_delta_a_low_speed_=-0.01690296, cn_delta_a_cruise_=-0.01767712)
+    yaw_moment_aileron(XML_FILE, cn_delta_a_low_speed_=-0.01690296, cn_delta_a_cruise_=-0.0066846)
 
 
 def test_cn_delta_r_aircraft():
     """Test yaw moment of the rudder."""
-    yaw_moment_rudder(XML_FILE, cn_delta_r_low_speed_=-0.07180581, cn_delta_r_cruise_=-0.07331479)
+    yaw_moment_rudder(XML_FILE, cn_delta_r_low_speed_=-0.07180581, cn_delta_r_cruise_=-0.07113097)
 
 
 def test_cn_p_wing():
     """Test cn p of the wing."""
     yaw_moment_roll_rate_wing(
-        XML_FILE, cn_p_wing_low_speed_=0.0668911, cn_p_wing_cruise_=0.06775914
+        XML_FILE, cn_p_wing_low_speed_=0.0668911, cn_p_wing_cruise_=0.02562311
     )
 
 
 def test_cn_p_vt():
     """Test cn p of the vt."""
-    yaw_moment_roll_rate_vt(XML_FILE, cn_p_vt_low_speed_=-0.00758319, cn_p_vt_cruise_=-0.00774388)
+    yaw_moment_roll_rate_vt(XML_FILE, cn_p_vt_low_speed_=-0.00758319, cn_p_vt_cruise_=-0.00147893)
 
 
 def test_cn_p_aircraft():
     """Tests cn p of the aircraft."""
-    yaw_moment_roll_rate_aircraft(XML_FILE, cn_p_low_speed_=0.05930792, cn_p_cruise_=0.06001526)
+    yaw_moment_roll_rate_aircraft(XML_FILE, cn_p_low_speed_=0.05930792, cn_p_cruise_=0.02414418)
 
 
 def test_cn_r_wing():
     """Test cn r of the wing."""
     yaw_moment_yaw_rate_wing(
-        XML_FILE, cn_r_wing_low_speed_=-0.00527219, cn_r_wing_cruise_=-0.0052716
+        XML_FILE, cn_r_wing_low_speed_=-0.00527219, cn_r_wing_cruise_=-0.00218132
     )
 
 
 def test_cn_r_vt():
     """Test cn r of the vt."""
-    yaw_moment_yaw_rate_vt(XML_FILE, cn_r_vt_low_speed_=-0.08852275, cn_r_vt_cruise_=-0.09039856)
+    yaw_moment_yaw_rate_vt(XML_FILE, cn_r_vt_low_speed_=-0.08852275, cn_r_vt_cruise_=-0.08509338)
 
 
 def test_cn_r_aircraft():
     """Tests cn r of the aircraft."""
-    yaw_moment_yaw_rate_aircraft(XML_FILE, cn_r_low_speed_=-0.09379494, cn_r_cruise_=-0.09567016)
+    yaw_moment_yaw_rate_aircraft(XML_FILE, cn_r_low_speed_=-0.09379494, cn_r_cruise_=-0.0872747)

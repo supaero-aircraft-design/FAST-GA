@@ -36,11 +36,6 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
         self.add_input(
@@ -51,11 +46,21 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
+            self.add_input(
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:aircraft:low_speed:Cy_p", units="rad**-1")
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input(
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
@@ -73,14 +78,14 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         wing_span = inputs["data:geometry:wing:span"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
             outputs["data:aerodynamics:aircraft:low_speed:Cy_p"] = (
                 2.0 * cy_beta_vt * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
             outputs["data:aerodynamics:aircraft:cruise:Cy_p"] = (
                 2.0 * cy_beta_vt * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
@@ -96,9 +101,8 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         wing_span = inputs["data:geometry:wing:span"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
 
             partials[
@@ -107,7 +111,7 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             ] = (
                 2.0 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
-            partials["data:aerodynamics:aircraft:low_speed:Cy_p", "data:geometry:wing:root:z",] = (
+            partials["data:aerodynamics:aircraft:low_speed:Cy_p", "data:geometry:wing:root:z"] = (
                 2.0 * cy_beta_vt * np.cos(aoa_ref) / wing_span
             )
             partials[
@@ -128,7 +132,7 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             ] = (
                 -2.0 * cy_beta_vt * np.sin(aoa_ref) / wing_span
             )
-            partials["data:aerodynamics:aircraft:low_speed:Cy_p", "data:geometry:wing:span",] = (
+            partials["data:aerodynamics:aircraft:low_speed:Cy_p", "data:geometry:wing:span"] = (
                 -2.0
                 * cy_beta_vt
                 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref))
@@ -136,12 +140,13 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             )
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cy_p",
-                "settings:aerodynamics:reference_flight_conditions:AOA",
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
             ] = (
                 -2.0 * cy_beta_vt * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) / wing_span
             )
 
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
 
             partials[
@@ -150,7 +155,7 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             ] = (
                 2.0 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref)) / wing_span
             )
-            partials["data:aerodynamics:aircraft:cruise:Cy_p", "data:geometry:wing:root:z",] = (
+            partials["data:aerodynamics:aircraft:cruise:Cy_p", "data:geometry:wing:root:z"] = (
                 2.0 * cy_beta_vt * np.cos(aoa_ref) / wing_span
             )
             partials[
@@ -171,7 +176,7 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             ] = (
                 -2.0 * cy_beta_vt * np.sin(aoa_ref) / wing_span
             )
-            partials["data:aerodynamics:aircraft:cruise:Cy_p", "data:geometry:wing:span",] = (
+            partials["data:aerodynamics:aircraft:cruise:Cy_p", "data:geometry:wing:span"] = (
                 -2.0
                 * cy_beta_vt
                 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref))
@@ -179,7 +184,7 @@ class ComputeCyRollRateAircraft(om.ExplicitComponent):
             )
             partials[
                 "data:aerodynamics:aircraft:cruise:Cy_p",
-                "settings:aerodynamics:reference_flight_conditions:AOA",
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
             ] = (
                 -2.0 * cy_beta_vt * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) / wing_span
             )

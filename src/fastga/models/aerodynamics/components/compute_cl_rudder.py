@@ -34,11 +34,6 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
@@ -51,11 +46,21 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
 
         if self.options["low_speed_aero"]:
             self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
+            self.add_input(
                 "data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1"
             )
 
             self.add_output("data:aerodynamics:rudder:low_speed:Cl_delta_r", units="rad**-1")
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input(
                 "data:aerodynamics:rudder:cruise:Cy_delta_r", val=np.nan, units="rad**-1"
             )
@@ -75,9 +80,8 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         vt_area = inputs["data:geometry:vertical_tail:area"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             # Change of reference surface area
             cy_delta_r = (
                 inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"] * vt_area / wing_area
@@ -86,6 +90,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
                 cy_delta_r * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span
             )
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             # Change of reference surface area
             cy_delta_r = inputs["data:aerodynamics:rudder:cruise:Cy_delta_r"] * vt_area / wing_area
             outputs["data:aerodynamics:rudder:cruise:Cl_delta_r"] = (
@@ -104,9 +109,8 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         vt_area = inputs["data:geometry:vertical_tail:area"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             cy_delta_r = inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"]
 
             partials[
@@ -170,7 +174,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             )
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
-                "settings:aerodynamics:reference_flight_conditions:AOA",
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
             ] = (
                 -cy_delta_r
                 * (z_v * np.sin(aoa_ref) + lp_vt * np.cos(aoa_ref))
@@ -180,6 +184,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             )
 
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             cy_delta_r = inputs["data:aerodynamics:rudder:cruise:Cy_delta_r"]
 
             partials[
@@ -188,7 +193,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             ] = (
                 (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span * vt_area / wing_area
             )
-            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:root:z",] = (
+            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:root:z"] = (
                 (cy_delta_r * np.cos(aoa_ref) / wing_span) * vt_area / wing_area
             )
             partials[
@@ -218,12 +223,12 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
                 / wing_span
                 / wing_area
             )
-            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:span",] = (
+            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:span"] = (
                 (-cy_delta_r * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span ** 2.0)
                 * vt_area
                 / wing_area
             )
-            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:area",] = (
+            partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:area"] = (
                 -cy_delta_r
                 * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
                 / wing_span
@@ -232,7 +237,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             )
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
-                "settings:aerodynamics:reference_flight_conditions:AOA",
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
             ] = (
                 (-cy_delta_r * (z_v * np.sin(aoa_ref) + lp_vt * np.cos(aoa_ref)) / wing_span)
                 * vt_area

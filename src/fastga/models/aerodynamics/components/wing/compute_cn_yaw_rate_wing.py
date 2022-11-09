@@ -46,13 +46,12 @@ class ComputeCnYawRateWing(FigureDigitization):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
-
         if self.options["low_speed_aero"]:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
@@ -60,6 +59,11 @@ class ComputeCnYawRateWing(FigureDigitization):
             self.add_output("data:aerodynamics:wing:low_speed:Cn_r", units="rad**-1")
 
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
@@ -73,14 +77,15 @@ class ComputeCnYawRateWing(FigureDigitization):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             cd_0_wing = inputs["data:aerodynamics:wing:low_speed:CD0"]
             cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             cd_0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
             cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]

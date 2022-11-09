@@ -61,13 +61,12 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
 
         self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
-
         if self.options["low_speed_aero"]:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
             self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
             self.add_input(
@@ -77,6 +76,11 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
             self.add_output("data:aerodynamics:horizontal_tail:low_speed:Cl_beta", units="rad**-1")
 
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
             self.add_input(
@@ -117,13 +121,13 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         # Represents the average depth at the VT location, used as an approximate
         avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             mach = inputs["data:aerodynamics:low_speed:mach"]
             cl_0_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL0"]
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             mach = inputs["data:aerodynamics:cruise:mach"]
             cl_0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL0"]
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]

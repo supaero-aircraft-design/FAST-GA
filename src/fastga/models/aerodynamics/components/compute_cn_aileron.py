@@ -40,13 +40,12 @@ class ComputeCnDeltaAileron(FigureDigitization):
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
-
         if self.options["low_speed_aero"]:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
             self.add_input(
                 "data:aerodynamics:aileron:low_speed:Cl_delta_a", val=np.nan, units="rad**-1"
             )
@@ -55,6 +54,11 @@ class ComputeCnDeltaAileron(FigureDigitization):
 
             self.add_output("data:aerodynamics:aileron:low_speed:Cn_delta_a", units="rad**-1")
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input(
                 "data:aerodynamics:aileron:cruise:Cl_delta_a", val=np.nan, units="rad**-1"
             )
@@ -71,13 +75,13 @@ class ComputeCnDeltaAileron(FigureDigitization):
         wing_aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             cl_delta_a = inputs["data:aerodynamics:aileron:low_speed:Cl_delta_a"]
             cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             cl_delta_a = inputs["data:aerodynamics:aileron:cruise:Cl_delta_a"]
             cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]

@@ -52,13 +52,12 @@ class ComputeClBetaWing(FigureDigitization):
 
         self.add_input("data:geometry:fuselage:master_cross_section", val=np.nan, units="m**2")
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
-
         if self.options["low_speed_aero"]:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
@@ -66,6 +65,11 @@ class ComputeClBetaWing(FigureDigitization):
             self.add_output("data:aerodynamics:wing:low_speed:Cl_beta", units="rad**-1")
 
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
@@ -92,13 +96,13 @@ class ComputeClBetaWing(FigureDigitization):
         master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
         avg_fus_depth = np.sqrt(master_cross_section / 0.7854)
 
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
-
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             mach = inputs["data:aerodynamics:low_speed:mach"]
             cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             mach = inputs["data:aerodynamics:cruise:mach"]
             cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]

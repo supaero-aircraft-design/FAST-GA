@@ -51,13 +51,12 @@ class ComputeCnRollRateWing(FigureDigitization):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:twist", val=0.0, units="deg")
 
-        self.add_input(
-            "settings:aerodynamics:reference_flight_conditions:AOA",
-            units="rad",
-            val=5.0 * np.pi / 180.0,
-        )
-
         if self.options["low_speed_aero"]:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
+                units="rad",
+                val=5.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
@@ -65,6 +64,11 @@ class ComputeCnRollRateWing(FigureDigitization):
             self.add_output("data:aerodynamics:wing:low_speed:Cn_p", units="rad**-1")
 
         else:
+            self.add_input(
+                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
+                units="rad",
+                val=1.0 * np.pi / 180.0,
+            )
             self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
@@ -82,15 +86,15 @@ class ComputeCnRollRateWing(FigureDigitization):
         # formula
 
         if self.options["low_speed_aero"]:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
             mach = inputs["data:aerodynamics:low_speed:mach"]
             cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
         else:
+            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
             mach = inputs["data:aerodynamics:cruise:mach"]
             cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
-
-        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
         cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
 

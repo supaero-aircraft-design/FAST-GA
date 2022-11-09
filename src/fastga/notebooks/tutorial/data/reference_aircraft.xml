@@ -293,7 +293,12 @@
         </tip_effect>
       </aileron>
       <reference_flight_conditions>
-        <AOA units="deg">5.0</AOA>
+        <low_speed>
+          <AOA units="rad" is_input="True">0.08726646259971647</AOA>
+        </low_speed>
+        <cruise>
+          <AOA units="rad" is_input="True">0.01745329251</AOA>
+        </cruise>
       </reference_flight_conditions>
     </aerodynamics>
   </settings>
