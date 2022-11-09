@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -36,28 +36,13 @@ from .constants import (
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
     SUBMODEL_DOWNWASH,
-    SUBMODEL_CL_Q,
-    SUBMODEL_CL_ALPHA_DOT,
     SUBMODEL_CY_BETA,
-    SUBMODEL_CY_R,
-    SUBMODEL_CY_P,
-    SUBMODEL_CL_BETA,
-    SUBMODEL_CL_P,
-    SUBMODEL_CL_R,
-    SUBMODEL_CL_AILERON,
-    SUBMODEL_CL_RUDDER,
-    SUBMODEL_CM_Q,
-    SUBMODEL_CM_ALPHA_DOT,
     SUBMODEL_CN_BETA,
-    SUBMODEL_CN_AILERON,
-    SUBMODEL_CN_RUDDER,
-    SUBMODEL_CN_P,
-    SUBMODEL_CN_R,
 )
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
-class AerodynamicsLowSpeed(Group):
+class AerodynamicsLowSpeed(om.Group):
     """Models for low speed aerodynamics."""
 
     def initialize(self):
@@ -195,89 +180,14 @@ class AerodynamicsLowSpeed(Group):
         )
 
         self.add_subsystem(
-            "cl_alpha_dot",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_ALPHA_DOT, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cl_q",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_Q, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
             "cy_beta",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_low_speed),
             promotes=["*"],
         )
-        self.add_subsystem(
-            "cy_r",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_R, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cy_p",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_P, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cl_beta",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_BETA, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cl_p",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_P, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cl_r",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_R, options=option_low_speed),
-            promotes=["*"],
-        )
 
-        self.add_subsystem(
-            "cl_delta_aileron",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_AILERON, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cl_delta_rudder",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CL_RUDDER, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cm_q",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_Q, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cm_alpha_dot",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_DOT, options=option_low_speed),
-            promotes=["*"],
-        )
         self.add_subsystem(
             "cn_beta",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cn_delta_a",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_AILERON, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cn_delta_r",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_RUDDER, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cn_p",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_P, options=option_low_speed),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "cn_r",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_R, options=option_low_speed),
             promotes=["*"],
         )
 
