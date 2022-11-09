@@ -32,7 +32,12 @@ class ComputeCnRollRateWing(FigureDigitization):
     with respect to yaw and roll, the rotation speed are made dimensionless by multiplying them
     by the wing span and dividing them by 2 times the airspeed.
 
-    Based on :cite:`roskampart6:1985` section 10.2.6
+    Based on :cite:`roskampart6:1985` section 10.2.6. The reference point for the CG was taken to
+    be equal to the wing quarter chord to match what is taken for other coefficient. The change
+    in reference point is not easy for this coefficient as it only affect part of the coefficient
+    (the wing lift contribution), this coefficient might thus need to be recomputed "on the fly"
+    for future stability computation. This is has no influence for unswept wing as in any case it
+    was multiplied by tan(sweep_25).
     """
 
     def initialize(self):
@@ -44,12 +49,7 @@ class ComputeCnRollRateWing(FigureDigitization):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:twist", val=0.0, units="deg")
-
-        self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
-        self.add_input("data:weight:aircraft:CG:fwd:x", val=np.nan, units="m")
 
         self.add_input(
             "settings:aerodynamics:reference_flight_conditions:AOA",
@@ -78,13 +78,8 @@ class ComputeCnRollRateWing(FigureDigitization):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         wing_twist = inputs["data:geometry:wing:twist"]  # In deg, not specified in the
         # formula
-
-        x_cg_fwd = inputs["data:weight:aircraft:CG:fwd:x"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
 
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
@@ -97,11 +92,6 @@ class ComputeCnRollRateWing(FigureDigitization):
 
         aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:AOA"]
 
-        # A CG position is necessary for the computation of this coefficient, we will thus assume
-        # a CG between the two extrema
-        x_cg_mid = (x_cg_fwd + x_cg_aft) / 2.0
-        x_w = (fa_length - x_cg_mid) / l0_wing
-
         cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
 
         cn_p_to_cl_mach_0 = (
@@ -109,9 +99,7 @@ class ComputeCnRollRateWing(FigureDigitization):
             / 6.0
             * (
                 wing_ar
-                + 6.0
-                * (wing_ar + np.cos(wing_sweep_25))
-                * (x_w * np.tan(wing_sweep_25) / wing_ar + np.tan(wing_sweep_25) ** 2.0 / 12.0)
+                + 6.0 * (wing_ar + np.cos(wing_sweep_25)) * (np.tan(wing_sweep_25) ** 2.0 / 12.0)
             )
             / (wing_ar + 4.0 * np.cos(wing_sweep_25))
         )

@@ -34,7 +34,9 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
 
     Based on :cite:`roskampart6:1985` section 10.2.3. The formula uses the lift curve slope of
     the htp with respect to its own area, we will make the change since we have it with respect
-    to the wing area.
+    to the wing area.  The reference point for the CG was taken to be equal to the wing quarter
+    chord to match what is taken for other coefficient. If another reference point is to be used,
+    the corresponding force (cl_alpha_ht) should be used to transpose the moment.
     """
 
     def initialize(self):
@@ -45,12 +47,9 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
 
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", units="m**2", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:fwd:x", units="m", val=np.nan)
-        self.add_input("data:weight:aircraft:CG:aft:x", units="m", val=np.nan)
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
@@ -80,7 +79,6 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         volume_coeff_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
 
         # From the instructions section 10.2.3, it seems to suggest that we need the lift curve
@@ -88,12 +86,6 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
         # reference surface. This seems to be confirmed by the order of magnitude of the results
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
-
-        # A CG position is necessary for the computation of this coefficient, we will thus assume
-        # a CG between the two extrema
-        x_cg_fwd = inputs["data:weight:aircraft:CG:fwd:x"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
-        x_cg_mid = (x_cg_fwd + x_cg_aft) / 2.0
 
         if self.options["low_speed_aero"]:
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
@@ -109,7 +101,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
         else:
@@ -124,7 +116,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
 
@@ -133,15 +125,10 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         volume_coeff_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
 
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
-
-        x_cg_fwd = inputs["data:weight:aircraft:CG:fwd:x"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
-        x_cg_mid = (x_cg_fwd + x_cg_aft) / 2.0
 
         if self.options["low_speed_aero"]:
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
@@ -159,7 +146,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -172,7 +159,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -185,21 +172,14 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cm_alpha_dot",
                 "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
             ] = (
-                -2.0
-                * volume_coeff_ht
-                * eta_h
-                * cl_alpha_ht
-                * wing_area
-                / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
-                / l0_wing
+                -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area * lp_ht / l0_wing
             )
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cm_alpha_dot",
@@ -211,7 +191,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * cl_alpha_ht
                 * downwash_gradient
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -225,20 +205,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area ** 2.0
-                * (fa_length + lp_ht - x_cg_mid)
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cm_alpha_dot",
-                "data:geometry:wing:MAC:at25percent:x",
-            ] = (
-                -2.0
-                * cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -247,30 +214,6 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
             ] = (
                 -2.0
                 * cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cm_alpha_dot",
-                "data:weight:aircraft:CG:aft:x",
-            ] = (
-                cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:low_speed:Cm_alpha_dot",
-                "data:weight:aircraft:CG:fwd:x",
-            ] = (
-                cl_alpha_ht
                 * eta_h
                 * volume_coeff_ht
                 * downwash_gradient
@@ -289,7 +232,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing ** 2.0
             )
         else:
@@ -306,7 +249,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -319,7 +262,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -332,21 +275,14 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
                 "data:aerodynamics:aircraft:cruise:Cm_alpha_dot",
                 "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
             ] = (
-                -2.0
-                * volume_coeff_ht
-                * eta_h
-                * cl_alpha_ht
-                * wing_area
-                / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
-                / l0_wing
+                -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area * lp_ht / l0_wing
             )
             partials[
                 "data:aerodynamics:aircraft:cruise:Cm_alpha_dot",
@@ -358,7 +294,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * cl_alpha_ht
                 * downwash_gradient
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -372,20 +308,7 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area ** 2.0
-                * (fa_length + lp_ht - x_cg_mid)
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cm_alpha_dot",
-                "data:geometry:wing:MAC:at25percent:x",
-            ] = (
-                -2.0
-                * cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
+                * lp_ht
                 / l0_wing
             )
             partials[
@@ -394,30 +317,6 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
             ] = (
                 -2.0
                 * cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cm_alpha_dot",
-                "data:weight:aircraft:CG:aft:x",
-            ] = (
-                cl_alpha_ht
-                * eta_h
-                * volume_coeff_ht
-                * downwash_gradient
-                * wing_area
-                / ht_area
-                / l0_wing
-            )
-            partials[
-                "data:aerodynamics:aircraft:cruise:Cm_alpha_dot",
-                "data:weight:aircraft:CG:fwd:x",
-            ] = (
-                cl_alpha_ht
                 * eta_h
                 * volume_coeff_ht
                 * downwash_gradient
@@ -436,6 +335,6 @@ class ComputeCMAlphaDotAircraft(om.ExplicitComponent):
                 * downwash_gradient
                 * wing_area
                 / ht_area
-                * (fa_length + lp_ht - x_cg_mid)
+                * lp_ht
                 / l0_wing ** 2.0
             )

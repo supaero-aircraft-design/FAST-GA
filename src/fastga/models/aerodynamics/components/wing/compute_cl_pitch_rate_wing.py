@@ -27,7 +27,11 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
     Computation of the contribution of the wing to the increase in lift due to a pitch velocity.
     The convention from :cite:`roskampart6:1985` are used, meaning that, for the derivative with
     respect to a pitch rate, this rate is made dimensionless by multiplying it by the MAC and
-    dividing it by 2 times the airspeed.
+    dividing it by 2 times the airspeed. The reference point for the CG was taken to be equal to
+    the wing quarter chord to match what is taken for other coefficient. If another reference
+    point is to be used, this coefficient should be multiplied by (1.0 + 4.0 * x_w / l0_wing)
+    with x_w the distance between CG and wing quarter chord, negative when CG is in front of the
+    wing quarter chord.
 
     Based on :cite:`roskampart6:1985` section 10.2.7
     """
@@ -40,11 +44,6 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
 
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-
-        self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
-        self.add_input("data:weight:aircraft:CG:fwd:x", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
@@ -64,11 +63,6 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
 
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-
-        x_cg_fwd = inputs["data:weight:aircraft:CG:fwd:x"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
 
         if self.options["low_speed_aero"]:
             cl_alpha_w = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
@@ -77,13 +71,9 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
             cl_alpha_w = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
             mach = inputs["data:aerodynamics:cruise:mach"]
 
-        # A CG position is necessary for the computation of this coefficient, we will thus assume
-        # a CG between the two extremas
-        x_cg_mid = (x_cg_fwd + x_cg_aft) / 2.0
-        x_w = fa_length - x_cg_mid
-
-        # At Mach number = 0.0
-        cl_q_wing_0 = (0.5 + 2.0 * x_w / l0_wing) * cl_alpha_w
+        # At Mach number = 0.0, simplified with respect to the formula in Roskam see the reason
+        # in the class docstring
+        cl_q_wing_0 = 0.5 * cl_alpha_w
 
         b_coeff = np.sqrt(1.0 - mach ** 2.0 * np.cos(wing_sweep_25) ** 2.0)
 
@@ -102,11 +92,6 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
 
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-
-        x_cg_fwd = inputs["data:weight:aircraft:CG:fwd:x"]
-        x_cg_aft = inputs["data:weight:aircraft:CG:aft:x"]
 
         if self.options["low_speed_aero"]:
             cl_alpha_w = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
@@ -115,16 +100,8 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
             cl_alpha_w = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
             mach = inputs["data:aerodynamics:cruise:mach"]
 
-        x_cg_mid = (x_cg_fwd + x_cg_aft) / 2.0
-        x_w = fa_length - x_cg_mid
-
         # At Mach number = 0.0
-        cl_q_wing_0 = (0.5 + 2.0 * x_w / l0_wing) * cl_alpha_w
-
-        d_cl_wing_0_d_x_cg_aft = -cl_alpha_w / l0_wing
-        d_cl_wing_0_d_x_cg_fwd = -cl_alpha_w / l0_wing
-        d_cl_wing_0_d_fa_length = 2.0 / l0_wing * cl_alpha_w
-        d_cl_wing_0_d_l0_wing = -2.0 * x_w / l0_wing ** 2.0 * cl_alpha_w
+        cl_q_wing_0 = 0.5 * cl_alpha_w
 
         b_coeff = np.sqrt(1.0 - mach ** 2.0 * np.cos(wing_sweep_25) ** 2.0)
 
@@ -162,34 +139,12 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
             # We're mostly gonna be at sweep_25 = 0.0 so the derivative will be null when
             # computed explicitly but not with finite difference, was tested with a different
             # sweep_25 and it works
-            partials["data:aerodynamics:wing:low_speed:CL_q", "data:geometry:wing:MAC:length"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_l0_wing
-            )
-            partials[
-                "data:aerodynamics:wing:low_speed:CL_q", "data:geometry:wing:MAC:at25percent:x"
-            ] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_fa_length
-            )
-            partials["data:aerodynamics:wing:low_speed:CL_q", "data:weight:aircraft:CG:fwd:x"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_x_cg_fwd
-            )
-            partials["data:aerodynamics:wing:low_speed:CL_q", "data:weight:aircraft:CG:aft:x"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_x_cg_aft
-            )
             partials[
                 "data:aerodynamics:wing:low_speed:CL_q", "data:aerodynamics:wing:low_speed:CL_alpha"
             ] = (
                 (wing_ar + 2.0 * np.cos(wing_sweep_25))
                 / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * (0.5 + 2.0 * x_w / l0_wing)
+                * 0.5
             )
             partials[
                 "data:aerodynamics:wing:low_speed:CL_q", "data:aerodynamics:low_speed:mach"
@@ -216,34 +171,12 @@ class ComputeCLPitchVelocityWing(om.ExplicitComponent):
                 / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25)) ** 2.0
                 * cl_q_wing_0
             )
-            partials["data:aerodynamics:wing:cruise:CL_q", "data:geometry:wing:MAC:length"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_l0_wing
-            )
-            partials[
-                "data:aerodynamics:wing:cruise:CL_q", "data:geometry:wing:MAC:at25percent:x"
-            ] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_fa_length
-            )
-            partials["data:aerodynamics:wing:cruise:CL_q", "data:weight:aircraft:CG:fwd:x"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_x_cg_fwd
-            )
-            partials["data:aerodynamics:wing:cruise:CL_q", "data:weight:aircraft:CG:aft:x"] = (
-                (wing_ar + 2.0 * np.cos(wing_sweep_25))
-                / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * d_cl_wing_0_d_x_cg_aft
-            )
             partials[
                 "data:aerodynamics:wing:cruise:CL_q", "data:aerodynamics:wing:cruise:CL_alpha"
             ] = (
                 (wing_ar + 2.0 * np.cos(wing_sweep_25))
                 / (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-                * (0.5 + 2.0 * x_w / l0_wing)
+                * 0.5
             )
             partials["data:aerodynamics:wing:cruise:CL_q", "data:aerodynamics:cruise:mach"] = (
                 -wing_ar

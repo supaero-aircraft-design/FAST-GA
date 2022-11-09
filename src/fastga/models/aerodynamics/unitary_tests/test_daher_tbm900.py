@@ -2024,13 +2024,13 @@ def test_cl_q_ht():
 def test_cl_q_wing():
     """Tests cl q of the wing."""
     lift_pitch_velocity_derivative_wing(
-        XML_FILE, cl_q_wing_low_speed_=1.362, cl_q_wing_cruise_=1.745
+        XML_FILE, cl_q_wing_low_speed_=2.387, cl_q_wing_cruise_=3.057
     )
 
 
 def test_cl_q_aircraft():
     """Tests cl q of the aircraft."""
-    lift_pitch_velocity_derivative_aircraft(XML_FILE, cl_q_low_speed_=5.993, cl_q_cruise_=6.535)
+    lift_pitch_velocity_derivative_aircraft(XML_FILE, cl_q_low_speed_=7.018, cl_q_cruise_=7.848)
 
 
 def test_cy_beta_wing():
@@ -2148,18 +2148,18 @@ def test_cm_q_wing():
 
 def test_cm_q_ht():
     """Test cm q of the ht."""
-    pitch_moment_pitch_rate_ht(XML_FILE, cm_q_ht_low_speed_=-16.40341967, cm_q_ht_cruise_=-16.968)
+    pitch_moment_pitch_rate_ht(XML_FILE, cm_q_ht_low_speed_=-16.900, cm_q_ht_cruise_=-17.482)
 
 
 def test_cm_q_aircraft():
     """Test cm q of the aircraft."""
-    pitch_moment_pitch_rate_aircraft(XML_FILE, cm_q_low_speed_=-18.29809697, cm_q_cruise_=-19.5011)
+    pitch_moment_pitch_rate_aircraft(XML_FILE, cm_q_low_speed_=-18.795, cm_q_cruise_=-20.015)
 
 
 def test_cm_alpha_dot():
     """Tests cm alpha dot of the aircraft."""
     pitch_moment_aoa_rate_derivative(
-        XML_FILE, cm_aoa_dot_low_speed_=-6.02497605, cm_aoa_dot_cruise_=-7.0200
+        XML_FILE, cm_aoa_dot_low_speed_=-6.207, cm_aoa_dot_cruise_=-7.232
     )
 
 
