@@ -112,10 +112,12 @@ class Cd0Wing(ExplicitComponent):
                 cf_root * (y2_wing - y1_wing) + 0.5 * (span / 2.0 - y2_wing) * (cf_root + cf_tip)
             ) / (span / 2.0 - y1_wing)
 
-        ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
+        form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
         if mach > 0.2:
-            ff = ff * 1.34 * mach ** 0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
-        cd0_wing = ff * cf_wing * wet_area_wing / wing_area
+            form_factor = (
+                form_factor * 1.34 * mach ** 0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
+            )
+        cd0_wing = form_factor * cf_wing * wet_area_wing / wing_area
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:CD0"] = cd0_wing
