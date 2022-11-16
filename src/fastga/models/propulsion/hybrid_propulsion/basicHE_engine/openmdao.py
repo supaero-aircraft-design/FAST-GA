@@ -122,6 +122,14 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:geometry:propeller:prop_number", np.nan, units=None)
         component.add_input("settings:weight:hybrid_powertrain:prop_reduction_factor", np.nan, units=None)
 
+        component.add_input("data:geometry:hybrid_powertrain:battery:pack_volume", val=np.nan, units="m**3")
+        component.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_ext_diameter", val=np.nan, units="m")
+        component.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_ext_length", val=np.nan, units="m")
+        component.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=np.nan)
+        component.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units="m")
+        component.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=np.nan, units="m**2")
+        component.add_input("data:geometry:hybrid_powertrain:bop:volume", val=np.nan, units="m**3")
+
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
@@ -156,7 +164,14 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "nb_blades": inputs["data:geometry:propeller:blades_number"],
             "prop_diameter": inputs["data:geometry:propeller:diameter"],
             "nb_propellers": inputs["data:geometry:propeller:prop_number"],
-            "prop_red_factor": inputs["settings:weight:hybrid_powertrain:prop_reduction_factor"]
+            "prop_red_factor": inputs["settings:weight:hybrid_powertrain:prop_reduction_factor"],
+            "batt_pack_vol": inputs["data:geometry:hybrid_powertrain:battery:pack_volume"],
+            "tank_ext_diameter": inputs["data:geometry:hybrid_powertrain:h2_storage:tank_ext_diameter"],
+            "tank_ext_length": inputs["data:geometry:hybrid_powertrain:h2_storage:tank_ext_length"],
+            "stack_height": inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_height"],
+            "stack_area": inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_area"],
+            "bop_vol": inputs["data:geometry:hybrid_powertrain:bop:volume"],
+            "nb_stacks": inputs["data:geometry:hybrid_powertrain:fuel_cell:number_stacks"],
         }
 
         return HybridEngineSet(

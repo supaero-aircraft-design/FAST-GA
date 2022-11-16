@@ -36,7 +36,7 @@ class ComputeBoP(om.ExplicitComponent):
 
     def setup(self):
         # Input dimensions refer to a single fuel cell stack if there are more than one.
-        # self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", val=np.nan, units='L')
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", val=np.nan, units='L')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_length", val=0.490, units='m')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_width", val=0.155, units='m')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units='m')
@@ -45,7 +45,7 @@ class ComputeBoP(om.ExplicitComponent):
         self.add_input("data:geometry:hybrid_powertrain:bop:fitting_factor", val=1, units='L',
                        desc='Scale factor to account for the subsystems computed outside of this discipline')
 
-        # self.add_output("data:geometry:hybrid_powertrain:bop:fc_ss_volume", units='L')
+        self.add_output("data:geometry:hybrid_powertrain:bop:volume", units='L')
         self.add_output("data:geometry:hybrid_powertrain:bop:extra_length", units='m')
         self.add_output("data:geometry:hybrid_powertrain:bop:extra_width", units='m')
         self.add_output("data:geometry:hybrid_powertrain:bop:extra_height", units='m')
@@ -53,7 +53,7 @@ class ComputeBoP(om.ExplicitComponent):
         self.declare_partials('*', '*', method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        # stack_volume = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_volume']
+        stack_volume = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_volume']
         stack_length = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_length']
         stack_width = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_width']
         stack_height = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_height']
@@ -68,6 +68,7 @@ class ComputeBoP(om.ExplicitComponent):
         #     - increases length by 136 %
         #     - increases width by 298 %
         #     - increases height by 173 %
+        # Globally a volume ratio of 6 between stack alone and all packaged WITH power electronics
         # Based on a comparison between the two following fuel cell stacks :
         #     - https://www.datocms-assets.com/36080/1611437781-v-stack.pdf
         #     - https://www.datocms-assets.com/36080/1636022163-power-generation-system-30-v221.pdf
@@ -75,7 +76,9 @@ class ComputeBoP(om.ExplicitComponent):
         L = 0.36 * stack_length * FITTING_FACTOR
         l = 1.98 * stack_width * FITTING_FACTOR
         h = 0.73 * stack_height * FITTING_FACTOR
+        vol_bop = stack_volume * 6 * FITTING_FACTOR - stack_volume
 
+        outputs["data:geometry:hybrid_powertrain:bop:volume"] = vol_bop
         outputs['data:geometry:hybrid_powertrain:bop:extra_length'] = L
         outputs['data:geometry:hybrid_powertrain:bop:extra_width'] = l
         outputs['data:geometry:hybrid_powertrain:bop:extra_height'] = h

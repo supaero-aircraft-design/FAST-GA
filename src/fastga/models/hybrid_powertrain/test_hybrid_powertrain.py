@@ -29,19 +29,23 @@ def test_compute_fuel_cells():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuelCells(), ivc)
     nb_cells = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:number_cells", units=None)
-    assert nb_cells == pytest.approx(627, abs=1)
+    assert nb_cells == pytest.approx(329, abs=1)
+    cell_area = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:stack_area", units='cm**2')
+    assert cell_area == pytest.approx(759.5, abs=1e-1)
     ox_flow = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:ox_mass_flow", units='kg/s')
-    assert ox_flow == pytest.approx(0.00572, abs=1e-5)
+    assert ox_flow == pytest.approx(0.006, abs=1e-5)
+    hy_flow = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow", units='kg/s')
+    assert hy_flow == pytest.approx(0.00075, abs=1e-5)
     stack_power = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:stack_power", units='W')
-    assert stack_power == pytest.approx(42000, abs=1)
+    assert stack_power == pytest.approx(22000, abs=1)
     out_power = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:output_power", units='W')
     assert out_power == pytest.approx(40000, abs=1)
     vol = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", units='m**3')
-    assert vol == pytest.approx(0.04, abs=1e-3)
+    assert vol == pytest.approx(0.0416, abs=1e-3)
     eff = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:efficiency", units=None)
     assert eff == pytest.approx(0.511, abs=1e-3)
     P_cooling = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:cooling_power", units='W')
-    assert P_cooling == pytest.approx(40156, abs=1)
+    assert P_cooling == pytest.approx(21034, abs=1)
 
 
 def test_compute_compressor():
@@ -114,12 +118,15 @@ def test_compute_battery():
     """ Tests computation of the batteries """
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeBatteries()), __file__, XML_FILE)
+    inputs = list_inputs(ComputeBatteries())
+    inputs.remove("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage")
+    ivc = get_indep_var_comp(inputs, __file__, XML_FILE)
 
     ivc.add_output("data:propulsion:hybrid_powertrain:battery:cell_current_limit", val=10, units='A')
     ivc.add_output('data:mission:sizing:end_of_mission:SOC', val=0.2)
     ivc.add_output('data:mission:sizing:total_battery_energy', val=24, units='kW*h')
     ivc.add_output('data:mission:sizing:battery_max_current', val=100)
+    ivc.add_output("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", val = 540, units='V')
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBatteries(), ivc)

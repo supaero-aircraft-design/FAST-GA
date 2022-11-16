@@ -77,7 +77,14 @@ class BasicHEEngine(AbstractHybridPropulsion):
             nb_blades,
             prop_diameter,
             nb_propellers,
-            prop_red_factor
+            prop_red_factor,
+            batt_pack_vol,
+            tank_ext_diameter,
+            tank_ext_length,
+            stack_height,
+            stack_area,
+            bop_vol,
+            nb_stacks,
     ):
         """
         Parametric hydrogen-powered Hybrid Electric propulsion engine.
@@ -125,6 +132,13 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.prop_diameter = prop_diameter
         self.nb_propellers = nb_propellers
         self.prop_red_factor = prop_red_factor
+        self.batt_pack_vol = batt_pack_vol
+        self.tank_ext_diameter = tank_ext_diameter
+        self.tank_ext_length = tank_ext_length
+        self.stack_height = stack_height
+        self.stack_area = stack_area
+        self.bop_vol = bop_vol
+        self.nb_stacks = nb_stacks
 
         # Evaluate engine volume based on max power @ 0.0m
         # rpm_vect, _, pme_limit_vect, _ = self.read_map(self.map_file_path)
@@ -627,18 +641,46 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.engine.height = self.ref["height"] * (self.max_power / self.ref["max_power"]) ** (1 / 3)
         self.engine.width = self.ref["width"] * (self.max_power / self.ref["max_power"]) ** (1 / 3)
 
-        if self.prop_layout == 3.0:
-            nacelle_length = 5. * self.engine.length
-            # Based on the length between nose and firewall for TB20 and SR22
-        else:
-            nacelle_length = 1.5 * self.engine.length
+        if self.nb_stacks > 1:
+            # Assume splitting of FC in pods
+            # Determine equivalent square shape of FC cells, accounting for 20% margin
+            cell_side = self.cell_area ** 0.5
+            cell_side *= 1.2
 
-        # Compute nacelle dimensions
-        self.nacelle = Nacelle(
-            height=self.engine.height * 1.1,
-            width=self.engine.width * 1.1,
-            length=nacelle_length,
-        )
+            # Compute Nacelle dimensions based on motor only
+            nac_height_mot = self.engine.height * 1.1
+            nac_width_mot = self.engine.width * 1.1
+
+            # Determine nacelle height
+            self.nacelle.nac_height = max(nac_height_mot * 1.2, cell_side, self.tank_diameter)
+
+            # determine nacelle width
+            self.nacelle.nac_width = max(nac_width_mot, cell_side, self.tank_diameter)
+            master_cross_section = self.nacelle.nac_height * self.nacelle.nac_width
+
+            # Determine battery length
+            batt_length = self.batt_vol / (master_cross_section / 2)
+
+            # Determine bop length
+            bop_length = self.bop_vol / (master_cross_section)
+
+            # Nacelle length
+            self.nacelle.nac_length = self.engine.length + batt_length + self.stack_height + bop_length + self.tank_length
+
+        else:
+
+            if self.prop_layout == 3.0:
+                nacelle_length = 5. * self.engine.length
+                # Based on the length between nose and firewall for TB20 and SR22
+            else:
+                nacelle_length = 1.5 * self.engine.length
+
+            # Compute nacelle dimensions
+            self.nacelle = Nacelle(
+                height=self.engine.height * 1.1,
+                width=self.engine.width * 1.1,
+                length=nacelle_length,
+            )
         self.nacelle.wet_area = 2 * (self.nacelle.height + self.nacelle.width) * self.nacelle.length
 
         return (

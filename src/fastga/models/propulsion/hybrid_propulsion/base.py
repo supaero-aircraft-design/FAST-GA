@@ -56,7 +56,7 @@ class HybridEngineSet(AbstractHybridPropulsion):
         """
         self.engine = engine
         self.engine_count = engine_count
-        # self.engine.fc_des_power = self.engine.fc_des_power / engine_count
+        self.engine.fc_des_power = self.engine.fc_des_power / engine_count
         # self.engine.H2_mass_flow = self.engine.H2_mass_flow / engine_count
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):

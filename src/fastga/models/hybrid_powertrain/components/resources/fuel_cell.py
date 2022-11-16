@@ -42,42 +42,43 @@ class FuelCell(object):
     """
 
     def __init__(self,
-                 stack_current: float,
                  required_power: float,
                  stack_pressure: float,
                  nom_pressure: float,
-                 stack_area: float,
+                 current_density: float,
+                 voltage_level: float,
                  compressor_power: float = 0,
-                 fc_type: int = 0,
-                 number_stacks: int = 2):
+                 fc_type: int = 0):
 
         # If a type of FC has been specified, some parameters are set to those of the data in FuelCellTypes
         self.data = FuelCellTypes['POWERCELLUTION_V_STACK']  # Using data of the reference FC for now
         if fc_type == 0:
             self.nom_pressure = nom_pressure
-            self.stack_area = stack_area
-        else:  # Type '1'
+            self.current_density = current_density
+        else:  # Type '1.0'
             # Retrieving data from the dictionary
             # self.data = FuelCellTypes[f'{fc_type}']
             self.stack_area = self.data['STACK_AREA']
             self.nom_pressure = self.data['P_NOM']
 
-        self.stack_current = stack_current
         self.required_power = required_power
         self.compressor_power = compressor_power
         self.stack_pressure = stack_pressure
-        self.nb_stacks = number_stacks
+        self.voltage_level = voltage_level
 
     @staticmethod
-    def compute_fc_weight(cell_number: int):
+    def compute_fc_weight(cell_number: int, cell_area: float):
         # Computes the weight of the fuel cell stack(s) given the total number of cells.
         # It is assumed that weight can be described as a linear function of the number of cells with the parameters :
         #     a = 0.1028153153153153
         #     b = 8.762162162162165
         # Those parameters are based on data retrieved from the PowerCellution V Stack fuel cell :
         #     https://www.datocms-assets.com/36080/1611437781-v-stack.pdf.
+        # The fuel cell of PowerCellution V stack being a ref 759.5cm**2, a ratio of area is applied
 
-        return cell_number * 0.103 + 8.762  # [kg]
+        a_ratio = cell_area/759.5
+
+        return (cell_number * 0.103 + 8.762)*a_ratio  # [kg]
 
     def compute_fc_height(self, cell_number: int):
         # Computes the height of a single fuel cell stack given the total number of cells and the number of stacks.
@@ -87,15 +88,14 @@ class FuelCell(object):
         # Those parameters are based on data retrieved from the PowerCellution V Stack fuel cell :
         #     https://www.datocms-assets.com/36080/1611437781-v-stack.pdf.
 
-        stack_cell_nb = math.ceil(cell_number / self.nb_stacks)
-        return (stack_cell_nb * 1.39 + 91.51) / 10  # [cm]
+        return (cell_number * 1.39 + 91.51) / 10  # [cm]
 
     def compute_fc_volume(self, cell_number: int):
         # Computes the volume of a single fuel cell stack given the total number of cells and considering constructor data
         # for the reference fuel cell Power Cellution V Stack :
         #     https://www.datocms-assets.com/36080/1611437781-v-stack.pdf.
 
-        vol = self.stack_area * self.compute_fc_height(cell_number)
+        vol = self.compute_cell_area() * self.compute_fc_height(cell_number)
         return vol  # [cm**3]
 
     def compute_design_power(self):
@@ -103,16 +103,23 @@ class FuelCell(object):
 
         return self.compressor_power + self.required_power  # [W]
 
-    def compute_design_current_density(self):
-        # Computes the current density of the fuel cell system.
+    def compute_design_current(self):
 
-        return self.stack_current / self.stack_area
+        design_pow = self.compute_design_power()
+
+        return design_pow / self.voltage_level
+
+    def compute_cell_area(self):
+
+        design_current = self.compute_design_current()
+
+        return design_current/self.current_density
 
     def compute_nb_cell(self):
         # Computes the number of cell needed considering design power of the FC system.
 
         # Determining one cell's design power
-        P_cell_des = self.stack_current * self.compute_cell_V()
+        P_cell_des = self.compute_design_current() * self.compute_cell_V()
 
         # Determining total required power
         tot_power = self.compute_design_power()
@@ -136,7 +143,7 @@ class FuelCell(object):
         C = 0.05  # [V]
 
         # Determining design surface current
-        i = self.compute_design_current_density()
+        i = self.current_density
 
         # Returning cell design voltage
         V = V0 - B * math.log(i) - R * i - m * math.exp(n * i) + C * math.log(self.stack_pressure / self.nom_pressure)
@@ -160,7 +167,7 @@ class FuelCell(object):
         F = 96485  # [C/mol] - Faraday Constant
 
         # hyd_mass_flow = M_H2 * self.required_power * stoich_ratio / (2 * self.compute_cell_V() * F)  # [g/s]
-        hyd_mass_flow = self.compute_nb_cell() * M_H2 * self.stack_current / (2 * F)  # [g/s]
+        hyd_mass_flow = self.compute_nb_cell() * M_H2 * self.compute_design_current() / (2 * F)  # [g/s]
         return hyd_mass_flow / 1000  # [kg/s]
 
     def compute_ox_mass_flow(self):
@@ -173,7 +180,7 @@ class FuelCell(object):
         F = 96485  # [C/mol] - Faraday Constant
 
         # ox_mass_flow = M_O2 * self.required_power * stoich_ratio / (4 * self.compute_cell_V() * F)  # [g/s]
-        ox_mass_flow = self.compute_nb_cell() * M_O2 * self.stack_current / (4 * F)  # [g/s]
+        ox_mass_flow = self.compute_nb_cell() * M_O2 * self.compute_design_current() / (4 * F)  # [g/s]
         return ox_mass_flow / 1000  # [kg/s]
 
     def compute_ref_efficiency(self):
@@ -191,7 +198,7 @@ class FuelCell(object):
         b1 = -2.943
 
         # Determining efficiency
-        eff = (a * self.stack_current + b) / ((a + a1) * self.stack_current + b + b1)
+        eff = (a * self.compute_design_current() + b) / ((a + a1) * self.compute_design_current() + b + b1)
         return eff
 
     def compute_efficiency(self):

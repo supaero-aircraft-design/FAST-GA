@@ -28,6 +28,7 @@ class ComputeFuelCellWeight(ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_cells", val=np.nan, units=None)
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=np.nan, units=None)
 
         self.add_output("data:weight:hybrid_powertrain:fuel_cell:mass", units="kg")
 
@@ -40,8 +41,12 @@ class ComputeFuelCellWeight(ExplicitComponent):
         Those parameters are based on data retrieved from the PowerCellution V Stack fuel cell :
             https://www.datocms-assets.com/36080/1611437781-v-stack.pdf.
         """
+        # The fuel cell of PowerCellution V stack being a ref 759.5cm**2, a ratio of area is applied
+
+        cell_area = inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_area"]
+        a_ratio = cell_area / 759.5
 
         cell_number = inputs['data:geometry:hybrid_powertrain:fuel_cell:number_cells']
-        b9 = cell_number * 0.103 + 8.762  # [kg]
+        b9 = (cell_number * 0.103 + 8.762 ) * a_ratio  # [kg]
 
         outputs['data:weight:hybrid_powertrain:fuel_cell:mass'] = b9

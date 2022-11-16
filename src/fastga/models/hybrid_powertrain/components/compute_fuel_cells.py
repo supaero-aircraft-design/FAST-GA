@@ -28,24 +28,23 @@ class ComputeFuelCells(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current", val=np.nan, units='A',
-                       desc='Baseline stack current, is used to determine FC nominal efficiency with stack area.'
-                            'Large current -> compact FC but low efficiency')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:user_defined_power", val=np.nan, units='W',
                        desc="User defined output FC power. Used to size the FC if the cruise power is lower.")
+        self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", val=np.nan, units='V')
         self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", val=np.nan, units='W')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure", val=np.nan, units='Pa')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure", val=np.nan, units='Pa')
-        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=759.50, units='cm**2')
         self.add_input("data:propulsion:hybrid_powertrain:compressor:power", val=0, units='W')
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=2,
                        desc = 'Used only in the determination of the geometry of the FC')
         self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:fc_type", val=0, units=None,
                        desc="Optional type of fuel cell - 0 is None and 1 is default fuel cell")
+        self.add_input("data:propulsion:hybrid_powertrain:fuel_cell:design_current_density", val=0.144, units='A/cm**2')
 
         self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:stack_power", units='W')
+        self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:design_current", units='A')
         self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:output_power", units="W")
-        self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:design_current_density", units='A/cm**2')
+
         self.add_output("data:geometry:hybrid_powertrain:fuel_cell:number_cells", units=None,
                         desc="Total number of cells in the stack(s)")
         self.add_output("data:geometry:hybrid_powertrain:fuel_cell:stack_height", units='cm')
@@ -53,17 +52,21 @@ class ComputeFuelCells(om.ExplicitComponent):
         self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:cell_voltage", units='V')
         self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:cooling_power", units='W')
         self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:efficiency", units=None)
-        self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:ox_mass_flow", units="kg/s")
-        self.add_output('data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow', units="kg/s")
+        self.add_output("data:propulsion:hybrid_powertrain:fuel_cell:ox_mass_flow", units="kg/s",
+                        desc='oxygene mass flow rate for all stack')
+        self.add_output('data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow', units="kg/s",
+                        desc='hydrogene mass flow rate for all stack,'
+                             'divide by stack_number to have per stack hydrogene consumption')
+        self.add_output("data:geometry:hybrid_powertrain:fuel_cell:stack_area", units='cm**2')
 
         self.declare_partials('*', '*', method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        design_current = inputs['data:propulsion:hybrid_powertrain:fuel_cell:design_current']
+        voltage_level = inputs['data:propulsion:hybrid_powertrain:battery:sys_nom_voltage']
         user_power = inputs['data:propulsion:hybrid_powertrain:fuel_cell:user_defined_power']
         compressor_power = inputs['data:propulsion:hybrid_powertrain:compressor:power']
         stack_pressure = inputs['data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure']
-        stack_area = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_area']
+        stack_current_density = inputs['data:propulsion:hybrid_powertrain:fuel_cell:design_current_density']
         nominal_pressure = inputs['data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure']
         fc_type = inputs['data:propulsion:hybrid_powertrain:fuel_cell:fc_type']
         nb_stacks = inputs['data:geometry:hybrid_powertrain:fuel_cell:number_stacks']
@@ -72,34 +75,36 @@ class ComputeFuelCells(om.ExplicitComponent):
         # Creating a FuelCell instance on which all computing methods will be called. This instance encapsulates the
         # computation of all the fuel cell stacks if there are more than 1.
 
-        fc = FuelCell(stack_current=design_current,
-                      required_power=max(user_power, cruise_power),
+        pow_per_fc = max(user_power, cruise_power) / nb_stacks
+        fc = FuelCell(required_power=pow_per_fc,
                       compressor_power=compressor_power,
                       stack_pressure=stack_pressure,
-                      stack_area=stack_area,
+                      current_density=stack_current_density,
+                      voltage_level=voltage_level,
                       nom_pressure=nominal_pressure,
-                      fc_type=fc_type,
-                      number_stacks=nb_stacks)
+                      fc_type=fc_type)
 
         design_power = fc.compute_design_power()
-        V_cell = fc.compute_cell_V()
+        design_current = fc.compute_design_current()
+        v_cell = fc.compute_cell_V()
         nb_cells = fc.compute_nb_cell()
         stack_height = fc.compute_fc_height(nb_cells)
         stack_volume = fc.compute_fc_volume(nb_cells)
-        P_cooling = fc.compute_cooling_power()
+        p_cooling = fc.compute_cooling_power()
         eff = fc.compute_ref_efficiency()
-        ox_flow = fc.compute_ox_mass_flow()
-        hyd_flow = fc.compute_hyd_mass_flow()
-        current_density = fc.compute_design_current_density()
+        ox_flow = fc.compute_ox_mass_flow() * nb_stacks
+        hyd_flow = fc.compute_hyd_mass_flow() * nb_stacks
+        cell_area = fc.compute_cell_area()
 
         outputs['data:propulsion:hybrid_powertrain:fuel_cell:stack_power'] = design_power
-        outputs['data:propulsion:hybrid_powertrain:fuel_cell:output_power'] = fc.required_power
+        outputs['data:propulsion:hybrid_powertrain:fuel_cell:output_power'] = pow_per_fc * nb_stacks
         outputs['data:geometry:hybrid_powertrain:fuel_cell:number_cells'] = nb_cells
         outputs['data:geometry:hybrid_powertrain:fuel_cell:stack_height'] = stack_height
         outputs['data:geometry:hybrid_powertrain:fuel_cell:stack_volume'] = stack_volume
-        outputs['data:propulsion:hybrid_powertrain:fuel_cell:cell_voltage'] = V_cell
-        outputs['data:propulsion:hybrid_powertrain:fuel_cell:cooling_power'] = P_cooling
+        outputs['data:propulsion:hybrid_powertrain:fuel_cell:cell_voltage'] = v_cell
+        outputs['data:propulsion:hybrid_powertrain:fuel_cell:cooling_power'] = p_cooling
         outputs['data:propulsion:hybrid_powertrain:fuel_cell:efficiency'] = eff
         outputs['data:propulsion:hybrid_powertrain:fuel_cell:ox_mass_flow'] = ox_flow
         outputs['data:propulsion:hybrid_powertrain:fuel_cell:hyd_mass_flow'] = hyd_flow
-        outputs['data:propulsion:hybrid_powertrain:fuel_cell:design_current_density'] = current_density
+        outputs['data:geometry:hybrid_powertrain:fuel_cell:stack_area'] = cell_area
+        outputs['data:propulsion:hybrid_powertrain:fuel_cell:design_current'] = design_current

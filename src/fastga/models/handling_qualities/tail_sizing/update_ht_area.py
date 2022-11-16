@@ -555,7 +555,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
+        self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)

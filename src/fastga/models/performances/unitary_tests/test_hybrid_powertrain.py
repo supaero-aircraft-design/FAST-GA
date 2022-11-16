@@ -154,7 +154,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=True), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_out:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.0, abs=1e-2
+        0.2886, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
     # Research independent input value in .xml file
@@ -166,7 +166,7 @@ def test_compute_taxi():
     problem = run_system(_compute_taxi(propulsion_id=ENGINE_WRAPPER, taxi_out=False), ivc)
     fuel_mass = problem.get_val("data:mission:sizing:taxi_in:fuel", units="kg")
     assert fuel_mass == pytest.approx(
-        0.0, abs=1e-2
+        0.5375, abs=1e-2
     )  # result strongly dependent on the defined Thrust limit
 
 
@@ -245,7 +245,7 @@ def test_loop_cruise_distance():
     # noinspection PyTypeChecker
     problem = run_system(Mission_HE(propulsion_id=ENGINE_WRAPPER), ivc)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
-    assert m_total == pytest.approx(30.62, abs=1e-1)
+    assert m_total == pytest.approx(31.48, abs=1e-1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")
     cruise_distance = problem.get_val("data:mission:sizing:main_route:cruise:distance", units="NM")
     descent_distance = problem.get_val(

@@ -487,7 +487,7 @@ class _compute_taxi(om.ExplicitComponent):
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
         flight_point = FlightPoint(
-            mach=mach, altitude=0.0, engine_setting=EngineSetting.IDLE, thrust_rate=thrust_rate
+            mach=mach, altitude=0.0, engine_setting=EngineSetting.CRUISE, thrust_rate=thrust_rate
         )
         flight_point.add_field("battery_power", annotation_type=float)
         flight_point.add_field("emotor_input_power", annotation_type=float)
@@ -500,25 +500,25 @@ class _compute_taxi(om.ExplicitComponent):
         else:
             outputs["data:mission:sizing:taxi_in:fuel"] = hyd_mass
 
-            # The electrical system voltage is used to compute the current
-            system_voltage = inputs["settings:electrical_system:system_voltage"]
+        # The electrical system voltage is used to compute the current
+        system_voltage = inputs["settings:electrical_system:system_voltage"]
 
-            # Compute the engine power during taxi and subsequently, the current, capacity and energy
-            taxi_power = flight_point.battery_power
-            battery_current = taxi_power / system_voltage
-            taxi_bat_capacity = battery_current * duration / 3600
-            bat_energy_taxi_out = propulsion_model.get_consumed_energy(flight_point, duration / 3600) / 1000  # kWh
+        # Compute the engine power during taxi and subsequently, the current, capacity and energy
+        taxi_power = flight_point.battery_power
+        battery_current = taxi_power / system_voltage
+        taxi_bat_capacity = battery_current * duration / 3600
+        bat_energy_taxi_out = propulsion_model.get_consumed_energy(flight_point, duration / 3600) / 1000  # kWh
 
-            if self.options["taxi_out"]:
-                outputs["data:mission:sizing:taxi_out:battery_power"] = taxi_power
-                outputs["data:mission:sizing:taxi_out:battery_current"] = battery_current
-                outputs["data:mission:sizing:taxi_out:battery_capacity"] = taxi_bat_capacity
-                outputs["data:mission:sizing:taxi_out:battery_energy"] = bat_energy_taxi_out
-            else:
-                outputs["data:mission:sizing:taxi_in:battery_power"] = taxi_power
-                outputs["data:mission:sizing:taxi_in:battery_current"] = battery_current
-                outputs["data:mission:sizing:taxi_in:battery_capacity"] = taxi_bat_capacity
-                outputs["data:mission:sizing:taxi_in:battery_energy"] = bat_energy_taxi_out
+        if self.options["taxi_out"]:
+            outputs["data:mission:sizing:taxi_out:battery_power"] = taxi_power
+            outputs["data:mission:sizing:taxi_out:battery_current"] = battery_current
+            outputs["data:mission:sizing:taxi_out:battery_capacity"] = taxi_bat_capacity
+            outputs["data:mission:sizing:taxi_out:battery_energy"] = bat_energy_taxi_out
+        else:
+            outputs["data:mission:sizing:taxi_in:battery_power"] = taxi_power
+            outputs["data:mission:sizing:taxi_in:battery_current"] = battery_current
+            outputs["data:mission:sizing:taxi_in:battery_capacity"] = taxi_bat_capacity
+            outputs["data:mission:sizing:taxi_in:battery_energy"] = bat_energy_taxi_out
 
 
 class _compute_climb(DynamicEquilibrium):

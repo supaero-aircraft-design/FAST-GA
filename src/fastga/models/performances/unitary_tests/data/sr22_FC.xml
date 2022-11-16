@@ -194,6 +194,7 @@
           <extra_height units="m" is_input="False">1.2134132999999998</extra_height>
           <extra_length units="m" is_input="False">0.1764</extra_length>
           <extra_width units="m" is_input="False">0.3069</extra_width>
+          <volume units="m**3">0.150</volume>
           <fitting_factor units="L" is_input="True">1.0<!--Scale factor to account for the subsystems computed outside of this discipline--></fitting_factor>
         </bop>
         <cables>

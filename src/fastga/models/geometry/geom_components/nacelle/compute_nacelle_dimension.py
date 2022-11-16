@@ -14,7 +14,7 @@
 
 
 import openmdao.api as om
-
+import numpy as np
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
@@ -56,6 +56,84 @@ class ComputeNacelleDimension(om.ExplicitComponent):
 
         nac_height, nac_width, nac_length, nac_wet_area = propulsion_model.compute_dimensions()
         master_cross_section = nac_height * nac_width
+
+        outputs["data:geometry:propulsion:nacelle:length"] = nac_length
+        outputs["data:geometry:propulsion:nacelle:height"] = nac_height
+        outputs["data:geometry:propulsion:nacelle:width"] = nac_width
+        outputs["data:geometry:propulsion:nacelle:wet_area"] = nac_wet_area
+        outputs["data:geometry:propulsion:nacelle:master_cross_section"] = master_cross_section
+
+
+
+# @oad.RegisterSubmodel(
+#     SUBMODEL_NACELLE_DIMENSION, "fastga.submodel.geometry.nacelle.dimension.hydrogene_pod"
+# )
+class ComputeNacelleDimension(om.ExplicitComponent):
+    # TODO: Document equations. Cite sources
+    """Nacelle and pylon geometry estimation."""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._engine_wrapper = None
+
+    def initialize(self):
+        self.options.declare("propulsion_id", default="", types=str)
+
+    def setup(self):
+        self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
+        self._engine_wrapper.setup(self)
+
+        # Inputs related to powertrain
+        self.add_input("data:geometry:hybrid_powertrain:battery:pack_volume", val=np.nan, units="m**3")
+        self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_ext_diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:h2_storage:tank_ext_length", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:motor:diameter", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:motor:length", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:hybrid_powertrain:bop:volume", val=np.nan, units="m**3")
+
+
+        self.add_output("data:geometry:propulsion:nacelle:length", units="m")
+        self.add_output("data:geometry:propulsion:nacelle:height", units="m")
+        self.add_output("data:geometry:propulsion:nacelle:width", units="m")
+        self.add_output("data:geometry:propulsion:nacelle:wet_area", units="m**2")
+        self.add_output("data:geometry:propulsion:nacelle:master_cross_section", units="m**2")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        cell_area = inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_area"]
+        tank_diameter = inputs["data:geometry:hybrid_powertrain:h2_storage:tank_ext_diameter"]
+        tank_length = inputs["data:geometry:hybrid_powertrain:h2_storage:tank_length"]
+        batt_vol = inputs["data:geometry:hybrid_powertrain:battery:pack_volume"]
+        bop_vol = inputs["data:geometry:hybrid_powertrain:bop:volume"]
+
+        # Determine equivalent square shape of FC cells, accounting for 20% margin
+        cell_side = cell_area**0.5
+        cell_side *= 1.2
+
+        # Compute Nacelle dimensions based on motor only
+        propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
+        nac_height_mot, nac_width_mot, _, _ = propulsion_model.compute_dimensions()
+
+        # Determine nacelle height
+        nac_height = max(nac_height_mot*1.2, cell_side, tank_diameter)
+
+        #determine nacelle width
+        nac_width = max( nac_width_mot, cell_side, tank_diameter)
+        master_cross_section = nac_height * nac_width
+
+        #Determine battery length
+        batt_length = batt_vol/(nac_height/2*nac_width)
+
+        #Determine bop length
+        bop_length = bop_vol /  (nac_height/nac_width)
+
+        #Nacelle length
+        nac_length = engine_length + batt_length + bop_length + tank_length
+
+        nac_wet_area = 2 * (nac_width + nac_height) * nac_length
 
         outputs["data:geometry:propulsion:nacelle:length"] = nac_length
         outputs["data:geometry:propulsion:nacelle:height"] = nac_height

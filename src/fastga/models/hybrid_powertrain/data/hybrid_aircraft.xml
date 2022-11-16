@@ -611,7 +611,7 @@
           <SOC is_input="True">0.5</SOC>
           <cell_nom_voltage units="V" is_input="True">3.7</cell_nom_voltage>
           <cell_capacity units="A*h" is_input="True">3.5</cell_capacity>
-          <sys_nom_voltage units="V" is_input="False">540</sys_nom_voltage>
+          <sys_nom_voltage units="V" is_input="False">200</sys_nom_voltage>
           <max_power units="W" is_input="False">20</max_power>
         </battery>
         <cables>
@@ -635,7 +635,7 @@
           <output_power units="W" is_input="False">40000</output_power>
           <stack_pressure units="Pa" is_input="True">121560</stack_pressure>
           <cell_voltage units="V" is_input="False">0.67</cell_voltage>
-          <design_current units="A" is_input="True">110</design_current>
+          <design_current_density units="A/cm**2" is_input="False">0.1448321263989467</design_current_density>
           <required_power units="W" is_input="False">22000</required_power>
           <nominal_pressure units="Pa" is_input="True">101300</nominal_pressure>
           <operating_temperature units="K" is_input="True">340</operating_temperature>
