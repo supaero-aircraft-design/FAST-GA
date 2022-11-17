@@ -132,11 +132,11 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.prop_diameter = prop_diameter
         self.nb_propellers = nb_propellers
         self.prop_red_factor = prop_red_factor
-        self.batt_pack_vol = batt_pack_vol
-        self.tank_ext_diameter = tank_ext_diameter
-        self.tank_ext_length = tank_ext_length
+        self.batt_vol = batt_pack_vol
+        self.tank_diameter = tank_ext_diameter
+        self.tank_length = tank_ext_length
         self.stack_height = stack_height
-        self.stack_area = stack_area
+        self.cell_area = stack_area
         self.bop_vol = bop_vol
         self.nb_stacks = nb_stacks
 
@@ -652,11 +652,17 @@ class BasicHEEngine(AbstractHybridPropulsion):
             nac_width_mot = self.engine.width * 1.1
 
             # Determine nacelle height
-            self.nacelle.nac_height = max(nac_height_mot * 1.2, cell_side, self.tank_diameter)
+            nac_height = max(nac_height_mot * 1.2, cell_side, self.tank_diameter)
 
             # determine nacelle width
-            self.nacelle.nac_width = max(nac_width_mot, cell_side, self.tank_diameter)
-            master_cross_section = self.nacelle.nac_height * self.nacelle.nac_width
+            nac_width = max(nac_width_mot, cell_side, self.tank_diameter)
+            self.nacelle = Nacelle(
+                height=nac_height,
+                width=nac_width,
+                length = 0,
+            )
+
+            master_cross_section = self.nacelle.height * self.nacelle.width
 
             # Determine battery length
             batt_length = self.batt_vol / (master_cross_section / 2)
@@ -665,7 +671,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             bop_length = self.bop_vol / (master_cross_section)
 
             # Nacelle length
-            self.nacelle.nac_length = self.engine.length + batt_length + self.stack_height + bop_length + self.tank_length
+            self.nacelle.length = self.engine.length + batt_length + self.stack_height + bop_length + self.tank_length
 
         else:
 

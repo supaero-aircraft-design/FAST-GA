@@ -37,26 +37,29 @@ class ComputeBoP(om.ExplicitComponent):
     def setup(self):
         # Input dimensions refer to a single fuel cell stack if there are more than one.
         self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", val=np.nan, units='L')
-        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_length", val=0.490, units='m')
-        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_width", val=0.155, units='m')
-        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units='m')
+        self.add_input("data:geometry:propulsion:nacelle:master_cross_section", val=np.nan, units='m**2')
+        # self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_length", val=0.490, units='m')
+        # self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_width", val=0.155, units='m')
+        # self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units='m')
         # self.add_input("data:geometry:hybrid_powertrain:compressor:volume", val=np.nan, units='L')
         # self.add_input("data:geometry:hybrid_powertrain:bop:pressure_reg_volume", val=1.3, units='L')
-        self.add_input("data:geometry:hybrid_powertrain:bop:fitting_factor", val=1, units='L',
+        self.add_input("data:geometry:hybrid_powertrain:bop:fitting_factor", val=1,
                        desc='Scale factor to account for the subsystems computed outside of this discipline')
 
         self.add_output("data:geometry:hybrid_powertrain:bop:volume", units='L')
-        self.add_output("data:geometry:hybrid_powertrain:bop:extra_length", units='m')
-        self.add_output("data:geometry:hybrid_powertrain:bop:extra_width", units='m')
-        self.add_output("data:geometry:hybrid_powertrain:bop:extra_height", units='m')
+        self.add_output("data:geometry:hybrid_powertrain:bop:length_in_nacelle", units='m')
+        # self.add_output("data:geometry:hybrid_powertrain:bop:extra_length", units='m')
+        # self.add_output("data:geometry:hybrid_powertrain:bop:extra_width", units='m')
+        # self.add_output("data:geometry:hybrid_powertrain:bop:extra_height", units='m')
 
         self.declare_partials('*', '*', method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         stack_volume = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_volume']
-        stack_length = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_length']
-        stack_width = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_width']
-        stack_height = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_height']
+        nacelle_cross_sec = inputs["data:geometry:propulsion:nacelle:master_cross_section"]
+        # stack_length = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_length']
+        # stack_width = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_width']
+        # stack_height = inputs['data:geometry:hybrid_powertrain:fuel_cell:stack_height']
         # compressor_volume = inputs['data:geometry:hybrid_powertrain:compressor:volume']
         # pressure_reg_volume = inputs['data:geometry:hybrid_powertrain:bop:pressure_reg_volume']
         FITTING_FACTOR = inputs['data:geometry:hybrid_powertrain:bop:fitting_factor']
@@ -73,15 +76,17 @@ class ComputeBoP(om.ExplicitComponent):
         #     - https://www.datocms-assets.com/36080/1611437781-v-stack.pdf
         #     - https://www.datocms-assets.com/36080/1636022163-power-generation-system-30-v221.pdf
 
-        L = 0.36 * stack_length * FITTING_FACTOR
-        l = 1.98 * stack_width * FITTING_FACTOR
-        h = 0.73 * stack_height * FITTING_FACTOR
+        # L = 0.36 * stack_length * FITTING_FACTOR
+        # l = 1.98 * stack_width * FITTING_FACTOR
+        # h = 0.73 * stack_height * FITTING_FACTOR
         vol_bop = stack_volume * 6 * FITTING_FACTOR - stack_volume
+        L_bop_in_nacelle = vol_bop / 1000 / nacelle_cross_sec
 
         outputs["data:geometry:hybrid_powertrain:bop:volume"] = vol_bop
-        outputs['data:geometry:hybrid_powertrain:bop:extra_length'] = L
-        outputs['data:geometry:hybrid_powertrain:bop:extra_width'] = l
-        outputs['data:geometry:hybrid_powertrain:bop:extra_height'] = h
+        outputs["data:geometry:hybrid_powertrain:bop:length_in_nacelle"] = L_bop_in_nacelle
+        # outputs['data:geometry:hybrid_powertrain:bop:extra_length'] = L
+        # outputs['data:geometry:hybrid_powertrain:bop:extra_width'] = l
+        # outputs['data:geometry:hybrid_powertrain:bop:extra_height'] = h
 
 
         ### Unused method

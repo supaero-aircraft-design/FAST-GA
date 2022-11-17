@@ -91,7 +91,7 @@ class ComputeFuelCells(om.ExplicitComponent):
         stack_height = fc.compute_fc_height(nb_cells)
         stack_volume = fc.compute_fc_volume(nb_cells)
         p_cooling = fc.compute_cooling_power()
-        eff = fc.compute_ref_efficiency()
+        eff = fc.compute_efficiency()
         ox_flow = fc.compute_ox_mass_flow() * nb_stacks
         hyd_flow = fc.compute_hyd_mass_flow() * nb_stacks
         cell_area = fc.compute_cell_area()

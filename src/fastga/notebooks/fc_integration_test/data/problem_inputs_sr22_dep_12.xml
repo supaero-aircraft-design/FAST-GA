@@ -3,9 +3,9 @@
     <TLAR>
       <NPAX_design is_input="True">2.0<!--design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)--></NPAX_design>
       <luggage_mass_design units="kg" is_input="True">35.0<!--luggage design mass--></luggage_mass_design>
-      <range units="nmi" is_input="True">200.0<!--design range--></range>
+      <range units="nmi" is_input="True">400.0<!--design range--></range>
       <v_approach units="m/s" is_input="True">40.6<!--approach speed--></v_approach>
-      <v_cruise units="m/s" is_input="True">72.0<!--cruise speed--></v_cruise>
+      <v_cruise units="m/s" is_input="True">62.0<!--cruise speed--></v_cruise>
       <v_max_sl units="m/s" is_input="True">78.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
@@ -51,16 +51,10 @@
         <type is_input="True">1.0<!--0=non-retractable / 1=retractable--></type>
       </landing_gear>
       <propeller>
-        <prop_number is_input="True">1.0</prop_number>
-        <average_rpm units="rpm" is_input="True">3200.0<!--average rotation speed of the propeller--></average_rpm>
         <blades_number is_input="True">3.0<!--number of blades on the propeller--></blades_number>
-        <chord_vect units="m" is_input="True">[0.05581763, 0.07928237, 0.08127332, 0.105946845, 0.09279237, 0.05581763, 0.05581763]<!--blade chord at the station along the radius stored in radius_ratio_vect--></chord_vect>
         <depth units="m" is_input="True">0.3<!--depth of the propeller--></depth>
-        <diameter units="m" is_input="True">1.2<!--propeller diameter--></diameter>
-        <hub_diameter units="m" is_input="True">0.2<!--propeller hub diameter--></hub_diameter>
-        <radius_ratio_vect is_input="True">[0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]<!--blade station at which blade geometric properties are sampled, as a percent of blade radius--></radius_ratio_vect>
-        <sweep_vect units="deg" is_input="True">[0, 0, 0, 0, 0, 0, 0]<!--blade sweep at the station along the radius stored in radius_ratio_vect--></sweep_vect>
-        <twist_vect units="deg" is_input="True">[59.9549991, 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]<!--blade twist at the station along the radius stored in radius_ratio_vect--></twist_vect>
+        <diameter units="m" is_input="True">0.9<!--propeller diameter--></diameter>
+        <prop_number is_input="True">1.0</prop_number>
       </propeller>
       <vertical_tail>
         <aspect_ratio is_input="True">2.0<!--vertical tail aspect ratio--></aspect_ratio>
@@ -89,10 +83,10 @@
           <cell_diameter units="m" is_input="True">0.018</cell_diameter>
           <cell_length units="m" is_input="True">0.065</cell_length>
           <cell_mass units="kg" is_input="True">0.0445</cell_mass>
-          <nb_packs is_input="True">1.0</nb_packs>
+          <nb_packs is_input="True">12.0</nb_packs>
         </battery>
         <bop>
-          <fitting_factor units="L" is_input="True">1.0<!--Scale factor to account for the subsystems computed outside of this discipline--></fitting_factor>
+          <fitting_factor units="L" is_input="True">0.66<!--Scale factor to account for the subsystems computed outside of this discipline--></fitting_factor>
         </bop>
         <cables>
           <length units="m" is_input="True">10.0</length>
@@ -101,16 +95,13 @@
           <nb_intakes is_input="True">1.0</nb_intakes>
         </cooling_intake>
         <fuel_cell>
-          <number_stacks is_input="True">2.0<!--Used only in the determination of the geometry of the FC--></number_stacks>
-          <stack_area units="cm**2" is_input="True">759.5</stack_area>
-          <stack_length units="m" is_input="True">0.49</stack_length>
-          <stack_width units="m" is_input="True">0.155</stack_width>
+          <number_stacks is_input="True">12.0<!--Used only in the determination of the geometry of the FC--></number_stacks>
         </fuel_cell>
         <h2_storage>
           <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
           <gravimetric_capacity_700b is_input="True">0.048</gravimetric_capacity_700b>
           <length_radius_ratio is_input="True">3.0</length_radius_ratio>
-          <nb_tanks is_input="True">2.0</nb_tanks>
+          <nb_tanks is_input="True">12.0</nb_tanks>
           <volumetric_capacity_350b units="kg/m**3" is_input="True">17.6</volumetric_capacity_350b>
           <volumetric_capacity_700b units="kg/m**3" is_input="True">26.3</volumetric_capacity_700b>
         </h2_storage>
@@ -132,7 +123,6 @@
     </geometry>
     <propulsion>
       <fuel_type is_input="True">0.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-      <max_rpm units="1/min" is_input="True">3500.0<!--maximum number of rotation per minute on the engine--></max_rpm>
       <hybrid_powertrain>
         <battery>
           <cell_capacity units="A*h" is_input="True">3.0</cell_capacity>
@@ -141,7 +131,7 @@
           <int_resistance units="ohm" is_input="True">0.039</int_resistance>
           <max_C_rate units="1/h" is_input="True">2.0</max_C_rate>
           <max_power units="kW" is_input="True">30.0</max_power>
-          <sys_nom_voltage units="V" is_input="True">270.0</sys_nom_voltage>
+          <sys_nom_voltage units="V" is_input="True">60.0</sys_nom_voltage>
           <type is_input="True">0.0<!--Optional type of battery - 0 is None and 1 is default Li-ion cells--></type>
         </battery>
         <cable>
@@ -158,7 +148,7 @@
           <free_stream_speed units="m/s" is_input="True">28.0</free_stream_speed>
         </cooling_intake>
         <fuel_cell>
-          <design_current units="A" is_input="True">110.0<!--Baseline stack current, is used to determine FC nominal efficiency with stack area.Large current -> compact FC but low efficiency--></design_current>
+          <design_current_density units="A/cm**2" is_input="True">0.144</design_current_density>
           <fc_type is_input="True">0.0<!--Optional type of fuel cell - 0 is None and 1 is default fuel cell--></fc_type>
           <nominal_pressure units="Pa" is_input="True">101300.0</nominal_pressure>
           <operating_temperature units="degK" is_input="True">340.0</operating_temperature>
@@ -177,9 +167,9 @@
           <specific_power units="W/kg" is_input="True">20000.0</specific_power>
         </inverter>
         <motor>
-          <max_power units="W" is_input="True">45000.0</max_power>
-          <max_torque units="N*m" is_input="True">500.0</max_torque>
-          <nominal_torque units="N*m" is_input="True">250.0</nominal_torque>
+          <max_power units="W" is_input="True">25000.0</max_power>
+          <max_torque units="N*m" is_input="True">300.0</max_torque>
+          <nominal_torque units="N*m" is_input="True">150.0</nominal_torque>
         </motor>
         <power_electronics>
           <efficiency is_input="True">0.98</efficiency>
@@ -187,7 +177,20 @@
         </power_electronics>
       </hybrid_powertrain>
     </propulsion>
+    <handling_qualities>
+      <static_margin>
+        <target is_input="True">0.05<!--static margin we want to achieve--></target>
+      </static_margin>
+    </handling_qualities>
     <aerodynamics>
+      <cooling>
+        <cruise>
+          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in cruise conditions--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in low speed conditions--></CD0>
+        </low_speed>
+      </cooling>
       <propeller>
         <cruise_level>
           <altitude units="m" is_input="True">2438.4<!--altitude at which the cruise level propeller efficiency map was computed--></altitude>
@@ -203,22 +206,7 @@
           <thrust_limit units="N" is_input="True">[278.9187971, 306.5727078, 328.9027732, 348.4811193, 366.7714028, 384.7400686, 402.7919724, 421.5236287, 441.3738115, 462.9459634]<!--maximum thrust output of the propeller at sea level for varying velocities--></thrust_limit>
         </sea_level>
       </propeller>
-      </propeller>
-      </propeller>
-      <cooling>
-        <cruise>
-          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in cruise conditions--></CD0>
-        </cruise>
-        <low_speed>
-          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in low speed conditions--></CD0>
-        </low_speed>
-      </cooling>
     </aerodynamics>
-    <handling_qualities>
-      <static_margin>
-        <target is_input="True">0.05<!--static margin we want to achieve--></target>
-      </static_margin>
-    </handling_qualities>
     <mission>
       <sizing>
         <end_of_mission>
@@ -247,12 +235,12 @@
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi in phase--></duration>
           <speed units="m/s" is_input="True">15.0<!--ground velocity during taxi in phase--></speed>
-          <thrust_rate is_input="True">0.5<!--thrust rate during taxi in phase--></thrust_rate>
+          <thrust_rate is_input="True">0.15<!--thrust rate during taxi in phase--></thrust_rate>
         </taxi_in>
         <taxi_out>
           <duration units="s" is_input="True">300.0<!--duration of taxi out phase--></duration>
           <speed units="m/s" is_input="True">15.0<!--ground velocity during taxi out phase--></speed>
-          <thrust_rate is_input="True">0.3<!--thrust rate during taxi out phase--></thrust_rate>
+          <thrust_rate is_input="True">0.15<!--thrust rate during taxi out phase--></thrust_rate>
         </taxi_out>
         <cs23>
           <characteristic_speed>
@@ -276,8 +264,8 @@
           </reserve>
           <climb>
             <climb_rate>
-              <cruise_level units="m/s" is_input="True">1.5<!--target climb rate at the end of climb--></cruise_level>
-              <sea_level units="m/s" is_input="True">2.0<!--target climb rate at sea level--></sea_level>
+              <cruise_level units="m/s" is_input="True">3.5<!--target climb rate at the end of climb--></cruise_level>
+              <sea_level units="m/s" is_input="True">4.0<!--target climb rate at sea level--></sea_level>
             </climb_rate>
           </climb>
         </main_route>

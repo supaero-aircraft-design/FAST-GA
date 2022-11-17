@@ -32,6 +32,7 @@ class ComputeBoPWeight(ExplicitComponent):
         self.add_input("data:geometry:hybrid_powertrain:hex:radiator_surface_density", val=np.nan, units='kg/cm**2')
         self.add_input("data:geometry:hybrid_powertrain:hex:area", val=np.nan, units='m**2')
         self.add_input("data:weight:hybrid_powertrain:fuel_cell:mass", val=np.nan, units="kg")
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=np.nan)
 
         self.add_output("data:weight:hybrid_powertrain:bop:compressor:mass", units="kg")
         self.add_output("data:weight:hybrid_powertrain:bop:hex:radiator_mass", units="kg")
@@ -47,7 +48,8 @@ class ComputeBoPWeight(ExplicitComponent):
         radiator_area = inputs['data:geometry:hybrid_powertrain:hex:area']
         radiator_surface_density = inputs['data:geometry:hybrid_powertrain:hex:radiator_surface_density']
 
-        stack_mass = inputs['data:weight:hybrid_powertrain:fuel_cell:mass']
+        nb_stacks = inputs["data:geometry:hybrid_powertrain:fuel_cell:number_stacks"]
+        stack_mass = inputs['data:weight:hybrid_powertrain:fuel_cell:mass'] / nb_stacks
 
         # Compressor
         M_compressor = M_ref * (R / R_ref) ** 3
@@ -66,6 +68,6 @@ class ComputeBoPWeight(ExplicitComponent):
         outputs['data:weight:hybrid_powertrain:bop:lc_ss_mass'] = M_lcss
 
         # Total mass of the BoP
-        b10 = M_compressor + M_hex + M_lcss
+        b10 = ( M_compressor + M_hex + M_lcss )*nb_stacks
 
         outputs['data:weight:hybrid_powertrain:bop:total_mass'] = b10

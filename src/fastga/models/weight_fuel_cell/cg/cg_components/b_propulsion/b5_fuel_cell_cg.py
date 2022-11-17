@@ -26,15 +26,33 @@ class ComputeFuelCellCG(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=np.nan)
+        self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units='m')
+        self.add_input("data:geometry:hybrid_powertrain:bop:length_in_nacelle", val=np.nan, units='m')
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units='m')
+        self.add_input("data:geometry:hybrid_powertrain:battery:pack_volume", val=np.nan, units='m**3')
+        self.add_input("data:geometry:propulsion:nacelle:master_cross_section", val=np.nan, units='m**2')
 
         self.add_output("data:weight:hybrid_powertrain:fuel_cell:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        fus_front_length = inputs["data:geometry:fuselage:front_length"]
+        nb_stacks = inputs["data:geometry:hybrid_powertrain:fuel_cell:number_stacks"]
 
-        # Fuel cell stack(s) assumed to be placed at 50% of the fuselage front length, in parallel if more than 1 stack
-        cg_b5 = 0.5 * fus_front_length
+        if nb_stacks > 1:
+            engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
+            bop_length = inputs["data:geometry:hybrid_powertrain:bop:length_in_nacelle"]
+            fc_height = inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_height"]
+            nac_section = inputs["data:geometry:propulsion:nacelle:master_cross_section"]
+            pack_vol = inputs["data:geometry:hybrid_powertrain:battery:pack_volume"]
+
+            cg_b5 = engine_cg + pack_vol/ (nac_section/2) + (bop_length + fc_height)/2
+        else:
+
+            fus_front_length = inputs["data:geometry:fuselage:front_length"]
+
+            # Fuel cell stack(s) assumed to be placed at 50% of the fuselage front length, in parallel if more than 1 stack
+            cg_b5 = 0.5 * fus_front_length
 
         outputs["data:weight:hybrid_powertrain:fuel_cell:CG:x"] = cg_b5

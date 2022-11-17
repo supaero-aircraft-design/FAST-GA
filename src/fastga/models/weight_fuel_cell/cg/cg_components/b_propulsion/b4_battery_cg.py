@@ -35,22 +35,35 @@ class ComputeBatteryCG(ExplicitComponent):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
+        self.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_stacks", val=np.nan)
+        self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units='m')
+        self.add_input("data:geometry:hybrid_powertrain:battery:pack_volume", val=np.nan, units='m**3')
+        self.add_input("data:geometry:propulsion:nacelle:master_cross_section", val=np.nan, units='m**2')
 
         self.add_output("data:weight:hybrid_powertrain:battery:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        nb_packs = inputs['data:geometry:hybrid_powertrain:battery:nb_packs']
-        fus_length = inputs["data:geometry:fuselage:length"]
-        fus_front_length = inputs["data:geometry:fuselage:front_length"]
-        cabin_length = inputs["data:geometry:cabin:length"]
+        nb_stacks = inputs["data:geometry:hybrid_powertrain:fuel_cell:number_stacks"]
 
-        if nb_packs == 1:  # Single battery placed behind the pilot seat and the hydrogen tanks : 95% of the cabin
-            cg_b4 = fus_front_length + 0.95 * cabin_length
-        else:  # Both batteries placed one after the other at the front of the aircraft behind fuel cell stacks
-            cg_batt_1 = 0.7 * fus_front_length  # 70% of the fuselage front
-            cg_batt_2 = 0.85 * fus_front_length  # 85% of the fuselage front
-            cg_b4 = (cg_batt_1 + cg_batt_2) / 2
+        if nb_stacks > 1:
+            engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
+            nac_section = inputs["data:geometry:propulsion:nacelle:master_cross_section"]
+            pack_vol = inputs["data:geometry:hybrid_powertrain:battery:pack_volume"]
+            cg_b4 = engine_cg + pack_vol/(nac_section/2)/2
+        else:
+
+            nb_packs = inputs['data:geometry:hybrid_powertrain:battery:nb_packs']
+            fus_length = inputs["data:geometry:fuselage:length"]
+            fus_front_length = inputs["data:geometry:fuselage:front_length"]
+            cabin_length = inputs["data:geometry:cabin:length"]
+
+            if nb_packs == 1:  # Single battery placed behind the pilot seat and the hydrogen tanks : 95% of the cabin
+                cg_b4 = fus_front_length + 0.95 * cabin_length
+            else:  # Both batteries placed one after the other at the front of the aircraft behind fuel cell stacks
+                cg_batt_1 = 0.7 * fus_front_length  # 70% of the fuselage front
+                cg_batt_2 = 0.85 * fus_front_length  # 85% of the fuselage front
+                cg_b4 = (cg_batt_1 + cg_batt_2) / 2
 
         outputs["data:weight:hybrid_powertrain:battery:CG:x"] = cg_b4

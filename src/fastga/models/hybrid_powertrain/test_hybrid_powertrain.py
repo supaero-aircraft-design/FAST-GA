@@ -11,13 +11,16 @@ from .components import (
     ComputeIntakes,
     ComputeInverter
 )
+
 from fastga.models.weight_fuel_cell.mass_breakdown.b_propulsion.b12_h2_storage_weight import (
     ComputeH2StorageWeightPhysical,
     ComputeH2StorageWeightLegacy
 )
 
+from fastga.models.geometry.geom_components.nacelle.compute_nacelle_dimension import ComputeNacelleDimension
 
 XML_FILE = "hybrid_aircraft.xml"
+ENGINE_WRAPPER = "fastga.wrapper.propulsion.basicHE_engine"
 
 
 def test_compute_fuel_cells():
@@ -231,3 +234,18 @@ def test_h2_storage_weight_physical():
     problem = run_system(ComputeH2StorageWeightPhysical(), ivc)
     vol = problem.get_val("data:weight:hybrid_powertrain:h2_storage:mass", units='kg')
     assert vol == pytest.approx(199.05, abs=1e-1)
+
+def test_dep_nacelle_dimensions():
+    """ Tests computation of the hydrogen storage """
+    XML_FILE = "fc_aircraft_dep.xml"
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeNacelleDimension(propulsion_id = ENGINE_WRAPPER)), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNacelleDimension(propulsion_id = ENGINE_WRAPPER), ivc)
+    length = problem.get_val("data:geometry:propulsion:nacelle:length", units='m')
+    cross_section = problem.get_val("data:geometry:propulsion:nacelle:master_cross_section", units='m**2')
+    wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units='m**2')
+    assert length == pytest.approx(4.7, abs=1e-1)
+    assert cross_section == pytest.approx(0.38, abs=1e-2)
+    assert wet_area == pytest.approx(11.6, abs=1e-1)
