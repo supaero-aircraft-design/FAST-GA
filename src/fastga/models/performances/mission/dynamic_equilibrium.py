@@ -15,6 +15,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from copy import deepcopy
+
 import math
 import logging
 import numpy as np
@@ -23,12 +25,12 @@ from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
 import fastoad.api as oad
-from copy import deepcopy
+
 
 from stdatm import Atmosphere
 
 # Definition of Fast-ga custom fields
-FAST_GA_fields = {
+FAST_GA_FIELDS = {
     "gamma": {"name": "gamma", "unit": "rad"},
     "alpha": {"name": "alpha", "unit": "deg"},
     "CL_wing": {"name": "CL_wing", "unit": "-"},
@@ -41,17 +43,15 @@ FAST_FIELDS_TO_REMOVE = {
 }
 
 # Extending FlightPoint dataclass, see FAST-OAD FlightPoint documentation
-col_name = oad.FlightPoint.__annotations__
-for key in FAST_GA_fields.keys():
-    if FAST_GA_fields[key]["name"] not in col_name:
+COL_NAME = oad.FlightPoint.__annotations__
+for key in FAST_GA_FIELDS:
+    if FAST_GA_FIELDS[key]["name"] not in COL_NAME:
         oad.FlightPoint.add_field(
-            name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"]
+            name=FAST_GA_FIELDS[key]["name"], unit=FAST_GA_FIELDS[key]["unit"]
         )
-for key in FAST_FIELDS_TO_REMOVE.keys():
-    if FAST_FIELDS_TO_REMOVE[key]["name"] in col_name:
-        oad.FlightPoint.remove_field(
-            name=FAST_FIELDS_TO_REMOVE[key]["name"]
-        )
+for key in FAST_FIELDS_TO_REMOVE:
+    if FAST_FIELDS_TO_REMOVE[key]["name"] in COL_NAME:
+        oad.FlightPoint.remove_field(name=FAST_FIELDS_TO_REMOVE[key]["name"])
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -287,8 +287,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
         # From flight point list to dataframe
         dataframe_to_add = pd.DataFrame(self.flight_points)
 
-        # Convert array to float
         def as_scalar(value):
+            """Converts arrays to float."""
             if isinstance(value, np.ndarray):
                 return value.item()
             return value
@@ -420,7 +420,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
     ):
 
         """
-        Method to add single flight_point to a list of flight_point and treats equilibirum_result at the same time
+        Method to add single flight_point to a list of flight_point and treats equilibrium_result
+        at the same time.
 
         :param equilibrium_result: result vector of dynamic equilibrium
         :param flight_point: the flight_point to add
@@ -431,7 +432,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 flight_point.alpha = float(equilibrium_result[0]) * 180.0 / np.pi
                 flight_point.CL_wing = float(equilibrium_result[2])
                 flight_point.CL_htp = float(equilibrium_result[3])
-                flight_point.CL = float(equilibrium_result[2]+equilibrium_result[3])
+                flight_point.CL = float(equilibrium_result[2] + equilibrium_result[3])
 
             self.flight_points.append(deepcopy(flight_point))
 
@@ -440,16 +441,14 @@ class DynamicEquilibrium(om.ExplicitComponent):
     ):
 
         """
-        Method to complete velocity fields in flight_point. Uses ONE of [v_cas, v_tas, mach] velocity to set the others.
-        Order of priority is as presented in the list.
+        Method to complete velocity fields in flight_point. Uses ONE of [v_cas, v_tas,
+        mach] velocity to set the others. Order of priority is as presented in the list.
 
         :param flight_point: the flight point to complete
         :param mach: the mach number
         :param v_cas: the calibrated airspeed
         :param v_tas: the true airspeed
         :param climb_rate: the climb rate in m/s used to compute gamma (can be negative).
-
-
         """
 
         atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)

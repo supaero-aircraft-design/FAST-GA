@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
+
 from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
-import numpy as np
 
 oad.RegisterSubmodel.active_models[
     SUBMODEL_INSTALLED_ENGINE_MASS
@@ -28,7 +28,7 @@ oad.RegisterSubmodel.active_models[
 @oad.RegisterSubmodel(
     SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
 )
-class ComputeEngineWeight(ExplicitComponent):
+class ComputeEngineWeight(om.ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
@@ -60,15 +60,15 @@ class ComputeEngineWeight(ExplicitComponent):
         uninstalled_engine_weight = propulsion_model.compute_weight()
         k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
-        b1 = 1.4 * uninstalled_engine_weight
+        b_1 = 1.4 * uninstalled_engine_weight
 
-        outputs["data:weight:propulsion:engine:mass"] = b1 * k_b1
+        outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.raymer"
 )
-class ComputeEngineWeightRaymer(ExplicitComponent):
+class ComputeEngineWeightRaymer(om.ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
@@ -102,6 +102,6 @@ class ComputeEngineWeightRaymer(ExplicitComponent):
         # This should give the UNINSTALLED weight in lbs !
         uninstalled_engine_weight = propulsion_model.compute_weight()
 
-        b1 = 2.575 * uninstalled_engine_weight ** 0.922
+        b_1 = 2.575 * uninstalled_engine_weight ** 0.922
 
-        outputs["data:weight:propulsion:engine:mass"] = b1 * k_b1
+        outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
