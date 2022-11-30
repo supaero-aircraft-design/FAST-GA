@@ -81,7 +81,9 @@ settings:weight:aircraft:CG:fwd:MAC_position:margin || safety margin fwd of the 
 settings:weight:aircraft:CG:range || distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG potentially fwd of the computed one, as currently, FAST-OAD uses the aft position of CG as a reference)
 settings:weight:aircraft:payload:design_mass_per_passenger || design payload mass carried by passenger
 settings:weight:aircraft:payload:max_mass_per_passenger || maximum payload mass carried by passenger
-settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear
+settings:weight:airframe:landing_gear:front:weight_ratio || part of aircraft weight that is supported by front landing gear, should not be lower than 0.08. Roskam
+settings:weight:airframe:landing_gear:front:front_fuselage_ratio || Position of front landing gear expressed as fuselage front length ratio
+settings:weight:propulsion:engine:k_factor || Engine weight tuning factor
 
 settings:geometry:fuel_tanks:depth || ratio of the tank depth as a percentage of the wing depth
 
