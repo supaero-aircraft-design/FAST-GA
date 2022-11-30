@@ -15,33 +15,42 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+from copy import deepcopy
+
 import logging
 import numpy as np
 import openmdao.api as om
 from scipy.constants import g
 from scipy.optimize import fsolve
 import pandas as pd
+import fastoad.api as oad
+
 
 from stdatm import Atmosphere
 
-CSV_DATA_LABELS = [
-    "time",
-    "altitude",
-    "ground_distance",
-    "mass",
-    "true_airspeed",
-    "equivalent_airspeed",
-    "mach",
-    "density",
-    "gamma",
-    "alpha",
-    "cl_wing",
-    "cl_htp",
-    "thrust (N)",
-    "thrust_rate",
-    "tsfc (kg/s/N)",
-    "name",
-]
+# Definition of Fast-ga custom fields
+FAST_GA_FIELDS = {
+    "gamma": {"name": "gamma", "unit": "rad"},
+    "alpha": {"name": "alpha", "unit": "deg"},
+    "CL_wing": {"name": "CL_wing", "unit": "-"},
+    "CL_htp": {"name": "CL_htp", "unit": "-"},
+}
+
+FAST_FIELDS_TO_REMOVE = {
+    "slope_angle": {"name": "slope_angle"},
+    "acceleration": {"name": "acceleration"},
+}
+
+# Extending FlightPoint dataclass, see FAST-OAD FlightPoint documentation
+COL_NAME = oad.FlightPoint.__annotations__
+for key in FAST_GA_FIELDS:
+    if FAST_GA_FIELDS[key]["name"] not in COL_NAME:
+        oad.FlightPoint.add_field(
+            name=FAST_GA_FIELDS[key]["name"], unit=FAST_GA_FIELDS[key]["unit"]
+        )
+for key in FAST_FIELDS_TO_REMOVE:
+    if FAST_FIELDS_TO_REMOVE[key]["name"] in COL_NAME:
+        oad.FlightPoint.remove_field(name=FAST_FIELDS_TO_REMOVE[key]["name"])
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +67,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.cl_tail_sol = 0.0
         self.error_on_pitch_equilibrium = False
         self.delta_e_sol = 0.0
+        self.flight_points = []
 
     def initialize(self):
         self.options.declare("out_file", default="", types=str)
@@ -269,14 +279,27 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
     def save_csv(
         self,
-        dataframe_to_add: pd.DataFrame,
     ):
         """
         Method to save mission point to .csv file for further post-processing
-
-        :param dataframe_to_add: Dataframe to add to the csv
         """
+        # From flight point list to dataframe
+        dataframe_to_add = pd.DataFrame(self.flight_points)
 
+        def as_scalar(value):
+            """Converts arrays to float."""
+            if isinstance(value, np.ndarray):
+                return value.item()
+            return value
+
+        dataframe_to_add = dataframe_to_add.applymap(as_scalar)
+        rename_dict = {
+            field_name: f"{field_name} [{unit}]"
+            for field_name, unit in oad.FlightPoint.get_units().items()
+        }
+        dataframe_to_add.rename(columns=rename_dict, inplace=True)
+
+        # Save and recycle data if a file is already present.
         if not os.path.exists(self.options["out_file"]):
             dataframe_to_add.index = range(len(dataframe_to_add))
             dataframe_to_add.to_csv(self.options["out_file"])
@@ -389,86 +412,60 @@ class DynamicEquilibrium(om.ExplicitComponent):
 
         return np.array([f1, f2])
 
+    def add_flight_point(
+        self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None
+    ):
 
-def save_df(
-    time,
-    altitude,
-    distance,
-    mass,
-    v_tas,
-    v_cas,
-    rho,
-    gamma,
-    equilibrium_result,
-    thrust_rate,
-    sfc,
-    name: str,
-    existing_dataframe: pd.DataFrame = None,
-):
-    """
-    Method to save mission point to a pandas dataframe file for further post-processing
+        """
+        Method to add single flight_point to a list of flight_point and treats equilibrium_result
+        at the same time.
 
-    :param time: mission time in seconds
-    :param altitude: flight altitude in meters
-    :param distance: flight distance in meters
-    :param mass: aircraft current mass
-    :param v_tas: true air speed in m/s
-    :param v_cas: calibrated air speed in m/s
-    :param rho: air density in kg/m3
-    :param gamma: slope angle in degree
-    :param equilibrium_result: result vector of dynamic equilibrium
-    :param thrust_rate: thrust rate at flight point
-    :param sfc: sfc at flight point
-    :param name: phase name
-    :param existing_dataframe: Dataframe
-    """
+        :param equilibrium_result: result vector of dynamic equilibrium
+        :param flight_point: the flight_point to add
+        """
 
-    alpha = float(equilibrium_result[0]) * 180.0 / np.pi
-    thrust = float(equilibrium_result[1])
-    cl_wing = float(equilibrium_result[2])
-    cl_htp = float(equilibrium_result[3])
-    atm = Atmosphere(altitude, altitude_in_feet=False)
-    mach = v_tas / atm.speed_of_sound
-    if existing_dataframe is None:
-        existing_dataframe = pd.DataFrame(columns=CSV_DATA_LABELS)
-        existing_dataframe.loc[0] = [
-            float(time),
-            float(altitude),
-            float(distance),
-            float(mass),
-            float(v_tas),
-            float(v_cas),
-            float(mach),
-            float(rho),
-            float(gamma),
-            alpha,
-            cl_wing,
-            cl_htp,
-            thrust,
-            float(thrust_rate),
-            float(sfc),
-            name,
-        ]
-    else:
-        data = [
-            float(time),
-            float(altitude),
-            float(distance),
-            float(mass),
-            float(v_tas),
-            float(v_cas),
-            float(mach),
-            float(rho),
-            float(gamma),
-            alpha,
-            cl_wing,
-            cl_htp,
-            thrust,
-            float(thrust_rate),
-            float(sfc),
-            name,
-        ]
-        row = pd.DataFrame(data, index=CSV_DATA_LABELS).transpose()
-        existing_dataframe = pd.concat([existing_dataframe, row])
+        if flight_point is not None:
+            if equilibrium_result is not None:
+                flight_point.alpha = float(equilibrium_result[0]) * 180.0 / np.pi
+                flight_point.CL_wing = float(equilibrium_result[2])
+                flight_point.CL_htp = float(equilibrium_result[3])
+                flight_point.CL = float(equilibrium_result[2] + equilibrium_result[3])
 
-    return existing_dataframe
+            self.flight_points.append(deepcopy(flight_point))
+
+    def complete_flight_point(
+        self, flight_point: oad.FlightPoint, mach=None, v_cas=None, v_tas=None, climb_rate=0.0
+    ):
+
+        """
+        Method to complete velocity fields in flight_point. Uses ONE of [v_cas, v_tas,
+        mach] velocity to set the others. Order of priority is as presented in the list.
+
+        :param flight_point: the flight point to complete
+        :param mach: the mach number
+        :param v_cas: the calibrated airspeed
+        :param v_tas: the true airspeed
+        :param climb_rate: the climb rate in m/s used to compute gamma (can be negative).
+        """
+
+        atm = Atmosphere(flight_point.altitude, altitude_in_feet=False)
+
+        if v_cas is not None:
+            atm.calibrated_airspeed = v_cas
+
+        elif v_tas is not None:
+            atm.true_airspeed = v_tas
+
+        elif mach is not None:
+            atm.mach = mach
+
+        else:
+            raise ValueError(
+                "Either v_cas, v_tas or mach number must be given to complete flight_point"
+            )
+
+        flight_point.mach = atm.mach
+        flight_point.true_airspeed = atm.true_airspeed
+        flight_point.equivalent_airspeed = atm.equivalent_airspeed
+        flight_point.calibrated_airspeed = atm.calibrated_airspeed
+        flight_point.gamma = np.arcsin(climb_rate / atm.true_airspeed)
