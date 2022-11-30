@@ -31,8 +31,13 @@ from stdatm import Atmosphere
 FAST_GA_fields = {
     "gamma": {"name": "gamma", "unit": "rad"},
     "alpha": {"name": "alpha", "unit": "deg"},
-    "cl_wing": {"name": "cl_wing", "unit": ""},
-    "cl_htp": {"name": "cl_htp", "unit": ""},
+    "CL_wing": {"name": "CL_wing", "unit": "-"},
+    "CL_htp": {"name": "CL_htp", "unit": "-"},
+}
+
+FAST_FIELDS_TO_REMOVE = {
+    "slope_angle": {"name": "slope_angle"},
+    "acceleration": {"name": "acceleration"},
 }
 
 # Extending FlightPoint dataclass, see FAST-OAD FlightPoint documentation
@@ -41,6 +46,11 @@ for key in FAST_GA_fields.keys():
     if FAST_GA_fields[key]["name"] not in col_name:
         oad.FlightPoint.add_field(
             name=FAST_GA_fields[key]["name"], unit=FAST_GA_fields[key]["unit"]
+        )
+for key in FAST_FIELDS_TO_REMOVE.keys():
+    if FAST_FIELDS_TO_REMOVE[key]["name"] in col_name:
+        oad.FlightPoint.remove_field(
+            name=FAST_FIELDS_TO_REMOVE[key]["name"]
         )
 
 _LOGGER = logging.getLogger(__name__)
@@ -419,8 +429,9 @@ class DynamicEquilibrium(om.ExplicitComponent):
         if flight_point is not None:
             if equilibrium_result is not None:
                 flight_point.alpha = float(equilibrium_result[0]) * 180.0 / np.pi
-                flight_point.cl_wing = float(equilibrium_result[2])
-                flight_point.cl_htp = float(equilibrium_result[3])
+                flight_point.CL_wing = float(equilibrium_result[2])
+                flight_point.CL_htp = float(equilibrium_result[3])
+                flight_point.CL = float(equilibrium_result[2]+equilibrium_result[3])
 
             self.flight_points.append(deepcopy(flight_point))
 
