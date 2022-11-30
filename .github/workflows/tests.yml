@@ -24,31 +24,16 @@ jobs:
         os: [ windows-latest, ubuntu-latest ]
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v3
 
       - name: Install Poetry
         run: pipx install poetry==1.1.15
-        shell: bash
 
-      - name: Poetry path
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-        shell: bash
-
-      - uses: actions/cache@v2
-        if: ${{ startsWith(runner.os, 'Linux') }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
-
-      - uses: actions/cache@v2
-        if: ${{ startsWith(runner.os, 'macOS') }}
-        with:
-          path: ~/Library/Caches/pypoetry
-          key: ${{ runner.os }}-Py${{ matrix.python-version }}-pypoetry-${{ hashFiles('**/poetry.lock') }}
+          python-version: ${{ matrix.python-version }}
+          cache: poetry
 
       - name: Activate environment and install dependencies
         run: poetry install
@@ -73,7 +58,7 @@ jobs:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v2
         if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
         with:
           #          flags: unittests  # optional
