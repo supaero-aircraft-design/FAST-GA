@@ -17,6 +17,7 @@
 import os
 from copy import deepcopy
 
+import math
 import logging
 import numpy as np
 import openmdao.api as om
