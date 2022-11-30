@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -35,11 +35,14 @@ from .constants import (
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_CY_BETA,
+    SUBMODEL_CN_BETA,
 )
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
-class AerodynamicsLowSpeed(Group):
+class AerodynamicsLowSpeed(om.Group):
     """Models for low speed aerodynamics."""
 
     def initialize(self):
@@ -83,6 +86,15 @@ class AerodynamicsLowSpeed(Group):
                 promotes=["*"],
             )
 
+        options_downwash = {
+            "low_speed_aero": True,
+        }
+        self.add_subsystem(
+            "downwash",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DOWNWASH, options=options_downwash),
+            promotes=["*"],
+        )
+
         options_cd0 = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": True,
@@ -125,7 +137,10 @@ class AerodynamicsLowSpeed(Group):
             "high_lift", oad.RegisterSubmodel.get_submodel(SUBMODEL_DELTA_HIGH_LIFT), promotes=["*"]
         )
 
-        option_wing_airfoil = {"wing_airfoil_file": self.options["wing_airfoil"]}
+        option_wing_airfoil = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
+            "wing_airfoil_file": self.options["wing_airfoil"],
+        }
         self.add_subsystem(
             "wing_extreme_cl_clean",
             oad.RegisterSubmodel.get_submodel(
@@ -134,7 +149,10 @@ class AerodynamicsLowSpeed(Group):
             promotes=["*"],
         )
 
-        option_htp_airfoil = {"htp_airfoil_file": self.options["htp_airfoil"]}
+        option_htp_airfoil = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
+            "htp_airfoil_file": self.options["htp_airfoil"],
+        }
         self.add_subsystem(
             "htp_extreme_cl_clean",
             oad.RegisterSubmodel.get_submodel(
@@ -158,6 +176,18 @@ class AerodynamicsLowSpeed(Group):
         self.add_subsystem(
             "Cy_Delta_rudder",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_RUDDER, options=option_low_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cy_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_low_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cn_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA, options=option_low_speed),
             promotes=["*"],
         )
 

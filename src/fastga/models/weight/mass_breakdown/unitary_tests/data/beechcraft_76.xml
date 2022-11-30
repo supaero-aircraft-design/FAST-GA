@@ -261,6 +261,15 @@
           </stick_free>
         </neutral_point>
       </cruise>
+      <fuselage>
+        <Cn_beta units="1/rad" is_input="False">-0.05579626374113451<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
+        <cruise>
+          <CD0 is_input="False">0.004908554056005626<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.005435236272330077<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
+        </low_speed>
+      </fuselage>
       <horizontal_tail>
         <efficiency is_input="False">1.0<!--ratio between the dynamic pressure at the tail and the free stream dynamic pressure--></efficiency>
         <airfoil>
@@ -384,15 +393,6 @@
           <CM is_input="False">-0.026064610795080875<!--additional pitching moment coefficient due to the deployment of flaps in takeoff configuration--></CM>
         </takeoff>
       </flaps>
-      <fuselage>
-        <cruise>
-          <CD0 is_input="False">0.004908554056005626<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
-          <CnBeta is_input="False">-0.05579626374113451<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
-        </cruise>
-        <low_speed>
-          <CD0 is_input="False">0.005435236272330077<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
-        </low_speed>
-      </fuselage>
       <landing_gear>
         <cruise>
           <CD0 is_input="False">0.0<!--profile drag coefficient for landing gears in cruise conditions--></CD0>

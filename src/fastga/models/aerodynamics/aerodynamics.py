@@ -13,7 +13,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -23,7 +23,7 @@ from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpe
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
-class Aerodynamics(Group):
+class Aerodynamics(om.Group):
     """
     Computes the aerodynamic properties of the aircraft in cruise conditions and in low speed
     conditions. Calls the AerodynamicHighSpeed and AerodynamicsLowSpeed sub-groups.

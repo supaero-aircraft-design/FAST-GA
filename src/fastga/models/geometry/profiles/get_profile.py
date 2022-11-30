@@ -15,7 +15,7 @@ Airfoil reshape function.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pandas as pd
-import math
+import numpy as np
 import warnings
 import logging
 
@@ -65,7 +65,7 @@ def get_profile(
 
 
 def genfromtxt(file_name: str = None) -> pd.DataFrame:
-    with open(pth.join(airfoil_folder.__path__[0], file_name), "r") as file:
+    with open(file_name, "r") as file:
         data = file.readlines()
         # Extract data
         x_data = []
@@ -77,7 +77,7 @@ def genfromtxt(file_name: str = None) -> pd.DataFrame:
                 try:
                     float(line[0])
                     float(line[1])
-                    if 0.0 <= math.ceil(float(line[0])) <= 1.0:
+                    if 0.0 <= np.ceil(float(line[0])) <= 1.0:
                         x_data.append(float(line[0]))
                         z_data.append(float(line[1]))
                 except ValueError:

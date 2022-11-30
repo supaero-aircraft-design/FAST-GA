@@ -14,7 +14,6 @@
 
 import numpy as np
 import openmdao.api as om
-import math
 
 import fastoad.api as oad
 from .constants import SUBMODEL_WING_MASS
@@ -64,7 +63,7 @@ class ComputeWingWeight(om.ExplicitComponent):
             96.948
             * (
                 (mtow * sizing_factor_ultimate / 10.0 ** 5.0) ** 0.65
-                * (aspect_ratio / (math.cos(sweep_25) ** 2.0)) ** 0.57
+                * (aspect_ratio / (np.cos(sweep_25) ** 2.0)) ** 0.57
                 * (wing_area / 100.0) ** 0.61
                 * ((1.0 + taper_ratio) / (2.0 * thickness_ratio)) ** 0.36
                 * (1.0 + v_max_sl / 500.0) ** 0.5

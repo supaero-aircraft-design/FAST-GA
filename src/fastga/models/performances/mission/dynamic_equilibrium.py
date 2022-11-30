@@ -168,7 +168,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         if len(previous_step) == 2:
             result = fsolve(
                 self.equation_outer,
-                np.array([previous_step[0] * 180.0 / math.pi, previous_step[1] / 1000.0]),
+                np.array([previous_step[0] * 180.0 / np.pi, previous_step[1] / 1000.0]),
                 args=(inputs, gamma, q, dvx_dt, dvz_dt, mass, flap_condition, low_speed, x_cg),
                 xtol=1.0e-3,
             )
@@ -179,7 +179,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
                 args=(inputs, gamma, q, dvx_dt, dvz_dt, mass, flap_condition, low_speed, x_cg),
                 xtol=1.0e-3,
             )
-        alpha_equilibrium = result[0] * math.pi / 180.0
+        alpha_equilibrium = result[0] * np.pi / 180.0
         # noinspection PyTypeChecker
         thrust_equilibrium = result[1] * 1000.0
 
@@ -363,15 +363,13 @@ class DynamicEquilibrium(om.ExplicitComponent):
         z_eng = z_cg_aircraft - z_cg_engine
         alpha_eng = 0.0  # fixme: angle between propulsion and wing not defined
 
-        alpha = x[0] * math.pi / 180.0  # defined in degree to be homogenous on x-tolerance
+        alpha = x[0] * np.pi / 180.0  # defined in degree to be homogenous on x-tolerance
         thrust = x[1] * 1000.0  # defined in kN to be homogenous on x-tolerance
 
-        load_factor = (
-            -dvz_dt + g * math.cos(gamma) - thrust / mass * math.sin(alpha - alpha_eng)
-        ) / g
+        load_factor = (-dvz_dt + g * np.cos(gamma) - thrust / mass * np.sin(alpha - alpha_eng)) / g
         # Additional aerodynamics
         delta_cl = 0.0
-        delta_cm = z_eng * thrust * math.cos(alpha - alpha_eng) / (wing_mac * q * wing_area)
+        delta_cm = z_eng * thrust * np.cos(alpha - alpha_eng) / (wing_mac * q * wing_area)
         cl_wing_blown, cl_htp, error_tag = self.found_cl_repartition(
             inputs, load_factor, mass, q, delta_cm, low_speed, x_cg
         )
@@ -405,7 +403,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         drag = q * cd * wing_area
         # Divide the results by characteristic number to have homogeneous responses
         f1 = float(
-            thrust * math.cos(alpha - alpha_eng) - mass * g * math.sin(gamma) - drag - mass * dvx_dt
+            thrust * np.cos(alpha - alpha_eng) - mass * g * np.sin(gamma) - drag - mass * dvx_dt
         ) / (float(mass) / 10.0)
         f2 = float(cl_wing_blown - (cl_wing + delta_cl)) / float(cl_max_clean)
 

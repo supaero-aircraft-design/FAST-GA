@@ -16,7 +16,6 @@ proposed by Gudmundsson.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 import scipy.interpolate as inter
 from scipy.constants import g
 import openmdao.api as om
@@ -131,7 +130,7 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         delta_e = commands[1]
 
         delta_alpha_stall = aircraft_equilibrium_limit._stall_angle_reduction(
-            inputs, abs(delta_e) * 180.0 / math.pi
+            inputs, abs(delta_e) * 180.0 / np.pi
         )
         stall_angle_min_htp = stall_angle_min + delta_alpha_stall
         stall_angle_max_htp = stall_angle_max - delta_alpha_stall
@@ -221,7 +220,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
 
         rho = Atmosphere(0.0).density
 
-        v_s0 = math.sqrt((mlw * 9.81) / (0.5 * rho * wing_area * cl_max_landing))
+        v_s0 = np.sqrt((mlw * 9.81) / (0.5 * rho * wing_area * cl_max_landing))
         v_ref = 1.3 * v_s0
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -283,9 +282,9 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         propulsion_model.compute_flight_points(flight_point)
         thrust = float(flight_point.thrust)
         propeller_advance_ratio = v_ref / (2700.0 / 60.0 * 1.97)
-        propeller_efficiency_reduction = math.sin(propeller_advance_ratio * math.pi / 2.0)
+        propeller_efficiency_reduction = np.sin(propeller_advance_ratio * np.pi / 2.0)
 
-        climb_angle = math.asin(propeller_efficiency_reduction * thrust / (mass * 9.81) - cd / cl)
-        climb_gradient = math.tan(climb_angle)
+        climb_angle = np.arcsin(propeller_efficiency_reduction * thrust / (mass * 9.81) - cd / cl)
+        climb_gradient = np.tan(climb_angle)
 
         return climb_gradient, equilibrium_found

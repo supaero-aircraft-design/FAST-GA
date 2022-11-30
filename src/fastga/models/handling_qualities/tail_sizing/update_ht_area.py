@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 import openmdao.api as om
 
 from scipy.constants import g
@@ -30,7 +29,7 @@ from fastga.command.api import list_inputs, list_outputs
 
 from .constants import SUBMODEL_HT_AREA
 
-_ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
+_ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
 @oad.RegisterSubmodel(
@@ -167,8 +166,8 @@ class HTPConstraints(om.ExplicitComponent):
 
         # Calculation of take-off minimum speed
         weight = mtow * g
-        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
-        vs1 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
+        vs0 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
+        vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_clean))
         # Rotation speed requirement from FAR 23.51 (depends on number of engines)
         if n_engines == 1:
             v_r = vs1 * 1.0
@@ -250,7 +249,7 @@ class HTPConstraints(om.ExplicitComponent):
 
         # Calculation of take-off minimum speed
         weight = mlw * g
-        vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
+        vs0 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
         # Rotation speed requirement from FAR 23.73
         v_r = vs0 * 1.3
         # Calculation of wheel factor
@@ -503,18 +502,18 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         if self.options["landing"]:
             # Calculation of take-off minimum speed
             weight = mlw * g
-            vs0 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
+            vs0 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_landing))
             # Rotation speed correction
             v_r = vs0 * 1.3
             # Evaluate aircraft overall angle (aoa)
             cl0_landing = cl0_clean_wing + cl_flaps_landing
             cl_landing = weight / (0.5 * rho * v_r ** 2 * wing_area)
-            alpha = (cl_landing - cl0_landing) / cl_alpha_wing * 180 / math.pi
+            alpha = (cl_landing - cl0_landing) / cl_alpha_wing * 180 / np.pi
         else:
             # Define aircraft overall angle (aoa)
             alpha = 0.0
         # Interpolate cl/cm and define with ht reference surface
-        cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
+        cl_htp = (cl0_htp + (alpha * np.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
         # Define Cl_alpha with htp reference surface
         cl_alpha_htp_isolated = cl_alpha_htp_isolated * wing_area / ht_area
 

@@ -24,7 +24,6 @@ class ComputeAeroCenter(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input(
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
@@ -32,6 +31,7 @@ class ComputeAeroCenter(ExplicitComponent):
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
+        self.add_input("data:aerodynamics:horizontal_tail:cruise:downwash_gradient", val=np.nan)
         self.add_input("data:aerodynamics:elevator:low_speed:CL_delta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:fuselage:cm_alpha", val=np.nan, units="rad**-1")
         self.add_input(
@@ -57,10 +57,10 @@ class ComputeAeroCenter(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         l0_wing = inputs["data:geometry:wing:MAC:length"]
-        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
         cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
+        downwash_gradient = inputs["data:aerodynamics:horizontal_tail:cruise:downwash_gradient"]
         cl_delta_ht = inputs["data:aerodynamics:elevator:low_speed:CL_delta"]
         ch_alpha_3d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha"]
         ch_delta_3d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta"]
@@ -88,7 +88,7 @@ class ComputeAeroCenter(ExplicitComponent):
         # downwash, as a consequence we must correct it influence for this specific calculation.
         # We will use the formula for elliptical wing as it is well known
 
-        downwash_effect = 1.0 - 2.0 * cl_alpha_wing / (np.pi * aspect_ratio)
+        downwash_effect = 1.0 - downwash_gradient
         cl_alpha_ht_ht = cl_alpha_ht / downwash_effect
         free_elevator_factor = 1.0 - (cl_delta_ht_cruise / cl_alpha_ht_ht) * (
             ch_alpha_3d / ch_delta_3d

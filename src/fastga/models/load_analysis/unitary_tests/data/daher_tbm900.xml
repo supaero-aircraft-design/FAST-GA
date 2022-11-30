@@ -46,8 +46,8 @@
         </seats>
       </cabin>
       <flap>
-        <span_ratio is_input="True">0.75<!--flap chord as a percentage of the wing chord--></span_ratio>
         <chord_ratio is_input="True">0.26<!--flap chord as a percentage of the wing chord--></chord_ratio>
+        <span_ratio is_input="True">0.75<!--flap chord as a percentage of the wing chord--></span_ratio>
       </flap>
       <fuselage>
         <PAX_length units="m" is_input="True">3.2<!--length of the passenger compartment--></PAX_length>
@@ -291,10 +291,10 @@
         </neutral_point>
       </cruise>
       <fuselage>
+        <Cn_beta units="1/rad" is_input="False">-0.08831552806431994<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
         <cm_alpha units="1/rad" is_input="False">-0.3174415261738678<!--derivative of fuselage pitching moment coefficient with respect to angle of attack--></cm_alpha>
         <cruise>
           <CD0 is_input="False">0.006054127142042641<!--profile drag coefficient for fuselage in cruise conditions--></CD0>
-          <CnBeta is_input="False">-0.08831552806431994<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
         </cruise>
         <low_speed>
           <CD0 is_input="False">0.006786723720049716<!--profile drag coefficient for fuselage in low speed conditions--></CD0>
@@ -598,16 +598,6 @@
       <sizing>
         <fuel units="kg" is_input="False">763.174832982154</fuel>
         <cs23>
-          <flight_domain>
-            <mzfw>
-              <velocity>[45.12871046,42.68884934,84.17368458,50.35792871,0.0,0.0,94.30284589,94.30284589,94.30284589,117.87855736,117.87855736,117.87855736,117.87855736,106.09070163,101.56759831,0.0,34.42068063,48.67819337,63.18019465]</velocity>
-              <load_factor>[1.0,-1.0,3.47893912,-1.39157565,0.0,0.0,-1.39157565,3.47893912,-1.39157565,3.47893912,0.0,2.2737062,-0.2737062,0.0,0.0,0.0,1.0,2.0,2.0]</load_factor>
-            </mzfw>
-            <mtow>
-              <velocity>[45.12871046,42.68884934,84.17368458,50.35792871,0.0,0.0,94.30284589,94.30284589,94.30284589,117.87855736,117.87855736,117.87855736,117.87855736,106.09070163,101.56759831,0.0,34.42068063,48.67819337,63.18019465]</velocity>
-              <load_factor>[1.0,-1.0,3.47893912,-1.39157565,0.0,0.0,-1.39157565,3.47893912,-1.39157565,3.47893912,0.0,2.2737062,-0.2737062,0.0,0.0,0.0,1.0,2.0,2.0]</load_factor>
-            </mtow>
-          </flight_domain>
           <safety_factor is_input="True">1.5</safety_factor>
           <characteristic_speed>
             <va units="knot" is_input="True">160.0</va>
@@ -625,6 +615,16 @@
               <positive is_input="True">5.7</positive>
             </ultimate_mzfw>
           </sizing_factor>
+          <flight_domain>
+            <mtow>
+              <load_factor>[1.0, -1.0, 3.47893912, -1.39157565, 0.0, 0.0, -1.39157565, 3.47893912, -1.39157565, 3.47893912, 0.0, 2.2737062, -0.2737062, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity>[45.12871046, 42.68884934, 84.17368458, 50.35792871, 0.0, 0.0, 94.30284589, 94.30284589, 94.30284589, 117.87855736, 117.87855736, 117.87855736, 117.87855736, 106.09070163, 101.56759831, 0.0, 34.42068063, 48.67819337, 63.18019465]</velocity>
+            </mtow>
+            <mzfw>
+              <load_factor>[1.0, -1.0, 3.47893912, -1.39157565, 0.0, 0.0, -1.39157565, 3.47893912, -1.39157565, 3.47893912, 0.0, 2.2737062, -0.2737062, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity>[45.12871046, 42.68884934, 84.17368458, 50.35792871, 0.0, 0.0, 94.30284589, 94.30284589, 94.30284589, 117.87855736, 117.87855736, 117.87855736, 117.87855736, 106.09070163, 101.56759831, 0.0, 34.42068063, 48.67819337, 63.18019465]</velocity>
+            </mzfw>
+          </flight_domain>
         </cs23>
         <initial_climb>
           <fuel units="kg" is_input="False">0.3079627331240003</fuel>
@@ -704,8 +704,8 @@
         <MZFW units="kg" is_input="False">2765.0739468171187<!--maximum zero fuel weight--></MZFW>
         <OWE units="kg" is_input="False">2115.0739468171187<!--Mass of aircraft--></OWE>
         <ZFW units="kg" is_input="False">2595.0739468171187<!--aircraft mass with payload, without fuel--></ZFW>
-        <max_payload is_input="True" units="kg">650.0<!--max payload weight--></max_payload>
-        <payload is_input="True" units="kg">480.0<!--design payload weight--></payload>
+        <max_payload units="kg" is_input="True">650.0<!--max payload weight--></max_payload>
+        <payload units="kg" is_input="True">480.0<!--design payload weight--></payload>
         <CG>
           <aft>
             <MAC_position is_input="False">0.48289041641614955<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>

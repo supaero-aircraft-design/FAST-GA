@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 import openmdao.api as om
 
 
@@ -63,7 +62,7 @@ class InFlightCGVariation(om.ExplicitComponent):
 
         l_instr = 0.7
         # Seats and passengers gravity center (hypothesis of 2 pilots)
-        nrows = math.ceil(npax / count_by_row)
+        nrows = int(np.ceil(npax / count_by_row))
         x_cg_passenger = lav + l_instr + l_pilot_seat * 2.0 / (npax + 2.0)
         for idx in range(nrows):
             length = l_pilot_seat + (idx + 0.5) * l_pass_seat

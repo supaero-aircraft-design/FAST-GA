@@ -30,10 +30,12 @@ from .constants import (
     SUBMODEL_CL_ALPHA_VT,
     SUBMODEL_HINGE_MOMENTS_TAIL,
     SUBMODEL_MAX_L_D,
-    SUBMODEL_CN_BETA_FUSELAGE,
     SUBMODEL_CM_ALPHA_FUSELAGE,
     SUBMODEL_CY_RUDDER,
     SUBMODEL_EFFECTIVE_EFFICIENCY_PROPELLER,
+    SUBMODEL_DOWNWASH,
+    SUBMODEL_CY_BETA,
+    SUBMODEL_CN_BETA,
 )
 
 
@@ -85,6 +87,7 @@ class AerodynamicsHighSpeed(Group):
                 self.add_subsystem(
                     "mach_interpolation_roskam",
                     ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
@@ -122,11 +125,22 @@ class AerodynamicsHighSpeed(Group):
                 self.add_subsystem(
                     "mach_interpolation_roskam",
                     ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                     ),
                     promotes=["*"],
                 )
+
+        options_downwash = {
+            "low_speed_aero": False,
+        }
+        self.add_subsystem(
+            "downwash",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_DOWNWASH, options=options_downwash),
+            promotes=["*"],
+        )
+
         options_cd0 = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": False,
@@ -153,11 +167,6 @@ class AerodynamicsHighSpeed(Group):
             "L_D_max", oad.RegisterSubmodel.get_submodel(SUBMODEL_MAX_L_D), promotes=["*"]
         )
         self.add_subsystem(
-            "cnBeta_fuse",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA_FUSELAGE),
-            promotes=["*"],
-        )
-        self.add_subsystem(
             "cmAlpha_fuse",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CM_ALPHA_FUSELAGE),
             promotes=["*"],
@@ -177,6 +186,19 @@ class AerodynamicsHighSpeed(Group):
         self.add_subsystem(
             "ch_ht", oad.RegisterSubmodel.get_submodel(SUBMODEL_HINGE_MOMENTS_TAIL), promotes=["*"]
         )
+
+        self.add_subsystem(
+            "cy_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CY_BETA, options=option_high_speed),
+            promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cn_beta",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CN_BETA, options=option_high_speed),
+            promotes=["*"],
+        )
+
         if self.options["compute_slipstream"]:
             self.add_subsystem(
                 "aero_slipstream_openvsp_hs",

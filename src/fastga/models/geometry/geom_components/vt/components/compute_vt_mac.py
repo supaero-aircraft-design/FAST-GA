@@ -15,8 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -61,7 +59,7 @@ class ComputeVTMacFD(ExplicitComponent):
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        tmp = root_chord * 0.25 + b_v * math.tan(sweep_25_vt) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25
 
         mac_vt = (
             (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)

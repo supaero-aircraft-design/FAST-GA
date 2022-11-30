@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
 from typing import Union, Tuple
 
 import numpy as np
@@ -400,7 +399,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         if flap_type == 1:  # Slotted flap
             alpha_flap = self.k_prime_single_slotted(angle, flap_chord_ratio)
             delta_cl_airfoil = (
-                2 * math.pi / math.sqrt(1 - mach ** 2) * alpha_flap * (angle * math.pi / 180)
+                2 * np.pi / np.sqrt(1 - mach ** 2) * alpha_flap * (angle * np.pi / 180)
             )
         else:  # Plain flap
             cl_delta_theory = self.cl_delta_theory_plain_flap(
@@ -410,7 +409,7 @@ class ComputeDeltaHighLift(FigureDigitization):
             k_cl_delta = self.k_cl_delta_plain_flap(
                 wing_thickness_ratio, cl_alpha_airfoil_wing, flap_chord_ratio
             )
-            delta_cl_airfoil = k_cl_delta * cl_delta_theory * k * (angle * math.pi / 180)
+            delta_cl_airfoil = k_cl_delta * cl_delta_theory * k * (angle * np.pi / 180)
 
         return delta_cl_airfoil
 
@@ -425,7 +424,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_type = inputs["data:geometry:flap_type"]
         el_aero = inputs["data:geometry:wing:thickness_ratio"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
-        sweep_25 = inputs["data:geometry:wing:sweep_25"] * math.pi / 180.0
+        sweep_25 = inputs["data:geometry:wing:sweep_25"] * np.pi / 180.0
         flap_area_ratio = self._compute_flap_area_ratio(inputs)
 
         base_increment = self.base_max_lift_increment(el_aero * 100.0, flap_type)
@@ -433,7 +432,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_angle_factor = self.k2_max_lift(flap_angle, flap_type)
         flap_motion_factor = self.k3_max_lift(flap_angle, flap_type)
 
-        k_planform = (1.0 - 0.08 * math.cos(sweep_25) ** 2.0) * math.cos(sweep_25) ** (3.0 / 4.0)
+        k_planform = (1.0 - 0.08 * np.cos(sweep_25) ** 2.0) * np.cos(sweep_25) ** (3.0 / 4.0)
         delta_cl_max_flaps = (
             base_increment
             * flap_chord_factor

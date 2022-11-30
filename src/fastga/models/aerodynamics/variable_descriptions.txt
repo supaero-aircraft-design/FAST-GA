@@ -22,7 +22,7 @@ data:aerodynamics:elevator:low_speed:CL_delta || derivative of horizontal tail l
 data:aerodynamics:elevator:low_speed:CD_delta || derivative of horizontal tail drag coefficient with respect to elevator command
 
 data:aerodynamics:fuselage:cruise:CD0 || profile drag coefficient for fuselage in cruise conditions
-data:aerodynamics:fuselage:cruise:CnBeta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
+data:aerodynamics:fuselage:Cn_beta || derivative of yawing moment against sideslip angle for fuselage in cruise conditions
 data:aerodynamics:fuselage:low_speed:CD0 || profile drag coefficient for fuselage in low speed conditions
 data:aerodynamics:fuselage:cm_alpha || derivative of fuselage pitching moment coefficient with respect to angle of attack
 

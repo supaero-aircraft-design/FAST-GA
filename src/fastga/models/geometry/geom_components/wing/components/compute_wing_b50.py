@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -48,7 +46,7 @@ class ComputeWingB50(ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         span = inputs["data:geometry:wing:span"]
 
-        sweep_50 = math.atan((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing) / (y4_wing - y2_wing))
-        b_50 = span / math.cos(sweep_50)
+        sweep_50 = np.arctan2((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing), (y4_wing - y2_wing))
+        b_50 = span / np.cos(sweep_50)
 
         outputs["data:geometry:wing:b_50"] = b_50

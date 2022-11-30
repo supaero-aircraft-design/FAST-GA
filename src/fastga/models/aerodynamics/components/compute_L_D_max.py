@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -50,8 +48,8 @@ class ComputeLDMax(ExplicitComponent):
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 
-        cl_opt = math.sqrt(cd0 / coeff_k)
-        alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / math.pi
+        cl_opt = np.sqrt(cd0 / coeff_k)
+        alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / np.pi
         cd_opt = cd0 + coeff_k * cl_opt ** 2
 
         outputs["data:aerodynamics:aircraft:cruise:L_D_max"] = cl_opt / cd_opt

@@ -22,7 +22,7 @@ from .components import (
     ComputeFuselageGeometryCabinSizingFL,
 )
 
-from .constants import SUBMODEL_FUSELAGE_WET_AREA
+from .constants import SUBMODEL_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_DEPTH, SUBMODEL_FUSELAGE_VOLUME
 
 from fastga.models.options import CABIN_SIZING_OPTION
 
@@ -48,6 +48,16 @@ class ComputeFuselageAlternate(Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
             promotes=["*"],
         )
+        self.add_subsystem(
+            "compute_avg_fuselage_depth",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DEPTH),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_fuselage_volume",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_VOLUME),
+            promotes=["*"],
+        )
 
 
 class ComputeFuselageLegacy(Group):
@@ -69,5 +79,15 @@ class ComputeFuselageLegacy(Group):
         self.add_subsystem(
             "compute_fus_wet_area",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_avg_fuselage_depth",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DEPTH),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_fuselage_volume",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_VOLUME),
             promotes=["*"],
         )
