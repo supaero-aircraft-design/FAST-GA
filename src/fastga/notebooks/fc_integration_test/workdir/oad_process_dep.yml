@@ -51,6 +51,9 @@ model:
             propulsion_id: fastga.wrapper.propulsion.basicHE_engine
         mtow:
             id: fastga.loop.mtow
+        takeoff:
+            id: fastga.performances.mission.takeoff_HE
+            propulsion_id: fastga.wrapper.propulsion.basicHE_engine
         performance:
             id: fastga.performances.mission_HE
             propulsion_id: fastga.wrapper.propulsion.basicHE_engine

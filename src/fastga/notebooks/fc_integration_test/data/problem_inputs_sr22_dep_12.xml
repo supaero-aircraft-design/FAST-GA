@@ -212,24 +212,15 @@
         <end_of_mission>
           <SOC is_input="True">0.2</SOC>
         </end_of_mission>
-        <initial_climb>
-          <battery_capacity units="A*h" is_input="True">1.0</battery_capacity>
-          <battery_current units="A" is_input="True">1.0</battery_current>
-          <battery_energy units="kW*h" is_input="True">1.0</battery_energy>
-          <fuel units="kg" is_input="True">0.1</fuel>
-        </initial_climb>
         <landing>
           <elevator_angle units="deg" is_input="True">-20.0<!--position of the elevator during landing--></elevator_angle>
           <flap_angle units="deg" is_input="True">30.0<!--position of the flaps during landing--></flap_angle>
           <target_sideslip units="deg" is_input="True">11.5</target_sideslip>
         </landing>
         <takeoff>
-          <battery_capacity units="A*h" is_input="True">1.0</battery_capacity>
-          <battery_current units="A" is_input="True">1.0</battery_current>
-          <battery_energy units="kW*h" is_input="True">1.0</battery_energy>
           <elevator_angle units="deg" is_input="True">-20.0<!--position of the elevator during takeoff--></elevator_angle>
           <flap_angle units="deg" is_input="True">10.0<!--position of the flaps during takeoff--></flap_angle>
-          <fuel units="kg" is_input="True">0.1</fuel>
+          <friction_coefficient_no_brake is_input="True">0.03<!--friction coefficient used during the computation of the takeoff phase--></friction_coefficient_no_brake>
           <thrust_rate is_input="True">1.0<!--thrust rate during takeoff phase--></thrust_rate>
         </takeoff>
         <taxi_in>

@@ -26,8 +26,8 @@ from fastoad.model_base import Atmosphere, FlightPoint
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
-
-from fastga.models.propulsion.hybrid_propulsion.base import HybridEngineSet
+from fastoad.module_management.constants import ModelDomain
+from fastoad.api import RegisterOpenMDAOSystem
 
 ALPHA_LIMIT = 13.5 * math.pi / 180.0  # Limit angle to touch tail on ground in rad
 ALPHA_RATE = 3.0 * math.pi / 180.0  # Angular rotation speed in rad/s
@@ -39,7 +39,7 @@ POINTS_POWER_COUNT = 200
 
 _LOGGER = logging.getLogger(__name__)
 
-
+@RegisterOpenMDAOSystem("fastga.performances.mission.takeoff_HE", domain=ModelDomain.PERFORMANCE)
 class TakeOffPhase(om.Group):
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
@@ -132,7 +132,6 @@ class _v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
@@ -150,9 +149,8 @@ class _v2(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         cl_alpha = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
@@ -228,7 +226,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
+
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
@@ -250,9 +248,8 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             + inputs["data:aerodynamics:flaps:takeoff:CL"]
@@ -405,7 +402,7 @@ class _vr_from_v2(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
+
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", np.nan, units="rad**-1")
@@ -426,9 +423,8 @@ class _vr_from_v2(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
             + inputs["data:aerodynamics:flaps:takeoff:CL"]
@@ -502,7 +498,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("data:geometry:propulsion:engine:count", np.nan)
+
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL", np.nan)
@@ -540,8 +536,8 @@ class _simulate_takeoff(om.ExplicitComponent):
         self.add_output("data:mission:sizing:takeoff:battery_current", units='A')
         self.add_output("data:mission:sizing:initial_climb:battery_current", units='A')
 
-        self.add_output("data:mission:sizing:takeoff:battery_energy", units='kW*h')
-        self.add_output("data:mission:sizing:initial_climb:battery_energy", units='kW*h')
+        self.add_output("data:mission:sizing:takeoff:battery_energy", units='W*h')
+        self.add_output("data:mission:sizing:initial_climb:battery_energy", units='W*h')
 
         # self.add_output("data:mission:sizing:takeoff:battery_power_array", shape=POINTS_POWER_COUNT, units="W")
         # self.add_output("data:mission:sizing:takeoff:battery_time_array", shape=POINTS_POWER_COUNT, units="h")
@@ -554,9 +550,8 @@ class _simulate_takeoff(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        propulsion_model = HybridEngineSet(
-            self._engine_wrapper.get_model(inputs), inputs["data:geometry:propulsion:engine:count"]
-        )
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -630,7 +625,7 @@ class _simulate_takeoff(om.ExplicitComponent):
                 engine_setting=EngineSetting.TAKEOFF,
                 thrust_rate=thrust_rate,
             )
-            flight_point.add_field("battery_power", annotation_type=float)
+            # flight_point.add_field("battery_power", annotation_type=float)
             # FIXME: (speed increased to vr to have feasible consumptions)
             propulsion_model.compute_flight_points(flight_point)
             thrust = float(flight_point.thrust)
