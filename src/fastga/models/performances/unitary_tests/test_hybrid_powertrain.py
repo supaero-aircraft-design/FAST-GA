@@ -142,7 +142,7 @@ def _test_takeoff_phase_connections():
     assert fuel2 == pytest.approx(0.002, abs=1e-3)
 
 
-def test_compute_taxi():
+def _test_compute_taxi():
     """ Tests taxi in/out phase """
 
     # Research independent input value in .xml file

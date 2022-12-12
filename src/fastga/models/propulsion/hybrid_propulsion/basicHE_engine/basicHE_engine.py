@@ -26,6 +26,7 @@ from fastoad.exceptions import FastUnknownEngineSettingError
 from .exceptions import FastBasicHEEngineInconsistentInputParametersError
 
 from fastga.models.propulsion.hybrid_propulsion.base import AbstractHybridPropulsion
+from fastga.models.hybrid_powertrain.components.resources.fuel_cell import FuelCell
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
 # Logger for this module
@@ -85,6 +86,12 @@ class BasicHEEngine(AbstractHybridPropulsion):
             stack_area,
             bop_vol,
             nb_stacks,
+            voltage_level,
+            stack_pressure,
+            nominal_pressure,
+            compressor_power,
+            cell_number
+
     ):
         """
         Parametric hydrogen-powered Hybrid Electric propulsion engine.
@@ -139,6 +146,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.cell_area = stack_area
         self.bop_vol = bop_vol
         self.nb_stacks = nb_stacks
+        self.voltage_level = voltage_level
+        self.compressor_power = compressor_power
 
         # Evaluate engine volume based on max power @ 0.0m
         # rpm_vect, _, pme_limit_vect, _ = self.read_map(self.map_file_path)
@@ -151,6 +160,14 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.engine = Engine(power_SL=max_power)
         self.nacelle = None
         self.propeller = None
+        self.fuel_cell = FuelCell(required_power=fc_des_power/nb_stacks,
+                                  compressor_power=compressor_power,
+                                  stack_pressure=stack_pressure,
+                                  current_density=0,
+                                  voltage_level=voltage_level,
+                                  nom_pressure=nominal_pressure,
+                                  stack_area=stack_area*1e4,
+                                  n_cells=cell_number)
 
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
         self.mixture_values = {
@@ -341,9 +358,13 @@ class BasicHEEngine(AbstractHybridPropulsion):
             # pass
         power_losses = (alpha * torque ** 2) + (beta * self.motor_speed ** 1.5)
 
-        pe_power = mech_power + power_losses  # Power received by power electronics*
+        pe_power = mech_power + power_losses  # Power received by power electronics
 
-        # Power is fully supplied by battery in descent phase
+        # fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power/self.eta_pe,self.fc_des_power))
+        # sfc_thrust = fuel_flow/thrust
+
+
+        # Battery power calculation
         battery_power = np.where(
             engine_setting == EngineSetting.IDLE,
             pe_power/self.eta_pe,

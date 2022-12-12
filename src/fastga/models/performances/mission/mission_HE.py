@@ -137,7 +137,7 @@ class _compute_reserve(om.ExplicitComponent):
                        desc="The degree of hybridization of the energy source, 1: full battery, 0: full fuel")
 
         # self.add_input("data:mission:sizing:main_route:reserve:battery_power", np.nan, units="kW")
-        self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
         self.add_input("data:mission:sizing:main_route:cruise:power_fuel_cell", units="W")
 
         self.add_output("data:mission:sizing:main_route:reserve:fuel", units="kg")
@@ -166,7 +166,7 @@ class _compute_reserve(om.ExplicitComponent):
 
         capacity_reserve = (
                 energy_reserve * 1000
-                / max(1e-6, inputs["settings:electrical_system:system_voltage"])  # Avoid 0 division
+                / max(1e-6, inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"])  # Avoid 0 division
         )
 
         outputs["data:mission:sizing:main_route:reserve:fuel"] = m_reserve
@@ -447,7 +447,7 @@ class _compute_taxi(om.ExplicitComponent):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
 
-        self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        # self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
 
         if self.options["taxi_out"]:
             self.add_input("data:mission:sizing:taxi_out:thrust_rate", np.nan)
@@ -501,7 +501,7 @@ class _compute_taxi(om.ExplicitComponent):
             outputs["data:mission:sizing:taxi_in:fuel"] = hyd_mass
 
         # The electrical system voltage is used to compute the current
-        system_voltage = inputs["settings:electrical_system:system_voltage"]
+        system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
 
         # Compute the engine power during taxi and subsequently, the current, capacity and energy
         taxi_power = flight_point.battery_power
@@ -556,7 +556,7 @@ class _compute_climb(DynamicEquilibrium):
         self.add_input(
             "data:mission:sizing:main_route:climb:climb_rate:cruise_level", val=np.nan, units="m/s"
         )
-        self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        # self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
 
         self.add_output("data:mission:sizing:main_route:climb:fuel", units="kg")
         self.add_output("data:mission:sizing:main_route:climb:battery_capacity", units='A*h')
@@ -595,7 +595,7 @@ class _compute_climb(DynamicEquilibrium):
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
         climb_rate_cl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"])
-        system_voltage = inputs["settings:electrical_system:system_voltage"]
+        system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
 
         # Define initial conditions of the hydrogen fuel cells system
         t_start = time.time()
@@ -773,7 +773,7 @@ class _compute_cruise(DynamicEquilibrium):
         # self.add_input("data:mission:sizing:takeoff:battery_energy", np.nan, units="kW*h")
         # self.add_input("data:mission:sizing:initial_climb:battery_energy", np.nan, units="kW*h")
         # self.add_input("data:mission:sizing:main_route:climb:battery_energy", np.nan, units="kW*h")
-        # self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        # self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
         self.add_input("data:mission:sizing:main_route:climb:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:descent:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
@@ -809,7 +809,7 @@ class _compute_cruise(DynamicEquilibrium):
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
-        # system_voltage = inputs["settings:electrical_system:system_voltage"]
+        # system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
 
         # Define specific time step ~POINTS_NB_CRUISE points for calculation
         time_step = (cruise_distance / v_tas) / float(POINTS_NB_CRUISE)
@@ -962,7 +962,7 @@ class _compute_descent(DynamicEquilibrium):
         # self.add_input("data:mission:sizing:initial_climb:battery_energy", np.nan, units="kW*h")
         # self.add_input("data:mission:sizing:main_route:climb:battery_energy", np.nan, units="kW*h")
         # self.add_input("data:mission:sizing:main_route:cruise:battery_energy", np.nan, units="kW*h")
-        self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        # self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
         self.add_input("data:mission:sizing:main_route:climb:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:cruise:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
@@ -996,7 +996,7 @@ class _compute_descent(DynamicEquilibrium):
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
         m_cr = inputs["data:mission:sizing:main_route:cruise:fuel"]
-        system_voltage = inputs["settings:electrical_system:system_voltage"]
+        system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
         battery_usage = inputs["data:mission:sizing:main_route:descent:battery_setting"]
 
         # Define initial conditions

@@ -13,7 +13,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math as math
+import numpy as np
+from scipy.interpolate import interp1d
 
 # Update the dictionary so that is includes more specific values and maybe parameters such as stack area, cell area...
 FuelCellTypes = {
@@ -48,7 +49,9 @@ class FuelCell(object):
                  current_density: float,
                  voltage_level: float,
                  compressor_power: float = 0,
-                 fc_type: int = 0):
+                 fc_type: int = 0,
+                 stack_area: float = 1.0,
+                 n_cells: int = 10):
 
         # If a type of FC has been specified, some parameters are set to those of the data in FuelCellTypes
         self.data = FuelCellTypes['POWERCELLUTION_V_STACK']  # Using data of the reference FC for now
@@ -65,6 +68,8 @@ class FuelCell(object):
         self.compressor_power = compressor_power
         self.stack_pressure = stack_pressure
         self.voltage_level = voltage_level
+        self.stack_area = stack_area
+        self.cell_number = n_cells
 
     @staticmethod
     def compute_fc_weight(cell_number: int, cell_area: float):
@@ -119,20 +124,33 @@ class FuelCell(object):
         # Computes the number of cell needed considering design power of the FC system.
 
         # Determining one cell's design power
-        P_cell_des = self.compute_design_current() * self.compute_cell_V()
+        P_cell_des = self.compute_design_current() * self.compute_design_cell_V()
 
         # Determining total required power
         tot_power = self.compute_design_power()
 
         # Returning the number of cells
-        N_fc = math.ceil(tot_power / P_cell_des)
+        N_fc = np.ceil(tot_power / P_cell_des)
         return N_fc
 
-    def compute_cell_V(self):
-        # Computes the voltage in a cell considering the polarization curve model found here :
-        #     https://repository.tudelft.nl/islandora/object/uuid%3A6e274095-9920-4d20-9e11-d5b76363e709
-        # First 3 parameters were adjusted to fit the i-V curve of the Power Cellution V Stack.
-        # + add a curve_fitting option to adjust to another type of fuel cell ?
+    def compute_design_cell_V(self):
+
+        # Using the design current density
+        i = self.current_density
+
+        return self.compute_cell_V(i)
+
+    def compute_cell_V(self, i):
+
+        """
+        Computes the voltage in a cell considering the polarization curve model found here :
+            https://repository.tudelft.nl/islandora/object/uuid%3A6e274095-9920-4d20-9e11-d5b76363e709
+        First 3 parameters were adjusted to fit the i-V curve of the Power Cellution V Stack.
+        + add a curve_fitting option to adjust to another type of fuel cell ?
+
+        i : the cell current density in A/cm**2
+
+        """
 
         # Defining the fitting parameters of the polarization curve - first 3 values are modified
         V0 = 0.64  # [V]
@@ -142,11 +160,8 @@ class FuelCell(object):
         n = 11.42  # [cm**2/A]
         C = 0.05  # [V]
 
-        # Determining design surface current
-        i = self.current_density
-
         # Returning cell design voltage
-        V = V0 - B * math.log(i) - R * i - m * math.exp(n * i) + C * math.log(self.stack_pressure / self.nom_pressure)
+        V = V0 - B * np.log(i) - R * i - m * np.exp(n * i) + C * np.log(self.stack_pressure / self.nom_pressure)
         return V
 
     def compute_cooling_power(self):
@@ -154,34 +169,58 @@ class FuelCell(object):
         # electricity is produced as heat.
         # Based on the work done in FAST-GA-AMPERE.
 
-        P_cooling = self.compute_design_power() / self.compute_ref_efficiency() - self.compute_design_power()
+        P_cooling = self.compute_design_power() / self.compute_efficiency() - self.compute_design_power()-\
+                    self.compressor_power
         return P_cooling
 
-    def compute_hyd_mass_flow(self):
-        # Computes the hydrogen mass flow rate required by the FC stack given required power and average cell voltage.
-        # Based on constructor data of the PowerCellution V Stack.
+    def compute_hyd_mass_flow(self, i):
+
+        """
+        Computes the hydrogen mass flow rate required by the FC stack given required power and average cell voltage.
+        Based on constructor data of the PowerCellution V Stack.
+
+        i : current (A))
+        """
 
         # Defining constants
         M_H2 = 2.016  # [g/mol]
         stoich_ratio = self.data['HYD_STOICH_RATIO']  # Hydrogen stoichiometric ratio for the chosen FC
         F = 96485  # [C/mol] - Faraday Constant
 
-        # hyd_mass_flow = M_H2 * self.required_power * stoich_ratio / (2 * self.compute_cell_V() * F)  # [g/s]
-        hyd_mass_flow = self.compute_nb_cell() * M_H2 * self.compute_design_current() / (2 * F)  # [g/s]
+        # hyd_mass_flow = M_H2 * self.required_power * stoich_ratio / (2 * self.compute_design_cell_V() * F)  # [g/s]
+        hyd_mass_flow = M_H2 * i / (2 * F)  # [g/s]
         return hyd_mass_flow / 1000  # [kg/s]
 
-    def compute_ox_mass_flow(self):
-        # Computes the oxygen mass flow rate required by the FC stack given required power and average cell voltage.
-        # Based on constructor data of the PowerCellution V Stack.
-        #
+    def compute_design_hyd_mass_flow(self):
+
+        i = self.compute_design_current()
+
+        return self.compute_nb_cell() * self.compute_hyd_mass_flow(i)
+
+
+    def compute_ox_mass_flow(self, i):
+
+        """Computes the oxygen mass flow rate required by the FC stack given required power and average cell voltage.
+        Based on constructor data of the PowerCellution V Stack.
+
+        i: current (A)
+
+        """
+
         # Defining constants
         M_O2 = 31.998  # [g/mol]
         stoich_ratio = self.data['OX_STOICH_RATIO']  # Oxygen stoichiometric ratio for the chosen FC
         F = 96485  # [C/mol] - Faraday Constant
 
-        # ox_mass_flow = M_O2 * self.required_power * stoich_ratio / (4 * self.compute_cell_V() * F)  # [g/s]
-        ox_mass_flow = self.compute_nb_cell() * M_O2 * self.compute_design_current() / (4 * F)  # [g/s]
+        # ox_mass_flow = M_O2 * self.required_power * stoich_ratio / (4 * self.compute_design_cell_V() * F)  # [g/s]
+        ox_mass_flow = M_O2 * i / (4 * F)  # [g/s]
         return ox_mass_flow / 1000  # [kg/s]
+
+    def compute_design_ox_mass_flow(self):
+
+        i=self.compute_design_current()
+
+        return self.compute_nb_cell() * self.compute_ox_mass_flow(i)
 
     def compute_ref_efficiency(self):
         # Calculates the efficiency of the fuel cell system : calculations are based on reference data for the Power
@@ -211,3 +250,17 @@ class FuelCell(object):
         # Determining efficiency
         eff = self.compute_design_power() / (self.compute_hyd_mass_flow() * 3600.0 * H2_ed)
         return eff
+
+    def get_hyd_flow(self, out_power):
+
+        max_amps = (self.required_power+self.compressor_power) / self.voltage_level
+        amps = np.linspace(1.0, float(max_amps)*1.2, 100)
+        power_vs_i = self.compute_cell_V(amps/self.stack_area)*amps*self.cell_number
+        i_vs_power = interp1d(power_vs_i, amps)
+        working_current = i_vs_power(out_power+self.compressor_power)
+
+        hyd_flow = self.compute_hyd_mass_flow(working_current)*self.cell_number
+
+        eff = out_power / (hyd_flow * 3600.0 * 34100)
+
+        return hyd_flow

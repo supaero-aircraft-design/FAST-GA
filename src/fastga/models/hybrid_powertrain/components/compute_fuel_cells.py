@@ -86,14 +86,14 @@ class ComputeFuelCells(om.ExplicitComponent):
 
         design_power = fc.compute_design_power()
         design_current = fc.compute_design_current()
-        v_cell = fc.compute_cell_V()
+        v_cell = fc.compute_design_cell_V()
         nb_cells = fc.compute_nb_cell()
         stack_height = fc.compute_fc_height(nb_cells)
         stack_volume = fc.compute_fc_volume(nb_cells)
         p_cooling = fc.compute_cooling_power()
         eff = fc.compute_efficiency()
-        ox_flow = fc.compute_ox_mass_flow() * nb_stacks
-        hyd_flow = fc.compute_hyd_mass_flow() * nb_stacks
+        ox_flow = fc.compute_design_ox_mass_flow() * nb_stacks
+        hyd_flow = fc.compute_design_hyd_mass_flow() * nb_stacks
         cell_area = fc.compute_cell_area()
 
         outputs['data:propulsion:hybrid_powertrain:fuel_cell:stack_power'] = design_power

@@ -129,6 +129,11 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
         component.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_height", val=np.nan, units="m")
         component.add_input("data:geometry:hybrid_powertrain:fuel_cell:stack_area", val=np.nan, units="m**2")
         component.add_input("data:geometry:hybrid_powertrain:bop:volume", val=np.nan, units="m**3")
+        component.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", val=np.nan, units="V")
+        component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure", val=np.nan, units='Pa')
+        component.add_input("data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure", val=np.nan, units='Pa')
+        component.add_input("data:propulsion:hybrid_powertrain:compressor:power", val=np.nan, units='W')
+        component.add_input("data:geometry:hybrid_powertrain:fuel_cell:number_cells", val=np.nan)
 
 
     @staticmethod
@@ -172,6 +177,11 @@ class OMBasicHEEngineWrapper(IOMPropulsionWrapper):
             "stack_area": inputs["data:geometry:hybrid_powertrain:fuel_cell:stack_area"],
             "bop_vol": inputs["data:geometry:hybrid_powertrain:bop:volume"],
             "nb_stacks": inputs["data:geometry:hybrid_powertrain:fuel_cell:number_stacks"],
+            "voltage_level": inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"],
+            "stack_pressure": inputs["data:propulsion:hybrid_powertrain:fuel_cell:stack_pressure"],
+            "nominal_pressure": inputs["data:propulsion:hybrid_powertrain:fuel_cell:nominal_pressure"],
+            "compressor_power": inputs["data:propulsion:hybrid_powertrain:compressor:power"],
+            "cell_number": inputs["data:geometry:hybrid_powertrain:fuel_cell:number_cells"],
         }
 
         return HybridEngineSet(
