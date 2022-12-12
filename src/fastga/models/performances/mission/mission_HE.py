@@ -487,11 +487,11 @@ class _compute_taxi(om.ExplicitComponent):
 
         # FIXME: no specific settings for taxi (to be changed in fastoad\constants.py)
         flight_point = FlightPoint(
-            mach=mach, altitude=0.0, engine_setting=EngineSetting.CRUISE, thrust_rate=thrust_rate
+            mach=mach, altitude=0.0, engine_setting=EngineSetting.CRUISE, thrust_rate=thrust_rate, battery_power=0
         )
-        flight_point.add_field("battery_power", annotation_type=float)
-        flight_point.add_field("emotor_input_power", annotation_type=float)
-        flight_point.add_field("powertrain_power_input", annotation_type=float)
+        # flight_point.add_field("battery_power", annotation_type=float)
+        # flight_point.add_field("emotor_input_power", annotation_type=float)
+        # flight_point.add_field("powertrain_power_input", annotation_type=float)
         propulsion_model.compute_flight_points(flight_point)
         hyd_mass = propulsion_model.get_consumed_mass(flight_point, duration)
 
@@ -638,12 +638,13 @@ class _compute_climb(DynamicEquilibrium):
         while altitude_t < cruise_altitude:
 
             flight_point = FlightPoint(altitude=altitude_t,
-                                           time=time_t,
-                                           ground_distance=distance_t,
-                                           engine_setting=EngineSetting.CLIMB,
-                                           thrust_is_regulated=True,
-                                           mass=mass_t,
-                                           name='sizing:main_route:climb')
+                                       time=time_t,
+                                       ground_distance=distance_t,
+                                       engine_setting=EngineSetting.CLIMB,
+                                       thrust_is_regulated=True,
+                                       mass=mass_t,
+                                       name='sizing:main_route:climb',
+                                       battery_power=0,)
 
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=climb_rate_interp(altitude_t))
@@ -777,6 +778,9 @@ class _compute_cruise(DynamicEquilibrium):
         self.add_input("data:mission:sizing:main_route:climb:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:descent:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
+        self.add_input("data:mission:sizing:main_route:cruise:battery_charge_rate_C", val=np.nan)
+        self.add_input("data:mission:sizing:total_battery_energy", val=np.nan, units="W*h")
+        self.add_input("data:mission:sizing:end_of_mission:SOC", val=np.nan)
 
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
         # self.add_output("data:mission:sizing:main_route:cruise:battery_capacity", units='A*h')
@@ -810,6 +814,10 @@ class _compute_cruise(DynamicEquilibrium):
         m_ic = inputs["data:mission:sizing:initial_climb:fuel"]
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
         # system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
+        battery_energy = inputs["data:mission:sizing:total_battery_energy"]
+        battery_SOC = inputs["data:mission:sizing:end_of_mission:SOC"]
+        battery_charge_rate = inputs["data:mission:sizing:main_route:cruise:battery_charge_rate_C"]
+        time2charge = (1-battery_SOC)/battery_charge_rate*3600
 
         # Define specific time step ~POINTS_NB_CRUISE points for calculation
         time_step = (cruise_distance / v_tas) / float(POINTS_NB_CRUISE)
@@ -842,9 +850,16 @@ class _compute_cruise(DynamicEquilibrium):
                                        engine_setting=EngineSetting.CRUISE,
                                        thrust_is_regulated=True,
                                        mass=mass_t,
-                                       name='sizing:main_route:cruise')
+                                       name='sizing:main_route:cruise',
+                                       battery_power=0,
+                                       )
 
             self.complete_flight_point(flight_point, v_tas=v_tas)
+
+            if time_t < time2charge:
+                flight_point.battery_power = - battery_energy*battery_charge_rate
+            else:
+                flight_point.battery_power=0
 
             # Calculate dynamic pressure
             q = 0.5 * atm.density * v_tas ** 2
@@ -1045,7 +1060,8 @@ class _compute_descent(DynamicEquilibrium):
                                        engine_setting=EngineSetting.CLIMB,
                                        thrust_is_regulated=True,
                                        mass=mass_t,
-                                       name='sizing:main_route:descent')
+                                       name='sizing:main_route:descent',
+                                       battery_power=0,)
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=descent_rate)
 

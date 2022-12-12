@@ -62,6 +62,8 @@ class HybridEngineSet(AbstractHybridPropulsion):
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
         if flight_points.thrust is not None:
             flight_points.thrust = flight_points.thrust / self.engine_count
+        if flight_points.battery_power is not None:
+            flight_points.battery_power = flight_points.battery_power / self.engine_count
 
         self.engine.compute_flight_points(flight_points)
 

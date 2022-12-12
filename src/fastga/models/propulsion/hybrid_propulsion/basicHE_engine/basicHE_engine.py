@@ -228,6 +228,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 flight_points.thrust_is_regulated,
                 flight_points.thrust_rate,
                 flight_points.thrust,
+                flight_points.battery_power
             )
             flight_points.battery_power = battery_power
             flight_points.sfc = sfc
@@ -239,6 +240,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             mach = np.asarray(flight_points.mach)
             altitude = np.asarray(flight_points.altitude).flatten()
             engine_setting = np.asarray(flight_points.engine_setting).flatten()
+            battery_power_in = np.asarray(flight_points.battery_power).flatten()
             if flight_points.thrust_is_regulated is None:
                 thrust_is_regulated = None
             else:
@@ -253,7 +255,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
                 thrust = np.asarray(flight_points.thrust).flatten()
             self.specific_shape = np.shape(mach)
             battery_power, sfc, thrust_rate, thrust, pe_power, pe_power_in = self._compute_flight_points(
-                mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust,
+                mach.flatten(), altitude, engine_setting, thrust_is_regulated, thrust_rate, thrust, battery_power_in,
             )
             if len(self.specific_shape) != 1:  # reshape data that is not array form
                 # noinspection PyUnresolvedReferences
@@ -284,6 +286,7 @@ class BasicHEEngine(AbstractHybridPropulsion):
             thrust_is_regulated: Optional[Union[bool, Sequence]] = None,
             thrust_rate: Optional[Union[float, Sequence]] = None,
             thrust: Optional[Union[float, Sequence]] = None,
+            battery_power: Optional[Union[float, Sequence]] = 0,
     ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
 
         """
@@ -343,9 +346,9 @@ class BasicHEEngine(AbstractHybridPropulsion):
         out_thrust_rate = out_thrust / max_thrust
 
         # Now SFC [kg/Ws] can be computed and converted to sfc_thrust [kg/N] to match computation from turboshaft
-        sfc, mech_power = self.sfc(out_thrust, engine_setting, atmosphere)
-        sfc_time = mech_power * sfc  # SFC in [kg/s]
-        sfc_thrust = sfc_time / np.maximum(out_thrust, 1e-6)  # Avoid 0 division - [kg/N]
+        _, mech_power = self.sfc(out_thrust, engine_setting, atmosphere)
+        # sfc_time = mech_power * sfc  # SFC in [kg/s]
+        # sfc_thrust = sfc_time / np.maximum(out_thrust, 1e-6)  # Avoid 0 division - [kg/N]
 
         # Now battery required power [W] can be computed taking into account the power delivered by the fuel cells :
         # Compute motor power losses
@@ -360,16 +363,20 @@ class BasicHEEngine(AbstractHybridPropulsion):
 
         pe_power = mech_power + power_losses  # Power received by power electronics
 
-        # fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power/self.eta_pe,self.fc_des_power))
-        # sfc_thrust = fuel_flow/thrust
+        # Handle battery
+        if engine_setting == EngineSetting.CRUISE:
+            #Then the battery may be charge, add battery power to required power.
+            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum((pe_power-battery_power) / self.eta_pe, self.fc_des_power))
+        else:
+            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power/self.eta_pe,self.fc_des_power))
+            # Battery power calculation
+            battery_power = np.where(
+                engine_setting == EngineSetting.IDLE,
+                pe_power / self.eta_pe,
+                np.maximum(0, pe_power / self.eta_pe - self.fc_des_power)
+            )
 
-
-        # Battery power calculation
-        battery_power = np.where(
-            engine_setting == EngineSetting.IDLE,
-            pe_power/self.eta_pe,
-            np.maximum(0, pe_power/self.eta_pe - self.fc_des_power)
-        )
+        sfc_thrust = fuel_flow/thrust
 
         return battery_power, sfc_thrust, out_thrust_rate, out_thrust, pe_power, pe_power/self.eta_pe
 
