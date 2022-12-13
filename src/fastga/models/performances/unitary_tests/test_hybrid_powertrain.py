@@ -27,8 +27,8 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 
-XML_FILE = "fc_aircraft_dep.xml"
-
+# XML_FILE = "fc_aircraft_dep.xml"
+XML_FILE = "problem_outputs_sr22_dep_12.xml"
 ENGINE_WRAPPER = "fastga.wrapper.propulsion.basicHE_engine"
 
 def _test_v2():

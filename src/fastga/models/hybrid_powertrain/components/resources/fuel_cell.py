@@ -248,7 +248,7 @@ class FuelCell(object):
         H2_ed = 34100.0  # [Wh/kg] - Hydrogen energy density
 
         # Determining efficiency
-        eff = self.compute_design_power() / (self.compute_hyd_mass_flow() * 3600.0 * H2_ed)
+        eff = self.compute_design_power() / (self.compute_design_hyd_mass_flow() * 3600.0 * H2_ed)
         return eff
 
     def get_hyd_flow(self, out_power):
@@ -261,6 +261,16 @@ class FuelCell(object):
 
         hyd_flow = self.compute_hyd_mass_flow(working_current)*self.cell_number
 
-        eff = out_power / (hyd_flow * 3600.0 * 34100)
+        import matplotlib.pyplot as plt
+
+        # plt.figure()
+        # plt.plot(amps, power_vs_i)
+        # power = np.linspace(1.0,self.required_power+self.compressor_power, 50)
+        # amps_1 = []
+        # for i in range(len(power))
+        #     amps_1.append(i_vs_power(power[i]))
+        # plt.plot(amps_1, power, '+')
+
+        # eff = out_power / (hyd_flow * 3600.0 * 34100)
 
         return hyd_flow

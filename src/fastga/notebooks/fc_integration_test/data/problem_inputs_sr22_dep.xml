@@ -51,16 +51,10 @@
         <type is_input="True">1.0<!--0=non-retractable / 1=retractable--></type>
       </landing_gear>
       <propeller>
-        <prop_number is_input="True">1.0</prop_number>
-        <average_rpm units="rpm" is_input="True">3200.0<!--average rotation speed of the propeller--></average_rpm>
         <blades_number is_input="True">3.0<!--number of blades on the propeller--></blades_number>
-        <chord_vect units="m" is_input="True">[0.05581763, 0.07928237, 0.08127332, 0.105946845, 0.09279237, 0.05581763, 0.05581763]<!--blade chord at the station along the radius stored in radius_ratio_vect--></chord_vect>
         <depth units="m" is_input="True">0.3<!--depth of the propeller--></depth>
         <diameter units="m" is_input="True">1.2<!--propeller diameter--></diameter>
-        <hub_diameter units="m" is_input="True">0.2<!--propeller hub diameter--></hub_diameter>
-        <radius_ratio_vect is_input="True">[0.165, 0.3, 0.45, 0.655, 0.835, 0.975, 1.0]<!--blade station at which blade geometric properties are sampled, as a percent of blade radius--></radius_ratio_vect>
-        <sweep_vect units="deg" is_input="True">[0, 0, 0, 0, 0, 0, 0]<!--blade sweep at the station along the radius stored in radius_ratio_vect--></sweep_vect>
-        <twist_vect units="deg" is_input="True">[59.9549991, 54.62741602, 50.40984436, 46.40324949, 43.92011437, 42.42629402, 42.19068494]<!--blade twist at the station along the radius stored in radius_ratio_vect--></twist_vect>
+        <prop_number is_input="True">1.0</prop_number>
       </propeller>
       <vertical_tail>
         <aspect_ratio is_input="True">2.0<!--vertical tail aspect ratio--></aspect_ratio>
@@ -102,9 +96,6 @@
         </cooling_intake>
         <fuel_cell>
           <number_stacks is_input="True">2.0<!--Used only in the determination of the geometry of the FC--></number_stacks>
-          <stack_area units="cm**2" is_input="True">759.5</stack_area>
-          <stack_length units="m" is_input="True">0.49</stack_length>
-          <stack_width units="m" is_input="True">0.155</stack_width>
         </fuel_cell>
         <h2_storage>
           <gravimetric_capacity_350b is_input="True">0.05</gravimetric_capacity_350b>
@@ -132,7 +123,6 @@
     </geometry>
     <propulsion>
       <fuel_type is_input="True">0.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
-      <max_rpm units="1/min" is_input="True">3500.0<!--maximum number of rotation per minute on the engine--></max_rpm>
       <hybrid_powertrain>
         <battery>
           <cell_capacity units="A*h" is_input="True">3.0</cell_capacity>
@@ -158,7 +148,7 @@
           <free_stream_speed units="m/s" is_input="True">28.0</free_stream_speed>
         </cooling_intake>
         <fuel_cell>
-          <design_current units="A" is_input="True">110.0<!--Baseline stack current, is used to determine FC nominal efficiency with stack area.Large current -> compact FC but low efficiency--></design_current>
+          <design_current_density units="A/cm**2" is_input="True">0.144</design_current_density>
           <fc_type is_input="True">0.0<!--Optional type of fuel cell - 0 is None and 1 is default fuel cell--></fc_type>
           <nominal_pressure units="Pa" is_input="True">101300.0</nominal_pressure>
           <operating_temperature units="degK" is_input="True">340.0</operating_temperature>
@@ -187,7 +177,20 @@
         </power_electronics>
       </hybrid_powertrain>
     </propulsion>
+    <handling_qualities>
+      <static_margin>
+        <target is_input="True">0.05<!--static margin we want to achieve--></target>
+      </static_margin>
+    </handling_qualities>
     <aerodynamics>
+      <cooling>
+        <cruise>
+          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in cruise conditions--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in low speed conditions--></CD0>
+        </low_speed>
+      </cooling>
       <propeller>
         <cruise_level>
           <altitude units="m" is_input="True">2438.4<!--altitude at which the cruise level propeller efficiency map was computed--></altitude>
@@ -203,20 +206,7 @@
           <thrust_limit units="N" is_input="True">[881.5211366, 968.9211507, 1039.495185, 1101.372426, 1159.178754, 1215.968612, 1273.021542, 1332.222826, 1394.959207, 1463.13786]<!--maximum thrust output of the propeller at sea level for varying velocities--></thrust_limit>
         </sea_level>
       </propeller>
-      <cooling>
-        <cruise>
-          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in cruise conditions--></CD0>
-        </cruise>
-        <low_speed>
-          <CD0 is_input="True">0.0005525<!--profile drag due to cooling in low speed conditions--></CD0>
-        </low_speed>
-      </cooling>
     </aerodynamics>
-    <handling_qualities>
-      <static_margin>
-        <target is_input="True">0.05<!--static margin we want to achieve--></target>
-      </static_margin>
-    </handling_qualities>
     <mission>
       <sizing>
         <end_of_mission>
@@ -263,6 +253,7 @@
         <main_route>
           <cruise>
             <altitude units="m" is_input="True">2500.0<!--main route cruise phase altitude--></altitude>
+            <battery_charge_rate_C is_input="True">2.0<!--Battery charge rate, in C. If 0 the battery is not charged.--></battery_charge_rate_C>
           </cruise>
           <descent>
             <battery_setting is_input="True">0.0<!--Battery use setting, 0: unused, 1: full battery usage--></battery_setting>
@@ -315,7 +306,6 @@
   <settings>
     <electrical_system>
       <SOC_in_reserve is_input="True">1.0</SOC_in_reserve>
-      <system_voltage units="V" is_input="True">400.0</system_voltage>
     </electrical_system>
     <handling_qualities>
       <rudder>

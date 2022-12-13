@@ -46,9 +46,9 @@ def test_compute_fuel_cells():
     vol = problem.get_val("data:geometry:hybrid_powertrain:fuel_cell:stack_volume", units='m**3')
     assert vol == pytest.approx(0.0416, abs=1e-3)
     eff = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:efficiency", units=None)
-    assert eff == pytest.approx(0.511, abs=1e-3)
+    assert eff == pytest.approx(0.474, abs=1e-3)
     P_cooling = problem.get_val("data:propulsion:hybrid_powertrain:fuel_cell:cooling_power", units='W')
-    assert P_cooling == pytest.approx(21034, abs=1)
+    assert P_cooling == pytest.approx(22413, abs=1)
 
 
 def test_compute_compressor():
@@ -73,12 +73,12 @@ def test_compute_bop():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeBoP(), ivc)
-    L = problem.get_val("data:geometry:hybrid_powertrain:bop:extra_length", units='m')
-    assert L == pytest.approx(0.1764, abs=1e-3)
-    l = problem.get_val("data:geometry:hybrid_powertrain:bop:extra_width", units='m')
-    assert l == pytest.approx(0.3069, abs=1e-3)
-    h = problem.get_val("data:geometry:hybrid_powertrain:bop:extra_height", units='m')
-    assert h == pytest.approx(0.2336, abs=1e-3)
+    vol = problem.get_val("data:geometry:hybrid_powertrain:bop:volume", units='m**3')
+    assert vol == pytest.approx(0.120, abs=1e-3)
+    l = problem.get_val("data:geometry:hybrid_powertrain:bop:length_in_nacelle", units='m')
+    assert l == pytest.approx(0.3159, abs=1e-3)
+    # h = problem.get_val("data:geometry:hybrid_powertrain:bop:extra_height", units='m')
+    # assert h == pytest.approx(0.2336, abs=1e-3)
 
 
 def test_compute_hex():

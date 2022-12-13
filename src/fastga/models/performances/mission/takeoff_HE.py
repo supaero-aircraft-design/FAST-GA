@@ -514,7 +514,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         self.add_input("data:mission:sizing:takeoff:friction_coefficient_no_brake", np.nan)
         self.add_input("vr:speed", np.nan, units="m/s")
         self.add_input("v2:angle", np.nan, units="rad")
-        self.add_input("settings:electrical_system:system_voltage", np.nan, units="V")
+        self.add_input("data:propulsion:hybrid_powertrain:battery:sys_nom_voltage", np.nan, units="V")
 
         self.add_output("data:mission:sizing:takeoff:VR", units="m/s")
         self.add_output("data:mission:sizing:takeoff:VLOF", units="m/s")
@@ -570,7 +570,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         thrust_rate = inputs["data:mission:sizing:takeoff:thrust_rate"]
         friction_coeff = inputs["data:mission:sizing:takeoff:friction_coefficient_no_brake"]
         alpha_v2 = float(inputs["v2:angle"])
-        system_voltage = inputs["settings:electrical_system:system_voltage"]
+        system_voltage = inputs["data:propulsion:hybrid_powertrain:battery:sys_nom_voltage"]
 
         # Define ground factor effect on Drag
         def k_ground(altitude):

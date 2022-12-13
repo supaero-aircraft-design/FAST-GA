@@ -366,7 +366,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
         # Handle battery
         if engine_setting == EngineSetting.CRUISE:
             #Then the battery may be charge, add battery power to required power.
-            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum((pe_power-battery_power) / self.eta_pe, self.fc_des_power))
+            pe_power = pe_power - battery_power
+            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum( pe_power/self.eta_pe, self.fc_des_power))
         else:
             fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power/self.eta_pe,self.fc_des_power))
             # Battery power calculation

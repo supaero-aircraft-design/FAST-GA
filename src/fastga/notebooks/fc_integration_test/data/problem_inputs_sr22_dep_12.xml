@@ -209,6 +209,9 @@
     </aerodynamics>
     <mission>
       <sizing>
+        <end_of_mission>
+          <SOC is_input="True">0.2</SOC>
+        </end_of_mission>
         <initial_climb>
           <battery_capacity units="A*h" is_input="True">1.0</battery_capacity>
           <battery_current units="A" is_input="True">1.0</battery_current>
@@ -227,12 +230,8 @@
           <elevator_angle units="deg" is_input="True">-20.0<!--position of the elevator during takeoff--></elevator_angle>
           <flap_angle units="deg" is_input="True">10.0<!--position of the flaps during takeoff--></flap_angle>
           <fuel units="kg" is_input="True">0.1</fuel>
-          <friction_coefficient_no_brake is_input="True">0.03<!--friction coefficient used during the computation of the takeoff phase--></friction_coefficient_no_brake>
           <thrust_rate is_input="True">1.0<!--thrust rate during takeoff phase--></thrust_rate>
         </takeoff>
-        <end_of_mission>
-          <SOC is_input="True">0.2</SOC>
-        </end_of_mission>
         <taxi_in>
           <duration units="s" is_input="True">300.0<!--duration of taxi in phase--></duration>
           <speed units="m/s" is_input="True">15.0<!--ground velocity during taxi in phase--></speed>
@@ -254,6 +253,7 @@
         <main_route>
           <cruise>
             <altitude units="m" is_input="True">2500.0<!--main route cruise phase altitude--></altitude>
+            <battery_charge_rate_C is_input="True">2.0<!--Battery charge rate, in C. If 0 the battery is not charged.--></battery_charge_rate_C>
           </cruise>
           <descent>
             <battery_setting is_input="True">0.0<!--Battery use setting, 0: unused, 1: full battery usage--></battery_setting>
@@ -306,7 +306,6 @@
   <settings>
     <electrical_system>
       <SOC_in_reserve is_input="True">1.0</SOC_in_reserve>
-      <system_voltage units="V" is_input="True">400.0</system_voltage>
     </electrical_system>
     <handling_qualities>
       <rudder>

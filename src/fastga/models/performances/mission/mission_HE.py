@@ -778,7 +778,7 @@ class _compute_cruise(DynamicEquilibrium):
         self.add_input("data:mission:sizing:main_route:climb:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:descent:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
-        self.add_input("data:mission:sizing:main_route:cruise:battery_charge_rate_C", val=np.nan)
+        self.add_input("data:mission:sizing:main_route:cruise:battery_charge_rate_C", val=np.nan, desc="Battery charge rate, in C. If 0 the battery is not charged.")
         self.add_input("data:mission:sizing:total_battery_energy", val=np.nan, units="W*h")
         self.add_input("data:mission:sizing:end_of_mission:SOC", val=np.nan)
 
@@ -817,7 +817,10 @@ class _compute_cruise(DynamicEquilibrium):
         battery_energy = inputs["data:mission:sizing:total_battery_energy"]
         battery_SOC = inputs["data:mission:sizing:end_of_mission:SOC"]
         battery_charge_rate = inputs["data:mission:sizing:main_route:cruise:battery_charge_rate_C"]
-        time2charge = (1-battery_SOC)/battery_charge_rate*3600
+        if battery_charge_rate > 0.1:
+            time2charge = (1-battery_SOC)/battery_charge_rate*3600
+        else:
+            time2charge = 0
 
         # Define specific time step ~POINTS_NB_CRUISE points for calculation
         time_step = (cruise_distance / v_tas) / float(POINTS_NB_CRUISE)
