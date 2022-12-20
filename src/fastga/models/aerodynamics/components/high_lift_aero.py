@@ -11,7 +11,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import functools
 from typing import Union, Tuple
 
 import numpy as np
@@ -97,7 +97,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                     flap_angle,
                     mach_ls,
                 )
-                x_cp_c_prime = self.x_cp_c_prime(flap_chord_ratio)
+                x_cp_c_prime = self.x_cp_c_prime(float(flap_chord_ratio))
                 outputs["data:aerodynamics:flaps:landing:CM_2D"] = cl_2d * (0.25 - x_cp_c_prime)
                 cd_3d = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
@@ -125,7 +125,7 @@ class ComputeDeltaHighLift(FigureDigitization):
                     flap_angle,
                     mach_ls,
                 )
-                x_cp_c_prime = self.x_cp_c_prime(flap_chord_ratio)
+                x_cp_c_prime = self.x_cp_c_prime(float(flap_chord_ratio))
                 outputs["data:aerodynamics:flaps:takeoff:CM_2D"] = cl_2d * (0.25 - x_cp_c_prime)
                 cd_3d = self._get_flaps_delta_cd(
                     inputs["data:geometry:flap_type"],
@@ -258,6 +258,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         return delta_cm_flap
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def _get_flaps_delta_cd(
         flap_type, chord_ratio, thickness_ratio, flap_angle: float, area_ratio
     ) -> float:

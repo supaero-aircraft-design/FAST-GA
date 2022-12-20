@@ -827,6 +827,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_a_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def x_cp_c_prime(flap_chord_ratio: float) -> float:
         """
         Roskam data to estimate the location of the center of pressure due to Incremental Flap
