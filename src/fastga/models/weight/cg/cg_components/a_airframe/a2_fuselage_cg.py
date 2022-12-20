@@ -42,7 +42,9 @@ class ComputeFuselageCG(ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:CG:x", units="m")
 
         self.declare_partials(
-            "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length", method="fd"
+            of="*",
+            wrt=["data:geometry:fuselage:length", "data:geometry:fuselage:front_length"],
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -65,3 +67,40 @@ class ComputeFuselageCG(ExplicitComponent):
             x_cg_a2 = 0.39 * fus_length
 
         outputs["data:weight:airframe:fuselage:CG:x"] = x_cg_a2
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+
+        # Fuselage gravity center
+        if prop_layout == 1.0:  # Wing mounted
+
+            partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.39
+            partials[
+                "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
+            ] = 0.0
+        elif prop_layout == 2.0:  # Rear fuselage mounted
+
+            partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.485
+            partials[
+                "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
+            ] = 0.515
+
+        elif prop_layout == 3.0:  # nose mount
+
+            partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.35
+            partials[
+                "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
+            ] = 0.65
+
+        else:
+            _LOGGER.warning(
+                "Propulsion layout %f does not exist, replaced by layout 1!", prop_layout
+            )
+
+            partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.39
+            partials[
+                "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
+            ] = 0.0
