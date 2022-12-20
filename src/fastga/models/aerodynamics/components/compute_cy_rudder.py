@@ -64,10 +64,10 @@ class ComputeCyDeltaRudder(FigureDigitization):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        aspect_ratio_vt = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
+        aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
         thickness_ratio_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]
         rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
-        k_ar_effective = float(inputs["data:aerodynamics:vertical_tail:k_ar_effective"])
+        k_ar_effective = inputs["data:aerodynamics:vertical_tail:k_ar_effective"]
 
         if self.options["low_speed_aero"]:
             cl_alpha_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"]
@@ -80,12 +80,12 @@ class ComputeCyDeltaRudder(FigureDigitization):
         # small gap at the bottom and at the top
         eta_in = 0.05
         eta_out = 0.95
-        kb = self.k_b_flaps(eta_in, eta_out, taper_ratio_vt)
+        kb = self.k_b_flaps(eta_in, eta_out, float(taper_ratio_vt))
 
         # Interpolation of the first graph of figure 8.53 of Roskam
-        rudder_effectiveness_parameter = self.a_delta_airfoil(rudder_chord_ratio)
+        rudder_effectiveness_parameter = self.a_delta_airfoil(float(rudder_chord_ratio))
         k_a_delta = self.k_a_delta(
-            float(rudder_effectiveness_parameter), k_ar_effective * aspect_ratio_vt
+            float(rudder_effectiveness_parameter), float(k_ar_effective * aspect_ratio_vt)
         )
 
         k_cl_delta = self.k_cl_delta_plain_flap(

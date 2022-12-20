@@ -181,8 +181,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
         y2_wing = inputs["data:geometry:wing:root:y"]
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
+        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"]
         cl_alpha_airfoil_wing = inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
 
         # 2D flap lift coefficient
@@ -192,9 +193,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         eta_out = ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing)) / (
             span_wing / 2.0 - y2_wing
         )
-        k_b = self.k_b_flaps(eta_in, eta_out, taper_ratio_wing)
-        a_delta_flap = self.a_delta_airfoil(float(inputs["data:geometry:flap:chord_ratio"]))
-        k_a_delta = self.k_a_delta(a_delta_flap, aspect_ratio_wing)
+        k_b = self.k_b_flaps(float(eta_in), float(eta_out), float(taper_ratio_wing))
+        a_delta_flap = self.a_delta_airfoil(float(flap_chord_ratio))
+        k_a_delta = self.k_a_delta(float(a_delta_flap), float(aspect_ratio_wing))
         delta_cl0_flaps = (
             k_b * delta_cl_airfoil * (cl_alpha_wing / cl_alpha_airfoil_wing) * k_a_delta
         )
@@ -218,7 +219,7 @@ class ComputeDeltaHighLift(FigureDigitization):
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
         taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
         aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
-        flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
+        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         wing_thickness_ratio = float(inputs["data:geometry:wing:thickness_ratio"])
         sweep_25 = float(inputs["data:geometry:wing:sweep_25"]) * np.pi / 180.0
 
@@ -232,9 +233,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         delta_cl_2d_ref = self._compute_delta_cl_airfoil_2d(inputs, flap_angle, mach)
         eta_in_ref = 0.0
         eta_out_ref = 1.0
-        kb_ref = self.k_b_flaps(eta_in_ref, eta_out_ref, taper_ratio_wing)
-        a_delta_flap_ref = self.a_delta_airfoil(float(inputs["data:geometry:flap:chord_ratio"]))
-        k_a_delta_ref = self.k_a_delta(a_delta_flap_ref, 6.0)
+        kb_ref = self.k_b_flaps(eta_in_ref, eta_out_ref, float(taper_ratio_wing))
+        a_delta_flap_ref = self.a_delta_airfoil(float(flap_chord_ratio))
+        k_a_delta_ref = self.k_a_delta(float(a_delta_flap_ref), 6.0)
         delta_cl_ref = (
             kb_ref * delta_cl_2d_ref * (cl_alpha_ref / cl_alpha_airfoil_wing) * k_a_delta_ref
         )
@@ -247,7 +248,9 @@ class ComputeDeltaHighLift(FigureDigitization):
         )
         k_delta = self.k_delta_flaps(taper_ratio_wing, eta_in, eta_out)
         k_p = self.k_p_flaps(taper_ratio_wing, eta_in, eta_out)
-        delta_cm_delta_cl_ref = self.pitch_to_reference_lift(wing_thickness_ratio, flap_chord_ratio)
+        delta_cm_delta_cl_ref = self.pitch_to_reference_lift(
+            wing_thickness_ratio, float(flap_chord_ratio)
+        )
 
         delta_cm_flap = (
             k_delta * aspect_ratio_wing / 1.5 * np.tan(sweep_25) + k_p * delta_cm_delta_cl_ref
@@ -429,10 +432,10 @@ class ComputeDeltaHighLift(FigureDigitization):
         sweep_25 = inputs["data:geometry:wing:sweep_25"] * np.pi / 180.0
         flap_area_ratio = self._compute_flap_area_ratio(inputs)
 
-        base_increment = self.base_max_lift_increment(el_aero * 100.0, flap_type)
-        flap_chord_factor = self.k1_max_lift(flap_chord_ratio * 100.0, flap_type)
-        flap_angle_factor = self.k2_max_lift(flap_angle, flap_type)
-        flap_motion_factor = self.k3_max_lift(flap_angle, flap_type)
+        base_increment = self.base_max_lift_increment(float(el_aero) * 100.0, float(flap_type))
+        flap_chord_factor = self.k1_max_lift(float(flap_chord_ratio) * 100.0, float(flap_type))
+        flap_angle_factor = self.k2_max_lift(float(flap_angle), float(flap_type))
+        flap_motion_factor = self.k3_max_lift(float(flap_angle), float(flap_type))
 
         k_planform = (1.0 - 0.08 * np.cos(sweep_25) ** 2.0) * np.cos(sweep_25) ** (3.0 / 4.0)
         delta_cl_max_flaps = (
