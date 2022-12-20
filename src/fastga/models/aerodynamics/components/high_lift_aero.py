@@ -217,11 +217,11 @@ class ComputeDeltaHighLift(FigureDigitization):
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
         y2_wing = inputs["data:geometry:wing:root:y"]
         flap_span_ratio = inputs["data:geometry:flap:span_ratio"]
-        taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
-        aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        aspect_ratio_wing = inputs["data:geometry:wing:aspect_ratio"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
-        wing_thickness_ratio = float(inputs["data:geometry:wing:thickness_ratio"])
-        sweep_25 = float(inputs["data:geometry:wing:sweep_25"]) * np.pi / 180.0
+        wing_thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"] * np.pi / 180.0
 
         beta_ref = np.sqrt(1.0 - mach ** 2.0)
         k = cl_alpha_airfoil_wing / (2.0 * np.pi)
@@ -241,15 +241,14 @@ class ComputeDeltaHighLift(FigureDigitization):
         )
 
         # Now we can compute the coefficient
-        eta_in = float(y1_wing / (span_wing / 2.0))
-        eta_out = float(
-            ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing))
-            / (span_wing / 2.0 - y2_wing)
+        eta_in = y1_wing / (span_wing / 2.0)
+        eta_out = ((y2_wing - y1_wing) + flap_span_ratio * (span_wing / 2.0 - y2_wing)) / (
+            span_wing / 2.0 - y2_wing
         )
-        k_delta = self.k_delta_flaps(taper_ratio_wing, eta_in, eta_out)
-        k_p = self.k_p_flaps(taper_ratio_wing, eta_in, eta_out)
+        k_delta = self.k_delta_flaps(float(taper_ratio_wing), float(eta_in), float(eta_out))
+        k_p = self.k_p_flaps(float(taper_ratio_wing), float(eta_in), float(eta_out))
         delta_cm_delta_cl_ref = self.pitch_to_reference_lift(
-            wing_thickness_ratio, float(flap_chord_ratio)
+            float(wing_thickness_ratio), float(flap_chord_ratio)
         )
 
         delta_cm_flap = (
