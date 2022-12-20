@@ -53,6 +53,7 @@ class ComputeDeltaElevator(FigureDigitization):
 
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]
+        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
 
         # Computes elevator contribution during low speed operations (for different deflection
         # angle)
@@ -63,8 +64,8 @@ class ComputeDeltaElevator(FigureDigitization):
         # derivative wrt to the wing, multiplies the deflection angle squared
         outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (
             self.delta_cd_plain_flap(
-                inputs["data:geometry:horizontal_tail:elevator_chord_ratio"],
-                abs(inputs["data:mission:sizing:landing:elevator_angle"]),
+                float(elevator_chord_ratio),
+                abs(float(inputs["data:mission:sizing:landing:elevator_angle"])),
             )
             / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * np.pi / 180.0) ** 2.0
             * np.cos(inputs["data:geometry:horizontal_tail:sweep_25"])

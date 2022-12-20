@@ -76,6 +76,7 @@ class FigureDigitization(om.ExplicitComponent):
         self.phase = None
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def delta_cd_plain_flap(chord_ratio, control_deflection) -> float:
         """
         Roskam data to account for the profile drag increment due to the deployment of plain flap
@@ -1129,6 +1130,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_vh
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def k_ch_alpha(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to compute the correction factor to differentiate the 2D control surface hinge
@@ -1187,6 +1189,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_ch_alpha
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def ch_alpha_th(thickness_ratio, chord_ratio):
         """
         Roskam data to compute the theoretical 2D control surface hinge moment derivative due to
@@ -1235,6 +1238,7 @@ class FigureDigitization(om.ExplicitComponent):
         return ch_alpha_th
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def k_ch_delta(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to compute the correction factor to differentiate the 2D control surface
@@ -1305,6 +1309,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_ch_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=256)
     def ch_delta_th(thickness_ratio, chord_ratio):
         """
         Roskam data to compute the theoretical 2D control surface hinge moment derivative due to

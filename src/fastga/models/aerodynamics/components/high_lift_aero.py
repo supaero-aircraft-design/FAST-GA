@@ -258,7 +258,6 @@ class ComputeDeltaHighLift(FigureDigitization):
         return delta_cm_flap
 
     @staticmethod
-    @functools.lru_cache(maxsize=256)
     def _get_flaps_delta_cd(
         flap_type, chord_ratio, thickness_ratio, flap_angle: float, area_ratio
     ) -> float:
