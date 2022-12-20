@@ -155,10 +155,12 @@ class ComputeDeltaHighLift(FigureDigitization):
         cl_alpha_airfoil_ht = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"]
 
         # Elevator (plain flap). Default: maximum deflection (25deg)
-        cl_delta_theory = self.cl_delta_theory_plain_flap(htp_thickness_ratio, elevator_chord_ratio)
-        k = self.k_prime_plain_flap(abs(elevator_angle), elevator_chord_ratio)
+        cl_delta_theory = self.cl_delta_theory_plain_flap(
+            float(htp_thickness_ratio), float(elevator_chord_ratio)
+        )
+        k = self.k_prime_plain_flap(abs(float(elevator_angle)), float(elevator_chord_ratio))
         k_cl_delta = self.k_cl_delta_plain_flap(
-            htp_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            float(htp_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
         )
         cl_alpha_elev = (cl_delta_theory * k * k_cl_delta) * ht_area / wing_area
         cl_alpha_elev *= 0.9  # Correction for the central fuselage part (no elevator there)
@@ -391,23 +393,23 @@ class ComputeDeltaHighLift(FigureDigitization):
         """
 
         flap_type = inputs["data:geometry:flap_type"]
-        flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
-        wing_thickness_ratio = float(inputs["data:geometry:wing:thickness_ratio"])
+        flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
+        wing_thickness_ratio = inputs["data:geometry:wing:thickness_ratio"]
         cl_alpha_airfoil_wing = inputs["data:aerodynamics:wing:airfoil:CL_alpha"]
 
         # 2D flap lift coefficient
         if flap_type == 1:  # Slotted flap
-            alpha_flap = self.k_prime_single_slotted(angle, flap_chord_ratio)
+            alpha_flap = self.k_prime_single_slotted(float(angle), float(flap_chord_ratio))
             delta_cl_airfoil = (
                 2 * np.pi / np.sqrt(1 - mach ** 2) * alpha_flap * (angle * np.pi / 180)
             )
         else:  # Plain flap
             cl_delta_theory = self.cl_delta_theory_plain_flap(
-                wing_thickness_ratio, flap_chord_ratio
+                float(wing_thickness_ratio), float(flap_chord_ratio)
             )
-            k = self.k_prime_plain_flap(abs(angle), flap_chord_ratio)
+            k = self.k_prime_plain_flap(abs(float(angle)), float(flap_chord_ratio))
             k_cl_delta = self.k_cl_delta_plain_flap(
-                wing_thickness_ratio, cl_alpha_airfoil_wing, flap_chord_ratio
+                float(wing_thickness_ratio), float(cl_alpha_airfoil_wing), float(flap_chord_ratio)
             )
             delta_cl_airfoil = k_cl_delta * cl_delta_theory * k * (angle * np.pi / 180)
 

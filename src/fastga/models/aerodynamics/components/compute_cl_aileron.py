@@ -87,7 +87,7 @@ class ComputeClDeltaAileron(FigureDigitization):
 
         # Aileron are most mostly going to be used around delta_a = 0 degree, which is the reason
         # why the effectiveness is going to be computed around this deflection
-        alpha_aileron = self.k_prime_single_slotted(0.0, aileron_chord_ratio)
+        alpha_aileron = self.k_prime_single_slotted(0.0, float(aileron_chord_ratio))
         lift_increase_aileron = 2 * np.pi / np.sqrt(1 - mach ** 2) * alpha_aileron
 
         cl_delta_a = (

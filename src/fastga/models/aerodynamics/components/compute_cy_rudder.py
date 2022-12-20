@@ -65,7 +65,7 @@ class ComputeCyDeltaRudder(FigureDigitization):
 
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         aspect_ratio_vt = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
-        thickness_ratio_vt = float(inputs["data:geometry:vertical_tail:thickness_ratio"])
+        thickness_ratio_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]
         rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
         k_ar_effective = float(inputs["data:aerodynamics:vertical_tail:k_ar_effective"])
 
@@ -89,10 +89,12 @@ class ComputeCyDeltaRudder(FigureDigitization):
         )
 
         k_cl_delta = self.k_cl_delta_plain_flap(
-            thickness_ratio_vt, cl_alpha_vt_airfoil, rudder_chord_ratio
+            float(thickness_ratio_vt), float(cl_alpha_vt_airfoil), float(rudder_chord_ratio)
         )
 
-        cl_delta_th = self.cl_delta_theory_plain_flap(thickness_ratio_vt, rudder_chord_ratio)
+        cl_delta_th = self.cl_delta_theory_plain_flap(
+            float(thickness_ratio_vt), float(rudder_chord_ratio)
+        )
 
         cy_delta_r = cl_alpha_vt / cl_alpha_vt_airfoil * kb * k_a_delta * k_cl_delta * cl_delta_th
 

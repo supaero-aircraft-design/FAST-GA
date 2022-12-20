@@ -16,6 +16,7 @@ coefficient of the aircraft.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import functools
 import os.path as pth
 
 import numpy as np
@@ -125,6 +126,7 @@ class FigureDigitization(om.ExplicitComponent):
         return delta_cd_flap
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_prime_plain_flap(flap_angle, chord_ratio):
         """
         Roskam data to estimate the correction factor to estimate non linear lift behaviour of
@@ -208,6 +210,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_prime
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def cl_delta_theory_plain_flap(thickness, chord_ratio):
         """
         Roskam data to estimate the theoretical airfoil lift effectiveness of a plain flap (
@@ -275,6 +278,7 @@ class FigureDigitization(om.ExplicitComponent):
         return cl_delta_th
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_cl_delta_plain_flap(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to estimate the correction factor to estimate difference from theoretical
@@ -335,6 +339,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_cl_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_prime_single_slotted(flap_angle, chord_ratio):
         """
         Roskam data to estimate the lift effectiveness of a single slotted flap (figure 8.17),
