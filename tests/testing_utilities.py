@@ -50,8 +50,8 @@ def run_system(
     model.add_subsystem("component", component, promotes=["*"])
     if add_solvers:
         # noinspection PyTypeChecker
-        model.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
-        model.linear_solver = om.DirectSolver()
+        model.nonlinear_solver = om.NonlinearBlockGS()
+        model.linear_solver = om.LinearBlockGS()
 
     if check:
         print("\n")
