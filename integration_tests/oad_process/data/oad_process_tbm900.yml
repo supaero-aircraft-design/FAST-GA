@@ -42,8 +42,6 @@ model:
         weight:
             id: fastga.weight.legacy
             propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
-        mtow:
-            id: fastga.loop.mtow
         performance:
             id: fastga.performances.mission
             propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
@@ -54,6 +52,8 @@ model:
                 propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
             static_margin:
                 id: fastga.handling_qualities.static_margin
+        mtow:
+            id: fastga.loop.mtow
         wing_position:
             id: fastga.loop.wing_position
         wing_area:
