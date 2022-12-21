@@ -97,6 +97,7 @@ class ComputeCruise(DynamicEquilibrium):
                 "Cruise distance is negative, check the input value mainly the range "
                 "and/or the climb and descent inputs"
             )
+        wing_area = inputs["data:geometry:wing:area"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -147,6 +148,9 @@ class ComputeCruise(DynamicEquilibrium):
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
             # Save results
+            self.compute_flight_point_drag(
+                flight_point=flight_point, equilibrium_result=previous_step, wing_area=wing_area
+            )
             self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
