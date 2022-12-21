@@ -35,6 +35,13 @@ class Cd0Total(ExplicitComponent):
 
     def setup(self):
 
+        self.add_input(
+            "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
+            val=1.25,
+            desc="Correction coefficient to take into account the other undesirable drag, "
+            "default is 1.25 as suggested in Gudmundsson",
+        )
+
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
@@ -76,7 +83,7 @@ class Cd0Total(ExplicitComponent):
             cd0_other = inputs["data:aerodynamics:other:cruise:CD0"]
 
         # CRUD (other undesirable drag). Factor from Gudmundsson book
-        crud_factor = 1.25
+        crud_factor = inputs["settings:aerodynamics:aircraft:undesirable_drag:k_factor"]
 
         cd0 = crud_factor * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other)
 
