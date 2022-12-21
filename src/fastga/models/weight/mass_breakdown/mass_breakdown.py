@@ -49,6 +49,14 @@ class MassBreakdown(om.Group):
                          design payload mass and maximum payload mass must be provided.
     """
 
+    def __init__(self, **kwargs):
+        """Defining solvers for mass breakdown computation resolution."""
+        super().__init__(**kwargs)
+
+        # Solvers setup
+        self.nonlinear_solver = om.NonlinearBlockGS()
+        self.linear_solver = om.LinearBlockGS()
+
     def initialize(self):
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
         self.options.declare("propulsion_id", default="", types=str)
@@ -67,6 +75,14 @@ class MassBreakdown(om.Group):
         self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
 
         # Solvers setup
+        self.nonlinear_solver.options["debug_print"] = True
+        self.nonlinear_solver.options["err_on_non_converge"] = True
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 50
+
+        self.linear_solver.options["err_on_non_converge"] = True
+        self.linear_solver.options["iprint"] = 0
+        self.linear_solver.options["maxiter"] = 10
 
 
 @oad.RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
