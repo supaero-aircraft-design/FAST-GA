@@ -948,6 +948,8 @@ def extreme_cl(
         cl_max_landing_wing, abs=1e-2
     )
 
+    problem.check_partials(compact_print=True)
+
 
 def l_d_max(
     XML_FILE: str, l_d_max_: float, optimal_cl: float, optimal_cd: float, optimal_alpha: float
@@ -968,6 +970,8 @@ def l_d_max(
     assert problem.get_val(
         "data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg"
     ) == pytest.approx(optimal_alpha, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def cnbeta(XML_FILE: str, cn_beta_fus: float):
