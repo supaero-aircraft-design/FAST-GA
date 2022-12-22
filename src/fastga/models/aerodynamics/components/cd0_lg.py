@@ -40,10 +40,18 @@ class Cd0LandingGear(ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:landing_gear:low_speed:CD0")
+            self.declare_partials(
+                "data:aerodynamics:landing_gear:low_speed:CD0",
+                ["data:geometry:landing_gear:height", "data:geometry:wing:area"],
+                method="exact",
+            )
         else:
             self.add_output("data:aerodynamics:landing_gear:cruise:CD0")
-
-        self.declare_partials("*", "*", method="fd")
+            self.declare_partials(
+                "data:aerodynamics:landing_gear:cruise:CD0",
+                ["data:geometry:landing_gear:height", "data:geometry:wing:area"],
+                method="exact",
+            )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -82,3 +90,74 @@ class Cd0LandingGear(ExplicitComponent):
                 outputs["data:aerodynamics:landing_gear:low_speed:CD0"] = cd0
             else:
                 outputs["data:aerodynamics:landing_gear:cruise:CD0"] = 0.0
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        lg_type = inputs["data:geometry:landing_gear:type"]
+        lg_height = inputs["data:geometry:landing_gear:height"]
+        wing_area = inputs["data:geometry:wing:area"]
+
+        if lg_type == 0.0:
+            area_mlg = 15 * 6 * 0.0254 ** 2  # Frontal area of wheel (data in inches)
+            area_nlg = 14 * 5 * 0.0254 ** 2
+            # MLG
+            cd_wheel = 0.484
+            cd0_mlg = cd_wheel * area_mlg / wing_area
+            # NLG
+            cd_wheel = 0.484 / 2
+            cd0_nlg = cd_wheel * area_nlg / wing_area
+            cd0 = cd0_mlg + cd0_nlg
+
+            if self.options["low_speed_aero"]:
+                partials[
+                    "data:aerodynamics:landing_gear:low_speed:CD0",
+                    "data:geometry:landing_gear:height",
+                ] = 0
+                partials[
+                    "data:aerodynamics:landing_gear:low_speed:CD0",
+                    "data:geometry:wing:area",
+                ] = (
+                    -cd0 / wing_area
+                )
+            else:
+                partials[
+                    "data:aerodynamics:landing_gear:cruise:CD0", "data:geometry:landing_gear:height"
+                ] = 0
+                partials[
+                    "data:aerodynamics:landing_gear:cruise:CD0",
+                    "data:geometry:wing:area",
+                ] = (
+                    -cd0 / wing_area
+                )
+        else:
+
+            tyre_width = 5 * 0.0254
+            # MLG
+            cd_mlg = 1.2
+            area_mlg = tyre_width * 1.8 * lg_height
+            # NLG
+            cd_nlg = 0.65
+            area_nlg = 14 * 5 * 0.0254 ** 2
+            cd0 = (cd_mlg * area_mlg + cd_nlg * area_nlg) / wing_area
+
+            if self.options["low_speed_aero"]:
+                partials[
+                    "data:aerodynamics:landing_gear:low_speed:CD0",
+                    "data:geometry:landing_gear:height",
+                ] = (
+                    cd_mlg * tyre_width * 1.8 / wing_area
+                )
+                partials[
+                    "data:aerodynamics:landing_gear:low_speed:CD0",
+                    "data:geometry:wing:area",
+                ] = (
+                    -cd0 / wing_area
+                )
+            else:
+                partials[
+                    "data:aerodynamics:landing_gear:cruise:CD0", "data:geometry:landing_gear:height"
+                ] = 0.0
+                partials[
+                    "data:aerodynamics:landing_gear:cruise:CD0",
+                    "data:geometry:wing:area",
+                ] = 0.0

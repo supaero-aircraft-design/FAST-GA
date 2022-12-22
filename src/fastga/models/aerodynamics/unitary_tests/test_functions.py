@@ -270,6 +270,8 @@ def cd0_high_speed(
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
 
+    problem.check_partials(compact_print=True)
+
 
 def cd0_low_speed(
     XML_FILE: str,
@@ -315,6 +317,8 @@ def cd0_low_speed(
         + problem["data:aerodynamics:other:low_speed:CD0"]
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
+
+    problem.check_partials(compact_print=True)
 
 
 def polar(

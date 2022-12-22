@@ -40,10 +40,21 @@ class Cd0Other(ExplicitComponent):
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
             self.add_input("data:aerodynamics:cooling:low_speed:CD0", val=0.0005525)
             self.add_output("data:aerodynamics:other:low_speed:CD0")
+            self.declare_partials(
+                of="data:aerodynamics:other:low_speed:CD0",
+                wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:low_speed:CD0"],
+                method="exact",
+            )
+
         else:
             # Gudmundsson p715. Assuming cx_cooling*wing area/MTOW value of the book is typical
             self.add_input("data:aerodynamics:cooling:cruise:CD0", val=0.0005525)
             self.add_output("data:aerodynamics:other:cruise:CD0")
+            self.declare_partials(
+                of="data:aerodynamics:other:cruise:CD0",
+                wrt=["data:geometry:wing:area", "data:aerodynamics:cooling:cruise:CD0"],
+                method="exact",
+            )
 
         self.declare_partials("*", "*", method="fd")
 
@@ -72,4 +83,29 @@ class Cd0Other(ExplicitComponent):
             cd0_cooling = inputs["data:aerodynamics:cooling:cruise:CD0"]
             outputs["data:aerodynamics:other:cruise:CD0"] = (
                 cd0_cowling + cd0_cooling + cd0_components
+            )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        wing_area = inputs["data:geometry:wing:area"]
+
+        if prop_layout == 3.0:
+            d_cd0_cowl_d_wing_area = -0.0267 / wing_area ** 2.0
+        else:
+            d_cd0_cowl_d_wing_area = 0.0
+
+        if self.options["low_speed_aero"]:
+            partials[
+                "data:aerodynamics:other:low_speed:CD0", "data:aerodynamics:cooling:low_speed:CD0"
+            ] = 1.0
+            partials["data:aerodynamics:other:low_speed:CD0", "data:geometry:wing:area"] = (
+                d_cd0_cowl_d_wing_area - 0.0253 / wing_area ** 2.0
+            )
+        else:
+            partials[
+                "data:aerodynamics:other:cruise:CD0", "data:aerodynamics:cooling:cruise:CD0"
+            ] = 1.0
+            partials["data:aerodynamics:other:cruise:CD0", "data:geometry:wing:area"] = (
+                d_cd0_cowl_d_wing_area - 0.0253 / wing_area ** 2.0
             )
