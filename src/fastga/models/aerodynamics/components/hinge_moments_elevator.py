@@ -115,10 +115,10 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         k_cl_alpha = float(cl_alpha_airfoil_ht) / float(cl_alpha_ht_th)
 
         k_ch_alpha = self.k_ch_alpha(
-            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
         )
 
-        ch_alpha = self.ch_alpha_th(tail_thickness_ratio, elevator_chord_ratio)
+        ch_alpha = self.ch_alpha_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
 
         ch_prime_alpha = k_ch_alpha * ch_alpha
 
@@ -162,10 +162,10 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # Step 2.
 
         k_ch_delta = self.k_ch_delta(
-            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
         )
 
-        ch_delta = self.ch_delta_th(tail_thickness_ratio, elevator_chord_ratio)
+        ch_delta = self.ch_delta_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
 
         ch_prime_delta = k_ch_delta * ch_delta
 
@@ -176,11 +176,11 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         else:
             cl_delta_th = self.cl_delta_theory_plain_flap(
-                tail_thickness_ratio, elevator_chord_ratio
+                float(tail_thickness_ratio), float(elevator_chord_ratio)
             )
 
             k_cl_delta = self.k_cl_delta_plain_flap(
-                tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+                float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
             )
 
             ch_prime_prime_delta = ch_prime_delta + (
@@ -257,7 +257,7 @@ class Compute3DHingeMomentsTail(FigureDigitization):
 
         # We'll compute the elevator effectiveness factor in the worst case scenario, i.e,
         # with the highest deflection angle which we will take at 25 degree
-        a_delta = self.k_prime_single_slotted(elevator_angle, elevator_chord_ratio)
+        a_delta = self.k_prime_single_slotted(elevator_angle, float(elevator_chord_ratio))
 
         ch_delta_3d = (
             np.cos(sweep_25_ht)

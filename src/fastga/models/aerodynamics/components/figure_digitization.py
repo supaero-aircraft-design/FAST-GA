@@ -16,6 +16,7 @@ coefficient of the aircraft.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
+import functools
 import os.path as pth
 
 import numpy as np
@@ -75,6 +76,7 @@ class FigureDigitization(om.ExplicitComponent):
         self.phase = None
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def delta_cd_plain_flap(chord_ratio, control_deflection) -> float:
         """
         Roskam data to account for the profile drag increment due to the deployment of plain flap
@@ -125,6 +127,7 @@ class FigureDigitization(om.ExplicitComponent):
         return delta_cd_flap
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_prime_plain_flap(flap_angle, chord_ratio):
         """
         Roskam data to estimate the correction factor to estimate non linear lift behaviour of
@@ -208,6 +211,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_prime
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def cl_delta_theory_plain_flap(thickness, chord_ratio):
         """
         Roskam data to estimate the theoretical airfoil lift effectiveness of a plain flap (
@@ -275,6 +279,7 @@ class FigureDigitization(om.ExplicitComponent):
         return cl_delta_th
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_cl_delta_plain_flap(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to estimate the correction factor to estimate difference from theoretical
@@ -335,6 +340,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_cl_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_prime_single_slotted(flap_angle, chord_ratio):
         """
         Roskam data to estimate the lift effectiveness of a single slotted flap (figure 8.17),
@@ -415,6 +421,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_prime
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def base_max_lift_increment(thickness_ratio: float, flap_type: float) -> float:
         """
         Roskam data to estimate base lift increment used in the computation of flap delta_cl_max
@@ -469,6 +476,7 @@ class FigureDigitization(om.ExplicitComponent):
         return delta_cl_max_base
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k1_max_lift(chord_ratio, flap_type) -> float:
         """
         Roskam data to correct the base lift increment to account for chord ratio difference wrt
@@ -510,6 +518,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k1
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k2_max_lift(angle, flap_type) -> float:
         """
         Roskam data to correct the base lift increment to account for the control surface
@@ -566,6 +575,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k2
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k3_max_lift(angle, flap_type) -> float:
         """
         Roskam data for flap motion correction factor (figure 8.34).
@@ -604,6 +614,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k3
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_b_flaps(eta_in: float, eta_out: float, taper_ratio: float) -> float:
         """
         Roskam data to estimate the flap span factor Kb (figure 8.52) This factor accounts for a
@@ -683,6 +694,7 @@ class FigureDigitization(om.ExplicitComponent):
         return float(kb_out - kb_in)
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def a_delta_airfoil(chord_ratio) -> float:
         """
         Roskam data to estimate the two-dimensional flap effectiveness factor (figure 8.53a) This
@@ -713,6 +725,7 @@ class FigureDigitization(om.ExplicitComponent):
         return a_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_a_delta(a_delta_airfoil, aspect_ratio) -> float:
         """
         Roskam data to estimate the two dimensional to three dimensional control surface lift
@@ -804,17 +817,18 @@ class FigureDigitization(om.ExplicitComponent):
         x = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         y = [y1, y2, y3, y4, y5, y6, y7, y8, y9, y10]
 
-        if float(a_delta_airfoil) != np.clip(float(a_delta_airfoil), 0.0, 1.0):
+        if a_delta_airfoil != np.clip(a_delta_airfoil, 0.0, 1.0):
             _LOGGER.warning(
                 "Control surface effectiveness ratio value outside of the range in "
                 "Roskam's book, value clipped"
             )
 
-        k_a_delta = interpolate.interp1d(x, y)(np.clip(float(a_delta_airfoil), 0.1, 1.0))
+        k_a_delta = interpolate.interp1d(x, y)(np.clip(a_delta_airfoil, 0.1, 1.0))
 
         return k_a_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def x_cp_c_prime(flap_chord_ratio: float) -> float:
         """
         Roskam data to estimate the location of the center of pressure due to Incremental Flap
@@ -836,6 +850,7 @@ class FigureDigitization(om.ExplicitComponent):
         return x_cp_c_prime
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_p_flaps(taper_ratio, eta_in, eta_out) -> float:
         """
         Roskam data to account for the partial span flaps factor on the pitch moment coefficient
@@ -892,6 +907,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_p
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def pitch_to_reference_lift(thickness_ratio: float, chord_ratio: float) -> float:
         """
         Roskam data to account for the ratio between the pitch moment coefficient and the
@@ -971,6 +987,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_delta_flaps(taper_ratio: float, eta_in: float, eta_out: float) -> float:
         """
         Roskam data to estimate the conversion factor which accounts for partial span flaps on a
@@ -1113,6 +1130,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_vh
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_ch_alpha(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to compute the correction factor to differentiate the 2D control surface hinge
@@ -1171,6 +1189,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_ch_alpha
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def ch_alpha_th(thickness_ratio, chord_ratio):
         """
         Roskam data to compute the theoretical 2D control surface hinge moment derivative due to
@@ -1219,6 +1238,7 @@ class FigureDigitization(om.ExplicitComponent):
         return ch_alpha_th
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def k_ch_delta(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
         Roskam data to compute the correction factor to differentiate the 2D control surface
@@ -1289,6 +1309,7 @@ class FigureDigitization(om.ExplicitComponent):
         return k_ch_delta
 
     @staticmethod
+    @functools.lru_cache(maxsize=128)
     def ch_delta_th(thickness_ratio, chord_ratio):
         """
         Roskam data to compute the theoretical 2D control surface hinge moment derivative due to
