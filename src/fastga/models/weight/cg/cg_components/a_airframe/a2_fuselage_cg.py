@@ -71,8 +71,6 @@ class ComputeFuselageCG(ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
-        fus_length = inputs["data:geometry:fuselage:length"]
-        lav = inputs["data:geometry:fuselage:front_length"]
 
         # Fuselage gravity center
         if prop_layout == 1.0:  # Wing mounted
