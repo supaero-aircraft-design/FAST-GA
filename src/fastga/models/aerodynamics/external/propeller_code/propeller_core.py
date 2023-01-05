@@ -15,7 +15,7 @@
 import logging
 
 import numpy as np
-from scipy.optimize import fsolve
+from scipy.optimize import root
 
 import openmdao.api as om
 
@@ -160,10 +160,10 @@ class PropellerCoreModule(om.ExplicitComponent):
         for idx, _ in enumerate(radius):
 
             # Solve BEM vs. disk theory system of equations
-            speed_vect = fsolve(
-                self.delta,
-                speed_vect,
-                (
+            speed_vect = root(
+                fun=self.delta,
+                x0=speed_vect,
+                args=(
                     radius[idx],
                     radius_min,
                     radius_max,
@@ -179,8 +179,9 @@ class PropellerCoreModule(om.ExplicitComponent):
                     atm,
                     reference_reynolds,
                 ),
-                xtol=1e-3,
-            )
+                method="hybr",
+                options={"xtol": 1e-3},
+            ).x
             vi_vect[idx] = speed_vect[0]
             vt_vect[idx] = speed_vect[1]
             results = self.bem_theory(

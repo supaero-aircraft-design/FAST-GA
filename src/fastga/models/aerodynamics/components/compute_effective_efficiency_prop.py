@@ -55,6 +55,8 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
                 "efficiency due to the presence of cowling (fuselage or nacelle) behind the "
                 "propeller",
             )
+
+            self.declare_partials("*", "*", method="fd")
         else:
             self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan)
@@ -67,7 +69,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
                 "propeller",
             )
 
-        self.declare_partials("*", "*", method="fd")
+            self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

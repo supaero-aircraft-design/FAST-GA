@@ -292,6 +292,11 @@
       </propulsion>
     </weight>
     <aerodynamics>
+      <aircraft>
+        <undesirable_drag>
+          <k_factor>1.25</k_factor>
+        </undesirable_drag>
+      </aircraft>
       <aileron>
         <tip_effect>
           <k_factor>0.9</k_factor>

@@ -35,6 +35,13 @@ class Cd0Total(ExplicitComponent):
 
     def setup(self):
 
+        self.add_input(
+            "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
+            val=1.25,
+            desc="Correction coefficient to take into account the other undesirable drag, "
+            "default is 1.25 as suggested in Gudmundsson",
+        )
+
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:fuselage:low_speed:CD0", val=np.nan)
@@ -44,6 +51,8 @@ class Cd0Total(ExplicitComponent):
             self.add_input("data:aerodynamics:landing_gear:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:other:low_speed:CD0", val=np.nan)
             self.add_output("data:aerodynamics:aircraft:low_speed:CD0")
+
+            self.declare_partials("*", "*", method="exact")
         else:
             self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:fuselage:cruise:CD0", val=np.nan)
@@ -54,7 +63,7 @@ class Cd0Total(ExplicitComponent):
             self.add_input("data:aerodynamics:other:cruise:CD0", val=np.nan)
             self.add_output("data:aerodynamics:aircraft:cruise:CD0")
 
-        self.declare_partials("*", "*", method="fd")
+            self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -76,7 +85,7 @@ class Cd0Total(ExplicitComponent):
             cd0_other = inputs["data:aerodynamics:other:cruise:CD0"]
 
         # CRUD (other undesirable drag). Factor from Gudmundsson book
-        crud_factor = 1.25
+        crud_factor = inputs["settings:aerodynamics:aircraft:undesirable_drag:k_factor"]
 
         cd0 = crud_factor * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other)
 
@@ -84,3 +93,85 @@ class Cd0Total(ExplicitComponent):
             outputs["data:aerodynamics:aircraft:low_speed:CD0"] = cd0
         else:
             outputs["data:aerodynamics:aircraft:cruise:CD0"] = cd0
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        crud_factor = inputs["settings:aerodynamics:aircraft:undesirable_drag:k_factor"]
+
+        if self.options["low_speed_aero"]:
+            cd0_wing = inputs["data:aerodynamics:wing:low_speed:CD0"]
+            cd0_fus = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
+            cd0_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CD0"]
+            cd0_vt = inputs["data:aerodynamics:vertical_tail:low_speed:CD0"]
+            cd0_nac = inputs["data:aerodynamics:nacelles:low_speed:CD0"]
+            cd0_lg = inputs["data:aerodynamics:landing_gear:low_speed:CD0"]
+            cd0_other = inputs["data:aerodynamics:other:low_speed:CD0"]
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0", "data:aerodynamics:wing:low_speed:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "data:aerodynamics:fuselage:low_speed:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "data:aerodynamics:horizontal_tail:low_speed:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "data:aerodynamics:vertical_tail:low_speed:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "data:aerodynamics:nacelles:low_speed:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "data:aerodynamics:landing_gear:low_speed:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0", "data:aerodynamics:other:low_speed:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:low_speed:CD0",
+                "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
+            ] = (
+                cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other
+            )
+        else:
+            cd0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
+            cd0_fus = inputs["data:aerodynamics:fuselage:cruise:CD0"]
+            cd0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CD0"]
+            cd0_vt = inputs["data:aerodynamics:vertical_tail:cruise:CD0"]
+            cd0_nac = inputs["data:aerodynamics:nacelles:cruise:CD0"]
+            cd0_lg = inputs["data:aerodynamics:landing_gear:cruise:CD0"]
+            cd0_other = inputs["data:aerodynamics:other:cruise:CD0"]
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0", "data:aerodynamics:wing:cruise:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0", "data:aerodynamics:fuselage:cruise:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "data:aerodynamics:horizontal_tail:cruise:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "data:aerodynamics:vertical_tail:cruise:CD0",
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0", "data:aerodynamics:nacelles:cruise:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0", "data:aerodynamics:landing_gear:cruise:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0", "data:aerodynamics:other:cruise:CD0"
+            ] = crud_factor
+            partials[
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
+            ] = (
+                cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other
+            )

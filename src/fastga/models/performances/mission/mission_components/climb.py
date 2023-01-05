@@ -100,6 +100,7 @@ class ComputeClimb(DynamicEquilibrium):
                 _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
+        wing_area = inputs["data:geometry:wing:area"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -175,6 +176,9 @@ class ComputeClimb(DynamicEquilibrium):
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
             # Save results
+            self.compute_flight_point_drag(
+                flight_point=flight_point, equilibrium_result=previous_step, wing_area=wing_area
+            )
             self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)

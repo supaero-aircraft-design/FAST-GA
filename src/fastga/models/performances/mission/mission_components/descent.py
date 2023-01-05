@@ -94,6 +94,7 @@ class ComputeDescent(DynamicEquilibrium):
             # noinspection PyBroadException
             flight_point_df = None
 
+        wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         descent_rate = inputs["data:mission:sizing:main_route:descent:descent_rate"]
@@ -181,6 +182,9 @@ class ComputeDescent(DynamicEquilibrium):
             propulsion_model.compute_flight_points(flight_point)
 
             # Save results
+            self.compute_flight_point_drag(
+                flight_point=flight_point, equilibrium_result=previous_step, wing_area=wing_area
+            )
             self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 

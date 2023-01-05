@@ -186,6 +186,13 @@
     </weight>
   </data>
   <settings>
+    <aerodynamics>
+      <aircraft>
+        <undesirable_drag>
+          <k_factor>1.25</k_factor>
+        </undesirable_drag>
+      </aircraft>
+    </aerodynamics>
     <propulsion>
       <IC_engine>
         <k_factor_sfc>1.1</k_factor_sfc>

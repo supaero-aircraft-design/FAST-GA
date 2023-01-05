@@ -67,6 +67,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.cl_tail_sol = 0.0
         self.error_on_pitch_equilibrium = False
         self.delta_e_sol = 0.0
+        self.cd_aircraft_sol = 0.0
         self.flight_points = []
 
     def initialize(self):
@@ -185,6 +186,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
         cl_wing_local = self.cl_wing_sol
         cl_htp_local = self.cl_tail_sol
         delta_elevator = self.delta_e_sol
+        cd_aircraft_local = self.cd_aircraft_sol
 
         error_on_htp = bool((cl_htp_local > cl_max_clean_htp) or (cl_htp_local < cl_min_clean_htp))
 
@@ -198,6 +200,7 @@ class DynamicEquilibrium(om.ExplicitComponent):
             cl_wing_local,
             cl_htp_local,
             delta_elevator,
+            cd_aircraft_local,
             error,
         )
 
@@ -409,8 +412,31 @@ class DynamicEquilibrium(om.ExplicitComponent):
         self.cl_wing_sol = cl_wing_blown
         self.cl_tail_sol = cl_htp
         self.delta_e_sol = delta_e
+        self.cd_aircraft_sol = cd
 
         return np.array([f1, f2])
+
+    def compute_flight_point_drag(
+        self,
+        flight_point: oad.FlightPoint = None,
+        equilibrium_result: tuple = None,
+        wing_area: float = None,
+    ):
+        """
+        Method to extract the drag coefficient from the equilibrium results and add it to the
+        flight point. Also computes the total drag of the aircraft
+
+        :param equilibrium_result: result vector of dynamic equilibrium
+        :param wing_area: reference surface of the aircraft
+        :param flight_point: the flight_point to add
+        """
+
+        flight_point.CD = float(equilibrium_result[5])
+
+        density = Atmosphere(flight_point.altitude, altitude_in_feet=False).density
+        drag = 0.5 * density * flight_point.true_airspeed ** 2.0 * wing_area * equilibrium_result[5]
+
+        flight_point.drag = drag
 
     def add_flight_point(
         self, flight_point: oad.FlightPoint = None, equilibrium_result: tuple = None

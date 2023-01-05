@@ -38,6 +38,7 @@ from ..wing_area_component.wing_area_cl_equilibrium import (
 )
 from ..wing_area_component.update_wing_area import UpdateWingArea
 from ..update_wing_area_group import UpdateWingAreaGroup
+from ..update_wing_position import UpdateWingPosition
 
 from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
@@ -272,3 +273,15 @@ def test_update_wing_area():
     assert_allclose(problem_aero["data:geometry:wing:area"], 15.0, atol=1e-3)
 
     # _ = problem_aero.check_partials(compact_print=True)
+
+
+def test_update_wing_position():
+
+    ivc = get_indep_var_comp(list_inputs(UpdateWingPosition()), __file__, "beechcraft_76.xml")
+
+    problem = run_system(UpdateWingPosition(), ivc)
+    assert_allclose(
+        problem.get_val("data:geometry:wing:MAC:at25percent:x", units="m"), 3.4550, atol=1e-3
+    )
+
+    problem.check_partials(compact_print=True)

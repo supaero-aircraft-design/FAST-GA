@@ -14,9 +14,9 @@ Test takeoff module.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
 import pytest
 import numpy as np
+import openmdao.api as om
 
 from fastga.models.performances.mission.takeoff import (
     TakeOffPhase,
@@ -206,7 +206,7 @@ def test_compute_climb_speed():
     """Tests climb phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("climb", ComputeClimbSpeed(), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
@@ -220,7 +220,7 @@ def test_compute_climb():
     """Tests climb phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("climb", ComputeClimb(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
@@ -241,7 +241,7 @@ def test_compute_cruise():
     """Tests cruise phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("cruise", ComputeCruise(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
@@ -258,7 +258,7 @@ def test_compute_descent_speed():
     """Tests climb phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("climb", ComputeDescentSpeed(), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
@@ -272,7 +272,7 @@ def test_compute_descent():
     """Tests descent phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
     group.add_subsystem("descent", ComputeDescent(propulsion_id=ENGINE_WRAPPER), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
@@ -293,7 +293,7 @@ def test_compute_reserve():
     """Tests reserve phase"""
 
     # Research independent input value in .xml file
-    group = Group()
+    group = om.Group()
     group.add_subsystem("reserve", ComputeReserve(), promotes=["*"])
     ivc = get_indep_var_comp(list_inputs(group), __file__, XML_FILE)
 
@@ -311,7 +311,7 @@ def test_loop_cruise_distance():
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
-    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc, add_solvers=True)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
     assert m_total == pytest.approx(140, abs=1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")

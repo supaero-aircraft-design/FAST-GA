@@ -43,6 +43,8 @@ It is recommended (but not required) to install FAST-(OAD)-GA in a virtual
 environment ([conda](https://docs.conda.io/en/latest/),
 [venv](https://docs.python.org/3.7/library/venv.html), ...).
 
-The FAST-(OAD)-GA is not registered for a direct pip install.
-Yet an installation using pip command is possible. To do so, use command:
-**pip install fast-oad-cs23==xxx**, where xxx is the version number (ex: 1.0.0).
+Once Python is installed, FAST-(OAD)-GA can be installed using pip, by doing the following:
+
+``` {.bash}
+$ pip install fast-oad-cs23
+```

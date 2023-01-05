@@ -47,13 +47,13 @@ class ComputeWingGeometry(Group):
             "wing_y", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SPAN), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_HEIGHT), promotes=["*"]
-        )
-        self.add_subsystem(
             "wing_l1l4", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L1_L4), promotes=["*"]
         )
         self.add_subsystem(
             "wing_l2l3", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L2_L3), promotes=["*"]
+        )
+        self.add_subsystem(
+            "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_HEIGHT), promotes=["*"]
         )
         self.add_subsystem(
             "wing_x", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]

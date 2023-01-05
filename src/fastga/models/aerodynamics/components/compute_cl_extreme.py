@@ -36,7 +36,27 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:takeoff:CL_max")
         self.add_output("data:aerodynamics:aircraft:landing:CL_max")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:aerodynamics:aircraft:takeoff:CL_max",
+            "data:aerodynamics:wing:low_speed:CL_max_clean",
+            val=1.0,
+        )
+        self.declare_partials(
+            "data:aerodynamics:aircraft:takeoff:CL_max",
+            "data:aerodynamics:flaps:takeoff:CL_max",
+            val=1.0,
+        )
+
+        self.declare_partials(
+            "data:aerodynamics:aircraft:landing:CL_max",
+            "data:aerodynamics:wing:low_speed:CL_max_clean",
+            val=1.0,
+        )
+        self.declare_partials(
+            "data:aerodynamics:aircraft:landing:CL_max",
+            "data:aerodynamics:flaps:landing:CL_max",
+            val=1.0,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
