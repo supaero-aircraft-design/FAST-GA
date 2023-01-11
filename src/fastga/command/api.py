@@ -522,9 +522,34 @@ def generate_block_analysis(
     overwrite: bool = False,
 ):
 
-    # If a valid ID is provided, build a system based on that ID
+    """
+    Generates a function based on set of models and a set of variables that we want this
+    functions to take.
+
+    :param local_system: the system the function is going to be based one, can be either an
+    OpenMDAO component (Implicit, Explicit or a Group), a registered FAST-OAD id, or the absolute
+    path to a configuration file
+    :param var_inputs: a list of variables name that we want the
+    patched function to have as an input, it will be the list of keys expected as an input of the
+    function
+    :param xml_file_path: the path of the XML that contains the values of the variables
+    necessary for the models but that are not inputs
+    :param options: the options of the group, required if an id is provided
+    :param overwrite: boolean to set whether or not the input XML file will be overwritten once
+    the function runs
+
+    :return patched_function: the function constructed based on the provided system which takes
+    var_inputs as inputs under the form of a dictionary {"var_name": (var_value, var_units)}
+    """
+
+    # If a valid ID or a path to a configuration file is provided, build a system based on that ID
     if isinstance(local_system, str):
-        local_system = oad.RegisterOpenMDAOSystem.get_system(local_system, options=options)
+        if local_system.endswith(".yml"):
+            configurator = oad.FASTOADProblemConfigurator(local_system)
+            dummy_problem = configurator.get_problem(read_inputs=False)
+            local_system = dummy_problem.model
+        else:
+            local_system = oad.RegisterOpenMDAOSystem.get_system(local_system, options=options)
 
     # Search what are the component/group outputs
     variables = list_variables(local_system)
