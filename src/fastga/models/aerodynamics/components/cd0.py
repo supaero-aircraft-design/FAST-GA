@@ -28,6 +28,7 @@ from ..constants import (
     SUBMODEL_CD0_OTHER,
     SUBMODEL_CD0_SUM,
     SUBMODEL_CD0,
+    SUBMODEL_CD_INLETS
 )
 
 
@@ -104,4 +105,10 @@ class Cd0(Group):
             "cd0_total",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_CD0_SUM, options=low_speed_option),
             promotes=["*"],
+        )
+
+        self.add_subsystem(
+            "cd_inlets",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_CD_INLETS, options=low_speed_option),
+            promotes=["*"]
         )
