@@ -43,6 +43,7 @@ class Cd0Total(ExplicitComponent):
             self.add_input("data:aerodynamics:nacelles:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:landing_gear:low_speed:CD0", val=np.nan)
             self.add_input("data:aerodynamics:other:low_speed:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:inlets:low_speed:CD0", val=np.nan)
             self.add_output("data:aerodynamics:aircraft:low_speed:CD0")
         else:
             self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
@@ -52,6 +53,7 @@ class Cd0Total(ExplicitComponent):
             self.add_input("data:aerodynamics:nacelles:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:landing_gear:cruise:CD0", val=np.nan)
             self.add_input("data:aerodynamics:other:cruise:CD0", val=np.nan)
+            self.add_input("data:aerodynamics:inlets:cruise:CD0", val=np.nan)
             self.add_output("data:aerodynamics:aircraft:cruise:CD0")
 
         self.declare_partials("*", "*", method="fd")
@@ -66,6 +68,7 @@ class Cd0Total(ExplicitComponent):
             cd0_nac = inputs["data:aerodynamics:nacelles:low_speed:CD0"]
             cd0_lg = inputs["data:aerodynamics:landing_gear:low_speed:CD0"]
             cd0_other = inputs["data:aerodynamics:other:low_speed:CD0"]
+            cd0_inlets = inputs["data:aerodynamics:inlets:low_speed:CD0"]
         else:
             cd0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
             cd0_fus = inputs["data:aerodynamics:fuselage:cruise:CD0"]
@@ -74,11 +77,12 @@ class Cd0Total(ExplicitComponent):
             cd0_nac = inputs["data:aerodynamics:nacelles:cruise:CD0"]
             cd0_lg = inputs["data:aerodynamics:landing_gear:cruise:CD0"]
             cd0_other = inputs["data:aerodynamics:other:cruise:CD0"]
+            cd0_inlets = inputs["data:aerodynamics:inlets:cruise:CD0"]
 
         # CRUD (other undesirable drag). Factor from Gudmundsson book
         crud_factor = 1.25
 
-        cd0 = crud_factor * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other)
+        cd0 = crud_factor * (cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other + cd0_inlets)
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:CD0"] = cd0
