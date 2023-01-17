@@ -82,6 +82,18 @@ def test_id_working():
 
     assert value_id == pytest.approx(value_direct, abs=1e-3)
 
+    test_generate_block_analysis_yml = api.generate_block_analysis(
+        pth.join(DATA_FOLDER_PATH, "blank.yml"),
+        var_inputs,
+        complete_xml_file,
+        overwrite=False,
+    )
+    input_dict = {"data:geometry:variable_2": ([-5.0, 2.0], "m**2")}
+    output_dict = test_generate_block_analysis_yml(input_dict)
+    value_yml = output_dict.get("data:geometry:variable_4")[0]
+
+    assert value_yml == pytest.approx(value_direct, abs=1e-3)
+
 
 def test_input_vars_working():
 
