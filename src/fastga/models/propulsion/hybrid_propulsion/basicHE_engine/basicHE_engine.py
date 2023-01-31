@@ -32,7 +32,7 @@ from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
 
-PROPELLER_EFFICIENCY = 0.83  # Used to be 0.8 maybe make it an xml parameter
+# PROPELLER_EFFICIENCY = 0.83  # Used to be 0.8 maybe make it an xml parameter
 
 # Set of dictionary keys that are mapped to instance attributes.
 ENGINE_LABELS = {
@@ -149,13 +149,6 @@ class BasicHEEngine(AbstractHybridPropulsion):
         self.voltage_level = voltage_level
         self.compressor_power = compressor_power
 
-        # Evaluate engine volume based on max power @ 0.0m
-        # rpm_vect, _, pme_limit_vect, _ = self.read_map(self.map_file_path)
-        # volume = self.max_power / np.max(
-        #     pme_limit_vect * 1e5 * rpm_vect / 240.0
-        # )  # conversion rpm to rad/s included
-        # self.volume = volume
-
         # Declare sub-components attribute
         self.engine = Engine(power_SL=max_power)
         self.nacelle = None
@@ -188,34 +181,6 @@ class BasicHEEngine(AbstractHybridPropulsion):
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
-    # @staticmethod
-    # def read_map(map_file_path):
-    #
-    #     data = pd.read_csv(map_file_path)
-    #     values = data.to_numpy()[:, 1:].tolist()
-    #     labels = data.to_numpy()[:, 0].tolist()
-    #     data = pd.DataFrame(values, index=labels)
-    #     rpm = data.loc["rpm", 0][1:-2].replace("\n", "").replace("\r", "")
-    #     for idx in range(10):
-    #         rpm = rpm.replace("  ", " ")
-    #     rpm_vect = np.array([float(i) for i in rpm.split(" ") if i != ""])
-    #     pme = data.loc["pme", 0][1:-2].replace("\n", "").replace("\r", "")
-    #     for idx in range(10):
-    #         pme = pme.replace("  ", " ")
-    #     pme_vect = np.array([float(i) for i in pme.split(" ") if i != ""])
-    #     pme_limit = data.loc["pme_limit", 0][1:-2].replace("\n", "").replace("\r", "")
-    #     for idx in range(10):
-    #         pme_limit = pme_limit.replace("  ", " ")
-    #     pme_limit_vect = np.array([float(i) for i in pme_limit.split(" ") if i != ""])
-    #     sfc = data.loc["sfc", 0][1:-2].replace("\n", "").replace("\r", "")
-    #     sfc_lines = sfc[1:-2].split("] [")
-    #     sfc_matrix = np.zeros(
-    #         (len(np.array([i for i in sfc_lines[0].split(" ") if i != ""])), len(sfc_lines))
-    #     )
-    #     for idx in range(len(sfc_lines)):
-    #         sfc_matrix[:, idx] = np.array([i for i in sfc_lines[idx].split(" ") if i != ""])
-    #
-    #     return rpm_vect, pme_vect, pme_limit_vect, sfc_matrix
 
     def compute_flight_points(self, flight_points: FlightPoint):
         # pylint: disable=too-many-arguments  # they define the trajectory
