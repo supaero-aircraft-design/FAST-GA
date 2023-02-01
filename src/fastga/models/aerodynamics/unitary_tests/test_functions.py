@@ -49,6 +49,7 @@ from fastga.models.aerodynamics.components import (
     ComputeExtremeCLWing,
     ComputeExtremeCLHtp,
     ComputeEffectiveEfficiencyPropeller,
+    Cooling_Airflow,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
@@ -1353,3 +1354,28 @@ def equilibrated_cl_cd_polar(
     polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL"))
     valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
     assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_cruise_, abs=1e-2)
+<<<<<<< Updated upstream
+=======
+
+
+def cd_inlets(XML_FILE: str):
+
+    ivc = get_indep_var_comp(list_inputs(Cd0Inlets(low_speed_aero=True)), __file__, XML_FILE)
+
+    problem = run_system(Cd0Inlets(low_speed_aero=True), ivc)
+
+    inlet_drag = problem.get_val("data:aerodynamics:inlets:low_speed:CD0")
+    print("Inlet drag is:", inlet_drag)
+
+
+def cooling_airflow(XML_FILE: str):
+
+    ivc = get_indep_var_comp((list_inputs(Cooling_Airflow)), __file__, XML_FILE)
+
+    problem = run_system(Cooling_Airflow, ivc)
+
+    airflow = problem.get_val("data:geometry:propulsion:fuelcell:cooling:airflow")
+    index = problem.get_val("data:geometry:propulsion:fuelcell:cooling:max_airflow")
+    print("Max airflow is:", airflow, "at the flight point", index)
+
+>>>>>>> Stashed changes
