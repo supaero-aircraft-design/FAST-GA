@@ -14,6 +14,11 @@
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .clalpha_vt import ComputeClAlphaVT
 from .compute_L_D_max import ComputeLDMax
+<<<<<<< Updated upstream
+=======
+from .cd_inlets import Cd0Inlets
+from .fuelcell_cooling import Cooling_Airflow
+>>>>>>> Stashed changes
 from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_cl_extreme_htp import ComputeExtremeCLHtp
 from .compute_cl_extreme_wing import ComputeExtremeCLWing
