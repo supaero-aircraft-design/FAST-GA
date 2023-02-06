@@ -67,7 +67,6 @@ from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
-from fastga.models.geometry.geom_components.wing.components.compute_wing_z import ComputeWingZ
 
 XML_FILE = "cirrus_sr22.xml"
 
@@ -451,14 +450,6 @@ def test_geometry_wing_x():
     assert wing_x3 == pytest.approx(0.0, abs=1e-3)
     wing_x4 = problem.get_val("data:geometry:wing:tip:leading_edge:x:local", units="m")
     assert wing_x4 == pytest.approx(0.184, abs=1e-3)
-
-
-def test_geometry_wing_z():
-    """Tests computation of the wing Zs"""
-
-    # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingZ()), __file__, XML_FILE)
-    problem = run_system(ComputeWingZ(), ivc)
 
 
 def test_geometry_wing_b50():
