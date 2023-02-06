@@ -81,6 +81,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:dihedral_angle", val=np.nan, units="rad")
+
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL", val=nans_array)
@@ -167,6 +169,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
         aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
         taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
+        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
         geometry_set = np.around(
             np.array(
                 [
@@ -226,11 +229,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
             # Post-process wing data ---------------------------------------------------------------
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
-            beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
-            cl_0_wing = float(wing_0["cl"] * k_fus / beta)
+            beta = math.sqrt(1 - mach ** 2)  # Prandtl-Glauert
+            cl_0_wing = float((wing_0["cl"] * k_fus / beta) * math.cos(dihedral_angle) * math.cos(dihedral_angle))
             cl_aoa_wing = float(wing_aoa["cl"] * k_fus / beta)
             cm_0_wing = float(wing_0["cm"] * k_fus / beta)
-            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
+            cl_alpha_wing = (
+                ((cl_aoa_wing - cl_0_wing) / (aoa_angle * math.pi / 180))
+                * math.cos(dihedral_angle)
+                * math.cos(dihedral_angle)
+            )
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus / beta).tolist()
             chord_vector_wing = wing_0["chord_vector"]

@@ -11,6 +11,7 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import math
 
 import numpy as np
 import openmdao.api as om
@@ -147,6 +148,7 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
         self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean")
@@ -164,6 +166,7 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         cl0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         y_interp = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
         y_vector = np.linspace(
@@ -181,8 +184,8 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         cl_max_clean = cl0 * np.min(cl_xfoil_max / cl_curve)
         cl_min_clean = cl0 * np.max(cl_xfoil_min / cl_curve)
 
-        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean
-        outputs["data:aerodynamics:wing:low_speed:CL_min_clean"] = cl_min_clean
+        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean * math.cos(sweep_25)
+        outputs["data:aerodynamics:wing:low_speed:CL_min_clean"] = cl_min_clean * math.cos(sweep_25)
 
     @staticmethod
     def _reshape_curve(y: np.ndarray, cl: np.ndarray):

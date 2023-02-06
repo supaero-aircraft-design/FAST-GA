@@ -148,6 +148,9 @@
         <sweep_100_inner units="rad" is_input="False">-0.10666425745434216<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">-0.10666425745434216<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <dihedral_angle units="deg">0.0<!--dihedral angle of the wing--></dihedral_angle>
+        <wing_configuration>1.0<!--location of the wing 1.0-low, 2.0-mid, 3.0-high--></wing_configuration>
+        <twist units="deg">3.0<!--twist angle for the wing (negative is tip down)--></twist>
         <sweep_50 units="deg" is_input="True">-1.73<!--sweep angle at 25% chord of wing--></sweep_50>
         <taper_ratio is_input="True">0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--mean thickness ratio of wing--></thickness_ratio>

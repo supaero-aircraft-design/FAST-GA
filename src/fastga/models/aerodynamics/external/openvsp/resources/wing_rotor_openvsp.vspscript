@@ -28,6 +28,9 @@ void main()
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_1"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_1"), 0 );
    SetParmVal( GetParm(wid, "SectTess_U", "XSec_1"), 8 );
+   SetParmVal( GetParm(wid, "Twist", "XSec_1"), 0 );
+   SetParmVal( GetParm(wid, "Twist_Location", "XSec_1"), 0.25 );
+   SetParmVal( GetParm(wid, "Dihedral", "XSec_1"), 0 );
    Update();
    
    //===== Define wing 2nd Section ====//
@@ -40,6 +43,9 @@ void main()
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_2"), 0 );
    SetParmVal( GetParm(wid, "SectTess_U", "XSec_2"), 33 );
    SetParmVal( GetParm(wid, "OutCluster", "XSec_2"), 0.9 );
+   SetParmVal( GetParm(wid, "Twist", "XSec_2"), twist );
+   SetParmVal( GetParm(wid, "Twist_Location", "XSec_2"), 0.25 );
+   SetParmVal( GetParm(wid, "Dihedral", "XSec_2"), dihedral_angle );
    Update();
    
    //==== Change Airfoil 0 shape ====//

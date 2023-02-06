@@ -28,6 +28,9 @@ void main()
    SetParmVal( GetParm(wid, "Sec_Sweep_Location", "XSec_1"), 0.7 );
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_1"), 0 );
    SetParmVal( GetParm(wid, "SectTess_U", "XSec_1"), 8 );
+   SetParmVal( GetParm(wid, "Twist", "XSec_1"), 0 );
+   SetParmVal( GetParm(wid, "Twist_Location", "XSec_1"), 0.25 );
+   SetParmVal( GetParm(wid, "Dihedral", "XSec_1"), 0 );
    Update();
    
    //===== Define wing 2nd Section ====//
@@ -40,6 +43,9 @@ void main()
    SetParmVal( GetParm(wid, "Sweep_Location", "XSec_2"), 0 );
    SetParmVal( GetParm(wid, "SectTess_U", "XSec_2"), 33 );
    SetParmVal( GetParm(wid, "OutCluster", "XSec_2"), 0.9 );
+   SetParmVal( GetParm(wid, "Twist", "XSec_2"), twist );
+   SetParmVal( GetParm(wid, "Twist_Location", "XSec_2"), 0.25 );
+   SetParmVal( GetParm(wid, "Dihedral", "XSec_2"), dihedral_angle );
    Update();
    
    //==== Change Airfoil 0 shape ====//
@@ -83,8 +89,8 @@ void main()
    SetParmVal( GetParm(hid, "Root_Chord", "XSec_1"), root_chord_htp );
    SetParmVal( GetParm(hid, "Tip_Chord", "XSec_1"), tip_chord_htp );
    SetParmVal( GetParm(hid, "Sweep", "XSec_1"), sweep_25_htp );
-   SetParmVal( GetParm(hid, "Sweep_Location", "XSec_1"), 0.25);
-   SetParmVal( GetParm(hid, "SectTess_U", "XSec_1"), 25);
+   SetParmVal( GetParm(hid, "Sweep_Location", "XSec_1"), 0.25 );
+   SetParmVal( GetParm(hid, "SectTess_U", "XSec_1"), 25 );
    Update();
    
    //==== Change Airfoils 0 shape  ====//
@@ -105,9 +111,9 @@ void main()
    
    while ( GetNumTotalErrors() > 0 )
    {
-		ErrorObj err = PopLastError();
-		Print(err.GetErrorString());
-	}
+        ErrorObj err = PopLastError();
+        Print(err.GetErrorString());
+    }
 	
 	//==== Set File Name ====//
 	
