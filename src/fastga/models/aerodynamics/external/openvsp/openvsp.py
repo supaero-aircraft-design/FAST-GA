@@ -79,7 +79,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:dihedral_angle", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:twist", val=np.nan, units="deg")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
@@ -367,7 +367,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         twist = inputs["data:geometry:wing:twist"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         # Compute remaining inputs
@@ -834,7 +834,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
@@ -1276,7 +1276,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]

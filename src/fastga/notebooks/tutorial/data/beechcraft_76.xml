@@ -77,9 +77,9 @@
         </rudder>
       </vertical_tail>
       <wing>
-        <dihedral units="deg">6.0</dihedral>
         <area units="m**2">16.638<!--wing reference area--></area>
         <aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+        <dihedral units="deg">6.0</dihedral>
         <sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>
@@ -186,6 +186,11 @@
     </weight>
   </data>
   <settings>
+    <propulsion>
+      <IC_engine>
+        <k_factor_sfc>1.1</k_factor_sfc>
+      </IC_engine>
+    </propulsion>
     <aerodynamics>
       <aircraft>
         <undesirable_drag>
@@ -193,17 +198,17 @@
         </undesirable_drag>
       </aircraft>
     </aerodynamics>
-    <propulsion>
-      <IC_engine>
-        <k_factor_sfc>1.1</k_factor_sfc>
-      </IC_engine>
-    </propulsion>
     <weight>
       <aircraft>
         <CG>
           <range>0.187<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
         </CG>
       </aircraft>
+      <propulsion>
+        <engine>
+          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
+        </engine>
+      </propulsion>
       <airframe>
         <landing_gear>
           <front>
@@ -211,11 +216,6 @@
           </front>
         </landing_gear>
       </airframe>
-      <propulsion>
-        <engine>
-          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
-        </engine>
-      </propulsion>
     </weight>
   </settings>
 </FASTOAD_model>

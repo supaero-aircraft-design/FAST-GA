@@ -27,7 +27,7 @@ class ComputeWingZ(ExplicitComponent):
 
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:dihedral_angle", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
@@ -46,7 +46,7 @@ class ComputeWingZ(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]

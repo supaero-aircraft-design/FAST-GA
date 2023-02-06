@@ -39,14 +39,14 @@
         <rear_length units="m">4.0<!--length of rear non-cylindrical part of the fuselage--></rear_length>
       </fuselage>
       <horizontal_tail>
-        <dihedral units="deg">0.0</dihedral>
-        <twist units="deg">0.0</twist>
         <area units="m**2">3.44<!--horizontal tail area--></area>
         <aspect_ratio is_input="False">3.84<!--aspect ratio of horizontal tail--></aspect_ratio>
+        <dihedral units="deg">0.0</dihedral>
         <elevator_chord_ratio is_input="True">0.3<!--elevator chord ratio--></elevator_chord_ratio>
         <sweep_25 units="deg">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
         <taper_ratio>1.0<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio>0.125<!--thickness ratio of horizontal tail--></thickness_ratio>
+        <twist units="deg">0.0</twist>
         <MAC>
           <at25percent>
             <x>
@@ -84,13 +84,13 @@
         </rudder>
       </vertical_tail>
       <wing>
-        <dihedral units="deg">6.0</dihedral>
-        <twist units="deg">0.0</twist>
         <area units="m**2">16.638<!--wing reference area--></area>
         <aspect_ratio>7.981<!--wing aspect ratio--></aspect_ratio>
+        <dihedral units="deg">6.0</dihedral>
         <sweep_25 units="deg">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio>1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio>0.15<!--mean thickness ratio of wing--></thickness_ratio>
+        <twist units="deg">0.0</twist>
         <aileron>
           <chord_ratio is_input="True">0.26<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="rad" is_input="True">40.0</max_deflection>
@@ -130,6 +130,12 @@
         </tank>
       </propulsion>
     </geometry>
+    <handling_qualities>
+      <stick_fixed_static_margin is_input="False">0.15169815309489232<!--stick fixed static margin--></stick_fixed_static_margin>
+      <static_margin>
+        <target>0.15<!--static margin we want to achieve--></target>
+      </static_margin>
+    </handling_qualities>
     <propulsion>
       <fuel_type>1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
       <max_rpm units="min**-1">2700.0<!--maximum number of rotation per minute on the engine--></max_rpm>
@@ -139,9 +145,6 @@
       </IC_engine>
     </propulsion>
     <aerodynamics>
-      <vertical_tail>
-        <efficiency>0.9<!--vertical tail area--></efficiency>
-      </vertical_tail>
       <propeller>
         <mach is_input="True">0.0<!--mach number used to compute the polar of the airfoil used in the propeller computation--></mach>
         <reynolds is_input="True">1000000.0<!--reynolds number used to compute the polar of the airfoil used in the propeller computation--></reynolds>
@@ -166,6 +169,9 @@
           <thrust_limit units="N" is_input="False">[6533.840174009261, 7181.649624427429, 7704.744804457652, 8163.379307607336, 8591.84017293703, 9012.766951506735, 9435.643628430062, 9874.443915635982, 10339.44635971018, 10844.786960869542]<!--maximum thrust output of the propeller at sea level for varying velocities--></thrust_limit>
         </sea_level>
       </propeller>
+      <vertical_tail>
+        <efficiency>0.9<!--vertical tail area--></efficiency>
+      </vertical_tail>
       <cooling>
         <cruise>
           <CD0 is_input="True">0.001624<!--profile drag due to cooling in cruise conditions--></CD0>
@@ -175,12 +181,6 @@
         </low_speed>
       </cooling>
     </aerodynamics>
-    <handling_qualities>
-      <stick_fixed_static_margin is_input="False">0.15169815309489232<!--stick fixed static margin--></stick_fixed_static_margin>
-      <static_margin>
-        <target>0.15<!--static margin we want to achieve--></target>
-      </static_margin>
-    </handling_qualities>
     <mission>
       <sizing>
         <fuel units="kg">0.0<!--consumed fuel mass during whole mission--></fuel>
@@ -233,18 +233,6 @@
       </sizing>
     </mission>
     <weight>
-      <aircraft>
-        <CG>
-          <aft>
-            <MAC_position is_input="False">0.3694798439402447<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
-            <x units="m" is_input="False">3.6312936410639622<!--most aft X-position of aircraft center of gravity--></x>
-          </aft>
-          <fwd>
-            <MAC_position is_input="False">0.1524798439402447<!--most fwd X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
-            <x units="m" is_input="False">3.3157410218396492<!--most fwd X-position of center of gravity--></x>
-          </fwd>
-        </CG>
-      </aircraft>
       <airframe>
         <fuselage>
           <k_factor_a2>1.0</k_factor_a2>
@@ -259,6 +247,18 @@
           <k_factor_a1>1.0</k_factor_a1>
         </wing>
       </airframe>
+      <aircraft>
+        <CG>
+          <aft>
+            <MAC_position is_input="False">0.3694798439402447<!--most aft X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
+            <x units="m" is_input="False">3.6312936410639622<!--most aft X-position of aircraft center of gravity--></x>
+          </aft>
+          <fwd>
+            <MAC_position is_input="False">0.1524798439402447<!--most fwd X-position of center of gravity as ratio of mean aerodynamic chord--></MAC_position>
+            <x units="m" is_input="False">3.3157410218396492<!--most fwd X-position of center of gravity--></x>
+          </fwd>
+        </CG>
+      </aircraft>
     </weight>
   </data>
   <settings>
@@ -272,12 +272,37 @@
         <k_factor_sfc>1.1</k_factor_sfc>
       </IC_engine>
     </propulsion>
+    <aerodynamics>
+      <aileron>
+        <tip_effect>
+          <k_factor>0.9</k_factor>
+        </tip_effect>
+      </aileron>
+      <aircraft>
+        <undesirable_drag>
+          <k_factor>1.25</k_factor>
+        </undesirable_drag>
+      </aircraft>
+      <reference_flight_conditions>
+        <cruise>
+          <AOA units="rad" is_input="True">0.01745329251</AOA>
+        </cruise>
+        <low_speed>
+          <AOA units="rad" is_input="True">0.08726646259971647</AOA>
+        </low_speed>
+      </reference_flight_conditions>
+    </aerodynamics>
     <weight>
       <aircraft>
         <CG>
           <range>0.187<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
         </CG>
       </aircraft>
+      <propulsion>
+        <engine>
+          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
+        </engine>
+      </propulsion>
       <airframe>
         <landing_gear>
           <front>
@@ -285,31 +310,6 @@
           </front>
         </landing_gear>
       </airframe>
-      <propulsion>
-        <engine>
-          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
-        </engine>
-      </propulsion>
     </weight>
-    <aerodynamics>
-      <aircraft>
-        <undesirable_drag>
-          <k_factor>1.25</k_factor>
-        </undesirable_drag>
-      </aircraft>
-      <aileron>
-        <tip_effect>
-          <k_factor>0.9</k_factor>
-        </tip_effect>
-      </aileron>
-      <reference_flight_conditions>
-        <low_speed>
-          <AOA units="rad" is_input="True">0.08726646259971647</AOA>
-        </low_speed>
-        <cruise>
-          <AOA units="rad" is_input="True">0.01745329251</AOA>
-        </cruise>
-      </reference_flight_conditions>
-    </aerodynamics>
   </settings>
 </FASTOAD_model>

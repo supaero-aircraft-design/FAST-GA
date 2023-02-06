@@ -81,7 +81,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:dihedral_angle", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["low_speed_aero"]:
@@ -169,7 +169,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
         aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
         taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
-        dihedral_angle = inputs["data:geometry:wing:dihedral_angle"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         geometry_set = np.around(
             np.array(
                 [
