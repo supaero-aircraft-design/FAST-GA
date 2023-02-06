@@ -645,6 +645,7 @@ def test_extreme_cl_wing_clean():
         cl_min_clean_wing=-1.26,
     )
 
+
 @pytest.mark.skipif(
     system() != "Windows",
     reason="No XFOIL executable available: not computed with empty result folder",

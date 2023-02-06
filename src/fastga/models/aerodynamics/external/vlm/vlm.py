@@ -230,7 +230,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             # Post-process wing data ---------------------------------------------------------------
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             beta = math.sqrt(1 - mach ** 2)  # Prandtl-Glauert
-            cl_0_wing = float((wing_0["cl"] * k_fus / beta) * math.cos(dihedral_angle) * math.cos(dihedral_angle))
+            cl_0_wing = float(
+                (wing_0["cl"] * k_fus / beta) * math.cos(dihedral_angle) * math.cos(dihedral_angle)
+            )
             cl_aoa_wing = float(wing_aoa["cl"] * k_fus / beta)
             cm_0_wing = float(wing_0["cm"] * k_fus / beta)
             cl_alpha_wing = (
