@@ -37,6 +37,7 @@ class ComputeAEROvlm(Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -59,6 +60,7 @@ class ComputeAEROvlm(Group):
             self.add_subsystem(
                 "wing_polar_ls",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
                     activate_negative_angle=True,
@@ -68,6 +70,7 @@ class ComputeAEROvlm(Group):
             self.add_subsystem(
                 "htp_polar_ls",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,
                     activate_negative_angle=True,
@@ -78,6 +81,7 @@ class ComputeAEROvlm(Group):
             self.add_subsystem(
                 "wing_polar_hs",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
                     activate_negative_angle=True,
@@ -87,6 +91,7 @@ class ComputeAEROvlm(Group):
             self.add_subsystem(
                 "htp_polar_hs",
                 XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,
                     activate_negative_angle=True,
@@ -99,6 +104,7 @@ class ComputeAEROvlm(Group):
                 low_speed_aero=self.options["low_speed_aero"],
                 result_folder_path=self.options["result_folder_path"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
             ),
@@ -279,7 +285,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         else:
             if self.options["compute_mach_interpolation"]:
                 mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                    inputs, outputs, INPUT_AOA, altitude, mach
+                    inputs, INPUT_AOA, altitude, mach
                 )
 
         # Defining outputs

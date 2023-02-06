@@ -12,6 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+NB_POINTS_POINT_MASS = 5
+# MUST BE AN EVEN NUMBER
+POINT_MASS_SPAN_RATIO = 0.01
+
 SUBMODEL_AEROSTRUCTURAL_LOADS = "submodel.loads.wings.aerostructural"
 SUBMODEL_STRUCTURAL_LOADS = "submodel.loads.wings.structural"
 SUBMODEL_AERODYNAMIC_LOADS = "submodel.loads.wings.aerodynamic"

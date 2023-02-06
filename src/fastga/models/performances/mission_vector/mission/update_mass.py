@@ -61,11 +61,10 @@ class UpdateMass(om.ExplicitComponent):
         # climb is considered
         outputs["mass"] = (
             np.full(number_of_points, mtow)
-            - np.cumsum(inputs["fuel_consumed_t"])
             - fuel_taxi_out
             - fuel_takeoff
             - fuel_initial_climb
-            + inputs["fuel_consumed_t"][0]
+            - np.cumsum(np.concatenate((np.zeros(1), inputs["fuel_consumed_t"][:-1])))
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):

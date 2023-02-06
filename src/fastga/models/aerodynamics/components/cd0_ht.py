@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -33,6 +31,7 @@ class Cd0HorizontalTail(ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
@@ -70,7 +69,10 @@ class Cd0HorizontalTail(ExplicitComponent):
             unit_reynolds = inputs["data:aerodynamics:cruise:unit_reynolds"]
 
         # Sear max thickness position ratio
-        profile = get_profile(file_name=self.options["htp_airfoil_file"])
+        profile = get_profile(
+            airfoil_folder_path=self.options["airfoil_folder_path"],
+            file_name=self.options["htp_airfoil_file"],
+        )
         relative_thickness = profile.get_relative_thickness()
         index = int(
             np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]
@@ -88,12 +90,14 @@ class Cd0HorizontalTail(ExplicitComponent):
         cf_tip = 0.074 / (unit_reynolds * tip_chord) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         # Global
         cf_ht = (cf_root + cf_tip) * 0.5
-        ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
-        ff = ff * 1.05  # Due to hinged elevator (Raymer)
+        form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
+        form_factor = form_factor * 1.05  # Due to hinged elevator (Raymer)
         if mach > 0.2:
-            ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25_ht * math.pi / 180)) ** 0.28
+            form_factor = (
+                form_factor * 1.34 * mach ** 0.18 * (np.cos(sweep_25_ht * np.pi / 180)) ** 0.28
+            )
         interference_factor = 1.05
-        cd0 = ff * interference_factor * cf_ht * wet_area_ht / wing_area
+        cd0 = form_factor * interference_factor * cf_ht * wet_area_ht / wing_area
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:horizontal_tail:low_speed:CD0"] = cd0

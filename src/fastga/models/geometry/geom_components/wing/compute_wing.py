@@ -19,9 +19,11 @@ import fastoad.api as oad
 from .constants import (
     SUBMODEL_WING_THICKNESS_RATIO,
     SUBMODEL_WING_SPAN,
+    SUBMODEL_WING_HEIGHT,
     SUBMODEL_WING_L1_L4,
     SUBMODEL_WING_L2_L3,
     SUBMODEL_WING_X_LOCAL,
+    SUBMODEL_WING_X_ABSOLUTE,
     SUBMODEL_WING_B50,
     SUBMODEL_WING_MAC,
     SUBMODEL_WING_SWEEP,
@@ -52,6 +54,9 @@ class ComputeWingGeometry(Group):
             "wing_l2l3", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L2_L3), promotes=["*"]
         )
         self.add_subsystem(
+            "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_HEIGHT), promotes=["*"]
+        )
+        self.add_subsystem(
             "wing_x", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]
         )
         self.add_subsystem(
@@ -59,6 +64,11 @@ class ComputeWingGeometry(Group):
         )
         self.add_subsystem(
             "wing_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MAC), promotes=["*"]
+        )
+        self.add_subsystem(
+            "wing_xabsolute",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_ABSOLUTE),
+            promotes=["*"],
         )
         self.add_subsystem(
             "wing_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SWEEP), promotes=["*"]

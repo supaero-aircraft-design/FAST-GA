@@ -15,8 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import openmdao.api as om
 
@@ -71,7 +69,7 @@ class ComputeHTcg(om.ExplicitComponent):
         x0_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
 
         l_cg = (1.0 - 0.38) * (root_chord - tip_chord) + tip_chord
-        x_cg_ht = 0.38 * b_h * math.tan(sweep_25_ht / 180.0 * math.pi) + 0.42 * l_cg
+        x_cg_ht = 0.38 * b_h * np.tan(sweep_25_ht / 180.0 * np.pi) + 0.42 * l_cg
         x_cg_31 = lp_ht + fa_length - 0.25 * mac_ht + (x_cg_ht - x0_ht)
 
         outputs["data:weight:airframe:horizontal_tail:CG:x"] = x_cg_31
@@ -111,11 +109,11 @@ class ComputeVTcg(om.ExplicitComponent):
 
         if has_t_tail:
             l_cg_vt = (1.0 - 0.55) * (root_chord - tip_chord) + tip_chord
-            x_cg_vt = 0.55 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
+            x_cg_vt = 0.55 * b_v * np.tan(sweep_25_vt / 180.0 * np.pi) + 0.42 * l_cg_vt
 
         else:
             l_cg_vt = (1.0 - 0.38) * (root_chord - tip_chord) + tip_chord
-            x_cg_vt = 0.38 * b_v * math.tan(sweep_25_vt / 180.0 * math.pi) + 0.42 * l_cg_vt
+            x_cg_vt = 0.38 * b_v * np.tan(sweep_25_vt / 180.0 * np.pi) + 0.42 * l_cg_vt
 
         x_cg_32 = lp_vt + fa_length - 0.25 * mac_vt + (x_cg_vt - x0_vt)
 

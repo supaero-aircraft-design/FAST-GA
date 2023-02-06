@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import openmdao.api as om
 import scipy.interpolate as inter
@@ -117,10 +115,10 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         k_cl_alpha = float(cl_alpha_airfoil_ht) / float(cl_alpha_ht_th)
 
         k_ch_alpha = self.k_ch_alpha(
-            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
         )
 
-        ch_alpha = self.ch_alpha_th(tail_thickness_ratio, elevator_chord_ratio)
+        ch_alpha = self.ch_alpha_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
 
         ch_prime_alpha = k_ch_alpha * ch_alpha
 
@@ -138,7 +136,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # repartition for the hinge line) We will also assume that the thickness ratio of the
         # elevator is the same as the tail and that it has a round nose
 
-        balance_ratio = math.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0)
+        balance_ratio = np.sqrt((1.0 / 3.0) ** 2.0 - (tail_thickness_ratio * 5.0 / 4) ** 2.0)
 
         if balance_ratio < 0.15:
             balance_ratio = 0.15
@@ -154,7 +152,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         sos_cruise = Atmosphere(cruise_alt, altitude_in_feet=False).speed_of_sound
         mach = v_cruise / sos_cruise
-        beta = math.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach ** 2.0)
 
         ch_alpha_fin = ch_alpha_balance / beta
 
@@ -164,10 +162,10 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         # Step 2.
 
         k_ch_delta = self.k_ch_delta(
-            tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+            float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
         )
 
-        ch_delta = self.ch_delta_th(tail_thickness_ratio, elevator_chord_ratio)
+        ch_delta = self.ch_delta_th(float(tail_thickness_ratio), float(elevator_chord_ratio))
 
         ch_prime_delta = k_ch_delta * ch_delta
 
@@ -178,11 +176,11 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         else:
             cl_delta_th = self.cl_delta_theory_plain_flap(
-                tail_thickness_ratio, elevator_chord_ratio
+                float(tail_thickness_ratio), float(elevator_chord_ratio)
             )
 
             k_cl_delta = self.k_cl_delta_plain_flap(
-                tail_thickness_ratio, cl_alpha_airfoil_ht, elevator_chord_ratio
+                float(tail_thickness_ratio), float(cl_alpha_airfoil_ht), float(elevator_chord_ratio)
             )
 
             ch_prime_prime_delta = ch_prime_delta + (
@@ -241,7 +239,7 @@ class Compute3DHingeMomentsTail(FigureDigitization):
 
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
-        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"] * math.pi / 180.0
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"] * np.pi / 180.0
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
         elevator_angle = float(abs(inputs["data:mission:sizing:takeoff:elevator_angle"]))
@@ -250,7 +248,7 @@ class Compute3DHingeMomentsTail(FigureDigitization):
         # Step 1. : delta_Ch_alpha we will ignore it for now, same for delta_Ch_delta
 
         ch_alpha_3d = (
-            (ar_ht * math.cos(sweep_25_ht)) / (ar_ht + 2.0 * math.cos(sweep_25_ht))
+            (ar_ht * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht))
         ) * ch_alpha_2d
 
         # Section 10.4.2.2
@@ -259,15 +257,15 @@ class Compute3DHingeMomentsTail(FigureDigitization):
 
         # We'll compute the elevator effectiveness factor in the worst case scenario, i.e,
         # with the highest deflection angle which we will take at 25 degree
-        a_delta = self.k_prime_single_slotted(elevator_angle, elevator_chord_ratio)
+        a_delta = self.k_prime_single_slotted(elevator_angle, float(elevator_chord_ratio))
 
         ch_delta_3d = (
-            math.cos(sweep_25_ht)
-            * math.cos(sweep_hl)
+            np.cos(sweep_25_ht)
+            * np.cos(sweep_hl)
             * (
                 ch_delta_2d
                 + a_delta
-                * ((2.0 * math.cos(sweep_25_ht)) / (ar_ht + 2.0 * math.cos(sweep_25_ht)))
+                * ((2.0 * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht)))
                 * ch_alpha_2d
             )
         )

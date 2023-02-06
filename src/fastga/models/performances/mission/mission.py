@@ -44,17 +44,12 @@ class Mission(om.Group):
     """
     Computes analytically the fuel mass necessary for each part of the flight cycle.
 
-    Loop on the distance crossed during descent and cruise distance/fuel mass.
-
+    This component previously used to have a solver acting on the cruise range to ensure that
+    range was equal to the sum of the ranges of the different flight phase. The solver was
+    removed because, inside a global OAD process, the default global solver can handle the
+    convergence of the cruise range just fine. This means that if this components is to be used
+    on its own (like in the tests or payload range computation), a solver should be added.
     """
-
-    def __init__(self, **kwargs):
-        """Defining solvers for mission computation resolution."""
-        super().__init__(**kwargs)
-
-        # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
-        self.linear_solver = om.LinearBlockGS()
 
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
@@ -110,17 +105,6 @@ class Mission(om.Group):
             promotes=["*"],
         )
         self.add_subsystem("update_fw", UpdateFW(), promotes=["*"])
-
-        # Solvers setup
-        self.nonlinear_solver.options["debug_print"] = True
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 100
-        self.nonlinear_solver.options["rtol"] = 1e-2
-
-        # self.linear_solver.options["err_on_non_converge"] = True
-        self.linear_solver.options["iprint"] = 0
-        self.linear_solver.options["maxiter"] = 10
-        self.linear_solver.options["rtol"] = 1e-2
 
 
 class UpdateFW(om.ExplicitComponent):

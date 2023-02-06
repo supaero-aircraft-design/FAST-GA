@@ -71,7 +71,8 @@ class MissionVector(om.Group):
         self.connect(
             "initialization.initialize_engine_setting.engine_setting",
             [
-                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption.engine_setting",
+                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption"
+                + ".engine_setting",
                 "to_csv.engine_setting",
             ],
         )
@@ -111,7 +112,8 @@ class MissionVector(om.Group):
             [
                 "solve_equilibrium.compute_dep_equilibrium.compute_equilibrium.true_airspeed",
                 "solve_equilibrium.compute_dep_equilibrium.compute_dep_effect.true_airspeed",
-                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption.true_airspeed",
+                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption"
+                + ".true_airspeed",
                 "to_csv.true_airspeed",
             ],
         )
@@ -186,7 +188,8 @@ class MissionVector(om.Group):
                 "to_csv.altitude",
                 "solve_equilibrium.compute_dep_equilibrium.compute_equilibrium.altitude",
                 "solve_equilibrium.compute_dep_equilibrium.compute_dep_effect.altitude",
-                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption.altitude",
+                "solve_equilibrium.compute_dep_equilibrium.preparation_for_energy_consumption"
+                + ".altitude",
             ],
         )
 

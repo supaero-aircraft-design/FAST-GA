@@ -316,7 +316,7 @@ def test_loop_cruise_distance():
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
-    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(Mission(propulsion_id=ENGINE_WRAPPER), ivc, add_solvers=True)
     m_total = problem.get_val("data:mission:sizing:fuel", units="kg")
     assert m_total == pytest.approx(163, abs=1)
     climb_distance = problem.get_val("data:mission:sizing:main_route:climb:distance", units="NM")
@@ -343,7 +343,7 @@ def test_mission_vector():
         ivc,
     )
     sizing_fuel = problem.get_val("data:mission:sizing:fuel", units="kg")
-    assert sizing_fuel == pytest.approx(238.7775, abs=1e-2)
+    assert sizing_fuel == pytest.approx(238.88, abs=1e-2)
     sizing_energy = problem.get_val("data:mission:sizing:energy", units="kW*h")
     assert sizing_energy == pytest.approx(0.0, abs=1e-2)
 

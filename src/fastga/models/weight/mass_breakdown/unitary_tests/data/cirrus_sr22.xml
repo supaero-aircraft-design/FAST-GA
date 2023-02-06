@@ -15,10 +15,10 @@
         <wet_area units="m**2" is_input="False">59.300124140468796<!--aircraft total wet area--></wet_area>
       </aircraft>
       <cabin>
-        <max_differential_pressure units="Pa">0.0<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <NPAX is_input="False">3.0<!--maximum number of passenger that can be seated in the aircraft assuming a constant number of seats per row--></NPAX>
         <aisle_width units="m" is_input="True">0.0<!--width of aisles--></aisle_width>
         <length units="m" is_input="False">2.8618916746684664<!--cabin length--></length>
+        <max_differential_pressure units="Pa">0.0<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <luggage>
           <mass_max units="kg" is_input="True">60.0<!--maximum luggage mass--></mass_max>
         </luggage>
@@ -87,8 +87,8 @@
       </horizontal_tail>
       <landing_gear>
         <height units="m" is_input="False">0.8118<!--height of landing gear--></height>
-        <y units="m" is_input="False">1.0<!--height of landing gear--></y>
         <type is_input="True">0.0<!--0=non-retractable / 1=retractable--></type>
+        <y units="m" is_input="False">1.0<!--height of landing gear--></y>
       </landing_gear>
       <plane>
         <length units="m" is_input="False">7.788566303432905</length>
@@ -165,8 +165,8 @@
         </MAC>
         <aileron>
           <chord_ratio>0.2</chord_ratio>
+          <max_deflection units="deg">20.0</max_deflection>
           <span_ratio>0.7</span_ratio>
-          <max_deflection units="deg">20</max_deflection>
         </aileron>
         <kink>
           <chord units="m" is_input="False">1.4744312836772349<!--chord length at wing kink--></chord>
@@ -196,13 +196,13 @@
           </leading_edge>
         </tip>
       </wing>
+      <cockpit>
+        <windows>
+          <height units="m">0.4</height>
+          <width units="m">1.0</width>
+        </windows>
+      </cockpit>
       <propulsion>
-        <tank>
-          <LE_chord_percentage>0.1</LE_chord_percentage>
-          <TE_chord_percentage>0.1</TE_chord_percentage>
-          <y_ratio_tank_beginning>0.0</y_ratio_tank_beginning>
-          <y_ratio_tank_end>1.0</y_ratio_tank_end>
-        </tank>
         <engine>
           <count is_input="True">1.0<!--number of engines--></count>
           <layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage)--></layout>
@@ -219,13 +219,13 @@
           <depth units="m" is_input="False">1.0</depth>
           <diameter units="m" is_input="False">1.0<!--diameter of the propeller--></diameter>
         </propeller>
+        <tank>
+          <LE_chord_percentage>0.1</LE_chord_percentage>
+          <TE_chord_percentage>0.1</TE_chord_percentage>
+          <y_ratio_tank_beginning>0.0</y_ratio_tank_beginning>
+          <y_ratio_tank_end>1.0</y_ratio_tank_end>
+        </tank>
       </propulsion>
-      <cockpit>
-        <windows>
-          <height units="m">0.4</height>
-          <width units="m">1.0</width>
-        </windows>
-      </cockpit>
     </geometry>
     <handling_qualities>
       <stick_fixed_static_margin is_input="False">0.10069617073725057<!--stick fixed static margin--></stick_fixed_static_margin>
@@ -256,6 +256,15 @@
           </stick_free>
         </neutral_point>
       </cruise>
+      <fuselage>
+        <Cn_beta units="1/rad" is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></Cn_beta>
+        <cruise>
+          <CD0 is_input="False">0.005790250893531268<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="False">0.006391135233304502<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
+        </low_speed>
+      </fuselage>
       <horizontal_tail>
         <efficiency is_input="False">0.9<!--ratio between the dynamic pressure at the tail and the free stream dynamic pressure--></efficiency>
         <airfoil>
@@ -379,15 +388,6 @@
           <CM is_input="False">-0.039139085101513024<!--additional pitching moment coefficient due to the deployment of flaps in takeoff configuration--></CM>
         </takeoff>
       </flaps>
-      <fuselage>
-        <cruise>
-          <CD0 is_input="False">0.005790250893531268<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:cruise:CL--></CD0>
-          <CnBeta is_input="False">-0.068481386499651<!--derivative of yawing moment against sideslip angle for fuselage in cruise conditions--></CnBeta>
-        </cruise>
-        <low_speed>
-          <CD0 is_input="False">0.006391135233304502<!--profile drag coefficient for fuselage w.r.t. data:aerodynamics:aircraft:low_speed:CL--></CD0>
-        </low_speed>
-      </fuselage>
       <landing_gear>
         <cruise>
           <CD0 is_input="False">0.0029355446503193505<!--profile drag coefficient for landing gears in cruise conditions--></CD0>
@@ -541,6 +541,25 @@
     <mission>
       <sizing>
         <fuel units="kg" is_input="False">252.19391779967108<!--consumed fuel mass during whole mission--></fuel>
+        <cs23>
+          <safety_factor>1.5</safety_factor>
+          <characteristic_speed>
+            <va units="m/s">64.75</va>
+            <vc units="m/s">78.63</vc>
+            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft>5.7</ultimate_aircraft>
+            <ultimate_mtow>
+              <negative>-2.28</negative>
+              <positive>5.7</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative>-2.28</negative>
+              <positive>5.7</positive>
+            </ultimate_mzfw>
+          </sizing_factor>
+        </cs23>
         <holding>
           <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
         </holding>
@@ -578,25 +597,6 @@
           <speed units="knot" is_input="True">20.0<!--speed during taxi-out phase in sizing mission--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate (between 0.0 and 1.0) during taxi-out phase in sizing mission--></thrust_rate>
         </taxi_out>
-        <cs23>
-          <safety_factor>1.5</safety_factor>
-          <characteristic_speed>
-            <va units="m/s">64.75</va>
-            <vc units="m/s">78.63</vc>
-            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
-          </characteristic_speed>
-          <sizing_factor>
-            <ultimate_aircraft>5.7</ultimate_aircraft>
-            <ultimate_mtow>
-              <negative>-2.28</negative>
-              <positive>5.7</positive>
-            </ultimate_mtow>
-            <ultimate_mzfw>
-              <negative>-2.28</negative>
-              <positive>5.7</positive>
-            </ultimate_mzfw>
-          </sizing_factor>
-        </cs23>
         <main_route>
           <climb>
             <distance units="m" is_input="False">24114.427039885122<!--covered ground distance during climb phase--></distance>
@@ -855,6 +855,19 @@
     </wing>
   </xfoil>
   <settings>
+    <geometry>
+      <fuel_tanks>
+        <depth>0.4</depth>
+      </fuel_tanks>
+      <fuselage>
+        <min_skin_thickness units="m">0.0005</min_skin_thickness>
+      </fuselage>
+    </geometry>
+    <handling_qualities>
+      <rudder>
+        <safety_margin is_input="True">0.2</safety_margin>
+      </rudder>
+    </handling_qualities>
     <materials>
       <insulation>
         <area_density units="kg/m**2">0.45</area_density>
@@ -873,19 +886,6 @@
         </stringer>
       </fuselage>
     </materials>
-    <geometry>
-      <fuselage>
-          <min_skin_thickness units="m">0.0005</min_skin_thickness>
-      </fuselage>
-      <fuel_tanks>
-        <depth>0.4</depth>
-      </fuel_tanks>
-    </geometry>
-    <handling_qualities>
-      <rudder>
-        <safety_margin is_input="True">0.2</safety_margin>
-      </rudder>
-    </handling_qualities>
     <weight>
       <aircraft>
         <CG>
@@ -915,9 +915,15 @@
         <landing_gear>
           <front>
             <weight_ratio is_input="True">0.075<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+            <front_fuselage_ratio is_input="True">0.75<!--Position of front landing gear expressed as fuselage front length ratio--> </front_fuselage_ratio>
           </front>
         </landing_gear>
       </airframe>
+      <propulsion>
+        <engine>
+          <k_factor is_input="True">1.0<!--Engine weight tuning factor--></k_factor>
+        </engine>
+      </propulsion>
     </weight>
   </settings>
 </FASTOAD_model>

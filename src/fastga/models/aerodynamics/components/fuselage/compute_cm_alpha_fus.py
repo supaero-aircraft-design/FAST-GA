@@ -15,14 +15,14 @@
 import numpy as np
 import fastoad.api as oad
 
-from .figure_digitization import FigureDigitization
-from ..constants import SUBMODEL_CM_ALPHA_FUSELAGE
+from fastga.models.aerodynamics.components.figure_digitization import FigureDigitization
+from fastga.models.aerodynamics.constants import SUBMODEL_CM_ALPHA_FUSELAGE
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment.legacy"
+    SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment_alpha.legacy"
 )
-class ComputeFuselagePitchingMoment(FigureDigitization):
+class ComputeCmAlphaFuselage(FigureDigitization):
     """
     Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
     of Raymer

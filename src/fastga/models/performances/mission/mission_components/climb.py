@@ -30,7 +30,7 @@ from stdatm import Atmosphere
 
 from fastga.models.performances.mission.takeoff import SAFETY_HEIGHT
 
-from ..dynamic_equilibrium import DynamicEquilibrium, save_df
+from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,7 +49,8 @@ oad.RegisterSubmodel.active_models[
 @oad.RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
 class ComputeClimb(DynamicEquilibrium):
     """
-    Compute the fuel consumption on climb segment with constant VCAS and fixed thrust ratio.
+    Compute the fuel consumption on climb segment with constant VCAS and a climb rate which
+    varies linearly with the altitude.
     The hypothesis of small alpha/gamma angles is done.
     """
 
@@ -99,6 +100,7 @@ class ComputeClimb(DynamicEquilibrium):
                 _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
+        wing_area = inputs["data:geometry:wing:area"]
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
@@ -118,74 +120,72 @@ class ComputeClimb(DynamicEquilibrium):
         mass_t = mtow - (m_to + m_tk + m_ic)
         mass_fuel_t = 0.0
         previous_step = ()
+        self.flight_points = []
 
         # Calculate constant speed (cos(gamma)~1) and corresponding climb angle
         atm = Atmosphere(altitude_t, altitude_in_feet=False)
         atm.calibrated_airspeed = v_cas
-        v_tas = atm.true_airspeed
-        gamma = np.arcsin(climb_rate_sl / v_tas)
 
         # Define specific time step ~POINTS_NB_CLIMB points for calculation (with ground conditions)
         time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate_sl) / float(POINTS_NB_CLIMB)
 
         while altitude_t < cruise_altitude:
 
+            flight_point = oad.FlightPoint(
+                altitude=altitude_t,
+                time=time_t,
+                ground_distance=distance_t,
+                engine_setting=EngineSetting.CLIMB,
+                thrust_is_regulated=True,
+                mass=mass_t,
+                name="sizing:main_route:climb",
+            )
+
+            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
+                altitude_t
+            )
+
+            self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=climb_rate)
             # Calculate dynamic pressure
             atm = Atmosphere(altitude_t, altitude_in_feet=False)
             atm.calibrated_airspeed = v_cas
             v_tas = atm.true_airspeed
-            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
-                altitude_t
-            )
-            gamma = np.arcsin(climb_rate / v_tas)
-            mach = v_tas / atm.speed_of_sound
+
             atm_1 = Atmosphere(altitude_t + 1.0, altitude_in_feet=False)
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
-            dvx_dt = dv_tas_dh * v_tas * np.sin(gamma)
+            dvx_dt = dv_tas_dh * v_tas * np.sin(flight_point.gamma)
             dynamic_pressure = 0.5 * atm.density * v_tas ** 2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
-                inputs, gamma, dynamic_pressure, dvx_dt, 0.0, mass_t, "none", previous_step[0:2]
+                inputs,
+                flight_point.gamma,
+                dynamic_pressure,
+                dvx_dt,
+                0.0,
+                mass_t,
+                "none",
+                previous_step[0:2],
             )
-            thrust = float(previous_step[1])
+            flight_point.thrust = float(previous_step[1])
 
             # Compute consumption
-            flight_point = oad.FlightPoint(
-                mach=mach,
-                altitude=altitude_t,
-                engine_setting=EngineSetting.CLIMB,
-                thrust_is_regulated=True,
-                thrust=thrust,
-            )
             propulsion_model.compute_flight_points(flight_point)
             if flight_point.thrust_rate > 1.0:
                 _LOGGER.warning("Thrust rate is above 1.0, value clipped at 1.0")
 
             # Save results
-            if self.options["out_file"] != "":
-                flight_point_df = save_df(
-                    time_t,
-                    altitude_t,
-                    distance_t,
-                    mass_t,
-                    v_tas,
-                    v_cas,
-                    atm.density,
-                    gamma * 180.0 / np.pi,
-                    previous_step,
-                    flight_point.thrust_rate,
-                    flight_point.sfc,
-                    "sizing:main_route:climb",
-                    flight_point_df,
-                )
+            self.compute_flight_point_drag(
+                flight_point=flight_point, equilibrium_result=previous_step, wing_area=wing_area
+            )
+            self.add_flight_point(flight_point=flight_point, equilibrium_result=previous_step)
 
             consumed_mass_1s = propulsion_model.get_consumed_mass(flight_point, 1.0)
 
             # Calculate distance variation (earth axis)
-            v_z = v_tas * np.sin(gamma)
-            v_x = v_tas * np.cos(gamma)
+            v_z = v_tas * np.sin(flight_point.gamma)
+            v_x = v_tas * np.cos(flight_point.gamma)
             time_step = min(time_step, (cruise_altitude - altitude_t) / v_z)
             altitude_t += v_z * time_step
             distance_t += v_x * time_step
@@ -202,24 +202,9 @@ class ComputeClimb(DynamicEquilibrium):
                     % MAX_CALCULATION_TIME
                 )
 
-        # Save results
+        # Save mission
         if self.options["out_file"] != "":
-            flight_point_df = save_df(
-                time_t,
-                altitude_t,
-                distance_t,
-                mass_t,
-                v_tas,
-                v_cas,
-                atm.density,
-                gamma * 180.0 / np.pi,
-                previous_step,
-                flight_point.thrust_rate,
-                flight_point.sfc,
-                "sizing:main_route:climb",
-                flight_point_df,
-            )
-            self.save_csv(flight_point_df)
+            self.save_csv()
 
         outputs["data:mission:sizing:main_route:climb:fuel"] = mass_fuel_t
         outputs["data:mission:sizing:main_route:climb:distance"] = distance_t

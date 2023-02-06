@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -40,7 +38,39 @@ class ComputeLDMax(ExplicitComponent):
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_CD")
         self.add_output("data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:aerodynamics:aircraft:cruise:optimal_CL",
+            [
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:aircraft:cruise:optimal_CD",
+            [
+                "data:aerodynamics:aircraft:cruise:CD0",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:aircraft:cruise:L_D_max",
+            [
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:aerodynamics:aircraft:cruise:optimal_alpha",
+            [
+                "data:aerodynamics:aircraft:cruise:CD0",
+                "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+                "data:aerodynamics:wing:cruise:CL_alpha",
+                "data:aerodynamics:wing:cruise:CL0_clean",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -50,11 +80,69 @@ class ComputeLDMax(ExplicitComponent):
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
         coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
 
-        cl_opt = math.sqrt(cd0 / coeff_k)
-        alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / math.pi
+        cl_opt = np.sqrt(cd0 / coeff_k)
+        alpha_opt = (cl_opt - cl0_clean) / cl_alpha * 180 / np.pi
         cd_opt = cd0 + coeff_k * cl_opt ** 2
 
         outputs["data:aerodynamics:aircraft:cruise:L_D_max"] = cl_opt / cd_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_CL"] = cl_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_CD"] = cd_opt
         outputs["data:aerodynamics:aircraft:cruise:optimal_alpha"] = alpha_opt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        cl0_clean = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
+        cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
+        cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
+        coeff_k = inputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"]
+
+        cl_opt = np.sqrt(cd0 / coeff_k)
+        d_cl_opt_d_cd0 = 0.5 * np.sqrt(1.0 / (coeff_k * cd0))
+        d_cl_opt_d_coeff_k = -0.5 * np.sqrt(cd0) * coeff_k ** -1.5
+
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_CL", "data:aerodynamics:aircraft:cruise:CD0"
+        ] = d_cl_opt_d_cd0
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_CL",
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+        ] = d_cl_opt_d_coeff_k
+
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_CD", "data:aerodynamics:aircraft:cruise:CD0"
+        ] = 2.0
+
+        partials[
+            "data:aerodynamics:aircraft:cruise:L_D_max", "data:aerodynamics:aircraft:cruise:CD0"
+        ] = (-0.25 * coeff_k ** -0.5 * cd0 ** -1.5)
+        partials[
+            "data:aerodynamics:aircraft:cruise:L_D_max",
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+        ] = (
+            -0.25 * coeff_k ** -1.5 * cd0 ** -0.5
+        )
+
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_alpha",
+            "data:aerodynamics:aircraft:cruise:CD0",
+        ] = (
+            d_cl_opt_d_cd0 / cl_alpha * 180 / np.pi
+        )
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_alpha",
+            "data:aerodynamics:wing:cruise:induced_drag_coefficient",
+        ] = (
+            d_cl_opt_d_coeff_k / cl_alpha * 180 / np.pi
+        )
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_alpha",
+            "data:aerodynamics:wing:cruise:CL0_clean",
+        ] = (
+            -1.0 / cl_alpha * 180 / np.pi
+        )
+        partials[
+            "data:aerodynamics:aircraft:cruise:optimal_alpha",
+            "data:aerodynamics:wing:cruise:CL_alpha",
+        ] = (
+            -(cl_opt - cl0_clean) / cl_alpha ** 2.0 * 180.0 / np.pi
+        )

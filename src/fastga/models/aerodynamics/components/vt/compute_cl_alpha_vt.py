@@ -12,21 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import scipy.interpolate as interp
 import fastoad.api as oad
 
-from .figure_digitization import FigureDigitization
-from ..constants import SUBMODEL_CL_ALPHA_VT
+from ..figure_digitization import FigureDigitization
+from ...constants import SUBMODEL_CL_ALPHA_VT
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_CL_ALPHA_VT, "fastga.submodel.aerodynamics.vertical_tail.lift_curve_slope.legacy"
 )
-class ComputeClAlphaVT(FigureDigitization):
-    """Vertical tail lift coefficient estimation
+class ComputeClAlphaVerticalTail(FigureDigitization):
+    """
+    Vertical tail lift coefficient estimation.
 
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
     Thrust and Power Characteristics. DARcorporation, 1985. Equation (8.22) applied with the
@@ -51,13 +50,10 @@ class ComputeClAlphaVT(FigureDigitization):
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
@@ -69,11 +65,11 @@ class ComputeClAlphaVT(FigureDigitization):
 
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
-            beta = math.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach ** 2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
-            beta = math.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach ** 2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
@@ -81,14 +77,9 @@ class ComputeClAlphaVT(FigureDigitization):
         span_vt = inputs["data:geometry:vertical_tail:span"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-        root_chord_vt = inputs["data:geometry:vertical_tail:root:chord"]
         area_ht = inputs["data:geometry:horizontal_tail:area"]
 
-        l_ar = inputs["data:geometry:fuselage:rear_length"]
-        w_max = inputs["data:geometry:fuselage:maximum_width"]
-        h_max = inputs["data:geometry:fuselage:maximum_height"]
-
-        avg_fus_depth = np.sqrt(w_max * h_max) * root_chord_vt / (2.0 * l_ar)
+        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective
         # aspect ratio
@@ -112,16 +103,16 @@ class ComputeClAlphaVT(FigureDigitization):
         cl_alpha_vt = (
             kv
             * 2
-            * math.pi
+            * np.pi
             * lambda_vt
             / (
                 2
-                + math.sqrt(
+                + np.sqrt(
                     4
                     + lambda_vt ** 2
                     * beta ** 2
                     / k ** 2
-                    * (1 + (math.tan(sweep_25_vt / 180.0 * math.pi)) ** 2 / beta ** 2)
+                    * (1 + (np.tan(sweep_25_vt / 180.0 * np.pi)) ** 2 / beta ** 2)
                 )
             )
         )

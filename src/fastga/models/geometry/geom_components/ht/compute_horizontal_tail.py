@@ -25,6 +25,7 @@ from .constants import (
     SUBMODEL_HT_WET_AREA,
     SUBMODEL_HT_WET_DISTANCE,
     SUBMODEL_HT_WET_EFFICIENCY,
+    SUBMODEL_HT_VOLUME_COEFF,
 )
 
 
@@ -49,6 +50,11 @@ class ComputeHorizontalTailGeometryFD(om.Group):
         )
         self.add_subsystem(
             "ht_eff", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_volume_coeff",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_VOLUME_COEFF),
+            promotes=["*"],
         )
 
 

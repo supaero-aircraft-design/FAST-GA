@@ -12,19 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_SPAN
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
-class ComputeWingY(ExplicitComponent):
+class ComputeWingY(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing Ys estimation."""
 
@@ -73,7 +70,7 @@ class ComputeWingY(ExplicitComponent):
         wing_break = inputs["data:geometry:wing:kink:span_ratio"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
 
-        span = math.sqrt(lambda_wing * wing_area)
+        span = np.sqrt(lambda_wing * wing_area)
 
         # Wing geometry
         y4_wing = span / 2.0

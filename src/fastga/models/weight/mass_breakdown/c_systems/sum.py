@@ -30,15 +30,12 @@ from ..constants import SUBMODEL_SYSTEMS_MASS
 class SystemsWeight(om.Group):
     """Computes mass of systems."""
 
-    def __init__(self, **kwargs):
-        """Defining solvers for systems weight computation resolution."""
-        super().__init__(**kwargs)
-
-        # Solvers setup
-        self.nonlinear_solver = om.NonlinearBlockGS()
-        self.linear_solver = om.LinearBlockGS()
-
     def setup(self):
+        self.add_subsystem(
+            "navigation_systems_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
+            promotes=["*"],
+        )
         self.add_subsystem(
             "power_systems_weight",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEM_MASS),
@@ -47,11 +44,6 @@ class SystemsWeight(om.Group):
         self.add_subsystem(
             "life_support_systems_weight",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "navigation_systems_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_AVIONICS_SYSTEM_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -81,13 +73,3 @@ class SystemsWeight(om.Group):
         )
 
         self.add_subsystem("systems_weight_sum", weight_sum, promotes=["*"])
-
-        # Solvers setup
-        self.nonlinear_solver.options["debug_print"] = True
-        self.nonlinear_solver.options["err_on_non_converge"] = True
-        self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 50
-
-        self.linear_solver.options["err_on_non_converge"] = True
-        self.linear_solver.options["iprint"] = 0
-        self.linear_solver.options["maxiter"] = 10

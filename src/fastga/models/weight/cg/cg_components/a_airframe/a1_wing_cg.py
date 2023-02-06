@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -69,7 +68,7 @@ class ComputeWingCG(ExplicitComponent):
                 chord_reduction = (y_cg - y2_wing) / (y4_wing - y2_wing) * (l2_wing - l4_wing)
 
             chord_at_cg_pos = l2_wing - chord_reduction
-            x_cg_wing_rel = 0.42 * chord_at_cg_pos + y_cg * math.tan(sweep_25 * math.pi / 180.0)
+            x_cg_wing_rel = 0.42 * chord_at_cg_pos + y_cg * np.tan(sweep_25 * np.pi / 180.0)
 
         else:
             y_cg = 0.35 * span / 2.0
@@ -87,7 +86,7 @@ class ComputeWingCG(ExplicitComponent):
             distance_between_spars = 0.30 * chord_at_cg_pos
 
             x_cg_wing_rel = (
-                y_cg * math.tan(sweep_25 * math.pi / 180.0)
+                y_cg * np.tan(sweep_25 * np.pi / 180.0)
                 + 0.30 * chord_at_cg_pos
                 + 0.70 * distance_between_spars
             )

@@ -69,6 +69,7 @@ class XfoilPolar(ExternalCodeComp):
     def initialize(self):
 
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
         self.options.declare(OPTION_RESULT_FOLDER_PATH, default="", types=str)
         self.options.declare(OPTION_RESULT_POLAR_FILENAME, default="polar_result.txt", types=str)
@@ -76,18 +77,38 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_ALPHA_END, default=90.0, types=float)
         self.options.declare(OPTION_ITER_LIMIT, default=100, types=int)
         self.options.declare(OPTION_COMP_NEG_AIR_SYM, default=False, types=bool)
+        self.options.declare(
+            "single_AoA",
+            default=False,
+            types=bool,
+            desc="If only one angle of attack is required, Cl_max_2D and Cl_min_2D won't be "
+            "returned and results won't be written in the resources nor will they be read from "
+            "them. In addition to that, options "
+            + OPTION_ALPHA_END
+            + " and "
+            + OPTION_ALPHA_END
+            + " must match",
+        )
 
     def setup(self):
 
         self.add_input("xfoil:mach", val=np.nan)
         self.add_input("xfoil:reynolds", val=np.nan)
-        self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
-        self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
-        self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
-        self.add_output("xfoil:CDp", shape=POLAR_POINT_COUNT)
-        self.add_output("xfoil:CM", shape=POLAR_POINT_COUNT)
-        self.add_output("xfoil:CL_max_2D")
-        self.add_output("xfoil:CL_min_2D")
+
+        if not self.options["single_AoA"]:
+            self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
+            self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
+            self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
+            self.add_output("xfoil:CDp", shape=POLAR_POINT_COUNT)
+            self.add_output("xfoil:CM", shape=POLAR_POINT_COUNT)
+            self.add_output("xfoil:CL_max_2D")
+            self.add_output("xfoil:CL_min_2D")
+        else:
+            self.add_output("xfoil:alpha", units="deg")
+            self.add_output("xfoil:CL")
+            self.add_output("xfoil:CD")
+            self.add_output("xfoil:CDp")
+            self.add_output("xfoil:CM")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -124,7 +145,7 @@ class XfoilPolar(ExternalCodeComp):
                 "resources",
                 self.options["airfoil_file"].replace(".af", "") + ".csv",
             )
-        if pth.exists(result_file):
+        if pth.exists(result_file) and not self.options["single_AoA"]:
             no_file = False
             data_saved = pd.read_csv(result_file)
             values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
@@ -236,6 +257,7 @@ class XfoilPolar(ExternalCodeComp):
             # profile file
             tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
             profile = get_profile(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 file_name=self.options["airfoil_file"],
             ).get_sides()
             # noinspection PyTypeChecker
@@ -304,7 +326,13 @@ class XfoilPolar(ExternalCodeComp):
                         raise TimeoutError("<p>Error: %s</p>" % e)
 
             # Post-processing
-            if self.options[OPTION_COMP_NEG_AIR_SYM]:
+            if self.options["single_AoA"]:
+                alpha = result_array_p["alpha"].tolist()
+                cl = result_array_p["CL"].tolist()
+                cd = result_array_p["CD"].tolist()
+                cdp = result_array_p["CDp"].tolist()
+                cm = result_array_p["CM"].tolist()
+            elif self.options[OPTION_COMP_NEG_AIR_SYM]:
                 cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
                 # noinspection PyUnboundLocalVariable
                 cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
@@ -332,63 +360,66 @@ class XfoilPolar(ExternalCodeComp):
                 cdp = result_array_p["CDp"].tolist()
                 cm = result_array_p["CM"].tolist()
 
-            if POLAR_POINT_COUNT < len(alpha):
-                alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
-                cl = np.interp(alpha_interp, alpha, cl)
-                cd = np.interp(alpha_interp, alpha, cd)
-                cdp = np.interp(alpha_interp, alpha, cdp)
-                cm = np.interp(alpha_interp, alpha, cm)
-                alpha = alpha_interp
-                warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
-            else:
-                additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
-                alpha.extend(additional_zeros)
-                alpha = np.array(alpha)
-                cl.extend(additional_zeros)
-                cl = np.array(cl)
-                cd.extend(additional_zeros)
-                cd = np.array(cd)
-                cdp.extend(additional_zeros)
-                cdp = np.array(cdp)
-                cm.extend(additional_zeros)
-                cm = np.array(cm)
-
-            # Save results to defined path
-            if not error:
-                results = [
-                    np.array(mach),
-                    np.array(reynolds),
-                    np.array(cl_max_2d),
-                    np.array(cl_min_2d),
-                    str(self._reshape(alpha, alpha).tolist()),
-                    str(self._reshape(alpha, cl).tolist()),
-                    str(self._reshape(alpha, cd).tolist()),
-                    str(self._reshape(alpha, cdp).tolist()),
-                    str(self._reshape(alpha, cm).tolist()),
-                ]
-                labels = [
-                    "mach",
-                    "reynolds",
-                    "cl_max_2d",
-                    "cl_min_2d",
-                    "alpha",
-                    "cl",
-                    "cd",
-                    "cdp",
-                    "cm",
-                ]
-                if no_file or (data_saved is None):
-                    data = pd.DataFrame(results, index=labels)
-                else:
-                    data = pd.DataFrame(np.c_[data_saved, results], index=labels)
-                # noinspection PyBroadException
-                try:
-                    data.to_csv(result_file)
-                except:
+            if not self.options["single_AoA"]:
+                if POLAR_POINT_COUNT < len(alpha):
+                    alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
+                    cl = np.interp(alpha_interp, alpha, cl)
+                    cd = np.interp(alpha_interp, alpha, cd)
+                    cdp = np.interp(alpha_interp, alpha, cdp)
+                    cm = np.interp(alpha_interp, alpha, cm)
+                    alpha = alpha_interp
                     warnings.warn(
-                        "Unable to save XFoil results to *.csv file: writing permission denied for "
-                        "%s folder!" % local_resources.__path__[0]
+                        "Defined polar point in fast aerodynamics\\constants.py exceeded!"
                     )
+                else:
+                    additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
+                    alpha.extend(additional_zeros)
+                    alpha = np.array(alpha)
+                    cl.extend(additional_zeros)
+                    cl = np.array(cl)
+                    cd.extend(additional_zeros)
+                    cd = np.array(cd)
+                    cdp.extend(additional_zeros)
+                    cdp = np.array(cdp)
+                    cm.extend(additional_zeros)
+                    cm = np.array(cm)
+
+                # Save results to defined path
+                if not error:
+                    results = [
+                        np.array(mach),
+                        np.array(reynolds),
+                        np.array(cl_max_2d),
+                        np.array(cl_min_2d),
+                        str(self._reshape(alpha, alpha).tolist()),
+                        str(self._reshape(alpha, cl).tolist()),
+                        str(self._reshape(alpha, cd).tolist()),
+                        str(self._reshape(alpha, cdp).tolist()),
+                        str(self._reshape(alpha, cm).tolist()),
+                    ]
+                    labels = [
+                        "mach",
+                        "reynolds",
+                        "cl_max_2d",
+                        "cl_min_2d",
+                        "alpha",
+                        "cl",
+                        "cd",
+                        "cdp",
+                        "cm",
+                    ]
+                    if no_file or (data_saved is None):
+                        data = pd.DataFrame(results, index=labels)
+                    else:
+                        data = pd.DataFrame(np.c_[data_saved, results], index=labels)
+                    # noinspection PyBroadException
+                    try:
+                        data.to_csv(result_file)
+                    except:
+                        warnings.warn(
+                            "Unable to save XFoil results to *.csv file: writing permission denied for "
+                            "%s folder!" % local_resources.__path__[0]
+                        )
 
             # Getting output files if needed
             if self.options[OPTION_RESULT_FOLDER_PATH] != "":
@@ -477,8 +508,9 @@ class XfoilPolar(ExternalCodeComp):
         outputs["xfoil:CD"] = cd
         outputs["xfoil:CDp"] = cdp
         outputs["xfoil:CM"] = cm
-        outputs["xfoil:CL_max_2D"] = cl_max_2d
-        outputs["xfoil:CL_min_2D"] = cl_min_2d
+        if not self.options["single_AoA"]:
+            outputs["xfoil:CL_max_2D"] = cl_max_2d
+            outputs["xfoil:CL_min_2D"] = cl_min_2d
 
     def _write_script_file(
         self,

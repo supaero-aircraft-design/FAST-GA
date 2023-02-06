@@ -28,11 +28,8 @@ from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced impor
     tank_volume_distribution,
 )
 
-from .constants import SUBMODEL_AEROSTRUCTURAL_LOADS
+from .constants import SUBMODEL_AEROSTRUCTURAL_LOADS, NB_POINTS_POINT_MASS, POINT_MASS_SPAN_RATIO
 
-NB_POINTS_POINT_MASS = 5
-# MUST BE AN EVEN NUMBER
-POINT_MASS_SPAN_RATIO = 0.01
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 
 

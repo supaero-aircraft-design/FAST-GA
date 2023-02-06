@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -33,6 +31,7 @@ class Cd0Wing(ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -82,7 +81,10 @@ class Cd0Wing(ExplicitComponent):
             unit_reynolds = inputs["data:aerodynamics:cruise:unit_reynolds"]
 
         # Sear max thickness position ratio
-        profile = get_profile(file_name=self.options["wing_airfoil_file"])
+        profile = get_profile(
+            airfoil_folder_path=self.options["airfoil_folder_path"],
+            file_name=self.options["wing_airfoil_file"],
+        )
         relative_thickness = profile.get_relative_thickness()
         index = int(
             np.where(relative_thickness["thickness"] == np.max(relative_thickness["thickness"]))[0]
@@ -110,10 +112,12 @@ class Cd0Wing(ExplicitComponent):
                 cf_root * (y2_wing - y1_wing) + 0.5 * (span / 2.0 - y2_wing) * (cf_root + cf_tip)
             ) / (span / 2.0 - y1_wing)
 
-        ff = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
+        form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
         if mach > 0.2:
-            ff = ff * 1.34 * mach ** 0.18 * (math.cos(sweep_25 * math.pi / 180)) ** 0.28
-        cd0_wing = ff * cf_wing * wet_area_wing / wing_area
+            form_factor = (
+                form_factor * 1.34 * mach ** 0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
+            )
+        cd0_wing = form_factor * cf_wing * wet_area_wing / wing_area
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:CD0"] = cd0_wing

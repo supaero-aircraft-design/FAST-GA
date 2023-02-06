@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 import openmdao.api as om
 from scipy.constants import g
 from typing import Union, List, Optional, Tuple
@@ -25,7 +24,7 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
-_ANG_VEL = 12 * math.pi / 180  # 12 deg/s (typical for light aircraft)
+_ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
 
 class ComputeTORotationLimitGroup(om.Group):
@@ -170,7 +169,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
 
         # Calculation of take-off minimum speed
         weight = mtow * g
-        vs1 = math.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
+        vs1 = np.sqrt(weight / (0.5 * rho * wing_area * cl_max_takeoff))
 
         if n_engines == 1.0:
             vr = 1.10 * vs1
@@ -268,7 +267,7 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         # Define angle of attack (aoa)
         alpha = 0.0
         # Interpolate cl/cm and define with ht reference surface
-        cl_htp = (cl0_htp + (alpha * math.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
+        cl_htp = (cl0_htp + (alpha * np.pi / 180) * cl_alpha_htp + cl_elev) * wing_area / ht_area
 
         cm_wing = cm0_wing
 

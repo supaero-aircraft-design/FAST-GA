@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 import openmdao.api as om
 import warnings
 import logging
@@ -27,9 +26,10 @@ import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
+from fastga.command.api import list_inputs, list_outputs
 
-ALPHA_LIMIT = 13.5 * math.pi / 180.0  # Limit angle to touch tail on ground in rad
-ALPHA_RATE = 3.0 * math.pi / 180.0  # Angular rotation speed in rad/s
+ALPHA_LIMIT = 13.5 * np.pi / 180.0  # Limit angle to touch tail on ground in rad
+ALPHA_RATE = 3.0 * np.pi / 180.0  # Angular rotation speed in rad/s
 SAFETY_HEIGHT = 50 * 0.3048  # Height in meters to reach V2 speed
 TIME_STEP = 0.1  # For time dependent simulation
 CLIMB_GRAD_AEO = 0.083  # Climb gradient when all engine are operating, based on CS23.65
@@ -99,25 +99,18 @@ class TakeOffPhase(om.Group):
         excludes: Optional[Union[str, List[str]]] = None,
         iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
-        prob = om.Problem(model=component)
-        prob.setup()
-        data = []
+
+        list_names = []
         if isinstance(iotypes, tuple):
-            data.extend(prob.model.list_inputs(out_stream=None))
-            data.extend(prob.model.list_outputs(out_stream=None))
+            list_names.extend(list_inputs(component))
+            list_names.extend(list_outputs(component))
         else:
             if iotypes == "inputs":
-                data.extend(prob.model.list_inputs(out_stream=None))
+                list_names.extend(list_inputs(component))
             else:
-                data.extend(prob.model.list_outputs(out_stream=None))
-        list_names = []
-        for idx in range(len(data)):
-            variable_name = data[idx][0]
-            if excludes is None:
-                list_names.append(variable_name)
-            else:
-                if variable_name not in list(excludes):
-                    list_names.append(variable_name)
+                list_names.extend(list_outputs(component))
+        if excludes is not None:
+            list_names = [x for x in list_names if x not in excludes]
 
         return list_names
 
@@ -181,7 +174,7 @@ class _v2(om.ExplicitComponent):
         # Define Cl considering 30% margin and estimate alpha
         while True:
             cl = cl_max_takeoff / factor ** 2.0
-            v2 = math.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
+            v2 = np.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
             mach = v2 / atm.speed_of_sound
 
             flight_point = oad.FlightPoint(
@@ -297,7 +290,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
             cl = cl0 + cl_alpha * alpha[i]
             # Loop on estimated lift-off speed error induced by thrust estimation
             rel_error = 0.1
-            v_lift_off[i] = math.sqrt((mtow * g) / (0.5 * atm_0.density * wing_area * cl))
+            v_lift_off[i] = np.sqrt((mtow * g) / (0.5 * atm_0.density * wing_area * cl))
             while rel_error > 0.05:
                 # Update thrust with v_lift_off
                 flight_point = oad.FlightPoint(
@@ -309,11 +302,11 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 propulsion_model.compute_flight_points(flight_point)
                 thrust = float(flight_point.thrust)
                 # Calculate v_lift_off necessary to overcome weight
-                if thrust * math.sin(alpha[i]) > mtow * g:
+                if thrust * np.sin(alpha[i]) > mtow * g:
                     break
                 else:
-                    v = math.sqrt(
-                        (mtow * g - thrust * math.sin(alpha[i]))
+                    v = np.sqrt(
+                        (mtow * g - thrust * np.sin(alpha[i]))
                         / (0.5 * atm_0.density * wing_area * cl)
                     )
                 rel_error = abs(v - v_lift_off[i]) / v
@@ -346,19 +339,19 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
                 # Calculate acceleration on x/z air axis
                 weight = mtow * g
-                acc_x = (thrust * math.cos(alpha_t) - weight * math.sin(gamma_t) - drag) / mtow
-                acc_z = (lift + thrust * math.sin(alpha_t) - weight * math.cos(gamma_t)) / mtow
+                acc_x = (thrust * np.cos(alpha_t) - weight * np.sin(gamma_t) - drag) / mtow
+                acc_z = (lift + thrust * np.sin(alpha_t) - weight * np.cos(gamma_t)) / mtow
                 # Calculate gamma change and new speed
-                delta_gamma = math.atan((acc_z * TIME_STEP) / (v_t + acc_x * TIME_STEP))
-                v_t_new = math.sqrt((acc_z * TIME_STEP) ** 2 + (v_t + acc_x * TIME_STEP) ** 2)
+                delta_gamma = np.arctan2((acc_z * TIME_STEP), (v_t + acc_x * TIME_STEP))
+                v_t_new = np.sqrt((acc_z * TIME_STEP) ** 2 + (v_t + acc_x * TIME_STEP) ** 2)
                 # Trapezoidal integration on distance/altitude
                 delta_altitude = (
-                    (v_t_new * math.sin(gamma_t + delta_gamma) + v_t * math.sin(gamma_t))
+                    (v_t_new * np.sin(gamma_t + delta_gamma) + v_t * np.sin(gamma_t))
                     / 2
                     * TIME_STEP
                 )
                 delta_distance = (
-                    (v_t_new * math.cos(gamma_t + delta_gamma) + v_t * math.cos(gamma_t))
+                    (v_t_new * np.cos(gamma_t + delta_gamma) + v_t * np.cos(gamma_t))
                     / 2
                     * TIME_STEP
                 )
@@ -472,9 +465,9 @@ class _vr_from_v2(om.ExplicitComponent):
             cd = cd0 + k_ground * coeff_k * cl ** 2
             drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
             # Calculate rolling resistance load
-            friction = (mtow * g - lift - thrust * math.sin(alpha_t)) * friction_coeff
+            friction = (mtow * g - lift - thrust * np.sin(alpha_t)) * friction_coeff
             # Calculate acceleration
-            acc_x = (thrust * math.cos(alpha_t) - drag - friction) / mtow
+            acc_x = (thrust * np.cos(alpha_t) - drag - friction) / mtow
             # Speed and angle update (feedback)
             dt = min(TIME_STEP / 5, alpha_t / ALPHA_RATE, v_t / acc_x)
             v_t = v_t - acc_x * dt
@@ -559,7 +552,7 @@ class _simulate_takeoff(om.ExplicitComponent):
             )
 
         # Determine rotation speed from regulation CS23.51
-        vs1 = math.sqrt((mtow * g) / (0.5 * Atmosphere(0).density * wing_area * cl_max_clean))
+        vs1 = np.sqrt((mtow * g) / (0.5 * Atmosphere(0).density * wing_area * cl_max_clean))
         if inputs["data:geometry:propulsion:engine:count"] == 1.0:
             k = 1.0
         else:
@@ -596,31 +589,27 @@ class _simulate_takeoff(om.ExplicitComponent):
             drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
             # Check if lift-off condition reached
             if (
-                (lift + thrust * math.sin(alpha_t) - mtow * g * math.cos(gamma_t)) >= 0.0
+                (lift + thrust * np.sin(alpha_t) - mtow * g * np.cos(gamma_t)) >= 0.0
             ) and not climb:
                 climb = True
                 v_lift_off = v_t
             # Calculate acceleration on x/z air axis
             if climb:
-                acc_z = (lift + thrust * math.sin(alpha_t) - mtow * g * math.cos(gamma_t)) / mtow
-                acc_x = (thrust * math.cos(alpha_t) - mtow * g * math.sin(gamma_t) - drag) / mtow
+                acc_z = (lift + thrust * np.sin(alpha_t) - mtow * g * np.cos(gamma_t)) / mtow
+                acc_x = (thrust * np.cos(alpha_t) - mtow * g * np.sin(gamma_t) - drag) / mtow
             else:
-                friction = (mtow * g - lift - thrust * math.sin(alpha_t)) * friction_coeff
+                friction = (mtow * g - lift - thrust * np.sin(alpha_t)) * friction_coeff
                 acc_z = 0.0
-                acc_x = (thrust * math.cos(alpha_t) - drag - friction) / mtow
+                acc_x = (thrust * np.cos(alpha_t) - drag - friction) / mtow
             # Calculate gamma change and new speed
-            delta_gamma = math.atan((acc_z * TIME_STEP) / (v_t + acc_x * TIME_STEP))
-            v_t_new = math.sqrt((acc_z * TIME_STEP) ** 2 + (v_t + acc_x * TIME_STEP) ** 2)
+            delta_gamma = np.arctan2((acc_z * TIME_STEP), (v_t + acc_x * TIME_STEP))
+            v_t_new = np.sqrt((acc_z * TIME_STEP) ** 2 + (v_t + acc_x * TIME_STEP) ** 2)
             # Trapezoidal integration on distance/altitude
             delta_altitude = (
-                (v_t_new * math.sin(gamma_t + delta_gamma) + v_t * math.sin(gamma_t))
-                / 2
-                * TIME_STEP
+                (v_t_new * np.sin(gamma_t + delta_gamma) + v_t * np.sin(gamma_t)) / 2 * TIME_STEP
             )
             delta_distance = (
-                (v_t_new * math.cos(gamma_t + delta_gamma) + v_t * math.cos(gamma_t))
-                / 2
-                * TIME_STEP
+                (v_t_new * np.cos(gamma_t + delta_gamma) + v_t * np.cos(gamma_t)) / 2 * TIME_STEP
             )
             # Update temporal values
             if v_t >= vr:

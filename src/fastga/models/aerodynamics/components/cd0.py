@@ -36,6 +36,7 @@ class Cd0(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -43,6 +44,7 @@ class Cd0(Group):
 
     def setup(self):
         options_wing = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": self.options["low_speed_aero"],
             "wing_airfoil_file": self.options["wing_airfoil_file"],
         }
@@ -60,6 +62,7 @@ class Cd0(Group):
         )
 
         options_htp = {
+            "airfoil_folder_path": self.options["airfoil_folder_path"],
             "low_speed_aero": self.options["low_speed_aero"],
             "htp_airfoil_file": self.options["htp_airfoil_file"],
         }

@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
@@ -59,14 +57,14 @@ class ComputeFuselageWetArea(ExplicitComponent):
         lar = inputs["data:geometry:fuselage:rear_length"]
 
         # Using the simple geometric description
-        fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
+        fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
         cyl_length = fus_length - lav - lar
         wet_area_nose = 2.45 * fus_dia * lav
-        wet_area_cyl = math.pi * fus_dia * cyl_length
+        wet_area_cyl = np.pi * fus_dia * cyl_length
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
-        master_cross_section = math.pi * (fus_dia / 2.0) ** 2.0
+        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
@@ -101,10 +99,10 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
         fus_length = inputs["data:geometry:fuselage:length"]
 
         # Using the formula from The Flight Optimization System Weights Estimation Method
-        fus_dia = math.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        wet_area_fus = math.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
+        fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
+        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
 
-        master_cross_section = math.pi * (fus_dia / 2.0) ** 2.0
+        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section

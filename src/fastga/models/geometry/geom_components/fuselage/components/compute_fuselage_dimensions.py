@@ -16,14 +16,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import math
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 class ComputeFuselageGeometryBasic(ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
-    Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing)
+    Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing).
     """
 
     def setup(self):
@@ -130,7 +128,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         # Length of instrument panel
         l_instr = 0.7
         # Length of pax cabin
-        npax = math.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
+        npax = np.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
         n_rows = npax / float(seats_p_row)
         l_pax = l_pilot_seats + n_rows * l_pass_seats
         # Cabin width considered is for side by side seats
@@ -143,7 +141,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2)
         # Cabin total length
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length
@@ -157,8 +155,8 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         # Calculate fuselage length
         fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
         plane_length = fa_length + max(
-            ht_lp + 0.75 * ht_length + b_h / 2.0 * math.tan(sweep_25_ht * math.pi / 180),
-            vt_lp + 0.75 * vt_length + b_v * math.tan(sweep_25_vt * math.pi / 180),
+            ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht * np.pi / 180),
+            vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt * np.pi / 180),
         )
         lar = fus_length - (lav + cabin_length)
 
@@ -233,7 +231,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         l_instr = 0.7
         # Length of pax cabin
         # noinspection PyBroadException
-        npax = math.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
+        npax = np.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
         n_rows = npax / float(seats_p_row)
         l_pax = l_pilot_seats + n_rows * l_pass_seats
         # Cabin width considered is for side by side seats
@@ -246,7 +244,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * math.pi * r_i ** 2)
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2)
         # Cabin total length
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length

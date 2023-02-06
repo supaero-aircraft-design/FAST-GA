@@ -17,10 +17,8 @@
 import numpy as np
 from stdatm import Atmosphere
 
-from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT
+from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT, FIRST_INVALID_COEFF
 from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
-
-FIRST_INVALID_COEFF = 100.0
 
 
 class ComputeEquilibratedPolar(DynamicEquilibrium):

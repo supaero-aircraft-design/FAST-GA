@@ -21,8 +21,8 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
-)
-from ..geom_components.fuselage.components.compute_fuselage_wet_area import (
+    ComputeFuselageDepth,
+    ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
 )
@@ -36,6 +36,8 @@ from ..geom_components.wing.components import (
     ComputeWingWetArea,
     ComputeWingX,
     ComputeWingY,
+    ComputeWingZ,
+    ComputeWingXAbsolute,
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
@@ -44,6 +46,7 @@ from ..geom_components.ht.components import (
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
+    ComputeHTVolumeCoefficient,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
@@ -157,6 +160,8 @@ def test_compute_vt_sweep():
     problem = run_system(ComputeVTSweep(), ivc)
     sweep_0 = problem.get_val("data:geometry:vertical_tail:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(34.03, abs=1e-1)
+    sweep_50 = problem.get_val("data:geometry:vertical_tail:sweep_50", units="deg")
+    assert sweep_50 == pytest.approx(15.86, abs=1e-1)
     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(15.83, abs=1e-1)
 
@@ -247,6 +252,8 @@ def test_compute_ht_sweep():
     problem = run_system(ComputeHTSweep(), ivc)
     sweep_0 = problem.get_val("data:geometry:horizontal_tail:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(4.0, abs=1e-1)
+    sweep_50 = problem.get_val("data:geometry:horizontal_tail:sweep_50", units="deg")
+    assert sweep_50 == pytest.approx(4.0, abs=1e-1)
     sweep_100 = problem.get_val("data:geometry:horizontal_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(4.0, abs=1e-1)
 
@@ -261,6 +268,20 @@ def test_compute_ht_wet_area():
     problem = run_system(ComputeHTWetArea(), ivc)
     wet_area = problem.get_val("data:geometry:horizontal_tail:wet_area", units="m**2")
     assert wet_area == pytest.approx(6.239, abs=1e-2)
+
+
+def test_compute_ht_volume_coefficient():
+    """Tests computation of the horizontal tail volume coefficient"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTVolumeCoefficient()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTVolumeCoefficient(), ivc)
+    vol_coeff = problem.get_val("data:geometry:horizontal_tail:volume_coefficient")
+    assert vol_coeff == pytest.approx(0.726, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_fuselage_cabin_sizing_fd():
@@ -372,6 +393,36 @@ def test_fuselage_wet_area_flops():
     assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
 
+def test_fuselage_depth():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageDepth()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageDepth(), ivc)
+    avg_fuselage_depth = problem.get_val("data:geometry:fuselage:average_depth", units="m")
+    assert avg_fuselage_depth == pytest.approx(0.225, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_fuselage_volume():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageVolume()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageVolume(), ivc)
+    avg_fuselage_depth = problem.get_val("data:geometry:fuselage:volume", units="m**3")
+    assert avg_fuselage_depth == pytest.approx(7.95, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
+
+
 def test_geometry_wing_toc():
     """Tests computation of the wing ToC (Thickness of Chord)"""
 
@@ -404,6 +455,20 @@ def test_geometry_wing_y():
     assert wing_y3 == pytest.approx(0.0, abs=1e-3)  # point 3 is virtual central point
     wing_y4 = problem.get_val("data:geometry:wing:tip:y", units="m")
     assert wing_y4 == pytest.approx(5.804, abs=1e-3)
+
+
+def test_geometry_wing_z():
+    """Tests computation of the wing Zs"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingZ()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingZ(), ivc)
+    wing_y2 = problem.get_val("data:geometry:wing:root:z", units="m")
+    assert wing_y2 == pytest.approx(0.533, rel=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_l1_l4():
@@ -450,6 +515,22 @@ def test_geometry_wing_x():
     assert wing_x4 == pytest.approx(0.0, abs=1e-3)
 
 
+def test_geometry_wing_x_absolute():
+    """Tests computation of the wing absolute Xs"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsolute()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingXAbsolute(), ivc)
+    wing_x0_abs = problem.get_val("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
+    assert wing_x0_abs == pytest.approx(3.091, abs=1e-3)
+    wing_x4_abs = problem.get_val("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
+    assert wing_x4_abs == pytest.approx(3.091, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
 def test_geometry_wing_b50():
     """Tests computation of the wing B50"""
 
@@ -488,17 +569,14 @@ def test_geometry_wing_sweep():
     """Tests computation of the wing sweeps"""
 
     # Define input values calculated from other modules
-    ivc = om.IndepVarComp()
-    ivc.add_output("data:geometry:wing:root:y", 0.6, units="m")
-    ivc.add_output("data:geometry:wing:tip:y", 6.181, units="m")
-    ivc.add_output("data:geometry:wing:root:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:tip:leading_edge:x:local", 0.0, units="m")
+    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingSweep(), ivc)
     sweep_0 = problem.get_val("data:geometry:wing:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(0.0, abs=1e-1)
+    sweep_50 = problem.get_val("data:geometry:wing:sweep_50", units="deg")
+    assert sweep_50 == pytest.approx(0.0, abs=1e-1)
     sweep_100_inner = problem.get_val("data:geometry:wing:sweep_100_inner", units="deg")
     assert sweep_100_inner == pytest.approx(0.0, abs=1e-1)
     sweep_100_outer = problem.get_val("data:geometry:wing:sweep_100_outer", units="deg")

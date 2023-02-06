@@ -14,9 +14,11 @@
 
 SUBMODEL_WING_THICKNESS_RATIO = "submodel.geometry.wing.thickness_ratio"
 SUBMODEL_WING_SPAN = "submodel.geometry.wing.span"
+SUBMODEL_WING_HEIGHT = "submodel.geometry.wing.height"
 SUBMODEL_WING_L1_L4 = "submodel.geometry.wing.l1_l4"
 SUBMODEL_WING_L2_L3 = "submodel.geometry.wing.l2_l3"
 SUBMODEL_WING_X_LOCAL = "submodel.geometry.wing.x_local"
+SUBMODEL_WING_X_ABSOLUTE = "submodel.geometry.wing.x_absolute"
 SUBMODEL_WING_B50 = "submodel.geometry.wing.half_span"
 SUBMODEL_WING_MAC = "submodel.geometry.wing.mac"
 SUBMODEL_WING_SWEEP = "submodel.geometry.wing.sweep"

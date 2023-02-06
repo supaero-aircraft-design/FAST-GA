@@ -2,6 +2,22 @@
 Changelog
 =========
 
+Version 1.1.0
+==================
+
+- Modified the Xfoil interface to allow for single AoA launch see #182
+- Modification of the usage of the FlightPoint dataclass so that it is possible to add new fields more easily see #187
+- Added a module for the computation of more aerodynamic derivatives see #185
+
+Version 1.0.4
+==================
+
+- Added compressibility corrections and reynolds correction in the BEMT code
+- Change in the propeller code organization
+- Added a new representation of the propeller performance under the form of Ct and Cp graphs
+- Centralized all post_processing function in a post-processing API
+- Added an option for the path to airfoil files
+
 Version 1.0.3
 ==================
 

@@ -35,6 +35,7 @@ class ComputeAEROopenvsp(Group):
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -55,6 +56,7 @@ class ComputeAEROopenvsp(Group):
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 result_folder_path=self.options["result_folder_path"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
             ),

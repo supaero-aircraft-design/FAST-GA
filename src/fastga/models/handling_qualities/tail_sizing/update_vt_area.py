@@ -98,8 +98,8 @@ class VTPConstraints(om.ExplicitComponent):
 
         cg_mac_position = float(inputs["data:weight:aircraft:CG:aft:MAC_position"])
 
-        cl_alpha_vt_ls = float(inputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"])
         cy_delta_r_vtp = float(inputs["data:aerodynamics:rudder:low_speed:Cy_delta_r"])
+        cy_beta = float(inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"])
 
         area_vtp = x[0]
         sigma = x[1]
@@ -116,11 +116,7 @@ class VTPConstraints(om.ExplicitComponent):
         v_w = v_f * np.tan(beta)
         v_t = np.sqrt(v_f ** 2.0 + v_w ** 2.0)
 
-        # Side wash influence on the vtp
-        k_sigma = side_wash_effect(area_vtp, inputs)
-
         # Side force derivative computation
-        cy_beta = -k_f1 * cl_alpha_vt_ls * k_sigma * area_vtp / area_wing
         cy_delta_r = -eta_v * cy_delta_r_vtp * area_vtp / area_wing
 
         # Side drag computation
@@ -171,7 +167,7 @@ class VTPConstraints(om.ExplicitComponent):
 
         cg_mac_position = inputs["data:weight:aircraft:CG:aft:MAC_position"]
 
-        cn_beta_fuselage = inputs["data:aerodynamics:fuselage:cruise:CnBeta"]
+        cn_beta_fuselage = inputs["data:aerodynamics:fuselage:Cn_beta"]
         cl_alpha_vt_cruise = inputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"]
 
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -489,12 +485,12 @@ class _UpdateVTArea(VTPConstraints):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:fuselage:cruise:CnBeta", val=np.nan)
+        self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
         self.add_input(
-            "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+            "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
         )
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 
@@ -621,12 +617,12 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:takeoff:CL_max", val=np.nan)
-        self.add_input("data:aerodynamics:fuselage:cruise:CnBeta", val=np.nan)
+        self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:vertical_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
         )
         self.add_input(
-            "data:aerodynamics:vertical_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+            "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
         )
         self.add_input("data:aerodynamics:rudder:low_speed:Cy_delta_r", val=np.nan, units="rad**-1")
 

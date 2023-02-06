@@ -431,7 +431,7 @@ def test_compute_engine_weight_raymer():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEngineWeightRaymer(propulsion_id=ENGINE_WRAPPER), ivc)
     weight_b1 = problem.get_val("data:weight:propulsion:engine:mass", units="kg")
-    assert weight_b1 == pytest.approx(802.27, abs=1e-2)
+    assert weight_b1 == pytest.approx(401.13, abs=1e-2)
 
 
 def test_compute_fuel_lines_weight():

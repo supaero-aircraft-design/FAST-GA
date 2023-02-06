@@ -15,7 +15,6 @@
 
 import os.path as pth
 import logging
-import math
 from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d, interp1d
 from scipy.optimize import fsolve
@@ -554,7 +553,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         # After the compressor
         t_3t = t_25t * opr_2 ** (f2_25 / self.eta_253)
-        eta_compress = math.log(global_opr) / math.log(t_3t / t_2t) * f2_2
+        eta_compress = np.log(global_opr) / np.log(t_3t / t_2t) * f2_2
 
         # Solving the gas generator equations
         p4t = p_3t * self.pi_cc
@@ -1636,10 +1635,10 @@ class BasicTPEngine(AbstractFuelPropulsion):
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)
         cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (math.log10(reynolds)) ** 2.58
+            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds)) ** 2.58
         )  # 100% turbulent
-        fineness = self.nacelle.length / math.sqrt(
-            4 * self.nacelle.height * self.nacelle.width / math.pi
+        fineness = self.nacelle.length / np.sqrt(
+            4 * self.nacelle.height * self.nacelle.width / np.pi
         )
         ff_nac = 1 + 0.35 / fineness  # Raymer (seen in Gudmunsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)

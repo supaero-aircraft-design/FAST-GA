@@ -31,7 +31,6 @@ from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpe
 from fastga.models.aerodynamics.components import (
     ComputeAircraftMaxCl,
     ComputeUnitReynolds,
-    ComputeCnBetaFuselage,
     ComputeLDMax,
     ComputeDeltaHighLift,
     ComputeDeltaElevator,
@@ -40,19 +39,68 @@ from fastga.models.aerodynamics.components import (
     ComputeHingeMomentsTail,
     ComputeMachInterpolation,
     ComputeCyDeltaRudder,
-    ComputeClAlphaVT,
     ComputeAirfoilLiftCurveSlope,
     ComputeVNAndVH,
-    ComputeFuselagePitchingMoment,
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
     ComputeExtremeCLWing,
     ComputeExtremeCLHtp,
     ComputeEffectiveEfficiencyPropeller,
+    ComputeCLAlphaDotAircraft,
+    ComputeCLPitchVelocityAircraft,
+    ComputeCYBetaAircraft,
+    ComputeCyYawRateAircraft,
+    ComputeCyRollRateAircraft,
+    ComputeClBetaAircraft,
+    ComputeClRollRateAircraft,
+    ComputeClYawRateAircraft,
+    ComputeClDeltaAileron,
+    ComputeClDeltaRudder,
+    ComputeCMPitchVelocityAircraft,
+    ComputeCMAlphaDotAircraft,
+    ComputeCnBetaAircraft,
+    ComputeCnDeltaAileron,
+    ComputeCnDeltaRudder,
+    ComputeCnRollRateAircraft,
 )
 from fastga.models.aerodynamics.components.cd0 import Cd0
+from fastga.models.aerodynamics.components.compute_cn_yaw_rate import ComputeCnYawRateAircraft
 from fastga.models.aerodynamics.components.compute_equilibrated_polar import FIRST_INVALID_COEFF
-from fastga.models.aerodynamics.components.compute_propeller_aero import ComputePropellerPerformance
+from fastga.models.aerodynamics.components.fuselage import (
+    ComputeCyBetaFuselage,
+    ComputeCnBetaFuselage,
+    ComputeCmAlphaFuselage,
+)
+from fastga.models.aerodynamics.components.ht import (
+    DownWashGradientComputation,
+    ComputeCLPitchVelocityHorizontalTail,
+    ComputeClBetaHorizontalTail,
+    ComputeClRollRateHorizontalTail,
+    ComputeCMPitchVelocityHorizontalTail,
+)
+from fastga.models.aerodynamics.components.wing import (
+    ComputeCLPitchVelocityWing,
+    ComputeCyBetaWing,
+    ComputeClBetaWing,
+    ComputeClRollRateWing,
+    ComputeClYawRateWing,
+    ComputeCMPitchVelocityWing,
+    ComputeCnRollRateWing,
+    ComputeCnYawRateWing,
+)
+from fastga.models.aerodynamics.components.vt import (
+    ComputeClAlphaVerticalTail,
+    ComputeCyBetaVerticalTail,
+    ComputeClBetaVerticalTail,
+    ComputeClRollRateVerticalTail,
+    ComputeClYawRateVerticalTail,
+    ComputeCnBetaVerticalTail,
+    ComputeCnRollRateVerticalTail,
+    ComputeCnYawRateVerticalTail,
+)
+from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
+    ComputePropellerPerformance,
+)
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
@@ -65,6 +113,7 @@ from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
 
 RESULTS_FOLDER = pth.join(pth.dirname(__file__), "results")
+DATA_FOLDER = pth.join(pth.dirname(__file__), "data")
 TMP_SAVE_FOLDER = "test_save"
 xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
@@ -221,6 +270,8 @@ def cd0_high_speed(
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
 
+    problem.check_partials(compact_print=True)
+
 
 def cd0_low_speed(
     XML_FILE: str,
@@ -266,6 +317,8 @@ def cd0_low_speed(
         + problem["data:aerodynamics:other:low_speed:CD0"]
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
+
+    problem.check_partials(compact_print=True)
 
 
 def polar(
@@ -313,6 +366,81 @@ def polar(
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=0.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+    assert problem["xfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
+    cl, cdp = reshape_polar(cl, cdp)
+    assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
+
+
+def polar_ext_folder(
+    XML_FILE: str,
+    mach_high_speed: float,
+    reynolds_high_speed: float,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+    cdp_1_high_speed: float,
+    cl_max_2d: float,
+    cdp_1_low_speed: float,
+):
+    """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+    shutil.copy(
+        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
+    )
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_high_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=0.0,
+        alpha_end=25.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        airfoil_folder_path=tmp_folder.name,
+        airfoil_file="sample_airfoil.af",
+    )
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+    cl, cdp = reshape_polar(cl, cdp)
+    assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_high_speed, abs=1e-4)
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+    shutil.copy(
+        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
+    )
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=0.0,
+        alpha_end=25.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        airfoil_folder_path=tmp_folder.name,
+        airfoil_file="sample_airfoil.af",
     )
     problem = run_system(xfoil_comp, ivc)
 
@@ -820,6 +948,8 @@ def extreme_cl(
         cl_max_landing_wing, abs=1e-2
     )
 
+    problem.check_partials(compact_print=True)
+
 
 def l_d_max(
     XML_FILE: str, l_d_max_: float, optimal_cl: float, optimal_cd: float, optimal_alpha: float
@@ -841,6 +971,8 @@ def l_d_max(
         "data:aerodynamics:aircraft:cruise:optimal_alpha", units="deg"
     ) == pytest.approx(optimal_alpha, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def cnbeta(XML_FILE: str, cn_beta_fus: float):
     """Tests cn beta fuselage"""
@@ -849,9 +981,9 @@ def cnbeta(XML_FILE: str, cn_beta_fus: float):
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCnBetaFuselage(), ivc)
-    assert problem["data:aerodynamics:fuselage:cruise:CnBeta"] == pytest.approx(
-        cn_beta_fus, abs=1e-4
-    )
+    assert problem["data:aerodynamics:fuselage:Cn_beta"] == pytest.approx(cn_beta_fus, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def slipstream_openvsp(
@@ -968,25 +1100,27 @@ def cl_alpha_vt(
 ):
     """Tests Cl alpha vt!"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVT(low_speed_aero=True)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClAlphaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeClAlphaVT(low_speed_aero=True), ivc)
+    problem = run_system(ComputeClAlphaVerticalTail(low_speed_aero=True), ivc)
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1"
-    ) == pytest.approx(cl_alpha_vt_ls, abs=1e-4)
+    ) == pytest.approx(cl_alpha_vt_ls, rel=1e-3)
     assert problem.get_val("data:aerodynamics:vertical_tail:k_ar_effective") == pytest.approx(
-        k_ar_effective, abs=1e-4
+        k_ar_effective, rel=1e-3
     )
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVT()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeClAlphaVerticalTail()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeClAlphaVT(), ivc)
+    problem = run_system(ComputeClAlphaVerticalTail(), ivc)
     assert problem.get_val(
         "data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1"
-    ) == pytest.approx(cl_alpha_vt_cruise, abs=1e-4)
+    ) == pytest.approx(cl_alpha_vt_cruise, rel=1e-3)
 
 
 def cy_delta_r(XML_FILE: str, cy_delta_r_: float, cy_delta_r_cruise):
@@ -1046,10 +1180,10 @@ def effective_efficiency(
 def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
     """Tests cm alpha of the fuselage"""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeFuselagePitchingMoment()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCmAlphaFuselage()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselagePitchingMoment(), ivc)
+    problem = run_system(ComputeCmAlphaFuselage(), ivc)
     assert problem.get_val("data:aerodynamics:fuselage:cm_alpha", units="rad**-1") == pytest.approx(
         cm_alpha_fus_, abs=1e-4
     )
@@ -1351,3 +1485,1140 @@ def equilibrated_cl_cd_polar(
     polar_cl = np.array(problem.get_val("data:aerodynamics:aircraft:cruise:equilibrated:CL"))
     valid_polar_cl = polar_cl[np.where(polar_cl < FIRST_INVALID_COEFF)[0]]
     assert list(valid_polar_cl)[::10] == pytest.approx(cl_polar_cruise_, abs=1e-2)
+
+
+def cy_beta_fus(
+    XML_FILE: str,
+    cy_beta_fus_: float,
+):
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaFuselage()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyBetaFuselage(), ivc)
+    assert problem.get_val("data:aerodynamics:fuselage:Cy_beta", units="rad**-1") == pytest.approx(
+        cy_beta_fus_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def downwash_gradient(
+    XML_FILE: str,
+    downwash_gradient_ls_: float,
+    downwash_gradient_cruise_: float,
+):
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(DownWashGradientComputation(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(DownWashGradientComputation(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient"
+    ) == pytest.approx(downwash_gradient_ls_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    """Tests cy beta of the fuselage"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(DownWashGradientComputation(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(DownWashGradientComputation(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:downwash_gradient"
+    ) == pytest.approx(downwash_gradient_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_aoa_rate_derivative(
+    XML_FILE: str,
+    cl_aoa_dot_low_speed_: float,
+    cl_aoa_dot_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLAlphaDotAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_alpha_dot") == pytest.approx(
+        cl_aoa_dot_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLAlphaDotAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_alpha_dot") == pytest.approx(
+        cl_aoa_dot_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_ht(
+    XML_FILE: str,
+    cl_q_ht_low_speed_: float,
+    cl_q_ht_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:horizontal_tail:low_speed:CL_q") == pytest.approx(
+        cl_q_ht_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:horizontal_tail:cruise:CL_q") == pytest.approx(
+        cl_q_ht_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_wing(
+    XML_FILE: str,
+    cl_q_wing_low_speed_: float,
+    cl_q_wing_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityWing(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:wing:low_speed:CL_q") == pytest.approx(
+        cl_q_wing_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:CL_q") == pytest.approx(
+        cl_q_wing_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def lift_pitch_velocity_derivative_aircraft(
+    XML_FILE: str,
+    cl_q_low_speed_: float,
+    cl_q_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:CL_q") == pytest.approx(
+        cl_q_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCLPitchVelocityAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:CL_q") == pytest.approx(
+        cl_q_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_sideslip_derivative_wing(
+    XML_FILE: str,
+    cy_beta_wing_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeCyBetaWing()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyBetaWing(), ivc)
+    assert problem.get_val("data:aerodynamics:wing:Cy_beta", units="rad**-1") == pytest.approx(
+        cy_beta_wing_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_sideslip_derivative_vt(
+    XML_FILE: str,
+    cy_beta_vt_low_speed_: float,
+    cy_beta_vt_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyBetaVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cy_beta", units="rad**-1"
+    ) == pytest.approx(cy_beta_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyBetaVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cy_beta", units="rad**-1"
+    ) == pytest.approx(cy_beta_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_sideslip_aircraft(
+    XML_FILE: str,
+    cy_beta_low_speed_: float,
+):
+    # Only testing the low speed case since the high can't run on its own (fuselage and wing
+    # contribution are independent of mach number and are thus only computed at low speed)
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCYBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCYBetaAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cy_beta", units="rad**-1"
+    ) == pytest.approx(cy_beta_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_yaw_rate_aircraft(
+    XML_FILE: str,
+    cy_yaw_rate_low_speed_: float,
+    cy_yaw_rate_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyYawRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cy_r", units="rad**-1"
+    ) == pytest.approx(cy_yaw_rate_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyYawRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cy_r", units="rad**-1"
+    ) == pytest.approx(cy_yaw_rate_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def side_force_roll_rate_aircraft(
+    XML_FILE: str,
+    cy_roll_rate_low_speed_: float,
+    cy_roll_rate_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyRollRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cy_p", units="rad**-1"
+    ) == pytest.approx(cy_roll_rate_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCyRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCyRollRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cy_p", units="rad**-1"
+    ) == pytest.approx(cy_roll_rate_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_side_slip_wing(
+    XML_FILE: str,
+    cl_beta_wing_low_speed_: float,
+    cl_beta_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaWing(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:cruise:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_wing_cruise_, rel=1e-3)
+
+
+def roll_moment_side_slip_ht(
+    XML_FILE: str,
+    cl_beta_ht_low_speed_: float,
+    cl_beta_ht_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaHorizontalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_ht_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaHorizontalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_ht_cruise_, rel=1e-3)
+
+
+def roll_moment_side_slip_vt(
+    XML_FILE: str,
+    cl_beta_vt_low_speed_: float,
+    cl_beta_vt_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_side_slip_aircraft(
+    XML_FILE: str,
+    cl_beta_low_speed_: float,
+    cl_beta_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClBetaAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClBetaAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cl_beta", units="rad**-1"
+    ) == pytest.approx(cl_beta_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_roll_rate_wing(
+    XML_FILE: str,
+    cl_p_wing_low_speed_: float,
+    cl_p_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:Cl_p", units="rad**-1") == pytest.approx(
+        cl_p_wing_cruise_, rel=1e-3
+    )
+
+
+def roll_moment_roll_rate_ht(
+    XML_FILE: str,
+    cl_p_ht_low_speed_: float,
+    cl_p_ht_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateHorizontalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_ht_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateHorizontalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_ht_cruise_, rel=1e-3)
+
+
+def roll_moment_roll_rate_vt(
+    XML_FILE: str,
+    cl_p_vt_low_speed_: float,
+    cl_p_vt_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_roll_rate_aircraft(
+    XML_FILE: str,
+    cl_p_low_speed_: float,
+    cl_p_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClRollRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cl_p", units="rad**-1"
+    ) == pytest.approx(cl_p_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_yaw_rate_wing(
+    XML_FILE: str,
+    cl_r_wing_low_speed_: float,
+    cl_r_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cl_r", units="rad**-1"
+    ) == pytest.approx(cl_r_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:Cl_r", units="rad**-1") == pytest.approx(
+        cl_r_wing_cruise_, rel=1e-3
+    )
+
+
+def roll_moment_yaw_rate_vt(
+    XML_FILE: str,
+    cl_r_vt_low_speed_: float,
+    cl_r_vt_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cl_r", units="rad**-1"
+    ) == pytest.approx(cl_r_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cl_r", units="rad**-1"
+    ) == pytest.approx(cl_r_vt_cruise_, rel=1e-3)
+    problem.check_partials(compact_print=True)
+
+
+def roll_moment_yaw_rate_aircraft(
+    XML_FILE: str,
+    cl_r_low_speed_: float,
+    cl_r_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cl_r", units="rad**-1"
+    ) == pytest.approx(cl_r_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClYawRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cl_r", units="rad**-1"
+    ) == pytest.approx(cl_r_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def roll_authority_aileron(
+    XML_FILE: str,
+    cl_delta_a_low_speed_: float,
+    cl_delta_a_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaAileron(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:low_speed:Cl_delta_a", units="rad**-1"
+    ) == pytest.approx(cl_delta_a_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaAileron(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1"
+    ) == pytest.approx(cl_delta_a_cruise_, rel=1e-3)
+
+
+def roll_moment_rudder(
+    XML_FILE: str,
+    cl_delta_r_low_speed_: float,
+    cl_delta_r_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaRudder(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:low_speed:Cl_delta_r", units="rad**-1"
+    ) == pytest.approx(cl_delta_r_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeClDeltaRudder(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeClDeltaRudder(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:cruise:Cl_delta_r", units="rad**-1"
+    ) == pytest.approx(cl_delta_r_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def pitch_moment_pitch_rate_wing(
+    XML_FILE: str,
+    cm_q_wing_low_speed_: float,
+    cm_q_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cm_q", units="rad**-1"
+    ) == pytest.approx(cm_q_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:Cm_q", units="rad**-1") == pytest.approx(
+        cm_q_wing_cruise_, rel=1e-3
+    )
+
+
+def pitch_moment_pitch_rate_ht(
+    XML_FILE: str,
+    cm_q_ht_low_speed_: float,
+    cm_q_ht_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:Cm_q", units="rad**-1"
+    ) == pytest.approx(cm_q_ht_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityHorizontalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:Cm_q", units="rad**-1"
+    ) == pytest.approx(cm_q_ht_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def pitch_moment_pitch_rate_aircraft(
+    XML_FILE: str,
+    cm_q_low_speed_: float,
+    cm_q_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cm_q", units="rad**-1"
+    ) == pytest.approx(cm_q_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMPitchVelocityAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMPitchVelocityAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cm_q", units="rad**-1"
+    ) == pytest.approx(cm_q_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def pitch_moment_aoa_rate_derivative(
+    XML_FILE: str,
+    cm_aoa_dot_low_speed_: float,
+    cm_aoa_dot_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMAlphaDotAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:low_speed:Cm_alpha_dot") == pytest.approx(
+        cm_aoa_dot_low_speed_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCMAlphaDotAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:aircraft:cruise:Cm_alpha_dot") == pytest.approx(
+        cm_aoa_dot_cruise_, rel=1e-3
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_sideslip_derivative_vt(
+    XML_FILE: str,
+    cn_beta_vt_low_speed_: float,
+    cn_beta_vt_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_sideslip_aircraft(
+    XML_FILE: str,
+    cn_beta_low_speed_: float,
+):
+    # Only testing the low speed case since the high can't run on its own (fuselage is
+    # independent of mach number and are thus only computed at low speed)
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnBetaAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnBetaAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cn_beta", units="rad**-1"
+    ) == pytest.approx(cn_beta_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_aileron(
+    XML_FILE: str,
+    cn_delta_a_low_speed_: float,
+    cn_delta_a_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnDeltaAileron(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnDeltaAileron(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:low_speed:Cn_delta_a", units="rad**-1"
+    ) == pytest.approx(cn_delta_a_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnDeltaAileron(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aileron:cruise:Cn_delta_a", units="rad**-1"
+    ) == pytest.approx(cn_delta_a_cruise_, rel=1e-3)
+
+
+def yaw_moment_rudder(
+    XML_FILE: str,
+    cn_delta_r_low_speed_: float,
+    cn_delta_r_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnDeltaRudder(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:low_speed:Cn_delta_r", units="rad**-1"
+    ) == pytest.approx(cn_delta_r_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnDeltaRudder(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnDeltaRudder(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:rudder:cruise:Cn_delta_r", units="rad**-1"
+    ) == pytest.approx(cn_delta_r_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_roll_rate_wing(
+    XML_FILE: str,
+    cn_p_wing_low_speed_: float,
+    cn_p_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cn_p", units="rad**-1"
+    ) == pytest.approx(cn_p_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:Cn_p", units="rad**-1") == pytest.approx(
+        cn_p_wing_cruise_, rel=1e-3
+    )
+
+
+def yaw_moment_roll_rate_vt(
+    XML_FILE: str,
+    cn_p_vt_low_speed_: float,
+    cn_p_vt_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cn_p", units="rad**-1"
+    ) == pytest.approx(cn_p_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cn_p", units="rad**-1"
+    ) == pytest.approx(cn_p_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_roll_rate_aircraft(
+    XML_FILE: str,
+    cn_p_low_speed_: float,
+    cn_p_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cn_p", units="rad**-1"
+    ) == pytest.approx(cn_p_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnRollRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnRollRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cn_p", units="rad**-1"
+    ) == pytest.approx(cn_p_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_yaw_rate_wing(
+    XML_FILE: str,
+    cn_r_wing_low_speed_: float,
+    cn_r_wing_cruise_: float,
+):
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateWing(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateWing(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:Cn_r", units="rad**-1"
+    ) == pytest.approx(cn_r_wing_low_speed_, rel=1e-3)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateWing(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateWing(low_speed_aero=False), ivc)
+    assert problem.get_val("data:aerodynamics:wing:cruise:Cn_r", units="rad**-1") == pytest.approx(
+        cn_r_wing_cruise_, rel=1e-3
+    )
+
+
+def yaw_moment_yaw_rate_vt(
+    XML_FILE: str,
+    cn_r_vt_low_speed_: float,
+    cn_r_vt_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateVerticalTail(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:low_speed:Cn_r", units="rad**-1"
+    ) == pytest.approx(cn_r_vt_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateVerticalTail(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:vertical_tail:cruise:Cn_r", units="rad**-1"
+    ) == pytest.approx(cn_r_vt_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def yaw_moment_yaw_rate_aircraft(
+    XML_FILE: str,
+    cn_r_low_speed_: float,
+    cn_r_cruise_: float,
+):
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateAircraft(low_speed_aero=True), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:low_speed:Cn_r", units="rad**-1"
+    ) == pytest.approx(cn_r_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeCnYawRateAircraft(low_speed_aero=False)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCnYawRateAircraft(low_speed_aero=False), ivc)
+    assert problem.get_val(
+        "data:aerodynamics:aircraft:cruise:Cn_r", units="rad**-1"
+    ) == pytest.approx(cn_r_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)

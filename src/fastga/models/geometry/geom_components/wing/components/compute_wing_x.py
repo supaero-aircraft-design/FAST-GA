@@ -14,8 +14,6 @@
 
 import numpy as np
 
-import math
-
 from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
@@ -73,12 +71,8 @@ class ComputeWingX(ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
-        x3_wing = (
-            1.0 / 4.0 * l1_wing + (y3_wing - y2_wing) * math.tan(sweep_25) - 1.0 / 4.0 * l3_wing
-        )
-        x4_wing = (
-            1.0 / 4.0 * l1_wing + (y4_wing - y2_wing) * math.tan(sweep_25) - 1.0 / 4.0 * l4_wing
-        )
+        x3_wing = 1.0 / 4.0 * l1_wing + (y3_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l3_wing
+        x4_wing = 1.0 / 4.0 * l1_wing + (y4_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l4_wing
 
         outputs["data:geometry:wing:kink:leading_edge:x:local"] = x3_wing
         outputs["data:geometry:wing:tip:leading_edge:x:local"] = x4_wing

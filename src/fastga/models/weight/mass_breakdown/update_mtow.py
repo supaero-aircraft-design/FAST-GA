@@ -33,7 +33,8 @@ class UpdateMTOW(ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MTOW", 1500.0, units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:weight:aircraft:MTOW", "data:weight:aircraft:ZFW", val=1.0)
+        self.declare_partials("data:weight:aircraft:MTOW", "data:mission:sizing:fuel", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         zfw = inputs["data:weight:aircraft:ZFW"]

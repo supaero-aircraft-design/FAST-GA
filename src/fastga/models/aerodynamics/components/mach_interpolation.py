@@ -15,8 +15,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import math
-
 import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
@@ -27,6 +25,7 @@ from ..external.xfoil.xfoil_polar import XfoilPolar
 
 class ComputeMachInterpolation(om.Group):
     def initialize(self):
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
@@ -42,6 +41,7 @@ class ComputeMachInterpolation(om.Group):
         self.add_subsystem(
             "wing_airfoil",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["wing_airfoil_file"],
                 activate_negative_angle=True,
@@ -51,6 +51,7 @@ class ComputeMachInterpolation(om.Group):
         self.add_subsystem(
             "htp_airfoil",
             XfoilPolar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,
@@ -141,7 +142,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         wing_alpha = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:alpha"])
         wing_airfoil_cl_alpha = (
             np.interp(11.0, wing_alpha, wing_cl) - np.interp(1.0, wing_alpha, wing_cl)
-        ) / (10.0 * math.pi / 180.0)
+        ) / (10.0 * np.pi / 180.0)
 
         htp_cl = self._reshape(
             inputs["xfoil:horizontal_tail:alpha"], inputs["xfoil:horizontal_tail:CL"]
@@ -151,16 +152,16 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         )
         htp_airfoil_cl_alpha = (
             np.interp(11.0, htp_alpha, htp_cl) - np.interp(1.0, htp_alpha, htp_cl)
-        ) / (10.0 * math.pi / 180.0)
+        ) / (10.0 * np.pi / 180.0)
 
         mach_array = np.linspace(0.0, 1.55 * mach_cruise, MACH_NB_PTS + 1)
 
         beta = np.sqrt(1.0 - mach_array ** 2.0)
-        k_wing = wing_airfoil_cl_alpha / beta / (2.0 * math.pi)
-        tan_sweep_wing = math.tan(sweep_25_wing * math.pi / 180.0)
-        cos_sweep_wing = math.cos(sweep_25_wing * math.pi / 180.0)
+        k_wing = wing_airfoil_cl_alpha / beta / (2.0 * np.pi)
+        tan_sweep_wing = np.tan(sweep_25_wing * np.pi / 180.0)
+        cos_sweep_wing = np.cos(sweep_25_wing * np.pi / 180.0)
 
-        wing_cl_alpha = (2.0 * math.pi * aspect_ratio_wing) / (
+        wing_cl_alpha = (2.0 * np.pi * aspect_ratio_wing) / (
             2.0
             + np.sqrt(
                 aspect_ratio_wing ** 2.0
@@ -171,8 +172,8 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             )
         )
 
-        k_htp = htp_airfoil_cl_alpha / beta / (2.0 * math.pi)
-        tan_sweep_htp = math.tan(sweep_25_htp * math.pi / 180.0)
+        k_htp = htp_airfoil_cl_alpha / beta / (2.0 * np.pi)
+        tan_sweep_htp = np.tan(sweep_25_htp * np.pi / 180.0)
 
         # Computing the fuselage interference factor
         k_wf = (
@@ -181,7 +182,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             - 0.25 * (fuselage_diameter / span_wing) ** 2.0
         )
 
-        htp_cl_alpha = (2.0 * math.pi * aspect_ratio_htp) / (
+        htp_cl_alpha = (2.0 * np.pi * aspect_ratio_htp) / (
             2.0
             + np.sqrt(
                 aspect_ratio_htp ** 2.0

@@ -46,6 +46,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -62,6 +63,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 low_speed_aero=self.options["low_speed_aero"],
             ),
@@ -82,6 +84,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
+        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -113,6 +116,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
+                airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 low_speed_aero=self.options["low_speed_aero"],
             ),

@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import math
 import warnings
 
 import numpy as np
@@ -319,8 +318,8 @@ class ComputeVN(om.ExplicitComponent):
         # over the values written in the documents.
 
         # Lets start by computing the 1g/-1g stall speeds using the usual formulations
-        vs_1g_ps = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * cl_max))  # [m/s]
-        vs_1g_ng = math.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * abs(cl_min)))  # [m/s]
+        vs_1g_ps = np.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * cl_max))  # [m/s]
+        vs_1g_ng = np.sqrt((2.0 * mass * g) / (atm_0.density * wing_area * abs(cl_min)))  # [m/s]
         velocity_array.append(float(vs_1g_ps))
         load_factor_array.append(1.0)
         velocity_array.append(float(vs_1g_ng))
@@ -434,8 +433,8 @@ class ComputeVN(om.ExplicitComponent):
         # https://www.easa.europa.eu/sites/default/files/dfu/CS-23%20Amendment%204.pdf
         # https://www.astm.org/Standards/F3116.htm
 
-        vma_ps = vs_1g_ps * math.sqrt(n_lim_ps)  # [m/s]
-        vma_ng = vs_1g_ng * math.sqrt(abs(n_lim_ng))  # [m/s]
+        vma_ps = vs_1g_ps * np.sqrt(n_lim_ps)  # [m/s]
+        vma_ng = vs_1g_ng * np.sqrt(abs(n_lim_ng))  # [m/s]
         velocity_array.append(float(vma_ps))
         velocity_array.append(float(vma_ng))
 
@@ -502,7 +501,7 @@ class ComputeVN(om.ExplicitComponent):
             else:
                 k_c = 28.6
 
-        vc_min_1 = k_c * math.sqrt(weight_lbf / wing_area_sft) * self.kts_to_ms  # [m/s]
+        vc_min_1 = k_c * np.sqrt(weight_lbf / wing_area_sft) * self.kts_to_ms  # [m/s]
 
         # This second constraint rather refers to the paragraph on maneuvering speeds,
         # which needs to be chosen so that they are smaller than cruising speeds
@@ -659,7 +658,7 @@ class ComputeVN(om.ExplicitComponent):
 
             # The second candidate for the Vmg is given by the stall speed and the load factor at
             # the cruise speed
-            vmg_min_2 = vs_1g_ps * math.sqrt(load_factor_gust_p(u_de_vc, vc))  # [m/s]
+            vmg_min_2 = vs_1g_ps * np.sqrt(load_factor_gust_p(u_de_vc, vc))  # [m/s]
             vmg = min([vmg_min_1, vmg_min_2])  # [m/s]
 
             # As for the computation of the associated load factor, no source were found for any
@@ -691,7 +690,7 @@ class ComputeVN(om.ExplicitComponent):
         # CS 23.345 (b)
 
         # Let us start by computing the Vfe
-        vs_fe_1g_ps = math.sqrt(
+        vs_fe_1g_ps = np.sqrt(
             (2.0 * mass * g) / (atm_0.density * wing_area * cl_max_flaps)
         )  # [m/s]
         vfe_min_1 = 1.4 * vs_1g_ps  # [m/s]
@@ -711,7 +710,7 @@ class ComputeVN(om.ExplicitComponent):
         n_lim_ps_fe = 2.0
         n_vfe = max(n_lim_ps_fe, load_factor_gust_n(u_de_fe, vfe))
 
-        velocity_array.append(float(vs_fe_1g_ps * math.sqrt(n_vfe)))
+        velocity_array.append(float(vs_fe_1g_ps * np.sqrt(n_vfe)))
         load_factor_array.append(float(n_vfe))
         velocity_array.append(float(vfe))
         load_factor_array.append(float(n_vfe))

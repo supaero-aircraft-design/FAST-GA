@@ -14,7 +14,6 @@
 
 import numpy as np
 import openmdao.api as om
-import math
 
 import fastoad.api as oad
 from stdatm import Atmosphere
@@ -136,7 +135,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         if cruise_alt > 10000.0:
             fus_dia = (maximum_height + maximum_width) / 2.0
-            v_press = (fus_length - lar - lav) * math.pi * (fus_dia / 2.0) ** 2.0
+            v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
             delta_p = (pressure_sl - pressure_cruise) * 0.000145038
         else:
             v_press = 0.0
