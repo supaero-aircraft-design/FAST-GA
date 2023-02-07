@@ -142,6 +142,7 @@
         <aspect_ratio is_input="True">7.981<!--wing aspect ratio--></aspect_ratio>
         <b_50 units="m" is_input="False">11.605647253590986<!--actual length between root and tip along 50% of chord--></b_50>
         <dihedral units="deg">6.0</dihedral>
+        <twist units="deg">-0.0</twist>
         <outer_area units="m**2" is_input="False">15.134670328835073<!--wing area outside of fuselage--></outer_area>
         <span units="m" is_input="False">11.605647253590986<!--wing span--></span>
         <sweep_0 units="rad" is_input="False">0.0<!--sweep angle at leading edge of wing--></sweep_0>

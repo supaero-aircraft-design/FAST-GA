@@ -82,6 +82,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:twist", val=np.nan, units="rad")
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["low_speed_aero"]:
@@ -169,13 +170,16 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
         aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
         taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
-        dihedral_angle = inputs["data:geometry:wing:dihedral"]
+        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
+        twist_angle = float(inputs["data:geometry:wing:twist"])
         geometry_set = np.around(
             np.array(
                 [
                     sweep25_wing,
                     taper_ratio_wing,
                     aspect_ratio_wing,
+                    dihedral_angle,
+                    twist_angle,
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
@@ -236,6 +240,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_alpha_wing = ((cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
                 dihedral_angle
             ) ** 2.0
+
+            # The correction on the effect of dihedral angle cannot be taken into account by
+            # modifying the generation of panel since only the surfaces of the panel and their
+            # aoa impact the computation, so we will stick with this "post processing" of the
+            # dihedral
+
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus / beta).tolist()
             chord_vector_wing = wing_0["chord_vector"]
@@ -401,17 +411,22 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aspect_ratio = float(inputs["data:geometry:wing:aspect_ratio"])
         meanchord = inputs["data:geometry:wing:MAC:length"]
 
+        y2_wing = float(inputs["data:geometry:wing:root:y"])
+        semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
+        wing_twist = float(inputs["data:geometry:wing:twist"])
+
         # Initialization
         x_c = self.wing["x_c"]
         panelchord = self.wing["panel_chord"]
         panelsurf = self.wing["panel_surf"]
         if use_airfoil:
             self.generate_curvature(self.wing, self.options["wing_airfoil_file"])
+        self.apply_deflection(inputs, flaps_angle)
+        self.generate_twist(self.wing, wing_twist, y2_wing, semi_span)
         panelangle_vect = self.wing["panel_angle_vect"]
         aic = self.wing["aic"]
         aic_inv = np.linalg.inv(aic)
         aic_wake = self.wing["aic_wake"]
-        self.apply_deflection(inputs, flaps_angle)
 
         # Compute air speed
         v_inf = max(
@@ -876,11 +891,27 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["aic"] = aic
         dictionary["aic_wake"] = aic_wake
 
+    def generate_twist(self, dictionary, twist, y_start, y_end):
+        """
+        Add the twist on the lifting surface assuming a linear variation between y_start and y_end.
+
+        :param dictionary: dictionary which contains the point coordinates of the lifting surface
+        :param twist: wing twist variation between root and tip, <0 when tip is pointed downwards
+        :param y_start: y coordinate of the start of linear twist
+        :param y_end:y coordinate of the end of linear twist
+        """
+
+        y_panel = dictionary["y_panel"][: self.n_y]
+        twist = np.interp(y_panel, [y_start, y_end], [0.0, twist])
+        twist_tile = np.tile(twist, self.n_x)
+
+        panel_angle_vect = dictionary["panel_angle_vect"]
+
+        dictionary["panel_angle_vect"] = panel_angle_vect + twist_tile
+
     def generate_curvature(self, dictionary, file_name):
         """Generates curvature corresponding to the airfoil contained in .af file."""
         x_panel = dictionary["x_panel"]
-        panelangle_vect = dictionary["panel_angle_vect"]
-        panelangle = dictionary["panel_angle"]
 
         # Initialization
         z_panel = np.zeros(self.n_x + 1)
@@ -893,17 +924,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         for i in range(self.n_x + 1):
             xred = (x_panel[i, 0] - x_panel[0, 0]) / rootchord
             z_panel[i] = np.interp(
-                min(max(xred, min(mean_line["x"])), max(mean_line["x"])),
+                np.clip(xred, min(mean_line["x"]), max(mean_line["x"])),
                 mean_line["x"],
                 mean_line["z"],
             )
         z_panel = z_panel * rootchord
-        for i in range(self.n_x):
-            panelangle[i] = (z_panel[i] - z_panel[i + 1]) / (x_panel[i + 1, 0] - x_panel[i, 0])
+        x_coord_chord = x_panel[:, 0]
 
-        for i in range(self.n_x):
-            for j in range(self.n_y):
-                panelangle_vect[i * self.n_y + j] = panelangle[i]
+        panelangle = (z_panel[: self.n_x] - z_panel[1 : self.n_x + 1]) / (
+            x_coord_chord[1 : self.n_x + 1] - x_coord_chord[: self.n_x]
+        )
+        panelangle_vect = np.repeat(panelangle, self.n_y)
 
         # Save results
         dictionary["panel_angle_vect"] = panelangle_vect
@@ -915,31 +946,34 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         root_chord = inputs["data:geometry:wing:root:chord"]
         x_start = (1.0 - inputs["data:geometry:flap:chord_ratio"]) * root_chord
-        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
 
         deflection_angle *= np.pi / 180  # converted to radian
-        # z_ = self.wing["z"]
         x_panel = self.wing["x_panel"]
-        y_panel = self.wing["y_panel"]
         panelangle = self.wing["panel_angle"]
         panelangle_vect = self.wing["panel_angle_vect"]
 
         z_panel = np.zeros(self.n_x + 1)
-        z_panel_no_flaps = np.zeros(self.n_x + 1)
+        z_panel_no_flaps = copy.deepcopy(self.wing["z"])
         for i in range(self.n_x + 1):
             if x_panel[i, 0] > x_start:
                 z_panel[i] = z_panel_no_flaps[i] - np.sin(deflection_angle) * (
                     x_panel[i, 0] - x_start
                 )
+            else:
+                z_panel[i] = z_panel_no_flaps[i]
+
+        # At this point z_panel contains the z coordinate of the flapped part of the wing,
+        # panel angle vector should not change in the un-flapped part
         for i in range(self.n_x):
             panelangle[i] = (z_panel[i] - z_panel[i + 1]) / (x_panel[i + 1, 0] - x_panel[i, 0])
-        for j in range(self.ny1):
-            if y_panel[j] > y1_wing:
-                for i in range(self.n_x):
-                    panelangle_vect[i * self.n_y + j] += panelangle[i]
+
+        # At this point panelangle contains the panel angle of the flapped part of the wing,
+        # panel angle vector should not change in the un-flapped part
+
+        # If we are in the flapped portion of the wing
         for j in range(self.ny1, self.ny1 + self.ny2):
             for i in range(self.n_x):
-                panelangle_vect[i * self.n_y + j] += panelangle[i]
+                panelangle_vect[i * self.n_y + j] = panelangle[i]
 
         # Save results
         self.wing["panel_angle_vect"] = panelangle_vect
@@ -985,6 +1019,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 "sweep25_wing",
                 "taper_ratio_wing",
                 "aspect_ratio_wing",
+                "dihedral_angle_wing",
+                "twist_angle_wing",
                 "sweep25_htp",
                 "taper_ratio_htp",
                 "aspect_ratio_htp",
@@ -1004,11 +1040,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                         data = pd.DataFrame(values, index=labels)
                         # noinspection PyBroadException
                         try:
-                            if np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy()) == 7:
+                            if (
+                                np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
+                                == len(geometry_set_labels) - 1
+                            ):
                                 saved_set = np.around(
                                     data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
                                 )
-                                if np.sum(saved_set == geometry_set[0:-1]) == 7:
+                                if (
+                                    np.sum(saved_set == geometry_set[0:-1])
+                                    == len(geometry_set_labels) - 1
+                                ):
                                     result_file_path = pth.join(
                                         result_folder_path, "vlm_" + str(idx) + ".csv"
                                     )
@@ -1027,6 +1069,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "sweep25_wing",
             "taper_ratio_wing",
             "aspect_ratio_wing",
+            "dihedral_angle_wing",
+            "twist_angle_wing",
             "sweep25_htp",
             "taper_ratio_htp",
             "aspect_ratio_htp",
