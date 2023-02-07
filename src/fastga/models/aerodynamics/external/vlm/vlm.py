@@ -316,6 +316,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
+                    cl_aoa_wing,
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
@@ -339,6 +340,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
+            cl_aoa_wing = float(data.loc["cl_X_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -1091,6 +1093,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """Reads saved results."""
         labels = [
             "cl_0_wing",
+            "cl_X_wing",
             "cl_alpha_wing",
             "cm_0_wing",
             "y_vector_wing",

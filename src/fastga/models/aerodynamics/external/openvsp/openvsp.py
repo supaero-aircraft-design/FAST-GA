@@ -160,12 +160,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
         aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
         taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
+        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
+        twist_angle = float(inputs["data:geometry:wing:twist"])
         geometry_set = np.around(
             np.array(
                 [
                     sweep25_wing,
                     taper_ratio_wing,
                     aspect_ratio_wing,
+                    dihedral_angle,
+                    twist_angle,
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
@@ -271,6 +275,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
+                    cl_aoa_wing,
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
@@ -294,6 +299,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
+            cl_aoa_wing = float(data.loc["cl_aoa_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -1127,6 +1133,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "sweep25_wing",
                 "taper_ratio_wing",
                 "aspect_ratio_wing",
+                "dihedral_angle_wing",
+                "twist_angle_wing",
                 "sweep25_htp",
                 "taper_ratio_htp",
                 "aspect_ratio_htp",
@@ -1169,6 +1177,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "sweep25_wing",
             "taper_ratio_wing",
             "aspect_ratio_wing",
+            "dihedral_angle_wing",
+            "twist_angle_wing",
             "sweep25_htp",
             "taper_ratio_htp",
             "aspect_ratio_htp",
@@ -1189,6 +1199,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         """Reads saved results."""
         labels = [
             "cl_0_wing",
+            "cl_X_wing",
             "cl_alpha_wing",
             "cm_0_wing",
             "y_vector_wing",

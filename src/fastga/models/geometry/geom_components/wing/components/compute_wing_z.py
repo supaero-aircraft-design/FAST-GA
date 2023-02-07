@@ -11,12 +11,12 @@ import fastoad.api as oad
 
 import logging
 
-from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_LOCATION
+from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_HEIGHT
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_LOCATION, "fastga.submodel.geometry.wing.location.legacy2")
+@oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
 class ComputeWingZ(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing Zs estimation."""
@@ -131,10 +131,8 @@ class ComputeWingZ(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        dihedral_angle = inputs["data:geometry:wing:dihedral"]
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
-        fus_height = inputs["data:geometry:fuselage:maximum_height"]
         wing_config = inputs["data:geometry:wing_configuration"]
 
         dihedral_angle = inputs["data:geometry:wing:dihedral"]
