@@ -229,17 +229,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
             # Post-process wing data ---------------------------------------------------------------
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
-            beta = math.sqrt(1 - mach ** 2)  # Prandtl-Glauert
-            cl_0_wing = float(
-                (wing_0["cl"] * k_fus / beta) * math.cos(dihedral_angle) * math.cos(dihedral_angle)
-            )
+            beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
+            cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
             cl_aoa_wing = float(wing_aoa["cl"] * k_fus / beta)
             cm_0_wing = float(wing_0["cm"] * k_fus / beta)
-            cl_alpha_wing = (
-                ((cl_aoa_wing - cl_0_wing) / (aoa_angle * math.pi / 180))
-                * math.cos(dihedral_angle)
-                * math.cos(dihedral_angle)
-            )
+            cl_alpha_wing = ((cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
+                dihedral_angle
+            ) ** 2.0
             y_vector_wing = wing_0["y_vector"]
             cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus / beta).tolist()
             chord_vector_wing = wing_0["chord_vector"]

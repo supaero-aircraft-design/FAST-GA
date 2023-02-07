@@ -9,6 +9,7 @@
     </TLAR>
     <geometry>
       <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <wing_configuration is_input="True">1.0</wing_configuration>
       <aircraft>
         <wet_area units="m**2" is_input="False">98.41054319614959<!--aircraft total wet area--></wet_area>
       </aircraft>
@@ -144,6 +145,7 @@
         <sweep_100_inner units="rad" is_input="False">-0.09657359194054961<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">-0.09657359194054961<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <dihedral units="deg" is_input="True">6.5<!--sweep angle at 25% chord of wing--></dihedral>
         <taper_ratio is_input="True">0.61<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.146<!--mean thickness ratio of wing--></thickness_ratio>
         <wet_area units="m**2" is_input="False">33.583595403474455<!--wet area of wing--></wet_area>

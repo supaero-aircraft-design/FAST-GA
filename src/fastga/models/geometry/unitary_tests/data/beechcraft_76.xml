@@ -11,6 +11,7 @@
     <geometry>
       <flap_type is_input="True">1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail is_input="True">1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <wing_configuration is_input="True">1.0<!--wing configuration type (1.0 - low wing, 2.0 - mid wing, 3.0 - high wing)--></wing_configuration>
       <aircraft>
         <wet_area units="m**2" is_input="False">82.21685637423752<!--aircraft total wet area--></wet_area>
       </aircraft>
@@ -141,6 +142,7 @@
         <b_50 units="m" is_input="False">11.605647253590986<!--actual length between root and tip along 50% of chord--></b_50>
         <outer_area units="m**2" is_input="False">15.134670328835073<!--wing area outside of fuselage--></outer_area>
         <span units="m" is_input="False">11.605647253590986<!--wing span--></span>
+        <dihedral units="deg" is_input="True">6.0<!--dihedral angle of the wing--></dihedral>
         <sweep_0 units="rad" is_input="False">0.0<!--sweep angle at leading edge of wing--></sweep_0>
         <sweep_100_inner units="rad" is_input="False">0.0<!--sweep angle at trailing edge of wing (inner side of the kink)--></sweep_100_inner>
         <sweep_100_outer units="rad" is_input="False">0.0<!--sweep angle at trailing edge of wing (outer side of the kink)--></sweep_100_outer>

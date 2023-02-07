@@ -350,7 +350,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
         # Needed for the computation of the hub lost factor
-        # phi = math.atan(v_ax / (omega * radius - v_t) * math.cos(sweep * math.pi / 180.0))
+        # phi = np.atan(v_ax / (omega * radius - v_t) * np.cos(sweep * np.pi / 180.0))
 
         # f_tip is the tip loose factor
         f_tip = (
@@ -374,10 +374,10 @@ class PropellerCoreModule(om.ExplicitComponent):
         #     f_hub = min(
         #         1.0,
         #         2
-        #         / math.pi
-        #         * math.acos(
-        #             math.exp(
-        #                  -blades_number / 2 * (radius - radius_min) / (radius * math.sin(phi))
+        #         / np.pi
+        #         * np.acos(
+        #             np.exp(
+        #                  -blades_number / 2 * (radius - radius_min) / (radius * np.sin(phi))
         #             )
         #         ),
         #     )
