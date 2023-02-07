@@ -24,6 +24,7 @@ from ..a_airframe import (
     ComputeFlightControlsWeightFLOPS,
     ComputeFuselageWeight,
     ComputeFuselageWeightRaymer,
+    ComputeFuselageWeightRoskam,
     ComputeFuselageMassAnalytical,
     ComputeWingWeight,
     ComputeLandingGearWeight,
@@ -128,8 +129,21 @@ def test_compute_fuselage_weight_raymer():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuselageWeightRaymer(), ivc)
-    weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass_raymer", units="kg")
+    weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
     assert weight_a2 == pytest.approx(320.60, abs=1e-2)
+
+
+def test_compute_fuselage_weight_roskam():
+    """Tests fuselage weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFuselageWeightRoskam()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFuselageWeightRoskam(), ivc)
+    weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
+    assert weight_a2 == pytest.approx(133.19, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_shell_mass():

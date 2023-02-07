@@ -1,0 +1,216 @@
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <v_max_sl units="kn">180.0</v_max_sl>
+      <v_cruise units="kn">160.0</v_cruise>
+    </TLAR>
+    <geometry>
+      <wing_configuration>3.0</wing_configuration>
+      <cockpit>
+        <windows>
+          <height units="m">0.25</height>
+          <number>6.0</number>
+          <width units="m">0.2</width>
+        </windows>
+      </cockpit>
+      <cabin>
+        <seats>
+          <passenger>
+            <NPAX_max>4.0</NPAX_max>
+          </passenger>
+        </seats>
+        <max_differential_pressure units="Pa">0.0<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
+        <pressurized>0.0</pressurized>
+        <length units="m">5.827</length>
+      </cabin>
+      <landing_gear>
+        <height units="m">0.5</height>
+      </landing_gear>
+      <propulsion>
+        <engine>
+          <layout>1.0</layout>
+        </engine>
+      </propulsion>
+      <fuselage>
+        <maximum_height units="m" is_input="False">1.2<!--maximum fuselage height--></maximum_height>
+        <maximum_width units="m" is_input="False">1.160<!--maximum fuselage width--></maximum_width>
+        <length units="m" is_input="False">9.55</length>
+        <front_length units="m" is_input="False">1.451</front_length>
+        <rear_length units="m" is_input="False">3.6</rear_length>
+        <wet_area units="m**2" is_input="False">35.0<!--fuselage wet area--></wet_area>
+      </fuselage>
+      <horizontal_tail>
+        <area units="m**2">3.60<!--horizontal tail area--></area>
+        <aspect_ratio is_input="False">4.225<!--aspect ratio of horizontal tail--></aspect_ratio>
+        <elevator_chord_ratio>0.14<!--elevator chord ratio--></elevator_chord_ratio>
+        <sweep_25 units="deg">0.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <taper_ratio>1.0<!--taper ratio of horizontal tail--></taper_ratio>
+        <thickness_ratio>0.1<!--thickness ratio of horizontal tail--></thickness_ratio>
+        <MAC>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m">5.02<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+            </x>
+          </at25percent>
+        </MAC>
+      </horizontal_tail>
+      <vertical_tail>
+        <area units="m**2">2.73<!--vertical tail area--></area>
+        <aspect_ratio>1.40<!--aspect ratio of vertical tail--></aspect_ratio>
+        <sweep_25 units="deg">5.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <taper_ratio>0.451<!--taper ratio of vertical tail--></taper_ratio>
+        <thickness_ratio>0.1<!--thickness ratio of vertical tail--></thickness_ratio>
+        <span units="m">1.954<!--thickness ratio of vertical tail--></span>
+        <rudder>
+          <chord_ratio>0.35<!--flap rudder as a percentage of the wing chord--></chord_ratio>
+          <max_deflection units="deg">25.0<!--rudder maximum deflection--></max_deflection>
+        </rudder>
+        <MAC>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m">4.5<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
+            </x>
+          </at25percent>
+        </MAC>
+      </vertical_tail>
+      <wing>
+        <area units="m**2">18.60</area>
+      </wing>
+    </geometry>
+    <aerodynamics>
+      <horizontal_tail>
+        <low_speed>
+          <CL_max_clean>0.3</CL_max_clean>
+        </low_speed>
+      </horizontal_tail>
+      <rudder>
+        <cruise>
+          <Cy_delta_r units="1/rad" is_input="False">2.0<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </cruise>
+        <low_speed>
+          <Cy_delta_r units="1/rad" is_input="False">1.888239590256808<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </low_speed>
+      </rudder>
+    </aerodynamics>
+    <mission>
+      <sizing>
+        <landing>
+          <elevator_angle units="deg">-20.0</elevator_angle>
+        </landing>
+        <cs23>
+          <sizing_factor>
+            <ultimate_aircraft>5.7</ultimate_aircraft>
+          </sizing_factor>
+          <characteristic_speed>
+              <vd units="kn">194.0</vd>
+          </characteristic_speed>
+        </cs23>
+        <main_route>
+          <cruise>
+            <altitude units="ft">10000</altitude>
+          </cruise>
+        </main_route>
+      </sizing>
+    </mission>
+    <weight>
+      <aircraft>
+        <MTOW units="kg">1990.0</MTOW>
+        <max_payload units="kg">500.0</max_payload>
+      </aircraft>
+      <airframe>
+        <wing>
+          <CG>
+            <x units="m">2.0</x>
+          </CG>
+        </wing>
+        <horizontal_tail>
+          <mass units="kg">30.0</mass>
+          <CG>
+            <x units="m">9.0</x>
+          </CG>
+        </horizontal_tail>
+        <vertical_tail>
+          <mass units="kg">20.0</mass>
+          <CG>
+            <x units="m">9.0</x>
+          </CG>
+        </vertical_tail>
+      </airframe>
+      <propulsion>
+        <engine>
+          <mass units="kg">327.6</mass>
+          <CG>
+            <x units="m">2.0</x>
+          </CG>
+        </engine>
+      </propulsion>
+      <systems>
+        <life_support>
+          <air_conditioning>
+            <mass units="lbm" is_input="False">93.332904377508<!--air conditioning (C2): mass--></mass>
+            <CG>
+              <x units="m" is_input="False">1.87292<!--air conditioning (C2): X-position of center of gravity--></x>
+            </CG>
+          </air_conditioning>
+          <de_icing>
+            <mass units="lbm" is_input="False">0.0<!--de-icing system mass--></mass>
+          </de_icing>
+          <fixed_oxygen>
+            <mass units="lbm" is_input="False">18.524400158713682<!--oxygen system mass--></mass>
+          </fixed_oxygen>
+          <insulation>
+            <mass units="lbm" is_input="False">0.0<!--insulation (C21): mass--></mass>
+          </insulation>
+          <internal_lighting>
+            <mass units="lbm" is_input="False">0.0<!--lightning mass--></mass>
+          </internal_lighting>
+          <seat_installation>
+            <mass units="lbm" is_input="False">0.0<!--life support embedded in seat mass--></mass>
+          </seat_installation>
+          <security_kits>
+            <mass units="lbm" is_input="False">0.0<!--security kits mass--></mass>
+          </security_kits>
+        </life_support>
+      </systems>
+      <furniture>
+        <passenger_seats>
+          <mass units="kg">80.0</mass>
+        </passenger_seats>
+      </furniture>
+    </weight>
+  </data>
+  <settings>
+    <geometry>
+      <fuselage>
+        <min_skin_thickness units="m">0.0005</min_skin_thickness>
+      </fuselage>
+    </geometry>
+    <materials>
+      <insulation>
+        <area_density units="kg/m**2">0.45</area_density>
+      </insulation>
+      <fuselage>
+        <skin>
+          <density units="kg/m**3">2780.0</density>
+          <max_shear_stress units="Pa">105000000.0</max_shear_stress>
+          <sigma_02 units="MPa">110.0<!--elasticity limit of the material--></sigma_02>
+          <sigma_max units="MPa">180.0<!--ultimate tensile strength of the material--></sigma_max>
+          <young_modulus units="GPa">69.5</young_modulus>
+        </skin>
+        <stringer>
+          <density units="kg/m**3">2780.0</density>
+          <young_modulus units="GPa">68.0</young_modulus>
+        </stringer>
+      </fuselage>
+    </materials>
+    <weight>
+      <airframe>
+        <fuselage>
+          <reinforcements>
+            <mass_fraction>0.2</mass_fraction>
+          </reinforcements>
+        </fuselage>
+      </airframe>
+    </weight>
+  </settings>
+</FASTOAD_model>

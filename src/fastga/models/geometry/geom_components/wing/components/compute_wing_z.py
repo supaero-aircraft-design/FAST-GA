@@ -33,7 +33,7 @@ class ComputeWingZ(ExplicitComponent):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:wing_configuration", val=np.nan)
+        self.add_input("data:geometry:wing_configuration", val=np.nan)
 
         self.add_output("data:geometry:wing:root:z_lower", units="m")
         self.add_output("data:geometry:wing:root:z_upper", units="m")
@@ -50,7 +50,7 @@ class ComputeWingZ(ExplicitComponent):
         root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]
-        wing_config = inputs["data:geometry:wing:wing_configuration"]
+        wing_config = inputs["data:geometry:wing_configuration"]
 
         if wing_config == 1.0:
 
