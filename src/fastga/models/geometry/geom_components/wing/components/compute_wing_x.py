@@ -18,7 +18,7 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_X_LOCAL
+from ..constants import SUBMODEL_WING_X_LOCAL
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_X_LOCAL, "fastga.submodel.geometry.wing.x_local.legacy")

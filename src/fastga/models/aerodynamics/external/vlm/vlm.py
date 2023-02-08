@@ -260,9 +260,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             # aoa impact the computation, so we will stick with this "post processing" of the
             # dihedral
 
-            y_vector_wing = wing_0["y_vector"]
-            cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus / beta).tolist()
-            chord_vector_wing = wing_0["chord_vector"]
+            y_vector_wing = wing_aoa["y_vector"]
+            cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus / beta).tolist()
+            chord_vector_wing = wing_aoa["chord_vector"]
             cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_aoa_wing)
             if mach <= 0.4:
                 coef_e = wing_aoa["coef_e"]

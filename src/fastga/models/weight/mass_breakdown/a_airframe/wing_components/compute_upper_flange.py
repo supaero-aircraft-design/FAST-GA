@@ -95,7 +95,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
             shape_by_conn=True,
             units="m",
         )
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
         )
@@ -212,7 +212,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
         y_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"]
         cl_vector = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
         cl_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"]
-        cl_0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
         v_ref = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"]
 
@@ -287,7 +287,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
         for load_factor in [load_factor_pos, load_factor_neg]:
 
             cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
-            cl_s_actual = cl_s * cl_wing / cl_0
+            cl_s_actual = cl_s * cl_wing / cl_ref
             cl_s_slip_actual = safety_factor * cl_s_slip * (v_ref / v_c_tas) ** 2.0
             lift_section = dynamic_pressure * (cl_s_actual + cl_s_slip_actual)
             weight_array = weight_array_orig * load_factor

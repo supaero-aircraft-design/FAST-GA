@@ -235,9 +235,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             cl_aoa_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
             cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
-            y_vector_wing = wing_0["y_vector"]
-            cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
-            chord_vector_wing = wing_0["chord_vector"]
+            y_vector_wing = wing_aoa["y_vector"]
+            cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
+            chord_vector_wing = wing_aoa["chord_vector"]
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
             # piAe) -> e' = e/1.05^2
@@ -313,7 +313,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
-            cl_aoa_wing = float(data.loc["cl_aoa_wing", 0])
+            cl_aoa_wing = float(data.loc["cl_X_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -1169,11 +1169,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                         data = pd.DataFrame(values, index=labels)
                         # noinspection PyBroadException
                         try:
-                            if np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy()) == 7:
+                            if (
+                                np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
+                                == len(geometry_set_labels) - 1
+                            ):
                                 saved_set = np.around(
                                     data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
                                 )
-                                if np.sum(saved_set == geometry_set[0:-1]) == 7:
+                                if (
+                                    np.sum(saved_set == geometry_set[0:-1])
+                                    == len(geometry_set_labels) - 1
+                                ):
                                     result_file_path = pth.join(
                                         result_folder_path, "openvsp_" + str(idx) + ".csv"
                                     )

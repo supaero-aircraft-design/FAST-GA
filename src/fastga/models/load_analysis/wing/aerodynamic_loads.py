@@ -71,7 +71,7 @@ class AerodynamicLoads(om.ExplicitComponent):
             "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
         )
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:cruise:CL_ref", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
@@ -150,7 +150,7 @@ class AerodynamicLoads(om.ExplicitComponent):
         cl_vector = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
         cl_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
-        cl_0 = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
+        cl_ref = inputs["data:aerodynamics:wing:cruise:CL_ref"]
         v_ref = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"]
 
         semi_span = float(inputs["data:geometry:wing:span"]) / 2.0
@@ -223,7 +223,7 @@ class AerodynamicLoads(om.ExplicitComponent):
         cl_s_slip = AerostructuralLoad.compute_cl_s(
             y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector
         )
-        cl_s_actual = cl_s * cl_wing / cl_0
+        cl_s_actual = cl_s * cl_wing / cl_ref
         cl_s_slip_actual = cl_s_slip * (v_ref / cruise_v_tas) ** 2.0
         lift_distribution = (cl_s_actual + cl_s_slip_actual) * dynamic_pressure
 
