@@ -213,6 +213,7 @@ def test_vlm_comp_high_speed():
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.0969,
+        cl_ref_wing=0.98,
         cl_alpha_wing=5.248,
         cm0=-0.0280,
         coeff_k_wing=0.0412,
@@ -226,7 +227,7 @@ def test_vlm_comp_high_speed():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS,
+    system() != "Windows" or False,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
@@ -340,7 +341,8 @@ def test_vlm_comp_low_speed():
     comp_low_speed(
         XML_FILE,
         use_openvsp=False,
-        cl0_wing=0.0945,
+        cl0_wing=0.09386,
+        cl_ref_wing=0.988,
         cl_alpha_wing=5.119,
         cm0=-0.0273,
         coeff_k_wing=0.03950,
@@ -366,6 +368,7 @@ def test_openvsp_comp_high_speed():
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.1269,
+        cl_ref_wing=0.98,
         cl_alpha_wing=5.079,
         cm0=-0.0271,
         coeff_k_wing=0.0382,
@@ -572,6 +575,7 @@ def test_openvsp_comp_low_speed():
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.1243,
+        cl_ref_wing=0.98,
         cl_alpha_wing=4.981,
         cm0=-0.0265,
         coeff_k_wing=0.0381,

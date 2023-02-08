@@ -107,9 +107,23 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         Function that perform a complete calculation of aerodynamic parameters under OpenVSP and
         returns only the cl_alpha_aircraft parameter.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coeff(
-            inputs, outputs, altitude, mach, aoa_angle
-        )
+        (
+            _,
+            _,
+            cl_alpha_wing,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            cl_alpha_htp,
+            _,
+            _,
+            _,
+            _,
+        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, aoa_angle)
         return float(cl_alpha_wing + cl_alpha_htp)
 
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
@@ -328,6 +342,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return (
             cl_0_wing,
+            cl_aoa_wing,
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,

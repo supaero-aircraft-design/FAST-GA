@@ -152,7 +152,7 @@
         <sweep_50 units="deg" is_input="True">-1.73<!--sweep angle at 25% chord of wing--></sweep_50>
         <taper_ratio is_input="True">0.5<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.12<!--mean thickness ratio of wing--></thickness_ratio>
-        <twist units="deg">3.0<!--twist angle for the wing (negative is tip down)--></twist>
+        <twist units="deg">0.0<!--twist angle for the wing (negative is tip down)--></twist>
         <wet_area units="m**2" is_input="False">24.44077908858997<!--wet area of wing--></wet_area>
         <MAC>
           <length units="m" is_input="False">1.1929955892823672<!--length of mean aerodynamic chord of wing--></length>

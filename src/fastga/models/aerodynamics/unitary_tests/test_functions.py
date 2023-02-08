@@ -617,6 +617,7 @@ def comp_high_speed(
     XML_FILE: str,
     use_openvsp: bool,
     cl0_wing: float,
+    cl_ref_wing: float,
     cl_alpha_wing: float,
     cm0: float,
     coeff_k_wing: float,
@@ -642,6 +643,9 @@ def comp_high_speed(
         else:
             assert problem["data:aerodynamics:wing:cruise:CL0_clean"] == pytest.approx(
                 cl0_wing, abs=1e-4
+            )
+            assert problem["data:aerodynamics:wing:cruise:CL_ref"] == pytest.approx(
+                cl_ref_wing, abs=1e-4
             )
             assert problem.get_val(
                 "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
@@ -670,6 +674,7 @@ def comp_low_speed(
     XML_FILE: str,
     use_openvsp: bool,
     cl0_wing: float,
+    cl_ref_wing: float,
     cl_alpha_wing: float,
     cm0: float,
     coeff_k_wing: float,
@@ -690,6 +695,9 @@ def comp_low_speed(
     # Check obtained value(s) is/(are) correct
     assert problem["data:aerodynamics:wing:low_speed:CL0_clean"] == pytest.approx(
         cl0_wing, abs=1e-4
+    )
+    assert problem["data:aerodynamics:wing:low_speed:CL_ref"] == pytest.approx(
+        cl_ref_wing, abs=1e-4
     )
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1"
