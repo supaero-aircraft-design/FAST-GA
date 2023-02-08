@@ -72,6 +72,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
@@ -394,7 +395,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
@@ -871,7 +874,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         distance_htp = fa_length + lp_htp - 0.25 * l0_htp - x0_htp
         rho = atm.density
@@ -1328,7 +1333,9 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
