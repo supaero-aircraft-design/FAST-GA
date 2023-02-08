@@ -342,7 +342,7 @@ python-versions = ">=3.5"
 six = ">=1.11.0"
 
 [package.extras]
-test = ["flake8", "coverage"]
+test = ["coverage", "flake8"]
 
 [[package]]
 name = "entrypoints"
@@ -354,7 +354,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "fast-oad-core"
-version = "1.4.0"
+version = "1.4.2"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 category = "main"
 optional = false
@@ -375,7 +375,7 @@ jupyterlab = ">=3.3.0,<4.0.0"
 lxml = ">=4.6.5,<5.0.0"
 notebook = ">=6.0,<7.0"
 numpy = ">=1.21.0,<2.0.0"
-openmdao = ">=3.10,<=3.21"
+openmdao = ">=3.10,<4.0"
 pandas = ">=1.1.0,<2.0.0"
 plotly = ">=5.0.0,<6.0.0"
 "ruamel.yaml" = ">=0.15.78,<0.18"
@@ -525,12 +525,12 @@ python-versions = "*"
 jsonrpclib-pelix = ">=0.3.1"
 
 [package.extras]
-zeroconf = ["zeroconf (==0.19)"]
-zookeeper = ["kazoo (>=2.4)"]
-xmpp = ["sleekxmpp (>=1.3.1)"]
-redis = ["redis (>=2.10)"]
-rsa = ["osgiservicebridge (>=1.5.1)", "python-etcd (>=0.4.5)"]
 mqtt = ["paho-mqtt (>=1.3)"]
+rsa = ["python-etcd (>=0.4.5)", "osgiservicebridge (>=1.5.1)"]
+redis = ["redis (>=2.10)"]
+xmpp = ["sleekxmpp (>=1.3.1)"]
+zookeeper = ["kazoo (>=2.4)"]
+zeroconf = ["zeroconf (==0.19)"]
 
 [[package]]
 name = "ipykernel"
@@ -989,8 +989,8 @@ nest-asyncio = "*"
 traitlets = ">=5.2.2"
 
 [package.extras]
-test = ["xmltodict", "twine (>=1.11.0)", "testpath", "setuptools (>=60.0)", "pytest-cov (>=2.6.1)", "pytest-asyncio", "pytest (>=4.1)", "pre-commit", "pip (>=18.1)", "nbconvert", "mypy", "ipywidgets", "ipython", "ipykernel", "flake8", "check-manifest", "black"]
-sphinx = ["sphinx-book-theme", "Sphinx (>=1.7)", "myst-parser", "moto", "mock", "autodoc-traits"]
+sphinx = ["autodoc-traits", "mock", "moto", "myst-parser", "Sphinx (>=1.7)", "sphinx-book-theme"]
+test = ["black", "check-manifest", "flake8", "ipykernel", "ipython", "ipywidgets", "mypy", "nbconvert", "pip (>=18.1)", "pre-commit", "pytest (>=4.1)", "pytest-asyncio", "pytest-cov (>=2.6.1)", "setuptools (>=60.0)", "testpath", "twine (>=1.11.0)", "xmltodict"]
 
 [[package]]
 name = "nbconvert"
@@ -1135,7 +1135,7 @@ python-versions = ">=3.7"
 jupyter-server = ">=1.8,<3"
 
 [package.extras]
-test = ["pytest-tornasync", "pytest-console-scripts", "pytest"]
+test = ["pytest", "pytest-console-scripts", "pytest-tornasync"]
 
 [[package]]
 name = "numpy"
@@ -1147,7 +1147,7 @@ python-versions = ">=3.7,<3.11"
 
 [[package]]
 name = "openmdao"
-version = "3.17.0"
+version = "3.25.0"
 description = "OpenMDAO framework infrastructure"
 category = "main"
 optional = false
@@ -1156,16 +1156,16 @@ python-versions = ">=3.7"
 [package.dependencies]
 networkx = ">=2.0"
 numpy = "*"
-pyDOE2 = "*"
-pyparsing = "*"
+packaging = "*"
 requests = "*"
 scipy = "*"
 
 [package.extras]
-all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipympl", "ipyparallel", "ipython", "ipywidgets (>=7.6.5)", "jupyter", "jupyter-book", "jupyter-sphinx (==0.3.1)", "matplotlib", "matplotlib", "nbconvert", "notebook", "numpydoc (>=1.1)", "numpydoc (>=1.1)", "parameterized", "playwright (<1.15)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "sphinx-sitemap", "tabulate", "tabulate", "testflo", "testflo (>=1.3.6websockets)"]
-docs = ["matplotlib", "jupyter", "nbconvert", "testflo", "ipyparallel", "numpydoc (>=1.1)", "tabulate", "jupyter-book", "jupyter-sphinx (==0.3.1)", "sphinx-sitemap"]
-notebooks = ["notebook", "tabulate", "ipython", "ipywidgets (>=7.6.5)", "ipympl"]
-test = ["parameterized", "numpydoc (>=1.1)", "pycodestyle (>=2.4.0)", "pydocstyle (==2.0.0)", "testflo (>=1.3.6websockets)", "aiounittest", "playwright (<1.15)"]
+all = ["aiounittest", "bokeh (>=1.3.4)", "colorama", "ipympl", "ipyparallel", "ipython", "ipywidgets (>=7.6.5)", "jupyter", "jupyter-book (>=0.8.0,<0.13)", "jupyter-client (>=7.4.0)", "jupyter-core (>=4.11.2)", "jupyter-sphinx", "matplotlib", "myst-nb", "nbconvert (>=6.3)", "notebook", "num2words", "numpydoc (>=1.1)", "parameterized", "playwright (>=1.20)", "pydoe2", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "sphinx-sitemap", "testflo (>=1.3.6)", "websockets (>8)"]
+docs = ["matplotlib", "numpydoc (>=1.1)", "jupyter-core (>=4.11.2)", "jupyter-book (>=0.8.0,<0.13)", "jupyter-client (>=7.4.0)", "jupyter", "jupyter-sphinx", "sphinx-sitemap", "ipyparallel", "nbconvert (>=6.3)"]
+doe = ["pydoe2"]
+notebooks = ["notebook", "ipython", "ipywidgets (>=7.6.5)", "ipympl", "myst-nb"]
+test = ["parameterized", "numpydoc (>=1.1)", "pycodestyle (>=2.4.0)", "pydocstyle (>=2.0.0)", "testflo (>=1.3.6)", "websockets (>8)", "aiounittest", "playwright (>=1.20)", "num2words"]
 visualization = ["bokeh (>=1.3.4)", "matplotlib", "colorama"]
 
 [[package]]
@@ -1308,8 +1308,8 @@ python-versions = ">=3.6"
 importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 
 [package.extras]
-testing = ["pytest-benchmark", "pytest"]
-dev = ["tox", "pre-commit"]
+dev = ["pre-commit", "tox"]
+testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
@@ -1422,18 +1422,6 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
-name = "pydoe2"
-version = "1.3.0"
-description = "Design of experiments for Python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-numpy = "*"
-scipy = "*"
-
-[[package]]
 name = "pyflakes"
 version = "2.4.0"
 description = "passive checker of Python programs"
@@ -1527,7 +1515,7 @@ coverage = {version = ">=5.2.1", extras = ["toml"]}
 pytest = ">=4.6"
 
 [package.extras]
-testing = ["virtualenv", "pytest-xdist", "six", "process-tests", "hunter", "fields"]
+testing = ["fields", "hunter", "process-tests", "six", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "python-dateutil"
@@ -1653,9 +1641,9 @@ optional = false
 python-versions = "*"
 
 [package.extras]
-win32 = ["pywin32"]
+nativelib = ["pyobjc-framework-cocoa", "pywin32"]
 objc = ["pyobjc-framework-cocoa"]
-nativelib = ["pywin32", "pyobjc-framework-cocoa"]
+win32 = ["pywin32"]
 
 [[package]]
 name = "setuptools-scm"
@@ -1749,7 +1737,7 @@ docutils = "<0.18"
 sphinx = ">=1.6"
 
 [package.extras]
-dev = ["bump2version", "sphinxcontrib-httpdomain", "transifex-client"]
+dev = ["transifex-client", "sphinxcontrib-httpdomain", "bump2version"]
 
 [[package]]
 name = "sphinxcontrib-applehelp"
@@ -1760,8 +1748,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
+lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
-lint = ["docutils-stubs", "mypy", "flake8"]
 
 [[package]]
 name = "sphinxcontrib-bibtex"
@@ -1787,8 +1775,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
+lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
-lint = ["docutils-stubs", "mypy", "flake8"]
 
 [[package]]
 name = "sphinxcontrib-htmlhelp"
@@ -1799,8 +1787,8 @@ optional = false
 python-versions = ">=3.6"
 
 [package.extras]
-test = ["html5lib", "pytest"]
-lint = ["docutils-stubs", "mypy", "flake8"]
+lint = ["flake8", "mypy", "docutils-stubs"]
+test = ["pytest", "html5lib"]
 
 [[package]]
 name = "sphinxcontrib-jsmath"
@@ -1811,7 +1799,7 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
-test = ["mypy", "flake8", "pytest"]
+test = ["pytest", "flake8", "mypy"]
 
 [[package]]
 name = "sphinxcontrib-qthelp"
@@ -1822,8 +1810,8 @@ optional = false
 python-versions = ">=3.5"
 
 [package.extras]
+lint = ["flake8", "mypy", "docutils-stubs"]
 test = ["pytest"]
-lint = ["docutils-stubs", "mypy", "flake8"]
 
 [[package]]
 name = "sphinxcontrib-serializinghtml"
@@ -1899,8 +1887,8 @@ python-versions = ">=3.7"
 webencodings = ">=0.4"
 
 [package.extras]
-test = ["flake8", "isort", "pytest"]
-doc = ["sphinx-rtd-theme", "sphinx"]
+doc = ["sphinx", "sphinx-rtd-theme"]
+test = ["pytest", "isort", "flake8"]
 
 [[package]]
 name = "tokenize-rt"
@@ -2034,9 +2022,9 @@ optional = false
 python-versions = ">=3.7"
 
 [package.extras]
+docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
+optional = ["python-socks", "wsaccel"]
 test = ["websockets"]
-optional = ["wsaccel", "python-socks"]
-docs = ["sphinx-rtd-theme (>=0.5)", "Sphinx (>=3.4)"]
 
 [[package]]
 name = "widgetsnbextension"
@@ -2101,7 +2089,7 @@ jupyterlab = []
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7, <3.10"
-content-hash = "82fe256db1f264c6a34a7d66e8375b8871ca53d2a87d9ae6cd94310c5f00d372"
+content-hash = "c27907edeba65b8f712627e70ba4e022f4202cb4fc6880ad46bdc6f304aa3692"
 
 [metadata.files]
 aenum = []
@@ -2210,7 +2198,6 @@ pybtex = []
 pybtex-docutils = []
 pycodestyle = []
 pycparser = []
-pydoe2 = []
 pyflakes = []
 pygments = []
 pylint = []
