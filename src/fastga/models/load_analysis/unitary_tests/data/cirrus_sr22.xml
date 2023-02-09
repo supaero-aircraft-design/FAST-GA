@@ -91,6 +91,9 @@
         <type is_input="True">0.0<!--0=non-retractable / 1=retractable--></type>
         <y units="m" is_input="False">1.61016<!--landing gear position along the wing--></y>
       </landing_gear>
+      <plane>
+        <length units="m" is_input="False">7.788566303432905</length>
+      </plane>
       <propeller>
         <average_rpm units="rpm" is_input="True">2500.0<!--average rotation speed of the propeller--></average_rpm>
         <blades_number is_input="True">3.0<!--number of blades on the propeller--></blades_number>
@@ -166,6 +169,10 @@
             </x>
           </leading_edge>
         </MAC>
+        <aileron>
+          <chord_ratio is_input="True">0.3<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+          <span_ratio is_input="True">0.17<!--ratio (width of flaps)/(total span)--></span_ratio>
+        </aileron>
         <kink>
           <chord units="m" is_input="False">1.4990460927665699<!--chord length at wing kink--></chord>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
@@ -213,6 +220,16 @@
           <x units="m" is_input="False">1.148849535217935<!--position, with respect to the aircraft nose, of the furthest point of the nacelle from the nose--></x>
           <y units="m" is_input="False">0.0<!--position of the nacelles along the wing--></y>
         </nacelle>
+        <propeller>
+          <depth units="m" is_input="False">1.0</depth>
+          <diameter units="m" is_input="False">1.0<!--diameter of the propeller--></diameter>
+        </propeller>
+        <tank>
+          <LE_chord_percentage>0.1<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage>0.1<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
+          <y_ratio_tank_beginning>0.1<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
+          <y_ratio_tank_end>0.9<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+        </tank>
       </propulsion>
     </geometry>
     <handling_qualities>
@@ -513,12 +530,15 @@
         </low_speed>
       </other>
       <rudder>
+        <low_speed>
+          <Cy_delta_r units="1/rad" is_input="False">1.8858689633082573<!--derivative of the side force coefficient with respect to the rudder command--></Cy_delta_r>
+        </low_speed>
+        <airfoil>
+          <CL_alpha units="1/rad" is_input="False">6.392070688291107<!--wing tail airfoil lift curve slope--></CL_alpha>
+        </airfoil>
         <cruise>
           <Cy_delta_r units="1/rad" is_input="False">1.9397498476935855<!--derivative of the side force coefficient with respect to the rudder command in cruise conditions--></Cy_delta_r>
         </cruise>
-        <low_speed>
-          <Cy_delta_r units="1/rad" is_input="False">1.899330617678978<!--derivative of the side force coefficient with respect to the rudder command in low speed conditions--></Cy_delta_r>
-        </low_speed>
       </rudder>
     </aerodynamics>
     <constraints>
@@ -540,7 +560,38 @@
     </constraints>
     <mission>
       <sizing>
-        <fuel units="kg" is_input="False">252.60648213664928</fuel>
+        <fuel units="kg" is_input="False">252.19391779967108<!--consumed fuel mass during whole mission--></fuel>
+        <cs23>
+          <safety_factor is_input="True">1.5</safety_factor>
+          <characteristic_speed>
+            <vc units="m/s" is_input="True">83.95891627547779<!--limit speed--></vc>
+            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+            <ultimate_mtow>
+              <negative is_input="True">-3.208113917044951</negative>
+              <positive is_input="True">6.20811391704495</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative is_input="True">-3.431253132553543</negative>
+              <positive is_input="True">6.431253132553544</positive>
+            </ultimate_mzfw>
+          </sizing_factor>
+          <flight_domain>
+            <mtow>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.1387426113633, -2.1387426113633006, 3.8, 0.0, 3.31588134646662, -1.31588134646662, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[35.19288484506213, 39.240797280574604, 68.60356219707293, 48.3793040488082, 0.0, 0.0, 83.95891627547779, 83.95891627547779, 83.95891627547779, 117.2874841235803, 117.2874841235803, 117.2874841235803, 117.2874841235803, 105.55873571122227, 83.95891627547779, 0.0, 31.262000542790425, 44.211145154529284, 56.271600977022764]</velocity>
+            </mtow>
+            <mzfw>
+              <load_factor>[1.0, -1.0, 3.8, -1.52, 0.0, 0.0, -1.52, 4.287502088369029, -2.287502088369029, 3.8, 0.0, 3.4082653703551147, -1.4082653703551147, 0.0, 0.0, 0.0, 1.0, 2.0, 2.0]</load_factor>
+              <velocity units="m/s">[33.087876724367646, 36.89366952160302, 64.50014594776054, 45.48557060397588, 0.0, 0.0, 78.93704320816128, 78.93704320816128, 78.93704320816128, 110.27211418096526, 110.27211418096526, 110.27211418096526, 110.27211418096526, 99.24490276286873, 78.93704320816128, 0.0, 29.392112203103423, 41.56672370442061, 52.905801965586164]</velocity>
+            </mzfw>
+          </flight_domain>
+        </cs23>
+        <holding>
+          <fuel units="kg" is_input="True">0.0<!--mass of consumed fuel during holding phase in sizing mission--></fuel>
+        </holding>
         <initial_climb>
           <fuel units="kg" is_input="False">0.08855397685162596</fuel>
         </initial_climb>
@@ -575,14 +626,6 @@
           <speed units="knot" is_input="True">20.0<!--ground velocity during taxi out phase--></speed>
           <thrust_rate is_input="True">0.3<!--thrust rate during taxi out phase--></thrust_rate>
         </taxi_out>
-        <cs23>
-          <characteristic_speed>
-            <vd units="knot" is_input="True">202.6<!--limit speed--></vd>
-          </characteristic_speed>
-          <sizing_factor>
-            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
-          </sizing_factor>
-        </cs23>
         <main_route>
           <climb>
             <distance units="m" is_input="False">24193.024952622603</distance>
@@ -707,6 +750,10 @@
           <CG>
             <x units="m" is_input="False">2.5214327184605305<!--X-position of center of gravity of the wing--></x>
           </CG>
+          <punctual_mass>
+            <mass>0.0</mass>
+            <y_ratio>0.0</y_ratio>
+          </punctual_mass>
         </wing>
         <landing_gear>
           <front>
@@ -754,6 +801,7 @@
           <mass units="lbm" is_input="False">79.15834073866525<!--total unusable fuel mass--></mass>
         </unusable_fuel>
         <tank>
+          <mass units="kg" is_input="True">1.0</mass>
           <CG>
             <x units="m" is_input="False">2.672714089767444<!--X-position of center of gravity of the tank--></x>
           </CG>
@@ -848,6 +896,11 @@
     </wing>
   </xfoil>
   <settings>
+    <geometry>
+      <fuel_tanks>
+        <depth>0.55<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+      </fuel_tanks>
+    </geometry>
     <handling_qualities>
       <rudder>
         <safety_margin is_input="True">0.2<!--Ratio of the total rudder deflection not used in the computation of the VT area to leave a safety margin--></safety_margin>

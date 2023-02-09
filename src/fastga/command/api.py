@@ -750,7 +750,7 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
     list.
     """
 
-    prob = om.Problem()
+    prob = oad.FASTOADProblem()
     model = prob.model
     model.add_subsystem("component", component, promotes=["*"])
 
@@ -789,12 +789,8 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
             var_inputs.append(var.name)
             var_units.append(var.units)
             var_shape.append(variables[var.name].metadata["shape"])
-            if var.name in var_copy_shape_name_list:
-                var_shape_by_conn.append(True)
-                var_copy_shape.append(var_copy_shape_list[var_copy_shape_name_list.index(var.name)])
-            else:
-                var_shape_by_conn.append(False)
-                var_copy_shape.append(None)
+            var_shape_by_conn.append(variables[var.name].metadata["shape_by_conn"])
+            var_copy_shape.append(variables[var.name].metadata["copy_shape"])
 
     return var_inputs, var_units, var_shape, var_shape_by_conn, var_copy_shape
 

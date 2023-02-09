@@ -6,6 +6,7 @@
       <range units="nmi" is_input="True">1100.0<!--design range--></range>
       <v_approach units="knot" is_input="True">85.0<!--approach speed--></v_approach>
       <v_cruise units="knot" is_input="True">320.0<!--cruise speed--></v_cruise>
+      <v_max_sl units="knot" is_input="True">240.0<!--cruise speed--></v_max_sl>
     </TLAR>
     <geometry>
       <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
@@ -43,6 +44,7 @@
       </cabin>
       <flap>
         <chord_ratio is_input="True">0.26<!--flap chord as a percentage of the wing chord--></chord_ratio>
+        <span_ratio is_input="True">0.75<!--flap chord as a percentage of the wing chord--></span_ratio>
       </flap>
       <fuselage>
         <PAX_length units="m" is_input="True">3.2<!--length of the passenger compartment--></PAX_length>

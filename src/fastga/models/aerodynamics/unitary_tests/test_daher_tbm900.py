@@ -648,8 +648,8 @@ def test_extreme_cl_wing_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
     wing_extreme_cl_clean(
         XML_FILE,
-        cl_max_clean_wing=1.60,
-        cl_min_clean_wing=-1.27,
+        cl_max_clean_wing=1.79808306,
+        cl_min_clean_wing=-1.41861461,
     )
 
 

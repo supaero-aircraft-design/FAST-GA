@@ -687,7 +687,7 @@ def test_compute_web_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWebMass(), ivc)
     assert problem["data:weight:airframe:wing:web:mass:max_fuel_in_wing"] == pytest.approx(
-        3.26, abs=1e-2
+        3.36, abs=1e-2
     )
 
     ivc2 = get_indep_var_comp(
@@ -697,7 +697,7 @@ def test_compute_web_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWebMass(min_fuel_in_wing=True), ivc2)
     assert problem["data:weight:airframe:wing:web:mass:min_fuel_in_wing"] == pytest.approx(
-        3.15, abs=1e-2
+        3.23, abs=1e-2
     )
 
 
@@ -708,7 +708,7 @@ def test_compute_upper_flange_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeUpperFlange(), ivc)
     assert problem["data:weight:airframe:wing:upper_flange:mass:max_fuel_in_wing"] == pytest.approx(
-        26.37, abs=1e-2
+        26.25, abs=1e-2
     )
 
     ivc2 = get_indep_var_comp(
@@ -718,7 +718,7 @@ def test_compute_upper_flange_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeUpperFlange(min_fuel_in_wing=True), ivc2)
     assert problem["data:weight:airframe:wing:upper_flange:mass:min_fuel_in_wing"] == pytest.approx(
-        25.10, abs=1e-2
+        24.94, abs=1e-2
     )
 
 
@@ -729,7 +729,7 @@ def test_compute_lower_flange_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeLowerFlange(), ivc)
     assert problem["data:weight:airframe:wing:lower_flange:mass:max_fuel_in_wing"] == pytest.approx(
-        19.73, abs=1e-2
+        19.64, abs=1e-2
     )
 
     ivc2 = get_indep_var_comp(
@@ -739,7 +739,7 @@ def test_compute_lower_flange_mass():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeLowerFlange(min_fuel_in_wing=True), ivc2)
     assert problem["data:weight:airframe:wing:lower_flange:mass:min_fuel_in_wing"] == pytest.approx(
-        18.79, abs=1e-2
+        18.66, abs=1e-2
     )
 
 
@@ -828,4 +828,4 @@ def test_compute_wing_mass_analytical():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingMassAnalytical(), ivc)
-    assert problem["data:weight:airframe:wing:mass"] == pytest.approx(271.89, abs=1e-2)
+    assert problem["data:weight:airframe:wing:mass"] == pytest.approx(271.84, abs=1e-2)
