@@ -1,7 +1,16 @@
 """Estimation of wing Zs."""
-# This submodel estimates the vertical wing position of the aircraft
-# taking into account the dihedral angle of the wing as well as it's wing location(high,mid,low)
-# 1.0 - low wing, 2.0 - mid wing, 3.0 - high wing
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2023  ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
 
@@ -17,8 +26,10 @@ _LOGGER = logging.getLogger(__name__)
 
 @oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
 class ComputeWingZ(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing Zs estimation."""
+    """
+    Computation of the distance between the fuselage center line and the wing. Based on simple
+    geometric considerations.
+    """
 
     def setup(self):
 
