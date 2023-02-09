@@ -227,6 +227,7 @@
       </static_margin>
     </handling_qualities>
     <propulsion>
+      <max_rpm units="min**-1">2700</max_rpm>
       <fuel_type is_input="True">1.0<!--engine fuel type (1.0 - gasoline, 2.0 - gasoil)--></fuel_type>
       <IC_engine>
         <max_power units="W" is_input="True">130000.0<!--maximum power of the engine--></max_power>
