@@ -13,6 +13,7 @@
     <geometry>
       <flap_type>1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail>1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <wing_configuration>1.0</wing_configuration>
       <cabin>
         <aisle_width units="m">0.0<!--width of aisles--></aisle_width>
         <luggage>
