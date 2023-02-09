@@ -3,13 +3,12 @@
 # taking into account the dihedral angle of the wing as well as it's wing location(high,mid,low)
 # 1.0 - low wing, 2.0 - mid wing, 3.0 - high wing
 
+import logging
+
 import numpy as np
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
-
-import logging
 
 from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_HEIGHT
 
@@ -17,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
-class ComputeWingZ(ExplicitComponent):
+class ComputeWingZ(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing Zs estimation."""
 
@@ -112,8 +111,7 @@ class ComputeWingZ(ExplicitComponent):
 
         else:
             _LOGGER.warning(
-                "Wing configuration " + str(wing_config) + " unknown, replaced by low wing "
-                "configuration"
+                "Wing configuration %s unknown, replaced by low wing configuration", wing_config
             )
             z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
