@@ -252,7 +252,8 @@ class BasicHEEngine(AbstractHybridPropulsion):
             thrust_rate: Optional[Union[float, Sequence]] = None,
             thrust: Optional[Union[float, Sequence]] = None,
             battery_power: Optional[Union[float, Sequence]] = 0,
-    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence], Union[float, Sequence]]:
+    ) -> Tuple[Union[float, Sequence], Union[float, Sequence], Union[float, Sequence], Union[float, Sequence],
+    Union[float, Sequence], Union[float, Sequence]]:
 
         """
         Same as method 'compute_flight_points' .
@@ -330,17 +331,17 @@ class BasicHEEngine(AbstractHybridPropulsion):
 
         # Handle battery
         if engine_setting == EngineSetting.CRUISE:
-            #Then the battery may be charge, add battery power to required power.
+            #Then the battery may be charge, add battery power .
             pe_power = pe_power - battery_power
-            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum( pe_power/self.eta_pe, self.fc_des_power))
         else:
-            fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power/self.eta_pe,self.fc_des_power))
-            # Battery power calculation
+            # When engine is idle, use full battery, elsewhere use battery to top off
             battery_power = np.where(
                 engine_setting == EngineSetting.IDLE,
                 pe_power / self.eta_pe,
                 np.maximum(0, pe_power / self.eta_pe - self.fc_des_power)
             )
+
+        fuel_flow = self.fuel_cell.get_hyd_flow(np.minimum(pe_power / self.eta_pe, self.fc_des_power))
 
         sfc_thrust = fuel_flow/thrust
 

@@ -539,13 +539,6 @@ class _simulate_takeoff(om.ExplicitComponent):
         self.add_output("data:mission:sizing:takeoff:battery_energy", units='W*h')
         self.add_output("data:mission:sizing:initial_climb:battery_energy", units='W*h')
 
-        # self.add_output("data:mission:sizing:takeoff:battery_power_array", shape=POINTS_POWER_COUNT, units="W")
-        # self.add_output("data:mission:sizing:takeoff:battery_time_array", shape=POINTS_POWER_COUNT, units="h")
-        # self.add_output("data:mission:sizing:takeoff:battery_capacity_array", shape=POINTS_POWER_COUNT, units="A*h")
-        # self.add_output("data:mission:sizing:initial_climb:battery_power_array", shape=POINTS_POWER_COUNT, units="W")
-        # self.add_output("data:mission:sizing:initial_climb:battery_time_array", shape=POINTS_POWER_COUNT, units="h")
-        # self.add_output("data:mission:sizing:initial_climb:battery_capacity_array", shape=POINTS_POWER_COUNT, units="A*h")
-
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

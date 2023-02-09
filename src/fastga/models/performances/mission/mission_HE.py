@@ -763,7 +763,9 @@ class _compute_cruise(DynamicEquilibrium):
         self.add_input("data:mission:sizing:main_route:descent:distance", np.nan, units="m")
         self.add_input("data:mission:sizing:main_route:climb:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:cruise:battery_charge_rate_C", val=np.nan, desc="Battery charge rate, in C. If 0 the battery is not charged.")
-        self.add_input("data:mission:sizing:total_battery_energy", val=np.nan, units="W*h")
+        self.add_input("data:mission:sizing:main_route:climb:battery_energy", val=np.nan, units="W*h")
+        self.add_input("data:mission:sizing:takeoff:battery_energy", np.nan, units="W*h")
+        self.add_input("data:mission:sizing:initial_climb:battery_energy", np.nan, units="W*h")
         self.add_input("data:mission:sizing:end_of_mission:SOC", val=np.nan)
 
         self.add_output("data:mission:sizing:main_route:cruise:fuel", units="kg")
@@ -792,7 +794,10 @@ class _compute_cruise(DynamicEquilibrium):
         m_cl = inputs["data:mission:sizing:main_route:climb:fuel"]
 
         # TO DO : the battery should be charged by the amount of energy lost during TO and climb only
-        battery_energy = inputs["data:mission:sizing:total_battery_energy"]
+        battery_energy_climb = inputs["data:mission:sizing:main_route:climb:battery_energy"]
+        battery_energy_TO = inputs["data:mission:sizing:takeoff:battery_energy"]
+        battery_energy_initial_climb = inputs["data:mission:sizing:initial_climb:battery_energy"]
+        battery_energy = battery_energy_climb + battery_energy_TO + battery_energy_initial_climb
         battery_SOC = inputs["data:mission:sizing:end_of_mission:SOC"]
         battery_charge_rate = inputs["data:mission:sizing:main_route:cruise:battery_charge_rate_C"]
 
@@ -981,13 +986,12 @@ class _compute_descent(DynamicEquilibrium):
         # FIXME: obviously this is not functional
         if battery_usage == 0.0:
             # Battery is not used
-            engine_setting = EngineSetting.CRUISE
+            engine_setting = EngineSetting.CLIMB
         elif battery_usage == 1.0:
             # Full battery
             engine_setting = EngineSetting.IDLE
 
         # Calculate constant speed (cos(gamma)~1) and corresponding descent angle
-        # FIXME: VCAS constant-speed strategy is specific to ICE-propeller configuration, should be an input!
         atm = _Atmosphere(altitude_t)
         vs1 = math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl_max_clean))
         v_cas = max(math.sqrt((mass_t * g) / (0.5 * atm.density * wing_area * cl)), 1.3 * vs1)
@@ -1003,7 +1007,7 @@ class _compute_descent(DynamicEquilibrium):
             flight_point = FlightPoint(altitude=altitude_t,
                                        time=time_t,
                                        ground_distance=distance_t,
-                                       engine_setting=EngineSetting.CLIMB,
+                                       engine_setting=engine_setting,
                                        thrust_is_regulated=True,
                                        mass=mass_t,
                                        name='sizing:main_route:descent',
