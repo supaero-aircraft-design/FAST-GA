@@ -238,9 +238,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             span_wing = inputs["data:geometry:wing:span"]
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             cl_0_wing = float(wing_0["cl"] * k_fus)
-            cl_aoa_wing = float(wing_aoa["cl"] * k_fus)
+            cl_x_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
-            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
+            cl_alpha_wing = (cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
             y_vector_wing = wing_aoa["y_vector"]
             cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
             chord_vector_wing = wing_aoa["chord_vector"]
@@ -295,7 +295,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
-                    cl_aoa_wing,
+                    cl_x_wing,
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
@@ -319,7 +319,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
-            cl_aoa_wing = float(data.loc["cl_X_wing", 0])
+            cl_x_wing = float(data.loc["cl_X_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -348,7 +348,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return (
             cl_0_wing,
-            cl_aoa_wing,
+            cl_x_wing,
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,

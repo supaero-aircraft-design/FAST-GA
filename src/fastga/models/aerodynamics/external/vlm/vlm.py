@@ -254,9 +254,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
             cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
-            cl_aoa_wing = float(wing_aoa["cl"] * k_fus / beta)
+            cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
             cm_0_wing = float(wing_0["cm"] * k_fus / beta)
-            cl_alpha_wing = ((cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
+            cl_alpha_wing = ((cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
                 dihedral_angle
             ) ** 2.0
 
@@ -268,14 +268,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_wing = wing_aoa["y_vector"]
             cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus / beta).tolist()
             chord_vector_wing = wing_aoa["chord_vector"]
-            cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_aoa_wing)
+            cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
             if mach <= 0.4:
                 coef_e = wing_aoa["coef_e"]
             else:
                 coef_e = wing_aoa["coef_e"] * (
                     -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
                 )  # Mach correction
-            cdi = cl_aoa_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
+            cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
             coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             coef_e = float(coef_e * k_fus)
@@ -335,7 +335,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
-                    cl_aoa_wing,
+                    cl_x_wing,
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
@@ -359,7 +359,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
-            cl_aoa_wing = float(data.loc["cl_X_wing", 0])
+            cl_x_wing = float(data.loc["cl_X_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -388,7 +388,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return (
             cl_0_wing,
-            cl_aoa_wing,
+            cl_x_wing,
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,
