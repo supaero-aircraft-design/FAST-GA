@@ -53,7 +53,7 @@ class Cd0Fuselage(ExplicitComponent):
                 of="data:aerodynamics:fuselage:cruise:CD0", wrt="*", method="exact"
             )
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

@@ -134,7 +134,7 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:tip:CL_min_2D", val=np.nan)
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
         self.add_input(
             "data:aerodynamics:wing:low_speed:Y_vector",
             val=np.nan,
@@ -147,6 +147,7 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
             shape_by_conn=True,
             copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
         )
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
         self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean")
@@ -161,9 +162,10 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         cl_max_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"])
         cl_min_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"])
         cl_min_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"])
-        cl0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         y_interp = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
         cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
         y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
         y_vector = np.linspace(
@@ -178,11 +180,11 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         cl_curve = np.maximum(
             np.interp(y_vector, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vector))
         )  # avoid divide by 0
-        cl_max_clean = cl0 * np.min(cl_xfoil_max / cl_curve)
-        cl_min_clean = cl0 * np.max(cl_xfoil_min / cl_curve)
+        cl_max_clean = cl_ref * np.min(cl_xfoil_max / cl_curve)
+        cl_min_clean = cl_ref * np.max(cl_xfoil_min / cl_curve)
 
-        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean
-        outputs["data:aerodynamics:wing:low_speed:CL_min_clean"] = cl_min_clean
+        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean * np.cos(sweep_25)
+        outputs["data:aerodynamics:wing:low_speed:CL_min_clean"] = cl_min_clean * np.cos(sweep_25)
 
     @staticmethod
     def _reshape_curve(y: np.ndarray, cl: np.ndarray):

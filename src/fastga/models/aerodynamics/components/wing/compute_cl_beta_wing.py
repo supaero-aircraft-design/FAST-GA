@@ -44,7 +44,12 @@ class ComputeClBetaWing(FigureDigitization):
         self.add_input("data:geometry:wing:sweep_50", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="deg")
-        self.add_input("data:geometry:wing:twist", val=0.0, units="deg")
+        self.add_input(
+            "data:geometry:wing:twist",
+            val=0.0,
+            units="deg",
+            desc="Negative twist means tip AOA is smaller than root",
+        )
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:leading_edge:x:absolute", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")

@@ -9,6 +9,7 @@
     </TLAR>
     <geometry>
       <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <wing_configuration is_input="True">1.0</wing_configuration>
       <cabin>
         <max_differential_pressure units="Pa" is_input="True">42747.5<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
         <pressurized is_input="True">1.0<!--Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization--></pressurized>
@@ -100,14 +101,14 @@
       <wing>
         <aspect_ratio is_input="True">8.22<!--wing aspect ratio--></aspect_ratio>
         <dihedral units="deg">6.5</dihedral>
+        <twist units="deg">-2.0</twist>
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio is_input="True">0.61<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.146<!--mean thickness ratio of wing--></thickness_ratio>
         <aileron>
           <chord_ratio is_input="True">0.25<!--aileron chord as a percentage of the wing chord--></chord_ratio>
           <max_deflection units="deg" is_input="True">25.0<!--aileron deflection--></max_deflection>
-          <span_ratio is_input="True">0.164<!--aileron span as a percentage of the wing
-				  span--></span_ratio>
+          <span_ratio is_input="True">0.164<!--aileron span as a percentage of the wing span--></span_ratio>
         </aileron>
         <kink>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>

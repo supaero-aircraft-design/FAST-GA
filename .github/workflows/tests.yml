@@ -33,11 +33,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: poetry
+          cache: 'poetry'
 
       - name: Activate environment and install dependencies
-        run: poetry install
-        shell: bash
+        run: |
+          poetry env use ${{ matrix.python-version }}
+          poetry install
 
       - name: Check with Black
         run: |

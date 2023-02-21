@@ -80,6 +80,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
 
         if self.options["low_speed_aero"]:
             self.add_output("data:aerodynamics:wing:low_speed:CL0_clean")
+            self.add_output("data:aerodynamics:wing:low_speed:CL_ref")
             self.add_output("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1")
             self.add_output("data:aerodynamics:wing:low_speed:CM0_clean")
             self.add_output(
@@ -107,6 +108,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             self.add_output("data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient")
         else:
             self.add_output("data:aerodynamics:wing:cruise:CL0_clean")
+            self.add_output("data:aerodynamics:wing:cruise:CL_ref")
             self.add_output("data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1")
             self.add_output("data:aerodynamics:wing:cruise:CM0_clean")
             self.add_output("data:aerodynamics:wing:cruise:induced_drag_coefficient")
@@ -150,6 +152,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
 
         (
             cl_0_wing,
+            cl_ref_wing,
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,
@@ -177,6 +180,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         # Defining outputs
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:CL0_clean"] = cl_0_wing
+            outputs["data:aerodynamics:wing:low_speed:CL_ref"] = cl_ref_wing
             outputs["data:aerodynamics:wing:low_speed:CL_alpha"] = cl_alpha_wing
             outputs["data:aerodynamics:wing:low_speed:CM0_clean"] = cm_0_wing
             outputs["data:aerodynamics:wing:low_speed:Y_vector"] = y_vector_wing
@@ -196,6 +200,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             ] = coef_k_htp
         else:
             outputs["data:aerodynamics:wing:cruise:CL0_clean"] = cl_0_wing
+            outputs["data:aerodynamics:wing:cruise:CL_ref"] = cl_ref_wing
             outputs["data:aerodynamics:wing:cruise:CL_alpha"] = cl_alpha_wing
             outputs["data:aerodynamics:wing:cruise:CM0_clean"] = cm_0_wing
             outputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"] = coef_k_wing

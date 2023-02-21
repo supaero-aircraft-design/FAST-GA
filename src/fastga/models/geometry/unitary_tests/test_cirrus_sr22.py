@@ -467,8 +467,10 @@ def test_geometry_wing_z():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingZ(), ivc)
-    wing_y2 = problem.get_val("data:geometry:wing:root:z", units="m")
-    assert wing_y2 == pytest.approx(0.596, rel=1e-2)
+    wing_z2 = problem.get_val("data:geometry:wing:root:z", units="m")
+    assert wing_z2 == pytest.approx(0.596, rel=1e-2)
+    wing_z4 = problem.get_val("data:geometry:wing:tip:z", units="m")
+    assert wing_z4 == pytest.approx(0.216, rel=1e-2)
 
     problem.check_partials(compact_print=True)
 

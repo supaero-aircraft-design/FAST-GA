@@ -100,5 +100,6 @@ data:geometry:flap:chord_ratio || flap chord as a percentage of the wing chord
 data:geometry:flap:span_ratio || flap span as a percentage of the wing span
 data:geometry:flap_type || flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)
 data:geometry:has_T_tail || 0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail
+data:geometry:wing_configuration || 1=low wing configuration / 2=mid wing configuration / 3=high wing configuration
 
 data:weight:aircraft:MFW || maximum fuel weight

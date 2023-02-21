@@ -750,7 +750,7 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
     list.
     """
 
-    prob = om.Problem()
+    prob = oad.FASTOADProblem()
     model = prob.model
     model.add_subsystem("component", component, promotes=["*"])
 
@@ -776,7 +776,7 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
                 ivc.add_output(name, [np.nan, np.nan], units=meta["units"])
             prob.model.add_subsystem("temp_shaper", ivc, promotes=["*"])
 
-    variables = list_variables(component)
+    variables = prob_copy.model.get_io_metadata("input")
 
     var_inputs = []
     var_units = []
@@ -784,17 +784,18 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
     var_shape_by_conn = []
     var_copy_shape = []
 
-    for var in variables:
-        if var.is_input:
-            var_inputs.append(var.name)
-            var_units.append(var.units)
-            var_shape.append(variables[var.name].metadata["shape"])
-            if var.name in var_copy_shape_name_list:
-                var_shape_by_conn.append(True)
-                var_copy_shape.append(var_copy_shape_list[var_copy_shape_name_list.index(var.name)])
-            else:
-                var_shape_by_conn.append(False)
-                var_copy_shape.append(None)
+    for variable_name in variables:
+
+        variable = variables[variable_name]
+        var_prom_name = variable["prom_name"]
+
+        # We check that it has not been added already
+        if var_prom_name not in var_inputs:
+            var_inputs.append(variable["prom_name"])
+            var_units.append(variable["units"])
+            var_shape.append(variable["shape"])
+            var_shape_by_conn.append(variable["shape_by_conn"])
+            var_copy_shape.append(variable["copy_shape"])
 
     return var_inputs, var_units, var_shape, var_shape_by_conn, var_copy_shape
 

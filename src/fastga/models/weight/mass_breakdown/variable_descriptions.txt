@@ -10,7 +10,7 @@ data:weight:aircraft:payload || design payload weight
 data:weight:aircraft:ZFW || aircraft mass with payload, without fuel
 data:weight:airframe:flight_controls:mass || flight controls total mass
 data:weight:airframe:fuselage:mass || fuselage total mass
-data:weight:airframe:fuselage:mass_raymer || fuselage total mass using Raymer's formula (not used but implemented)
+data:weight:airframe:fuselage:mass || fuselage total mass using Raymer's formula (not used but implemented)
 data:weight:airframe:horizontal_tail:mass || horizontal tail total mass
 data:weight:airframe:landing_gear:front:mass || front landing gear mass
 data:weight:airframe:landing_gear:main:mass || main landing gear mass

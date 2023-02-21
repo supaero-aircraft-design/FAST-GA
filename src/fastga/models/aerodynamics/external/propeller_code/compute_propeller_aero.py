@@ -307,7 +307,7 @@ class _ComputePropellerPerformance(PropellerCoreModule):
             # plt.plot(local_theta_vect,
             #          v_inf * np.array(local_thrust_vect)
             #          /
-            #          (np.array(local_eta_vect) * omega * math.pi / 30.0))
+            #          (np.array(local_eta_vect) * omega * np.pi / 30.0))
 
         return thrust_vect, theta_vect, eta_vect
 

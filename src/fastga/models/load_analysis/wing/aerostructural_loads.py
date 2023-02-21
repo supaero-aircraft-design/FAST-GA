@@ -79,8 +79,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input(
             "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
         )
-        self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-        self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
@@ -194,7 +193,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         y_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"]
         cl_vector = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
         cl_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"]
-        cl_0 = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
+        cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
         v_ref = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"]
 
@@ -304,7 +303,7 @@ class AerostructuralLoad(om.ExplicitComponent):
                 # WEIGHT AND SCALE THE INITIAL VECTOR ACCORDING TO LOAD FACTOR AND LIFT EQUILIBRIUM
 
                 cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
-                cl_s_actual = cl_s * cl_wing / cl_0
+                cl_s_actual = cl_s * cl_wing / cl_ref
                 cl_s_slip_actual = cl_s_slip * (v_ref / v_c_tas) ** 2.0
                 lift_section = (
                     factor_of_safety * dynamic_pressure * (cl_s_actual + cl_s_slip_actual)

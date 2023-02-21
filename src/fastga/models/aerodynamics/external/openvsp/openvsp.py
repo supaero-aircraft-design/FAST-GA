@@ -72,6 +72,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:z", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
@@ -79,6 +80,13 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
+        self.add_input(
+            "data:geometry:wing:twist",
+            val=np.nan,
+            units="deg",
+            desc="Negative twist means tip AOA is smaller than root",
+        )
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
@@ -105,9 +113,23 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         Function that perform a complete calculation of aerodynamic parameters under OpenVSP and
         returns only the cl_alpha_aircraft parameter.
         """
-        _, cl_alpha_wing, _, _, _, _, _, _, _, cl_alpha_htp, _, _, _, _ = self.compute_aero_coeff(
-            inputs, outputs, altitude, mach, aoa_angle
-        )
+        (
+            _,
+            _,
+            cl_alpha_wing,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            _,
+            cl_alpha_htp,
+            _,
+            _,
+            _,
+            _,
+        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, aoa_angle)
         return float(cl_alpha_wing + cl_alpha_htp)
 
     def compute_cl_alpha_mach(self, inputs, outputs, aoa_angle, altitude, cruise_mach):
@@ -158,12 +180,16 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         sweep25_htp = float(inputs["data:geometry:horizontal_tail:sweep_25"])
         aspect_ratio_htp = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
         taper_ratio_htp = float(inputs["data:geometry:horizontal_tail:taper_ratio"])
+        dihedral_angle = float(inputs["data:geometry:wing:dihedral"])
+        twist_angle = float(inputs["data:geometry:wing:twist"])
         geometry_set = np.around(
             np.array(
                 [
                     sweep25_wing,
                     taper_ratio_wing,
                     aspect_ratio_wing,
+                    dihedral_angle,
+                    twist_angle,
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
@@ -212,12 +238,12 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             span_wing = inputs["data:geometry:wing:span"]
             k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
             cl_0_wing = float(wing_0["cl"] * k_fus)
-            cl_aoa_wing = float(wing_aoa["cl"] * k_fus)
+            cl_x_wing = float(wing_aoa["cl"] * k_fus)
             cm_0_wing = float(wing_0["cm"] * k_fus)
-            cl_alpha_wing = (cl_aoa_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
-            y_vector_wing = wing_0["y_vector"]
-            cl_vector_wing = (np.array(wing_0["cl_vector"]) * k_fus).tolist()
-            chord_vector_wing = wing_0["chord_vector"]
+            cl_alpha_wing = (cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)
+            y_vector_wing = wing_aoa["y_vector"]
+            cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
+            chord_vector_wing = wing_aoa["chord_vector"]
             k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
             # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
             # piAe) -> e' = e/1.05^2
@@ -269,6 +295,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             if self.options["result_folder_path"] != "":
                 results = [
                     cl_0_wing,
+                    cl_x_wing,
                     cl_alpha_wing,
                     cm_0_wing,
                     y_vector_wing,
@@ -292,6 +319,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             data = self.read_results(result_file_path)
             saved_area_wing = float(data.loc["saved_ref_area", 0])
             cl_0_wing = float(data.loc["cl_0_wing", 0])
+            cl_x_wing = float(data.loc["cl_X_wing", 0])
             cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
             cm_0_wing = float(data.loc["cm_0_wing", 0])
             y_vector_wing = np.array(
@@ -320,6 +348,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return (
             cl_0_wing,
+            cl_x_wing,
             cl_alpha_wing,
             cm_0_wing,
             y_vector_wing,
@@ -365,11 +394,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
+        twist = inputs["data:geometry:wing:twist"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
@@ -445,6 +478,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
@@ -826,6 +863,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
+        twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
@@ -840,7 +879,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         distance_htp = fa_length + lp_htp - 0.25 * l0_htp - x0_htp
         rho = atm.density
@@ -929,6 +970,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[-2].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
@@ -1113,6 +1158,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "sweep25_wing",
                 "taper_ratio_wing",
                 "aspect_ratio_wing",
+                "dihedral_angle_wing",
+                "twist_angle_wing",
                 "sweep25_htp",
                 "taper_ratio_htp",
                 "aspect_ratio_htp",
@@ -1132,11 +1179,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                         data = pd.DataFrame(values, index=labels)
                         # noinspection PyBroadException
                         try:
-                            if np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy()) == 7:
+                            if (
+                                np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
+                                == len(geometry_set_labels) - 1
+                            ):
                                 saved_set = np.around(
                                     data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
                                 )
-                                if np.sum(saved_set == geometry_set[0:-1]) == 7:
+                                if (
+                                    np.sum(saved_set == geometry_set[0:-1])
+                                    == len(geometry_set_labels) - 1
+                                ):
                                     result_file_path = pth.join(
                                         result_folder_path, "openvsp_" + str(idx) + ".csv"
                                     )
@@ -1155,6 +1208,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             "sweep25_wing",
             "taper_ratio_wing",
             "aspect_ratio_wing",
+            "dihedral_angle_wing",
+            "twist_angle_wing",
             "sweep25_htp",
             "taper_ratio_htp",
             "aspect_ratio_htp",
@@ -1175,6 +1230,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         """Reads saved results."""
         labels = [
             "cl_0_wing",
+            "cl_X_wing",
             "cl_alpha_wing",
             "cm_0_wing",
             "y_vector_wing",
@@ -1262,6 +1318,8 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         sweep_0_wing = inputs["data:geometry:wing:sweep_0"]
+        dihedral_angle = inputs["data:geometry:wing:dihedral"]
+        twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
         height_max = inputs["data:geometry:fuselage:maximum_height"]
@@ -1280,7 +1338,9 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         # Compute remaining inputs
         atm = Atmosphere(altitude, altitude_in_feet=False)
         x_wing = fa_length - x0_wing - 0.25 * l0_wing
-        z_wing = -(height_max - 0.12 * l2_wing) * 0.5
+        # In the rest of the code the convention for z_wing is positive when wing below the
+        # fuselage centerline, for OpenVSP it seems to be the other way around, hence the - sign
+        z_wing = -inputs["data:geometry:wing:root:z"]
         span2_wing = y4_wing - y2_wing
         rho = atm.density
         v_inf = max(atm.speed_of_sound * mach, 0.01)  # avoid V=0 m/s crashes
@@ -1443,6 +1503,10 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
             parser.transfer_var(float(l4_wing), 0, 5)
             parser.mark_anchor("sweep_0_wing")
             parser.transfer_var(float(sweep_0_wing), 0, 5)
+            parser.mark_anchor("twist")
+            parser.transfer_var(float(twist), 0, 5)
+            parser.mark_anchor("dihedral_angle")
+            parser.transfer_var(float(dihedral_angle), 0, 5)
             parser.mark_anchor("airfoil_0_file")
             parser.transfer_var('"' + input_file_list[1].replace("\\", "/") + '"', 0, 3)
             parser.mark_anchor("airfoil_1_file")
