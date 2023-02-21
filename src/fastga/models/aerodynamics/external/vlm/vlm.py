@@ -82,7 +82,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:twist", val=np.nan, units="rad")
+        self.add_input(
+            "data:geometry:wing:twist",
+            val=np.nan,
+            units="rad",
+            desc="Negative twist means tip AOA is smaller than root",
+        )
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         if self.options["low_speed_aero"]:

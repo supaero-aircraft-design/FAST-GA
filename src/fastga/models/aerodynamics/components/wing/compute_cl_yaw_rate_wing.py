@@ -45,7 +45,12 @@ class ComputeClYawRateWing(FigureDigitization):
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="deg")
-        self.add_input("data:geometry:wing:twist", val=0.0, units="deg")
+        self.add_input(
+            "data:geometry:wing:twist",
+            val=0.0,
+            units="deg",
+            desc="Negative twist means tip AOA is smaller than root",
+        )
 
         if self.options["low_speed_aero"]:
             self.add_input(
