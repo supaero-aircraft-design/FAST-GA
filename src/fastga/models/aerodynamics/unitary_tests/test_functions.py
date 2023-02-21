@@ -270,7 +270,15 @@ def cd0_high_speed(
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
 
-    problem.check_partials(compact_print=True)
+    # Exclude check on wing, ht and nacelles Cd0 partials as it is computed by fd for now
+    problem.check_partials(
+        compact_print=True,
+        excludes=[
+            "data:aerodynamics:wing:*",
+            "data:aerodynamics:horizontal_tail:*",
+            "data:aerodynamics:nacelles:*",
+        ],
+    )
 
 
 def cd0_low_speed(
@@ -318,7 +326,15 @@ def cd0_low_speed(
     )
     assert cd0_total_cal == pytest.approx(cd0_total, abs=1e-5)
 
-    problem.check_partials(compact_print=True)
+    # Exclude check on wing, ht and nacelles Cd0 partials as it is computed by fd for now
+    problem.check_partials(
+        compact_print=True,
+        excludes=[
+            "data:aerodynamics:wing:*",
+            "data:aerodynamics:horizontal_tail:*",
+            "data:aerodynamics:nacelles:*",
+        ],
+    )
 
 
 def polar(
@@ -1918,7 +1934,11 @@ def roll_moment_side_slip_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing/HT contribution as it is computed with fd
+    problem.check_partials(
+        compact_print=True,
+        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -1931,7 +1951,11 @@ def roll_moment_side_slip_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_beta", units="rad**-1"
     ) == pytest.approx(cl_beta_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing/HT contribution as it is computed with fd
+    problem.check_partials(
+        compact_print=True,
+        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+    )
 
 
 def roll_moment_roll_rate_wing(
@@ -2038,7 +2062,11 @@ def roll_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing/HT contribution as it is computed with fd
+    problem.check_partials(
+        compact_print=True,
+        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+    )
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -2051,7 +2079,11 @@ def roll_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_p", units="rad**-1"
     ) == pytest.approx(cl_p_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing/HT contribution as it is computed with fd
+    problem.check_partials(
+        compact_print=True,
+        excludes=["data:aerodynamics:wing:*", "data:aerodynamics:horizontal_tail:*"],
+    )
 
 
 def roll_moment_yaw_rate_wing(
@@ -2129,7 +2161,8 @@ def roll_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing contribution as it is computed with fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -2142,7 +2175,8 @@ def roll_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing contribution as it is computed with fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
 
 def roll_authority_aileron(
@@ -2281,7 +2315,8 @@ def pitch_moment_pitch_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing contribution as it is computed with fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -2294,7 +2329,8 @@ def pitch_moment_pitch_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cm_q", units="rad**-1"
     ) == pytest.approx(cm_q_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # No need to check wing contribution as it is computed with fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
 
 def pitch_moment_aoa_rate_derivative(
@@ -2522,7 +2558,8 @@ def yaw_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # Do not check partials on wing contribution as it is already calculated by fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -2535,7 +2572,8 @@ def yaw_moment_roll_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cn_p", units="rad**-1"
     ) == pytest.approx(cn_p_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # Do not check partials on wing contribution as it is already calculated by fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
 
 def yaw_moment_yaw_rate_wing(
@@ -2616,7 +2654,8 @@ def yaw_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:low_speed:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_low_speed_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # Do not check partials on wing contribution as it is already calculated by fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -2629,4 +2668,5 @@ def yaw_moment_yaw_rate_aircraft(
         "data:aerodynamics:aircraft:cruise:Cn_r", units="rad**-1"
     ) == pytest.approx(cn_r_cruise_, rel=1e-3)
 
-    problem.check_partials(compact_print=True)
+    # Do not check partials on wing contribution as it is already calculated by fd
+    problem.check_partials(compact_print=True, excludes=["data:aerodynamics:wing:*"])

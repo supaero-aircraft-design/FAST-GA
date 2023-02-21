@@ -56,7 +56,7 @@ class Cd0Other(ExplicitComponent):
                 method="exact",
             )
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

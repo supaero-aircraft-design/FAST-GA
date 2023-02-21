@@ -377,10 +377,10 @@
       </vertical_tail>
       <aileron>
           <low_speed>
-            <Cl_delta_a>0.4</Cl_delta_a>
+            <Cl_delta_a units="rad**-1">0.4</Cl_delta_a>
           </low_speed>
           <cruise>
-            <Cl_delta_a>0.41</Cl_delta_a>
+            <Cl_delta_a units="rad**-1">0.41</Cl_delta_a>
           </cruise>
         </aileron>
       <wing>

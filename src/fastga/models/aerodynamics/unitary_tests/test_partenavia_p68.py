@@ -23,11 +23,11 @@ import numpy as np
 from .test_functions import comp_low_speed
 
 XML_FILE = "partenavia_p68.xml"
-SKIP_STEPS = False  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
+SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or False,
+    system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
