@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.2.0
+==================
+
+- Made use of the @functools.lru_cache function in order to save time on function that read csv files see #188
+- Reworked some of the solvers to save some time and deleted some that were not useful see #195
+- Added yml as a viable input for the block analysis
+- Development of high wing models by pulling the work of @fomra during his summer 2022 internship
+- Implementation of twist and dihedral in logitudinal aerodynamics see #202
+- Changed the function of the Cl=f(curve) to match a new reference wing Cl see #202
+
 Version 1.1.0
 ==================
 
