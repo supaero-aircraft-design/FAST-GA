@@ -61,9 +61,9 @@ class ComputeTORotationLimitGroup(om.Group):
 
     @staticmethod
     def get_io_names(
-            component: om.ExplicitComponent,
-            excludes: Optional[Union[str, List[str]]] = None,
-            iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
+        component: om.ExplicitComponent,
+        excludes: Optional[Union[str, List[str]]] = None,
+        iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
 
         list_names = []
