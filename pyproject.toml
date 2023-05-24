@@ -53,23 +53,29 @@ stdatm = "0.2.0"
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]
 
-[tool.poetry.plugins."fastoad.plugins"]
-"cs23" = "fastga"
-
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 wheel = "*"
+matplotlib = "^3.1.2"
+click = "8.0.4"
+
+[tool.poetry.group.test.dependencies]
 pytest = "^6.2"
 pytest-cov = "^3.0"
-pre-commit = "^2.14.1"
-black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
-pylint = "^2.10.2"
 nbval = "^0.9.6"
+
+[tool.poetry.group.doc.dependencies]
 sphinx = "^4.1.2"
 sphinx-rtd-theme = "^1.0"
 sphinxcontrib-bibtex = "^2.3.0"
+
+[tool.poetry.group.lint.dependencies]
+pre-commit = "^2.14.1"
+black = { version = "21.9b0", extras = ["jupyter"], allow-prereleases = true } # if version is changed, please change it also in .pre-commit-config.yaml file.
+pylint = "^2.10.2"
 flake8 = "^4.0.1"
-matplotlib = "^3.1.2"
-click = "8.0.4"
+
+[tool.poetry.plugins."fastoad.plugins"]
+"cs23" = "fastga"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
