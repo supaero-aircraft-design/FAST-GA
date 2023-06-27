@@ -1,0 +1,59 @@
+title: Sample OAD Process applied to beechcraft
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+
+# Input and output files
+input_file: ./problem_inputs.xml
+output_file: ./problem_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-1, optimizer='COBYLA')
+
+model:
+    nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
+    linear_solver: om.DirectSolver()
+    geometry:
+        id: fastga.geometry.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+    aerodynamics_lowspeed:
+        id: fastga.aerodynamics.lowspeed.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        result_folder_path : ./workdir
+        use_openvsp : false
+        compute_slipstream : false
+    aerodynamics_highspeed:
+        id: fastga.aerodynamics.highspeed.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        result_folder_path: ./workdir
+        use_openvsp: false
+        compute_mach_interpolation: false
+        compute_slipstream: false
+    weight:
+        id: fastga.weight.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+    performance:
+        id: fastga.performances.mission
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+    hq:
+        tail_sizing:
+            id: fastga.handling_qualities.tail_sizing
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        static_margin:
+            id: fastga.handling_qualities.static_margin
+    mtow:
+        id: fastga.loop.mtow
+    wing_position:
+        id: fastga.loop.wing_position
+    wing_area:
+        id: fastga.loop.wing_area
+
+optimization: # This section is needed only if optimization process is run
+  design_variables:
+    - name: data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25
+      lower: 3.0
+      upper: 8.0
+  objective:
+    - name: data:mission:sizing:fuel
+      scaler: 1.e-4
