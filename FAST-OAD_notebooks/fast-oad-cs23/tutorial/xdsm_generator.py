@@ -28,11 +28,6 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 # For having log messages on screen
 #logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
 
-# For using all screen width
-#from IPython.core.display import display, HTML
-
-#display(HTML("<style>.container { width:95% !important; }</style>"))
-
 
 """api_cs25.generate_configuration_file(
     CONFIGURATION_FILE,
@@ -44,10 +39,11 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 
 XDSM_FILE = pth.join(WORK_FOLDER_PATH, "xdsm.html")
 api_cs25.write_xdsm(CONFIGURATION_FILE, XDSM_FILE, overwrite=True)
+
 print('There are', Count_Under_XDSM_Diag(XDSM_FILE), 'elements under the diagonal')
-#from IPython.display import IFrame
-#IFrame(src=XDSM_FILE, width="100%", height="500px")
+
+
 ending = time.time()
 
-print(ending - starting)
+print('Time taken in this iteration:', ending - starting)
 
