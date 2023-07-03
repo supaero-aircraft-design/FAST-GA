@@ -1,0 +1,17 @@
+title: Aircraft polar run
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+
+# Input and output files
+input_file: ./polar_inputs.xml
+output_file: ./polar_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+model:
+    polars:
+        id: fastga.aerodynamics.cl_cd_polar
+        cg_ratio: 0.55

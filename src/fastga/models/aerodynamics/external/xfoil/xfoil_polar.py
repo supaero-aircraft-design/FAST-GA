@@ -94,8 +94,8 @@ class XfoilPolar(ExternalCodeComp):
 
         self.add_input("xfoil:mach", val=np.nan)
         self.add_input("xfoil:reynolds", val=np.nan)
-
-        if not self.options["single_AoA"]:
+        multiple_AoA = not self.options["single_AoA"]
+        if multiple_AoA:
             self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
             self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
             self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
@@ -130,259 +130,22 @@ class XfoilPolar(ExternalCodeComp):
         no_file = True
         data_saved = None
         interpolated_result = None
-        if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(
-                    ".af", "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END])))
-                )
-                + "S.csv",
-            )
-        else:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-        if pth.exists(result_file) and not self.options["single_AoA"]:
-            no_file = False
-            data_saved = pd.read_csv(result_file)
-            values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
-            labels = data_saved.to_numpy()[:, 0].tolist()
-            data_saved = pd.DataFrame(values, index=labels)
-            saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
-            index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
-            near_mach = []
-            distance_to_mach = []
-            for index in index_near_mach:
-                if not (saved_mach_list[index] in near_mach):
-                    near_mach.append(saved_mach_list[index])
-                    distance_to_mach.append(abs(saved_mach_list[index] - mach))
-            if not near_mach:
-                index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
-            else:
-                selected_mach_index = distance_to_mach.index(min(distance_to_mach))
-                index_mach = np.where(saved_mach_list == near_mach[selected_mach_index])[0]
-            data_reduced = data_saved.loc[labels, index_mach]
-            # Search if this exact reynolds has been computed and save results
-            reynolds_vect = np.array(
-                [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
-            )
-            index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
-            if len(index_reynolds) == 1:
-                interpolated_result = data_reduced.loc[labels, index_reynolds]
-            # Else search for lower/upper Reynolds
-            else:
-                lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
-                upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
-                if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                    index_lower_reynolds = index_mach[
-                        np.where(reynolds_vect == max(lower_reynolds))[0]
-                    ]
-                    index_upper_reynolds = index_mach[
-                        np.where(reynolds_vect == min(upper_reynolds))[0]
-                    ]
-                    lower_values = data_reduced.loc[labels, index_lower_reynolds]
-                    upper_values = data_reduced.loc[labels, index_upper_reynolds]
-                    # Initialise values with lower reynolds
-                    interpolated_result = lower_values
-                    # Calculate reynolds ratio split for linear interpolation
-                    x_ratio = (min(upper_reynolds) - reynolds) / (
-                        min(upper_reynolds) - max(lower_reynolds)
-                    )
-                    # Search for common alpha range for linear interpolation
-                    alpha_lower = (
-                        np.array(
-                            np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                        )
-                        .ravel()
-                        .tolist()
-                    )
-                    alpha_upper = (
-                        np.array(
-                            np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                        )
-                        .ravel()
-                        .tolist()
-                    )
-                    alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                    interpolated_result.loc["alpha", index_lower_reynolds] = str(
-                        alpha_shared.tolist()
-                    )
-                    labels.remove("alpha")
-                    # Calculate average values (cd, cl...) with linear interpolation
-                    for label in labels:
-                        lower_value = np.array(
-                            np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                        ).ravel()
-                        upper_value = np.array(
-                            np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                        ).ravel()
-                        # If values relative to alpha vector, performs interpolation with shared
-                        # vector
-                        if np.size(lower_value) == len(alpha_lower):
-                            lower_value = np.interp(
-                                alpha_shared, np.array(alpha_lower), lower_value
-                            )
-                            upper_value = np.interp(
-                                alpha_shared, np.array(alpha_upper), upper_value
-                            )
-                        value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
-                        interpolated_result.loc[label, index_lower_reynolds] = str(value)
-
+        # Modify file type respect to negaive AoA option
+        result_file = self.identify_negative_angle_option()
+        multiple_AoA = not self.options["single_AoA"]
+        if pth.exists(result_file) and multiple_AoA:
+            interpolated_result = self.interpolation_for_exist_data(result_file,mach,reynolds)
+        
         if interpolated_result is None:
-            # Create result folder first (if it must fail, let it fail as soon as possible)
-            result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
-            if result_folder_path != "":
-                os.makedirs(result_folder_path, exist_ok=True)
-
-            # Pre-processing (populating temp directory)
-            # XFoil exe
-            tmp_directory = self._create_tmp_directory()
-            if self.options[OPTION_XFOIL_EXE_PATH]:
-                # if a path for Xfoil has been provided, simply use it
-                self.options["command"] = [self.options[OPTION_XFOIL_EXE_PATH]]
-            else:
-                # otherwise, copy the embedded resource in tmp dir
-                # noinspection PyTypeChecker
-                copy_resource(xfoil699, XFOIL_EXE_NAME, tmp_directory.name)
-                self.options["command"] = [pth.join(tmp_directory.name, XFOIL_EXE_NAME)]
-
-            # I/O files
-            self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
-            self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
-            self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
-
-            # profile file
-            tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
-            profile = get_profile(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                file_name=self.options["airfoil_file"],
-            ).get_sides()
-            # noinspection PyTypeChecker
-            np.savetxt(
-                tmp_profile_file_path,
-                profile.to_numpy(),
-                fmt="%.15f",
-                delimiter=" ",
-                header="Wing",
-                comments="",
-            )
-
-            # standard input file
-            tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
-            self._write_script_file(
-                reynolds,
-                mach,
-                tmp_profile_file_path,
-                tmp_result_file_path,
-                self.options[OPTION_ALPHA_START],
-                self.options[OPTION_ALPHA_END],
-                ALPHA_STEP,
-            )
-
-            # Run XFOIL
-            self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
-            self.options["external_output_files"] = [tmp_result_file_path]
-            # noinspection PyBroadException
-            try:
-                super().compute(inputs, outputs)
-                result_array_p = self._read_polar(tmp_result_file_path)
-            except:
-                # catch the error and try to read result file for non-convergence on higher angles
-                error = sys.exc_info()[1]
-                try:
-                    result_array_p = self._read_polar(tmp_result_file_path)
-                except:
-                    raise TimeoutError("<p>Error: %s</p>" % error)
-
-            if self.options[OPTION_COMP_NEG_AIR_SYM]:
-                os.remove(self.stdin)
-                os.remove(self.stdout)
-                os.remove(self.stderr)
-                os.remove(tmp_result_file_path)
-                alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
-                self._write_script_file(
-                    reynolds,
-                    mach,
-                    tmp_profile_file_path,
-                    tmp_result_file_path,
-                    alpha_start,
-                    -1 * self.options[OPTION_ALPHA_END],
-                    -ALPHA_STEP,
-                )
-                # noinspection PyBroadException
-                try:
-                    super().compute(inputs, outputs)
-                    result_array_n = self._read_polar(tmp_result_file_path)
-                except:
-                    # catch the error and try to read result file for non-convergence on higher
-                    # angles
-                    e = sys.exc_info()[1]
-                    try:
-                        result_array_n = self._read_polar(tmp_result_file_path)
-                    except:
-                        raise TimeoutError("<p>Error: %s</p>" % e)
-
+            result_array_p, result_array_n, result_folder_path, tmp_directory,tmp_result_file_path =\
+            self.run_XFoil(inputs, outputs,reynolds,mach)
             # Post-processing
-            if self.options["single_AoA"]:
-                alpha = result_array_p["alpha"].tolist()
-                cl = result_array_p["CL"].tolist()
-                cd = result_array_p["CD"].tolist()
-                cdp = result_array_p["CDp"].tolist()
-                cm = result_array_p["CM"].tolist()
-            elif self.options[OPTION_COMP_NEG_AIR_SYM]:
-                cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
-                # noinspection PyUnboundLocalVariable
-                cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
-                alpha = result_array_n["alpha"].tolist()
-                alpha.reverse()
-                alpha.extend(result_array_p["alpha"].tolist())
-                cl = result_array_n["CL"].tolist()
-                cl.reverse()
-                cl.extend(result_array_p["CL"].tolist())
-                cd = result_array_n["CD"].tolist()
-                cd.reverse()
-                cd.extend(result_array_p["CD"].tolist())
-                cdp = result_array_n["CDp"].tolist()
-                cdp.reverse()
-                cdp.extend(result_array_p["CDp"].tolist())
-                cm = result_array_n["CM"].tolist()
-                cm.reverse()
-                cm.extend(result_array_p["CM"].tolist())
-            else:
-                cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
-                cl_min_2d, _ = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
-                alpha = result_array_p["alpha"].tolist()
-                cl = result_array_p["CL"].tolist()
-                cd = result_array_p["CD"].tolist()
-                cdp = result_array_p["CDp"].tolist()
-                cm = result_array_p["CM"].tolist()
+            alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, error =\
+            self.post_processing_fill_value(result_array_p, result_array_n)
 
-            if not self.options["single_AoA"]:
-                if POLAR_POINT_COUNT < len(alpha):
-                    alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
-                    cl = np.interp(alpha_interp, alpha, cl)
-                    cd = np.interp(alpha_interp, alpha, cd)
-                    cdp = np.interp(alpha_interp, alpha, cdp)
-                    cm = np.interp(alpha_interp, alpha, cm)
-                    alpha = alpha_interp
-                    warnings.warn(
-                        "Defined polar point in fast aerodynamics\\constants.py exceeded!"
-                    )
-                else:
-                    additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
-                    alpha.extend(additional_zeros)
-                    alpha = np.array(alpha)
-                    cl.extend(additional_zeros)
-                    cl = np.array(cl)
-                    cd.extend(additional_zeros)
-                    cd = np.array(cd)
-                    cdp.extend(additional_zeros)
-                    cdp = np.array(cdp)
-                    cm.extend(additional_zeros)
-                    cm = np.array(cm)
+            if multiple_AoA:
+                #Fix output length if needed
+                alpha, cl, cd, cdp, cm = self.Fix_mutiple_AoA_output_length(alpha, cl, cd, cdp, cm)
 
                 # Save results to defined path
                 if not error:
@@ -502,15 +265,7 @@ class XfoilPolar(ExternalCodeComp):
                 # noinspection PyTypeChecker
                 cm = np.asarray(cm)
 
-        # Defining outputs -------------------------------------------------------------------------
-        outputs["xfoil:alpha"] = alpha
-        outputs["xfoil:CL"] = cl
-        outputs["xfoil:CD"] = cd
-        outputs["xfoil:CDp"] = cdp
-        outputs["xfoil:CM"] = cm
-        if not self.options["single_AoA"]:
-            outputs["xfoil:CL_max_2D"] = cl_max_2d
-            outputs["xfoil:CL_min_2D"] = cl_min_2d
+        outputs = self.Define_outputs(outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d,multiple_AoA)
 
     def _write_script_file(
         self,
@@ -523,6 +278,7 @@ class XfoilPolar(ExternalCodeComp):
         step,
     ):
         parser = InputFileGenerator()
+        # input command to run XFoil
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
             parser.set_template_file(str(input_template_path))
             parser.set_generated_file(self.stdin)
@@ -651,3 +407,288 @@ class XfoilPolar(ExternalCodeComp):
             )
 
         return tmp_directory
+
+    def run_XFoil(self, inputs, outputs,reynolds,mach):
+    # Create result folder first (if it must fail, let it fail as soon as possible)
+        result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
+        if result_folder_path != "":
+            os.makedirs(result_folder_path, exist_ok=True)
+
+        # Pre-processing (populating temp directory)
+        # XFoil exe
+        tmp_directory = self._create_tmp_directory()
+        if self.options[OPTION_XFOIL_EXE_PATH]:
+            # if a path for Xfoil has been provided, simply use it
+            self.options["command"] = [self.options[OPTION_XFOIL_EXE_PATH]]
+        else:
+            # otherwise, copy the embedded resource in tmp dir
+            # noinspection PyTypeChecker
+            copy_resource(xfoil699, XFOIL_EXE_NAME, tmp_directory.name)
+            self.options["command"] = [pth.join(tmp_directory.name, XFOIL_EXE_NAME)]
+
+        # I/O files
+        self.stdin = pth.join(tmp_directory.name, _INPUT_FILE_NAME)
+        self.stdout = pth.join(tmp_directory.name, _STDOUT_FILE_NAME)
+        self.stderr = pth.join(tmp_directory.name, _STDERR_FILE_NAME)
+
+        # profile file
+        tmp_profile_file_path = pth.join(tmp_directory.name, _TMP_PROFILE_FILE_NAME)
+        profile = get_profile(
+            airfoil_folder_path=self.options["airfoil_folder_path"],
+            file_name=self.options["airfoil_file"],
+        ).get_sides()
+        # noinspection PyTypeChecker
+        np.savetxt(
+            tmp_profile_file_path,
+            profile.to_numpy(),
+            fmt="%.15f",
+            delimiter=" ",
+            header="Wing",
+            comments="",
+        )
+
+        # standard input file
+        tmp_result_file_path = pth.join(tmp_directory.name, _TMP_RESULT_FILE_NAME)
+        self._write_script_file(
+            reynolds,
+            mach,
+            tmp_profile_file_path,
+            tmp_result_file_path,
+            self.options[OPTION_ALPHA_START],
+            self.options[OPTION_ALPHA_END],
+            ALPHA_STEP,
+        )
+
+        # Run XFOIL
+        self.options["external_input_files"] = [self.stdin, tmp_profile_file_path]
+        self.options["external_output_files"] = [tmp_result_file_path]
+        # noinspection PyBroadException
+        try:
+            super().compute(inputs, outputs)
+            result_array_p = self._read_polar(tmp_result_file_path)
+        except:
+            # catch the error and try to read result file for non-convergence on higher angles
+            error = sys.exc_info()[1]
+            try:
+                result_array_p = self._read_polar(tmp_result_file_path)
+            except:
+                raise TimeoutError("<p>Error: %s</p>" % error)
+        result_array_n = np.array([])
+
+        if self.options[OPTION_COMP_NEG_AIR_SYM]:
+            os.remove(self.stdin)
+            os.remove(self.stdout)
+            os.remove(self.stderr)
+            os.remove(tmp_result_file_path)
+            alpha_start = min(-1 * self.options[OPTION_ALPHA_START], -ALPHA_STEP)
+            self._write_script_file(
+                reynolds,
+                mach,
+                tmp_profile_file_path,
+                tmp_result_file_path,
+                alpha_start,
+                -1 * self.options[OPTION_ALPHA_END],
+                -ALPHA_STEP,
+            )
+            # noinspection PyBroadException
+            try:
+                super().compute(inputs, outputs)
+                result_array_n = self._read_polar(tmp_result_file_path)
+            except:
+                # catch the error and try to read result file for non-convergence on higher
+                # angles
+                e = sys.exc_info()[1]
+                try:
+                    result_array_n = self._read_polar(tmp_result_file_path)
+                except:
+                    raise TimeoutError("<p>Error: %s</p>" % e)
+        
+        return result_array_p, result_array_n, result_folder_path, tmp_directory, tmp_result_file_path
+    
+    def interpolation_for_exist_data(self,result_file,mach,reynolds):
+        no_file = False
+        data_saved = pd.read_csv(result_file)
+        values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
+        labels = data_saved.to_numpy()[:, 0].tolist()
+        data_saved = pd.DataFrame(values, index=labels)
+        saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
+        index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
+        near_mach = []
+        distance_to_mach = []
+        #Check if there is a velocity (Mach) value that is close to this one
+        for index in index_near_mach:
+            if not (saved_mach_list[index] in near_mach):
+                near_mach.append(saved_mach_list[index])
+                distance_to_mach.append(abs(saved_mach_list[index] - mach))
+        if not near_mach:
+            index_mach = np.where(data_saved.loc["mach", :].to_numpy() == str(mach))[0]
+        else:
+            selected_mach_index = distance_to_mach.index(min(distance_to_mach))
+            index_mach = np.where(saved_mach_list == near_mach[selected_mach_index])[0]
+        data_reduced = data_saved.loc[labels, index_mach]
+        # Search if this exact reynolds has been computed and save results
+        reynolds_vect = np.array(
+            [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
+        )
+        index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
+        if len(index_reynolds) == 1:
+            interpolated_result = data_reduced.loc[labels, index_reynolds]
+        # Else search for lower/upper Reynolds
+        else:
+            lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
+            upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
+            if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
+                index_lower_reynolds = index_mach[
+                    np.where(reynolds_vect == max(lower_reynolds))[0]
+                ]
+                index_upper_reynolds = index_mach[
+                    np.where(reynolds_vect == min(upper_reynolds))[0]
+                ]
+                lower_values = data_reduced.loc[labels, index_lower_reynolds]
+                upper_values = data_reduced.loc[labels, index_upper_reynolds]
+                # Initialise values with lower reynolds
+                interpolated_result = lower_values
+                # Calculate reynolds ratio split for linear interpolation
+                x_ratio = (min(upper_reynolds) - reynolds) / (
+                    min(upper_reynolds) - max(lower_reynolds)
+                )
+                # Search for common alpha range for linear interpolation
+                alpha_lower = (
+                    np.array(
+                        np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                    )
+                    .ravel()
+                    .tolist()
+                )
+                alpha_upper = (
+                    np.array(
+                        np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                    )
+                    .ravel()
+                    .tolist()
+                )
+                alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
+                interpolated_result.loc["alpha", index_lower_reynolds] = str(
+                    alpha_shared.tolist()
+                )
+                labels.remove("alpha")
+                # Calculate average values (cd, cl...) with linear interpolation
+                for label in labels:
+                    lower_value = np.array(
+                        np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                    ).ravel()
+                    upper_value = np.array(
+                        np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                    ).ravel()
+                    # If values relative to alpha vector, performs interpolation with shared
+                    # vector
+                    if np.size(lower_value) == len(alpha_lower):
+                        lower_value = np.interp(
+                            alpha_shared, np.array(alpha_lower), lower_value
+                        )
+                        upper_value = np.interp(
+                            alpha_shared, np.array(alpha_upper), upper_value
+                        )
+                    value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
+                    interpolated_result.loc[label, index_lower_reynolds] = str(value)
+                    
+                return interpolated_result
+    
+    def identify_negative_angle_option(self):
+        # change to csv for later usage
+        if self.options[OPTION_COMP_NEG_AIR_SYM]:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(
+                    ".af", "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END])))
+                )
+                + "S.csv",
+            )
+        else:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
+        return result_file
+    
+    def post_processing_fill_value(self,result_array_p, result_array_n):
+        if self.options["single_AoA"]:
+            alpha = result_array_p["alpha"].tolist()
+            cl = result_array_p["CL"].tolist()
+            cd = result_array_p["CD"].tolist()
+            cdp = result_array_p["CDp"].tolist()
+            cm = result_array_p["CM"].tolist()
+            cl_max_2d = []
+            cl_min_2d = []
+            error = []
+        elif self.options[OPTION_COMP_NEG_AIR_SYM]:
+            cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+            # noinspection PyUnboundLocalVariable
+            cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
+            alpha = result_array_n["alpha"].tolist()
+            alpha.reverse()
+            alpha.extend(result_array_p["alpha"].tolist())
+            cl = result_array_n["CL"].tolist()
+            cl.reverse()
+            cl.extend(result_array_p["CL"].tolist())
+            cd = result_array_n["CD"].tolist()
+            cd.reverse()
+            cd.extend(result_array_p["CD"].tolist())
+            cdp = result_array_n["CDp"].tolist()
+            cdp.reverse()
+            cdp.extend(result_array_p["CDp"].tolist())
+            cm = result_array_n["CM"].tolist()
+            cm.reverse()
+            cm.extend(result_array_p["CM"].tolist())
+        else:
+            cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
+            cl_min_2d, _ = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
+            alpha = result_array_p["alpha"].tolist()
+            cl = result_array_p["CL"].tolist()
+            cd = result_array_p["CD"].tolist()
+            cdp = result_array_p["CDp"].tolist()
+            cm = result_array_p["CM"].tolist()
+        
+        return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, error
+    
+    def Define_outputs(self,outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d,multiple_AoA):
+        outputs["xfoil:alpha"] = alpha
+        outputs["xfoil:CL"] = cl
+        outputs["xfoil:CD"] = cd
+        outputs["xfoil:CDp"] = cdp
+        outputs["xfoil:CM"] = cm
+        if multiple_AoA:
+            outputs["xfoil:CL_max_2D"] = cl_max_2d
+            outputs["xfoil:CL_min_2D"] = cl_min_2d
+        
+        return outputs
+    
+    def Fix_mutiple_AoA_output_length(self,alpha, cl, cd, cdp, cm):
+        shorter = POLAR_POINT_COUNT < len(alpha)
+        # use inerpolation to fill missing values and add zero for values that are out of range
+        if shorter:
+            alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
+            cl = np.interp(alpha_interp, alpha, cl)
+            cd = np.interp(alpha_interp, alpha, cd)
+            cdp = np.interp(alpha_interp, alpha, cdp)
+            cm = np.interp(alpha_interp, alpha, cm)
+            alpha = alpha_interp
+            warnings.warn(
+                "Defined polar point in fast aerodynamics\\constants.py exceeded!"
+            )
+        else:
+            additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
+            alpha.extend(additional_zeros)
+            alpha = np.array(alpha)
+            cl.extend(additional_zeros)
+            cl = np.array(cl)
+            cd.extend(additional_zeros)
+            cd = np.array(cd)
+            cdp.extend(additional_zeros)
+            cdp = np.array(cdp)
+            cm.extend(additional_zeros)
+            cm = np.array(cm)
+            
+        return alpha, cl, cd, cdp, cm
