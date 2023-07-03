@@ -1,6 +1,6 @@
 #import warnings
-import time
-starting = time.time()
+import timeit
+starting = timeit.timeit()
 from Count_Under_XDSM_Diag import *
 
 #warnings.filterwarnings(action="ignore")
@@ -38,12 +38,12 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 
 
 XDSM_FILE = pth.join(WORK_FOLDER_PATH, "xdsm.html")
-api_cs25.write_xdsm(CONFIGURATION_FILE, XDSM_FILE, overwrite=True)
+api_cs25.write_xdsm(CONFIGURATION_FILE, XDSM_FILE, overwrite=True, depth=-1)
 
 print('There are', Count_Under_XDSM_Diag(XDSM_FILE), 'elements under the diagonal')
 
 
-ending = time.time()
+ending = timeit.timeit()
 
 print('Time taken in this iteration:', ending - starting)
 
