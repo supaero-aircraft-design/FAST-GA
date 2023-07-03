@@ -1,0 +1,16 @@
+title: Propeller thrust and power coefficients run
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+
+# Input and output files
+input_file: ./propeller_coeff_inputs.xml
+output_file: ./propeller_coeff_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+model:
+    propeller_coeff_map:
+        id: fastga.aerodynamics.propeller.coeff_map

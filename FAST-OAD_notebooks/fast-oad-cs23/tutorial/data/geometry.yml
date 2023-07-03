@@ -1,0 +1,17 @@
+title: Geometry run
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+
+# Input and output files
+input_file: ./geometry_inputs.xml
+output_file: ./geometry_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+model:
+    geometry:
+        id: fastga.geometry.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
