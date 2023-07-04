@@ -15,6 +15,7 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -22,9 +23,18 @@ from ..constants import SUBMODEL_WING_L1_L4
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_L1_L4, "fastga.submodel.geometry.wing.l1_l4.legacy")
-class ComputeWingL1AndL4(ExplicitComponent):
+class ComputeWingL1AndL4(Group):
     # TODO: Document equations. Cite sources
     """Wing chords (l1 and l4) estimation."""
+
+    def setup(self):
+
+        self.add_subsystem("comp_wing_l1", ComputeWingL1(), promotes=["*"])
+        self.add_subsystem("comp_wing_l4", ComputeWingL4(), promotes=["*"])
+
+
+class ComputeWingL1(ExplicitComponent):
+    """Estimate l1 wing chord."""
 
     def setup(self):
 
@@ -34,10 +44,9 @@ class ComputeWingL1AndL4(ExplicitComponent):
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
-        self.add_output("data:geometry:wing:tip:chord", units="m")
 
         self.declare_partials("*", "*", method="fd")
-
+    
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         wing_area = inputs["data:geometry:wing:area"]
@@ -47,7 +56,26 @@ class ComputeWingL1AndL4(ExplicitComponent):
 
         l1_wing = wing_area / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio))
 
+        outputs["data:geometry:wing:root:virtual_chord"] = l1_wing
+
+
+class ComputeWingL4(ExplicitComponent):
+    """Estimate l4 wing chord."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:root:virtual_chord", units="m")
+
+        self.add_output("data:geometry:wing:tip:chord", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+    
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+
         l4_wing = l1_wing * taper_ratio
 
-        outputs["data:geometry:wing:root:virtual_chord"] = l1_wing
-        outputs["data:geometry:wing:tip:chord"] = l4_wing
+        outputs["data:geometry:wing:tip:chord"] = l4_wing         
