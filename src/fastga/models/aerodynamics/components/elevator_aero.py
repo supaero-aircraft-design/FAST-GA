@@ -16,15 +16,24 @@ from typing import Union
 
 import numpy as np
 import fastoad.api as oad
+import openmdao.api as om
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_ELEVATOR
 
 
 @oad.RegisterSubmodel(SUBMODEL_DELTA_ELEVATOR, "fastga.submodel.aerodynamics.elevator.delta.legacy")
-class ComputeDeltaElevator(FigureDigitization):
+class ComputeDeltaElevator(om.Group):
+    
+    def setup(self):
+
+        self.add_subsystem("comp_CL_delta", ComputeCLDelta(), promotes=["*"])
+        self.add_subsystem("comp_CD_delta", ComputeCDDelta(), promotes=["*"])
+
+
+class ComputeCLDelta(FigureDigitization):
     """
-    Provides lift and drag increments due to high-lift devices.
+    Provides lift increments due to high-lift devices.
     """
 
     def __init__(self, **kwargs):
@@ -35,44 +44,23 @@ class ComputeDeltaElevator(FigureDigitization):
 
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input(
             "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
-        self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
 
         self.add_output("data:aerodynamics:elevator:low_speed:CL_delta", units="rad**-1")
-        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        wing_area = inputs["data:geometry:wing:area"]
-        htp_area = inputs["data:geometry:horizontal_tail:area"]
-        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
-
-        # Computes elevator contribution during low speed operations (for different deflection
-        # angle)
+        
         outputs["data:aerodynamics:elevator:low_speed:CL_delta"] = self._get_elevator_delta_cl(
             inputs,
             25.0,
-        )  # get derivative for 25° angle assuming it is linear when <= to 25 degree,
-        # derivative wrt to the wing, multiplies the deflection angle squared
-        outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (
-            self.delta_cd_plain_flap(
-                float(elevator_chord_ratio),
-                abs(float(inputs["data:mission:sizing:landing:elevator_angle"])),
-            )
-            / (abs(inputs["data:mission:sizing:landing:elevator_angle"]) * np.pi / 180.0) ** 2.0
-            * np.cos(inputs["data:geometry:horizontal_tail:sweep_25"])
-            * htp_area
-            / wing_area
-        )
-
+        ) 
+        
     def _get_elevator_delta_cl(
         self, inputs, elevator_angle: Union[float, np.array]
     ) -> Union[float, np.array]:
@@ -102,3 +90,52 @@ class ComputeDeltaElevator(FigureDigitization):
         cl_alpha_elev *= 0.9  # Correction for the central fuselage part (no elevator there)
 
         return cl_alpha_elev
+
+
+class ComputeCDDelta(FigureDigitization):
+    """
+    Provides drag increments due to high-lift devices.
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.phase = None
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
+        self.add_input("data:mission:sizing:landing:elevator_angle", val=np.nan, units="deg")
+
+        self.add_output("data:aerodynamics:elevator:low_speed:CD_delta", units="rad**-2")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        wing_area = inputs["data:geometry:wing:area"]
+        htp_area = inputs["data:geometry:horizontal_tail:area"]
+        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
+        elevator_angle = inputs["data:mission:sizing:landing:elevator_angle"]
+        sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
+
+        """
+        Computes elevator contribution during low speed operations (for different deflection
+        angle)
+        get derivative for 25° angle assuming it is linear when <= to 25 degree,
+        derivative wrt to the wing, multiplies the deflection angle squared
+        """
+
+        outputs["data:aerodynamics:elevator:low_speed:CD_delta"] = (
+            self.delta_cd_plain_flap(
+                float(elevator_chord_ratio),
+                abs(float(elevator_angle)),
+            )
+            / (abs(elevator_angle) * np.pi / 180.0) ** 2.0
+            * np.cos(sweep_25)
+            * htp_area
+            / wing_area
+        )
+
