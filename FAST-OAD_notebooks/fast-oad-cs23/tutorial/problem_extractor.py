@@ -18,18 +18,21 @@ def process_variables(children_list, prefix=''):
             variables.extend(process_variables(child['children'], child_prefix))
     return variables
 
+def extract_BLC(data): #extracts Bottom level components for feedback loops
+    result = []
+    for entry in data:
+        src_value = entry['src']
+        tgt_value = entry['tgt']
 
+        src_parts = src_value.split('.')
+        tgt_parts = tgt_value.split('.')
 
-def get_dict_depth(dictionary): 
-    if isinstance(dictionary, dict):
-        if len(dictionary) == 0:
-            return 1
-        else:
-            return 1 + max(get_dict_depth(value) for value in dictionary.values())
-    else:
-        return 0
-    
+        src_word = src_parts[-2] if len(src_parts) >= 2 else ''
+        tgt_word = tgt_parts[-2] if len(tgt_parts) >= 2 else ''
 
+        result.append((src_word, tgt_word))
+
+    return result
 
 
 
@@ -57,27 +60,36 @@ except TypeError as err:
     model_data = {}
     err_msg = str(err)
     issue_warning(err_msg)
-#dict_keys(['tree', 'md5_hash', 'sys_pathnames_list', 'connections_list', 'abs2prom', 'driver', 'design_vars', 'responses', 'declare_partials_list'])
 
 #retrieves the dictionary for models and their sub-models
 ordered_vars = process_variables(model_data['tree']['children'])
-
 
 connections_list = model_data['connections_list'] #data_list
 result_list = []
 for data in connections_list:
     src_position = ordered_vars.index(data['src'])
-    #print(data['src'], src_position)
     tgt_position = ordered_vars.index(data['tgt'])
-    #print(data['tgt'], tgt_position)
     if src_position > tgt_position:
         result_list.append(data)
-        #print('OK!')
 
 
-print(len(result_list))
-"""
+print('There are', len(result_list), 'feedback connections')
 
-with open('output_tree.txt', 'w') as f:
-    f.write(str(model_data['tree']))
-#print(model_data.values())"""
+print(extract_BLC(result_list))
+"""src_words = []
+tgt_words = []
+
+for entry in data:
+    src_value = entry['src']
+    tgt_value = entry['tgt']
+
+    src_word = src_value.rsplit('.', 1)[0].rsplit('.', 1)[-1]
+    tgt_word = tgt_value.rsplit('.', 1)[0].rsplit('.', 1)[-1]
+
+    src_words.append(src_word)
+    tgt_words.append(tgt_word)
+
+print("bottom level component source of feedback: ", src_words)
+print("bottom level component target of feedback", tgt_words)"""
+
+#print(result_list)
