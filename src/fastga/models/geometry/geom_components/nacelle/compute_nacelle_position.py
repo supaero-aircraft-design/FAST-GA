@@ -15,46 +15,40 @@
 
 import numpy as np
 import warnings
-import openmdao.api as om
-
 import fastoad.api as oad
 
 from ...constants import SUBMODEL_NACELLE_POSITION
 
+from openmdao.core.group import Group
+from openmdao.core.explicitcomponent import ExplicitComponent
+
 
 @oad.RegisterSubmodel(SUBMODEL_NACELLE_POSITION, "fastga.submodel.geometry.nacelle.position.legacy")
-class ComputeNacellePosition(om.ExplicitComponent):
+class ComputeNacellePosition(Group):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""
 
     def setup(self):
 
+        self.add_subsystem("comp_y_nacelle", ComputeYPosition(), promotes=["*"])
+        self.add_subsystem("comp_x_nacelle", ComputeXPosition(), promotes=["*"])
+
+
+class ComputeYPosition(ExplicitComponent):
+
+    def setup(self):
+
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input(
             "data:geometry:propulsion:engine:y_ratio",
             shape_by_conn=True,
         )
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-
+        
         self.add_output(
             "data:geometry:propulsion:nacelle:y",
-            units="m",
-            shape_by_conn=True,
-            copy_shape="data:geometry:propulsion:engine:y_ratio",
-        )
-        self.add_output(
-            "data:geometry:propulsion:nacelle:x",
             units="m",
             shape_by_conn=True,
             copy_shape="data:geometry:propulsion:engine:y_ratio",
@@ -63,13 +57,63 @@ class ComputeNacellePosition(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
+        
         nac_width = inputs["data:geometry:propulsion:nacelle:width"]
-        nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
         b_f = inputs["data:geometry:fuselage:maximum_width"]
+
+        if prop_layout == 1.0:
+            y_nacelle_array = y_ratio * span / 2
+        elif prop_layout == 2.0:
+            y_nacelle_array = b_f / 2 + 0.8 * nac_width
+        elif prop_layout == 3.0:
+            y_nacelle_array = 0.0
+        else:
+            y_nacelle_array = 0.0
+
+            warnings.warn(
+                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
+                    prop_layout
+                )
+            )
+
+        outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array 
+
+
+class ComputeXPosition(ExplicitComponent):
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
+        self.add_input("data:geometry:propulsion:nacelle:y", 
+            units="m",
+            shape_by_conn=True,
+        )
+
+        self.add_output(
+            "data:geometry:propulsion:nacelle:x",
+            units="m",
+            shape_by_conn=True,
+            copy_shape="data:geometry:propulsion:nacelle:y",
+        )
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        nac_length = inputs["data:geometry:propulsion:nacelle:length"]
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         fus_length = inputs["data:geometry:fuselage:length"]
         rear_length = inputs["data:geometry:fuselage:rear_length"]
         y2_wing = float(inputs["data:geometry:wing:root:y"])
@@ -80,7 +124,7 @@ class ComputeNacellePosition(om.ExplicitComponent):
         y4_wing = float(inputs["data:geometry:wing:tip:y"])
 
         if prop_layout == 1.0:
-            y_nacelle_array = y_ratio * span / 2
+            y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
             x_nacelle_array = np.copy(y_nacelle_array)
 
             for idx, y_nacelle in enumerate(y_nacelle_array):
@@ -91,13 +135,10 @@ class ComputeNacellePosition(om.ExplicitComponent):
                 x_nacelle_array[idx] = fa_length - x0_wing - 0.25 * l0_wing + delta_x_nacelle
 
         elif prop_layout == 2.0:
-            y_nacelle_array = b_f / 2 + 0.8 * nac_width
             x_nacelle_array = fus_length - 0.1 * rear_length
         elif prop_layout == 3.0:
-            y_nacelle_array = 0.0
             x_nacelle_array = float(nac_length)
         else:
-            y_nacelle_array = 0.0
             x_nacelle_array = float(nac_length)
 
             warnings.warn(
@@ -106,5 +147,4 @@ class ComputeNacellePosition(om.ExplicitComponent):
                 )
             )
 
-        outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array
-        outputs["data:geometry:propulsion:nacelle:x"] = x_nacelle_array
+        outputs["data:geometry:propulsion:nacelle:x"] = x_nacelle_array 
