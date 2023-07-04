@@ -15,6 +15,7 @@
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_VT_POSITION_FL, SUBMODEL_VT_POSITION_FD
@@ -103,7 +104,7 @@ oad.RegisterSubmodel.active_models[
 @oad.RegisterSubmodel(
     SUBMODEL_VT_POSITION_FL, "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
 )
-class ComputeVTMacPositionFL(ExplicitComponent):
+class ComputeVTMacPositionFL(Group):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord position estimation based on (F)ixed fuselage (L)ength (VTP
@@ -111,36 +112,101 @@ class ComputeVTMacPositionFL(ExplicitComponent):
     """
 
     def setup(self):
+
+        self.add_subsystem(
+            "comp_x_pos_local_25MAC_fl", ComputeVTMacX25FL(), promotes=["*"]
+        )
+        self.add_subsystem(
+            "comp_x_pos_from_wing_25MAC_fl", ComputeVTMacX25WFL(), promotes=["*"]
+        )
+        self.add_subsystem("comp_x_pos_tip_fl", ComputeVTXTipFL(), promotes=["*"])
+
+
+class ComputeVTMacX25FL(ExplicitComponent):
+    """
+    Compute x coordinate (local) at 25% MAC of the vertical tail based on (F)ixed 
+    fuselage (L)ength (VTP distance computed).
+    """
+
+    def setup(self):
+
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input(
-            "data:geometry:vertical_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
-        )
-
+        
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
-        self.add_output("data:geometry:vertical_tail:tip:x", units="m")
-        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
-
+        
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
-        x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
-        x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
 
         tmp = root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25
-
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
 
+        outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
+
+
+class ComputeVTMacX25WFL(ExplicitComponent):
+    """
+    Compute x coordinate (from wing MAC .25) at 25% MAC of the vertical tail based on 
+    (F)ixed fuselage (L)ength (VTP distance computed).
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
+        )
+        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+
+        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+    
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
+        x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
+
         vt_lp = (x_vt + x0_vt) - x_wing25
+
+        outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
+
+
+class ComputeVTXTipFL(ExplicitComponent):
+    """
+    Compute x coordinate of the vertical tail's tip based on (F)ixed fuselage 
+    (L)ength (VTP distance computed).
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")        
+
+        self.add_output("data:geometry:vertical_tail:tip:x", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+    
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+        x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
+        vt_lp = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+
         x_tip = b_v * np.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
 
-        outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:tip:x"] = x_tip
-        outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
