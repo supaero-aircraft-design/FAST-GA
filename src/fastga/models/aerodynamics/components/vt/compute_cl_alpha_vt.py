@@ -16,6 +16,7 @@ import numpy as np
 import scipy.interpolate as interp
 import fastoad.api as oad
 
+from openmdao.core.group import Group
 from ..figure_digitization import FigureDigitization
 from ...constants import SUBMODEL_CL_ALPHA_VT
 
@@ -23,7 +24,7 @@ from ...constants import SUBMODEL_CL_ALPHA_VT
 @oad.RegisterSubmodel(
     SUBMODEL_CL_ALPHA_VT, "fastga.submodel.aerodynamics.vertical_tail.lift_curve_slope.legacy"
 )
-class ComputeClAlphaVerticalTail(FigureDigitization):
+class ComputeClAlphaVerticalTail(Group):
     """
     Vertical tail lift coefficient estimation.
 
@@ -38,47 +39,45 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
     def setup(self):
 
-        if self.options["low_speed_aero"]:
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-        else:
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+        self.add_subsystem("comp_k_ar_eff", ComputeKAR(), promotes=["*"])
 
-        self.add_input(
-            "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
-        )
+        if self.options["low_speed_aero"]:
+            self.add_subsystem(
+                "comp_cl_alpha_vt", 
+                ComputeClAlphaVTP(low_speed_aero=self.options["low_speed_aero"]), 
+                promotes=["*"],
+            )
+        else:
+            self.add_subsystem(
+                "comp_cl_alpha_vt", 
+                ComputeClAlphaVTP(low_speed_aero=self.options["low_speed_aero"]), 
+                promotes=["*"],
+            )
+        
+
+class ComputeKAR(FigureDigitization):
+    """ K_ar effective estimation """
+
+    def setup(self):
+
         self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
-        if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
-            self.add_output("data:aerodynamics:vertical_tail:k_ar_effective")
-        else:
-            self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
+        self.add_output("data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan)
+
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        if self.options["low_speed_aero"]:
-            mach = inputs["data:aerodynamics:low_speed:mach"]
-            beta = np.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
-        else:
-            mach = inputs["data:aerodynamics:cruise:mach"]
-            beta = np.sqrt(1 - mach ** 2)
-            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
-
+        
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         span_vt = inputs["data:geometry:vertical_tail:span"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         area_ht = inputs["data:geometry:horizontal_tail:area"]
-
         avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
 
         # Compute the effect of fuselage and HTP as end plates which gives a different effective
@@ -91,6 +90,54 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         k_ar_effective = k_ar_fuselage * (1.0 + k_vh * (k_ar_fuselage_ht - 1.0))
 
+        outputs["data:aerodynamics:vertical_tail:k_ar_effective"] = k_ar_effective
+
+        
+class ComputeClAlphaVTP(FigureDigitization):
+    """ Vertical tail lift coefficient estimation. """
+
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+
+        if self.options["low_speed_aero"]:
+            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+        else:
+            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
+
+        self.add_input(
+            "data:aerodynamics:vertical_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
+        self.add_input("data:aerodynamics:vertical_tail:k_ar_effective", val=np.nan)
+
+        if self.options["low_speed_aero"]:
+            self.add_output("data:aerodynamics:vertical_tail:low_speed:CL_alpha", units="rad**-1")
+        else:
+            self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
+
+        self.declare_partials("*", "*", method='fd')
+
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        if self.options["low_speed_aero"]:
+            mach = inputs["data:aerodynamics:low_speed:mach"]
+            beta = np.sqrt(1 - mach ** 2)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
+        else:
+            mach = inputs["data:aerodynamics:cruise:mach"]
+            beta = np.sqrt(1 - mach ** 2)
+            k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
+
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        span_vt = inputs["data:geometry:vertical_tail:span"]
+        avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
+        k_ar_effective = inputs["data:aerodynamics:vertical_tail:k_ar_effective"]
         lambda_vt = inputs["data:geometry:vertical_tail:aspect_ratio"] * k_ar_effective
 
         if span_vt / avg_fus_depth < 2.0:
@@ -119,6 +166,6 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:vertical_tail:low_speed:CL_alpha"] = cl_alpha_vt
-            outputs["data:aerodynamics:vertical_tail:k_ar_effective"] = k_ar_effective
         else:
             outputs["data:aerodynamics:vertical_tail:cruise:CL_alpha"] = cl_alpha_vt
+
