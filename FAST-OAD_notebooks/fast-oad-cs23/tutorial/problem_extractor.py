@@ -34,6 +34,6 @@ print(type(model_data))
 #dict_keys(['tree', 'md5_hash', 'sys_pathnames_list', 'connections_list', 'abs2prom', 'driver', 'design_vars', 'responses', 'declare_partials_list'])
 print(str(model_data['connections_list']))
 
-with open('output.txt', 'a') as f:
+with open('output.txt', 'w') as f:
     f.write(str(model_data['connections_list']))
 #print(model_data.values())
