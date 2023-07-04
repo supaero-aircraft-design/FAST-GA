@@ -17,42 +17,94 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
+
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_VT_CHORD
 
 
 @oad.RegisterSubmodel(SUBMODEL_VT_CHORD, "fastga.submodel.geometry.vertical_tail.chord.legacy")
-class ComputeVTChords(ExplicitComponent):
+class ComputeVTChords(Group):
     # TODO: Document equations. Cite sources
     """Vertical tail chords and span estimation"""
 
     def setup(self):
+
+        self.add_subsystem("comp_vertical_tail_span", ComputeVTSpan(), promotes=["*"])
+        self.add_subsystem(
+            "comp_vertical_tail_root_chord", ComputeVTRootChord(), promotes=["*"]
+        )
+        self.add_subsystem(
+            "comp_vertical_tail_tip_chord", ComputeVTTipChord(), promotes=["*"]
+        )
+
+
+class ComputeVTSpan(ExplicitComponent):
+
+    def setup(self):
+
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-
+        
         self.add_output("data:geometry:vertical_tail:span", units="m")
-        self.add_output("data:geometry:vertical_tail:root:chord", units="m")
-        self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
         self.declare_partials(
             "data:geometry:vertical_tail:span",
             ["data:geometry:vertical_tail:aspect_ratio", "data:geometry:vertical_tail:area"],
             method="fd",
         )
-        self.declare_partials("data:geometry:vertical_tail:root:chord", "*", method="fd")
-        self.declare_partials("data:geometry:vertical_tail:tip:chord", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
         lambda_vt = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
         s_v = float(inputs["data:geometry:vertical_tail:area"])
-        taper_v = inputs["data:geometry:vertical_tail:taper_ratio"]
 
-        b_v = np.sqrt(max(lambda_vt * s_v, 0.1))  # !!!: to avoid 0 division if s_h initialised to 0
-        root_chord = s_v * 2 / (1 + taper_v) / b_v
-        tip_chord = root_chord * taper_v
+        # Give a minimum value to avoid 0 division later if s_v initialised to 0
+        b_v = np.sqrt(max(lambda_vt * s_v, 0.1))  
 
         outputs["data:geometry:vertical_tail:span"] = b_v
+
+class ComputeVTRootChord(ExplicitComponent):
+
+    def setup(self):
+        
+        self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:span", units="m")
+
+        self.add_output("data:geometry:vertical_tail:root:chord", units="m")
+
+        self.declare_partials("data:geometry:vertical_tail:root:chord", "*", method="fd")
+        
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        s_v = float(inputs["data:geometry:vertical_tail:area"])
+        taper_v = inputs["data:geometry:vertical_tail:taper_ratio"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        root_chord = s_v * 2 / (1 + taper_v) / b_v
+
         outputs["data:geometry:vertical_tail:root:chord"] = root_chord
+
+class ComputeVTTipChord(ExplicitComponent):
+
+    def setup(self):
+        
+        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:vertical_tail:root:chord", units="m")
+
+        self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
+
+        self.declare_partials("data:geometry:vertical_tail:tip:chord", "*", method="fd")
+
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        taper_v = inputs["data:geometry:vertical_tail:taper_ratio"]
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+
+        tip_chord = root_chord * taper_v
+
         outputs["data:geometry:vertical_tail:tip:chord"] = tip_chord
+
