@@ -29,11 +29,32 @@ except TypeError as err:
     err_msg = str(err)
     issue_warning(err_msg)
 
-print(type(model_data))
+#print(type(model_data))
 #print(model_data.keys())
 #dict_keys(['tree', 'md5_hash', 'sys_pathnames_list', 'connections_list', 'abs2prom', 'driver', 'design_vars', 'responses', 'declare_partials_list'])
-print(str(model_data['connections_list']))
+#print(str(model_data['design_vars']))
 
-with open('output.txt', 'w') as f:
-    f.write(str(model_data['connections_list']))
-#print(model_data.values())
+
+#obtain from the dictionary abs2prom the ordered list of variables
+ordered_vars = [] #string1_list
+for pair in model_data['abs2prom'].values():
+    ordered_vars.extend(pair.keys())
+
+connections_list = model_data['connections_list'] #data_list
+result_list = []
+for data in connections_list:
+    src_position = ordered_vars.index(data['src'])
+    print(data['src'], src_position)
+    tgt_position = ordered_vars.index(data['tgt'])
+    print(data['tgt'], tgt_position)
+    if src_position > tgt_position:
+        result_list.append(data)
+        print('OK!')
+
+#print(result_list)#DOESNT WORK
+
+
+
+"""with open('output_abs2prom.txt', 'w') as f:
+    f.write(str(model_data['abs2prom']))
+#print(model_data.values())"""
