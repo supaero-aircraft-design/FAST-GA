@@ -24,7 +24,9 @@ from ..external.xfoil.xfoil_polar import XfoilPolar
 
 
 class ComputeMachInterpolation(om.Group):
+
     def initialize(self):
+
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
@@ -33,6 +35,7 @@ class ComputeMachInterpolation(om.Group):
 
     # noinspection PyTypeChecker
     def setup(self):
+        
         ivc_conditions = om.IndepVarComp()
         ivc_conditions.add_output("mach", val=0.05)
         ivc_conditions.add_output("reynolds", val=0.5e6)
@@ -58,7 +61,8 @@ class ComputeMachInterpolation(om.Group):
             ),
             promotes=[],
         )
-        self.add_subsystem("mach_interpolation", _ComputeMachInterpolation(), promotes=["*"])
+        self.add_subsystem("mach_interpolation_mach", InterpolationMachVector(), promotes=["*"])
+        self.add_subsystem("mach_interpolation_cl_alpha", InterpolationCLAlpha(), promotes=["*"])
 
         self.connect("incompressible_conditions.mach", "wing_airfoil.xfoil:mach")
         self.connect("incompressible_conditions.reynolds", "wing_airfoil.xfoil:reynolds")
@@ -71,11 +75,46 @@ class ComputeMachInterpolation(om.Group):
         self.connect("htp_airfoil.xfoil:CL", "xfoil:horizontal_tail:CL")
 
 
-class _ComputeMachInterpolation(om.ExplicitComponent):
-    # Based on the equation of Roskam Part VI
-    """Lift curve slope coefficient as a function of Mach number"""
+class InterpolationMachVector(om.ExplicitComponent):
+    """
+    Based on the equation of Roskam Part VI
+    Lift curve slope coefficient as a function of Mach number
+    The following class gives the Mach array to be used in the interpolation
+    """
 
     def setup(self):
+
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
+
+        self.add_output(
+            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", shape=MACH_NB_PTS + 1
+        )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        sos_cruise = Atmosphere(
+            inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=False
+        ).speed_of_sound
+        mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
+
+        mach_array = np.linspace(0.0, 1.55 * mach_cruise, MACH_NB_PTS + 1)
+
+        outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_array
+
+
+class InterpolationCLAlpha(om.ExplicitComponent):
+    """
+    Based on the equation of Roskam Part VI
+    Lift curve slope coefficient as a function of Mach number
+    The following class computes CL_alpha based on mach array
+    """
+    
+    def setup(self):
+
+        self.add_input(
+            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", val=np.nan, shape=MACH_NB_PTS + 1
+        )
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -90,9 +129,6 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-
-        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input("xfoil:wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
@@ -109,11 +145,11 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             units="rad**-1",
             shape=MACH_NB_PTS + 1,
         )
-        self.add_output(
-            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", shape=MACH_NB_PTS + 1
-        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        mach_array = inputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
+        
         sweep_25_wing = float(inputs["data:geometry:wing:sweep_25"])
         aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
         taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
@@ -133,11 +169,6 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         area_ratio = area_htp / area_wing
 
-        sos_cruise = Atmosphere(
-            inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=False
-        ).speed_of_sound
-        mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
-
         wing_cl = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:CL"])
         wing_alpha = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:alpha"])
         wing_airfoil_cl_alpha = (
@@ -153,8 +184,6 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         htp_airfoil_cl_alpha = (
             np.interp(11.0, htp_alpha, htp_cl) - np.interp(1.0, htp_alpha, htp_cl)
         ) / (10.0 * np.pi / 180.0)
-
-        mach_array = np.linspace(0.0, 1.55 * mach_cruise, MACH_NB_PTS + 1)
 
         beta = np.sqrt(1.0 - mach_array ** 2.0)
         k_wing = wing_airfoil_cl_alpha / beta / (2.0 * np.pi)
@@ -209,7 +238,6 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         )
 
         outputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"] = aircraft_cl_alpha
-        outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_array
 
     @staticmethod
     def _reshape(x: np.ndarray, y: np.ndarray) -> np.ndarray:
@@ -219,3 +247,4 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
                 y = y[0:idx]
                 break
         return y
+    
