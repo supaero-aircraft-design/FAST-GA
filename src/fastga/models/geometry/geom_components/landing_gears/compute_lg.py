@@ -14,9 +14,10 @@
 
 
 import numpy as np
-import openmdao.api as om
-
 import fastoad.api as oad
+
+from openmdao.core.group import Group
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
 
@@ -24,7 +25,7 @@ from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
 @oad.RegisterSubmodel(
     SUBMODEL_LANDING_GEAR_GEOMETRY, "fastga.submodel.geometry.landing_gear.legacy"
 )
-class ComputeLGGeometry(om.ExplicitComponent):
+class ComputeLGGeometry(Group):
     # TODO: Document equations. Cite sources
     """
     Landing gears geometry estimation. Position along the span is based on aircraft pictures
@@ -33,29 +34,58 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_subsystem("comp_lg_height", ComputeLGHeight(), promotes=["*"])
+        self.add_subsystem("comp_y_lg", ComputeYLG(), promotes=["*"])
 
+
+class ComputeLGHeight(ExplicitComponent):
+    """
+    Landing gears height position estimation
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
+        
         self.add_output("data:geometry:landing_gear:height", units="m")
+
+        self.declare_partials(
+            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", val=0.41
+        )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        prop_dia = inputs["data:geometry:propeller:diameter"]
+
+        lg_height = 0.41 * prop_dia
+
+        outputs["data:geometry:landing_gear:height"] = lg_height
+
+
+class ComputeYLG(ExplicitComponent):
+    """
+    Landing gears y-position estimation
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+        self.add_input("data:geometry:landing_gear:height", units="m")
+
         self.add_output("data:geometry:landing_gear:y", units="m")
 
         self.declare_partials(
-            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", method="exact"
+            "data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width", val=0.5
         )
-        self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
+        self.declare_partials(
+            "data:geometry:landing_gear:y", "data:geometry:landing_gear:height", val=1.2
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        prop_dia = inputs["data:geometry:propeller:diameter"]
+        
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
-        lg_height = 0.41 * prop_dia
+        lg_height = inputs["data:geometry:landing_gear:height"]
+
         y_lg = fuselage_max_width / 2 + lg_height * 1.2
 
-        outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
-        partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2
-        partials["data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width"] = 0.5
