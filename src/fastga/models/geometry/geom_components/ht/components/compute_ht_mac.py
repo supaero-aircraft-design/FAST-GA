@@ -18,29 +18,83 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 
-class ComputeHTMacFD(ExplicitComponent):
-    # TODO: Document equations. Cite sources
+class ComputeHTMacFD(Group):
+
+    def setup(self):
+
+        self.add_subsystem(
+            "comp_ht_mac_length_fd", ComputeHTMACLengthFD(), promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_ht_mac_x25_fd", ComputeHTMACx25FD(), promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_ht_mac_y_fd", ComputeHTMACyFD(), promotes=["*"],
+        )
+
+class ComputeHTMACLengthFD(ExplicitComponent):
     """
-    Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
+    Compute MAC length of the horizontal tail based on (F)ixed tail (D)istance.
     """
 
     def setup(self):
+
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
-
+        
         self.add_output("data:geometry:horizontal_tail:MAC:length", units="m")
-        self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
-        self.add_output("data:geometry:horizontal_tail:MAC:y", units="m")
 
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:length",
             ["data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:tip:chord"],
             method="exact",
         )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+
+        mac_ht = (
+            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            / (tip_chord + root_chord)
+            * 2
+            / 3
+        )
+
+        outputs["data:geometry:horizontal_tail:MAC:length"] = mac_ht
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
+        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        partials[
+            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
+        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+
+
+class ComputeHTMACx25FD(ExplicitComponent):
+    """
+    Compute x coordinate (local) at 25% MAC of the horizontal tail based on 
+    (F)ixed tail (D)istance.
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
+
+        self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
+        
         self.declare_partials(
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             [
@@ -51,50 +105,25 @@ class ComputeHTMacFD(ExplicitComponent):
             ],
             method="exact",
         )
-        self.declare_partials(
-            "data:geometry:horizontal_tail:MAC:y",
-            [
-                "data:geometry:horizontal_tail:root:chord",
-                "data:geometry:horizontal_tail:tip:chord",
-                "data:geometry:horizontal_tail:span",
-            ],
-            method="exact",
-        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
-
-        mac_ht = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
-            / (tip_chord + root_chord)
-            * 2
-            / 3
-        )
         x0_ht = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
-        y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
-        outputs["data:geometry:horizontal_tail:MAC:length"] = mac_ht
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
-        outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
-
+    
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
-
-        partials[
-            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
-        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
-        partials[
-            "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
-        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
 
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
@@ -130,6 +159,46 @@ class ComputeHTMacFD(ExplicitComponent):
         ] = (
             tmp_2 * d_tmp_d_bh
         )
+
+
+class ComputeHTMACyFD(ExplicitComponent):
+    """
+    Compute y coordinate of the horizontal tail's MAC based on (F)ixed tail (D)istance.
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
+
+        self.add_output("data:geometry:horizontal_tail:MAC:y", units="m")
+
+        self.declare_partials(
+            "data:geometry:horizontal_tail:MAC:y",
+            [
+                "data:geometry:horizontal_tail:root:chord",
+                "data:geometry:horizontal_tail:tip:chord",
+                "data:geometry:horizontal_tail:span",
+            ],
+            method="exact",
+        )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+        b_h = inputs["data:geometry:horizontal_tail:span"]
+
+        y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
+
+        outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
+        b_h = inputs["data:geometry:horizontal_tail:span"]
 
         partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
             0.5 * root_chord + tip_chord
