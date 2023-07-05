@@ -16,8 +16,10 @@ import logging
 
 import numpy as np
 
-import openmdao.api as om
 import fastoad.api as oad
+
+from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_HEIGHT
 
@@ -25,21 +27,27 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
-class ComputeWingZ(om.ExplicitComponent):
+class ComputeWingZ(Group):
     """
     Computation of the distance between the fuselage center line and the wing. Based on simple
     geometric considerations.
+
+    Convention is positive in a low wing configuration and negative otherwise, see Roskam
+    part VI page 384 in the graph description
     """
 
     def setup(self):
 
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_subsystem("comp_wing_root_z", ComputeWingRootZ(), promotes=["*"])
+        self.add_subsystem("comp_wing_tip_z", ComputeWingTipZ(), promotes=["*"])
+
+
+class ComputeWingRootZ(ExplicitComponent):
+
+    def setup(self):
+
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing_configuration", val=np.nan)
 
@@ -47,12 +55,6 @@ class ComputeWingZ(om.ExplicitComponent):
             "data:geometry:wing:root:z",
             units="m",
             desc="Distance between the wing aerodynamic center at the root and the fuselage "
-            "centerline, taken positive when wing is below the fuselage centerline",
-        )
-        self.add_output(
-            "data:geometry:wing:tip:z",
-            units="m",
-            desc="Distance between the wing aerodynamic center at the tip and the fuselage "
             "centerline, taken positive when wing is below the fuselage centerline",
         )
 
@@ -65,6 +67,91 @@ class ComputeWingZ(om.ExplicitComponent):
             ],
             method="exact",
         )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
+        fus_height = inputs["data:geometry:fuselage:maximum_height"]
+        wing_config = inputs["data:geometry:wing_configuration"]
+
+        if wing_config == 1.0:
+
+            # Positive dihedral reduce distance between wing AC and fuselage centerline
+
+            z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
+
+        elif wing_config == 2.0:
+
+            # For mid-wing configuration the root AC is at the same height as the fuselage
+            # centerline
+
+            z2_wing = 0.0
+
+        elif wing_config == 3.0:
+
+            z2_wing = -0.5 * fus_height + 0.5 * root_thickness_ratio * l2_wing
+
+        else:
+            _LOGGER.warning(
+                "Wing configuration %s unknown, replaced by low wing configuration", wing_config
+            )
+            z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
+
+        outputs["data:geometry:wing:root:z"] = z2_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
+        wing_config = inputs["data:geometry:wing_configuration"]
+
+        if wing_config == 2.0:
+
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = 0.0
+            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.0
+
+        elif wing_config == 3.0:
+
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
+                0.5 * l2_wing
+            )
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = (
+                0.5 * root_thickness_ratio
+            )
+            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = -0.5
+
+        else:
+
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
+                -0.5 * l2_wing
+            )
+            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = (
+                -0.5 * root_thickness_ratio
+            )
+            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.5
+
+
+class ComputeWingTipZ(ExplicitComponent):
+    
+    def setup(self):
+
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
+        self.add_input("data:geometry:wing_configuration", val=np.nan)
+
+        self.add_output(
+            "data:geometry:wing:tip:z",
+            units="m",
+            desc="Distance between the wing aerodynamic center at the tip and the fuselage "
+            "centerline, taken positive when wing is below the fuselage centerline",
+        )
+
         self.declare_partials(
             of="data:geometry:wing:tip:z",
             wrt=[
@@ -82,38 +169,31 @@ class ComputeWingZ(om.ExplicitComponent):
 
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
-        l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         dihedral_angle = inputs["data:geometry:wing:dihedral"]
-        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
         fus_height = inputs["data:geometry:fuselage:maximum_height"]
         wing_config = inputs["data:geometry:wing_configuration"]
 
-        # Convention is positive in a low wing configuration and negative otherwise, see Roskam
-        # part VI page 384 in the graph description
-
         if wing_config == 1.0:
 
-            z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
+            # Positive dihedral reduce distance between wing AC and fuselage centerline
+
             z4_wing = (
                 0.5 * fus_height
                 - (y4_wing - y2_wing) * np.tan(dihedral_angle)
                 - 0.5 * tip_thickness_ratio * l4_wing
             )
-            # Positive dihedral reduce distance between wing AC and fuselage centerline
 
         elif wing_config == 2.0:
 
             # For mid-wing configuration the root AC is at the same height as the fuselage
             # centerline
 
-            z2_wing = 0.0
             z4_wing = -(y4_wing - y2_wing) * np.tan(dihedral_angle)
 
         elif wing_config == 3.0:
 
-            z2_wing = -0.5 * fus_height + 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 -0.5 * fus_height
                 - (y4_wing - y2_wing) * np.tan(dihedral_angle)
@@ -124,33 +204,25 @@ class ComputeWingZ(om.ExplicitComponent):
             _LOGGER.warning(
                 "Wing configuration %s unknown, replaced by low wing configuration", wing_config
             )
-            z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 0.5 * fus_height
                 - (y4_wing - y2_wing) * np.tan(dihedral_angle)
                 - 0.5 * tip_thickness_ratio * l4_wing
             )
 
-        outputs["data:geometry:wing:root:z"] = z2_wing
         outputs["data:geometry:wing:tip:z"] = z4_wing
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
-        l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
         wing_config = inputs["data:geometry:wing_configuration"]
 
         dihedral_angle = inputs["data:geometry:wing:dihedral"]
 
         if wing_config == 2.0:
-
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = 0.0
-            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
             partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = -np.tan(
                 dihedral_angle
@@ -166,14 +238,6 @@ class ComputeWingZ(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
         elif wing_config == 3.0:
-
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
-                0.5 * l2_wing
-            )
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = (
-                0.5 * root_thickness_ratio
-            )
-            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
             partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = np.tan(
                 dihedral_angle
@@ -193,14 +257,6 @@ class ComputeWingZ(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
         else:
-
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
-                -0.5 * l2_wing
-            )
-            partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = (
-                -0.5 * root_thickness_ratio
-            )
-            partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.5
 
             partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = np.tan(
                 dihedral_angle
