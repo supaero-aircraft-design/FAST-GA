@@ -15,6 +15,7 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -22,9 +23,68 @@ from ..constants import SUBMODEL_WING_SWEEP
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_SWEEP, "fastga.submodel.geometry.wing.sweep.legacy")
-class ComputeWingSweep(ExplicitComponent):
+class ComputeWingSweep(Group):
     # TODO: Document equations. Cite sources
     """Wing sweeps estimation."""
+
+    def setup(self):
+
+        self.add_subsystem("comp_wing_sweep_0", ComputeWingSweep0(), promotes=["*"])
+        self.add_subsystem("comp_wing_sweep_50", ComputeWingSweep50(), promotes=["*"])
+        self.add_subsystem("comp_wing_sweep_100_inner", ComputeWingSweep100Inner(), promotes=["*"])
+        self.add_subsystem("comp_wing_sweep_100_outer", ComputeWingSweep100Outer(), promotes=["*"])
+
+
+class ComputeWingSweep0(ExplicitComponent):
+    """Estimation of wing sweep at l/c=0%"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:sweep_0", units="rad")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+
+        sweep_0 = np.arctan2(x4_wing, (y4_wing - y2_wing))
+
+        outputs["data:geometry:wing:sweep_0"] = sweep_0
+
+
+class ComputeWingSweep50(ExplicitComponent):
+    """Estimation of wing sweep at l/c=50%"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:sweep_0", units="rad")
+
+        self.add_output("data:geometry:wing:sweep_50", units="rad")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        sweep_0 = inputs["data:geometry:wing:sweep_0"]
+
+        outputs["data:geometry:wing:sweep_50"] = np.arctan(
+            np.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
+        )
+
+
+class ComputeWingSweep100Inner(ExplicitComponent):
+    """Estimation of inner wing sweep at l/c=100%"""
 
     def setup(self):
 
@@ -33,56 +93,10 @@ class ComputeWingSweep(ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
-        self.add_output("data:geometry:wing:sweep_0", units="rad")
-        self.add_output("data:geometry:wing:sweep_50", units="rad")
         self.add_output("data:geometry:wing:sweep_100_inner", units="rad")
-        self.add_output("data:geometry:wing:sweep_100_outer", units="rad")
 
-        self.declare_partials(
-            "data:geometry:wing:sweep_0",
-            [
-                "data:geometry:wing:tip:leading_edge:x:local",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:tip:y",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:sweep_50",
-            [
-                "data:geometry:wing:tip:leading_edge:x:local",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:tip:y",
-                "data:geometry:wing:aspect_ratio",
-                "data:geometry:wing:taper_ratio",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:sweep_100_inner",
-            [
-                "data:geometry:wing:tip:leading_edge:x:local",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:tip:y",
-                "data:geometry:wing:root:chord",
-                "data:geometry:wing:tip:chord",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:sweep_100_outer",
-            [
-                "data:geometry:wing:tip:leading_edge:x:local",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:tip:y",
-                "data:geometry:wing:root:chord",
-                "data:geometry:wing:tip:chord",
-            ],
-            method="fd",
-        )
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -91,18 +105,35 @@ class ComputeWingSweep(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
-        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
-        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
 
-        sweep_0 = np.arctan2(x4_wing, (y4_wing - y2_wing))
-
-        outputs["data:geometry:wing:sweep_0"] = sweep_0
-        outputs["data:geometry:wing:sweep_50"] = np.arctan(
-            np.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
-        )
         outputs["data:geometry:wing:sweep_100_inner"] = np.arctan2(
             (x4_wing + l4_wing - l2_wing), (y4_wing - y2_wing)
         )
+
+
+class ComputeWingSweep100Outer(ExplicitComponent):
+    """Estimation of outer wing sweep at l/c=100%"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:sweep_100_outer", units="rad")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+
         outputs["data:geometry:wing:sweep_100_outer"] = np.arctan2(
             (x4_wing + l4_wing - l2_wing), (y4_wing - y2_wing)
         )
