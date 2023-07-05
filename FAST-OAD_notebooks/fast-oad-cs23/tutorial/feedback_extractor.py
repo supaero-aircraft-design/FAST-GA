@@ -75,6 +75,9 @@ for data in connections_list:
 
 print('There are', len(result_list), 'feedback connections')
 
+print('\n They are: \n')
+#print(result_list)
+
 print(extract_BLC(result_list))
 """src_words = []
 tgt_words = []
