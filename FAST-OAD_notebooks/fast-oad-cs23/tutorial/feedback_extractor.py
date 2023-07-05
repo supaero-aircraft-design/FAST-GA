@@ -3,7 +3,6 @@ from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
 from openmdao.utils.om_warnings import issue_warning
 import os.path as pth
 import os
-import ast
 
 #definition of the function to output an n2-ordered list of all the variables in the problem
 #The dictionary is actually an alternation of lists of dicts where eahc dicht has the key 'children', which contains a list of dicts, and so on
@@ -37,7 +36,7 @@ def extract_BLC(data): #extracts the Bottom level components to which the feedba
 # Define relative path
 DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
-CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
+CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process.yml")
 
 # Used for test purposes only
 _PROBLEM_CONFIGURATOR = None
@@ -74,9 +73,11 @@ for data in connections_list:
         distance_of_BLC.append(src_position - tgt_position) #register also how far apart they are
 
 
-print('\n There are', len(result_list), 'feedback connections \n')
-
+#extract the BLCs from the variables
 list_of_BLC_in_feedback = extract_BLC(result_list)
+list_of_BLC_in_feedback = [(a, b) for (a, b) in list_of_BLC_in_feedback if 'fastoad_shaper' not in (a, b)] # remove fastoad_shaper from feedback counts
+
+print('\n There are', len(list_of_BLC_in_feedback), 'feedback connections \n')
 
 #Prints the source and target of the feedback loop, along with the distance (in number of BLCs) that separates them
 print("Feedback loops:")
@@ -84,6 +85,6 @@ loop_counter = 1
 loop_set = set()
 for pair in list_of_BLC_in_feedback:
         loop_set.add(pair)
-        print(f"{loop_counter}. {pair[0]} -> {pair[1]}| {distance_of_BLC[loop_counter-1]} BLCs")
+        print(f"{loop_counter}. {pair[0]} -> {pair[1]} | {distance_of_BLC[loop_counter-1]} BLCs")
         loop_counter += 1
 print("\n")
