@@ -34,8 +34,6 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process.yml")
 # LVL 3: etc 
 # LVL 4: etc
 
-
-
 Optimization_level = 1
 
 if Optimization_level == 1:
@@ -51,6 +49,7 @@ if Optimization_level == 1:
 
         aircraft_sizing_data = yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver',None)
         aircraft_sizing_data = yaml_data['model']['aircraft_sizing'].pop('linear_solver',None)
+        
 
         print(aircraft_sizing_data)
 
