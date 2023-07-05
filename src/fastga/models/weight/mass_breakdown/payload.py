@@ -16,7 +16,8 @@ Payload mass computation.
 
 import numpy as np
 
-from openmdao import api as om
+from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -24,13 +25,21 @@ from .constants import SUBMODEL_PAYLOAD_MASS
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAYLOAD_MASS, "fastga.submodel.weight.mass.payload.legacy")
-class ComputePayload(om.ExplicitComponent):
+class ComputePayload(Group):
     """Computes payload from NPAX."""
 
     def setup(self):
+
+        self.add_subsystem("comp_design_payload", ComputeDesignPayload(), promotes=["*"])
+        self.add_subsystem("comp_max_payload", ComputeMaxPayload(), promotes=["*"])
+
+
+class ComputeDesignPayload(ExplicitComponent):
+    """Computes design payload with addition of 2 pilots"""
+
+    def setup(self):
+
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
-        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input("data:TLAR:luggage_mass_design", val=np.nan, units="kg")
         self.add_input(
             "settings:weight:aircraft:payload:design_mass_per_passenger",
@@ -38,6 +47,27 @@ class ComputePayload(om.ExplicitComponent):
             units="kg",
             desc="Design value of mass per passenger",
         )
+
+        self.add_output("data:weight:aircraft:payload", units="kg")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        npax_design = inputs["data:TLAR:NPAX_design"] + 2.0
+        mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
+        luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]
+
+        outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
+
+
+class ComputeMaxPayload(ExplicitComponent):
+    """Computes maximum payload with addition of 2 pilots"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
         self.add_input(
             "settings:weight:aircraft:payload:max_mass_per_passenger",
             val=90.0,
@@ -45,20 +75,14 @@ class ComputePayload(om.ExplicitComponent):
             desc="Maximum value of mass per passenger",
         )
 
-        self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        npax_design = inputs["data:TLAR:NPAX_design"] + 2.0  # addition of 2 pilots
-        npax_max = (
-            inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
-        )  # addition of 2 pilots
-        mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
+
+        npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
         max_mass_per_pax = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
-        luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
-        outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
         outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max
