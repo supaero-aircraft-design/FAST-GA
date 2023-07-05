@@ -17,6 +17,7 @@
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -24,19 +25,75 @@ from .constants import SUBMODEL_PAYLOAD_CG
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAYLOAD_CG, "fastga.submodel.weight.cg.payload.legacy")
-class ComputePayloadCG(ExplicitComponent):
+class ComputePayloadCG(Group):
     # TODO: Document equations. Cite sources
     """Payload center(s) of gravity estimation"""
 
     def setup(self):
 
-        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
+        self.add_subsystem("comp_pax_cg", ComputePaxCG(), promotes=["*"])
+        self.add_subsystem("comp_rear_fret_cg", ComputeRearFretCG(), promotes=["*"])
+        self.add_subsystem("comp_front_fret_cg", ComputeFrontFretCG(), promotes=["*"])
+
+
+class ComputePaxCG(ExplicitComponent):
+    """
+    Pasenger center of gravity estimation.
+
+    Passengers gravity center identical to seats
+    """
+
+    def setup(self):
+
         self.add_input("data:weight:furniture:passenger_seats:CG:x", val=np.nan, units="m")
+
+        self.add_output("data:weight:payload:PAX:CG:x", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        x_cg_d2 = inputs["data:weight:furniture:passenger_seats:CG:x"]
+
+        x_cg_pax = x_cg_d2
+
+        outputs["data:weight:payload:PAX:CG:x"] = x_cg_pax
+
+
+class ComputeRearFretCG(ExplicitComponent):
+    """Rear fret center of gravity estimation"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:luggage_length", val=np.nan, units="m")
 
-        self.add_output("data:weight:payload:PAX:CG:x", units="m")
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lpax = inputs["data:geometry:fuselage:PAX_length"]
+        l_lug = inputs["data:geometry:fuselage:luggage_length"]
+
+        # Instruments length
+        l_instr = 0.7
+
+        x_cg_r_fret = lav + l_instr + lpax + l_lug / 2
+
+        outputs["data:weight:payload:rear_fret:CG:x"] = x_cg_r_fret
+
+
+class ComputeFrontFretCG(ExplicitComponent):
+    """Front fret center of gravity estimation"""
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
+
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
@@ -44,18 +101,8 @@ class ComputePayloadCG(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         lav = inputs["data:geometry:fuselage:front_length"]
-        x_cg_d2 = inputs["data:weight:furniture:passenger_seats:CG:x"]
-        lpax = inputs["data:geometry:fuselage:PAX_length"]
-        l_lug = inputs["data:geometry:fuselage:luggage_length"]
 
-        # Passengers gravity center identical to seats
-        x_cg_pax = x_cg_d2
-        # Instruments length
-        l_instr = 0.7
         # Fret center of gravity
         x_cg_f_fret = lav * 0.0  # ???: should be defined somewhere in the CAB
-        x_cg_r_fret = lav + l_instr + lpax + l_lug / 2
 
-        outputs["data:weight:payload:PAX:CG:x"] = x_cg_pax
-        outputs["data:weight:payload:rear_fret:CG:x"] = x_cg_r_fret
         outputs["data:weight:payload:front_fret:CG:x"] = x_cg_f_fret
