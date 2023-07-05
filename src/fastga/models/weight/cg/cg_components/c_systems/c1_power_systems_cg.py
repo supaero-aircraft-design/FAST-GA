@@ -15,6 +15,7 @@
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -24,9 +25,23 @@ from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 @oad.RegisterSubmodel(
     SUBMODEL_POWER_SYSTEMS_CG, "fastga.submodel.weight.cg.system.power_system.legacy"
 )
-class ComputePowerSystemsCG(ExplicitComponent):
+class ComputePowerSystemsCG(Group):
     # TODO: Document equations. Cite sources
     """Power systems center(s) of gravity estimation."""
+
+    def setup(self):
+
+        self.add_subsystem("comp_electric_sys_cg", ComputeElectricSystemCG(), promotes=["*"])
+        self.add_subsystem("comp_hydraulic_sys_cg", ComputeHydraulicSystemCG(), promotes=["*"])
+
+
+class ComputeElectricSystemCG(ExplicitComponent):
+    """
+    Electric system gravity center estimation.
+
+    Formula based on the fact that on a Cirrus SR22, one battery is in front of the
+    firewall while the other one is behind the pressure bulkhead.
+    """
 
     def setup(self):
 
@@ -35,6 +50,31 @@ class ComputePowerSystemsCG(ExplicitComponent):
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:power:electric_systems:CG:x", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lar = inputs["data:geometry:fuselage:rear_length"]
+
+        x_cg_c12 = lav + 0.5 * (fus_length - (lav + lar))
+
+        outputs["data:weight:systems:power:electric_systems:CG:x"] = x_cg_c12
+
+
+class ComputeHydraulicSystemCG(ExplicitComponent):
+    """
+    Hydraulic system gravity center estimation.
+    """
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
+        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
+
         self.add_output("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
 
         self.declare_partials("*", "*", method="fd")
@@ -45,12 +85,6 @@ class ComputePowerSystemsCG(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
-        # Electric system gravity center, formula based on the fact that on a Cirrus SR22,
-        # one battery is in front of the firewall while the other one is behind the pressure
-        # bulkhead
-        x_cg_c12 = lav + 0.5 * (fus_length - (lav + lar))
-        # Hydraulic system gravity center
         x_cg_c13 = lav + 0.5 * (fus_length - (lav + lar))
 
-        outputs["data:weight:systems:power:electric_systems:CG:x"] = x_cg_c12
         outputs["data:weight:systems:power:hydraulic_systems:CG:x"] = x_cg_c13
