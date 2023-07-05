@@ -15,6 +15,7 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -22,57 +23,67 @@ from ..constants import SUBMODEL_WING_X_LOCAL
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_X_LOCAL, "fastga.submodel.geometry.wing.x_local.legacy")
-class ComputeWingX(ExplicitComponent):
+class ComputeWingX(Group):
     # TODO: Document equations. Cite sources
     """Wing Xs estimation."""
 
     def setup(self):
 
+        self.add_subsystem("comp_wing_kink_x", ComputeWingXKink(), promotes=["*"])
+        self.add_subsystem("comp_wing_tip_x", ComputeWingXTip(), promotes=["*"])
+
+
+class ComputeWingXKink(ExplicitComponent):
+    """Wing kink Xs estimation."""
+
+    def setup(self):
+
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("data:geometry:wing:kink:leading_edge:x:local", units="m")
-        self.add_output("data:geometry:wing:tip:leading_edge:x:local", units="m")
 
-        self.declare_partials(
-            "data:geometry:wing:kink:leading_edge:x:local",
-            [
-                "data:geometry:wing:root:virtual_chord",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:kink:y",
-                "data:geometry:wing:kink:chord",
-                "data:geometry:wing:sweep_25",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:tip:leading_edge:x:local",
-            [
-                "data:geometry:wing:root:virtual_chord",
-                "data:geometry:wing:root:y",
-                "data:geometry:wing:tip:y",
-                "data:geometry:wing:tip:chord",
-                "data:geometry:wing:sweep_25",
-            ],
-            method="fd",
-        )
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
         y2_wing = inputs["data:geometry:wing:root:y"]
         y3_wing = inputs["data:geometry:wing:kink:y"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
         l3_wing = inputs["data:geometry:wing:kink:chord"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
 
         x3_wing = 1.0 / 4.0 * l1_wing + (y3_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l3_wing
-        x4_wing = 1.0 / 4.0 * l1_wing + (y4_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l4_wing
 
         outputs["data:geometry:wing:kink:leading_edge:x:local"] = x3_wing
+
+
+class ComputeWingXTip(ExplicitComponent):
+    """Wing tip Xs estimation."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
+
+        self.add_output("data:geometry:wing:tip:leading_edge:x:local", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        x4_wing = 1.0 / 4.0 * l1_wing + (y4_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l4_wing
+
         outputs["data:geometry:wing:tip:leading_edge:x:local"] = x4_wing
