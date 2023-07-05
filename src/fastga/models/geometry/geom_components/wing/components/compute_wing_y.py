@@ -14,70 +14,106 @@
 
 import numpy as np
 
-import openmdao.api as om
 import fastoad.api as oad
+
+from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 from ..constants import SUBMODEL_WING_SPAN
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
-class ComputeWingY(om.ExplicitComponent):
+class ComputeWingY(Group):
     # TODO: Document equations. Cite sources
     """Wing Ys estimation."""
 
     def setup(self):
 
+        self.add_subsystem("comp_wing_span", ComputeWingSpan(), promotes=["*"])
+        self.add_subsystem("comp_wing_root_y", ComputeWingRootY(), promotes=["*"])
+        self.add_subsystem("comp_wing_tip_y", ComputeWingTipY(), promotes=["*"])
+        self.add_subsystem("comp_wing_kink_y", ComputeWingKinkY(), promotes=["*"])
+
+
+class ComputeWingSpan(ExplicitComponent):
+    """Wing span estimation."""
+
+    def setup(self):
+
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:wing:kink:span_ratio", val=0.5)
 
         self.add_output("data:geometry:wing:span", units="m")
-        self.add_output("data:geometry:wing:root:y", units="m")
-        self.add_output("data:geometry:wing:kink:y", units="m")
-        self.add_output("data:geometry:wing:tip:y", units="m")
 
-        self.declare_partials(
-            "data:geometry:wing:span",
-            ["data:geometry:wing:area", "data:geometry:wing:aspect_ratio"],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:root:y", "data:geometry:fuselage:maximum_width", method="fd"
-        )
-        self.declare_partials(
-            "data:geometry:wing:kink:y",
-            [
-                "data:geometry:wing:area",
-                "data:geometry:wing:aspect_ratio",
-                "data:geometry:wing:kink:span_ratio",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            "data:geometry:wing:tip:y",
-            [
-                "data:geometry:wing:area",
-                "data:geometry:wing:aspect_ratio",
-            ],
-            method="fd",
-        )
+        self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
-        wing_break = inputs["data:geometry:wing:kink:span_ratio"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
 
         span = np.sqrt(lambda_wing * wing_area)
 
-        # Wing geometry
-        y4_wing = span / 2.0
+        outputs["data:geometry:wing:span"] = span
+
+
+class ComputeWingRootY(ExplicitComponent):
+    """Wing root Ys estimation."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:root:y", units="m")
+
+        self.declare_partials("*", "*", val=0.5)
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        width_max = inputs["data:geometry:fuselage:maximum_width"]
+
         y2_wing = width_max / 2.0
+
+        outputs["data:geometry:wing:root:y"] = y2_wing
+
+
+class ComputeWingTipY(ExplicitComponent):
+    """Wing tip Ys estimation."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:tip:y", units="m")
+
+        self.declare_partials("*", "*", val=0.5)
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        span = inputs["data:geometry:wing:span"]
+
+        y4_wing = span / 2.0
+
+        outputs["data:geometry:wing:tip:y"] = y4_wing
+
+
+class ComputeWingKinkY(ExplicitComponent):
+    """Wing kink Ys estimation."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:kink:span_ratio", val=0.5)
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:kink:y", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        wing_break = inputs["data:geometry:wing:kink:span_ratio"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+
         y3_wing = y4_wing * wing_break
 
-        outputs["data:geometry:wing:span"] = span
-        outputs["data:geometry:wing:root:y"] = y2_wing
         outputs["data:geometry:wing:kink:y"] = y3_wing
-        outputs["data:geometry:wing:tip:y"] = y4_wing
