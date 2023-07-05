@@ -16,6 +16,7 @@ Estimation of power systems weight.
 
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 from .constants import SUBMODEL_POWER_SYSTEM_MASS
@@ -24,7 +25,7 @@ from .constants import SUBMODEL_POWER_SYSTEM_MASS
 @oad.RegisterSubmodel(
     SUBMODEL_POWER_SYSTEM_MASS, "fastga.submodel.weight.mass.system.power_system.legacy"
 )
-class ComputePowerSystemsWeight(ExplicitComponent):
+class ComputePowerSystemsWeight(Group):
     """
     Weight estimation for power systems (generation and distribution)
 
@@ -34,11 +35,43 @@ class ComputePowerSystemsWeight(ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_subsystem("comp_electric_weight", ComputeElectricWeight(), promotes=["*"])
+        self.add_subsystem("comp_hydraulic_weight", ComputeHydraulicWeight(), promotes=["*"])
+
+
+class ComputeElectricWeight(ExplicitComponent):
+    """
+    Weight estimation for electrical system
+    """
+
+    def setup(self):
+
         self.add_input("data:weight:propulsion:fuel_lines:mass", val=np.nan, units="lb")
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
 
         self.add_output("data:weight:systems:power:electric_systems:mass", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
+        m_iae = inputs["data:weight:systems:avionics:mass"]
+
+        c12 = 426.0 * ((m_fuel_lines + m_iae) / 1000.0) ** 0.51  # mass formula in lb
+
+        outputs["data:weight:systems:power:electric_systems:mass"] = c12
+
+
+class ComputeHydraulicWeight(ExplicitComponent):
+    """
+    Weight estimation for hydraulic system
+    """
+
+    def setup(self):
+
+        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
@@ -46,11 +79,7 @@ class ComputePowerSystemsWeight(ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         mtow = inputs["data:weight:aircraft:MTOW"]
-        m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
-        m_iae = inputs["data:weight:systems:avionics:mass"]
 
-        c12 = 426.0 * ((m_fuel_lines + m_iae) / 1000.0) ** 0.51  # mass formula in lb
         c13 = 0.007 * mtow  # mass formula in lb
 
-        outputs["data:weight:systems:power:electric_systems:mass"] = c12
         outputs["data:weight:systems:power:hydraulic_systems:mass"] = c13
