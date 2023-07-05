@@ -15,6 +15,7 @@
 import numpy as np
 
 from openmdao.core.explicitcomponent import ExplicitComponent
+from openmdao.core.group import Group
 
 import fastoad.api as oad
 
@@ -22,8 +23,17 @@ from ..constants import SUBMODEL_WING_WET_AREA
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, "fastga.submodel.geometry.wing.wet_area.legacy")
-class ComputeWingWetArea(ExplicitComponent):
+class ComputeWingWetArea(Group):
     # TODO: Document equations. Cite sources
+    """Wing wet and outer area estimation."""
+
+    def setup(self):
+
+        self.add_subsystem("comp_wing_outer_area", ComputeOuterArea(), promotes=["*"])
+        self.add_subsystem("comp_wing_wet_area", ComputeWetArea(), promotes=["*"])
+
+
+class ComputeOuterArea(ExplicitComponent):
     """Wing wet area estimation."""
 
     def setup(self):
@@ -33,7 +43,6 @@ class ComputeWingWetArea(ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
         self.add_output("data:geometry:wing:outer_area", units="m**2")
-        self.add_output("data:geometry:wing:wet_area", units="m**2")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -42,10 +51,31 @@ class ComputeWingWetArea(ExplicitComponent):
         wing_area = inputs["data:geometry:wing:area"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
 
         s_pf = wing_area - 2 * l1_wing * y1_wing
-        wet_area_wing = 2 * (wing_area - width_max * l1_wing) * 1.07  # Gudmunnson k_b (pag 707)
 
         outputs["data:geometry:wing:outer_area"] = s_pf
+
+
+class ComputeWetArea(ExplicitComponent):
+    """Wing outer area estimation based on Gudmunnson k_b (pag 707)."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
+
+        self.add_output("data:geometry:wing:wet_area", units="m**2")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        wing_area = inputs["data:geometry:wing:area"]
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+        width_max = inputs["data:geometry:fuselage:maximum_width"]
+
+        wet_area_wing = 2 * (wing_area - width_max * l1_wing) * 1.07
+
         outputs["data:geometry:wing:wet_area"] = wet_area_wing
