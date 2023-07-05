@@ -15,10 +15,10 @@ def process_variables(children_list, prefix=''):
             variables.append(var_name)
         if 'children' in child:
             child_prefix = prefix + child['name'] + '.'
-            variables.extend(process_variables(child['children'], child_prefix))
+            variables.extend(process_variables(child['children'], child_prefix)) #recursive call of the function to reach the last 
     return variables
 
-def extract_BLC(data): #extracts Bottom level components for feedback loops
+def extract_BLC(data): #extracts the Bottom level components to which the feedbacking variables belong
     result = []
     for entry in data:
         src_value = entry['src']
@@ -33,8 +33,6 @@ def extract_BLC(data): #extracts Bottom level components for feedback loops
         result.append((src_word, tgt_word))
 
     return result
-
-
 
 # Define relative path
 DATA_FOLDER_PATH = "data"
@@ -61,38 +59,31 @@ except TypeError as err:
     err_msg = str(err)
     issue_warning(err_msg)
 
-#retrieves the dictionary for models and their sub-models
+#retrieves the dictionary for models and their sub-models and returns as an ordered list of the full "paths" to the variables
 ordered_vars = process_variables(model_data['tree']['children'])
 
-connections_list = model_data['connections_list'] #data_list
+#extracts connections for which the target is above the source, in the ordered list of variables
+connections_list = model_data['connections_list']
 result_list = []
+distance_of_BLC = []
 for data in connections_list:
     src_position = ordered_vars.index(data['src'])
     tgt_position = ordered_vars.index(data['tgt'])
     if src_position > tgt_position:
         result_list.append(data)
+        distance_of_BLC.append(src_position - tgt_position) #register also how far apart they are
 
 
-print('There are', len(result_list), 'feedback connections')
+print('\n There are', len(result_list), 'feedback connections \n')
 
-print('\n They are: \n')
-#print(result_list)
+list_of_BLC_in_feedback = extract_BLC(result_list)
 
-print(extract_BLC(result_list))
-"""src_words = []
-tgt_words = []
-
-for entry in data:
-    src_value = entry['src']
-    tgt_value = entry['tgt']
-
-    src_word = src_value.rsplit('.', 1)[0].rsplit('.', 1)[-1]
-    tgt_word = tgt_value.rsplit('.', 1)[0].rsplit('.', 1)[-1]
-
-    src_words.append(src_word)
-    tgt_words.append(tgt_word)
-
-print("bottom level component source of feedback: ", src_words)
-print("bottom level component target of feedback", tgt_words)"""
-
-#print(result_list)
+#Prints the source and target of the feedback loop, along with the distance (in number of BLCs) that separates them
+print("Feedback loops:")
+loop_counter = 1
+loop_set = set()
+for pair in list_of_BLC_in_feedback:
+        loop_set.add(pair)
+        print(f"{loop_counter}. {pair[0]} -> {pair[1]}| {distance_of_BLC[loop_counter-1]} BLCs")
+        loop_counter += 1
+print("\n")
