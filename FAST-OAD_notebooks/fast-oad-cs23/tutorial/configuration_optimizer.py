@@ -23,7 +23,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     print('Starting order: ', keys_list)
     counter = 0
     while True:
-        counter =+ 1 
+        counter = counter + 1 
         print(counter)
         improvement = False
         # Find a better position for the last node
@@ -53,26 +53,28 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             
             if score < best_score:
                 best_score = score
-                best_order = list(keys).copy()
+                best_order = keys_list
                 improvement = True
                 print('Swap Kept')
                 print('Current order: ', best_order)
+                break
+
 
             else:
                 keys_list[i], keys_list[-1] = keys_list[-1], keys_list[i]  # Revert the swap
                 print('Swap reverted')
                 print('Current order: ', keys_list)
 
-        if not improvement:
+        if not improvement: #and counter == 9 #OJOOOOOOOOOOOOOOOOOOOOO
             break
         
-    keys_list = best_order.copy()  # Start from the best order found so far
+    keys_list = best_order  # Start from the best order found so far
     best_config = existing_data
-    best_config['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
-    #Write best configuration
-    with open(CONFIGURATION_FILE, 'w') as file:
-        yaml.dump(best_config, file, default_flow_style=False, sort_keys=False)
-    print('Best order has been written in configuration file')
+    #best_config['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
+    ##Write best configuration
+    #with open(CONFIGURATION_FILE, 'w') as file:
+    #    yaml.dump(best_config, file, default_flow_style=False, sort_keys=False)
+    #print('Best order has been written in configuration file')
     return keys_list
 
 
