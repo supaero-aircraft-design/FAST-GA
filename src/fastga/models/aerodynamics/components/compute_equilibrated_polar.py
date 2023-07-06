@@ -20,7 +20,13 @@ from stdatm import Atmosphere
 from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT, FIRST_INVALID_COEFF
 from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquilibrium
 
+import fastoad.api as oad
 
+from ..constants import SUBMODEL_EQUILIBRATED_POLAR
+
+@oad.RegisterSubmodel(
+    SUBMODEL_EQUILIBRATED_POLAR, "fastga.submodel.aerodynamics.cl_cd_polar.equilibrated.legacy"
+)
 class ComputeEquilibratedPolar(DynamicEquilibrium):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)

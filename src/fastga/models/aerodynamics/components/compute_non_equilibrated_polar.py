@@ -20,7 +20,13 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT
 
+import fastoad.api as oad
 
+from ..constants import SUBMODEL_NON_EQUILIBRATED_POLAR
+
+@oad.RegisterSubmodel(
+    SUBMODEL_NON_EQUILIBRATED_POLAR, "fastga.submodel.aerodynamics.cl_cd_polar.non_equilibrated.legacy"
+)
 class ComputeNonEquilibratedPolar(Group):
 
     def initialize(self):
