@@ -28,7 +28,7 @@ import fastoad.api as oad
 
 from stdatm import Atmosphere
 
-from ..constants import SUBMODEL_VH
+from ..constants import SUBMODEL_VH, SUBMODEL_VN
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
@@ -37,6 +37,10 @@ _LOGGER = logging.getLogger(__name__)
 oad.RegisterSubmodel.active_models[
     SUBMODEL_VH
 ] = "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy"
+
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_VN
+] = "fastga.submodel.aerodynamics.aircraft.load_diagram.legacy"
 
 
 class ComputeVNAndVH(om.Group):
@@ -54,7 +58,7 @@ class ComputeVNAndVH(om.Group):
         )
         self.add_subsystem(
             "compute_vn_diagram",
-            ComputeVN(),
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VN),
             promotes=["*"],
         )
 
@@ -129,6 +133,7 @@ class ComputeVh(om.ExplicitComponent):
         return thrust - drag
 
 
+@oad.RegisterSubmodel(SUBMODEL_VN, "fastga.submodel.aerodynamics.aircraft.load_diagram.legacy")
 class ComputeVN(om.ExplicitComponent):
     """
     Computes the load diagram of the aircraft.
