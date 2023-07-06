@@ -6,6 +6,7 @@ from fastoad import api as api_cs25
 from fastga.command import api as api_cs23
 import yaml
 import shutil
+import time
 
 # Define relative path
 DATA_FOLDER_PATH = "data"
@@ -33,6 +34,7 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process.yml")
 # LVL 2: Shuffles order of all sub-modules in all the modules of the CONFIG file
 # LVL 3: etc 
 # LVL 4: etc
+start = time.time()
 
 Optimization_level = 1
 
@@ -47,11 +49,14 @@ if Optimization_level == 1:
         except:
             sys.exit("\n Error: Configuration optimizer assumes existence of aircraft_sizing inside model .yml config file \n")
 
-        aircraft_sizing_data = yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver',None)
-        aircraft_sizing_data = yaml_data['model']['aircraft_sizing'].pop('linear_solver',None)
+        yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
+        yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
+        aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
+
         
 
-        print(aircraft_sizing_data)
+
+        #print(aircraft_sizing_data)
 
 #elif Optimization_level == 2:
 #elif Optimization_level == 3:
@@ -59,3 +64,5 @@ if Optimization_level == 1:
 #elif Optimization_level == 5:
 else:
     print('Not possible sry')
+
+print('\n Time taken', time.time() - start, 'seconds')
