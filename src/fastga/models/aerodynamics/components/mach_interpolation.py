@@ -19,12 +19,16 @@ import numpy as np
 import openmdao.api as om
 from stdatm import Atmosphere
 
-from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
+import fastoad.api as oad
+
+from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS, SUBMODEL_MACH_INTERPOLATION
 from ..external.xfoil.xfoil_polar import XfoilPolar
 
 
+@oad.RegisterSubmodel(
+    SUBMODEL_MACH_INTERPOLATION, "fastga.submodel.aerodynamics.aircraft.mach_interpolation.legacy"
+)
 class ComputeMachInterpolation(om.Group):
-
     def initialize(self):
 
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
@@ -35,7 +39,7 @@ class ComputeMachInterpolation(om.Group):
 
     # noinspection PyTypeChecker
     def setup(self):
-        
+
         ivc_conditions = om.IndepVarComp()
         ivc_conditions.add_output("mach", val=0.05)
         ivc_conditions.add_output("reynolds", val=0.5e6)
@@ -109,11 +113,13 @@ class InterpolationCLAlpha(om.ExplicitComponent):
     Lift curve slope coefficient as a function of Mach number
     The following class computes CL_alpha based on mach array
     """
-    
+
     def setup(self):
 
         self.add_input(
-            "data:aerodynamics:aircraft:mach_interpolation:mach_vector", val=np.nan, shape=MACH_NB_PTS + 1
+            "data:aerodynamics:aircraft:mach_interpolation:mach_vector",
+            val=np.nan,
+            shape=MACH_NB_PTS + 1,
         )
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -147,9 +153,9 @@ class InterpolationCLAlpha(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         mach_array = inputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
-        
+
         sweep_25_wing = float(inputs["data:geometry:wing:sweep_25"])
         aspect_ratio_wing = float(inputs["data:geometry:wing:aspect_ratio"])
         taper_ratio_wing = float(inputs["data:geometry:wing:taper_ratio"])
@@ -247,4 +253,3 @@ class InterpolationCLAlpha(om.ExplicitComponent):
                 y = y[0:idx]
                 break
         return y
-    
