@@ -12,11 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_fuselage_dimensions import (
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizingFD,
-    ComputeFuselageGeometryCabinSizingFL,
-)
+from .compute_fuselage_dimensions import ComputeFuselageGeometryBasic
+from .compute_fuselage_dimensions_fl import ComputeFuselageGeometryCabinSizingFL
+from .compute_fuselage_dimensions_fd import ComputeFuselageGeometryCabinSizingFD
 from .compute_fuselage_wet_area import ComputeFuselageWetArea, ComputeFuselageWetAreaFLOPS
 from .compute_fuselage_depth import ComputeFuselageDepth
 from .compute_fuselage_volume import ComputeFuselageVolume
