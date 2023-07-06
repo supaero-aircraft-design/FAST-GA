@@ -22,6 +22,7 @@ import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from .components.compute_vn import ComputeVNAndVH, DOMAIN_PTS_NB
+from .constants import SUBMODEL_LOAD_FACTOR
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
@@ -39,9 +40,16 @@ class LoadFactor(Group):
             ComputeVNAndVH(propulsion_id=self.options["propulsion_id"]),
             promotes=["*"],
         )
-        self.add_subsystem("sizing_load_factor", _LoadFactorIdentification(), promotes=["*"])
+        self.add_subsystem(
+            "sizing_load_factor",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LOAD_FACTOR),
+            promotes=["*"],
+        )
 
 
+@oad.RegisterSubmodel(
+    SUBMODEL_LOAD_FACTOR, "fastga.submodel.aerodynamics.aircraft.load_factor.legacy"
+)
 class _LoadFactorIdentification(Group):
     def setup(self):
 
