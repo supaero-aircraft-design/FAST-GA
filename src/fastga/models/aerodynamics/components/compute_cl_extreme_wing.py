@@ -40,16 +40,18 @@ class ComputeExtremeCLWing(om.Group):
         )
 
     def setup(self):
+
         self.add_subsystem(
-            "comp_local_reynolds_wing",
-            ComputeLocalReynolds(),
+            "comp_local_reynolds_wing_root", ComputeLocalReynoldsRoot(), promotes=["*"]
+        )
+        self.add_subsystem(
+            "comp_local_reynolds_wing_tip", ComputeLocalReynoldsTip(), promotes=["*"]
+        )
+        self.add_subsystem(
+            "comp_local_reynolds_wing_mach",
+            ComputeLocalReynoldsMach(),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
-                "data:aerodynamics:low_speed:unit_reynolds",
-                "data:geometry:wing:root:chord",
-                "data:geometry:wing:tip:chord",
-                "data:aerodynamics:wing:root:low_speed:reynolds",
-                "data:aerodynamics:wing:tip:low_speed:reynolds",
             ],
         )
         self.add_subsystem(
@@ -73,9 +75,10 @@ class ComputeExtremeCLWing(om.Group):
             promotes=[],
         )
 
-        self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
+        self.add_subsystem("CL_max_3D_wing", ComputeWing3DExtremeCLMax(), promotes=["*"])
+        self.add_subsystem("CL_min_3D_wing", ComputeWing3DExtremeCLMin(), promotes=["*"])
 
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_root_polar.xfoil:mach")
+        self.connect("comp_local_reynolds_wing_mach.xfoil:mach", "wing_root_polar.xfoil:mach")
         self.connect(
             "data:aerodynamics:wing:root:low_speed:reynolds", "wing_root_polar.xfoil:reynolds"
         )
@@ -86,7 +89,7 @@ class ComputeExtremeCLWing(om.Group):
             "wing_root_polar.xfoil:CL_min_2D", "data:aerodynamics:wing:low_speed:root:CL_min_2D"
         )
 
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_tip_polar.xfoil:mach")
+        self.connect("comp_local_reynolds_wing_mach.xfoil:mach", "wing_tip_polar.xfoil:mach")
         self.connect(
             "data:aerodynamics:wing:tip:low_speed:reynolds", "wing_tip_polar.xfoil:reynolds"
         )
@@ -98,16 +101,12 @@ class ComputeExtremeCLWing(om.Group):
         )
 
 
-class ComputeLocalReynolds(om.ExplicitComponent):
+class ComputeLocalReynoldsRoot(om.ExplicitComponent):
     def setup(self):
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
 
         self.add_output("data:aerodynamics:wing:root:low_speed:reynolds")
-        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
-        self.add_output("xfoil:mach")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -116,14 +115,37 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:root:chord"]
         )
+
+
+class ComputeLocalReynoldsTip(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
+        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
+
+        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:wing:tip:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:tip:chord"]
         )
+
+
+class ComputeLocalReynoldsMach(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
+
+        self.add_output("xfoil:mach")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
-class ComputeWing3DExtremeCL(om.ExplicitComponent):
+class ComputeWing3DExtremeCLMax(om.ExplicitComponent):
     """Computes wing 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
 
     def setup(self):
@@ -132,6 +154,70 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_max_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:tip:CL_max_2D", val=np.nan)
+        self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:Y_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            units="m",
+        )
+        self.add_input(
+            "data:aerodynamics:wing:low_speed:CL_vector",
+            val=np.nan,
+            shape_by_conn=True,
+            copy_shape="data:aerodynamics:wing:low_speed:Y_vector",
+        )
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
+
+        self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        y_root = float(inputs["data:geometry:wing:root:y"])
+        y_tip = float(inputs["data:geometry:wing:tip:y"])
+        cl_max_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"])
+        cl_max_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"])
+        cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
+        y_interp = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
+        cl_interp = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
+        sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        y_interp, cl_interp = self._reshape_curve(y_interp, cl_interp)
+        y_vector = np.linspace(
+            max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
+        )
+        cl_xfoil_max = np.interp(
+            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
+        )
+        cl_curve = np.maximum(
+            np.interp(y_vector, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vector))
+        )  # avoid divide by 0
+        cl_max_clean = cl_ref * np.min(cl_xfoil_max / cl_curve)
+
+        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean * np.cos(sweep_25)
+
+    @staticmethod
+    def _reshape_curve(y: np.ndarray, cl: np.ndarray):
+        """Reshape data from openvsp/vlm lift curve"""
+
+        for idx in range(len(y)):
+            if np.sum(y[idx : len(y)] == 0) == (len(y) - idx):
+                y = y[0:idx]
+                cl = cl[0:idx]
+                break
+
+        return y, cl
+
+
+class ComputeWing3DExtremeCLMin(om.ExplicitComponent):
+    """Computes wing 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
+
+    def setup(self):
+
+        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:tip:CL_min_2D", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
@@ -149,7 +235,6 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         )
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("data:aerodynamics:wing:low_speed:CL_max_clean")
         self.add_output("data:aerodynamics:wing:low_speed:CL_min_clean")
 
         self.declare_partials("*", "*", method="fd")
@@ -158,8 +243,6 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
 
         y_root = float(inputs["data:geometry:wing:root:y"])
         y_tip = float(inputs["data:geometry:wing:tip:y"])
-        cl_max_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"])
-        cl_max_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_max_2D"])
         cl_min_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_min_2D"])
         cl_min_2d_tip = float(inputs["data:aerodynamics:wing:low_speed:tip:CL_min_2D"])
         cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
@@ -171,19 +254,14 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         y_vector = np.linspace(
             max(y_root, min(y_interp)), min(y_tip, max(y_interp)), SPAN_MESH_POINT
         )
-        cl_xfoil_max = np.interp(
-            y_vector, np.array([y_root, y_tip]), np.array([cl_max_2d_root, cl_max_2d_tip])
-        )
         cl_xfoil_min = np.interp(
             y_vector, np.array([y_root, y_tip]), np.array([cl_min_2d_root, cl_min_2d_tip])
         )
         cl_curve = np.maximum(
             np.interp(y_vector, y_interp, cl_interp), 1e-12 * np.ones(np.size(y_vector))
         )  # avoid divide by 0
-        cl_max_clean = cl_ref * np.min(cl_xfoil_max / cl_curve)
         cl_min_clean = cl_ref * np.max(cl_xfoil_min / cl_curve)
 
-        outputs["data:aerodynamics:wing:low_speed:CL_max_clean"] = cl_max_clean * np.cos(sweep_25)
         outputs["data:aerodynamics:wing:low_speed:CL_min_clean"] = cl_min_clean * np.cos(sweep_25)
 
     @staticmethod
