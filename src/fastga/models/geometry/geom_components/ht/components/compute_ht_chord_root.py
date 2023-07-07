@@ -32,9 +32,9 @@ class ComputeHTRootChord(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:root:chord", units="m")
 
         self.declare_partials("*", "*", method="fd")
-        
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         s_h = inputs["data:geometry:horizontal_tail:area"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
