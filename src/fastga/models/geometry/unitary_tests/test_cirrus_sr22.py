@@ -40,13 +40,15 @@ from ..geom_components.wing.components import (
     ComputeWingXAbsolute,
 )
 from ..geom_components.ht.components import (
-    ComputeHTChord,
     ComputeHTMacFD,
     ComputeHTMacFL,
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
     ComputeHTVolumeCoefficient,
+    ComputeHTSpan,
+    ComputeHTRootChord,
+    ComputeHTTipChord,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
@@ -190,20 +192,50 @@ def test_compute_ht_distance():
     assert lp_vt == pytest.approx(0.0, abs=1e-3)
 
 
-def test_compute_ht_chord():
-    """Tests computation of the horizontal tail chords"""
+def test_compute_ht_span():
+    """Tests computation of the horizontal tail span"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeHTChord()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTSpan()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTChord(), ivc)
+    problem = run_system(ComputeHTSpan(), ivc)
     span = problem.get_val("data:geometry:horizontal_tail:span", units="m")
     assert span == pytest.approx(3.824, abs=1e-3)
+
+
+def test_compute_ht_chord_root():
+    """Tests computation of the horizontal tail root chord"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeHTRootChord()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTRootChord(), ivc)
     root_chord = problem.get_val("data:geometry:horizontal_tail:root:chord", units="m")
     assert root_chord == pytest.approx(0.866, abs=1e-3)
+
+
+def test_compute_ht_chord_tip():
+    """Tests computation of the horizontal tail tip chord"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeHTTipChord()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTTipChord(), ivc)
     tip_chord = problem.get_val("data:geometry:horizontal_tail:tip:chord", units="m")
     assert tip_chord == pytest.approx(0.531, abs=1e-3)
+
+
+def test_compute_ht_aspect_ratio():
+    """Tests computation of the horizontal tail aspect ratio"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeHTSpan()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTSpan(), ivc)
     aspect_ratio = problem.get_val("data:geometry:horizontal_tail:aspect_ratio")
     assert aspect_ratio == pytest.approx(5.47, abs=1e-3)
 
