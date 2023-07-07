@@ -26,7 +26,7 @@ class ComputeHTTipChord(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:root:chord", units="m")
+        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
 
         self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
 

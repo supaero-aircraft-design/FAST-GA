@@ -27,7 +27,7 @@ class ComputeHTRootChord(om.ExplicitComponent):
 
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:span", units="m")
+        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:horizontal_tail:root:chord", units="m")
 
