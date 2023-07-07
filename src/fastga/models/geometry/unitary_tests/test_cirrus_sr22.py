@@ -66,7 +66,8 @@ from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
 )
-from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
+from ..geom_components.landing_gears.compute_lg_height import ComputeLGHeight
+from ..geom_components.landing_gears.compute_lg_y_position import ComputeLGPosition
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
@@ -746,16 +747,26 @@ def test_installation_effect_propeller():
     assert prop_installation_effect == pytest.approx(0.883, abs=1e-3)
 
 
-def test_landing_gear_geometry():
+def test_landing_gear_height():
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeLGGeometry()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeLGHeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeLGGeometry(), ivc)
+    problem = run_system(ComputeLGHeight(), ivc)
 
     lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
     assert lg_height == pytest.approx(0.811, abs=1e-3)
+
+
+def test_landing_gear_position():
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeLGPosition()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeLGPosition(), ivc)
+
     lg_position = problem.get_val("data:geometry:landing_gear:y", units="m")
     assert lg_position == pytest.approx(1.610, abs=1e-3)
 
