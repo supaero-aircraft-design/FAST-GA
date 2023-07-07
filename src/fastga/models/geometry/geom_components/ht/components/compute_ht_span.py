@@ -46,17 +46,15 @@ class ComputeHTSpan(om.ExplicitComponent):
 
         # Give minimum value to avoid 0 division later if s_h initialised to 0
 
-        b_h = np.sqrt(
-            max(aspect_ratio * s_h, 0.1)
-        )  
+        b_h = np.sqrt(max(aspect_ratio * s_h, 0.1))
 
         outputs["data:geometry:horizontal_tail:span"] = b_h
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        
+
         s_h = inputs["data:geometry:horizontal_tail:area"]
         aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
-        
+
         if aspect_ratio * s_h < 0.1:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = 0
             partials[
@@ -69,5 +67,3 @@ class ComputeHTSpan(om.ExplicitComponent):
             partials[
                 "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
             ] = np.sqrt(s_h) / (2.0 * np.sqrt(aspect_ratio))
-
-        

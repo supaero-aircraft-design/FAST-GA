@@ -18,7 +18,13 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from .components import ComputeHTMacFD, ComputeHTMacFL, ComputeHTSpan, ComputeHTRootChord, ComputeHTTipChord
+from .components import (
+    ComputeHTMacFD,
+    ComputeHTMacFL,
+    ComputeHTSpan,
+    ComputeHTRootChord,
+    ComputeHTTipChord,
+)
 from .constants import (
     SUBMODEL_HT_SWEEP,
     SUBMODEL_HT_WET_AREA,

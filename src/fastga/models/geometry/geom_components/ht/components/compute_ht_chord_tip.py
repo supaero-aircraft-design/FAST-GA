@@ -18,7 +18,7 @@ import numpy as np
 
 import openmdao.api as om
 import fastoad.api as oad
- 
+
 
 class ComputeHTTipChord(om.ExplicitComponent):
     """Tip chord estimation of horizontal tail"""
@@ -29,15 +29,14 @@ class ComputeHTTipChord(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:root:chord", units="m")
 
         self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
-        
+
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
 
         tip_chord = root_chord * taper_ht
 
         outputs["data:geometry:horizontal_tail:tip:chord"] = tip_chord
-        
