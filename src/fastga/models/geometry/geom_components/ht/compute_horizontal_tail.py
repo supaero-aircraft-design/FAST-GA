@@ -25,8 +25,12 @@ from .components import (
     ComputeHTRootChord,
     ComputeHTTipChord,
 )
+from .components import (
+    ComputeHTSweep0,
+    ComputeHTSweep50,
+    ComputeHTSweep100,
+)
 from .constants import (
-    SUBMODEL_HT_SWEEP,
     SUBMODEL_HT_WET_AREA,
     SUBMODEL_HT_WET_DISTANCE,
     SUBMODEL_HT_WET_EFFICIENCY,
@@ -43,9 +47,9 @@ class ComputeHorizontalTailGeometryFD(om.Group):
         self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
         self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
         self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
-        self.add_subsystem(
-            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
-        )
+        self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
+        self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
+        self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])
         self.add_subsystem(
             "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )
@@ -73,9 +77,9 @@ class ComputeHorizontalTailGeometryFL(om.Group):
         self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
         self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
         self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
-        self.add_subsystem(
-            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
-        )
+        self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
+        self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
+        self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])
         self.add_subsystem(
             "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )

@@ -16,7 +16,9 @@ Estimation of horizontal tail geometry (components).
 
 from .compute_ht_distance import ComputeHTDistance
 from .compute_ht_mac import ComputeHTMacFD, ComputeHTMacFL
-from .compute_ht_sweep import ComputeHTSweep
+from .compute_ht_sweep_0 import ComputeHTSweep0
+from .compute_ht_sweep_50 import ComputeHTSweep50
+from .compute_ht_sweep_100 import ComputeHTSweep100
 from .compute_ht_wet_area import ComputeHTWetArea
 from .compute_ht_efficiency import ComputeHTEfficiency
 from .compute_ht_volume_coefficient import ComputeHTVolumeCoefficient

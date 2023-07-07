@@ -42,13 +42,15 @@ from ..geom_components.wing.components import (
 from ..geom_components.ht.components import (
     ComputeHTMacFD,
     ComputeHTMacFL,
-    ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
     ComputeHTVolumeCoefficient,
     ComputeHTSpan,
     ComputeHTRootChord,
     ComputeHTTipChord,
+    ComputeHTSweep0,
+    ComputeHTSweep50,
+    ComputeHTSweep100,
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
@@ -276,18 +278,38 @@ def test_compute_ht_mac_fl():
     assert lp_ht == pytest.approx(4.860, abs=1e-3)
 
 
-def test_compute_ht_sweep():
-    """Tests computation of the horizontal tail sweep"""
+def test_compute_ht_sweep_0():
+    """Tests computation of the horizontal tail sweep at l/c=0%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTSweep()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTSweep0()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTSweep(), ivc)
+    problem = run_system(ComputeHTSweep0(), ivc)
     sweep_0 = problem.get_val("data:geometry:horizontal_tail:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(2.017, abs=1e-1)
+
+
+def test_compute_ht_sweep_50():
+    """Tests computation of the horizontal tail sweep at l/c=50%"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTSweep50()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTSweep50(), ivc)
     sweep_50 = problem.get_val("data:geometry:horizontal_tail:sweep_50", units="deg")
     assert sweep_50 == pytest.approx(-2.017, abs=1e-1)
+
+
+def test_compute_ht_sweep_100():
+    """Tests computation of the horizontal tail sweep at l/c=100%"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTSweep100()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTSweep100(), ivc)
     sweep_100 = problem.get_val("data:geometry:horizontal_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(173.967, abs=1e-1)
 
