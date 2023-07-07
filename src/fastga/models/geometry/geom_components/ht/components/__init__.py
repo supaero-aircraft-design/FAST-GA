@@ -14,10 +14,12 @@ Estimation of horizontal tail geometry (components).
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_ht_chords import ComputeHTChord
 from .compute_ht_distance import ComputeHTDistance
 from .compute_ht_mac import ComputeHTMacFD, ComputeHTMacFL
 from .compute_ht_sweep import ComputeHTSweep
 from .compute_ht_wet_area import ComputeHTWetArea
 from .compute_ht_efficiency import ComputeHTEfficiency
 from .compute_ht_volume_coefficient import ComputeHTVolumeCoefficient
+from .compute_ht_span import ComputeHTSpan
+from .compute_ht_chord_root import ComputeHTRootChord
+from .compute_ht_chord_tip import ComputeHTTipChord

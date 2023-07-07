@@ -18,9 +18,8 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from .components import ComputeHTMacFD, ComputeHTMacFL
+from .components import ComputeHTMacFD, ComputeHTMacFL, ComputeHTSpan, ComputeHTRootChord, ComputeHTTipChord
 from .constants import (
-    SUBMODEL_HT_CHORD,
     SUBMODEL_HT_SWEEP,
     SUBMODEL_HT_WET_AREA,
     SUBMODEL_HT_WET_DISTANCE,
@@ -33,9 +32,10 @@ class ComputeHorizontalTailGeometryFD(om.Group):
     """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
 
     def setup(self):
-        self.add_subsystem(
-            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
-        )
+
+        self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
+        self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
+        self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
         self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
         self.add_subsystem(
             "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
@@ -62,9 +62,10 @@ class ComputeHorizontalTailGeometryFL(om.Group):
     """Horizontal tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
-        self.add_subsystem(
-            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
-        )
+
+        self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
+        self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
+        self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
         self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
         self.add_subsystem(
             "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
