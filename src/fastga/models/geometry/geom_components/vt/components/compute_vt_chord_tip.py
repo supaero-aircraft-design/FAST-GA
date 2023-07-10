@@ -33,7 +33,7 @@ class ComputeVTTipChord(om.ExplicitComponent):
     def setup(self):
 
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:root:chord", units="m")
+        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
 
         self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
