@@ -25,7 +25,7 @@ from ...constants import SUBMODEL_NACELLE_Y_POSITION
 @oad.RegisterSubmodel(
     SUBMODEL_NACELLE_Y_POSITION, "fastga.submodel.geometry.nacelle.position.y.legacy"
 )
-class ComputeYPosition(om.ExplicitComponent):
+class ComputeNacelleYPosition(om.ExplicitComponent):
     """
     Estimates x position of the nacelle.
     """
