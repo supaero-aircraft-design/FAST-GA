@@ -1,5 +1,4 @@
-"""Estimation of wing chords (l2 and l3)."""
-
+"""Estimation of wing L2 chords."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,27 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_L2_L3
+from ..constants import SUBMODEL_WING_L2
 
-
-@oad.RegisterSubmodel(SUBMODEL_WING_L2_L3, "fastga.submodel.geometry.wing.l2_l3.legacy")
-class ComputeWingL2AndL3(Group):
-    # TODO: Document equations. Cite sources
-    """Wing chords (l2 and l3) estimation."""
-
-    def setup(self):
-
-        self.add_subsystem("comp_wing_l2", ComputeWingL2(), promotes=["*"])
-        self.add_subsystem("comp_wing_l3", ComputeWingL3(), promotes=["*"])
-
-
-class ComputeWingL2(ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_WING_L2, "fastga.submodel.geometry.wing.l2")
+class ComputeWingL2(om.ExplicitComponent):
     """Estimate l2 wing chord."""
 
     def setup(self):
@@ -58,25 +43,3 @@ class ComputeWingL2(ExplicitComponent):
         l2_wing = wing_area / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio))
 
         outputs["data:geometry:wing:root:chord"] = l2_wing
-
-
-class ComputeWingL3(ExplicitComponent):
-    """Estimate l3 wing chord."""
-
-    def setup(self):
-
-        self.add_input("data:geometry:wing:root:chord", units="m")
-
-        self.add_output("data:geometry:wing:kink:chord", units="m")
-
-        self.declare_partials(
-            "data:geometry:wing:kink:chord", "data:geometry:wing:root:chord", val=1.0
-        )
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
-        l2_wing = inputs["data:geometry:wing:root:chord"]
-
-        l3_wing = l2_wing
-
-        outputs["data:geometry:wing:kink:chord"] = l3_wing

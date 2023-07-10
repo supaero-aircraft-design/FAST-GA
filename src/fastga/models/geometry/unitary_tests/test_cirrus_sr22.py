@@ -29,8 +29,9 @@ from ..geom_components.fuselage.components import (
 from ..geom_components.wing.components import (
     ComputeWingB50,
     ComputeWingL1,
+    ComputeWingL2,
+    ComputeWingL3,
     ComputeWingL4,
-    ComputeWingL2AndL3,
     ComputeWingMAC,
     ComputeWingSweep,
     ComputeWingToc,
@@ -584,6 +585,32 @@ def test_geometry_wing_z():
     problem.check_partials(compact_print=True)
 
 
+def test_geometry_wing_l2():
+    """Tests computation of the wing chords (l2)"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingL2()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingL2(), ivc)
+    wing_l2 = problem.get_val("data:geometry:wing:root:chord", units="m")
+    assert wing_l2 == pytest.approx(1.474, abs=1e-2)
+
+
+def test_geometry_wing_l3():
+    """Tests computation of the wing chords (l3)"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingL3()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingL3(), ivc)
+    wing_l3 = problem.get_val("data:geometry:wing:kink:chord", units="m")
+    assert wing_l3 == pytest.approx(
+        1.474, abs=1e-2
+    )  # point 3 and 2 equal (previous version ignored)
+
+
 def test_geometry_wing_l1():
     """Tests computation of the wing chords (l1)"""
 
@@ -606,22 +633,6 @@ def test_geometry_wing_l4():
     problem = run_system(ComputeWingL4(), ivc)
     wing_l4 = problem.get_val("data:geometry:wing:tip:chord", units="m")
     assert wing_l4 == pytest.approx(0.737, abs=1e-3)
-
-
-def test_geometry_wing_l2_l3():
-    """Tests computation of the wing chords (l2 and l3)"""
-
-    # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL2AndL3()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingL2AndL3(), ivc)
-    wing_l2 = problem.get_val("data:geometry:wing:root:chord", units="m")
-    assert wing_l2 == pytest.approx(1.474, abs=1e-2)
-    wing_l3 = problem.get_val("data:geometry:wing:kink:chord", units="m")
-    assert wing_l3 == pytest.approx(
-        1.474, abs=1e-2
-    )  # point 3 and 2 equal (previous version ignored)
 
 
 def test_geometry_wing_x():
