@@ -135,7 +135,7 @@ class XfoilPolar(ExternalCodeComp):
         multiple_AoA = not self.options["single_AoA"]
         if pth.exists(result_file) and multiple_AoA:
             interpolated_result = self.interpolation_for_exist_data(result_file,mach,reynolds)
-        
+        # reslut_array_p(+AoA), reslut_array_n(-AoA)
         if interpolated_result is None:
             result_array_p, result_array_n, result_folder_path, tmp_directory,tmp_result_file_path =\
             self.run_XFoil(inputs, outputs,reynolds,mach)
@@ -149,28 +149,7 @@ class XfoilPolar(ExternalCodeComp):
 
                 # Save results to defined path
                 if not error:
-                    results = [
-                        np.array(mach),
-                        np.array(reynolds),
-                        np.array(cl_max_2d),
-                        np.array(cl_min_2d),
-                        str(self._reshape(alpha, alpha).tolist()),
-                        str(self._reshape(alpha, cl).tolist()),
-                        str(self._reshape(alpha, cd).tolist()),
-                        str(self._reshape(alpha, cdp).tolist()),
-                        str(self._reshape(alpha, cm).tolist()),
-                    ]
-                    labels = [
-                        "mach",
-                        "reynolds",
-                        "cl_max_2d",
-                        "cl_min_2d",
-                        "alpha",
-                        "cl",
-                        "cd",
-                        "cdp",
-                        "cm",
-                    ]
+                    results, labels = self.give_data_labels(alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d,mach,reynolds)
                     if no_file or (data_saved is None):
                         data = pd.DataFrame(results, index=labels)
                     else:
@@ -222,48 +201,7 @@ class XfoilPolar(ExternalCodeComp):
                     )
 
         else:
-            # Extract results
-            cl_max_2d = np.array(
-                np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
-            ).ravel()
-            cl_min_2d = np.array(
-                np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
-            ).ravel()
-            ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
-            CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
-            CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
-            CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
-            CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
-
-            # Modify vector length if necessary
-            if POLAR_POINT_COUNT < len(ALPHA):
-                alpha = np.linspace(ALPHA[0], ALPHA[-1], POLAR_POINT_COUNT)
-                cl = np.interp(alpha, ALPHA, CL)
-                cd = np.interp(alpha, ALPHA, CD)
-                cdp = np.interp(alpha, ALPHA, CDP)
-                cm = np.interp(alpha, ALPHA, CM)
-            else:
-                additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(ALPHA)))
-                alpha = ALPHA.tolist()
-                alpha.extend(additional_zeros)
-                # noinspection PyTypeChecker
-                alpha = np.asarray(alpha)
-                cl = CL.tolist()
-                cl.extend(additional_zeros)
-                # noinspection PyTypeChecker
-                cl = np.asarray(cl)
-                cd = CD.tolist()
-                cd.extend(additional_zeros)
-                # noinspection PyTypeChecker
-                cd = np.asarray(cd)
-                cdp = CDP.tolist()
-                cdp.extend(additional_zeros)
-                # noinspection PyTypeChecker
-                cdp = np.asarray(cdp)
-                cm = CM.tolist()
-                cm.extend(additional_zeros)
-                # noinspection PyTypeChecker
-                cm = np.asarray(cm)
+            alpha, cl, cd, cdp, cm = self.Fix_interpolated_result_length(interpolated_result)
 
         outputs = self.Define_outputs(outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d,multiple_AoA)
 
@@ -409,7 +347,7 @@ class XfoilPolar(ExternalCodeComp):
         return tmp_directory
 
     def run_XFoil(self, inputs, outputs,reynolds,mach):
-    # Create result folder first (if it must fail, let it fail as soon as possible)
+        # Create result folder first (if it must fail, let it fail as soon as possible)
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
         if result_folder_path != "":
             os.makedirs(result_folder_path, exist_ok=True)
@@ -692,3 +630,83 @@ class XfoilPolar(ExternalCodeComp):
             cm = np.array(cm)
             
         return alpha, cl, cd, cdp, cm
+    
+    def Fix_interpolated_result_length(self,interpolated_result):
+        # Extract results
+        cl_max_2d = np.array(
+            np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+        ).ravel()
+        cl_min_2d = np.array(
+            np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+        ).ravel()
+        ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
+        CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
+        CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
+        CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
+        CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
+
+        # Modify vector length if necessary
+        if POLAR_POINT_COUNT < len(ALPHA):
+            alpha = np.linspace(ALPHA[0], ALPHA[-1], POLAR_POINT_COUNT)
+            cl = np.interp(alpha, ALPHA, CL)
+            cd = np.interp(alpha, ALPHA, CD)
+            cdp = np.interp(alpha, ALPHA, CDP)
+            cm = np.interp(alpha, ALPHA, CM)
+        else:
+            additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(ALPHA)))
+            alpha = ALPHA.tolist()
+            alpha.extend(additional_zeros)
+            # noinspection PyTypeChecker
+            alpha = np.asarray(alpha)
+            cl = CL.tolist()
+            cl.extend(additional_zeros)
+            # noinspection PyTypeChecker
+            cl = np.asarray(cl)
+            cd = CD.tolist()
+            cd.extend(additional_zeros)
+            # noinspection PyTypeChecker
+            cd = np.asarray(cd)
+            cdp = CDP.tolist()
+            cdp.extend(additional_zeros)
+            # noinspection PyTypeChecker
+            cdp = np.asarray(cdp)
+            cm = CM.tolist()
+            cm.extend(additional_zeros)
+            # noinspection PyTypeChecker
+            cm = np.asarray(cm)
+        
+        return alpha, cl, cd, cdp, cm
+    
+    def give_data_labels(self,alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d,mach,reynolds):
+        """
+        Five data labes and prepare list for later writing to the file
+        """
+        results = [
+            np.array(mach),
+            np.array(reynolds),
+            np.array(cl_max_2d),
+            np.array(cl_min_2d),
+            str(self._reshape(alpha, alpha).tolist()),
+            str(self._reshape(alpha, cl).tolist()),
+            str(self._reshape(alpha, cd).tolist()),
+            str(self._reshape(alpha, cdp).tolist()),
+            str(self._reshape(alpha, cm).tolist()),
+        ]
+        labels = [
+            "mach",
+            "reynolds",
+            "cl_max_2d",
+            "cl_min_2d",
+            "alpha",
+            "cl",
+            "cd",
+            "cdp",
+            "cm",
+        ]       
+        return results, labels
+        
+        
+    
+
+        
+        
