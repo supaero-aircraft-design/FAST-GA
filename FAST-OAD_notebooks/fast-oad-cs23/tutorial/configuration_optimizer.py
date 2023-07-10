@@ -22,15 +22,17 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
     print('Starting order: ', keys_list)
     counter = 0
-    while True:
+    swap_position = 0
+    while counter < len(keys_list):
         counter = counter + 1 
-        print(counter)
+        print('Loop nº: ', counter)
         improvement = False
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
 
             # Swap last node with the ith node (doube swap)
-            keys_list[i], keys_list[-1] = keys_list[-1], keys_list[i]  
+            keys_list[i], keys_list[-1-swap_position] = keys_list[-1-swap_position], keys_list[i]  
+            
             print('Trying order: ', keys_list)
             #Generate new config file with proposed order
             with open(CONFIGURATION_FILE, 'r') as file:
@@ -55,26 +57,23 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
                 best_score = score
                 best_order = keys_list
                 improvement = True
+                swap_position = 0
                 print('Swap Kept')
                 print('Current order: ', best_order)
                 break
 
-
             else:
-                keys_list[i], keys_list[-1] = keys_list[-1], keys_list[i]  # Revert the swap
+                keys_list[i], keys_list[-1-swap_position] = keys_list[-1-swap_position], keys_list[i]  # Revert the swap
                 print('Swap reverted')
                 print('Current order: ', keys_list)
 
-        if not improvement: #and counter == 9 #OJOOOOOOOOOOOOOOOOOOOOO
-            break
+        if not improvement: swap_position = swap_position + 1
         
     keys_list = best_order  # Start from the best order found so far
-    best_config = existing_data
-    #best_config['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
-    ##Write best configuration
-    #with open(CONFIGURATION_FILE, 'w') as file:
-    #    yaml.dump(best_config, file, default_flow_style=False, sort_keys=False)
-    #print('Best order has been written in configuration file')
+    existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
+    with open(CONFIGURATION_FILE, 'w') as file:
+        yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+        file.flush()
     return keys_list
 
 
@@ -87,15 +86,18 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
     print('Starting order: ', keys_list)
     counter = 0
-    while True:
-        counter =+ 1 
-        print(counter)
+    swap_position = 0
+    while counter < len(keys_list):
+        counter = counter + 1 
+        print('Loop: nº', counter)
         improvement = False
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
 
-            # Swap last node with the ith node (doube swap)
-            keys_list[i], keys_list[-1] = keys_list[-1], keys_list[i]  
+            # Move last node to top position, displacing others
+            #keys_list = keys_list[-1:] + keys_list[:-1]
+            shifted_element = keys_list.pop(-1-swap_position)
+            keys_list.insert(0, shifted_element)
             print('Trying order: ', keys_list)
             #Generate new config file with proposed order
             with open(CONFIGURATION_FILE, 'r') as file:
@@ -109,6 +111,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             problem = conf.get_problem()
             problem.setup()
             problem.final_setup()
+            #convert problem to dictionary, as input for feedback_extractor
             case_id=None
             model_data = _get_viewer_data(problem, case_id=case_id)
 
@@ -117,30 +120,45 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             
             if score < best_score:
                 best_score = score
-                best_order = list(keys).copy()
+                best_order = keys_list
                 improvement = True
+                swap_position = 0
                 print('Swap Kept')
                 print('Current order: ', best_order)
+                break
 
             else:
-                keys_list[i], keys_list[-1] = keys_list[-1], keys_list[i]  # Revert the swap
+                ##################keys_list[i], keys_list[-1-swap_position] = keys_list[-1-swap_position], keys_list[i]  # Revert the swap
+                shifted_element = keys_list.pop(0)
+                keys_list.insert(-1-swap_position, shifted_element)
                 print('Swap reverted')
                 print('Current order: ', keys_list)
 
         if not improvement:
-            break
+            swap_position = swap_position + 1
         
-    keys_list = best_order.copy()  # Start from the best order found so far
-    best_config = existing_data
-    best_config['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
-    #Write best configuration
+
+    keys_list = best_order
+    existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
     with open(CONFIGURATION_FILE, 'w') as file:
-        yaml.dump(best_config, file, default_flow_style=False, sort_keys=False)
-    print('Best order has been written in configuration file')
+        yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+        file.flush()
     return keys_list
 
 
+def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
+    print("\n HYBRID SWAP: Starting double swap")
+    keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
+
+    with open(CONFIGURATION_FILE, 'r') as file:
+                existing_data = yaml.safe_load(file) 
+                print('\n\n DATA AT END OF DOUBLE SWAP :')
+                print(existing_data['model']['aircraft_sizing'].keys())
+
+    print("\n HYBRID SWAP: Starting single swap")
+    keys_list = single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
+    return keys_list
 
 
 
@@ -178,7 +196,7 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 start = time.time()
 
 optimization_level = 1
-swap = 'DOUBLE'
+swap = 'HYBRID'
 
 if optimization_level == 1:
 
@@ -220,8 +238,9 @@ if optimization_level == 1:
         elif swap == 'SINGLE':
             dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
         elif swap == 'HYBRID':
-            e = 3
-        else: print('\Swap type not valid')
+            dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+
+        else: print('N Swap type not valid')
 
         print(dummy_var)
 
