@@ -13,45 +13,41 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import (
-    SUBMODEL_VT_POSITION_FL,
-    SUBMODEL_VT_POSITION_FL_X25_LOCAL,
-    SUBMODEL_VT_POSITION_FL_X25_W,
-    SUBMODEL_VT_POSITION_FL_TIP_X,
-)
-
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_VT_POSITION_FL
-] = "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
+from ..constants import SUBMODEL_VT_POSITION_FL
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_VT_POSITION_FL, "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
+    SUBMODEL_VT_POSITION_FL,
+    "fastga.submodel.geometry.vertical_tail.position.fl.legacy",
 )
-class ComputeVTMacPositionFL(om.Group):
-    # TODO: Document equations. Cite sources
+class ComputeVTMacPositionFL(om.ExplicitComponent):
     """
-    Vertical tail mean aerodynamic chord position estimation based on (F)ixed fuselage (L)ength (VTP
-    distance computed).
+    Computes x coordinate (from wing MAC .25) at 25% MAC of the vertical tail based on
+    (F)ixed fuselage (L)ength (VTP distance computed).
     """
 
     def setup(self):
 
-        self.add_subsystem(
-            "comp_x_pos_local_25MAC_fl",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL_X25_LOCAL),
-            promotes=["*"],
+        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:absolute", val=np.nan, units="m"
         )
-        self.add_subsystem(
-            "comp_x_pos_from_wing_25MAC_fl",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL_X25_W),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "comp_x_pos_tip_fl",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL_TIP_X),
-            promotes=["*"],
-        )
+        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+
+        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        x_wing25 = inputs["data:geometry:wing:MAC:at25percent:x"]
+        x_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:absolute"]
+        x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
+
+        vt_lp = (x_vt + x0_vt) - x_wing25
+
+        outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp

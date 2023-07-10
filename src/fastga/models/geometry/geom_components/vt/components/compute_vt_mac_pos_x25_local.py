@@ -1,4 +1,4 @@
-"""Estimation of vertical tail mean aerodynamic chord position based on (F)ixed fuselage (L)ength."""
+"""Estimation of vertical tail mean aerodynamic chord position (local)."""
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -17,17 +17,16 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_VT_POSITION_FL_X25_LOCAL
+from ..constants import SUBMODEL_VT_POSITION_X25_LOCAL
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_VT_POSITION_FL_X25_LOCAL,
+    SUBMODEL_VT_POSITION_X25_LOCAL,
     "fastga.submodel.geometry.vertical_tail.position.fl.x25_local.legacy",
 )
-class ComputeVTMacX25FL(om.ExplicitComponent):
+class ComputeVTMacX25Local(om.ExplicitComponent):
     """
-    Compute x coordinate (local) at 25% MAC of the vertical tail based on (F)ixed
-    fuselage (L)ength (VTP distance computed).
+    Computes x coordinate (local) at 25% MAC of the vertical tail.
     """
 
     def setup(self):

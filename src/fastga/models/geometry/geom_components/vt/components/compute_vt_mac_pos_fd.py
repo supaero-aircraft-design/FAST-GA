@@ -30,7 +30,8 @@ oad.RegisterSubmodel.active_models[
 class ComputeVTMacPositionFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Vertical tail mean aerodynamic chord position estimation based on (F)ixed tail (D)istance.
+    Vertical tail 25% mean aerodynamic chord position estimation (from wing MAC .25) based on (F)ixed
+    tail (D)istance.
     """
 
     def setup(self):

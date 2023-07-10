@@ -27,10 +27,12 @@ from .constants import (
     SUBMODEL_VT_SWEEP_50,
     SUBMODEL_VT_SWEEP_100,
     SUBMODEL_VT_WET_AREA,
+    SUBMODEL_VT_MAC_LENGTH,
+    SUBMODEL_VT_POSITION_Z,
+    SUBMODEL_VT_POSITION_X25_LOCAL,
     SUBMODEL_VT_POSITION_FD,
     SUBMODEL_VT_POSITION_FL,
-    SUBMODEL_VT_MAC_FD,
-    SUBMODEL_VT_MAC_FL,
+    SUBMODEL_VT_POSITION_TIP_X,
 )
 
 
@@ -51,10 +53,22 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_FD), promotes=["*"]
+            "comp_vt_mac_length_fd",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_LENGTH),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "vt_position",
+            "comp_vt_z_pos_fd",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_Z),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_vt_x_pos_local_fd",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_X25_LOCAL),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_vt_x_pos_from_wing_25MAC_fd",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD),
             promotes=["*"],
         )
@@ -89,11 +103,28 @@ class ComputeVerticalTailGeometryFL(om.Group):
             "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_FL), promotes=["*"]
+            "comp_vt_mac_length_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_LENGTH),
+            promotes=["*"],
         )
         self.add_subsystem(
-            "vt_position",
+            "comp_vt_z_pos_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_Z),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_vt_x_pos_local_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_X25_LOCAL),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_vt_x_pos_from_wing_25MAC_fl",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_vt_x_pos_tip_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_TIP_X),
             promotes=["*"],
         )
         self.add_subsystem(
