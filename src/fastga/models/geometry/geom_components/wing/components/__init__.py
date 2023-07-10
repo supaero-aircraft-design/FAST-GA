@@ -16,8 +16,9 @@ Estimation of wing geometry (components).
 
 from .compute_wing_b50 import ComputeWingB50
 from .compute_wing_l1 import ComputeWingL1
+from .compute_wing_l2 import ComputeWingL2
+from .compute_wing_l3 import ComputeWingL3
 from .compute_wing_l4 import ComputeWingL4
-from .compute_wing_l2_l3 import ComputeWingL2AndL3
 from .compute_wing_mac import ComputeWingMAC
 from .compute_wing_sweep import ComputeWingSweep
 from .compute_wing_toc import ComputeWingToc
