@@ -61,7 +61,11 @@ from ..geom_components.vt.components import (
     ComputeVTSweep,
     ComputeVTWetArea,
 )
-from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
+from ..geom_components.nacelle import (
+    ComputeNacelleDimension,
+    ComputeNacelleXPosition,
+    ComputeNacelleYPosition,
+)
 from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
@@ -692,20 +696,30 @@ def test_geometry_nacelle():
     assert nacelle_master_cross_section == pytest.approx(0.57890572, abs=1e-3)
 
 
-def test_position_nacelle():
-    """Tests computation of the nacelle and pylons component"""
+def test_x_position_nacelle():
+    """Tests computation of the nacelle and pylons component x position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeNacellePosition()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeNacelleXPosition()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeNacellePosition(), ivc)
-    y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
-    y_nacelle_result = 1.972
-    assert abs(y_nacelle - y_nacelle_result) < 1e-3
+    problem = run_system(ComputeNacelleXPosition(), ivc)
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
     x_nacelle_result = 3.092
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
+
+
+def test_y_position_nacelle():
+    """Tests computation of the nacelle and pylons component y position"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeNacelleYPosition()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeNacelleYPosition(), ivc)
+    y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
+    y_nacelle_result = 1.972
+    assert abs(y_nacelle - y_nacelle_result) < 1e-3
 
 
 def test_position_propeller():

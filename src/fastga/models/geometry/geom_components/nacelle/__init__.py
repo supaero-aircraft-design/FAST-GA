@@ -14,3 +14,5 @@
 
 from .compute_nacelle_dimension import ComputeNacelleDimension
 from .compute_nacelle_position import ComputeNacellePosition
+from .compute_nacelle_x_position import ComputeNacelleXPosition
+from .compute_nacelle_y_position import  ComputeNacelleYPosition
