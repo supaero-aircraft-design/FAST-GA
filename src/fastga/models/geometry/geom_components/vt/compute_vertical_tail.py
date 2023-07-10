@@ -21,7 +21,9 @@ import fastoad.api as oad
 
 from .components import ComputeVTMacFD, ComputeVTMacFL
 from .constants import (
-    SUBMODEL_VT_CHORD,
+    SUBMODEL_VT_ROOT_CHORD,
+    SUBMODEL_VT_TIP_CHORD,
+    SUBMODEL_VT_SPAN,
     SUBMODEL_VT_SWEEP,
     SUBMODEL_VT_WET_AREA,
     SUBMODEL_VT_POSITION_FD,
@@ -35,7 +37,13 @@ class ComputeVerticalTailGeometryFD(om.Group):
     def setup(self):
 
         self.add_subsystem(
-            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_root_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
         self.add_subsystem(
@@ -55,8 +63,15 @@ class ComputeVerticalTailGeometryFL(om.Group):
     """Vertical tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
+        
         self.add_subsystem(
-            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_root_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
         self.add_subsystem(

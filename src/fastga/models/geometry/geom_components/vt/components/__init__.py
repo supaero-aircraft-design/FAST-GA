@@ -14,7 +14,9 @@ Estimation of vertical tail geometry (components)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_vt_chords import ComputeVTChords
+from .compute_vt_chord_root import ComputeVTRootChord
+from .compute_vt_chord_tip import ComputeVTTipChord
+from .compute_vt_span import ComputeVTSpan
 from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
 from .compute_vt_distance import ComputeVTMacPositionFD, ComputeVTMacPositionFL
 from .compute_vt_sweep import ComputeVTSweep

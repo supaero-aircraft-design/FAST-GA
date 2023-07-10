@@ -12,7 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_VT_CHORD = "submodel.geometry.vertical_tail.chord"
+SUBMODEL_VT_ROOT_CHORD = "submodel.geometry.vertical_tail.chord.root"
+SUBMODEL_VT_TIP_CHORD = "submodel.geometry.vertical_tail.chord.tip"
+SUBMODEL_VT_SPAN = "submodel.geometry.vertical_tail.soan"
 SUBMODEL_VT_POSITION_FD = "submodel.geometry.vertical_tail.position.fd"
 SUBMODEL_VT_POSITION_FL = "submodel.geometry.vertical_tail.position.fl"
 SUBMODEL_VT_SWEEP = "submodel.geometry.vertical_tail.sweep"
