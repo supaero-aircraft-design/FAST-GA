@@ -28,7 +28,8 @@ from ..geom_components.fuselage.components import (
 )
 from ..geom_components.wing.components import (
     ComputeWingB50,
-    ComputeWingL1AndL4,
+    ComputeWingL1,
+    ComputeWingL4,
     ComputeWingL2AndL3,
     ComputeWingMAC,
     ComputeWingSweep,
@@ -571,16 +572,26 @@ def test_geometry_wing_z():
     problem.check_partials(compact_print=True)
 
 
-def test_geometry_wing_l1_l4():
-    """Tests computation of the wing chords (l1 and l4)"""
+def test_geometry_wing_l1():
+    """Tests computation of the wing chords (l1)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL1AndL4()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingL1()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingL1AndL4(), ivc)
+    problem = run_system(ComputeWingL1(), ivc)
     wing_l1 = problem.get_val("data:geometry:wing:root:virtual_chord", units="m")
     assert wing_l1 == pytest.approx(1.455, abs=1e-3)
+
+
+def test_geometry_wing_l4():
+    """Tests computation of the wing chords (l4)"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingL4()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingL4(), ivc)
     wing_l4 = problem.get_val("data:geometry:wing:tip:chord", units="m")
     assert wing_l4 == pytest.approx(1.455, abs=1e-3)
 
