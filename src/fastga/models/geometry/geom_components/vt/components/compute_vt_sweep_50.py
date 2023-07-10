@@ -29,7 +29,7 @@ class ComputeVTSweep50(om.ExplicitComponent):
 
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:sweep_0", units="deg")
+        self.add_input("data:geometry:vertical_tail:sweep_0", val=np.nan, units="deg")
 
         self.add_output("data:geometry:vertical_tail:sweep_50", units="rad")
 

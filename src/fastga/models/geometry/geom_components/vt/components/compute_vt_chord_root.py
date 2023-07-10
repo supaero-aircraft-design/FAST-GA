@@ -34,7 +34,7 @@ class ComputeVTRootChord(om.ExplicitComponent):
 
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:span", units="m")
+        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
 
