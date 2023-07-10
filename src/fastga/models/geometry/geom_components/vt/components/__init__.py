@@ -18,6 +18,7 @@ from .compute_vt_chord_root import ComputeVTRootChord
 from .compute_vt_chord_tip import ComputeVTTipChord
 from .compute_vt_span import ComputeVTSpan
 from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
-from .compute_vt_distance import ComputeVTMacPositionFD, ComputeVTMacPositionFL
+from .compute_vt_mac_pos_fd import ComputeVTMacPositionFD
+from .compute_vt_mac_pos_fl import ComputeVTMacPositionFL
 from .compute_vt_sweep import ComputeVTSweep
 from .compute_vt_wet_area import ComputeVTWetArea
