@@ -29,15 +29,9 @@ import fastoad.api as oad
 from fastga.command.api import generate_block_analysis
 
 from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
-from fastga.models.geometry.geom_components.wing.components.compute_wing_l2_l3 import (
-    ComputeWingL2AndL3,
-)
-from fastga.models.geometry.geom_components.wing.components.compute_wing_l4 import (
-    ComputeWingL4,
-)
-from fastga.models.geometry.geom_components.wing.components.compute_wing_l1 import (
-    ComputeWingL1,
-)
+from fastga.models.geometry.geom_components.wing.components.compute_wing_l2 import ComputeWingL2
+from fastga.models.geometry.geom_components.wing.components.compute_wing_l4 import ComputeWingL4
+from fastga.models.geometry.geom_components.wing.components.compute_wing_l1 import ComputeWingL1
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import ComputeMFWAdvanced
 
 from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
@@ -246,7 +240,7 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     ]
 
     compute_wing_root_chord = generate_block_analysis(
-        ComputeWingL2AndL3(), var_inputs_compute_root_chord, "", False
+        ComputeWingL2(), var_inputs_compute_root_chord, "", False
     )
 
     var_dict_compute_root_chord = {
@@ -267,7 +261,7 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     ]
     root_chord = convert_units(root_chord_original_value, root_chord_original_unit, "m")
 
-    # Compute virtual root chord first 
+    # Compute virtual root chord first
 
     var_inputs_compute_virtual_root_chord = copy.copy(var_inputs_compute_root_chord)
 
@@ -277,12 +271,20 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
 
     var_dict_compute_virtual_root_chord = copy.copy(var_dict_compute_root_chord)
 
-    var_outputs_compute_virtual_root_chord = compute_wing_virtual_root__chord(var_dict_compute_virtual_root_chord)
+    var_outputs_compute_virtual_root_chord = compute_wing_virtual_root__chord(
+        var_dict_compute_virtual_root_chord
+    )
 
     # We ensure that the units are in the SI system using openmdao convert unit_function
-    virtual_root_chord_original_value = var_outputs_compute_virtual_root_chord.get("data:geometry:wing:root:virtual_chord")[0]
-    virtual_root_chord_original_unit = var_outputs_compute_virtual_root_chord.get("data:geometry:wing:root:virtual_chord")[1]
-    virtual_root_chord = convert_units(virtual_root_chord_original_value, virtual_root_chord_original_unit, "m")
+    virtual_root_chord_original_value = var_outputs_compute_virtual_root_chord.get(
+        "data:geometry:wing:root:virtual_chord"
+    )[0]
+    virtual_root_chord_original_unit = var_outputs_compute_virtual_root_chord.get(
+        "data:geometry:wing:root:virtual_chord"
+    )[1]
+    virtual_root_chord = convert_units(
+        virtual_root_chord_original_value, virtual_root_chord_original_unit, "m"
+    )
 
     # We now compute the tip chord
 
