@@ -20,5 +20,7 @@ from .compute_vt_span import ComputeVTSpan
 from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
 from .compute_vt_mac_pos_fd import ComputeVTMacPositionFD
 from .compute_vt_mac_pos_fl import ComputeVTMacPositionFL
-from .compute_vt_sweep import ComputeVTSweep
+from .compute_vt_sweep_0 import ComputeVTSweep0
+from .compute_vt_sweep_50 import ComputeVTSweep50
+from .compute_vt_sweep_100 import ComputeVTSweep100
 from .compute_vt_wet_area import ComputeVTWetArea

@@ -60,7 +60,10 @@ from ..geom_components.vt.components import (
     ComputeVTMacFL,
     ComputeVTMacPositionFD,
     ComputeVTMacPositionFL,
-    ComputeVTSweep,
+    # ComputeVTSweep,
+    ComputeVTSweep0,
+    ComputeVTSweep50,
+    ComputeVTSweep100,
     ComputeVTWetArea,
 )
 from ..geom_components.nacelle import (
@@ -181,18 +184,54 @@ def test_compute_vt_mac_position_fl():
     assert vt_x0 == pytest.approx(0.193, abs=1e-3)
 
 
-def test_compute_vt_sweep():
-    """Tests computation of the vertical tail sweep"""
+# def test_compute_vt_sweep():
+#     """Tests computation of the vertical tail sweep"""
+
+#     # Research independent input value in .xml file and add values calculated from other modules
+#     ivc = get_indep_var_comp(list_inputs(ComputeVTSweep()), __file__, XML_FILE)
+
+#     # Run problem and check obtained value(s) is/(are) correct
+#     problem = run_system(ComputeVTSweep(), ivc)
+#     sweep_0 = problem.get_val("data:geometry:vertical_tail:sweep_0", units="deg")
+#     assert sweep_0 == pytest.approx(14.532, abs=1e-1)
+#     sweep_50 = problem.get_val("data:geometry:vertical_tail:sweep_50", units="deg")
+#     assert sweep_50 == pytest.approx(-4.13, abs=1e-1)
+#     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
+#     assert sweep_100 == pytest.approx(-4.13, abs=1e-1)
+
+
+def test_compute_vt_sweep_0():
+    """Tests computation of the vertical tail sweep at l/c=0%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTSweep()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTSweep0()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTSweep(), ivc)
+    problem = run_system(ComputeVTSweep0(), ivc)
     sweep_0 = problem.get_val("data:geometry:vertical_tail:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(14.532, abs=1e-1)
+
+
+def test_compute_vt_sweep_50():
+    """Tests computation of the vertical tail sweep at l/c=50%"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTSweep50()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTSweep50(), ivc)
     sweep_50 = problem.get_val("data:geometry:vertical_tail:sweep_50", units="deg")
     assert sweep_50 == pytest.approx(-4.13, abs=1e-1)
+
+
+def test_compute_vt_sweep_100():
+    """Tests computation of the vertical tail sweep at l/c=100%"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTSweep100()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTSweep100(), ivc)
     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(-4.13, abs=1e-1)
 
