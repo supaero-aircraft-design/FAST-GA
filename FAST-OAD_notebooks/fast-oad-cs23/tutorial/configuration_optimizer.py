@@ -149,14 +149,11 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
     print("\n HYBRID SWAP: Starting double swap")
+    print("____________________________________\n")
     keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
 
-    #with open(CONFIGURATION_FILE, 'r') as file:
-    #            existing_data = yaml.safe_load(file) 
-    #            print('\n\n DATA AT END OF DOUBLE SWAP :')
-    #            print(existing_data['model']['aircraft_sizing'].keys())
-
     print("\nHYBRID SWAP: Starting single swap")
+    print("____________________________________\n")
     #Setup the problem again with the updated order from the double swap
     conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
     problem = conf.get_problem()
