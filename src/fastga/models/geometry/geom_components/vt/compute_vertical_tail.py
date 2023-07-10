@@ -24,7 +24,9 @@ from .constants import (
     SUBMODEL_VT_ROOT_CHORD,
     SUBMODEL_VT_TIP_CHORD,
     SUBMODEL_VT_SPAN,
-    SUBMODEL_VT_SWEEP,
+    SUBMODEL_VT_SWEEP_0,
+    SUBMODEL_VT_SWEEP_50,
+    SUBMODEL_VT_SWEEP_100,
     SUBMODEL_VT_WET_AREA,
     SUBMODEL_VT_POSITION_FD,
     SUBMODEL_VT_POSITION_FL,
@@ -52,7 +54,13 @@ class ComputeVerticalTailGeometryFD(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
+            "vt_sweep_0", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_0), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_sweep_50", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_50), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_sweep_100", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_100), promotes=["*"]
         )
         self.add_subsystem(
             "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
@@ -63,7 +71,7 @@ class ComputeVerticalTailGeometryFL(om.Group):
     """Vertical tail geometry estimation based on fixed fuselage length"""
 
     def setup(self):
-        
+
         self.add_subsystem(
             "vt_root_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD), promotes=["*"]
         )
@@ -80,7 +88,13 @@ class ComputeVerticalTailGeometryFL(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
+            "vt_sweep_0", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_0), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_sweep_50", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_50), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vt_sweep_100", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP_100), promotes=["*"]
         )
         self.add_subsystem(
             "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
