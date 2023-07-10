@@ -19,7 +19,6 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from .components import ComputeVTMacFD, ComputeVTMacFL
 from .constants import (
     SUBMODEL_VT_ROOT_CHORD,
     SUBMODEL_VT_TIP_CHORD,
@@ -30,6 +29,8 @@ from .constants import (
     SUBMODEL_VT_WET_AREA,
     SUBMODEL_VT_POSITION_FD,
     SUBMODEL_VT_POSITION_FL,
+    SUBMODEL_VT_MAC_FD,
+    SUBMODEL_VT_MAC_FL,
 )
 
 
@@ -39,7 +40,9 @@ class ComputeVerticalTailGeometryFD(om.Group):
     def setup(self):
 
         self.add_subsystem(
-            "vt_root_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD), promotes=["*"]
+            "vt_root_chord",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD),
+            promotes=["*"],
         )
         self.add_subsystem(
             "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
@@ -47,7 +50,9 @@ class ComputeVerticalTailGeometryFD(om.Group):
         self.add_subsystem(
             "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
-        self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
+        self.add_subsystem(
+            "vt_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_FD), promotes=["*"]
+        )
         self.add_subsystem(
             "vt_position",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD),
@@ -73,7 +78,9 @@ class ComputeVerticalTailGeometryFL(om.Group):
     def setup(self):
 
         self.add_subsystem(
-            "vt_root_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD), promotes=["*"]
+            "vt_root_chord",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD),
+            promotes=["*"],
         )
         self.add_subsystem(
             "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
@@ -81,7 +88,9 @@ class ComputeVerticalTailGeometryFL(om.Group):
         self.add_subsystem(
             "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
-        self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
+        self.add_subsystem(
+            "vt_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_FL), promotes=["*"]
+        )
         self.add_subsystem(
             "vt_position",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
