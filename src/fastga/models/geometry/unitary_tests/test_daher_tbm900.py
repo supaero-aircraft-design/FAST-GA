@@ -53,7 +53,9 @@ from ..geom_components.ht.components import (
     ComputeHTSweep100,
 )
 from ..geom_components.vt.components import (
-    ComputeVTChords,
+    ComputeVTRootChord,
+    ComputeVTTipChord,
+    ComputeVTSpan,
     ComputeVTMacFD,
     ComputeVTMacFL,
     ComputeVTMacPositionFD,
@@ -83,20 +85,40 @@ from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 XML_FILE = "daher_tbm900.xml"
 
 
-def test_compute_vt_chords():
-    """Tests computation of the vertical tail chords"""
+def test_compute_vt_root_chord():
+    """Tests computation of the vertical tail chord: root"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeVTChords()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTRootChord()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTChords(), ivc)
+    problem = run_system(ComputeVTRootChord(), ivc)
+    root_chord = problem.get_val("data:geometry:vertical_tail:root:chord", units="m")
+    assert root_chord == pytest.approx(2.019, abs=1e-3)
+
+
+def test_compute_vt_tip_chord():
+    """Tests computation of the vertical tail chord: tip"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVTTipChord()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTTipChord(), ivc)
+    tip_chord = problem.get_val("data:geometry:vertical_tail:tip:chord", units="m")
+    assert tip_chord == pytest.approx(0.754, abs=1e-3)
+
+
+def test_compute_vt_span():
+    """Tests computation of the vertical tail span"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVTSpan()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTSpan(), ivc)
     span = problem.get_val("data:geometry:vertical_tail:span", units="m")
     assert span == pytest.approx(2.056, abs=1e-3)
-    root_chord = problem.get_val("data:geometry:vertical_tail:root:chord", units="m")
-    assert root_chord == pytest.approx(2.028, abs=1e-3)
-    tip_chord = problem.get_val("data:geometry:vertical_tail:tip:chord", units="m")
-    assert tip_chord == pytest.approx(0.750, abs=1e-3)
 
 
 def test_compute_vt_mac():
