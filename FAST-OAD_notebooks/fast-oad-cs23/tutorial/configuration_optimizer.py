@@ -151,13 +151,26 @@ def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     print("\n HYBRID SWAP: Starting double swap")
     keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
 
-    with open(CONFIGURATION_FILE, 'r') as file:
-                existing_data = yaml.safe_load(file) 
-                print('\n\n DATA AT END OF DOUBLE SWAP :')
-                print(existing_data['model']['aircraft_sizing'].keys())
+    #with open(CONFIGURATION_FILE, 'r') as file:
+    #            existing_data = yaml.safe_load(file) 
+    #            print('\n\n DATA AT END OF DOUBLE SWAP :')
+    #            print(existing_data['model']['aircraft_sizing'].keys())
 
-    print("\n HYBRID SWAP: Starting single swap")
-    keys_list = single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
+    print("\nHYBRID SWAP: Starting single swap")
+    #Setup the problem again with the updated order from the double swap
+    conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+    problem = conf.get_problem()
+    problem.setup()
+    problem.final_setup()
+    case_id=None
+    model_data = _get_viewer_data(problem, case_id=case_id)
+    with open(CONFIGURATION_FILE, 'r') as file:
+        yaml_data = yaml.safe_load(file)
+        yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
+        yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
+        aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
+
+    keys_list = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
     return keys_list
 
 
