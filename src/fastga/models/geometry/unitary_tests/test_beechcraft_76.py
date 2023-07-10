@@ -56,8 +56,9 @@ from ..geom_components.vt.components import (
     ComputeVTRootChord,
     ComputeVTTipChord,
     ComputeVTSpan,
-    ComputeVTMacFD,
-    ComputeVTMacFL,
+    ComputeVTMacLength,
+    ComputeVTMacX25Local,
+    ComputeVTMacZ,
     ComputeVTMacPositionFD,
     ComputeVTMacPositionFL,
     ComputeVTSweep0,
@@ -123,38 +124,44 @@ def test_compute_vt_span():
     assert span == pytest.approx(1.459, abs=1e-3)
 
 
-def test_compute_vt_mac():
-    """Tests computation of the vertical tail mac"""
+def test_compute_vt_mac_length():
+    """Tests computation of the vertical tail mac length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacLength()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacFD(), ivc)
+    problem = run_system(ComputeVTMacLength(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
+    
+
+def test_compute_vt_mac_x25_local():
+    """Tests computation of the vertical tail 25% mac x position (local)"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacX25Local()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTMacX25Local(), ivc)
     vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
     assert vt_x0 == pytest.approx(0.453, abs=1e-3)
-    vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
-    assert vt_z0 == pytest.approx(0.672, abs=1e-3)
 
 
-def test_compute_vt_mac_fl():
-    """Tests computation of the horizontal tail mac"""
+def test_compute_vt_mac_z():
+    """Tests computation of the vertical tail mac z position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFL()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacZ()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacFL(), ivc)
-    length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
-    assert length == pytest.approx(1.237, abs=1e-3)
+    problem = run_system(ComputeVTMacZ(), ivc)
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.672, abs=1e-3)
 
 
 def test_compute_vt_mac_position():
-    """Tests computation of the vertical tail mac position"""
+    """Tests computation of the vertical tail mac position from wing"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFD()), __file__, XML_FILE)
@@ -168,7 +175,7 @@ def test_compute_vt_mac_position():
 
 
 def test_compute_vt_mac_position_fl():
-    """Tests computation of the vertical tail mac position"""
+    """Tests computation of the vertical tail mac position from wing"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFL()), __file__, XML_FILE)
@@ -179,8 +186,6 @@ def test_compute_vt_mac_position_fl():
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_vt == pytest.approx(4.808, abs=1e-3)
-    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
-    assert vt_x0 == pytest.approx(0.453, abs=1e-3)
 
 
 def test_compute_vt_sweep_0():
