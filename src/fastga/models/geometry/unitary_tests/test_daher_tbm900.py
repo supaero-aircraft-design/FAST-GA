@@ -60,7 +60,6 @@ from ..geom_components.vt.components import (
     ComputeVTMacFL,
     ComputeVTMacPositionFD,
     ComputeVTMacPositionFL,
-    # ComputeVTSweep,
     ComputeVTSweep0,
     ComputeVTSweep50,
     ComputeVTSweep100,
@@ -182,22 +181,6 @@ def test_compute_vt_mac_position_fl():
     assert lp_vt == pytest.approx(5.638, abs=1e-3)
     vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
     assert vt_x0 == pytest.approx(0.870, abs=1e-3)
-
-
-# def test_compute_vt_sweep():
-#     """Tests computation of the vertical tail sweep"""
-
-#     # Research independent input value in .xml file and add values calculated from other modules
-#     ivc = get_indep_var_comp(list_inputs(ComputeVTSweep()), __file__, XML_FILE)
-
-#     # Run problem and check obtained value(s) is/(are) correct
-#     problem = run_system(ComputeVTSweep(), ivc)
-#     sweep_0 = problem.get_val("data:geometry:vertical_tail:sweep_0", units="deg")
-#     assert sweep_0 == pytest.approx(44.84, abs=1e-1)
-#     sweep_50 = problem.get_val("data:geometry:vertical_tail:sweep_50", units="deg")
-#     assert sweep_50 == pytest.approx(20.45, abs=1e-1)
-#     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
-#     assert sweep_100 == pytest.approx(20.45, abs=1e-1)
 
 
 def test_compute_vt_sweep_0():
