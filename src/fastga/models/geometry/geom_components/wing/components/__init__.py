@@ -15,7 +15,8 @@ Estimation of wing geometry (components).
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_wing_b50 import ComputeWingB50
-from .compute_wing_l1_l4 import ComputeWingL1AndL4
+from .compute_wing_l1 import ComputeWingL1
+from .compute_wing_l4 import ComputeWingL4
 from .compute_wing_l2_l3 import ComputeWingL2AndL3
 from .compute_wing_mac import ComputeWingMAC
 from .compute_wing_sweep import ComputeWingSweep
