@@ -47,7 +47,8 @@ from ..geom_components.wing.components import (
     ComputeWingX,
     ComputeWingY,
     ComputeWingZ,
-    ComputeWingXAbsolute,
+    ComputeWingXAbsoluteMac,
+    ComputeWingXAbsoluteTip,
 )
 from ..geom_components.ht.components import (
     ComputeHTMacFD,
@@ -665,16 +666,31 @@ def test_geometry_wing_x():
     assert wing_x4 == pytest.approx(0.0, abs=1e-3)
 
 
-def test_geometry_wing_x_absolute():
-    """Tests computation of the wing absolute Xs"""
+def test_geometry_wing_x_absolute_mac():
+    """Tests computation of the wing MAC absolute X"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsolute()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsoluteMac()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingXAbsolute(), ivc)
+    problem = run_system(ComputeWingXAbsoluteMac(), ivc)
     wing_x0_abs = problem.get_val("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
     assert wing_x0_abs == pytest.approx(3.091, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_geometry_wing_x_absolute_tip():
+    """Tests computation of the wing tip absolute X"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsoluteTip()), __file__, XML_FILE)
+    
+    # Define input value calculated from other modules
+    ivc.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", 3.091, units="m")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingXAbsoluteTip(), ivc)
     wing_x4_abs = problem.get_val("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
     assert wing_x4_abs == pytest.approx(3.091, abs=1e-3)
 
