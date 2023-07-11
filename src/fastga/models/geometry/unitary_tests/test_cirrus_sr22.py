@@ -35,7 +35,10 @@ from ..geom_components.wing.components import (
     ComputeWingMacLength,
     ComputeWingMacX,
     ComputeWingMacY,
-    ComputeWingSweep,
+    ComputeWingSweep0,
+    ComputeWingSweep50,
+    ComputeWingSweep100Inner,
+    ComputeWingSweep100Outer,
     ComputeWingToc,
     ComputeWingWetArea,
     ComputeWingX,
@@ -721,20 +724,50 @@ def test_geometry_wing_mac_y_pos():
     assert wing_y0 == pytest.approx(2.562, abs=1e-3)
 
 
-def test_geometry_wing_sweep():
-    """Tests computation of the wing sweeps"""
+def test_geometry_wing_sweep_0():
+    """Test computation of the wing sweep at l/c=0%"""
 
     # Define input values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep0()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingSweep(), ivc)
+    problem = run_system(ComputeWingSweep0(), ivc)
     sweep_0 = problem.get_val("data:geometry:wing:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(2.044, abs=1e-1)
+
+
+def test_geometry_wing_sweep_50():
+    """Test computation of the wing sweep at l/c=50%"""
+
+    # Define input values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep50()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingSweep50(), ivc)
     sweep_50 = problem.get_val("data:geometry:wing:sweep_50", units="deg")
     assert sweep_50 == pytest.approx(-1.73, abs=1e-1)
+
+
+def test_geometry_wing_sweep_100_inner():
+    """Test computation of the wing sweep at l/c=100% (inner)"""
+
+    # Define input values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep100Inner()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingSweep100Inner(), ivc)
     sweep_100_inner = problem.get_val("data:geometry:wing:sweep_100_inner", units="deg")
     assert sweep_100_inner == pytest.approx(-6.11, abs=1e-1)
+
+
+def test_geometry_wing_sweep_100_outer():
+    """Test computation of the wing sweep at l/c=100% (outer)"""
+
+    # Define input values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingSweep100Outer()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingSweep100Outer(), ivc)
     sweep_100_outer = problem.get_val("data:geometry:wing:sweep_100_outer", units="deg")
     assert sweep_100_outer == pytest.approx(-6.11, abs=1e-1)
 
