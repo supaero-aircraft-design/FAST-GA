@@ -20,7 +20,7 @@ from ..constants import SUBMODEL_WING_Y_KINK
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_Y_KINK, "fastga.submodel.geometry.wing.y.kink.legacy")
-class ComputeWingYKink(om.ExplicitComponent):
+class ComputeWingKinkY(om.ExplicitComponent):
     """Wing kink Y estimation."""
 
     # TODO: Document equations. Cite sources

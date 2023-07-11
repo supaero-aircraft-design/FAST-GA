@@ -33,9 +33,9 @@ from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_outer_area import ComputeWingOuterArea
 from .compute_wing_x_kink import ComputeWingXKink
 from .compute_wing_x_tip import ComputeWingXTip
-from .compute_wing_y_root import ComputeWingYRoot
-from .compute_wing_y_kink import ComputeWingYKink
-from .compute_wing_y_tip import ComputeWingYTip
+from .compute_wing_y_root import ComputeWingRootY
+from .compute_wing_y_kink import ComputeWingKinkY
+from .compute_wing_y_tip import ComputeWingTipY
 from .compute_wing_z_root import ComputeWingZRoot
 from .compute_wing_z_tip import ComputeWingZTip
 from .compute_wing_x_absolute_mac import ComputeWingXAbsoluteMac
