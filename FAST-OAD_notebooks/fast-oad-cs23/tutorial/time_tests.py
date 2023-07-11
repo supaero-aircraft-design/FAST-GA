@@ -13,20 +13,27 @@ import time
 # Define relative path
 DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
+times_module = []
+
+for i in range(50):
+    try:
+        os.remove(WORK_FOLDER_PATH, "problem_outputs.xml")
+    except:
+        print('nothing removed')
+    # Define files
+
+    CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
+    SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
 
 
-os.remove(WORK_FOLDER_PATH, "problem_outputs.txt")
 
-# Define files
-CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process.yml")
-SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
+    api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
 
-
+    starting = time.time()
+    eval_problem = api_cs25.evaluate_problem(CONFIGURATION_FILE, overwrite=True)
 
 
-api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
+    print('\n Problem ran in ', time.time() - starting , ' seconds \n')
+    times_module.append(time.time() - starting)
 
-starting = time.time()
-eval_problem = api_cs25.evaluate_problem(CONFIGURATION_FILE, overwrite=True)
-
-print('\n Problem ran in ', time.time() - starting , ' seconds \n')
+print('mean time for aero lowspeed: ', sum(times_module)/len(times_module))

@@ -16,7 +16,7 @@ from openmdao.utils.om_warnings import issue_warning
 def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -51,7 +51,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data)
+            score = feedback_extractor(model_data, config_dictionary)
             
             if score < best_score:
                 best_score = score
@@ -80,7 +80,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -116,7 +116,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data)
+            score = feedback_extractor(model_data, config_dictionary)
             
             if score < best_score:
                 best_score = score
@@ -200,11 +200,10 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 #        wing_position
 #        wing_area
 #
-# LVL 2: Shuffles order of all sub-modules in all the modules of the CONFIG file
-# LVL 3: etc 
-# LVL 4: etc
+# LVL 2: Shuffles order of all sub-modules in all the modules of the CONFIG file TO BE DONE
+# LVL 3: etc TO BE DONE
+# LVL 4: etc TO BE DONE
 start = time.time()
-
 optimization_level = 1
 swap = 'HYBRID'
 
@@ -240,38 +239,27 @@ if optimization_level == 1:
         yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
         yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
         aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
-
         print('Starting order before first swap: ', aircraft_sizing_data.keys())
 
-        if swap == 'DOUBLE':
-            dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
-        elif swap == 'SINGLE':
-            dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
-        elif swap == 'HYBRID':
-            dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+    if swap == 'DOUBLE':
+        dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+    elif swap == 'SINGLE':
+        dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+    elif swap == 'HYBRID':
+        dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
 
-        else: print('N Swap type not valid')
+    else: print('\n Swap type not valid')
 
-        print(dummy_var)
-
-
-        #print('\n', feedback_extractor(aircraft_sizing_data))
+    print(dummy_var)
 
 
-
-
-
-
-
-
-
-
+#TODO::::
 
 #elif Optimization_level == 2:
 #elif Optimization_level == 3:
 #elif Optimization_level == 4:
 #elif Optimization_level == 5:
 else:
-    print('Not possible sry')
+    print('Not possible sry') 
 
 print('\n Time taken', time.time() - start, 'seconds')
