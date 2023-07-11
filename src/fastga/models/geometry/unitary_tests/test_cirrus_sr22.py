@@ -32,7 +32,9 @@ from ..geom_components.wing.components import (
     ComputeWingL2,
     ComputeWingL3,
     ComputeWingL4,
-    ComputeWingMAC,
+    ComputeWingMacLength,
+    ComputeWingMacX,
+    ComputeWingMacY,
     ComputeWingSweep,
     ComputeWingToc,
     ComputeWingWetArea,
@@ -683,18 +685,38 @@ def test_geometry_wing_b50():
     assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
 
 
-def test_geometry_wing_mac():
-    """Tests computation of the wing mean aerodynamic chord"""
+def test_geometry_wing_mac_length():
+    """Tests computation of the wing mean aerodynamic chord length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingMAC()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingMacLength()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingMAC(), ivc)
+    problem = run_system(ComputeWingMacLength(), ivc)
     wing_l0 = problem.get_val("data:geometry:wing:MAC:length", units="m")
     assert wing_l0 == pytest.approx(1.193, abs=1e-3)
+
+
+def test_geometry_wing_mac_x_pos():
+    """Tests computation of the wing mean aerodynamic chord x local"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingMacX()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingMacX(), ivc)
     wing_x0 = problem.get_val("data:geometry:wing:MAC:leading_edge:x:local", units="m")
     assert wing_x0 == pytest.approx(0.070, abs=1e-3)
+
+
+def test_geometry_wing_mac_y_pos():
+    """Tests computation of the wing mean aerodynamic chord y position"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingMacY()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingMacY(), ivc)
     wing_y0 = problem.get_val("data:geometry:wing:MAC:y", units="m")
     assert wing_y0 == pytest.approx(2.562, abs=1e-3)
 
