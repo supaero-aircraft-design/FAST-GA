@@ -22,7 +22,10 @@ from .compute_wing_l4 import ComputeWingL4
 from .compute_wing_mac_length import ComputeWingMacLength
 from .compute_wing_mac_x import ComputeWingMacX
 from .compute_wing_mac_y import ComputeWingMacY
-from .compute_wing_sweep import ComputeWingSweep
+from .compute_wing_sweep_0 import ComputeWingSweep0
+from .compute_wing_sweep_50 import ComputeWingSweep50
+from .compute_wing_sweep_100_inner import ComputeWingSweep100Inner
+from .compute_wing_sweep_100_outer import ComputeWingSweep100Outer
 from .compute_wing_toc import ComputeWingToc
 from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_x import ComputeWingX
