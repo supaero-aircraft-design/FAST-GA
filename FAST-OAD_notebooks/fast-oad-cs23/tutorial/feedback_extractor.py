@@ -54,10 +54,10 @@ def feedback_extractor(model_data, config_dictionary, INFO = False):
 
     def time_modules(feedback_list):
         modules_times = {
-            "geometry": 1.8936853075027467,
+            "geometry": 2.7000320196151733,
             "aerodynamics_lowspeed" : 2,
             "aerodynamics_highspeed" : 2,
-            "weight" : 3,
+            "weight" : 1.962327229976654,
             "performance" : 1,
             "hq" : 1.5,
             "mtow" : 0.5,
