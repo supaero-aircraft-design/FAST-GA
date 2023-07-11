@@ -17,35 +17,23 @@ Test module for geometry functions of the different components.
 import openmdao.api as om
 import pytest
 
-from ..geom_components.wing.components import ComputeWingZRoot, ComputeWingZTip
+from ..geom_components.wing.components import ComputeWingZ
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 XML_FILE = "partenavia_p68.xml"
 
 
-def test_geometry_wing_z_root():
-    """Tests computation of the wing root Z"""
+def test_geometry_wing_z():
+    """Tests computation of the wing Zs"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingZRoot()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingZ()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingZRoot(), ivc)
+    problem = run_system(ComputeWingZ(), ivc)
     wing_z2 = problem.get_val("data:geometry:wing:root:z", units="m")
     assert wing_z2 == pytest.approx(-0.523, rel=1e-2)
-
-    problem.check_partials(compact_print=True)
-
-
-def test_geometry_wing_z_tip():
-    """Tests computation of the wing tip Z"""
-
-    # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingZTip()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingZTip(), ivc)
     wing_z4 = problem.get_val("data:geometry:wing:tip:z", units="m")
     assert wing_z4 == pytest.approx(-0.617, rel=1e-2)
 

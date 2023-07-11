@@ -36,8 +36,7 @@ from .compute_wing_x_tip import ComputeWingXTip
 from .compute_wing_y_root import ComputeWingYRoot
 from .compute_wing_y_kink import ComputeWingYKink
 from .compute_wing_y_tip import ComputeWingYTip
-from .compute_wing_z_root import ComputeWingZRoot
-from .compute_wing_z_tip import ComputeWingZTip
+from .compute_wing_z import ComputeWingZ
 from .compute_wing_x_absolute_mac import ComputeWingXAbsoluteMac
 from .compute_wing_x_absolute_tip import ComputeWingXAbsoluteTip
 from .compute_wing_span import ComputeWingSpan
