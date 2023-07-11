@@ -91,7 +91,9 @@ class XfoilPolar(ExternalCodeComp):
         )
 
     def setup(self):
-
+        """_summary_
+        Set up inputs and outputs required for this operation
+        """
         self.add_input("xfoil:mach", val=np.nan)
         self.add_input("xfoil:reynolds", val=np.nan)
         multiple_AoA = not self.options["single_AoA"]
@@ -117,6 +119,17 @@ class XfoilPolar(ExternalCodeComp):
         pass
 
     def compute(self, inputs, outputs):
+        """
+        Function that computes airfoil in XFoil environment and returns the different
+        aerodynamic parameters.
+
+        @param inputs: inputs parameters defined within FAST-OAD-GA
+        @param outputs: outputs parameters defined within FAST-OAD-GA
+        @param altitude: altitude for aerodynamic calculation in meters
+        @param mach: air speed expressed in mach
+        @param aoa_angle: air speed angle of attack (degree)
+
+        """
 
         # Define timeout for the function
         self.options["timeout"] = 15.0
@@ -173,7 +186,7 @@ class XfoilPolar(ExternalCodeComp):
 
             # Getting output files if needed
             if self.options[OPTION_RESULT_FOLDER_PATH] != "":
-                self.get_output_files(result_folder_path,tmp_result_file_path)
+                self.get_output_files(result_folder_path, tmp_result_file_path)
             # Try to delete the temp directory, if process not finished correctly try to
             # close files before removing directory for second attempt
             # noinspection PyBroadException
@@ -213,6 +226,18 @@ class XfoilPolar(ExternalCodeComp):
         alpha_end,
         step,
     ):
+        """_summary_
+        Create command script to run XFoil for obtaining results
+
+        Args:
+            reynolds (_list_): Renold's number
+            mach (_list_): mach number
+            tmp_profile_file_path (_path_): temporary profile path
+            tmp_result_file_path (_path_): temporary result path
+            alpha_start (_float_): starting angle of attack in XFoil caculation
+            alpha_end (_float_): ending angle of attack in XFoil caculation
+            step (_float_): steps between each angle of attack in XFoil calculation
+        """
         parser = InputFileGenerator()
         # input command to run XFoil
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
@@ -345,6 +370,23 @@ class XfoilPolar(ExternalCodeComp):
         return tmp_directory
 
     def run_XFoil(self, inputs, outputs, reynolds, mach):
+        """_summary_
+        Imoprt required list data and XFoil.exe to script and save
+        for exporting the results
+        Args:
+            inputs (_list_): input data list
+            outputs (_list_): ooutput data list
+            reynolds (_list_): reynold's number list
+            mach (_list_): mach number list
+
+        Raises:
+            TimeoutError: _description_
+            TimeoutError: _description_
+
+        Returns:
+            _list_: export data list for postprocessing
+        """
+
         # Create result folder first (if it must fail, let it fail as soon as possible)
         result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
         if result_folder_path != "":
@@ -546,6 +588,15 @@ class XfoilPolar(ExternalCodeComp):
         return result_file
 
     def post_processing_fill_value(self, result_array_p, result_array_n):
+        """_summary_
+        Filling value after XFoil calculation
+        Args:
+            result_array_p (_array_): results with positive angel of attacks
+            result_array_n (_array_): results with negative angle of attacks
+
+        Returns:
+            _list_: aerodynamic characteristics in different angle of attack
+        """
         if self.options["single_AoA"]:
             alpha = result_array_p["alpha"].tolist()
             cl = result_array_p["CL"].tolist()
@@ -586,6 +637,22 @@ class XfoilPolar(ExternalCodeComp):
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, error
 
     def define_outputs(self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, multiple_AoA):
+        """_summary_
+
+        Args:
+            outputs (_list_): the output data list needs to be filled
+            alpha (_array_):length-adjusted angle of attack array
+            cl (_array_): length-adjusted lift coefficient array
+            cd (_array_): length-adjusted drag coefficient array
+            cdp (_array_): length-adjusted pressure drag coefficient array
+            cm (_array_): length-adjusted moment coefficient array
+            cl_max_2d (_float_): maximum lift coefficient
+            cl_min_2d (_float_): miniimum lift coefficient
+            multiple_AoA (_boolean_): multiple angle of attack option
+
+        Returns:
+            _type_: _description_
+        """
         outputs["xfoil:alpha"] = alpha
         outputs["xfoil:CL"] = cl
         outputs["xfoil:CD"] = cd
@@ -598,6 +665,22 @@ class XfoilPolar(ExternalCodeComp):
         return outputs
 
     def fix_mutiple_aoa_output_length(self, alpha, cl, cd, cdp, cm):
+        """_summary_
+        Fix the length of all results respect to the length of array alpha
+        so that the results will have no error in fast-oad.
+        If the length of result arrays are longer, this function will interpolate
+        value for ALPHA. On the contrary, the extra zero elements is filled in
+        the results array.
+        Args:
+            alpha (_list_): angle of attach list
+            cl (_list_): lift coefficient list
+            cd (_list_): drag coefficient list
+            cdp (_list_): pressure drag coefficient list
+            cm (_list_): moment coefficient list
+
+        Returns:
+            _array_: length-modified aerodynamic characteristic array
+        """
         shorter = POLAR_POINT_COUNT < len(alpha)
         # use inerpolation to fill missing values and add zero for values that are out of range
         if shorter:
@@ -624,6 +707,19 @@ class XfoilPolar(ExternalCodeComp):
         return alpha, cl, cd, cdp, cm
 
     def fix_interpolated_result_length(self, interpolated_result):
+        """_summary_
+        Fix the length of all results respect to the length of array ALPHA
+        so that the results will have no error in fast-oad.
+        If the length of result arrays are longer, this function will interpolate
+        value for ALPHA. On the contrary, the extra zero elements is filled to make
+        the results array as long as ALPHA.
+
+        Args:
+            interpolated_result (_list_): result dataset with labels and values
+
+        Returns:
+            _array_: length-modified aerodynamic characteristic array
+        """
         # Extract results
         cl_max_2d = np.array(
             np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
@@ -697,7 +793,7 @@ class XfoilPolar(ExternalCodeComp):
         ]
         return results, labels
 
-    def get_output_files(self,result_folder_path,tmp_result_file_path):
+    def get_output_files(self, result_folder_path, tmp_result_file_path):
         if pth.exists(tmp_result_file_path):
             polar_file_path = pth.join(
                 result_folder_path, self.options[OPTION_RESULT_POLAR_FILENAME]

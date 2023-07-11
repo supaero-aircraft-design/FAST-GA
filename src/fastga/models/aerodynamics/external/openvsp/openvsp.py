@@ -336,7 +336,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
         sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
         semi_span_htp = inputs["data:geometry:horizontal_tail:span"] / 2.0
-        span_htp = inputs["data:geometry:horizontal_tail:span"]
+        span_htp = inputs["data:geometry:horizontal_tail:span"]  # full span? half span for htp?
         root_chord_htp = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord_htp = inputs["data:geometry:horizontal_tail:tip:chord"]
         lp_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -349,7 +349,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         reynolds_htp = v_inf * l0_htp / atm.kinematic_viscosity
 
         # A/C
-        span_htp_ac = inputs["data:geometry:horizontal_tail:span"] / 2.0
+        span_htp_ac = (
+            inputs["data:geometry:horizontal_tail:span"] / 2.0
+        )  # full span? half span for htp?
         distance_htp = fa_length + lp_htp - 0.25 * l0_htp - x0_htp
         # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
         ############################################################################################
@@ -1754,6 +1756,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         return pd.DataFrame(values, index=labels)
 
     def define_geometry(self, inputs, mach):
+        """_summary_
+
+        Args:
+            inputs (_list_): input data list
+            mach (_float_): air speed expressed in mach
+
+        Returns:
+            s_ref_wing (_float_): wing reference surface area
+            area_ratio (_float_): area ratio between wing and horizontal stabilizer
+            geometry_set (_array_): geometry dataset for openvsp calculation
+        """
         s_ref_wing = float(inputs["data:geometry:wing:area"])
         s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
         area_ratio = s_ref_htp / s_ref_wing
@@ -1786,6 +1799,18 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         return s_ref_wing, area_ratio, geometry_set
 
     def post_process_wing(self, inputs, wing_0, wing_aoa, s_ref_wing, aoa_angle):
+        """_summary_
+        Assign float arrray to variable for later length modification
+        Args:
+            inputs (_list_): _description_
+            wing_0 (_list_): wing aerodynamic parameters with zero angel of attack
+            wing_aoa (_list_): wing aerodynamic parameters with freestream angel of attack
+            s_ref_wing (_float_): wing reference surfance area
+            aoa_angle (_float_): freestream angel of attack
+
+        Returns:
+            _list_: length-unmodified wing aerodynamic paramter arrays
+        """
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         span_wing = inputs["data:geometry:wing:span"]
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
@@ -1816,6 +1841,24 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
     def post_process_htp(
         self, htp_0, htp_aoa, htp_0_isolated, htp_aoa_isolated, aoa_angle, area_ratio
     ):
+        """_summary_
+        Assign float arrray to variable for later length modification
+        Args:
+            htp_0 (_list_): horizontal satbilizer aerodynamic parameters with zero angle of attack
+                            with consider the the wing downwash
+            htp_aoa (_list_): horizontal satbilizer aerodynamic parameters with freestream
+                                angle of attack with consider the the wing downwash
+            htp_0_isolated (_list_): horizontal satbilizer aerodynamic parameters with zero angle of attack
+                                        without consider the the wing downwash
+            htp_aoa_isolated (_list_): horizontal satbilizer aerodynamic parameters with freestream
+                                angle of attack without consider the the wing downwash
+            aoa_angle (_float_): freestream angel of attack
+            area_ratio (_float_): area ratio between wing and horizontal stabilizer
+
+        Returns:
+            _list_: length-unmodified horizontal stabilizer aerodynamic parameters
+        """
+
         # Post-process HTP-aircraft data -------------------------------------------------------
         cl_0_htp = float(htp_0["cl"])
         cl_aoa_htp = float(htp_aoa["cl"])
@@ -1842,6 +1885,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         )
 
     def resize_wing_vector(self, vector_wing):
+        """_summary_
+        To avoid error occur in other model, import length-unmodified wing aerodynamic
+        paramters for modification, so that the length of result list will be equal.
+        Args:
+            vector_wing (_list_): wing aerodynamic results
+
+        Returns:
+            _list_: length-modified results
+        """
         [y_vector_wing, cl_vector_wing, chord_vector_wing] = vector_wing
         # shorter
         if SPAN_MESH_POINT < len(y_vector_wing):
@@ -1860,6 +1912,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         return y_vector_wing, cl_vector_wing, chord_vector_wing
 
     def resize_htp_vector(self, vector_htp):
+        """_summary_
+        To avoid error occur in other model, import length-unmodified horizontal stabilizer
+        aerodynamic paramters for modification, so that the length of result list will be equal.
+        Args:
+            vector_htp (_list_): horizontal stabilizer aerodynamic results
+
+        Returns:
+            _list_: length-modified results
+        """
         [y_vector_htp, cl_vector_htp] = vector_htp
         if SPAN_MESH_POINT < len(y_vector_htp):
             y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
@@ -1874,6 +1935,18 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         return y_vector_htp, cl_vector_htp
 
     def assign_read_data(self, data, area_ratio, saved_area_ratio, s_ref_wing):
+        """_summary_
+        Since there are existed results, read and assign existed data with consider
+        new surface areas and area ratios.
+        Args:
+            data (_list_): existed data list
+            area_ratio (_float_): area ratio between the wing and the horizontal stabilizer
+            saved_area_ratio (_float_): existed area ratio of wing and horizontal stabilizer
+            s_ref_wing (_float_): wing reference surfance area
+
+        Returns:
+            _array_: aerodynamic characteristic parameters of eing and horizontal stabilizer
+        """
         saved_area_wing = float(data.loc["saved_ref_area", 0])
         cl_0_wing = float(data.loc["cl_0_wing", 0])
         cl_x_wing = float(data.loc["cl_X_wing", 0])
