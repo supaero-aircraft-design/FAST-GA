@@ -1,4 +1,4 @@
-"""Estimation of wing wet area."""
+"""Estimation of wing outer area."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,12 +16,12 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_WET_AREA
+from ..constants import SUBMODEL_WING_OUTER_AREA
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, "fastga.submodel.geometry.wing.area.wet.legacy")
-class ComputeWingWetArea(om.ExplicitComponent):
-    """Wing outer area estimation based on Gudmunnson k_b (pag 707)."""
+@oad.RegisterSubmodel(SUBMODEL_WING_OUTER_AREA, "fastga.submodel.geometry.wing.area.outer.legacy")
+class ComputeWingOuterArea(om.ExplicitComponent):
+    """Wing outer area estimation."""
 
     def setup(self):
 
@@ -29,7 +29,7 @@ class ComputeWingWetArea(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
-        self.add_output("data:geometry:wing:wet_area", units="m**2")
+        self.add_output("data:geometry:wing:outer_area", units="m**2")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -37,8 +37,8 @@ class ComputeWingWetArea(om.ExplicitComponent):
 
         wing_area = inputs["data:geometry:wing:area"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
+        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2
 
-        wet_area_wing = 2 * (wing_area - width_max * l1_wing) * 1.07
+        s_pf = wing_area - 2 * l1_wing * y1_wing
 
-        outputs["data:geometry:wing:wet_area"] = wet_area_wing
+        outputs["data:geometry:wing:outer_area"] = s_pf

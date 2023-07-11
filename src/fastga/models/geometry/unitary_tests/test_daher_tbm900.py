@@ -43,6 +43,7 @@ from ..geom_components.wing.components import (
     ComputeWingTocKink,
     ComputeWingTocTip,
     ComputeWingWetArea,
+    ComputeWingOuterArea,
     ComputeWingX,
     ComputeWingY,
     ComputeWingZ,
@@ -802,10 +803,20 @@ def test_geometry_wing_wet_area():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingWetArea(), ivc)
-    area_pf = problem.get_val("data:geometry:wing:outer_area", units="m**2")
-    assert area_pf == pytest.approx(15.636, abs=1e-1)
     wet_area = problem.get_val("data:geometry:wing:wet_area", units="m**2")
     assert wet_area == pytest.approx(33.462, abs=1e-3)
+
+
+def test_geometry_wing_outer_area():
+    """Tests computation of the wing outer area"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingOuterArea()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingOuterArea(), ivc)
+    area_pf = problem.get_val("data:geometry:wing:outer_area", units="m**2")
+    assert area_pf == pytest.approx(15.636, abs=1e-1)
 
 
 def test_geometry_wing_mfw_simple():
