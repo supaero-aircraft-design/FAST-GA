@@ -21,7 +21,8 @@ from .constants import (
     SUBMODEL_WING_THICKNESS_RATIO_KINK,
     SUBMODEL_WING_THICKNESS_RATIO_TIP,
     SUBMODEL_WING_SPAN,
-    SUBMODEL_WING_HEIGHT,
+    SUBMODEL_WING_ROOT_HEIGHT,
+    SUBMODEL_WING_TIP_HEIGHT,
     SUBMODEL_WING_L1,
     SUBMODEL_WING_L2,
     SUBMODEL_WING_L3,
@@ -84,7 +85,14 @@ class ComputeWingGeometry(Group):
             "wing_l4", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_L4), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_HEIGHT), promotes=["*"]
+            "wing_z_root",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_ROOT_HEIGHT),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "wing_z_tip",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_TIP_HEIGHT),
+            promotes=["*"],
         )
         self.add_subsystem(
             "wing_x_kink",
