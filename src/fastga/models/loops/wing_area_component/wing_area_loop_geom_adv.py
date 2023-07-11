@@ -28,13 +28,7 @@ import fastoad.api as oad
 
 from fastga.command.api import generate_block_analysis
 
-from fastga.models.geometry.geom_components.wing.components.compute_wing_span import ComputeWingSpan
-from fastga.models.geometry.geom_components.wing.components.compute_wing_y_root import (
-    ComputeWingYRoot,
-)
-from fastga.models.geometry.geom_components.wing.components.compute_wing_y_tip import (
-    ComputeWingYTip,
-)
+from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l2 import ComputeWingL2
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l4 import ComputeWingL4
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l1 import ComputeWingL1
@@ -203,63 +197,37 @@ def compute_wing_area_new(wing_area, inputs, fuel_mission):
     # generate block analysis method on the component that compute said value and then use a
     # block_analysis on the compute_mfw_advanced component.
 
-    # First we need to compute the span
+    # First we need to compute the y positions and the span
 
-    var_inputs_compute_span = [
+    var_inputs_compute_y = [
         "data:geometry:wing:aspect_ratio",
+        "data:geometry:fuselage:maximum_width",
         "data:geometry:wing:area",
+        "data:geometry:wing:kink:span_ratio",
     ]
 
-    compute_wing_span = generate_block_analysis(
-        ComputeWingSpan(), var_inputs_compute_span, "", False
-    )
+    compute_wing_y = generate_block_analysis(ComputeWingY(), var_inputs_compute_y, "", False)
 
-    var_dict_compute_span = {
+    var_dict_compute_y = {
         "data:geometry:wing:aspect_ratio": (wing_ar, None),
+        "data:geometry:fuselage:maximum_width": (fus_width, "m"),
         "data:geometry:wing:area": (wing_area, "m**2"),
+        "data:geometry:wing:kink:span_ratio": (kink_span_ratio, None),
     }
 
-    var_outputs_compute_span = compute_wing_span(var_dict_compute_span)
+    var_outputs_compute_y = compute_wing_y(var_dict_compute_y)
 
     # We ensure that the units are in the SI system using openmdao convert unit_function
-    wing_span_original_val = var_outputs_compute_span.get("data:geometry:wing:span")[0]
-    wing_span_original_unit = var_outputs_compute_span.get("data:geometry:wing:span")[1]
+    wing_span_original_val = var_outputs_compute_y.get("data:geometry:wing:span")[0]
+    wing_span_original_unit = var_outputs_compute_y.get("data:geometry:wing:span")[1]
     wing_span = convert_units(wing_span_original_val, wing_span_original_unit, "m")
 
-    # Now we compute the Y position of the wing root
-
-    var_inputs_compute_root_y = ["data:geometry:fuselage:maximum_width"]
-
-    compute_root_y = generate_block_analysis(
-        ComputeWingYRoot(), var_inputs_compute_root_y, "", False
-    )
-
-    var_dict_compute_root_y = {
-        "data:geometry:fuselage:maximum_width": (fus_width, "m"),
-    }
-
-    var_outputs_compute_root_y = compute_root_y(var_dict_compute_root_y)
-
-    # We ensure that the units are in the SI system using openmdao convert unit_function
-    root_y_original_val = var_outputs_compute_root_y.get("data:geometry:wing:root:y")[0]
-    root_y_original_unit = var_outputs_compute_root_y.get("data:geometry:wing:root:y")[1]
+    root_y_original_val = var_outputs_compute_y.get("data:geometry:wing:root:y")[0]
+    root_y_original_unit = var_outputs_compute_y.get("data:geometry:wing:root:y")[1]
     root_y = convert_units(root_y_original_val, root_y_original_unit, "m")
 
-    # Compute the Y position of the wing tip
-
-    var_inputs_compute_tip_y = ["data:geometry:wing:span"]
-
-    compute_tip_y = generate_block_analysis(
-        ComputeWingYTip(), var_inputs_compute_tip_y, "", False
-    )
-
-    var_dict_compute_tip_y = {"data:geometry:wing:span": (wing_span, "m")}
-
-    var_outputs_compute_tip_y = compute_tip_y(var_dict_compute_tip_y)
-
-    # We ensure that the units are in the SI system using openmdao convert unit_function
-    tip_y_original_val = var_outputs_compute_tip_y.get("data:geometry:wing:tip:y")[0]
-    tip_y_original_unit = var_outputs_compute_tip_y.get("data:geometry:wing:tip:y")[1]
+    tip_y_original_val = var_outputs_compute_y.get("data:geometry:wing:tip:y")[0]
+    tip_y_original_unit = var_outputs_compute_y.get("data:geometry:wing:tip:y")[1]
     tip_y = convert_units(tip_y_original_val, tip_y_original_unit, "m")
 
     # We now compute the root chord
