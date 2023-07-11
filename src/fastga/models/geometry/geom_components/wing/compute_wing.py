@@ -26,7 +26,8 @@ from .constants import (
     SUBMODEL_WING_L2,
     SUBMODEL_WING_L3,
     SUBMODEL_WING_L4,
-    SUBMODEL_WING_X_LOCAL,
+    SUBMODEL_WING_X_LOCAL_KINK,
+    SUBMODEL_WING_X_LOCAL_TIP,
     SUBMODEL_WING_X_ABSOLUTE_MAC,
     SUBMODEL_WING_X_ABSOLUTE_TIP,
     SUBMODEL_WING_B50,
@@ -83,7 +84,14 @@ class ComputeWingGeometry(Group):
             "wing_z", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_HEIGHT), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_x", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]
+            "wing_x_kink",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL_KINK),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "wing_x_tip",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL_TIP),
+            promotes=["*"],
         )
         self.add_subsystem(
             "wing_b50", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_B50), promotes=["*"]
