@@ -20,7 +20,7 @@ from ..constants import SUBMODEL_WING_Y_ROOT
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_Y_ROOT, "fastga.submodel.geometry.wing.y.root.legacy")
-class ComputeWingRootY(om.ExplicitComponent):
+class ComputeWingYRoot(om.ExplicitComponent):
     """Wing root Y estimation."""
 
     # TODO: Document equations. Cite sources
