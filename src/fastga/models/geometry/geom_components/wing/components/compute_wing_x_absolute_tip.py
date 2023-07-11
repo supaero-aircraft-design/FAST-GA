@@ -1,4 +1,4 @@
-"""Estimation of wing Xs."""
+"""Estimation of wing tip X absolute."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,64 +13,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_X_ABSOLUTE
+from ..constants import SUBMODEL_WING_X_ABSOLUTE_TIP
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_X_ABSOLUTE, "fastga.submodel.geometry.wing.x_absolute.legacy")
-class ComputeWingXAbsolute(Group):
-    """
-    Wing absolute Xs estimation, distance from the nose to the leading edge at different
-    section.
-    """
-
-    def setup(self):
-
-        self.add_subsystem("comp_wing_x_abs_from_mac", ComputeXAbsoluteMac(), promotes=["*"])
-        self.add_subsystem("comp_wing_x_abs_from_tip", ComputeXAbsoluteTip(), promotes=["*"])
-
-
-class ComputeXAbsoluteMac(ExplicitComponent):
-    """
-    Wing absolute Xs estimation, distance from the nose to the MAC leading edge
-    """
-
-    def setup(self):
-
-        self.add_input("data:geometry:wing:MAC:length", units="m", val=np.nan)
-        self.add_input("data:geometry:wing:MAC:at25percent:x", units="m", val=np.nan)
-
-        self.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
-
-        self.declare_partials("*", "*", method="exact")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-
-        x_abs_mac = fa_length - 0.25 * l0_wing
-
-        outputs["data:geometry:wing:MAC:leading_edge:x:absolute"] = x_abs_mac
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        partials[
-            "data:geometry:wing:MAC:leading_edge:x:absolute",
-            "data:geometry:wing:MAC:at25percent:x",
-        ] = 1.0
-        partials[
-            "data:geometry:wing:MAC:leading_edge:x:absolute",
-            "data:geometry:wing:MAC:length",
-        ] = -0.25
-
-
-class ComputeXAbsoluteTip(ExplicitComponent):
+@oad.RegisterSubmodel(
+    SUBMODEL_WING_X_ABSOLUTE_TIP, "fastga.submodel.geometry.wing.x_absolute.tip.legacy"
+)
+class ComputeWingXAbsoluteTip(om.ExplicitComponent):
     """
     Wing absolute Xs estimation, distance from the nose to the wing tip leading edge
     """
