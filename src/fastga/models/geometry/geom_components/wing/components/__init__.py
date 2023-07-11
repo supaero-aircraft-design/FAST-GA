@@ -19,7 +19,9 @@ from .compute_wing_l1 import ComputeWingL1
 from .compute_wing_l2 import ComputeWingL2
 from .compute_wing_l3 import ComputeWingL3
 from .compute_wing_l4 import ComputeWingL4
-from .compute_wing_mac import ComputeWingMAC
+from .compute_wing_mac_length import ComputeWingMacLength
+from .compute_wing_mac_x import ComputeWingMacX
+from .compute_wing_mac_y import ComputeWingMacY
 from .compute_wing_sweep import ComputeWingSweep
 from .compute_wing_toc import ComputeWingToc
 from .compute_wing_wet_area import ComputeWingWetArea
