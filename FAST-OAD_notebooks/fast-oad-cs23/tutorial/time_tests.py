@@ -15,7 +15,7 @@ DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
 times_module = []
 
-for i in range(50):
+for i in range(20):
     try:
         os.remove(WORK_FOLDER_PATH, "problem_outputs.xml")
     except:
@@ -36,4 +36,4 @@ for i in range(50):
     print('\n Problem ran in ', time.time() - starting , ' seconds \n')
     times_module.append(time.time() - starting)
 
-print('mean time for aero lowspeed: ', sum(times_module)/len(times_module))
+print('mean time for aero high: ', sum(times_module)/len(times_module))
