@@ -39,7 +39,9 @@ from ..geom_components.wing.components import (
     ComputeWingSweep50,
     ComputeWingSweep100Inner,
     ComputeWingSweep100Outer,
-    ComputeWingToc,
+    ComputeWingTocRoot,
+    ComputeWingTocKink,
+    ComputeWingTocTip,
     ComputeWingWetArea,
     ComputeWingX,
     ComputeWingY,
@@ -540,18 +542,38 @@ def test_fuselage_volume():
     problem.check_partials(compact_print=True)
 
 
-def test_geometry_wing_toc():
-    """Tests computation of the wing ToC (Thickness of Chord)"""
+def test_geometry_wing_toc_root():
+    """Tests computation of the wing root ToC (Thickness of Chord)"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeWingToc()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingTocRoot()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingToc(), ivc)
+    problem = run_system(ComputeWingTocRoot(), ivc)
     toc_root = problem["data:geometry:wing:root:thickness_ratio"]
     assert toc_root == pytest.approx(0.149, abs=1e-3)
+
+
+def test_geometry_wing_toc_kink():
+    """Tests computation of the wing kink ToC (Thickness of Chord)"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeWingTocKink()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingTocKink(), ivc)
     toc_kink = problem["data:geometry:wing:kink:thickness_ratio"]
     assert toc_kink == pytest.approx(0.113, abs=1e-3)
+
+
+def test_geometry_wing_toc_tip():
+    """Tests computation of the wing tip ToC (Thickness of Chord)"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeWingTocTip()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingTocTip(), ivc)
     toc_tip = problem["data:geometry:wing:tip:thickness_ratio"]
     assert toc_tip == pytest.approx(0.103, abs=1e-3)
 

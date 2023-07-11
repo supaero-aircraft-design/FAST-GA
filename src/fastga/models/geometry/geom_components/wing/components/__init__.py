@@ -26,7 +26,9 @@ from .compute_wing_sweep_0 import ComputeWingSweep0
 from .compute_wing_sweep_50 import ComputeWingSweep50
 from .compute_wing_sweep_100_inner import ComputeWingSweep100Inner
 from .compute_wing_sweep_100_outer import ComputeWingSweep100Outer
-from .compute_wing_toc import ComputeWingToc
+from .compute_wing_toc_root import ComputeWingTocRoot
+from .compute_wing_toc_kink import ComputeWingTocKink
+from .compute_wing_toc_tip import ComputeWingTocTip
 from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_x import ComputeWingX
 from .compute_wing_y import ComputeWingY
