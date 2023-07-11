@@ -1,5 +1,4 @@
 import warnings
-
 warnings.filterwarnings(action="ignore")
 
 import os.path as pth
@@ -7,12 +6,14 @@ import os
 import openmdao.api as om
 from fastoad import api as api_cs25
 from fastga.command import api as api_cs23
-
+import subprocess
 import time
+
 
 # Define relative path
 DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
+SRC_FOLDER_PATH = "src/fastga/source_files"
 times_module = []
 
 for i in range(20):
@@ -24,6 +25,7 @@ for i in range(20):
 
     CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
     SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
+    #SOURCE_FILE = pth.join(SRC_FOLDER_PATH, "Daher_TBM900.xml")
 
     api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
 
@@ -34,4 +36,4 @@ for i in range(20):
     print('\n Problem ran in ', time.time() - starting , ' seconds \n')
     times_module.append(time.time() - starting)
 
-print('mean time for : ', sum(times_module)/len(times_module))
+print('mean time for wing pos : ', sum(times_module)/len(times_module))

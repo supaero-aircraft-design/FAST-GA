@@ -1,7 +1,8 @@
-def feedback_extractor(model_data, config_dictionary, INFO = False):
+def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO = False):
 #TODO: if info is false, only compute the number, not save every src tgt pair
-#TODO: compute time
+
     import time
+    from time_modules import time_modules
 
     #INFO: used to toggle on and off the printing of feedback loops and other info
     if INFO: start = time.time()
@@ -52,7 +53,7 @@ def feedback_extractor(model_data, config_dictionary, INFO = False):
                 result.append((src_word, tgt_word))
         return result
 
-    def time_modules(feedback_list):
+    def total_time_of_modules(feedback_list):
         modules_times = {
             "geometry": 2.7000320196151733,
             "aerodynamics_lowspeed" : 2,
@@ -64,8 +65,13 @@ def feedback_extractor(model_data, config_dictionary, INFO = False):
             "wing_position" : 3,
             "wing_area" : 2,
         }
+        ##########
+        # THIS IS THE POSITIONOF TIME MODULES FUNCTION, TO SUBTITUTE THE HARDCODED TIMES
+        print("\n Retrieving individual times for your modules... \n")
+        modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
 
-        #create config file for each module separately, run problem and store time
+        ###########
+
         #find how many times they run
         modules_in_feedback = extract_module(feedback_list)
         keys_order = list(config_dictionary.keys())
@@ -119,13 +125,14 @@ def feedback_extractor(model_data, config_dictionary, INFO = False):
 
 
 
-    score = time_modules(result_list)
+    score = total_time_of_modules(result_list)
 
 
 
 
 
     print('Score: ', score)
+
     if INFO:
         print('\n There are', len(list_of_BLC_in_feedback), 'feedback connections \n')
 

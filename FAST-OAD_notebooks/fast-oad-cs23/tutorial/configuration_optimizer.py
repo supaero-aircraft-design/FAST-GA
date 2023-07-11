@@ -16,7 +16,7 @@ from openmdao.utils.om_warnings import issue_warning
 def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -51,7 +51,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE)
             
             if score < best_score:
                 best_score = score
@@ -80,7 +80,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -95,7 +95,6 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
         for i in range(len(keys_list) - 1):
 
             # Move last node to top position, displacing others
-            #keys_list = keys_list[-1:] + keys_list[:-1]
             shifted_element = keys_list.pop(-1-swap_position)
             keys_list.insert(0, shifted_element)
             print('Trying order: ', keys_list)
@@ -116,7 +115,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE)
             
             if score < best_score:
                 best_score = score
@@ -128,7 +127,6 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
                 break
 
             else:
-                ##################keys_list[i], keys_list[-1-swap_position] = keys_list[-1-swap_position], keys_list[i]  # Revert the swap
                 shifted_element = keys_list.pop(0)
                 keys_list.insert(-1-swap_position, shifted_element)
                 print('Swap reverted')
@@ -199,7 +197,7 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 #        mtow
 #        wing_position
 #        wing_area
-#
+#        etc
 # LVL 2: Shuffles order of all sub-modules in all the modules of the CONFIG file TO BE DONE
 # LVL 3: etc TO BE DONE
 # LVL 4: etc TO BE DONE
