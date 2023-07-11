@@ -69,7 +69,8 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
-
+        self.options.declare("input_angel_of_attack", default=10.0, types=float)
+        
     def setup(self):
         super().setup()
         if self.options["low_speed_aero"]:
@@ -136,7 +137,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         pass
 
     def compute(self, inputs, outputs):
-
+        INPUT_AOA = self.options["input_angel_of_attack"]
         _LOGGER.debug("Entering aerodynamic computation")
 
         # Check AOA input is float

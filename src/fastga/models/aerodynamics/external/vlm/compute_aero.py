@@ -187,7 +187,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         super().initialize()
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
-
+        self.options.declare("input_angel_of_attack", default=10.0, types=float)
     def setup(self):
 
         super().setup()
@@ -253,7 +253,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         _LOGGER.debug("Entering aerodynamic computation")
-
+        INPUT_AOA = self.options["input_angel_of_attack"]
         # Check AOA input is float
         if not isinstance(INPUT_AOA, float):
             raise TypeError("INPUT_AOA should be a float!")
