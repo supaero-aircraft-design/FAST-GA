@@ -44,7 +44,8 @@ from ..geom_components.wing.components import (
     ComputeWingTocTip,
     ComputeWingWetArea,
     ComputeWingOuterArea,
-    ComputeWingX,
+    ComputeWingXKink,
+    ComputeWingXTip,
     ComputeWingY,
     ComputeWingZ,
     ComputeWingXAbsoluteMac,
@@ -664,16 +665,26 @@ def test_geometry_wing_l4():
     assert wing_l4 == pytest.approx(0.737, abs=1e-3)
 
 
-def test_geometry_wing_x():
-    """Tests computation of the wing Xs"""
+def test_geometry_wing_x_kink():
+    """Tests computation of the wing kink X local"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingX()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXKink()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeWingX(), ivc)
+    problem = run_system(ComputeWingXKink(), ivc)
     wing_x3 = problem.get_val("data:geometry:wing:kink:leading_edge:x:local", units="m")
     assert wing_x3 == pytest.approx(0.0, abs=1e-3)
+
+
+def test_geometry_wing_x_tip():
+    """Tests computation of the wing tip X local"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeWingXTip()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeWingXTip(), ivc)
     wing_x4 = problem.get_val("data:geometry:wing:tip:leading_edge:x:local", units="m")
     assert wing_x4 == pytest.approx(0.184, abs=1e-3)
 

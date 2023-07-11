@@ -31,7 +31,8 @@ from .compute_wing_toc_kink import ComputeWingTocKink
 from .compute_wing_toc_tip import ComputeWingTocTip
 from .compute_wing_wet_area import ComputeWingWetArea
 from .compute_wing_outer_area import ComputeWingOuterArea
-from .compute_wing_x import ComputeWingX
+from .compute_wing_x_kink import ComputeWingXKink
+from .compute_wing_x_tip import ComputeWingXTip
 from .compute_wing_y import ComputeWingY
 from .compute_wing_z import ComputeWingZ
 from .compute_wing_x_absolute_mac import ComputeWingXAbsoluteMac

@@ -1,4 +1,4 @@
-"""Estimation of wing Xs."""
+"""Estimation of wing tip X local."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,56 +13,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_X_LOCAL
+from ..constants import SUBMODEL_WING_X_LOCAL_TIP
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_X_LOCAL, "fastga.submodel.geometry.wing.x_local.legacy")
-class ComputeWingX(Group):
+@oad.RegisterSubmodel(SUBMODEL_WING_X_LOCAL_TIP, "fastga.submodel.geometry.wing.x_local.tip.legacy")
+class ComputeWingXTip(om.ExplicitComponent):
+    """Wing tip X local estimation."""
     # TODO: Document equations. Cite sources
-    """Wing Xs estimation."""
-
-    def setup(self):
-
-        self.add_subsystem("comp_wing_kink_x", ComputeWingXKink(), promotes=["*"])
-        self.add_subsystem("comp_wing_tip_x", ComputeWingXTip(), promotes=["*"])
-
-
-class ComputeWingXKink(ExplicitComponent):
-    """Wing kink Xs estimation."""
-
-    def setup(self):
-
-        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:kink:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-
-        self.add_output("data:geometry:wing:kink:leading_edge:x:local", units="m")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        y3_wing = inputs["data:geometry:wing:kink:y"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        l3_wing = inputs["data:geometry:wing:kink:chord"]
-        sweep_25 = inputs["data:geometry:wing:sweep_25"]
-
-        x3_wing = 1.0 / 4.0 * l1_wing + (y3_wing - y2_wing) * np.tan(sweep_25) - 1.0 / 4.0 * l3_wing
-
-        outputs["data:geometry:wing:kink:leading_edge:x:local"] = x3_wing
-
-
-class ComputeWingXTip(ExplicitComponent):
-    """Wing tip Xs estimation."""
 
     def setup(self):
 
