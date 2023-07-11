@@ -20,7 +20,7 @@ from ..constants import SUBMODEL_WING_Y_TIP
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_Y_TIP, "fastga.submodel.geometry.wing.y.tip.legacy")
-class ComputeWingTipY(om.ExplicitComponent):
+class ComputeWingYTip(om.ExplicitComponent):
     """Wing tip Y estimation."""
 
     # TODO: Document equations. Cite sources
