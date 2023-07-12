@@ -28,3 +28,4 @@ SUBMODEL_FUSELAGE_NOSE_LENGTH_FD = "submodel.geometry.fuselage.dimensions.nose_l
 SUBMODEL_FUSELAGE_NOSE_LENGTH_FL = "submodel.geometry.fuselage.dimensions.nose_length.fl"
 SUBMODEL_FUSELAGE_PLANE_LENGTH = "submodel.geometry.fuselage.dimensions.plane_length"
 SUBMODEL_FUSELAGE_REAR_LENGTH = "submodel.geometry.fuselage.dimensions.rear_length"
+SUBMODEL_FUSELAGE_DIMENSIONS_BASIC = "submodel.geometry.fuselage.dimensions.basic"

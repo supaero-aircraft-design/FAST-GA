@@ -16,15 +16,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
-# from ..constants import SUBMODEL_FUSELAGE_DIMENSIONS
+from ..constants import SUBMODEL_FUSELAGE_DIMENSIONS_BASIC
 
 
-# @oad.RegisterSubmodel(SUBMODEL_FUSELAGE_DIMENSIONS, "fastga.submodel.geometry.fuselage.dimensions.legacy")
-class ComputeFuselageGeometryBasic(ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC, "fastga.submodel.geometry.fuselage.dimensions.basic.legacy")
+class ComputeFuselageGeometryBasic(om.ExplicitComponent):
     """
     Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing).
     """

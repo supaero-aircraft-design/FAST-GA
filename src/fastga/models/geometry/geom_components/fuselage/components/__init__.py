@@ -13,8 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_fuselage_dimensions import ComputeFuselageGeometryBasic
-from .compute_fuselage_dimensions_fl import ComputeFuselageGeometryCabinSizingFL
-from .compute_fuselage_dimensions_fd import ComputeFuselageGeometryCabinSizingFD
 from .compute_fuselage_wet_area import ComputeFuselageWetArea
 from .compute_fuselage_wet_area_flops import ComputeFuselageWetAreaFLOPS
 from .compute_master_cross_section import ComputeMasterCrossSection
