@@ -32,8 +32,7 @@ from fastga.models.options import CABIN_SIZING_OPTION
 
 from .constants import (
     SUBMODEL_WING_GEOMETRY,
-    SUBMODEL_NACELLE_DIMENSION,
-    SUBMODEL_NACELLE_POSITION,
+    SUBMODEL_NACELLE_GEOMETRY,
     SUBMODEL_LANDING_GEAR_GEOMETRY,
     SUBMODEL_MFW,
     SUBMODEL_AIRCRAFT_WET_AREA,
@@ -61,10 +60,8 @@ class GeometryFixedFuselage(om.Group):
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
-            "compute_engine_nacelle_dimension",
-            oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_NACELLE_DIMENSION, options=propulsion_option
-            ),
+            "compute_engine_nacelle",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -80,12 +77,6 @@ class GeometryFixedFuselage(om.Group):
         self.add_subsystem(
             "compute_wing",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY),
-            promotes=["*"],
-        )
-
-        self.add_subsystem(
-            "compute_engine_nacelle_position",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -129,10 +120,8 @@ class GeometryFixedTailDistance(om.Group):
 
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
-            "compute_engine_nacelle_dimension",
-            oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_NACELLE_DIMENSION, options=propulsion_option
-            ),
+            "compute_engine_nacelle",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_GEOMETRY, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFD(), promotes=["*"])
@@ -148,11 +137,6 @@ class GeometryFixedTailDistance(om.Group):
         self.add_subsystem(
             "compute_wing",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "compute_engine_nacelle",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
