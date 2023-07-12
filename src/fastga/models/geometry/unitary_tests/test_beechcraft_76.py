@@ -91,7 +91,7 @@ from ..geom_components.vt.components import (
     ComputeVTSweep100,
     ComputeVTWetArea,
 )
-from ..geom_components.nacelle import (
+from ..geom_components.nacelle.components import (
     ComputeNacelleDimension,
     ComputeNacelleXPosition,
     ComputeNacelleYPosition,
