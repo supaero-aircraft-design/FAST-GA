@@ -17,10 +17,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_HT_MAC_X_WING
 
 
+@oad.RegisterSubmodel(
+    SUBMODEL_HT_MAC_X_WING, "fastga.submodel.geometry.horizontal_tail.mac.x_wing.legacy"
+)
 class ComputeHTMacX25Wing(om.ExplicitComponent):
     """
     Compute x coordinate (from wing MAC .25) at 25% MAC of the horizontal tail.

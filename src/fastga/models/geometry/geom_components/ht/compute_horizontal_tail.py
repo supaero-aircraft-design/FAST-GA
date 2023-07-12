@@ -15,12 +15,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 import fastoad.api as oad
 
 from .components import (
-    ComputeHTMacFD,
-    ComputeHTMacFL,
     ComputeHTSpan,
     ComputeHTRootChord,
     ComputeHTTipChord,
@@ -35,6 +32,10 @@ from .constants import (
     SUBMODEL_HT_WET_DISTANCE,
     SUBMODEL_HT_WET_EFFICIENCY,
     SUBMODEL_HT_VOLUME_COEFF,
+    SUBMODEL_HT_MAC_LENGTH,
+    SUBMODEL_HT_MAC_Y,
+    SUBMODEL_HT_MAC_X_LOCAL,
+    SUBMODEL_HT_MAC_X_WING,
 )
 
 
@@ -46,7 +47,19 @@ class ComputeHorizontalTailGeometryFD(om.Group):
         self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
         self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
         self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
-        self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
+        self.add_subsystem(
+            "ht_mac_length",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_LENGTH),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ht_mac_y", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_Y), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_mac_x_local",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_X_LOCAL),
+            promotes=["*"],
+        )
         self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
         self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
         self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])
@@ -76,7 +89,24 @@ class ComputeHorizontalTailGeometryFL(om.Group):
         self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
         self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
         self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
-        self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
+        self.add_subsystem(
+            "ht_mac_length",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_LENGTH),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ht_mac_y", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_Y), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_mac_x_local",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_X_LOCAL),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ht_mac_x_wing",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_X_WING),
+            promotes=["*"],
+        )
         self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
         self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
         self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])

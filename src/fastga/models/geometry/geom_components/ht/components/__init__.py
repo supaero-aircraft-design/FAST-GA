@@ -15,8 +15,10 @@ Estimation of horizontal tail geometry (components).
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .compute_ht_distance import ComputeHTDistance
-from .compute_ht_mac_fd import ComputeHTMacFD
-from .compute_ht_mac_fl import ComputeHTMacFL
+from .compute_ht_mac_length import ComputeHTMacLength
+from .compute_ht_mac_y import ComputeHTMacY
+from .compute_ht_mac25_x_local import ComputeHTMacX25
+from .compute_ht_mac25_x_from_wing import ComputeHTMacX25Wing
 from .compute_ht_sweep_0 import ComputeHTSweep0
 from .compute_ht_sweep_50 import ComputeHTSweep50
 from .compute_ht_sweep_100 import ComputeHTSweep100
