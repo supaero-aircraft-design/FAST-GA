@@ -55,9 +55,9 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO =
 
     def total_time_of_modules(feedback_list):
         modules_times = {
-            "geometry": 2.7000320196151733,
-            "aerodynamics_lowspeed" : 2,
-            "aerodynamics_highspeed" : 2,
+            "geometry": 2.0065503120422363,
+            "aerodynamics_lowspeed" : 2.4223287105560303,
+            "aerodynamics_highspeed" : 2.0636613965034485,
             "weight" : 1.962327229976654,
             "performance" : 1,
             "hq" : 1.5,
@@ -69,7 +69,7 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO =
         # THIS IS THE POSITIONOF TIME MODULES FUNCTION, TO SUBTITUTE THE HARDCODED TIMES
         print("\n Retrieving individual times for your modules... \n")
         modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
-
+        print(modules_times)
         ###########
 
         #find how many times they run
@@ -121,9 +121,6 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO =
     list_of_BLC_in_feedback = extract_BLC(result_list)
     list_of_BLC_in_feedback = [(a, b) for (a, b) in list_of_BLC_in_feedback if 'fastoad_shaper' not in (a, b)] # remove fastoad_shaper from feedback counts
     
-
-
-
 
     score = total_time_of_modules(result_list)
 

@@ -203,7 +203,7 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 # LVL 4: etc TO BE DONE
 start = time.time()
 optimization_level = 1
-swap = 'HYBRID'
+swap = 'DOUBLE'
 
 if optimization_level == 1:
 
@@ -237,7 +237,7 @@ if optimization_level == 1:
         yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
         yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
         aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
-        print('Starting order before first swap: ', aircraft_sizing_data.keys())
+        print('\n Order before first swap: ', list(aircraft_sizing_data.keys()))
 
     if swap == 'DOUBLE':
         dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
