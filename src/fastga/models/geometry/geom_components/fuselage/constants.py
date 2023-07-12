@@ -15,3 +15,4 @@
 SUBMODEL_FUSELAGE_WET_AREA = "submodel.geometry.fuselage.wet_area"
 SUBMODEL_FUSELAGE_DEPTH = "submodel.geometry.fuselage.depth"
 SUBMODEL_FUSELAGE_VOLUME = "submodel.geometry.fuselage.volume"
+SUBMODEL_FUSELAGE_CROSS_SECTION = "submodel.geometry.fuselage.cross_section"

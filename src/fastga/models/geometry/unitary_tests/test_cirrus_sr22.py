@@ -25,6 +25,7 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
+    ComputeMasterCrossSection,
 )
 from ..geom_components.wing.components import (
     ComputeWingB50,
@@ -497,8 +498,6 @@ def test_fuselage_wet_area():
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(26.613, abs=1e-3)
-    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
-    assert fuselage_master_cross_section == pytest.approx(1.410, abs=1e-3)
 
 
 def test_fuselage_wet_area_flops():
@@ -512,6 +511,17 @@ def test_fuselage_wet_area_flops():
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(21.952, abs=1e-3)
+
+
+def test_fuselage_master_cross_section():
+
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeMasterCrossSection()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeMasterCrossSection(), ivc)
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.410, abs=1e-3)
 

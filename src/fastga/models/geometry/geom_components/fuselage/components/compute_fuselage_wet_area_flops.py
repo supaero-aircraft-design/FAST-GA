@@ -1,4 +1,4 @@
-"""Estimation of fuselage wet area."""
+"""Estimation of fuselage wet area FLOPS."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,18 +18,15 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_WET_AREA
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUSELAGE_WET_AREA
-] = "fastga.submodel.geometry.fuselage.wet_area.legacy"
-
 
 @oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy"
+    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops"
 )
-class ComputeFuselageWetArea(om.ExplicitComponent):
+class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
     """
-    Fuselage wet area estimation, based on a simple geometric description of the fuselage one
-    cone at the front a cylinder in the middle and a cone at the back.
+    Fuselage wet area estimation, determined based on Wells, Douglas P., Bryce L. Horvath,
+    and Linwood A. McCullers. "The Flight Optimization System Weights Estimation Method." (2017).
+    Equation 61.
     """
 
     def setup(self):
@@ -37,8 +34,6 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
@@ -49,15 +44,9 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]
-        lav = inputs["data:geometry:fuselage:front_length"]
-        lar = inputs["data:geometry:fuselage:rear_length"]
 
-        # Using the simple geometric description
+        # Using the formula from The Flight Optimization System Weights Estimation Method
         fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        cyl_length = fus_length - lav - lar
-        wet_area_nose = 2.45 * fus_dia * lav
-        wet_area_cyl = np.pi * fus_dia * cyl_length
-        wet_area_tail = 2.3 * fus_dia * lar
-        wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
+        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
