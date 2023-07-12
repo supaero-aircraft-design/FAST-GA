@@ -100,8 +100,7 @@ from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
 )
-from ..geom_components.landing_gears.compute_lg_height import ComputeLGHeight
-from ..geom_components.landing_gears.compute_lg_y_position import ComputeLGPosition
+from ..geom_components.landing_gears.components import ComputeLGHeight, ComputeLGPosition
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
@@ -236,6 +235,7 @@ def test_compute_vt_sweep_50():
     sweep_50 = problem.get_val("data:geometry:vertical_tail:sweep_50", units="deg")
     assert sweep_50 == pytest.approx(20.45, abs=1e-1)
 
+
 def test_compute_vt_sweep_100():
     """Tests computation of the vertical tail sweep at l/c=100%"""
 
@@ -246,7 +246,6 @@ def test_compute_vt_sweep_100():
     problem = run_system(ComputeVTSweep100(), ivc)
     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(20.45, abs=1e-1)
-
 
 
 def test_compute_vt_wet_area():
@@ -521,7 +520,7 @@ def test_compute_fuselage_cabin_length():
     problem = run_system(ComputeFuselageCabinLength(), ivc)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(4.7, abs=1e-3)
-    
+
 
 def test_compute_fuselage_nose_length_fd():
     """Tests computation of the fuselage nose length FD"""
@@ -743,7 +742,7 @@ def test_geometry_wing_l3():
         1.791, abs=1e-2
     )  # point 3 and 2 equal (previous version ignored)
 
-    
+
 def test_geometry_wing_l4():
     """Tests computation of the wing chords (l4)"""
 

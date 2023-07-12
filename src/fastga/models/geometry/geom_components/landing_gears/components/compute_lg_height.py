@@ -18,11 +18,11 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
+from ..constants import SUBMODEL_LANDING_GEAR_HEIGHT
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_GEOMETRY, "fastga.submodel.geometry.landing_gear.legacy"
+    SUBMODEL_LANDING_GEAR_HEIGHT, "fastga.submodel.geometry.landing_gear.height.legacy"
 )
 class ComputeLGHeight(om.ExplicitComponent):
     """

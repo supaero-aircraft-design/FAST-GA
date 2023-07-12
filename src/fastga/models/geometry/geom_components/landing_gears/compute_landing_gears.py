@@ -1,5 +1,4 @@
-"""Estimation of landing gears y-poisition."""
-
+"""Estimation of landing gears geometry."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,40 +13,33 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
 from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
 
+from .constants import SUBMODEL_LANDING_GEAR_HEIGHT, SUBMODEL_LANDING_GEAR_POSITION
+
 
 @oad.RegisterSubmodel(
     SUBMODEL_LANDING_GEAR_GEOMETRY, "fastga.submodel.geometry.landing_gear.legacy"
 )
-class ComputeLGPosition(om.ExplicitComponent):
+class ComputeLandingGearsGeometry(om.Group):
+    # TODO: Document equations. Cite sources
     """
-    Landing gears y-position estimation
+    Landing gears geometry estimation. Position along the span is based on aircraft pictures
+    analysis.
     """
 
     def setup(self):
 
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
-
-        self.add_output("data:geometry:landing_gear:y", units="m")
-
-        self.declare_partials(
-            "data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width", val=0.5
+        self.add_subsystem(
+            "landing_gear_height",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_HEIGHT),
+            promotes=["*"],
         )
-        self.declare_partials(
-            "data:geometry:landing_gear:y", "data:geometry:landing_gear:height", val=1.2
+        self.add_subsystem(
+            "landing_gear_position",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_POSITION),
+            promotes=["*"],
         )
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
-        lg_height = inputs["data:geometry:landing_gear:height"]
-
-        y_lg = fuselage_max_width / 2 + lg_height * 1.2
-
-        outputs["data:geometry:landing_gear:y"] = y_lg

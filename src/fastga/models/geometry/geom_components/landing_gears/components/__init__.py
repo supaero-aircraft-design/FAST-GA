@@ -1,4 +1,4 @@
-"""Estimation of landing gears geometry."""
+"""Estimation of landing gears geometry components."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,4 +12,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_landing_gears import ComputeLandingGearsGeometry
+from .compute_lg_height import ComputeLGHeight
+from .compute_lg_y_position import ComputeLGPosition

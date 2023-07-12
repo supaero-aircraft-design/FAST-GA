@@ -100,8 +100,7 @@ from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
 )
-from ..geom_components.landing_gears.compute_lg_height import ComputeLGHeight
-from ..geom_components.landing_gears.compute_lg_y_position import ComputeLGPosition
+from ..geom_components.landing_gears.components import ComputeLGHeight, ComputeLGPosition
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
@@ -357,7 +356,7 @@ def test_compute_ht_mac_x0_from_wing():
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_ht == pytest.approx(3.887, abs=1e-3)
-    
+
 
 def test_compute_ht_mac_y0():
     """Tests computation of the horizontal tail mac y"""
@@ -520,7 +519,7 @@ def test_compute_fuselage_cabin_length():
     problem = run_system(ComputeFuselageCabinLength(), ivc)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(2.861, abs=1e-3)
-    
+
 
 def test_compute_fuselage_nose_length_fd():
     """Tests computation of the fuselage nose length FD"""
