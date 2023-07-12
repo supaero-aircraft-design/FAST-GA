@@ -22,7 +22,12 @@ from .components import (
     ComputeFuselageGeometryCabinSizingFL,
 )
 
-from .constants import SUBMODEL_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_DEPTH, SUBMODEL_FUSELAGE_VOLUME
+from .constants import (
+    SUBMODEL_FUSELAGE_WET_AREA,
+    SUBMODEL_FUSELAGE_DEPTH,
+    SUBMODEL_FUSELAGE_VOLUME,
+    SUBMODEL_FUSELAGE_CROSS_SECTION,
+)
 
 from fastga.models.options import CABIN_SIZING_OPTION
 
@@ -46,6 +51,11 @@ class ComputeFuselageAlternate(Group):
         self.add_subsystem(
             "compute_fus_wet_area",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_fuselage_master_cross_section_area",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CROSS_SECTION),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -79,6 +89,11 @@ class ComputeFuselageLegacy(Group):
         self.add_subsystem(
             "compute_fus_wet_area",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_fuselage_master_cross_section_area",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CROSS_SECTION),
             promotes=["*"],
         )
         self.add_subsystem(

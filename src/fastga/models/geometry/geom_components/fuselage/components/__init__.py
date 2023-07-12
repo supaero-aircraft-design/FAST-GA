@@ -15,6 +15,8 @@
 from .compute_fuselage_dimensions import ComputeFuselageGeometryBasic
 from .compute_fuselage_dimensions_fl import ComputeFuselageGeometryCabinSizingFL
 from .compute_fuselage_dimensions_fd import ComputeFuselageGeometryCabinSizingFD
-from .compute_fuselage_wet_area import ComputeFuselageWetArea, ComputeFuselageWetAreaFLOPS
+from .compute_fuselage_wet_area import ComputeFuselageWetArea
+from .compute_fuselage_wet_area_flops import ComputeFuselageWetAreaFLOPS
+from .compute_master_cross_section import ComputeMasterCrossSection
 from .compute_fuselage_depth import ComputeFuselageDepth
 from .compute_fuselage_volume import ComputeFuselageVolume
