@@ -16,10 +16,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_HT_SWEEP_50
 
 
+@oad.RegisterSubmodel(SUBMODEL_HT_SWEEP_50, "fastga.submodel.geometry.horizontal_tail.sweep_50.legacy")
 class ComputeHTSweep50(om.ExplicitComponent):
     """Estimation of horizontal tail sweep at l/c=50%"""
 

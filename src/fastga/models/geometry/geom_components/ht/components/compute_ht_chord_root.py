@@ -15,11 +15,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
 import fastoad.api as oad
 
+from ..constants import SUBMODEL_HT_ROOT_CHORD
 
+
+@oad.RegisterSubmodel(
+    SUBMODEL_HT_ROOT_CHORD, "fastga.submodel.geometry.horizontal_tail.chord.root.legacy"
+)
 class ComputeHTRootChord(om.ExplicitComponent):
     """Root chord estimation of horizontal tail"""
 

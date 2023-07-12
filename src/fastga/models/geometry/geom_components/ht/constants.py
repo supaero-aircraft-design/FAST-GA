@@ -12,8 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_HT_CHORD = "submodel.geometry.horizontal_tail.chord"
-SUBMODEL_HT_SWEEP = "submodel.geometry.horizontal_tail.sweep"
+SUBMODEL_HT_ROOT_CHORD = "submodel.geometry.horizontal_tail.chord.root"
+SUBMODEL_HT_TIP_CHORD = "submodel.geometry.horizontal_tail.chord.tip"
+SUBMODEL_HT_SWEEP_0 = "submodel.geometry.horizontal_tail.sweep_0"
+SUBMODEL_HT_SWEEP_50 = "submodel.geometry.horizontal_tail.sweep_50"
+SUBMODEL_HT_SWEEP_100 = "submodel.geometry.horizontal_tail.sweep_100"
+SUBMODEL_HT_SPAN = "submodel.geometry.horizontal_tail.span"
 SUBMODEL_HT_WET_AREA = "submodel.geometry.horizontal_tail.wet_area"
 SUBMODEL_HT_WET_DISTANCE = "submodel.geometry.horizontal_tail.distance"
 SUBMODEL_HT_WET_EFFICIENCY = "submodel.geometry.horizontal_tail.efficiency"
