@@ -1,4 +1,4 @@
-"""Estimation of nacelle geometry."""
+"""Constants for the nacelle geometry submodels."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,4 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .compute_nacelle import ComputeNacellePosition
+SUBMODEL_NACELLE_DIMENSION = "submodel.geometry.nacelle.dimension"
+SUBMODEL_NACELLE_X_POSITION = "submodel.geometry.nacelle.position.x"
+SUBMODEL_NACELLE_Y_POSITION = "submodel.geometry.nacelle.position.y"

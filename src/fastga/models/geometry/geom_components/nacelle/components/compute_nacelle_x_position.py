@@ -12,14 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 import warnings
 
 import openmdao.api as om
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_NACELLE_X_POSITION
+from ..constants import SUBMODEL_NACELLE_X_POSITION
 
 
 @oad.RegisterSubmodel(

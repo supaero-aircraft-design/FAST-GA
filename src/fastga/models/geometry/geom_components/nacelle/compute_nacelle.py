@@ -12,19 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import fastoad.api as oad
-
-from ...constants import (
-    SUBMODEL_NACELLE_X_POSITION,
-    SUBMODEL_NACELLE_Y_POSITION,
-    SUBMODEL_NACELLE_POSITION,
-)
-
 import openmdao.api as om
 
+from .constants import (
+    SUBMODEL_NACELLE_X_POSITION,
+    SUBMODEL_NACELLE_Y_POSITION,
+    SUBMODEL_NACELLE_DIMENSION,
+)
 
-@oad.RegisterSubmodel(SUBMODEL_NACELLE_POSITION, "fastga.submodel.geometry.nacelle.position.legacy")
+from ...constants import SUBMODEL_NACELLE_GEOMETRY
+
+
+@oad.RegisterSubmodel(SUBMODEL_NACELLE_GEOMETRY, "fastga.submodel.geometry.nacelle.legacy")
 class ComputeNacellePosition(om.Group):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""
@@ -32,12 +32,17 @@ class ComputeNacellePosition(om.Group):
     def setup(self):
 
         self.add_subsystem(
-            "comp_y_nacelle",
+            "comp_nacelle_y_pos",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_X_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
-            "comp_x_nacelle",
+            "comp_nacelle_x_pos",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_Y_POSITION),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "comp_nacelle_dimension",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_DIMENSION),
             promotes=["*"],
         )

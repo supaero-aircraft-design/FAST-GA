@@ -1,4 +1,4 @@
-"""Estimation of nacelle and pylon geometry."""
+"""Estimation of nacelle and pylon dimension."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,16 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import fastoad.api as oad
 import openmdao.api as om
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
-from ...constants import SUBMODEL_NACELLE_DIMENSION
+from ..constants import SUBMODEL_NACELLE_DIMENSION
 
 
 @oad.RegisterSubmodel(
