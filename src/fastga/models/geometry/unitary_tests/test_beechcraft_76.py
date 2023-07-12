@@ -100,8 +100,7 @@ from ..geom_components.propeller.components import (
     ComputePropellerPosition,
     ComputePropellerInstallationEffect,
 )
-from ..geom_components.landing_gears.compute_lg_height import ComputeLGHeight
-from ..geom_components.landing_gears.compute_lg_y_position import ComputeLGPosition
+from ..geom_components.landing_gears.components import ComputeLGHeight, ComputeLGPosition
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
@@ -159,7 +158,7 @@ def test_compute_vt_mac_length():
     problem = run_system(ComputeVTMacLength(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
-    
+
 
 def test_compute_vt_mac_x25_local():
     """Tests computation of the vertical tail 25% mac x position (local)"""
@@ -333,7 +332,7 @@ def test_compute_ht_mac_x0_from_wing():
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_ht == pytest.approx(4.93, abs=1e-3)
-    
+
 
 def test_compute_ht_mac_x0():
     """Tests computation of the horizontal tail mac x local"""
@@ -491,7 +490,7 @@ def test_compute_fuselage_cabin_length():
     problem = run_system(ComputeFuselageCabinLength(), ivc)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(2.896, abs=1e-3)
-    
+
 
 def test_compute_fuselage_nose_length_fd():
     """Tests computation of the fuselage nose length FD"""
@@ -814,7 +813,7 @@ def test_geometry_wing_x_absolute_tip():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeWingXAbsoluteTip()), __file__, XML_FILE)
-    
+
     # Define input value calculated from other modules
     ivc.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", 3.091, units="m")
 
