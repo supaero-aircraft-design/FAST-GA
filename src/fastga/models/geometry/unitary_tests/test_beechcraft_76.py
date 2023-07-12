@@ -19,8 +19,6 @@ import pytest
 
 from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
-    # ComputeFuselageGeometryCabinSizingFD,
-    # ComputeFuselageGeometryCabinSizingFL,
     ComputeFuselageDepth,
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
@@ -65,8 +63,10 @@ from ..geom_components.wing.components import (
     ComputeWingXAbsoluteTip,
 )
 from ..geom_components.ht.components import (
-    ComputeHTMacFD,
-    ComputeHTMacFL,
+    ComputeHTMacLength,
+    ComputeHTMacY,
+    ComputeHTMacX25,
+    ComputeHTMacX25Wing,
     ComputeHTWetArea,
     ComputeHTDistance,
     ComputeHTVolumeCoefficient,
@@ -309,40 +309,54 @@ def test_compute_ht_chord_tip():
     assert tip_chord == pytest.approx(0.983, abs=1e-3)
 
 
-def test_compute_ht_mac():
-    """Tests computation of the horizontal tail mac"""
+def test_compute_ht_mac_length():
+    """Tests computation of the horizontal tail mac length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacLength()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTMacFD(), ivc)
+    problem = run_system(ComputeHTMacLength(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
-    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
-    assert ht_x0 == pytest.approx(0.065, abs=1e-3)
-    ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
-    assert ht_y0 == pytest.approx(0.943, abs=1e-3)
 
 
-def test_compute_ht_mac_fl():
-    """Tests computation of the horizontal tail mac"""
+def test_compute_ht_mac_x0_from_wing():
+    """Tests computation of the horizontal tail mac x from 25% wing mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFL()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacX25Wing()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTMacFL(), ivc)
-    length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
-    assert length == pytest.approx(0.983, abs=1e-3)
-    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
-    assert ht_x0 == pytest.approx(0.065, abs=1e-3)
-    ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
-    assert ht_y0 == pytest.approx(0.943, abs=1e-3)
+    problem = run_system(ComputeHTMacX25Wing(), ivc)
     lp_ht = problem.get_val(
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_ht == pytest.approx(4.93, abs=1e-3)
+    
+
+def test_compute_ht_mac_x0():
+    """Tests computation of the horizontal tail mac x local"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacX25()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTMacX25(), ivc)
+    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
+    assert ht_x0 == pytest.approx(0.065, abs=1e-3)
+
+
+def test_compute_ht_mac_y0():
+    """Tests computation of the horizontal tail mac y"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacY()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTMacY(), ivc)
+    ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
+    assert ht_y0 == pytest.approx(0.943, abs=1e-3)
 
 
 def test_compute_ht_sweep_0():
