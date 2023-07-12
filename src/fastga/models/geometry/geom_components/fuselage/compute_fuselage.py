@@ -12,27 +12,34 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
-
-from .components import (
-    ComputeFuselageGeometryBasic,
-    ComputeFuselageGeometryCabinSizingFD,
-    ComputeFuselageGeometryCabinSizingFL,
-)
 
 from .constants import (
     SUBMODEL_FUSELAGE_WET_AREA,
     SUBMODEL_FUSELAGE_DEPTH,
     SUBMODEL_FUSELAGE_VOLUME,
     SUBMODEL_FUSELAGE_CROSS_SECTION,
+    SUBMODEL_FUSELAGE_NPAX,
+    SUBMODEL_FUSELAGE_PAX_LENGTH,
+    SUBMODEL_FUSELAGE_MAX_WIDTH,
+    SUBMODEL_FUSELAGE_MAX_HEIGHT,
+    SUBMODEL_FUSELAGE_LUGGAGE_LENGTH,
+    SUBMODEL_FUSELAGE_CABIN_LENGTH,
+    SUBMODEL_FUSELAGE_NOSE_LENGTH_FL,
+    SUBMODEL_FUSELAGE_NOSE_LENGTH_FD,
+    SUBMODEL_FUSELAGE_LENGTH_FL,
+    SUBMODEL_FUSELAGE_LENGTH_FD,
+    SUBMODEL_FUSELAGE_PLANE_LENGTH,
+    SUBMODEL_FUSELAGE_REAR_LENGTH,
+    SUBMODEL_FUSELAGE_DIMENSIONS_BASIC,
 )
 
 from fastga.models.options import CABIN_SIZING_OPTION
 
 
-class ComputeFuselageAlternate(Group):
+class ComputeFuselageAlternate(om.Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
@@ -40,13 +47,50 @@ class ComputeFuselageAlternate(Group):
     def setup(self):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(
-                "compute_fuselage_dim",
-                ComputeFuselageGeometryCabinSizingFL(propulsion_id=self.options["propulsion_id"]),
+                "compute_fuselage_npax",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_NPAX),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_pax_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_PAX_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_max_width",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MAX_WIDTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_max_height",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MAX_HEIGHT),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_luggage_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_LUGGAGE_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_cabin_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CABIN_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_nose_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_NOSE_LENGTH_FL),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_LENGTH_FL),
                 promotes=["*"],
             )
         else:
             self.add_subsystem(
-                "compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"]
+                "compute_fuselage_dim", 
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC), 
+                promotes=["*"],
             )
         self.add_subsystem(
             "compute_fus_wet_area",
@@ -70,7 +114,7 @@ class ComputeFuselageAlternate(Group):
         )
 
 
-class ComputeFuselageLegacy(Group):
+class ComputeFuselageLegacy(om.Group):
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
@@ -78,13 +122,60 @@ class ComputeFuselageLegacy(Group):
     def setup(self):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(
-                "compute_fuselage_dim",
-                ComputeFuselageGeometryCabinSizingFD(propulsion_id=self.options["propulsion_id"]),
+                "compute_fuselage_npax",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_NPAX),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_pax_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_PAX_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_max_width",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MAX_WIDTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_max_height",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_MAX_HEIGHT),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_luggage_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_LUGGAGE_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_cabin_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CABIN_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_nose_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_NOSE_LENGTH_FD),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_LENGTH_FD),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_plane_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_PLANE_LENGTH),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "compute_fuselage_rear_length",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_REAR_LENGTH),
                 promotes=["*"],
             )
         else:
             self.add_subsystem(
-                "compute_fuselage_dim", ComputeFuselageGeometryBasic(), promotes=["*"]
+                "compute_fuselage_dim", 
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC), 
+                promotes=["*"],
             )
         self.add_subsystem(
             "compute_fus_wet_area",
