@@ -16,8 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_HT_WET_AREA
@@ -26,7 +25,7 @@ from ..constants import SUBMODEL_HT_WET_AREA
 @oad.RegisterSubmodel(
     SUBMODEL_HT_WET_AREA, "fastga.submodel.geometry.horizontal_tail.wet_area.legacy"
 )
-class ComputeHTWetArea(ExplicitComponent):
+class ComputeHTWetArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail wet area estimation"""
 

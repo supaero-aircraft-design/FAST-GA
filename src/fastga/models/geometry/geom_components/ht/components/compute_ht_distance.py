@@ -17,7 +17,6 @@
 
 import numpy as np
 import openmdao.api as om
-
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_HT_WET_DISTANCE
