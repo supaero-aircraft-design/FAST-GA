@@ -34,7 +34,9 @@ class ComputeVTXTip(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m")
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
 
         self.add_output("data:geometry:vertical_tail:tip:x", units="m")
 
