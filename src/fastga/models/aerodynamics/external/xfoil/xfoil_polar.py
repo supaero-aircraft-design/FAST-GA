@@ -45,6 +45,7 @@ OPTION_ITER_LIMIT = "iter_limit"
 OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
 DEFAULT_2D_CL_MAX = 1.9
 DEFAULT_2D_CL_MIN = -1.7
+DEFAULT_2D_CD_MIN = 0
 ALPHA_STEP = 0.5
 
 _INPUT_FILE_NAME = "polar_session.txt"
@@ -105,6 +106,7 @@ class XfoilPolar(ExternalCodeComp):
             self.add_output("xfoil:CM", shape=POLAR_POINT_COUNT)
             self.add_output("xfoil:CL_max_2D")
             self.add_output("xfoil:CL_min_2D")
+            self.add_output("xfoil:CD_min_2D")
         else:
             self.add_output("xfoil:alpha", units="deg")
             self.add_output("xfoil:CL")
@@ -158,9 +160,17 @@ class XfoilPolar(ExternalCodeComp):
                 tmp_result_file_path,
             ) = self.run_XFoil(inputs, outputs, reynolds, mach)
             # Post-processing
-            alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, error = self.post_processing_fill_value(
-                result_array_p, result_array_n
-            )
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+            ) = self.post_processing_fill_value(result_array_p, result_array_n)
 
             if multiple_AoA:
                 # Fix output length if needed
@@ -169,7 +179,7 @@ class XfoilPolar(ExternalCodeComp):
                 # Save results to defined path
                 if not error:
                     results, labels = self.give_data_labels(
-                        alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, mach, reynolds
+                        alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, mach, reynolds
                     )
                     if no_file or (data_saved is None):
                         data = pd.DataFrame(results, index=labels)
@@ -210,10 +220,19 @@ class XfoilPolar(ExternalCodeComp):
                     )
 
         else:
-            alpha, cl, cd, cdp, cm = self.fix_interpolated_result_length(interpolated_result)
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+            ) = self.extract_fix_interpolated_result_length(interpolated_result)
 
         outputs = self.define_outputs(
-            outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, multiple_AoA
+            outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
         )
 
     def _write_script_file(
@@ -605,11 +624,13 @@ class XfoilPolar(ExternalCodeComp):
             cm = result_array_p["CM"].tolist()
             cl_max_2d = []
             cl_min_2d = []
+            cd_min_2d = []
             error = []
         elif self.options[OPTION_COMP_NEG_AIR_SYM]:
             cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
             # noinspection PyUnboundLocalVariable
             cl_min_2d, _ = self._get_min_cl(result_array_n["alpha"], result_array_n["CL"])
+            cd_min_2d = np.min(result_array_p["CD"])
             alpha = result_array_n["alpha"].tolist()
             alpha.reverse()
             alpha.extend(result_array_p["alpha"].tolist())
@@ -628,15 +649,18 @@ class XfoilPolar(ExternalCodeComp):
         else:
             cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
             cl_min_2d, _ = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
+            cd_min_2d = np.min(result_array_p["CD"])
             alpha = result_array_p["alpha"].tolist()
             cl = result_array_p["CL"].tolist()
             cd = result_array_p["CD"].tolist()
             cdp = result_array_p["CDp"].tolist()
             cm = result_array_p["CM"].tolist()
 
-        return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, error
+        return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error
 
-    def define_outputs(self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, multiple_AoA):
+    def define_outputs(
+        self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
+    ):
         """_summary_
 
         Args:
@@ -648,6 +672,7 @@ class XfoilPolar(ExternalCodeComp):
             cm (_array_): length-adjusted moment coefficient array
             cl_max_2d (_float_): maximum lift coefficient
             cl_min_2d (_float_): miniimum lift coefficient
+            cd_min_2d (_float_): miniimum drag coefficient
             multiple_AoA (_boolean_): multiple angle of attack option
 
         Returns:
@@ -661,6 +686,7 @@ class XfoilPolar(ExternalCodeComp):
         if multiple_AoA:
             outputs["xfoil:CL_max_2D"] = cl_max_2d
             outputs["xfoil:CL_min_2D"] = cl_min_2d
+            outputs["xfoil:CD_min_2D"] = cd_min_2d
 
         return outputs
 
@@ -706,7 +732,7 @@ class XfoilPolar(ExternalCodeComp):
 
         return alpha, cl, cd, cdp, cm
 
-    def fix_interpolated_result_length(self, interpolated_result):
+    def extract_fix_interpolated_result_length(self, interpolated_result):
         """_summary_
         Fix the length of all results respect to the length of array ALPHA
         so that the results will have no error in fast-oad.
@@ -732,7 +758,7 @@ class XfoilPolar(ExternalCodeComp):
         CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
         CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
         CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
-
+        cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
             alpha = np.linspace(ALPHA[0], ALPHA[-1], POLAR_POINT_COUNT)
@@ -763,9 +789,11 @@ class XfoilPolar(ExternalCodeComp):
             # noinspection PyTypeChecker
             cm = np.asarray(cm)
 
-        return alpha, cl, cd, cdp, cm
+        return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
 
-    def give_data_labels(self, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, mach, reynolds):
+    def give_data_labels(
+        self, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, mach, reynolds
+    ):
         """
         Five data labes and prepare list for later writing to the file
         """
@@ -774,6 +802,7 @@ class XfoilPolar(ExternalCodeComp):
             np.array(reynolds),
             np.array(cl_max_2d),
             np.array(cl_min_2d),
+            np.array(cd_min_2d),
             str(self._reshape(alpha, alpha).tolist()),
             str(self._reshape(alpha, cl).tolist()),
             str(self._reshape(alpha, cd).tolist()),
@@ -785,6 +814,7 @@ class XfoilPolar(ExternalCodeComp):
             "reynolds",
             "cl_max_2d",
             "cl_min_2d",
+            "cd_min_2d",
             "alpha",
             "cl",
             "cd",
