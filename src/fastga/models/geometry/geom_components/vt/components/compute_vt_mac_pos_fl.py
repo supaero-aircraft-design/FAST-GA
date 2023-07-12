@@ -19,6 +19,10 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_VT_POSITION_FL
 
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_VT_POSITION_FL
+] = "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
+
 
 @oad.RegisterSubmodel(
     SUBMODEL_VT_POSITION_FL,

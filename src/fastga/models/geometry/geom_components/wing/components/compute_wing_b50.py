@@ -13,16 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_B50
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_B50, "fastga.submodel.geometry.wing.half_span.legacy")
-class ComputeWingB50(ExplicitComponent):
+class ComputeWingB50(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing B50 estimation."""
 

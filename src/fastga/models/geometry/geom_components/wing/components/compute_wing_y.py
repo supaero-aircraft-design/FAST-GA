@@ -13,17 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
+import openmdao.api as om
 import fastoad.api as oad
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
 
 from ..constants import SUBMODEL_WING_SPAN
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
-class ComputeWingY(Group):
+class ComputeWingY(om.Group):
     # TODO: Document equations. Cite sources
     """Wing Ys estimation."""
 
@@ -35,7 +32,7 @@ class ComputeWingY(Group):
         self.add_subsystem("comp_wing_kink_y", ComputeWingKinkY(), promotes=["*"])
 
 
-class ComputeWingSpan(ExplicitComponent):
+class ComputeWingSpan(om.ExplicitComponent):
     """Wing span estimation."""
 
     def setup(self):
@@ -57,7 +54,7 @@ class ComputeWingSpan(ExplicitComponent):
         outputs["data:geometry:wing:span"] = span
 
 
-class ComputeWingRootY(ExplicitComponent):
+class ComputeWingRootY(om.ExplicitComponent):
     """Wing root Ys estimation."""
 
     def setup(self):
@@ -77,7 +74,7 @@ class ComputeWingRootY(ExplicitComponent):
         outputs["data:geometry:wing:root:y"] = y2_wing
 
 
-class ComputeWingTipY(ExplicitComponent):
+class ComputeWingTipY(om.ExplicitComponent):
     """Wing tip Ys estimation."""
 
     def setup(self):
@@ -97,7 +94,7 @@ class ComputeWingTipY(ExplicitComponent):
         outputs["data:geometry:wing:tip:y"] = y4_wing
 
 
-class ComputeWingKinkY(ExplicitComponent):
+class ComputeWingKinkY(om.ExplicitComponent):
     """Wing kink Ys estimation."""
 
     def setup(self):
