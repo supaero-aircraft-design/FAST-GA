@@ -24,6 +24,7 @@ from ..constants import SUBMODEL_WING_X_LOCAL_KINK
 )
 class ComputeWingXKink(om.ExplicitComponent):
     """Wing kink X local estimation."""
+
     # TODO: Document equations. Cite sources
 
     def setup(self):

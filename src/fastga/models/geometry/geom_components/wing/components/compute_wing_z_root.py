@@ -33,7 +33,6 @@ class ComputeWingZRoot(om.ExplicitComponent):
     part VI page 384 in the graph description
     """
 
-
     def setup(self):
 
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
@@ -121,4 +120,3 @@ class ComputeWingZRoot(om.ExplicitComponent):
                 -0.5 * root_thickness_ratio
             )
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.5
-

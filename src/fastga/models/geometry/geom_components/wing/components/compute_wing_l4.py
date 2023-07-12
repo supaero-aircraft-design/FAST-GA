@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_L4
 
+
 @oad.RegisterSubmodel(SUBMODEL_WING_L4, "fastga.submodel.geometry.wing.l4")
 class ComputeWingL4(om.ExplicitComponent):
     """Estimate l4 wing chord."""
@@ -30,7 +31,7 @@ class ComputeWingL4(om.ExplicitComponent):
         self.add_output("data:geometry:wing:tip:chord", units="m")
 
         self.declare_partials("*", "*", method="fd")
-    
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -38,4 +39,4 @@ class ComputeWingL4(om.ExplicitComponent):
 
         l4_wing = l1_wing * taper_ratio
 
-        outputs["data:geometry:wing:tip:chord"] = l4_wing   
+        outputs["data:geometry:wing:tip:chord"] = l4_wing

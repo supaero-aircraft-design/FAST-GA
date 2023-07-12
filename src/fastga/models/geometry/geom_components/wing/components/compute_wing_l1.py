@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_L1
 
+
 @oad.RegisterSubmodel(SUBMODEL_WING_L1, "fastga.submodel.geometry.wing.l1")
 class ComputeWingL1(om.ExplicitComponent):
     """Estimate l1 wing chord."""
@@ -32,7 +33,7 @@ class ComputeWingL1(om.ExplicitComponent):
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
 
         self.declare_partials("*", "*", method="fd")
-    
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         wing_area = inputs["data:geometry:wing:area"]

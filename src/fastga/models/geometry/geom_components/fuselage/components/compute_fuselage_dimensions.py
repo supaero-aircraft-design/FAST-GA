@@ -22,7 +22,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_FUSELAGE_DIMENSIONS_BASIC
 
 
-@oad.RegisterSubmodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC, "fastga.submodel.geometry.fuselage.dimensions.basic.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_FUSELAGE_DIMENSIONS_BASIC, "fastga.submodel.geometry.fuselage.dimensions.basic.legacy"
+)
 class ComputeFuselageGeometryBasic(om.ExplicitComponent):
     """
     Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing).

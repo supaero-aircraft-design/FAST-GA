@@ -22,7 +22,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_HT_SWEEP_50
 
 
-@oad.RegisterSubmodel(SUBMODEL_HT_SWEEP_50, "fastga.submodel.geometry.horizontal_tail.sweep_50.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_HT_SWEEP_50, "fastga.submodel.geometry.horizontal_tail.sweep_50.legacy"
+)
 class ComputeHTSweep50(om.ExplicitComponent):
     """Estimation of horizontal tail sweep at l/c=50%"""
 

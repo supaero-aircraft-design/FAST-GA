@@ -21,7 +21,9 @@ from ..constants import SUBMODEL_VT_SWEEP_100
 
 
 # TODO: HT and VT components are similar --> factorize
-@oad.RegisterSubmodel(SUBMODEL_VT_SWEEP_100, "fastga.submodel.geometry.vertical_tail.sweep_100.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_VT_SWEEP_100, "fastga.submodel.geometry.vertical_tail.sweep_100.legacy"
+)
 class ComputeVTSweep100(om.ExplicitComponent):
     """Estimation of vertical tail sweep at l/c=100%"""
 

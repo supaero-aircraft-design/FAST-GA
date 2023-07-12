@@ -22,6 +22,7 @@ from ..constants import SUBMODEL_WING_X_LOCAL_TIP
 @oad.RegisterSubmodel(SUBMODEL_WING_X_LOCAL_TIP, "fastga.submodel.geometry.wing.x_local.tip.legacy")
 class ComputeWingXTip(om.ExplicitComponent):
     """Wing tip X local estimation."""
+
     # TODO: Document equations. Cite sources
 
     def setup(self):

@@ -13,9 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_VOLUME
@@ -26,7 +24,7 @@ oad.RegisterSubmodel.active_models[
 
 
 @oad.RegisterSubmodel(SUBMODEL_FUSELAGE_VOLUME, "fastga.submodel.geometry.fuselage.volume.legacy")
-class ComputeFuselageVolume(ExplicitComponent):
+class ComputeFuselageVolume(om.ExplicitComponent):
 
     """
     Fuselage volume computation. Based on geometric consideration assuming the fuselage is
