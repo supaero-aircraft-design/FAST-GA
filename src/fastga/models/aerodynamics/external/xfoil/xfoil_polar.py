@@ -554,14 +554,14 @@ class XfoilPolar(ExternalCodeComp):
                 # Search for common alpha range for linear interpolation
                 alpha_lower = (
                     np.array(
-                        np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                        lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]
                     )
                     .ravel()
                     .tolist()
                 )
                 alpha_upper = (
                     np.array(
-                        np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                        upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]
                     )
                     .ravel()
                     .tolist()
@@ -572,10 +572,10 @@ class XfoilPolar(ExternalCodeComp):
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
                     lower_value = np.array(
-                        np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                        lower_values.loc[label, index_lower_reynolds].to_numpy()[0]
                     ).ravel()
                     upper_value = np.array(
-                        np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                        upper_values.loc[label, index_upper_reynolds].to_numpy()[0]
                     ).ravel()
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
@@ -748,16 +748,16 @@ class XfoilPolar(ExternalCodeComp):
         """
         # Extract results
         cl_max_2d = np.array(
-            np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+            interpolated_result.loc["cl_max_2d", :].to_numpy()[0]
         ).ravel()
         cl_min_2d = np.array(
-            np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+            interpolated_result.loc["cl_min_2d", :].to_numpy()[0]
         ).ravel()
-        ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
-        CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
-        CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
-        CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
-        CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
+        ALPHA = np.array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
+        CL = np.array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
+        CD = np.array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
+        CDP = np.array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
+        CM = np.array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
