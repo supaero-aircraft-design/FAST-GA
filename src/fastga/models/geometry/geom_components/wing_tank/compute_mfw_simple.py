@@ -16,8 +16,7 @@ import numpy as np
 
 import warnings
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ...constants import SUBMODEL_MFW
@@ -26,7 +25,7 @@ oad.RegisterSubmodel.active_models[SUBMODEL_MFW] = "fastga.submodel.geometry.mfw
 
 
 @oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.legacy")
-class ComputeMFWSimple(ExplicitComponent):
+class ComputeMFWSimple(om.ExplicitComponent):
     """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 
     def setup(self):

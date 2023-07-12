@@ -18,8 +18,7 @@ import numpy as np
 
 from scipy.integrate import trapz
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ...constants import SUBMODEL_MFW
@@ -28,7 +27,7 @@ POINTS_NB_WING = 50
 
 
 @oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
-class ComputeMFWAdvanced(ExplicitComponent):
+class ComputeMFWAdvanced(om.ExplicitComponent):
     """
     Max fuel weight estimation based on Jenkinson 'Aircraft Design projects for Engineering
     Students' p.65. discretize the fuel tank in the wings along the span. Only works for linear
