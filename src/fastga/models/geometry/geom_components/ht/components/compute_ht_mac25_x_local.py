@@ -16,10 +16,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_HT_MAC_X_LOCAL
 
 
+@oad.RegisterSubmodel(
+    SUBMODEL_HT_MAC_X_LOCAL, "fastga.submodel.geometry.horizontal_tail.mac.x_local.legacy"
+)
 class ComputeHTMacX25(om.ExplicitComponent):
     """
     Compute x coordinate (local) at 25% MAC of the horizontal tail.

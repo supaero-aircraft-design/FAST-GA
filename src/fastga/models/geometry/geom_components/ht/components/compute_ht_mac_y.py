@@ -16,10 +16,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_HT_MAC_Y
 
 
+@oad.RegisterSubmodel(SUBMODEL_HT_MAC_Y, "fastga.submodel.geometry.horizontal_tail.mac.y.legacy")
 class ComputeHTMacY(om.ExplicitComponent):
     """
     Compute y coordinate of the horizontal tail's MAC.
