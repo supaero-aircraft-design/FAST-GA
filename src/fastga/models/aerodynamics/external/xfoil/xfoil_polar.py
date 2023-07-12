@@ -78,6 +78,7 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_ALPHA_END, default=90.0, types=float)
         self.options.declare(OPTION_ITER_LIMIT, default=100, types=int)
         self.options.declare(OPTION_COMP_NEG_AIR_SYM, default=False, types=bool)
+        self.options.declare("Invicid_calculation", default=False, types=bool)
         self.options.declare(
             "single_AoA",
             default=False,
@@ -258,12 +259,14 @@ class XfoilPolar(ExternalCodeComp):
             step (_float_): steps between each angle of attack in XFoil calculation
         """
         parser = InputFileGenerator()
+        viscid = not self.options["Invicid_calculation"]
         # input command to run XFoil
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
             parser.set_template_file(str(input_template_path))
             parser.set_generated_file(self.stdin)
-            parser.mark_anchor("RE")
-            parser.transfer_var(float(reynolds), 1, 1)
+            if viscid:
+                parser.mark_anchor("RE")
+                parser.transfer_var(float(reynolds), 1, 1)   
             parser.mark_anchor("M")
             parser.transfer_var(float(mach), 1, 1)
             parser.mark_anchor("ITER")
