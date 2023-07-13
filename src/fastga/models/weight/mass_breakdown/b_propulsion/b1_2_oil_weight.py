@@ -20,7 +20,14 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
+from .constants import SUBMODEL_OIL_WEIGHT
 
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_OIL_WEIGHT
+] = "submodel.weight.mass.propulsion.oil_weight.legacy"
+
+
+@oad.RegisterSubmodel(SUBMODEL_OIL_WEIGHT, "submodel.weight.mass.propulsion.oil_weight.legacy")
 class ComputeOilWeight(ExplicitComponent):
     """
     Weight estimation for motor oil.
