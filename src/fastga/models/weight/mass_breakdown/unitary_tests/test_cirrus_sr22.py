@@ -70,7 +70,8 @@ from ..c_systems import (
     ComputeLifeSupportSystemsWeight,
     ComputeLifeSupportSystemsWeightFLOPS,
     ComputeAvionicsSystemsWeight,
-    ComputePowerSystemsWeight,
+    ComputeElectricWeight,
+    ComputeHydraulicWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
     ComputeRecordingSystemsWeight,
 )
@@ -520,16 +521,26 @@ def test_compute_avionics_systems_weight_from_uninstalled():
     assert weight_c3 == pytest.approx(33.37, abs=1e-2)
 
 
-def test_compute_power_systems_weight():
-    """Tests power systems weight computation from sample XML data"""
+def test_compute_electric_power_system_weight():
+    """Tests electric power system weight computation from sample XML data"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputePowerSystemsWeight()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeElectricWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputePowerSystemsWeight(), ivc)
+    problem = run_system(ComputeElectricWeight(), ivc)
     weight_c12 = problem.get_val("data:weight:systems:power:electric_systems:mass", units="kg")
     assert weight_c12 == pytest.approx(85.25, abs=1e-2)
+
+
+def test_compute_hydraulic_power_system_weight():
+    """Tests hydraulic power system weight computation from sample XML data"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeHydraulicWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHydraulicWeight(), ivc)
     weight_c13 = problem.get_val("data:weight:systems:power:hydraulic_systems:mass", units="kg")
     assert weight_c13 == pytest.approx(11.29, abs=1e-2)
 

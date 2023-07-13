@@ -12,7 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_POWER_SYSTEM_MASS = "submodel.weight.mass.system.power_system"
+SUBMODEL_ELECTRIC_POWER_SYSTEM_MASS = "submodel.weight.mass.system.power_system.electric"
+SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS = "submodel.weight.mass.system.power_system.hydraulic"
 SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS = "submodel.weight.mass.system.life_support_system"
 SUBMODEL_AVIONICS_SYSTEM_MASS = "submodel.weight.mass.system.avionics_system"
 SUBMODEL_RECORDING_SYSTEM_MASS = "submodel.weight.mass.system.recording_system"
