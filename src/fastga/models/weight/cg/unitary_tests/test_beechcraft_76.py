@@ -42,7 +42,8 @@ from ..cg_components.d_furniture import ComputePassengerSeatsCG
 from ..cg_components.payload import ComputePayloadCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
 from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
-from ..cg_components.max_cg_ratio import ComputeMaxMinCGRatio
+from ..cg_components.most_aft_cg_mac import ComputeAftCGMac
+from ..cg_components.most_forward_cg_mac import ComputeForwardCGMac
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
@@ -284,15 +285,24 @@ def test_compute_cg_load_case():
     assert mac_min == pytest.approx(0.198, abs=1e-2)
 
 
-def test_compute_max_cg_ratio():
-    """Tests computation of maximum center of gravity ratio."""
+def test_compute_aft_cg_ratio_mac():
+    """Tests computation of maximum (aft) center of gravity ratio."""
     # Define the independent input values that should be filled if basic function is chosen
-    ivc = get_indep_var_comp(list_inputs(ComputeMaxMinCGRatio()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeAftCGMac()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMaxMinCGRatio(), ivc)
+    problem = run_system(ComputeAftCGMac(), ivc)
     cg_ratio_aft = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
     assert cg_ratio_aft == pytest.approx(0.369, abs=1e-3)
+
+
+def test_compute_fwd_cg_ratio():
+    """Tests computation of maximum (forward) center of gravity ratio."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeForwardCGMac()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeForwardCGMac(), ivc)
     cg_ratio_fwd = problem.get_val("data:weight:aircraft:CG:fwd:MAC_position")
     assert cg_ratio_fwd == pytest.approx(0.152, abs=1e-3)
 

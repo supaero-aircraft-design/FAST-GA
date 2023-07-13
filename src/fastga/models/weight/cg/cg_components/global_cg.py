@@ -12,22 +12,23 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
-
+import openmdao.api as om
 import fastoad.api as oad
-
-from .max_cg_ratio import ComputeMaxMinCGRatio
 
 from .constants import (
     SUBMODEL_AIRCRAFT_X_CG_RATIO,
     SUBMODEL_LOADCASE_GROUND_X,
     SUBMODEL_LOADCASE_FLIGHT_X,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
+    SUBMODEL_AIRCRAFT_AFT_CG_MAC,
+    SUBMODEL_AIRCRAFT_AFT_CG_X,
+    SUBMODEL_AIRCRAFT_FORWARD_CG_MAC,
+    SUBMODEL_AIRCRAFT_FORWARD_CG_X,
 )
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")
-class ComputeGlobalCG(Group):
+class ComputeGlobalCG(om.Group):
     # TODO: Document equations. Cite sources
     """Global center of gravity estimation."""
 
@@ -53,4 +54,23 @@ class ComputeGlobalCG(Group):
             ),
             promotes=["*"],
         )
-        self.add_subsystem("cg_ratio_extrema", ComputeMaxMinCGRatio(), promotes=["*"])
+        self.add_subsystem(
+            "cg_ratio_aft_mac",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_AFT_CG_MAC),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cg_ratio_aft_x",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_AFT_CG_X),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cg_ratio_forward_mac",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_FORWARD_CG_MAC),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cg_ratio_forward_x",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_FORWARD_CG_X),
+            promotes=["*"],
+        )
