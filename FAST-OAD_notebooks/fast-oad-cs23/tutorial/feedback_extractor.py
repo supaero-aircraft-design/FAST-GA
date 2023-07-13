@@ -6,6 +6,9 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     import sys
     #INFO: used to toggle on and off the printing of feedback loops and other info
     if INFO: start = time.time()
+    import functools
+    import os
+    import json
 
     #definition of the function to output an n2-ordered list of all the variables in the problem
     #The dictionary is actually an alternation of lists of dicts where eahc dicht has the key 'children', which contains a list of dicts, and so on
@@ -67,7 +70,6 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
                 "wing_area" : 2,
             }
         else: #compute modules times for your particular machine, solver, etc.
-            print("\n   Calculating individual times for your modules... \n")
             modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
         
 
@@ -75,6 +77,38 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
 
         #return score as sum (time*times they run).
         return modules_times
+
+    '''class run_once: 
+        def __init__(self, func):
+            self.func = func
+            self.has_run = False
+            self.result = None
+
+        def __call__(self, *args, **kwargs):
+            if not self.has_run:
+                self.result = self.func(*args, **kwargs)
+                self.has_run = True
+            return self.result
+
+    # Apply the decorator to my function
+    time_modules = run_once(time_modules)'''
+
+    def run_once(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            if not os.path.exists('tmp_saved_single_module_timings.txt'):
+                result = func(*args, **kwargs)
+                with open('tmp_saved_single_module_timings.txt', 'w') as f:
+                    f.write(json.dumps(result))
+                return result
+            else:
+                with open('tmp_saved_single_module_timings.txt', 'r') as f:
+                    result = json.load(f)
+                return result
+
+        return wrapper
+    #apply decorator
+    time_modules = run_once(time_modules) #Ensures that we only compute the time of the individual modules once
 
 
 #############################################
@@ -101,9 +135,10 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     list_of_BLC_in_feedback = [(a, b) for (a, b) in list_of_BLC_in_feedback if 'fastoad_shaper' not in (a, b)] # remove fastoad_shaper from feedback counts
     
     if score_criteria == 'compute_time' or score_criteria == 'use_time':
-        if 'run_once' not in vars(): #only compute/get once the times of the modules
-            modules_times = total_time_of_modules(score_criteria) 
-            run_once = 1
+
+        # Check if the function has already run by reading the tmp_saved_single_module_timings file. Otherwise time for each individual module will be timed at every swap. not necessary
+        modules_times = total_time_of_modules(score_criteria) 
+      
 
         #find how many times they run
         modules_in_feedback = extract_module(result_list)

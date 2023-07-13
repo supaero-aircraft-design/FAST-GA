@@ -1,0 +1,1 @@
+{"wing_area": 1.7017413139343263, "wing_position": 1.2450641751289369, "mtow": 1.066208040714264, "geometry": 1.9554701924324036, "aerodynamics_lowspeed": 3.6208065152168274, "hq": 12.701896786689758, "aerodynamics_highspeed": 2.6451884508132935, "performance": 22.87080020904541, "weight": 3}
