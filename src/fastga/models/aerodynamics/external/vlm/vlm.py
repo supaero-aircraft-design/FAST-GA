@@ -43,11 +43,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         super().__init__(**kwargs)
         self.wing = None
         self.htp = None
-        self.n_x = None
+        self.n_x = None #number of chordwise panel
         self.ny1 = None
         self.ny2 = None
         self.ny3 = None
-        self.n_y = None
+        self.n_y = None #number of semi-spanwise panel
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -162,6 +162,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
+        
+               ^
+             y |                Points defining the panel
+               |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
+        P3--B--|-----P4
+        |  |   |     |
+        |  |   |     |
+        T1 |   +--P--T2---->
+        |  |         |     x
+        |  |         |
+        P2--A--------P1
         """
 
         # Fix mach number of digits to consider similar results

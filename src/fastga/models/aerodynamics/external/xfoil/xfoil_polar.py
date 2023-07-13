@@ -362,7 +362,7 @@ class XfoilPolar(ExternalCodeComp):
 
     @staticmethod
     def _create_tmp_directory() -> TemporaryDirectory:
-        """
+        """_summary_
         Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
         Changing working directory to the tmp dir would allow to just provide file name,
         but it is not really safe (at least, it does mess with the coverage report).
