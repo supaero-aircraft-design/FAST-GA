@@ -27,7 +27,8 @@ from ..cg_components.constants import (
     SUBMODEL_MAIN_LANDING_GEAR_CG,
     SUBMODEL_FRONT_LANDING_GEAR_CG,
     SUBMODEL_PROPULSION_CG,
-    SUBMODEL_POWER_SYSTEMS_CG,
+    SUBMODEL_ELECTRIC_POWER_SYSTEMS_CG,
+    SUBMODEL_HYDRAULIC_POWER_SYSTEMS_CG,
     SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
     SUBMODEL_NAVIGATION_SYSTEMS_CG,
     SUBMODEL_RECORDING_SYSTEMS_CG,
@@ -73,8 +74,13 @@ class ComputeCGRatioAircraftEmpty(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "power_systems_cg",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEMS_CG),
+            "electric_power_systems_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_ELECTRIC_POWER_SYSTEMS_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "hydraulic_power_systems_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HYDRAULIC_POWER_SYSTEMS_CG),
             promotes=["*"],
         )
         self.add_subsystem(

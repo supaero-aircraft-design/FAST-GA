@@ -11,7 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .c1_power_systems_cg import ComputePowerSystemsCG
+from .c1_electric_power_systems_cg import ComputeElectricPowerSystemCG
+from .c1_hydraulic_power_systems_cg import ComputeHydraulicPowerSystemCG
 from .c2_life_support_systems_cg import ComputeLifeSupportCG
 from .c3_navigation_systems_cg import ComputeNavigationSystemsCG
 from .c4_recording_systems_cg import ComputeRecordingSystemsCG
