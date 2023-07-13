@@ -1,5 +1,5 @@
 """
-Estimation of hydraulic power system weight.
+Zero Fuel Weight (ZFW) estimation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -18,33 +18,30 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from .constants import SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS
+from .constants import SUBMODEL_ZFW
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.power_system.hydraulic.legacy",
-)
-class ComputeHydraulicWeight(om.ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_ZFW, "fastga.submodel.weight.mass.zfw.legacy")
+class ComputeZFW(om.ExplicitComponent):
     """
-    Weight estimation for hydraulic power systems (generation and distribution)
-
-    Based on a statistical analysis. See :cite:`roskampart5:1985` USAF method for the electric
-    system weight and hydraulic weight.
+    Computes Zero Fuel Weight from Overall Empty Weight and Payload.
     """
 
     def setup(self):
 
-        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:payload", val=np.nan, units="kg")
 
-        self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
+        self.add_output("data:weight:aircraft:ZFW", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:weight:aircraft:ZFW", "data:weight:aircraft:OWE", val=1.0)
+        self.declare_partials("data:weight:aircraft:ZFW", "data:weight:aircraft:payload", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        mtow = inputs["data:weight:aircraft:MTOW"]
+        owe = inputs["data:weight:aircraft:OWE"]
+        pl = inputs["data:weight:aircraft:payload"]
 
-        c13 = 0.007 * mtow  # mass formula in lb
+        zfw = owe + pl
 
-        outputs["data:weight:systems:power:hydraulic_systems:mass"] = c13
+        outputs["data:weight:aircraft:ZFW"] = zfw

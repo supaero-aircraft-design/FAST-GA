@@ -1,5 +1,5 @@
 """
-Estimation of hydraulic power system weight.
+Maximum Zero Fuel Weight (MZFW) estimation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -18,33 +18,32 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from .constants import SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS
+from .constants import SUBMODEL_MZFW
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.power_system.hydraulic.legacy",
-)
-class ComputeHydraulicWeight(om.ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_MZFW, "fastga.submodel.weight.mass.mzfw.legacy")
+class ComputeMZFW(om.ExplicitComponent):
     """
-    Weight estimation for hydraulic power systems (generation and distribution)
-
-    Based on a statistical analysis. See :cite:`roskampart5:1985` USAF method for the electric
-    system weight and hydraulic weight.
+    Computes Maximum Zero Fuel Weight from Overall Empty Weight and Maximum Payload.
     """
 
     def setup(self):
 
-        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
+        self.add_input("data:weight:aircraft:OWE", val=np.nan, units="kg")
+        self.add_input("data:weight:aircraft:max_payload", val=np.nan, units="kg")
 
-        self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
+        self.add_output("data:weight:aircraft:MZFW", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:weight:aircraft:MZFW", "data:weight:aircraft:OWE", val=1.0)
+        self.declare_partials(
+            "data:weight:aircraft:MZFW", "data:weight:aircraft:max_payload", val=1.0
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        mtow = inputs["data:weight:aircraft:MTOW"]
+        owe = inputs["data:weight:aircraft:OWE"]
+        max_pl = inputs["data:weight:aircraft:max_payload"]
 
-        c13 = 0.007 * mtow  # mass formula in lb
+        mzfw = owe + max_pl
 
-        outputs["data:weight:systems:power:hydraulic_systems:mass"] = c13
+        outputs["data:weight:aircraft:MZFW"] = mzfw
