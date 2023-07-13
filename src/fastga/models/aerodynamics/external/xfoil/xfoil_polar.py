@@ -221,6 +221,7 @@ class XfoilPolar(ExternalCodeComp):
                     )
 
         else:
+            # adjust the interpolated results size for outher model use
             (
                 alpha,
                 cl,
@@ -361,13 +362,15 @@ class XfoilPolar(ExternalCodeComp):
 
     @staticmethod
     def _create_tmp_directory() -> TemporaryDirectory:
-        # Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
-        #           Changing working directory to the tmp dir would allow to just provide file name,
-        #           but it is not really safe (at least, it does mess with the coverage report).
-        #           Then the point is to get a tmp directory with a short path.
-        #           On Windows, the default (user-dependent) tmp dir can exceed the limit.
-        #           Therefore, as a second choice, tmp dir is created as close of user home
-        #           directory as possible.
+        """
+        Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
+        Changing working directory to the tmp dir would allow to just provide file name,
+        but it is not really safe (at least, it does mess with the coverage report).
+        Then the point is to get a tmp directory with a short path.
+        On Windows, the default (user-dependent) tmp dir can exceed the limit.
+        Therefore, as a second choice, tmp dir is created as close of user home
+        directory as possible.
+        """
         tmp_candidates = []
         for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
             if tmp_base_path is not None:
@@ -512,6 +515,19 @@ class XfoilPolar(ExternalCodeComp):
         )
 
     def interpolation_for_exist_data(self, result_file, mach, reynolds):
+        """_summary_
+        First, check if the existed data list has the exact same reult.
+        Then, use existed Renolds number and mach number to find 
+        corresponded existed results for interpolation. 
+        With interpolation, the the result can be obtained.     
+        Args:
+            result_file (_path_): result data path
+            mach (_list_): existed mach number list
+            reynolds (_list_): existed reynolds umber list
+
+        Returns:
+            _list_: interpolated result list
+        """
         no_file = False
         data_saved = pd.read_csv(result_file)
         values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
@@ -592,6 +608,12 @@ class XfoilPolar(ExternalCodeComp):
 
     def identify_negative_angle_option(self):
         # change to csv for later usage
+        """_summary_
+        identify negative angel of attack option and congigure the 
+        file naming
+        Returns:
+            _path_: result data path
+        """
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
             result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
@@ -665,7 +687,7 @@ class XfoilPolar(ExternalCodeComp):
         self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
     ):
         """_summary_
-
+        assign output to outputs list
         Args:
             outputs (_list_): the output data list needs to be filled
             alpha (_array_):length-adjusted angle of attack array
