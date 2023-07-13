@@ -24,7 +24,8 @@ from .constants import (
     SUBMODEL_SYSTEMS_MASS,
     SUBMODEL_FURNITURE_MASS,
     SUBMODEL_OWE,
-    SUBMODEL_PAYLOAD_MASS,
+    SUBMODEL_DESIGN_PAYLOAD_MASS,
+    SUBMODEL_MAX_PAYLOAD_MASS,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN
 
@@ -64,7 +65,14 @@ class MassBreakdown(om.Group):
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
             self.add_subsystem(
-                "payload", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_MASS), promotes=["*"]
+                "design_payload",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_DESIGN_PAYLOAD_MASS),
+                promotes=["*"],
+            )
+            self.add_subsystem(
+                "max_payload",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_MAX_PAYLOAD_MASS),
+                promotes=["*"],
             )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(

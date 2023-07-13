@@ -79,7 +79,8 @@ from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
 from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
-from ..payload import ComputePayload
+from ..compute_design_payload import ComputeDesignPayload
+from ..compute_maximum_payload import ComputeMaxPayload
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -88,14 +89,23 @@ from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 XML_FILE = "daher_tbm900.xml"
 
 
-def test_compute_payload():
+def test_compute_design_payload():
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputePayload()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeDesignPayload()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputePayload(), ivc)
+    problem = run_system(ComputeDesignPayload(), ivc)
     assert problem["data:weight:aircraft:payload"] == pytest.approx(612.0, abs=1e-2)
+
+
+def test_compute_max_payload():
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeMaxPayload()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMaxPayload(), ivc)
     assert problem["data:weight:aircraft:max_payload"] == pytest.approx(690.0, abs=1e-2)
 
 
