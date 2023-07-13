@@ -17,7 +17,8 @@ import openmdao.api as om
 import fastoad.api as oad
 
 from .constants import (
-    SUBMODEL_POWER_SYSTEM_MASS,
+    SUBMODEL_ELECTRIC_POWER_SYSTEM_MASS,
+    SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS,
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
     SUBMODEL_AVIONICS_SYSTEM_MASS,
     SUBMODEL_RECORDING_SYSTEM_MASS,
@@ -37,8 +38,13 @@ class SystemsWeight(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "power_systems_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_POWER_SYSTEM_MASS),
+            "electric_power_systems_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_ELECTRIC_POWER_SYSTEM_MASS),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "hydraulic_power_systems_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HYDRAULIC_POWER_SYSTEM_MASS),
             promotes=["*"],
         )
         self.add_subsystem(

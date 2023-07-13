@@ -11,7 +11,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .c1_power_systems_weight import ComputePowerSystemsWeight
+from .c1_electric_power_systems_weight import ComputeElectricWeight
+from .c5_hydraulic_power_systems_weight import ComputeHydraulicWeight
 from .c2_life_support_systems_weight import (
     ComputeLifeSupportSystemsWeight,
     ComputeLifeSupportSystemsWeightFLOPS,
