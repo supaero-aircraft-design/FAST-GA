@@ -32,7 +32,8 @@ from ..cg_components.b_propulsion import (
     FuelPropulsionCG,
 )
 from ..cg_components.c_systems import (
-    ComputePowerSystemsCG,
+    ComputeElectricPowerSystemCG,
+    ComputeHydraulicPowerSystemCG,
     ComputeLifeSupportCG,
     ComputeNavigationSystemsCG,
     ComputeRecordingSystemsCG,
@@ -160,16 +161,26 @@ def test_compute_cg_fuel_propulsion():
     assert x_cg_b3 == pytest.approx(2.37, abs=1e-2)
 
 
-def test_compute_cg_power_systems():
-    """Tests computation of power systems center of gravity."""
+def test_compute_cg_electric_power_systems():
+    """Tests computation of electric power systems center of gravity."""
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputePowerSystemsCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeElectricPowerSystemCG()), __file__, XML_FILE)
     ivc.add_output("data:weight:propulsion:engine:CG:x", 2.7, units="m")
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputePowerSystemsCG(), ivc)
+    problem = run_system(ComputeElectricPowerSystemCG(), ivc)
     x_cg_c12 = problem.get_val("data:weight:systems:power:electric_systems:CG:x", units="m")
     assert x_cg_c12 == pytest.approx(4.99, abs=1e-2)
+
+
+def test_compute_cg_hydraulic_power_systems():
+    """Tests computation of hydraulic power systems center of gravity."""
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHydraulicPowerSystemCG()), __file__, XML_FILE)
+    ivc.add_output("data:weight:propulsion:engine:CG:x", 2.7, units="m")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHydraulicPowerSystemCG(), ivc)
     x_cg_c13 = problem.get_val("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
     assert x_cg_c13 == pytest.approx(4.99, abs=1e-2)
 
