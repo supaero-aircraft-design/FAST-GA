@@ -10,12 +10,3 @@ model:
     geometry:
       id: fastga.geometry.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    aerodynamics_lowspeed:
-      id: fastga.aerodynamics.lowspeed.legacy
-      propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-      result_folder_path: ./workdir
-      use_openvsp: false
-      compute_slipstream: false
-    nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-3, debug_print=True,
-      reraise_child_analysiserror=True)
-    linear_solver: om.DirectSolver()
