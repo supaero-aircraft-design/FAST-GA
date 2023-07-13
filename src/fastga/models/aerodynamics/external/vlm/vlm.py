@@ -778,7 +778,20 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_common(self.htp)
 
     def _generate_common(self, dictionary):
-        """Common code shared between wing and htp to calculate geometry/aero parameters."""
+        """Common code shared between wing and htp to calculate geometry/aero parameters.
+        
+                ^
+              y |                Points defining the panel
+                |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
+        P3--B---|-----P4
+        |   |   |     |
+        |   |   |     |
+        T1  |   +--P--T2---->
+        |   |         |     x
+        |   |         |
+        P2--A--------P1
+        
+        """
         # Initial data (zero matrix/array)
         x_le = dictionary["x_le"]
         chord = dictionary["chord"]
