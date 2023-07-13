@@ -15,14 +15,9 @@ Main components for mass breakdown.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 import fastoad.api as oad
 
 from .constants import (
-    SUBMODEL_AIRFRAME_MASS,
-    SUBMODEL_PROPULSION_MASS,
-    SUBMODEL_SYSTEMS_MASS,
-    SUBMODEL_FURNITURE_MASS,
     SUBMODEL_OWE,
     SUBMODEL_MLW,
     SUBMODEL_ZFW,
@@ -31,7 +26,6 @@ from .constants import (
     SUBMODEL_MAX_PAYLOAD_MASS,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN
-
 from fastga.models.options import PAYLOAD_FROM_NPAX
 
 
@@ -100,56 +94,3 @@ class MassBreakdown(om.Group):
         self.linear_solver.options["err_on_non_converge"] = True
         self.linear_solver.options["iprint"] = 0
         self.linear_solver.options["maxiter"] = 10
-
-
-@oad.RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
-class ComputeOperatingWeightEmpty(om.Group):
-    """Operating Empty Weight (OEW) estimation
-
-    This group aggregates weight from all components of the aircraft.
-    """
-
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
-    def setup(self):
-        # Airframe
-        self.add_subsystem(
-            "airframe_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRFRAME_MASS),
-            promotes=["*"],
-        )
-        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
-        self.add_subsystem(
-            "propulsion_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPULSION_MASS, options=propulsion_option),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "systems_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_SYSTEMS_MASS),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "furniture_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FURNITURE_MASS),
-            promotes=["*"],
-        )
-
-        owe_sum = om.AddSubtractComp()
-        owe_sum.add_equation(
-            "data:weight:aircraft:OWE",
-            [
-                "data:weight:airframe:mass",
-                "data:weight:propulsion:mass",
-                "data:weight:systems:mass",
-                "data:weight:furniture:mass",
-            ],
-            units="kg",
-            desc="Mass of aircraft",
-        )
-        self.add_subsystem(
-            "OWE_sum",
-            owe_sum,
-            promotes=["*"],
-        )
