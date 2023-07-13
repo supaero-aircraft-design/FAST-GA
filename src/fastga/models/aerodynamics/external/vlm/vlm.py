@@ -163,15 +163,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
         
-               ^
-             y |                Points defining the panel
-               |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
-        P3--B--|-----P4
-        |  |   |     |
-        |  |   |     |
-        T1 |   +--P--T2---->
-        |  |         |     x
-        |  |         |
+                ^
+              y |                Points defining the panel
+                |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
+        P3--B---|-----P4
+        |   |   |     |
+        |   |   |     |
+        T1  |   +--P--T2---->
+        |   |         |     x
+        |   |         |
         P2--A--------P1
         """
 
