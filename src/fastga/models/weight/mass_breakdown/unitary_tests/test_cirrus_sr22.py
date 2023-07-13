@@ -81,6 +81,9 @@ from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
 from ..compute_design_payload import ComputeDesignPayload
 from ..compute_maximum_payload import ComputeMaxPayload
+from ..update_mlw import ComputeMLW
+from ..update_zfw import ComputeZFW
+from ..update_mzfw import ComputeMZFW
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -699,6 +702,42 @@ def test_loop_compute_owe():
     )
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1004, abs=1)
+
+
+def test_evaluate_mlw():
+    """Tests a simple evaluation of Maximum Landing Weight from sample XML data."""
+
+    ivc = get_indep_var_comp(list_inputs(ComputeMLW()), __file__, XML_FILE)
+
+    # noinspection PyTypeChecker
+    mass_computation = run_system(ComputeMLW(), ivc)
+
+    mlw = mass_computation.get_val("data:weight:aircraft:MLW", units="kg")
+    assert mlw == pytest.approx(1613, abs=1)
+
+
+def test_evaluate_zfw():
+    """Tests a simple evaluation of Landing Weight from sample XML data."""
+
+    ivc = get_indep_var_comp(list_inputs(ComputeZFW()), __file__, XML_FILE)
+
+    # noinspection PyTypeChecker
+    mass_computation = run_system(ComputeZFW(), ivc)
+
+    zfw = mass_computation.get_val("data:weight:aircraft:ZFW", units="kg")
+    assert zfw == pytest.approx(1361, abs=1)
+
+
+def test_evaluate_mzfw():
+    """Tests a simple evaluation of Maximum Landing Weight from sample XML data."""
+
+    ivc = get_indep_var_comp(list_inputs(ComputeMZFW()), __file__, XML_FILE)
+
+    # noinspection PyTypeChecker
+    mass_computation = run_system(ComputeMZFW(), ivc)
+
+    mzfw = mass_computation.get_val("data:weight:aircraft:MZFW", units="kg")
+    assert mzfw == pytest.approx(1426, abs=1)
 
 
 def test_compute_web_mass():

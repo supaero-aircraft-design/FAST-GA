@@ -24,12 +24,13 @@ from .constants import (
     SUBMODEL_SYSTEMS_MASS,
     SUBMODEL_FURNITURE_MASS,
     SUBMODEL_OWE,
+    SUBMODEL_MLW,
+    SUBMODEL_ZFW,
+    SUBMODEL_MZFW,
     SUBMODEL_DESIGN_PAYLOAD_MASS,
     SUBMODEL_MAX_PAYLOAD_MASS,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN
-
-from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 
 from fastga.models.options import PAYLOAD_FROM_NPAX
 
@@ -80,7 +81,15 @@ class MassBreakdown(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_OWE, options=propulsion_option),
             promotes=["*"],
         )
-        self.add_subsystem("update_mzfw_and_mlw", UpdateMLWandMZFW(), promotes=["*"])
+        self.add_subsystem(
+            "update_mlw", oad.RegisterSubmodel.get_submodel(SUBMODEL_MLW), promotes=["*"]
+        )
+        self.add_subsystem(
+            "update_zfw", oad.RegisterSubmodel.get_submodel(SUBMODEL_ZFW), promotes=["*"]
+        )
+        self.add_subsystem(
+            "update_mzfw", oad.RegisterSubmodel.get_submodel(SUBMODEL_MZFW), promotes=["*"]
+        )
 
         # Solvers setup
         self.nonlinear_solver.options["debug_print"] = True
