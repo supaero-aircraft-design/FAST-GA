@@ -168,7 +168,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
         P3--B---|-----P4         Reference: 
         |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
-        |   |   |     |          p.394-395
+        |   |   |     |          p.394-398
         T1  |   +--P--T2---->
         |   |         |     x
         |   |         |
@@ -785,7 +785,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
         P3--B---|-----P4         Reference: 
         |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
-        |   |   |     |          p.394-395
+        |   |   |     |          p.394-398
         T1  |   +--P--T2---->
         |   |         |     x
         |   |         |
