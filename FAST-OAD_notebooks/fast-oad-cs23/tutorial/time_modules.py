@@ -1,8 +1,5 @@
 def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
 
-    import warnings
-    warnings.filterwarnings(action="ignore")
-
     import os.path as pth
     import os
     import openmdao.api as om
@@ -26,7 +23,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
         return None
 
     # Define relative path
-    WORK_FOLDER_PATH = "workdir"
+    WORK_FOLDER_PATH = "workdir" ##########################################TODO: ELIMINATE FROM HERE, pass as argument
 
     # Obtaining the modules for this version of fastoad
     command = "fastoad list_modules"
@@ -62,7 +59,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
                 yaml.dump(data, file, default_flow_style=False, sort_keys=False)
     
         #Fetch the appropriate SOURCE file from unitary_tests of each module, with the paths to the modules listed by the fastoad list_modules ran before
-        ################################
+         ################################
         #Find the id or ids of the module in question
         id_of_module = find_id_value(config_dictionary[module])
 
@@ -72,28 +69,29 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
         index = path_to_id_of_module.index("/models")  # Find the index of "/models"
         next_folder_index = path_to_id_of_module.find("/", index + len("/models") + 1) # Find the index of the folder immediately after models
              
-        if module != 'weight':
-            NEW_SOURCE_FILE = path_to_id_of_module[:next_folder_index] + '/unitary_tests/data/beechcraft_76.xml' #add the path to the source file used for the unitary test of module being timed
-   
-            ###############################
+        if id_of_module != 'fastga.weight.legacy':
 
+            NEW_SOURCE_FILE = path_to_id_of_module[:next_folder_index] + '/unitary_tests/data/beechcraft_76.xml' #add the path to the source file used for the unitary test of module being timed
+            if id_of_module == 'fastga.loop.mtow':
+                NEW_SOURCE_FILE = path_to_id_of_module[:next_folder_index] + '/mass_breakdown/unitary_tests/data/beechcraft_76.xml' #add the path to the source file used for the unitary test of module being timed
+    
+         ###############################
             api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, NEW_SOURCE_FILE, overwrite=True)
 
             executions_time = []
 
-            print('\n Starting timings of: ', module)
+            print('\n   Starting timings of: ', module)
             for _ in range(20): #run them individually 20 times, to have a good average
 
                 starting = time.time()
                 eval_problem = api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
 
-                print('\n Problem ran in ', time.time() - starting , ' seconds \n')
                 executions_time.append(time.time() - starting)
 
             module_times[module] = sum(executions_time)/len(executions_time)
-            print('\n Average time of ', module, ': ', module_times[module], ' seconds')
-        else:
-            module_times['weight'] = 3
+            print('\n   Average time of ', module, ': ', module_times[module], ' seconds')     
+        elif id_of_module == 'fastga.weight.legacy':
+            module_times[module] = 3
          
     #remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))

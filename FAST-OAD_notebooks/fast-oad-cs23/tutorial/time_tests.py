@@ -25,8 +25,7 @@ for i in range(20):
 
     CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
     SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
-    #SOURCE_FILE = pth.join(SRC_FOLDER_PATH, "Daher_TBM900.xml")
-
+    
     api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
 
     starting = time.time()

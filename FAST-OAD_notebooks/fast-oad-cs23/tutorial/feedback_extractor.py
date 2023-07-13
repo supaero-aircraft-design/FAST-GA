@@ -1,9 +1,9 @@
-def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO = False):
+def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, INFO = False):
 #TODO: if info is false, only compute the number, not save every src tgt pair
 
     import time
     from time_modules import time_modules
-
+    import sys
     #INFO: used to toggle on and off the printing of feedback loops and other info
     if INFO: start = time.time()
 
@@ -53,54 +53,33 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO =
                 result.append((src_word, tgt_word))
         return result
 
-    def total_time_of_modules(feedback_list):
-        modules_times = {
-            "geometry": 2.0065503120422363,
-            "aerodynamics_lowspeed" : 2.4223287105560303,
-            "aerodynamics_highspeed" : 2.0636613965034485,
-            "weight" : 1.962327229976654,
-            "performance" : 1,
-            "hq" : 1.5,
-            "mtow" : 0.5,
-            "wing_position" : 3,
-            "wing_area" : 2,
-        }
-        ##########
-        # THIS IS THE POSITIONOF TIME MODULES FUNCTION, TO SUBTITUTE THE HARDCODED TIMES
-        print("\n Retrieving individual times for your modules... \n")
-        modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
-        print(modules_times)
-        ###########
-
-        #find how many times they run
-        modules_in_feedback = extract_module(feedback_list)
-        keys_order = list(config_dictionary.keys())
+    def total_time_of_modules(score_criteria):
+        if score_criteria == 'use_time': #use pre-ran times for each individual module
+            modules_times = {
+                "geometry": 2.0065503120422363,
+                "aerodynamics_lowspeed" : 2.4223287105560303,
+                "aerodynamics_highspeed" : 2.0636613965034485,
+                "weight" : 1.962327229976654,
+                "performance" : 1,
+                "hq" : 1.5,
+                "mtow" : 0.5,
+                "wing_position" : 3,
+                "wing_area" : 2,
+            }
+        else: #compute modules times for your particular machine, solver, etc.
+            print("\n   Calculating individual times for your modules... \n")
+            modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
         
-        rerun_counts = {key: 0 for key in keys_order}  # Initialize a dictionary to store rerun counts
 
-        #count modules that have to be rerun
-        for pair in modules_in_feedback:
-            source, target = pair
-            start_index = keys_order.index(source)  # Find the index of the source module
-            end_index = keys_order.index(target)  # Find the index of the target module
-            
-            rerun_modules = keys_order[end_index:start_index+1]  # Extract the modules that need to be rerun
-            
-            for module in rerun_modules:
-                rerun_counts[module] += 1  # Increment the rerun count (dict) for each module
-
-        #Compute total time knowing how many reruns each module has:
-        total_time = 0
-        for module, count in rerun_counts.items():
-            total_time += count * modules_times[module]
-
-        #TODO: multiply the times of the modules given by modules_times by the counts in module counts
+        
 
         #return score as sum (time*times they run).
-        return total_time
+        return modules_times
 
 
-
+#############################################
+#End of the functions
+#############################################
 
     #retrieves the dictionary for models and their sub-models and returns as an ordered list of the full "paths" to the variables
     ordered_vars = process_variables(model_data['tree']['children'])
@@ -121,11 +100,38 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, INFO =
     list_of_BLC_in_feedback = extract_BLC(result_list)
     list_of_BLC_in_feedback = [(a, b) for (a, b) in list_of_BLC_in_feedback if 'fastoad_shaper' not in (a, b)] # remove fastoad_shaper from feedback counts
     
+    if score_criteria == 'compute_time' or score_criteria == 'use_time':
+        if 'run_once' not in vars(): #only compute/get once the times of the modules
+            modules_times = total_time_of_modules(score_criteria) 
+            run_once = 1
 
-    score = total_time_of_modules(result_list)
+        #find how many times they run
+        modules_in_feedback = extract_module(result_list)
+        keys_order = list(config_dictionary.keys())
+        
+        rerun_counts = {key: 0 for key in keys_order}  # Initialize a dictionary to store rerun counts
 
+        #count modules that have to be rerun
+        for pair in modules_in_feedback:
+            source, target = pair
+            start_index = keys_order.index(source)  # Find the index of the source module
+            end_index = keys_order.index(target)  # Find the index of the target module
+            
+            rerun_modules = keys_order[end_index:start_index+1]  # Extract the modules that need to be rerun
+            
+            for module in rerun_modules:
+                rerun_counts[module] += 1  # Increment the rerun count (dict) for each module
 
+        #Compute total time knowing how many reruns each module has:
+        total_time = 0
+        for module, count in rerun_counts.items():
+            total_time += count * modules_times[module]
+        score = total_time
 
+    elif score_criteria == 'count_feedbacks':
+        score = len(list_of_BLC_in_feedback) 
+    else:
+        sys.exit('\nScore criteria not valid. please choose compute_time, use_time or count_feedbacks')
 
 
     print('Score: ', score)

@@ -13,10 +13,16 @@ from fastoad.io.configuration import FASTOADProblemConfigurator
 from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
 from openmdao.utils.om_warnings import issue_warning
 
-def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
+def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
+    print("\n Starting DOUBLE swap")
+    print("____________________________________\n")
+    dict_with_solvers = config_dictionary.copy()
+
+    config_dictionary.pop('nonlinear_solver', None)
+    config_dictionary.pop('linear_solver', None)
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -40,7 +46,6 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
             with open(CONFIGURATION_FILE, 'w') as file:
                 yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
-
             #convert config file to problem and then to dictionary, as input for feedback_extractor
             conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
             problem = conf.get_problem()
@@ -51,7 +56,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria)
             
             if score < best_score:
                 best_score = score
@@ -71,16 +76,23 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
         
     keys_list = best_order  # Start from the best order found so far
     existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
+    #add back solvers, if they were there
+    if 'nonlinear_solver' in dict_with_solvers.keys(): existing_data['model']['aircraft_sizing']['nonlinear_solver'] = dict_with_solvers['nonlinear_solver'] 
+    if 'linear_solver' in dict_with_solvers: existing_data['model']['aircraft_sizing']['linear_solver'] = dict_with_solvers['linear_solver'] 
     with open(CONFIGURATION_FILE, 'w') as file:
         yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
         file.flush()
     return keys_list
 
 
-def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
-
+def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
+    print("\n Starting SINGLE swap")
+    print("____________________________________\n")
+    dict_with_solvers = config_dictionary.copy()
+    config_dictionary.pop('nonlinear_solver', None)
+    config_dictionary.pop('linear_solver', None)
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
 
@@ -115,7 +127,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria)
             
             if score < best_score:
                 best_score = score
@@ -138,20 +150,21 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
     keys_list = best_order
     existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
+    #add back solvers, if they were there
+    if 'nonlinear_solver' in dict_with_solvers.keys(): existing_data['model']['aircraft_sizing']['nonlinear_solver'] = dict_with_solvers['nonlinear_solver'] 
+    if 'linear_solver' in dict_with_solvers: existing_data['model']['aircraft_sizing']['linear_solver'] = dict_with_solvers['linear_solver'] 
     with open(CONFIGURATION_FILE, 'w') as file:
         yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
         file.flush()
     return keys_list
 
 
-def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE):
+def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
 
-    print("\n HYBRID SWAP: Starting double swap")
-    print("____________________________________\n")
-    keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE)
+    print("\n HYBRID SWAP")
 
-    print("\nHYBRID SWAP: Starting single swap")
-    print("____________________________________\n")
+    keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)
+
     #Setup the problem again with the updated order from the double swap
     conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
     problem = conf.get_problem()
@@ -161,20 +174,16 @@ def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     model_data = _get_viewer_data(problem, case_id=case_id)
     with open(CONFIGURATION_FILE, 'r') as file:
         yaml_data = yaml.safe_load(file)
-        yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
-        yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
         aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
 
-    keys_list = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+    keys_list = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
     return keys_list
 
 
 
-
-
-
-
-
+#############################################
+#End of the functions
+#############################################
 
 
 
@@ -203,7 +212,8 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 # LVL 4: etc TO BE DONE
 start = time.time()
 optimization_level = 1
-swap = 'DOUBLE'
+swap = 'HYBRID' #SINGLE DOUBLE HYBRID
+score_criteria = 'count_feedbacks' #use_time, compute_time, count_feedbacks
 
 if optimization_level == 1:
 
@@ -227,28 +237,24 @@ if optimization_level == 1:
 
         # Load the YAML contents
         yaml_data = yaml.safe_load(file)
-
         # Get the structure under 'model: aircraft_sizing'
         try:
             yaml_data['model']['aircraft_sizing']
         except:
             sys.exit("\n Error: Configuration optimizer assumes existence of aircraft_sizing inside model .yml config file \n")
+    aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
 
-        yaml_data['model']['aircraft_sizing'].pop('nonlinear_solver', None)
-        yaml_data['model']['aircraft_sizing'].pop('linear_solver', None)
-        aircraft_sizing_data = yaml_data['model']['aircraft_sizing']
-        print('\n Order before first swap: ', list(aircraft_sizing_data.keys()))
+    print('\n Order before first swap: ', [key for key in aircraft_sizing_data if key != 'linear_solver' and key != 'nonlinear_solver'])
 
     if swap == 'DOUBLE':
-        dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+        dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
     elif swap == 'SINGLE':
-        dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+        dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
     elif swap == 'HYBRID':
-        dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE)
+        dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
 
-    else: print('\n Swap type not valid')
+    else: sys.exit("\n SWAP type not valid. Please choose SINGLE, DOUBLE or HYBRID \n")
 
-    print(dummy_var)
 
 
 #TODO::::
@@ -260,4 +266,4 @@ if optimization_level == 1:
 else:
     print('Not possible sry') 
 
-print('\n Time taken', time.time() - start, 'seconds')
+print('\nYour configuration file has been overwritten with optimal order. Time taken', time.time() - start, 'seconds')
