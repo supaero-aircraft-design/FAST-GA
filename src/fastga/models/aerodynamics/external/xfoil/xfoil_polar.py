@@ -261,6 +261,7 @@ class XfoilPolar(ExternalCodeComp):
         """
         parser = InputFileGenerator()
         viscid = not self.options["Invicid_calculation"]
+        single_AoA = self.options["single_AoA"]
         # input command to run XFoil
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
             parser.set_template_file(str(input_template_path))
@@ -272,9 +273,15 @@ class XfoilPolar(ExternalCodeComp):
             parser.transfer_var(float(mach), 1, 1)
             parser.mark_anchor("ITER")
             parser.transfer_var(self.options[OPTION_ITER_LIMIT], 1, 1)
-            parser.mark_anchor("ASEQ")
-            parser.transfer_var(alpha_start, 1, 1)
-            parser.transfer_var(alpha_end, 2, 1)
+            
+            if single_AoA:
+                parser.mark_anchor("ALFA")
+                parser.transfer_var(alpha_start, 1, 1)     
+            else:
+                parser.mark_anchor("ASEQ")
+                parser.transfer_var(alpha_start, 1, 1)
+                parser.transfer_var(alpha_end, 2, 1)
+            
             parser.transfer_var(step, 3, 1)
             parser.reset_anchor()
             parser.mark_anchor("/profile")
