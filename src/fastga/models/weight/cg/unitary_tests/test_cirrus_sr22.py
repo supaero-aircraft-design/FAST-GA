@@ -25,7 +25,8 @@ from ..cg_components.a_airframe import (
     ComputeFuselageCG,
     ComputeTailCG,
     ComputeFlightControlCG,
-    ComputeLandingGearCG,
+    ComputeFrontLandingGearCG,
+    ComputeMainLandingGearCG,
 )
 from ..cg_components.b_propulsion import (
     ComputeEngineCG,
@@ -96,15 +97,26 @@ def test_compute_cg_flight_control():
     assert x_cg_a4 == pytest.approx(4.83, abs=1e-2)
 
 
-def test_compute_cg_landing_gear():
-    """Tests computation of landing gear center(s) of gravity."""
+def test_compute_cg_front_landing_gear():
+    """Tests computation of front landing gear center of gravity."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeLandingGearCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeFrontLandingGearCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeLandingGearCG(), ivc)
+    problem = run_system(ComputeFrontLandingGearCG(), ivc)
     x_cg_a52 = problem.get_val("data:weight:airframe:landing_gear:front:CG:x", units="m")
     assert x_cg_a52 == pytest.approx(1.08, abs=1e-2)
+
+
+def test_compute_cg_main_landing_gear():
+    """Tests computation of main landing gear center of gravity."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeMainLandingGearCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMainLandingGearCG(), ivc)
+    x_cg_a51 = problem.get_val("data:weight:airframe:landing_gear:main:CG:x", units="m")
+    assert x_cg_a51 == pytest.approx(3.06, abs=1e-2)
 
 
 def test_compute_cg_engine():
