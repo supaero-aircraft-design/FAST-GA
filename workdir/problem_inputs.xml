@@ -3,10 +3,12 @@
     <TLAR>
       <NPAX_design is_input="True">2.0<!--design number of passengers (two pilots are included de facto, meaning for a 2 seater, NPAX_design is equal to 0)--></NPAX_design>
       <luggage_mass_design units="kg" is_input="True">60.0<!--luggage design mass--></luggage_mass_design>
+      <v_approach units="kn" is_input="True">78.0<!--approach speed--></v_approach>
       <v_cruise units="kn" is_input="True">158.0<!--cruise speed--></v_cruise>
       <v_max_sl units="kn" is_input="True">171.0<!--maximum speed at sea level--></v_max_sl>
     </TLAR>
     <geometry>
+      <flap_type is_input="True">1.0<!--flap type (0.0 - plain flap, 2.0 - single slotted flap, 3.0 - split flap)--></flap_type>
       <has_T_tail is_input="True">1.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
       <wing_configuration is_input="True">1.0<!--1=low wing configuration / 2=mid wing configuration / 3=high wing configuration--></wing_configuration>
       <cabin>
@@ -29,10 +31,12 @@
       </cabin>
       <flap>
         <chord_ratio is_input="True">0.15<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+        <span_ratio is_input="True">0.7<!--ratio (width of flaps)/(total span)--></span_ratio>
       </flap>
       <horizontal_tail>
         <area units="m**2" is_input="True">3.44<!--horizontal tail area--></area>
         <aspect_ratio is_input="True">3.84<!--aspect ratio of horizontal tail--></aspect_ratio>
+        <elevator_chord_ratio is_input="True">0.34<!--elevator chord ratio--></elevator_chord_ratio>
         <sweep_25 units="deg" is_input="True">4.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
         <taper_ratio is_input="True">1.0<!--taper ratio of horizontal tail--></taper_ratio>
         <thickness_ratio is_input="True">0.125<!--thickness ratio of horizontal tail--></thickness_ratio>
@@ -64,6 +68,13 @@
         <sweep_25 units="deg" is_input="True">30.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
         <taper_ratio is_input="True">0.62<!--taper ratio of vertical tail--></taper_ratio>
         <thickness_ratio is_input="True">0.125<!--thickness ratio of vertical tail--></thickness_ratio>
+        <max_thickness>
+          <x_ratio is_input="True">0.3<!--position of the point of maximum thickness as a ratio of vertical tail chord--></x_ratio>
+        </max_thickness>
+        <rudder>
+          <chord_ratio is_input="True">0.4<!--flap rudder as a percentage of the wing chord--></chord_ratio>
+          <max_deflection units="deg" is_input="True">30.0<!--rudder maximum deflection--></max_deflection>
+        </rudder>
       </vertical_tail>
       <wing>
         <area units="m**2" is_input="True">16.638<!--wing reference area--></area>
@@ -72,6 +83,7 @@
         <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
         <taper_ratio is_input="True">1.0<!--taper ratio of wing--></taper_ratio>
         <thickness_ratio is_input="True">0.15<!--mean thickness ratio of wing--></thickness_ratio>
+        <twist units="deg" is_input="True">-3.0<!--Negative twist means tip AOA is smaller than root--></twist>
         <kink>
           <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
         </kink>
@@ -103,25 +115,54 @@
         <installation_effect>
           <effective_efficiency>
             <cruise is_input="True">1.0<!--Value to multiply the uninstalled efficiency with to obtain the effective efficiency due to the presence of cowling (fuselage or nacelle) behind the propeller--></cruise>
-            <low_speed is_input="True">1.0<!--Value to multiply the uninstalled efficiency with to obtain the effective efficiency due to the presence of cowling (fuselage or nacelle) behind the propeller--></low_speed>
           </effective_efficiency>
         </installation_effect>
       </propeller>
+      <vertical_tail>
+        <efficiency is_input="True">0.95</efficiency>
+      </vertical_tail>
       <aircraft>
         <cruise>
           <CD0 is_input="True">nan<!--profile drag coefficient for the complete aircraft in cruise conditions--></CD0>
         </cruise>
       </aircraft>
+      <cooling>
+        <low_speed>
+          <CD0 is_input="True">0.001624<!--profile drag due to cooling in low speed conditions--></CD0>
+        </low_speed>
+      </cooling>
       <wing>
         <cruise>
           <induced_drag_coefficient is_input="True">nan<!--coefficient to multiply by the lift coefficient squared to get wing induced drag in cruise conditions--></induced_drag_coefficient>
         </cruise>
       </wing>
     </aerodynamics>
+    <mission>
+      <sizing>
+        <fuel units="kg" is_input="True">0.0<!--consumed fuel mass during whole mission--></fuel>
+        <landing>
+          <elevator_angle units="deg" is_input="True">-20.0<!--position of the elevator during landing--></elevator_angle>
+          <flap_angle units="deg" is_input="True">30.0<!--position of the flaps during landing--></flap_angle>
+        </landing>
+        <takeoff>
+          <flap_angle units="deg" is_input="True">10.0<!--flap angle during takeoff phase in sizing mission--></flap_angle>
+        </takeoff>
+        <cs23>
+          <characteristic_speed>
+            <vd units="kn" is_input="True">194.0<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
+        <main_route>
+          <cruise>
+            <altitude units="ft" is_input="True">10000.0<!--altitude during cruise phase in sizing mission--></altitude>
+          </cruise>
+        </main_route>
+      </sizing>
+    </mission>
     <weight>
-      <aircraft>
-        <MTOW units="kg" is_input="True">nan<!--maximum takeoff weight of the aircraft--></MTOW>
-      </aircraft>
       <airframe>
         <fuselage>
           <k_factor is_input="True">1.0<!--proportional corrective factor for fuselage mass--></k_factor>
@@ -140,23 +181,6 @@
         </wing>
       </airframe>
     </weight>
-    <mission>
-      <sizing>
-        <cs23>
-          <characteristic_speed>
-            <vd units="kn" is_input="True">194.0<!--limit speed--></vd>
-          </characteristic_speed>
-          <sizing_factor>
-            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
-          </sizing_factor>
-        </cs23>
-        <main_route>
-          <cruise>
-            <altitude units="ft" is_input="True">10000.0<!--altitude during cruise phase in sizing mission--></altitude>
-          </cruise>
-        </main_route>
-      </sizing>
-    </mission>
   </data>
   <settings>
     <propulsion>
@@ -204,5 +228,17 @@
         </landing_gear>
       </airframe>
     </weight>
+    <aerodynamics>
+      <aircraft>
+        <undesirable_drag>
+          <k_factor is_input="True">1.25<!--Correction coefficient to take into account the other undesirable drag, default is 1.25 as suggested in Gudmundsson--></k_factor>
+        </undesirable_drag>
+      </aircraft>
+      <reference_flight_conditions>
+        <low_speed>
+          <AOA units="rad" is_input="True">0.08726646259971647</AOA>
+        </low_speed>
+      </reference_flight_conditions>
+    </aerodynamics>
   </settings>
 </FASTOAD_model>
