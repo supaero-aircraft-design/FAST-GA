@@ -12,55 +12,50 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
 from .constants import SUBMODEL_AVIONICS_SYSTEM_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_AVIONICS_SYSTEM_MASS
-] = "fastga.submodel.weight.mass.system.avionics_systems.legacy"
-
 
 @oad.RegisterSubmodel(
     SUBMODEL_AVIONICS_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.avionics_systems.legacy",
+    "fastga.submodel.weight.mass.system.avionics_systems.from_uninstalled",
 )
-class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
+class ComputeAvionicsSystemsWeightFromUninstalled(om.ExplicitComponent):
     """
     Weight estimation for avionics systems. Takes into account the weight of:
     - Instrumentation
     - Avionics
-    - Electronics
+    - Navigation
 
-    Based on a statistical analysis. See :cite:`roskampart5:1985` Torenbeek method. This method
-    might not be suited for modern aircraft with EFIS type cockpit installation according to Roskam.
+    Based on a statistical analysis. See :cite:`gudmundsson:2013`.
     """
 
     def setup(self):
 
-        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lbm")
-        self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
+        self.add_input(
+            "data:weight:systems:avionics:mass_uninstalled",
+            val=45.0,
+            units="lbm",
+            desc="Weight of the uninstalled avionics system, default correspond to the value of "
+            "the Garmin G1000",
+        )
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        mtow = inputs["data:weight:aircraft:MTOW"]
-        n_eng = inputs["data:geometry:propulsion:engine:count"]
-        n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
+        uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
-        n_occ = n_pax + 2.0
-        # The formula differs depending on the number of propeller on the engine
+        outputs["data:weight:systems:avionics:mass"] = 2.11 * uninstalled_avionics ** 0.933
 
-        if n_eng == 1.0:
-            c3 = 33.0 * n_occ
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        else:
-            c3 = 40 + 0.008 * mtow  # mass formula in lb
+        uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
-        outputs["data:weight:systems:avionics:mass"] = c3
+        partials[
+            "data:weight:systems:avionics:mass", "data:weight:systems:avionics:mass_uninstalled"
+        ] = (2.11 * 0.993 * uninstalled_avionics ** -0.067)
