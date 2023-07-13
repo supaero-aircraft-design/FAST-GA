@@ -14,8 +14,7 @@ from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
 from openmdao.utils.om_warnings import issue_warning
 
 def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
-    print("\n Starting DOUBLE swap")
-    print("____________________________________\n")
+    
     dict_with_solvers = config_dictionary.copy()
 
     config_dictionary.pop('nonlinear_solver', None)
@@ -25,7 +24,8 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
-
+    print("\n Starting DOUBLE swap")
+    print("____________________________________\n")
     print('Starting order: ', keys_list)
     counter = 0
     swap_position = 0
@@ -87,8 +87,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
 
 def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
-    print("\n Starting SINGLE swap")
-    print("____________________________________\n")
+    
     dict_with_solvers = config_dictionary.copy()
     config_dictionary.pop('nonlinear_solver', None)
     config_dictionary.pop('linear_solver', None)
@@ -96,7 +95,8 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
-
+    print("\n Starting SINGLE swap")
+    print("____________________________________\n")
     print('Starting order: ', keys_list)
     counter = 0
     swap_position = 0
@@ -163,7 +163,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
 def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria):
 
-    print("\n HYBRID SWAP")
+    print("\n HYBRID SWAP: First double, then single:")
 
     keys_list = double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)
 
@@ -188,14 +188,12 @@ def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 #############################################
 
 
-
-
-
 # Define relative path
 WORK_FOLDER_PATH = "workdir"
 
 # Define file
 CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
+start = time.time()
 
 #Define optimizatin level: (assumes presence of aircraft_sizing, with modules defined)
 # LVL 1: CONFIG FILE MODULES - shuffles the order of
@@ -212,11 +210,23 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 # LVL 2: Shuffles order of all sub-modules in all the modules of the CONFIG file TO BE DONE
 # LVL 3: etc TO BE DONE
 # LVL 4: etc TO BE DONE
-start = time.time()
-optimization_level = 1
-swap = 'HYBRID' #SINGLE DOUBLE HYBRID
-score_criteria = 'count_feedbacks' #use_time, compute_time, count_feedbacks
 
+############################################
+optimization_level = 1
+swap = 'DOUBLE' #SINGLE DOUBLE HYBRID
+score_criteria = 'compute_time' #use_time, compute_time, count_feedbacks
+############################################
+
+try:
+    os.remove('tmp_saved_single_module_timings.txt')
+except FileNotFoundError:
+    pass
+try:
+    #remove all temporary config files created for unitary timing
+    shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))
+except FileNotFoundError:
+    pass
+    
 if optimization_level == 1:
 
     #Setup of the problem
@@ -269,3 +279,12 @@ else:
     print('Not possible sry') 
 
 print('\nYour configuration file has been overwritten with optimal order. Time taken', time.time() - start, 'seconds')
+try:
+    os.remove('tmp_saved_single_module_timings.txt')
+except FileNotFoundError:
+    pass
+try:
+    #remove all temporary config files created for unitary timing
+    shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))
+except FileNotFoundError:
+    pass

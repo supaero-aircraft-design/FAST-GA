@@ -4,12 +4,13 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
     import os
     import openmdao.api as om
     from fastoad import api as api_cs25
-    from fastga.command import api as api_cs23
+    #from fastga.command import api as api_cs23
     import subprocess
     import time
     import yaml
     import shutil
     import re
+    import contextlib
 
     def find_id_value(dictionary):
         if 'id' in dictionary:
@@ -37,7 +38,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
 
     module_times = dict.fromkeys(config_dictionary.keys(), 0)
 
-
+    print("\n   Calculating individual times for your modules... \n")
     for module in config_dictionary.keys(): #iterate over each module present in the configuration file we are trying to optimize
 
         #generate the configuration file with single module (no optimization and no propeller)
@@ -45,6 +46,9 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
         if not pth.isdir(NEW_CONFIGURATION_FILE):
             os.makedirs(NEW_CONFIGURATION_FILE)
         shutil.copy(ORIGINAL_CONFIGURATION_FILE, NEW_CONFIGURATION_FILE)
+        FOLDER_WITH_CSVS_SRC = WORK_FOLDER_PATH + '/workdir' 
+        FOLDER_WITH_CSVS_TGT = NEW_CONFIGURATION_FILE + '/workdir'
+        shutil.copytree(FOLDER_WITH_CSVS_SRC, FOLDER_WITH_CSVS_TGT, dirs_exist_ok=True)#copy needed csv files to new config file path
         NEW_CONFIGURATION_FILE = pth.join(NEW_CONFIGURATION_FILE, os.path.basename(ORIGINAL_CONFIGURATION_FILE))
         with open(NEW_CONFIGURATION_FILE, 'r') as file:
                 data = yaml.safe_load(file)
@@ -84,15 +88,20 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
             for _ in range(20): #run them individually 20 times, to have a good average
 
                 starting = time.time()
-                eval_problem = api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
+
+                with contextlib.redirect_stdout(None): #supresses outputs by terminal of each small case execution
+                    api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
 
                 executions_time.append(time.time() - starting)
 
             module_times[module] = sum(executions_time)/len(executions_time)
-            print('\n   Average time of ', module, ': ', module_times[module], ' seconds')     
+            print('\n       Average time of ', module, ': ', module_times[module], ' seconds\n')     
         elif id_of_module == 'fastga.weight.legacy':
+            print('\n   Starting timings of: ', module)
+            ########################################### Bonjour Florent LUTZ, est-ce qu'il y a une manière de cronométrer le temps du module weight tout seul? J'ai réussi avec les autres, car leurs source files dans unitary_tests sont complets
+            ########################################### CHECKKK 
             module_times[module] = 3
+            print('\n       Average time of ', module, ': ', module_times[module], ' seconds\n')
          
-    #remove all temporary config files created for unitary timing
-    shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))
+  
     return  module_times
