@@ -78,7 +78,8 @@ from ..c_systems import (
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight
 from ..d_furniture.sum import FurnitureWeight
-from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
+from ..mass_breakdown import MassBreakdown
+from ..update_owe import ComputeOperatingWeightEmpty
 from ..compute_design_payload import ComputeDesignPayload
 from ..compute_maximum_payload import ComputeMaxPayload
 from ..update_mlw import ComputeMLW
