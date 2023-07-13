@@ -21,7 +21,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
 from .cg_components.constants import (
-    SUBMODEL_PAYLOAD_CG,
+    SUBMODEL_PAYLOAD_FRONT_FRET_CG,
+    SUBMODEL_PAYLOAD_REAR_FRET_CG,
+    SUBMODEL_PAYLOAD_PAX_CG,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
     SUBMODEL_TANK_CG,
 )
@@ -47,7 +49,17 @@ class CG(om.Group):
             "tank_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "payload_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
+            "front_fret_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_FRONT_FRET_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "rear_fret_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_REAR_FRET_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "pax_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_PAX_CG), promotes=["*"]
         )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(

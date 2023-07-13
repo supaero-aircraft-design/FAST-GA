@@ -42,7 +42,9 @@ from ..cg_components.c_systems import (
     ComputeRecordingSystemsCG,
 )
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
-from ..cg_components.payload import ComputePayloadCG
+from ..cg_components.payload_front_fret_cg import ComputeFrontFretCG
+from ..cg_components.payload_rear_fret_cg import ComputeRearFretCG
+from ..cg_components.payload_pax_cg import ComputePaxCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
 from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
 from ..cg_components.most_aft_cg_mac import ComputeAftCGMac
@@ -233,17 +235,35 @@ def test_compute_cg_passenger_seats():
     assert x_cg_d2 == pytest.approx(3.223, abs=1e-2)  # modified with new cabin definition
 
 
-def test_compute_cg_payload():
-    """Tests computation of payload center(s) of gravity."""
+def test_compute_cg_payload_pax():
+    """Tests computation of payload (pax) center of gravity."""
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputePayloadCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputePaxCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputePayloadCG(), ivc)
+    problem = run_system(ComputePaxCG(), ivc)
     x_cg_pl = problem.get_val("data:weight:payload:PAX:CG:x", units="m")
     assert x_cg_pl == pytest.approx(3.22, abs=1e-1)
+
+
+def test_compute_cg_payload_rear_fret():
+    """Tests computation of payload (rear fret) center of gravity."""
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeRearFretCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeRearFretCG(), ivc)
     x_cg_rear_fret = problem.get_val("data:weight:payload:rear_fret:CG:x", units="m")
     assert x_cg_rear_fret == pytest.approx(4.104, abs=1e-2)
+
+
+def test_compute_cg_payload_front_fret():
+    """Tests computation of payload (front fret) center of gravity."""
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeFrontFretCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFrontFretCG(), ivc)
     x_cg_front_fret = problem.get_val("data:weight:payload:front_fret:CG:x", units="m")
     assert x_cg_front_fret == pytest.approx(0.0, abs=1e-2)
 
