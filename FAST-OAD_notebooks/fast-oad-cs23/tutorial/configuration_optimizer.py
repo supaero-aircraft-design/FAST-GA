@@ -29,6 +29,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     print('Starting order: ', keys_list)
     counter = 0
     swap_position = 0
+    if len(keys_list)<2: sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
     while counter < len(keys_list):
         counter = counter + 1 
         print('Loop nº: ', counter)
@@ -99,6 +100,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     print('Starting order: ', keys_list)
     counter = 0
     swap_position = 0
+    if len(keys_list)<2: sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
     while counter < len(keys_list):
         counter = counter + 1 
         print('Loop: nº', counter)
