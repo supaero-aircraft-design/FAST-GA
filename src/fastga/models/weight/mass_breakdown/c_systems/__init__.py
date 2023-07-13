@@ -13,10 +13,8 @@
 
 from .c1_electric_power_systems_weight import ComputeElectricWeight
 from .c5_hydraulic_power_systems_weight import ComputeHydraulicWeight
-from .c2_life_support_systems_weight import (
-    ComputeLifeSupportSystemsWeight,
-    ComputeLifeSupportSystemsWeightFLOPS,
-)
+from .c2_life_support_systems_weight import ComputeLifeSupportSystemsWeight
+from .c2_life_support_systems_weight_flops import ComputeLifeSupportSystemsWeightFLOPS
 from .c3_avionics_systems_weight import ComputeAvionicsSystemsWeight
 from .c3_avionics_systems_from_uninstalled_weight import ComputeAvionicsSystemsWeightFromUninstalled
 from .c4_recording_systems_weight import ComputeRecordingSystemsWeight
