@@ -17,8 +17,6 @@ from .c2_life_support_systems_weight import (
     ComputeLifeSupportSystemsWeight,
     ComputeLifeSupportSystemsWeightFLOPS,
 )
-from .c3_avionics_systems_weight import (
-    ComputeAvionicsSystemsWeight,
-    ComputeAvionicsSystemsWeightFromUninstalled,
-)
+from .c3_avionics_systems_weight import ComputeAvionicsSystemsWeight
+from .c3_avionics_systems_from_uninstalled_weight import ComputeAvionicsSystemsWeightFromUninstalled
 from .c4_recording_systems_weight import ComputeRecordingSystemsWeight
