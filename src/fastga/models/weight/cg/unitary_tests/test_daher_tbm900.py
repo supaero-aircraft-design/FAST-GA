@@ -22,7 +22,8 @@ from ..cg_components.a_airframe import (
     ComputeFuselageCG,
     ComputeTailCG,
     ComputeFlightControlCG,
-    ComputeLandingGearCG,
+    ComputeFrontLandingGearCG,
+    ComputeMainLandingGearCG,
 )
 from ..cg_components.b_propulsion import (
     ComputeEngineCG,
@@ -93,15 +94,26 @@ def test_compute_cg_flight_control():
     assert x_cg_a4 == pytest.approx(7.301, abs=1e-2)
 
 
-def test_compute_cg_landing_gear():
-    """Tests computation of landing gear center(s) of gravity."""
+def test_compute_cg_front_landing_gear():
+    """Tests computation of front landing gear center of gravity."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeLandingGearCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeFrontLandingGearCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeLandingGearCG(), ivc)
+    problem = run_system(ComputeFrontLandingGearCG(), ivc)
     x_cg_a52 = problem.get_val("data:weight:airframe:landing_gear:front:CG:x", units="m")
     assert x_cg_a52 == pytest.approx(2.25, abs=1e-2)
+
+
+def test_compute_cg_main_landing_gear():
+    """Tests computation of main landing gear center of gravity."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeMainLandingGearCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMainLandingGearCG(), ivc)
+    x_cg_a51 = problem.get_val("data:weight:airframe:landing_gear:main:CG:x", units="m")
+    assert x_cg_a51 == pytest.approx(5.99, abs=1e-2)
 
 
 def test_compute_cg_engine():
@@ -231,9 +243,9 @@ def test_compute_cg_ratio_aft():
     empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
     assert empty_mass == pytest.approx(2046.36, abs=1e-2)
     cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
-    assert cg_x == pytest.approx(4.89, abs=1e-2)
+    assert cg_x == pytest.approx(4.91, abs=1e-2)
     cg_mac_pos = problem["data:weight:aircraft:empty:CG:MAC_position"]
-    assert cg_mac_pos == pytest.approx(0.34, abs=1e-2)
+    assert cg_mac_pos == pytest.approx(0.36, abs=1e-2)
 
 
 def test_compute_cg_load_case():

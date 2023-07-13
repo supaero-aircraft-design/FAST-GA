@@ -1,4 +1,4 @@
-"""Estimation of landing gear center(s) of gravity."""
+"""Estimation of main landing gear center of gravity."""
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -14,77 +14,25 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_LANDING_GEAR_CG
+from ..constants import SUBMODEL_MAIN_LANDING_GEAR_CG
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_LANDING_GEAR_CG
-] = "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
+# oad.RegisterSubmodel.active_models[
+#     SUBMODEL_LANDING_GEAR_CG
+# ] = "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
+    SUBMODEL_MAIN_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.main.legacy"
 )
-class ComputeLandingGearCG(Group):
+class ComputeMainLandingGearCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Landing gear center of gravity estimation based on the ratio of weight supported by each
+    Main landing gear center of gravity estimation based on the ratio of weight supported by each
     gear.
     """
-
-    def setup(self):
-
-        self.add_subsystem("comp_nlg_cg", ComputeFrontCGX(), promotes=["*"])
-        self.add_subsystem("comp_mlg_cg", ComputeMainCGX(), promotes=["*"])
-
-
-class ComputeFrontCGX(ExplicitComponent):
-    """NLG gravity center"""
-
-    def setup(self):
-
-        self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
-        self.add_input(
-            "settings:weight:airframe:landing_gear:front:front_fuselage_ratio",
-            val=0.75,
-        )
-
-        self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
-
-        self.declare_partials(
-            of="data:weight:airframe:landing_gear:front:CG:x",
-            wrt="data:geometry:fuselage:front_length",
-            method="exact",
-        )
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        lav = inputs["data:geometry:fuselage:front_length"]
-        front_lg_fuselage = inputs[
-            "settings:weight:airframe:landing_gear:front:front_fuselage_ratio"
-        ]
-
-        x_cg_a52 = lav * front_lg_fuselage
-
-        outputs["data:weight:airframe:landing_gear:front:CG:x"] = x_cg_a52
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        front_lg_fuselage = inputs[
-            "settings:weight:airframe:landing_gear:front:front_fuselage_ratio"
-        ]
-
-        partials[
-            "data:weight:airframe:landing_gear:front:CG:x", "data:geometry:fuselage:front_length"
-        ] = front_lg_fuselage
-
-
-class ComputeMainCGX(ExplicitComponent):
-    """MLG gravity center"""
 
     def setup(self):
 

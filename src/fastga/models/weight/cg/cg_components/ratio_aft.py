@@ -24,7 +24,8 @@ from ..cg_components.constants import (
     SUBMODEL_FUSELAGE_CG,
     SUBMODEL_TAIL_CG,
     SUBMODEL_FLIGHT_CONTROLS_CG,
-    SUBMODEL_LANDING_GEAR_CG,
+    SUBMODEL_MAIN_LANDING_GEAR_CG,
+    SUBMODEL_FRONT_LANDING_GEAR_CG,
     SUBMODEL_PROPULSION_CG,
     SUBMODEL_POWER_SYSTEMS_CG,
     SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG,
@@ -57,8 +58,13 @@ class ComputeCGRatioAircraftEmpty(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "landing_gear_cg",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_CG),
+            "main_landing_gear_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_MAIN_LANDING_GEAR_CG),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "front_landing_gear_cg",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FRONT_LANDING_GEAR_CG),
             promotes=["*"],
         )
         self.add_subsystem(
