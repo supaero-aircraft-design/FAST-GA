@@ -15,3 +15,4 @@
 SUBMODEL_INSTALLED_ENGINE_MASS = "submodel.weight.mass.propulsion.installed_engine"
 SUBMODEL_FUEL_SYSTEM_MASS = "submodel.weight.mass.propulsion.fuel_system"
 SUBMODEL_UNUSABLE_FUEL_MASS = "submodel.weight.mass.propulsion.unusable_fuel"
+SUBMODEL_OIL_WEIGHT = "submodel.weight.mass.propulsion.oil_weight"
