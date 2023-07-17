@@ -183,9 +183,9 @@ def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
 
 
 
-#############################################
+####################################################################################################################################################################################
 #End of the functions
-#############################################
+####################################################################################################################################################################################
 
 
 # Define relative path
@@ -267,10 +267,7 @@ if optimization_level == 1:
 
     else: sys.exit("\n SWAP type not valid. Please choose SINGLE, DOUBLE or HYBRID \n")
 
-
-
 #TODO::::
-
 #elif Optimization_level == 2:
 #elif Optimization_level == 3:
 #elif Optimization_level == 4:

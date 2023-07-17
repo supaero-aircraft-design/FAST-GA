@@ -10,7 +10,9 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
     import yaml
     import shutil
     import re
+    import sys
     import contextlib
+    import xml.etree.ElementTree as ET
 
     def find_id_value(dictionary):
         if 'id' in dictionary:
@@ -35,7 +37,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
     module_path_pairs = re.findall(r'\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|', list_modules)
     module_path_pairs = [(module.strip(), path.strip()) for module, path in module_path_pairs]
 
-
+    #initialize empty dict for storing module times
     module_times = dict.fromkeys(config_dictionary.keys(), 0)
 
     print("\n   Calculating individual times for your modules... \n")
@@ -63,7 +65,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
                 yaml.dump(data, file, default_flow_style=False, sort_keys=False)
     
         #Fetch the appropriate SOURCE file from unitary_tests of each module, with the paths to the modules listed by the fastoad list_modules ran before
-         ################################
+
         #Find the id or ids of the module in question
         id_of_module = find_id_value(config_dictionary[module])
 
@@ -89,19 +91,77 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
 
                 starting = time.time()
 
+                #Supressing terminal outputs of modules:
+
+                # Save the original standard output and standard error
+                original_stdout = sys.stdout
+                original_stderr = sys.stderr
+                # Redirect standard output and standard error to the null device
+                sys.stdout = open(os.devnull, 'w')
+                sys.stderr = open(os.devnull, 'w')
+                with contextlib.redirect_stdout(None): #supresses outputs by terminal of each small case execution
+                    api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
+                # Restore the original standard output and standard error
+                sys.stdout = original_stdout
+                sys.stderr = original_stderr
+
+                executions_time.append(time.time() - starting)
+
+            module_times[module] = sum(executions_time)/len(executions_time)
+            print('\n       Average time of ', module, ': ', module_times[module], ' seconds\n') 
+
+
+        elif id_of_module == 'fastga.weight.legacy':
+
+            CG_SOURCE_FILE = path_to_id_of_module[:next_folder_index] + '/cg/unitary_tests/data/beechcraft_76.xml' #add the path to the source file used for the unitary test of module being timed
+
+            #we have to include a missing line to the source file in FAST-GA/src/fastga/models/weight/cg, so weight can run on its own
+            tree = ET.parse(CG_SOURCE_FILE)
+            root = tree.getroot()
+
+            # Find the <geometry> element
+            geometry_element = root.find('data/geometry')
+            if geometry_element is not None:
+                # Create missing element
+                new_element = ET.Element('wing_configuration')
+                new_element.set('is_input', 'True')
+                new_element.text = '1.0'
+
+                # Append the new element to the <geometry> element
+                geometry_element.append(new_element)
+            else:
+                sys.exit("<geometry> element not found in the XML structure. Couls not compute weight times")
+
+            # Save the modified XML back to a file
+            WEIGHT_PATH = pth.join(WORK_FOLDER_PATH, 'config_opti_tmp', str(module), 'data')
+            if not pth.isdir(WEIGHT_PATH):
+                os.makedirs(WEIGHT_PATH)
+            WEIGHT_SOURCE_FILE = pth.join(WEIGHT_PATH, 'beechcraft_76.xml')
+            tree.write(WEIGHT_SOURCE_FILE)
+
+    
+            api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, WEIGHT_SOURCE_FILE, overwrite=True)
+
+            executions_time = []
+
+            print('\n   Starting timings of: ', module)
+            for _ in range(20): #run them individually 20 times, to have a good average
+
+                starting = time.time()
+
                 with contextlib.redirect_stdout(None): #supresses outputs by terminal of each small case execution
                     api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
 
                 executions_time.append(time.time() - starting)
 
             module_times[module] = sum(executions_time)/len(executions_time)
-            print('\n       Average time of ', module, ': ', module_times[module], ' seconds\n')     
-        elif id_of_module == 'fastga.weight.legacy':
-            print('\n   Starting timings of: ', module)
-            ########################################### Bonjour Florent LUTZ, est-ce qu'il y a une manière de cronométrer le temps du module weight tout seul? J'ai réussi avec les autres, car leurs source files dans unitary_tests sont complets
-            ########################################### CHECKKK 
-            module_times[module] = 3
+
             print('\n       Average time of ', module, ': ', module_times[module], ' seconds\n')
          
-  
+        
+    try:
+        #remove all temporary config files created for unitary timing
+        shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))
+    except FileNotFoundError:
+        pass
     return  module_times
