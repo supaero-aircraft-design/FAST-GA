@@ -42,7 +42,7 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -61,3 +61,31 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        b_f = inputs["data:geometry:fuselage:maximum_width"]
+        h_f = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lar = inputs["data:geometry:fuselage:rear_length"]
+
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
+            (23 * h_f * lar) / 20
+            + (49 * h_f * lav) / 40
+            - (h_f * np.pi * (lar - fus_length + lav)) / 2
+        ) / (np.sqrt(b_f * h_f))
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
+            (23 * b_f * lar) / 20
+            + (49 * b_f * lav) / 40
+            - (b_f * np.pi * (lar - fus_length + lav)) / 2
+        ) / (np.sqrt(b_f * h_f))
+        partials[
+            "data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"
+        ] = np.pi * np.sqrt(b_f * h_f)
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:front_length"] = (
+            49 / 20 - np.pi
+        ) * np.sqrt(b_f * h_f)
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:rear_length"] = (
+            23 / 10 - np.pi
+        ) * np.sqrt(b_f * h_f)

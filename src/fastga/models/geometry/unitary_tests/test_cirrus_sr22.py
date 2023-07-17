@@ -17,6 +17,8 @@ Test module for geometry functions of cg components.
 import openmdao.api as om
 import pytest
 
+from openmdao.utils.assert_utils import assert_check_partials
+
 from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageDepth,
@@ -432,7 +434,7 @@ def test_compute_ht_volume_coefficient():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_fuselage_basic():
+def test_fuselage_basic():
     """Tests computation of the fuselage with no cabin sizing"""
 
     # Define the independent input values that should be filled if basic function is chosen
@@ -448,8 +450,14 @@ def test_compute_fuselage_basic():
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(3.762, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
-def test_compute_fuselage_npax():
+
+def test_fuselage_npax():
     """Tests computation of the fuselage npax"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -461,7 +469,7 @@ def test_compute_fuselage_npax():
     assert npax == pytest.approx(2.0, abs=1)
 
 
-def test_compute_fuselage_pax_length():
+def test_fuselage_pax_length():
     """Tests computation of the fuselage pax length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -472,8 +480,14 @@ def test_compute_fuselage_pax_length():
     fuselage_lpax = problem.get_val("data:geometry:fuselage:PAX_length", units="m")
     assert fuselage_lpax == pytest.approx(1.75, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
-def test_compute_fuselage_max_width():
+
+def test_fuselage_max_width():
     """Tests computation of the fuselage maximum width"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -485,7 +499,7 @@ def test_compute_fuselage_max_width():
     assert fuselage_width_max == pytest.approx(1.272, abs=1e-3)
 
 
-def test_compute_fuselage_max_height():
+def test_fuselage_max_height():
     """Tests computation of the fuselage maximum height"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -496,8 +510,14 @@ def test_compute_fuselage_max_height():
     fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
     assert fuselage_height_max == pytest.approx(1.412, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
-def test_compute_fuselage_luggage_length():
+
+def test_fuselage_luggage_length():
     """Tests computation of the fuselage luggage length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -509,7 +529,7 @@ def test_compute_fuselage_luggage_length():
     assert luggage_length == pytest.approx(0.411, abs=1e-3)
 
 
-def test_compute_fuselage_cabin_length():
+def test_fuselage_cabin_length():
     """Tests computation of the fuselage cabin length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -520,8 +540,14 @@ def test_compute_fuselage_cabin_length():
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(2.861, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
-def test_compute_fuselage_nose_length_fd():
+
+def test_fuselage_nose_length_fd():
     """Tests computation of the fuselage nose length FD"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -532,8 +558,14 @@ def test_compute_fuselage_nose_length_fd():
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(1.448, abs=1e-3)
 
+    # data = problem.check_partials(compact_print=True)
+    # try:
+    #     assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    # except:
+    #     assert False
 
-def test_compute_fuselage_nose_length_fl():
+
+def test_fuselage_nose_length_fl():
     """Tests computation of the fuselage nose length FL"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -544,8 +576,14 @@ def test_compute_fuselage_nose_length_fl():
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(1.148, abs=1e-3)
 
+    # data = problem.check_partials(compact_print=True)
+    # try:
+    #     assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    # except:
+    #     assert False
 
-def test_compute_fuselage_length_fd():
+
+def test_fuselage_length_fd():
     """Tests computation of the fuselage length FD"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -556,8 +594,14 @@ def test_compute_fuselage_length_fd():
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
     assert fuselage_length == pytest.approx(7.491, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
-def test_compute_fuselage_length_fl():
+
+def test_fuselage_length_fl():
     """Tests computation of the fuselage length FL"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -569,7 +613,7 @@ def test_compute_fuselage_length_fl():
     assert fuselage_length == pytest.approx(7.492, abs=1e-3)
 
 
-def test_compute_fuselage_rear_length():
+def test_fuselage_rear_length():
     """Tests computation of the fuselage rear length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -579,6 +623,12 @@ def test_compute_fuselage_rear_length():
     problem = run_system(ComputeFuselageRearLength(), ivc)
     fuselage_lar = problem.get_val("data:geometry:fuselage:rear_length", units="m")
     assert fuselage_lar == pytest.approx(3.181, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
 
 def test_fuselage_wet_area():
@@ -593,6 +643,12 @@ def test_fuselage_wet_area():
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(26.613, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    except:
+        assert False
+
 
 def test_fuselage_wet_area_flops():
 
@@ -605,6 +661,12 @@ def test_fuselage_wet_area_flops():
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(21.952, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    except:
+        assert False
 
 
 def test_fuselage_master_cross_section():
@@ -619,6 +681,12 @@ def test_fuselage_master_cross_section():
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.410, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    except:
+        assert False
+
 
 def test_fuselage_depth():
 
@@ -632,7 +700,11 @@ def test_fuselage_depth():
     avg_fuselage_depth = problem.get_val("data:geometry:fuselage:average_depth", units="m")
     assert avg_fuselage_depth == pytest.approx(0.235, rel=1e-2)
 
-    problem.check_partials(compact_print=True)
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
 
 def test_fuselage_volume():
@@ -647,7 +719,11 @@ def test_fuselage_volume():
     avg_fuselage_depth = problem.get_val("data:geometry:fuselage:volume", units="m**3")
     assert avg_fuselage_depth == pytest.approx(7.711, rel=1e-2)
 
-    problem.check_partials(compact_print=True)
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+    except:
+        assert False
 
 
 def test_geometry_wing_toc_root():

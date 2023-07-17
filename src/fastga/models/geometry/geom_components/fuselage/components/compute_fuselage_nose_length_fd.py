@@ -42,8 +42,12 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
 
         self.declare_partials(
             "*",
-            ["data:geometry:propulsion:nacelle:length", "data:geometry:fuselage:maximum_height"],
-            method="fd",
+            [
+                "data:geometry:propulsion:nacelle:length",
+                "data:geometry:propeller:depth",
+                "data:geometry:fuselage:maximum_height",
+            ],
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -62,3 +66,27 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
             # its use
 
         outputs["data:geometry:fuselage:front_length"] = lav
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+
+        if prop_layout == 3.0:
+
+            partials[
+                "data:geometry:fuselage:front_length", "data:geometry:propulsion:nacelle:length"
+            ] = 1.0
+            partials["data:geometry:fuselage:front_length", "data:geometry:propeller:depth"] = 1.0
+            partials[
+                "data:geometry:fuselage:front_length", "data:geometry:fuselage:maximum_height"
+            ] = 0.0
+
+        else:
+
+            partials[
+                "data:geometry:fuselage:front_length", "data:geometry:propulsion:nacelle:length"
+            ] = 0.0
+            partials["data:geometry:fuselage:front_length", "data:geometry:propeller:depth"] = 0.0
+            partials[
+                "data:geometry:fuselage:front_length", "data:geometry:fuselage:maximum_height"
+            ] = 1.40

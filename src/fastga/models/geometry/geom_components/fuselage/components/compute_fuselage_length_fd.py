@@ -45,7 +45,7 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:length", val=10.0, units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -58,3 +58,46 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
         fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
 
         outputs["data:geometry:fuselage:length"] = fus_length
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        vt_lp = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        ht_length = inputs["data:geometry:horizontal_tail:MAC:length"]
+        vt_length = inputs["data:geometry:vertical_tail:MAC:length"]
+
+        partials["data:geometry:fuselage:length", "data:geometry:wing:MAC:at25percent:x"] = 1.0
+
+        if (ht_lp + 0.75 * ht_length) > (vt_lp + 0.75 * vt_length):
+
+            partials[
+                "data:geometry:fuselage:length",
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            ] = 1.0
+            partials[
+                "data:geometry:fuselage:length", "data:geometry:horizontal_tail:MAC:length"
+            ] = 0.75
+            partials[
+                "data:geometry:fuselage:length",
+                "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:length", "data:geometry:vertical_tail:MAC:length"
+            ] = 0.0
+
+        elif (ht_lp + 0.75 * ht_length) < (vt_lp + 0.75 * vt_length):
+
+            partials[
+                "data:geometry:fuselage:length",
+                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:length", "data:geometry:horizontal_tail:MAC:length"
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:length",
+                "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+            ] = 1.0
+            partials[
+                "data:geometry:fuselage:length", "data:geometry:vertical_tail:MAC:length"
+            ] = 0.75

@@ -39,7 +39,7 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:PAX_length", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -52,3 +52,22 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
         l_pax = l_pilot_seats + n_rows * l_pass_seats
 
         outputs["data:geometry:fuselage:PAX_length"] = l_pax
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        l_pass_seats = inputs["data:geometry:cabin:seats:passenger:length"]
+        seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
+        npax = inputs["data:geometry:cabin:NPAX"]
+
+        partials[
+            "data:geometry:fuselage:PAX_length", "data:geometry:cabin:seats:pilot:length"
+        ] = 1.0
+        partials[
+            "data:geometry:fuselage:PAX_length", "data:geometry:cabin:seats:passenger:length"
+        ] = npax / float(seats_p_row)
+        partials[
+            "data:geometry:fuselage:PAX_length", "data:geometry:cabin:seats:passenger:count_by_row"
+        ] = (-npax / (float(seats_p_row)) ** 2 * l_pass_seats)
+        partials[
+            "data:geometry:fuselage:PAX_length", "data:geometry:cabin:NPAX"
+        ] = l_pass_seats / float(seats_p_row)
