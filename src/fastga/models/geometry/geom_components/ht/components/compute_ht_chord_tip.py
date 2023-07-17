@@ -34,7 +34,7 @@ class ComputeHTTipChord(om.ExplicitComponent):
 
         self.add_output("data:geometry:horizontal_tail:tip:chord", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -44,3 +44,15 @@ class ComputeHTTipChord(om.ExplicitComponent):
         tip_chord = root_chord * taper_ht
 
         outputs["data:geometry:horizontal_tail:tip:chord"] = tip_chord
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
+        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
+
+        partials[
+            "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:taper_ratio"
+        ] = root_chord
+        partials[
+            "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:root:chord"
+        ] = taper_ht
