@@ -146,8 +146,8 @@ class XfoilPolar(ExternalCodeComp):
         no_file = True
         data_saved = None
         interpolated_result = None
-        # Modify file type respect to negaive AoA option
-        result_file = self.identify_negative_angle_option()
+        # Modify file type respect to negaive AoA/ inviscod/single AoA options
+        result_file = self.define_result_file_path()
         multiple_AoA = not self.options["single_AoA"]
         if pth.exists(result_file) and multiple_AoA:
             interpolated_result = self.interpolation_for_exist_data(result_file, mach, reynolds)
@@ -614,7 +614,19 @@ class XfoilPolar(ExternalCodeComp):
                     return interpolated_result
 
                 return interpolated_result
-
+    
+    def define_result_file_path(self):
+        """_summary_
+        rename the file for better underdtanding 
+        of the computation options
+        Returns:
+            _path_: result data path 
+        """
+        result_file = self.identify_negative_angle_option()
+        result_file = self.identify_single_aoa_option()
+        result_file = self.identify_inviscid_option()
+        return result_file
+    
     def identify_negative_angle_option(self):
         # change to csv for later usage
         """_summary_
@@ -639,7 +651,49 @@ class XfoilPolar(ExternalCodeComp):
                 self.options["airfoil_file"].replace(".af", "") + ".csv",
             )
         return result_file
-
+    
+    def identify_single_aoa_option(self):
+        """_summary_
+        identify negative single angel of attack option and 
+        congigure the file naming
+        Returns:
+            _path_: result data path
+        """
+        if self.options["single_AoA"]:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "_single_aoa") + ".csv",
+            )
+        else:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "_multi_aoa") + ".csv",
+            ) 
+        return result_file
+    
+    def identify_inviscid_option(self):
+        """_summary_
+        identify inviscid calculation option and 
+        congigure the file naming
+        Returns:
+            _path_: result data path
+        """
+        if self.options["Invicid_calculation"]:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "_inviscid") + ".csv",
+            )
+        else:
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "_viscous") + ".csv",
+            )
+        return result_file
+    
     def post_processing_fill_value(self, result_array_p, result_array_n):
         """_summary_
         Filling value after XFoil calculation
