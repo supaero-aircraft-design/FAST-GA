@@ -213,7 +213,7 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = 'DOUBLE' #SINGLE DOUBLE HYBRID
+swap = 'single' #SINGLE DOUBLE HYBRID
 score_criteria = 'compute_time' #use_time, compute_time, count_feedbacks
 ############################################
 
