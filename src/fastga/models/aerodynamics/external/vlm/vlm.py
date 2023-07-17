@@ -18,7 +18,11 @@ import os
 import os.path as pth
 import warnings
 from typing import Optional
+from numba import jit
 
+# Initialize Numba
+from numba import config
+config.THREADING_LAYER = 'omp'
 import numpy as np
 import openmdao.api as om
 import pandas as pd
@@ -776,7 +780,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp["x_le"] = x_le
         # Launch common code
         self._generate_common(self.htp)
-
+    @jit(parallel=True)
     def _generate_common(self, dictionary):
         """Common code shared between wing and htp to calculate geometry/aero parameters.
         
@@ -954,7 +958,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panel_angle_vect = dictionary["panel_angle_vect"]
 
         dictionary["panel_angle_vect"] = panel_angle_vect + twist_tile
-
+    @jit(parallel=True)
     def generate_curvature(self, dictionary, file_name):
         """Generates curvature corresponding to the airfoil contained in .af file."""
         x_panel = dictionary["x_panel"]
