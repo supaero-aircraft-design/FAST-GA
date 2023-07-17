@@ -59,39 +59,22 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     def total_time_of_modules(score_criteria):
         if score_criteria == 'use_time': #use pre-ran times for each individual module
             modules_times = {
-                "geometry": 2.0065503120422363,
-                "aerodynamics_lowspeed" : 2.4223287105560303,
-                "aerodynamics_highspeed" : 2.0636613965034485,
-                "weight" : 1.962327229976654,
-                "performance" : 1,
-                "hq" : 1.5,
-                "mtow" : 0.5,
-                "wing_position" : 3,
-                "wing_area" : 2,
+                "geometry": 1.7216651797294618,
+                "aerodynamics_lowspeed" : 2.5686846733093263,
+                "aerodynamics_highspeed" : 2.165796732902527,
+                "weight" : 3.7698839783668516,
+                "performance" : 24.092622423171996,
+                "hq" : 13.180185759067536,
+                "mtow" : 1.0099695563316344,
+                "wing_position" : 1.0157811045646667,
+                "wing_area" : 1.1173424243927002,
             }
         else: #compute modules times for your particular machine, solver, etc.
             modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
         
 
-        
-
         #return score as sum (time*times they run).
         return modules_times
-
-    '''class run_once: 
-        def __init__(self, func):
-            self.func = func
-            self.has_run = False
-            self.result = None
-
-        def __call__(self, *args, **kwargs):
-            if not self.has_run:
-                self.result = self.func(*args, **kwargs)
-                self.has_run = True
-            return self.result
-
-    # Apply the decorator to my function
-    time_modules = run_once(time_modules)'''
 
     def run_once(func):
         @functools.wraps(func)

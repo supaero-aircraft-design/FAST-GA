@@ -32,7 +32,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     if len(keys_list)<2: sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
     while counter < len(keys_list):
         counter = counter + 1 
-        print('Loop nº: ', counter)
+        print('\nLoop nº: ', counter)
         improvement = False
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
@@ -213,8 +213,12 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = 'single' #SINGLE DOUBLE HYBRID
-score_criteria = 'compute_time' #use_time, compute_time, count_feedbacks
+swap = 'single' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+#Optimize using as score: 
+    #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.  
+    #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
+    #'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
+score_criteria = 'compute_time'  
 ############################################
 
 try:
@@ -258,13 +262,12 @@ if optimization_level == 1:
 
     print('\n Order before first swap: ', [key for key in aircraft_sizing_data if key != 'linear_solver' and key != 'nonlinear_solver'])
 
-    if swap == 'DOUBLE':
+    if swap == 'DOUBLE' or swap == 'double':
         dummy_var = double_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
-    elif swap == 'SINGLE':
+    elif swap == 'SINGLE' or swap == 'single':
         dummy_var = single_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
-    elif swap == 'HYBRID':
+    elif swap == 'HYBRID' or swap == 'hybrid':
         dummy_var = hybrid_swap_algorithm(model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria)
-
     else: sys.exit("\n SWAP type not valid. Please choose SINGLE, DOUBLE or HYBRID \n")
 
 #TODO::::
