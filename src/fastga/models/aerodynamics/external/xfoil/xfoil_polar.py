@@ -663,13 +663,23 @@ class XfoilPolar(ExternalCodeComp):
             result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
-                self.options["airfoil_file"].replace(".csv", "_single_aoa") + ".csv",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "") + "_single_aoa.csv",
             )
         else:
             result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
-                self.options["airfoil_file"].replace(".csv", "_multi_aoa") + ".csv",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "") + "_multi_aoa.csv",
             ) 
         return result_file
     
@@ -684,13 +694,23 @@ class XfoilPolar(ExternalCodeComp):
             result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
-                self.options["airfoil_file"].replace(".csv", "_inviscid") + ".csv",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "") + "_inviscid.csv",
             )
         else:
             result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
-                self.options["airfoil_file"].replace(".csv", "_viscous") + ".csv",
+                self.options["airfoil_file"].replace(".af", "") + ".csv",
+            )
+            result_file = pth.join(
+                pth.split(os.path.realpath(__file__))[0],
+                "resources",
+                self.options["airfoil_file"].replace(".csv", "") + "_viscous.csv",
             )
         return result_file
     
