@@ -36,7 +36,7 @@ class ComputeHTSweep50(om.ExplicitComponent):
 
         self.add_output("data:geometry:horizontal_tail:sweep_50", units="rad")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -47,3 +47,29 @@ class ComputeHTSweep50(om.ExplicitComponent):
         sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
 
         outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
+        sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
+
+        partials[
+            "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:aspect_ratio"
+        ] = -(2 * (taper_ht - 1)) / (
+            ar_ht ** 2
+            * ((np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1)
+            * (taper_ht + 1)
+        )
+        partials[
+            "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:taper_ratio"
+        ] = (
+            2 / (ar_ht * (taper_ht + 1)) - (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1) ** 2)
+        ) / (
+            (np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1
+        )
+        partials[
+            "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
+        ] = (np.tan(sweep_0) ** 2 + 1) / (
+            (np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1
+        )
