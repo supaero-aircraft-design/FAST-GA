@@ -1228,6 +1228,12 @@ def test_landing_gear_height():
     lg_height = problem.get_val("data:geometry:landing_gear:height", units="m")
     assert lg_height == pytest.approx(0.947, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    except:
+        assert False
+
 
 def test_landing_gear_position():
 
@@ -1239,6 +1245,12 @@ def test_landing_gear_position():
 
     lg_position = problem.get_val("data:geometry:landing_gear:y", units="m")
     assert lg_position == pytest.approx(1.816, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+    except:
+        assert False
 
 
 def test_geometry_total_area():
