@@ -608,8 +608,10 @@ class XfoilPolar(ExternalCodeComp):
                     if np.size(lower_value) == len(alpha_lower):
                         lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
                         upper_value = np.interp(alpha_shared, np.array(alpha_upper), upper_value)
+                        return lower_value, upper_value
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
+                    return interpolated_result
 
                 return interpolated_result
 
