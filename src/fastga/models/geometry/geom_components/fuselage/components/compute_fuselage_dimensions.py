@@ -38,7 +38,9 @@ class ComputeFuselageGeometryBasic(om.ExplicitComponent):
 
         self.add_output("data:geometry:cabin:length", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "data:geometry:fuselage:length", val=1.0)
+        self.declare_partials("*", "data:geometry:fuselage:front_length", val=-1.0)
+        self.declare_partials("*", "data:geometry:fuselage:rear_length", val=-1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

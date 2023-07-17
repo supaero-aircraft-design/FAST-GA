@@ -34,7 +34,7 @@ class ComputeMasterCrossSection(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -45,3 +45,15 @@ class ComputeMasterCrossSection(om.ExplicitComponent):
         master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        b_f = inputs["data:geometry:fuselage:maximum_width"]
+        h_f = inputs["data:geometry:fuselage:maximum_height"]
+
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
+        ] = (np.pi * h_f) / 4
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
+        ] = (np.pi * b_f) / 4
