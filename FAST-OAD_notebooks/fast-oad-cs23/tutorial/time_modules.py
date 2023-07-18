@@ -1,4 +1,4 @@
-def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
+def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PATH):
 
     import os.path as pth
     import os
@@ -26,7 +26,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE):
         return None
 
     # Define relative path
-    WORK_FOLDER_PATH = "workdir" ##########################################TODO: ELIMINATE FROM HERE, pass as argument
+    #WORK_FOLDER_PATH = "workdir" ##########################################TODO: ELIMINATE FROM HERE, pass as argument
 
     # Obtaining the modules for this version of fastoad
     command = "fastoad list_modules"

@@ -21,7 +21,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     config_dictionary.pop('linear_solver', None)
 
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
     print("\n Starting DOUBLE swap")
@@ -57,7 +57,7 @@ def double_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)
             
             if score < best_score:
                 best_score = score
@@ -92,7 +92,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     config_dictionary.pop('nonlinear_solver', None)
     config_dictionary.pop('linear_solver', None)
     keys = config_dictionary.keys()
-    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria)  # Initial score of the dictionary
+    best_score = feedback_extractor(problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)  # Initial score of the dictionary
     keys_list = list(keys)
     best_order = keys_list.copy()  # Initial order of keys
     print("\n Starting SINGLE swap")
@@ -129,7 +129,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             model_data = _get_viewer_data(problem, case_id=case_id)
 
             #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria)
+            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)
             
             if score < best_score:
                 best_score = score
