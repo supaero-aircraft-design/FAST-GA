@@ -990,7 +990,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["panel_angle_vect"] = panelangle_vect
         dictionary["panel_angle"] = panelangle
         dictionary["z"] = z_panel
-
+    @jit(parallel=True)
     def apply_deflection(self, inputs, deflection_angle):
         """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]."""
 
