@@ -37,7 +37,7 @@ class ComputePaxCG(om.ExplicitComponent):
 
         self.add_output("data:weight:payload:PAX:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -46,4 +46,3 @@ class ComputePaxCG(om.ExplicitComponent):
         x_cg_pax = x_cg_d2
 
         outputs["data:weight:payload:PAX:CG:x"] = x_cg_pax
-

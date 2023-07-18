@@ -22,7 +22,9 @@ import fastoad.api as oad
 from .constants import SUBMODEL_PAYLOAD_REAR_FRET_CG
 
 
-@oad.RegisterSubmodel(SUBMODEL_PAYLOAD_REAR_FRET_CG, "fastga.submodel.weight.cg.payload.rear_fret.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_PAYLOAD_REAR_FRET_CG, "fastga.submodel.weight.cg.payload.rear_fret.legacy"
+)
 class ComputeRearFretCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Rear fret center of gravity estimation"""
@@ -35,7 +37,15 @@ class ComputeRearFretCG(om.ExplicitComponent):
 
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:front_length", val=1.0
+        )
+        self.declare_partials(
+            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:PAX_length", val=1.0
+        )
+        self.declare_partials(
+            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:luggage_length", val=0.5
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -49,4 +59,3 @@ class ComputeRearFretCG(om.ExplicitComponent):
         x_cg_r_fret = lav + l_instr + lpax + l_lug / 2
 
         outputs["data:weight:payload:rear_fret:CG:x"] = x_cg_r_fret
-

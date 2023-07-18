@@ -44,7 +44,7 @@ class ComputeForwardCGMac(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:CG:fwd:MAC_position")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -60,3 +60,66 @@ class ComputeForwardCGMac(om.ExplicitComponent):
         )
 
         outputs["data:weight:aircraft:CG:fwd:MAC_position"] = cg_min_fwd_mac
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        ground_conditions_fwd = inputs["data:weight:aircraft:CG:ground_condition:min:MAC_position"]
+        flight_conditions_fwd = inputs["data:weight:aircraft:CG:flight_condition:min:MAC_position"]
+        cg_range = inputs["settings:weight:aircraft:CG:range"]
+        cg_max_aft_mac = inputs["data:weight:aircraft:CG:aft:MAC_position"]
+
+        min_cg = min(ground_conditions_fwd, flight_conditions_fwd, cg_max_aft_mac - cg_range)
+
+        if min_cg == ground_conditions_fwd:
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:ground_condition:min:MAC_position",
+            ] = 1.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:flight_condition:min:MAC_position",
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position", "settings:weight:aircraft:CG:range"
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:aft:MAC_position",
+            ] = 0.0
+        elif min_cg == flight_conditions_fwd:
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:ground_condition:min:MAC_position",
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:flight_condition:min:MAC_position",
+            ] = 1.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position", "settings:weight:aircraft:CG:range"
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:aft:MAC_position",
+            ] = 0.0
+        else:
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:ground_condition:min:MAC_position",
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:flight_condition:min:MAC_position",
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position", "settings:weight:aircraft:CG:range"
+            ] = -1.0
+            partials[
+                "data:weight:aircraft:CG:fwd:MAC_position",
+                "data:weight:aircraft:CG:aft:MAC_position",
+            ] = 1.0
+
+        partials[
+            "data:weight:aircraft:CG:fwd:MAC_position",
+            "settings:weight:aircraft:CG:fwd:MAC_position:margin",
+        ] = -1.0

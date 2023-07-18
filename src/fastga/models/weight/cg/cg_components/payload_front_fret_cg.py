@@ -22,7 +22,9 @@ import fastoad.api as oad
 from .constants import SUBMODEL_PAYLOAD_FRONT_FRET_CG
 
 
-@oad.RegisterSubmodel(SUBMODEL_PAYLOAD_FRONT_FRET_CG, "fastga.submodel.weight.cg.payload.front_fret.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_PAYLOAD_FRONT_FRET_CG, "fastga.submodel.weight.cg.payload.front_fret.legacy"
+)
 class ComputeFrontFretCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Front fret center of gravity estimation"""
@@ -33,7 +35,7 @@ class ComputeFrontFretCG(om.ExplicitComponent):
 
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=0.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
