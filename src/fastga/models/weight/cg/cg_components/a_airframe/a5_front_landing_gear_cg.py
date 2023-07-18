@@ -19,10 +19,6 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_FRONT_LANDING_GEAR_CG
 
-# oad.RegisterSubmodel.active_models[
-#     SUBMODEL_LANDING_GEAR_CG
-# ] = "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
-
 
 @oad.RegisterSubmodel(
     SUBMODEL_FRONT_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.front.legacy"
@@ -44,11 +40,7 @@ class ComputeFrontLandingGearCG(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:landing_gear:front:CG:x", units="m")
 
-        self.declare_partials(
-            of="data:weight:airframe:landing_gear:front:CG:x",
-            wrt="data:geometry:fuselage:front_length",
-            method="exact",
-        )
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -66,7 +58,12 @@ class ComputeFrontLandingGearCG(om.ExplicitComponent):
         front_lg_fuselage = inputs[
             "settings:weight:airframe:landing_gear:front:front_fuselage_ratio"
         ]
+        lav = inputs["data:geometry:fuselage:front_length"]
 
         partials[
             "data:weight:airframe:landing_gear:front:CG:x", "data:geometry:fuselage:front_length"
         ] = front_lg_fuselage
+        partials[
+            "data:weight:airframe:landing_gear:front:CG:x",
+            "settings:weight:airframe:landing_gear:front:front_fuselage_ratio",
+        ] = lav
