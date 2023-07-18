@@ -136,6 +136,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             _,
             _,
             _,
+            _,
         ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, aoa_angle)
         return float(cl_alpha_wing + cl_alpha_htp)
 
@@ -173,7 +174,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coeff_k_htp parameters.
         """
-
+        #initialize
+        results = []
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
 
@@ -202,22 +204,24 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 result_file_path = self.save_geometry(result_folder_path, geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
+            # comp_opt = 1 (wing)
+            # comp_opt = 2 (htp)
+            # comp_opt = 3 (A/C)
+            wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=1)
             
-            wing_0 = self.compute(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
-            
-            wing_aoa = self.compute(inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing")
+            wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt=1)
             # Compute complete aircraft @ 0°/X° angle of attack
             
-            _, htp_0, _ = self.compute(inputs, outputs, altitude, mach, 0.0, comp_opt="ac")
+            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=3)
             
-            _, htp_aoa, _ = self.compute(inputs, outputs, altitude, mach, aoa_angle, comp_opt="ac")
+            _, htp_aoa, _ = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt=3)
 
             # Compute isolated HTP @ 0°/X° angle of attack
             
-            htp_0_isolated = self.compute(inputs, outputs, altitude, mach, 0.0, comp_opt="htp")
+            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=2)
             
-            htp_aoa_isolated = self.compute(
-                inputs, outputs, altitude, mach, aoa_angle, comp_opt="htp"
+            htp_aoa_isolated = self.compute_ac(
+                inputs, outputs, altitude, mach, aoa_angle, comp_opt=2
             )
 
             # Post-process wing data ---------------------------------------------------------------
@@ -272,14 +276,15 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     s_ref_wing,
                 ]
                 self.save_results(result_file_path, results)
-
+                
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
             # Read values from result file ---------------------------------------------------------
             data = self.read_results(result_file_path)
-            return self.assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing)
+            results = self.assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing)
+        return results
 
-    def compute(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
+    def compute_ac(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt=1):
         """
         Function that computes in OpenVSP environment the wing, horizontal stablizer(htp), and complete aircraft (considering wing and
         horizontal tail plan) and returns the different aerodynamic parameters. The downwash is
@@ -293,7 +298,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
-
+        output_result = {}
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
 
@@ -358,17 +363,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for wing, HTP, and aircraft
-        if comp_opt == "wing":
+        if comp_opt == 1:
             input_file_list = [
                 pth.join(target_directory, INPUT_WING_SCRIPT),
                 pth.join(target_directory, self.options["wing_airfoil_file"]),
             ]
-        elif comp_opt == "htp":
+        elif comp_opt == 2:
             input_file_list = [
                 pth.join(target_directory, INPUT_HTP_SCRIPT),
                 pth.join(target_directory, self.options["htp_airfoil_file"]),
             ]
-        elif comp_opt == "ac":
+        elif comp_opt == 3:
             input_file_list = [
                 pth.join(target_directory, INPUT_AIRCRAFT_SCRIPT),
                 pth.join(target_directory, self.options["wing_airfoil_file"]),
@@ -381,29 +386,29 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
         if self.options["airfoil_folder_path"] is None:
-            if comp_opt == "wing":
+            if comp_opt == 1:
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
-            elif comp_opt == "htp":
+            elif comp_opt == 2:
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
-            elif comp_opt == "ac":
+            elif comp_opt == 3:
                 # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
                 # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
         else:
-            if comp_opt == "wing":
+            if comp_opt == 1:
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["wing_airfoil_file"],
                     target_directory,
                 )
-            elif comp_opt == "htp":
+            elif comp_opt == 2:
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["htp_airfoil_file"],
                     target_directory,
                 )
-            elif comp_opt == "ac":
+            elif comp_opt == 3:
                 # noinspection PyTypeChecker
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
@@ -421,21 +426,21 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file = open(self.options["command"][0], "w+")
         batch_file.write("@echo off\n")
 
-        if comp_opt == "wing":
+        if comp_opt == 1:
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
                 + pth.join(target_directory, INPUT_WING_SCRIPT)
                 + " >nul 2>nul\n"
             )
-        elif comp_opt == "htp":
+        elif comp_opt == 2:
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
                 + pth.join(target_directory, INPUT_HTP_SCRIPT)
                 + " >nul 2>nul\n"
             )
-        elif comp_opt == "ac":
+        elif comp_opt == 3:
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
@@ -448,7 +453,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
         # WORKDIR #################################################################################
-        if comp_opt == "wing":
+        if comp_opt == 1:
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -490,7 +495,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
-        elif comp_opt == "htp":
+        elif comp_opt == 2:
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -522,7 +527,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
-        elif comp_opt == "ac":
+        elif comp_opt == 3:
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -582,269 +587,272 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
 
-                # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
-                ############################################################################################
-                self.options["external_output_files"] = output_file_list
-                super().compute(inputs, outputs)
+        # STEP 4/XX - RUN BATCH TO GENERATE GEOMETRY .CSV FILE #####################################
+        ############################################################################################
+        self.options["external_output_files"] = output_file_list
+        super().compute(inputs, outputs)
 
-                # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
-                ############################################################################################
-                input_file_list = output_file_list
-                input_file_list.append(input_file_list[0].replace(".csv", ".vspaero"))
-                output_file_list = [
-                    input_file_list[0].replace(".csv", ".lod"),
-                    input_file_list[0].replace(".csv", ".polar"),
-                ]
-                self.options["external_input_files"] = input_file_list
-                self.options["external_output_files"] = output_file_list
-                self.options["command"] = [pth.join(target_directory, "vspaero.bat")]
-                batch_file = open(self.options["command"][0], "w+")
-                batch_file.write("@echo off\n")
-                command = (
-                    pth.join(target_directory, VSPAERO_EXE_NAME)
-                    + " "
-                    + input_file_list[1].replace(".vspaero", "")
-                    + " >nul 2>nul\n"
-                )
-                batch_file.write(command)
-                batch_file.close()
+        # STEP 5/XX - DEFINE NEW INPUT/OUTPUT FILES LIST AND CREATE BATCH FOR VLM COMPUTATION ######
+        ############################################################################################
+        input_file_list = output_file_list
+        input_file_list.append(input_file_list[0].replace(".csv", ".vspaero"))
+        output_file_list = [
+            input_file_list[0].replace(".csv", ".lod"),
+            input_file_list[0].replace(".csv", ".polar"),
+        ]
+        self.options["external_input_files"] = input_file_list
+        self.options["external_output_files"] = output_file_list
+        self.options["command"] = [pth.join(target_directory, "vspaero.bat")]
+        batch_file = open(self.options["command"][0], "w+")
+        batch_file.write("@echo off\n")
+        command = (
+            pth.join(target_directory, VSPAERO_EXE_NAME)
+            + " "
+            + input_file_list[1].replace(".vspaero", "")
+            + " >nul 2>nul\n"
+        )
+        batch_file.write(command)
+        batch_file.close()
 
-                # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
-                ############################################################################################
-                parser = InputFileGenerator()
-                template_file = pth.split(input_file_list[1])[1]
-                with path(local_resources, template_file) as input_template_path:
-                    parser.set_template_file(str(input_template_path))
-                    parser.set_generated_file(input_file_list[1])
-                    parser.reset_anchor()
+        # STEP 6/XX - OPEN THE TEMPLATE VSPAERO FOR COMPUTATION, MODIFY VALUES AND SAVE TO WORKDIR #
+        ############################################################################################
+        parser = InputFileGenerator()
+        template_file = pth.split(input_file_list[1])[1]
+        with path(local_resources, template_file) as input_template_path:
+            parser.set_template_file(str(input_template_path))
+            parser.set_generated_file(input_file_list[1])
+            parser.reset_anchor()
 
-                    if comp_opt == "wing":
-                        parser.mark_anchor("Sref")
-                        parser.transfer_var(float(s_ref_wing), 0, 3)
-                        parser.mark_anchor("Cref")
-                        parser.transfer_var(float(l0_wing), 0, 3)
-                        parser.mark_anchor("Bref")
-                        parser.transfer_var(float(span_wing), 0, 3)
-                        parser.mark_anchor("X_cg")
-                        parser.transfer_var(float(fa_length), 0, 3)
-                        reynolds = reynolds_wing
-                    elif comp_opt == "htp":
-                        parser.mark_anchor("Sref")
-                        parser.transfer_var(float(s_ref_htp), 0, 3)
-                        parser.mark_anchor("Cref")
-                        parser.transfer_var(float(l0_htp), 0, 3)
-                        parser.mark_anchor("Bref")
-                        parser.transfer_var(float(2.0 * semi_span_htp), 0, 3)
-                        parser.mark_anchor("X_cg")
-                        parser.transfer_var(float(fa_length + lp_htp), 0, 3)
-                        reynolds = reynolds_htp
-                    elif comp_opt == "ac":
-                        parser.mark_anchor("Sref")
-                        parser.transfer_var(float(s_ref_wing), 0, 3)
-                        parser.mark_anchor("Cref")
-                        parser.transfer_var(float(l0_wing), 0, 3)
-                        parser.mark_anchor("Bref")
-                        parser.transfer_var(float(span_wing), 0, 3)
-                        parser.mark_anchor("X_cg")
-                        parser.transfer_var(float(fa_length), 0, 3)
-                        reynolds = reynolds_wing
+            if comp_opt == 1:
+                parser.mark_anchor("Sref")
+                parser.transfer_var(float(s_ref_wing), 0, 3)
+                parser.mark_anchor("Cref")
+                parser.transfer_var(float(l0_wing), 0, 3)
+                parser.mark_anchor("Bref")
+                parser.transfer_var(float(span_wing), 0, 3)
+                parser.mark_anchor("X_cg")
+                parser.transfer_var(float(fa_length), 0, 3)
+                reynolds = reynolds_wing
+            elif comp_opt == 2:
+                parser.mark_anchor("Sref")
+                parser.transfer_var(float(s_ref_htp), 0, 3)
+                parser.mark_anchor("Cref")
+                parser.transfer_var(float(l0_htp), 0, 3)
+                parser.mark_anchor("Bref")
+                parser.transfer_var(float(2.0 * semi_span_htp), 0, 3)
+                parser.mark_anchor("X_cg")
+                parser.transfer_var(float(fa_length + lp_htp), 0, 3)
+                reynolds = reynolds_htp
+            elif comp_opt == 3:
+                parser.mark_anchor("Sref")
+                parser.transfer_var(float(s_ref_wing), 0, 3)
+                parser.mark_anchor("Cref")
+                parser.transfer_var(float(l0_wing), 0, 3)
+                parser.mark_anchor("Bref")
+                parser.transfer_var(float(span_wing), 0, 3)
+                parser.mark_anchor("X_cg")
+                parser.transfer_var(float(fa_length), 0, 3)
+                reynolds = reynolds_wing
+            
+            parser.mark_anchor("Mach")
+            parser.transfer_var(float(mach), 0, 3)
+            parser.mark_anchor("AOA")
+            parser.transfer_var(float(aoa_angle), 0, 3)
+            parser.mark_anchor("Vinf")
+            parser.transfer_var(float(v_inf), 0, 3)
+            parser.mark_anchor("Rho")
+            parser.transfer_var(float(rho), 0, 3)
+            parser.mark_anchor("ReCref")
+            parser.transfer_var(float(reynolds), 0, 3)
+            parser.generate()
 
-                    parser.transfer_var(float(mach), 0, 3)
-                    parser.mark_anchor("AOA")
-                    parser.transfer_var(float(aoa_angle), 0, 3)
-                    parser.mark_anchor("Vinf")
-                    parser.transfer_var(float(v_inf), 0, 3)
-                    parser.mark_anchor("Rho")
-                    parser.transfer_var(float(rho), 0, 3)
-                    parser.mark_anchor("ReCref")
-                    parser.transfer_var(float(reynolds), 0, 3)
-                    parser.generate()
+        # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
+        ############################################################################################
+        super().compute(inputs, outputs)
 
-                # STEP 7/XX - RUN BATCH TO GENERATE AERO OUTPUT FILES (.lod, .polar...) ####################
-                ############################################################################################
-                super().compute(inputs, outputs)
-
-                # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
-                ############################################################################################
-                if comp_opt == "wing":
-                    # Open .lod file and extract data
-                    wing_y_vect = []
-                    wing_chord_vect = []
-                    wing_cl_vect = []
-                    wing_cd_vect = []
-                    wing_cm_vect = []
-                    with open(output_file_list[0], "r") as file_stream:
-                        data = file_stream.readlines()
-                        for i, _ in enumerate(data):
-                            line = data[i].split()
-                            line.append("**")
-                            if line[0] == "1":
-                                wing_y_vect.append(float(line[2]))
-                                wing_chord_vect.append(float(line[3]))
-                                wing_cl_vect.append(float(line[5]))
-                                wing_cd_vect.append(float(line[6]))
-                                wing_cm_vect.append(float(line[12]))
-                            if line[0] == "Comp":
-                                cl_wing = float(data[i + 1].split()[5]) + float(
-                                    data[i + 2].split()[5]
-                                )  # sum CL left/right
-                                cdi_wing = float(data[i + 1].split()[6]) + float(
-                                    data[i + 2].split()[6]
-                                )  # sum CDi left/right
-                                cm_wing = float(data[i + 1].split()[12]) + float(
-                                    data[i + 2].split()[12]
-                                )  # sum CM left/right
-                                break
-                    # Open .polar file and extract data
-                    with open(output_file_list[1], "r") as file_stream:
-                        data = file_stream.readlines()
-                        wing_e = float(data[1].split()[10])
-                    # Delete temporary directory
-                    if not self.options["openvsp_exe_path"]:
-                        # noinspection PyUnboundLocalVariable
-                        tmp_directory.cleanup()
-                    # Return values
-                    wing = {
-                        "y_vector": wing_y_vect,
-                        "cl_vector": wing_cl_vect,
-                        "chord_vector": wing_chord_vect,
-                        "cd_vector": wing_cd_vect,
-                        "cm_vector": wing_cm_vect,
-                        "cl": cl_wing,
-                        "cdi": cdi_wing,
-                        "cm": cm_wing,
-                        "coeff_e": wing_e,
-                    }
-                    return wing
-                elif comp_opt == "htp":
-                    # Open .lod file and extract data
-                    htp_y_vect = []
-                    htp_cl_vect = []
-                    htp_cd_vect = []
-                    htp_cm_vect = []
-                    with open(output_file_list[0], "r") as lf:
-                        data = lf.readlines()
-                        for i in range(len(data)):
-                            line = data[i].split()
-                            line.append("**")
-                            if line[0] == "1":
-                                htp_y_vect.append(float(line[2]))
-                                htp_cl_vect.append(float(line[5]))
-                                htp_cd_vect.append(float(line[6]))
-                                htp_cm_vect.append(float(line[12]))
-                            if line[0] == "Comp":
-                                cl_htp = float(data[i + 1].split()[5]) + float(
-                                    data[i + 2].split()[5]
-                                )  # sum CL left/right
-                                cdi_htp = float(data[i + 1].split()[6]) + float(
-                                    data[i + 2].split()[6]
-                                )  # sum CDi left/right
-                                cm_htp = float(data[i + 1].split()[12]) + float(
-                                    data[i + 2].split()[12]
-                                )  # sum CM left/right
-                                break
-                    # Open .polar file and extract data
-                    with open(output_file_list[1], "r") as lf:
-                        data = lf.readlines()
-                        htp_e = float(data[1].split()[10])
-                    # Delete temporary directory
-                    if not (self.options["openvsp_exe_path"]):
-                        # noinspection PyUnboundLocalVariable
-                        tmp_directory.cleanup()
-                    # Return values
-                    htp = {
-                        "y_vector": htp_y_vect,
-                        "cl_vector": htp_cl_vect,
-                        "cd_vector": htp_cd_vect,
-                        "cm_vector": htp_cm_vect,
-                        "cl": cl_htp,
-                        "cdi": cdi_htp,
-                        "cm": cm_htp,
-                        "coeff_e": htp_e,
-                    }
-                    return htp
-                elif comp_opt == "ac":
-                    # Open .lod file and extract data
-                    wing_y_vect = []
-                    wing_cl_vect = []
-                    wing_cd_vect = []
-                    wing_cm_vect = []
-                    htp_y_vect = []
-                    htp_cl_vect = []
-                    htp_cd_vect = []
-                    htp_cm_vect = []
-                    with open(output_file_list[0], "r") as lf:
-                        data = lf.readlines()
-                        for i in range(len(data)):
-                            line = data[i].split()
-                            line.append("**")
-                            if line[0] == "1":
-                                wing_y_vect.append(float(line[2]))
-                                wing_cl_vect.append(float(line[5]))
-                                wing_cd_vect.append(float(line[6]))
-                                wing_cm_vect.append(float(line[12]))
-                            elif line[0] == "3":
-                                htp_y_vect.append(float(line[2]))
-                                htp_cl_vect.append(float(line[5]))
-                                htp_cd_vect.append(float(line[6]))
-                                htp_cm_vect.append(float(line[12]))
-                            if line[0] == "Comp":
-                                cl_wing = float(data[i + 1].split()[5]) + float(
-                                    data[i + 2].split()[5]
-                                )  # sum CL left/right
-                                cdi_wing = float(data[i + 1].split()[6]) + float(
-                                    data[i + 2].split()[6]
-                                )  # sum CDi left/right
-                                cm_wing = float(data[i + 1].split()[12]) + float(
-                                    data[i + 2].split()[12]
-                                )  # sum CM left/right
-                                cl_htp = float(data[i + 3].split()[5]) + float(
-                                    data[i + 4].split()[5]
-                                )  # sum CL left/right
-                                cdi_htp = float(data[i + 3].split()[6]) + float(
-                                    data[i + 4].split()[6]
-                                )  # sum CDi left/right
-                                cm_htp = float(data[i + 3].split()[12]) + float(
-                                    data[i + 4].split()[12]
-                                )  # sum CM left/right
-                                break
-                    # Open .polar file and extract data
-                    with open(output_file_list[1], "r") as lf:
-                        data = lf.readlines()
-                        aircraft_cl = float(data[1].split()[4])
-                        aircraft_cd0 = float(data[1].split()[5])
-                        aircraft_cdi = float(data[1].split()[6])
-                        aircraft_e = float(data[1].split()[10])
-                    # Delete temporary directory
-                    if not (self.options["openvsp_exe_path"]):
-                        # noinspection PyUnboundLocalVariable
-                        tmp_directory.cleanup()
-                    # Return values
-                    wing = {
-                        "y_vector": wing_y_vect,
-                        "cl_vector": wing_cl_vect,
-                        "cd_vector": wing_cd_vect,
-                        "cm_vector": wing_cm_vect,
-                        "cl": cl_wing,
-                        "cdi": cdi_wing,
-                        "cm": cm_wing,
-                    }
-                    htp = {
-                        "y_vector": htp_y_vect,
-                        "cl_vector": htp_cl_vect,
-                        "cd_vector": htp_cd_vect,
-                        "cm_vector": htp_cm_vect,
-                        "cl": cl_htp,
-                        "cdi": cdi_htp,
-                        "cm": cm_htp,
-                    }
-                    aircraft = {
-                        "cl": aircraft_cl,
-                        "cd0": aircraft_cd0,
-                        "cdi": aircraft_cdi,
-                        "coeff_e": aircraft_e,
-                    }
-                    return wing, htp, aircraft
+        # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
+        ############################################################################################
+        if comp_opt == 1:
+            # Open .lod file and extract data
+            wing_y_vect = []
+            wing_chord_vect = []
+            wing_cl_vect = []
+            wing_cd_vect = []
+            wing_cm_vect = []
+            with open(output_file_list[0], "r") as file_stream:
+                data = file_stream.readlines()
+                for i, _ in enumerate(data):
+                    line = data[i].split()
+                    line.append("**")
+                    if line[0] == "1":
+                        wing_y_vect.append(float(line[2]))
+                        wing_chord_vect.append(float(line[3]))
+                        wing_cl_vect.append(float(line[5]))
+                        wing_cd_vect.append(float(line[6]))
+                        wing_cm_vect.append(float(line[12]))
+                    if line[0] == "Comp":
+                        cl_wing = float(data[i + 1].split()[5]) + float(
+                            data[i + 2].split()[5]
+                        )  # sum CL left/right
+                        cdi_wing = float(data[i + 1].split()[6]) + float(
+                            data[i + 2].split()[6]
+                        )  # sum CDi left/right
+                        cm_wing = float(data[i + 1].split()[12]) + float(
+                            data[i + 2].split()[12]
+                        )  # sum CM left/right
+                        break
+            # Open .polar file and extract data
+            with open(output_file_list[1], "r") as file_stream:
+                data = file_stream.readlines()
+                wing_e = float(data[1].split()[10])
+            # Delete temporary directory
+            if not self.options["openvsp_exe_path"]:
+                # noinspection PyUnboundLocalVariable
+                tmp_directory.cleanup()
+            # Return values
+            wing = {
+                "y_vector": wing_y_vect,
+                "cl_vector": wing_cl_vect,
+                "chord_vector": wing_chord_vect,
+                "cd_vector": wing_cd_vect,
+                "cm_vector": wing_cm_vect,
+                "cl": cl_wing,
+                "cdi": cdi_wing,
+                "cm": cm_wing,
+                "coeff_e": wing_e,
+            }
+            output_result = wing
+        elif comp_opt == 2:
+            # Open .lod file and extract data
+            htp_y_vect = []
+            htp_cl_vect = []
+            htp_cd_vect = []
+            htp_cm_vect = []
+            with open(output_file_list[0], "r") as lf:
+                data = lf.readlines()
+                for i in range(len(data)):
+                    line = data[i].split()
+                    line.append("**")
+                    if line[0] == "1":
+                        htp_y_vect.append(float(line[2]))
+                        htp_cl_vect.append(float(line[5]))
+                        htp_cd_vect.append(float(line[6]))
+                        htp_cm_vect.append(float(line[12]))
+                    if line[0] == "Comp":
+                        cl_htp = float(data[i + 1].split()[5]) + float(
+                            data[i + 2].split()[5]
+                        )  # sum CL left/right
+                        cdi_htp = float(data[i + 1].split()[6]) + float(
+                            data[i + 2].split()[6]
+                        )  # sum CDi left/right
+                        cm_htp = float(data[i + 1].split()[12]) + float(
+                            data[i + 2].split()[12]
+                        )  # sum CM left/right
+                        break
+            # Open .polar file and extract data
+            with open(output_file_list[1], "r") as lf:
+                data = lf.readlines()
+                htp_e = float(data[1].split()[10])
+            # Delete temporary directory
+            if not (self.options["openvsp_exe_path"]):
+                # noinspection PyUnboundLocalVariable
+                tmp_directory.cleanup()
+            # Return values
+            htp = {
+                "y_vector": htp_y_vect,
+                "cl_vector": htp_cl_vect,
+                "cd_vector": htp_cd_vect,
+                "cm_vector": htp_cm_vect,
+                "cl": cl_htp,
+                "cdi": cdi_htp,
+                "cm": cm_htp,
+                "coeff_e": htp_e,
+            }
+            output_result=htp
+        elif comp_opt == 3:
+            # Open .lod file and extract data
+            wing_y_vect = []
+            wing_cl_vect = []
+            wing_cd_vect = []
+            wing_cm_vect = []
+            htp_y_vect = []
+            htp_cl_vect = []
+            htp_cd_vect = []
+            htp_cm_vect = []
+            with open(output_file_list[0], "r") as lf:
+                data = lf.readlines()
+                for i in range(len(data)):
+                    line = data[i].split()
+                    line.append("**")
+                    if line[0] == "1":
+                        wing_y_vect.append(float(line[2]))
+                        wing_cl_vect.append(float(line[5]))
+                        wing_cd_vect.append(float(line[6]))
+                        wing_cm_vect.append(float(line[12]))
+                    elif line[0] == "3":
+                        htp_y_vect.append(float(line[2]))
+                        htp_cl_vect.append(float(line[5]))
+                        htp_cd_vect.append(float(line[6]))
+                        htp_cm_vect.append(float(line[12]))
+                    if line[0] == "Comp":
+                        cl_wing = float(data[i + 1].split()[5]) + float(
+                            data[i + 2].split()[5]
+                        )  # sum CL left/right
+                        cdi_wing = float(data[i + 1].split()[6]) + float(
+                            data[i + 2].split()[6]
+                        )  # sum CDi left/right
+                        cm_wing = float(data[i + 1].split()[12]) + float(
+                            data[i + 2].split()[12]
+                        )  # sum CM left/right
+                        cl_htp = float(data[i + 3].split()[5]) + float(
+                            data[i + 4].split()[5]
+                        )  # sum CL left/right
+                        cdi_htp = float(data[i + 3].split()[6]) + float(
+                            data[i + 4].split()[6]
+                        )  # sum CDi left/right
+                        cm_htp = float(data[i + 3].split()[12]) + float(
+                            data[i + 4].split()[12]
+                        )  # sum CM left/right
+                        break
+            # Open .polar file and extract data
+            with open(output_file_list[1], "r") as lf:
+                data = lf.readlines()
+                aircraft_cl = float(data[1].split()[4])
+                aircraft_cd0 = float(data[1].split()[5])
+                aircraft_cdi = float(data[1].split()[6])
+                aircraft_e = float(data[1].split()[10])
+            # Delete temporary directory
+            if not (self.options["openvsp_exe_path"]):
+                # noinspection PyUnboundLocalVariable
+                tmp_directory.cleanup()
+            # Return values
+            wing = {
+                "y_vector": wing_y_vect,
+                "cl_vector": wing_cl_vect,
+                "cd_vector": wing_cd_vect,
+                "cm_vector": wing_cm_vect,
+                "cl": cl_wing,
+                "cdi": cdi_wing,
+                "cm": cm_wing,
+            }
+            htp = {
+                "y_vector": htp_y_vect,
+                "cl_vector": htp_cl_vect,
+                "cd_vector": htp_cd_vect,
+                "cm_vector": htp_cm_vect,
+                "cl": cl_htp,
+                "cdi": cdi_htp,
+                "cm": cm_htp,
+            }
+            aircraft = {
+                "cl": aircraft_cl,
+                "cd0": aircraft_cd0,
+                "cdi": aircraft_cdi,
+                "coeff_e": aircraft_e,
+            }
+            output_result=wing, htp, aircraft
+        
+        return output_result
 
     @staticmethod
     def search_results(result_folder_path, geometry_set):
@@ -1064,7 +1072,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp = float(htp_0["cl"])
         cl_aoa_htp = float(htp_aoa["cl"])
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2
+        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2 #area ratio missing ?
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
@@ -1191,6 +1199,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             y_vector_htp,
             cl_vector_htp,
             coeff_k_htp,
+            s_ref_wing,
         )
 
 
