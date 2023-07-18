@@ -1,4 +1,4 @@
-def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, INFO = False):
+def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH,  INFO = False):
 #TODO: if info is false, only compute the number, not save every src tgt pair
 
     import time
@@ -56,7 +56,7 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
                 result.append((src_word, tgt_word))
         return result
 
-    def total_time_of_modules(score_criteria):
+    def total_time_of_modules(score_criteria, WORK_FOLDER_PATH):
         if score_criteria == 'use_time': #use pre-ran times for each individual module
             modules_times = {
                 "geometry": 1.7216651797294618,
@@ -70,7 +70,7 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
                 "wing_area" : 1.1173424243927002,
             }
         else: #compute modules times for your particular machine, solver, etc.
-            modules_times = time_modules(config_dictionary, CONFIGURATION_FILE)
+            modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
         
 
         #return score as sum (time*times they run).
