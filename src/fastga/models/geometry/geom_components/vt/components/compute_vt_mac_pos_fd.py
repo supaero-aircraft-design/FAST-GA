@@ -44,16 +44,7 @@ class ComputeVTMacPositionFD(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
-        self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            [
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-                "data:geometry:vertical_tail:span",
-                "data:geometry:vertical_tail:sweep_25",
-                "data:geometry:has_T_tail",
-            ],
-            method="exact",
-        )
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
