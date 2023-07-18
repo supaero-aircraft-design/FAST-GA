@@ -31,7 +31,7 @@ class ComputeWingWetArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:wet_area", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -42,3 +42,16 @@ class ComputeWingWetArea(om.ExplicitComponent):
         wet_area_wing = 2 * (wing_area - width_max * l1_wing) * 1.07
 
         outputs["data:geometry:wing:wet_area"] = wet_area_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+        width_max = inputs["data:geometry:fuselage:maximum_width"]
+
+        partials["data:geometry:wing:wet_area", "data:geometry:wing:area"] = 2.14
+        partials["data:geometry:wing:wet_area", "data:geometry:wing:root:virtual_chord"] = (
+            -2.14 * width_max
+        )
+        partials["data:geometry:wing:wet_area", "data:geometry:fuselage:maximum_width"] = (
+            -2.14 * l1_wing
+        )

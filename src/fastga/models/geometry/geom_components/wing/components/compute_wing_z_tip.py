@@ -132,7 +132,7 @@ class ComputeWingZTip(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:chord"] = 0.0
             partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
                 y4_wing - y2_wing
-            )
+            ) * (np.tan(dihedral_angle) ** 2 + 1)
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
         elif wing_config == 3.0:
@@ -151,7 +151,7 @@ class ComputeWingZTip(om.ExplicitComponent):
             )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
                 y4_wing - y2_wing
-            )
+            ) * (np.tan(dihedral_angle) ** 2 + 1)
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
         else:
@@ -170,5 +170,5 @@ class ComputeWingZTip(om.ExplicitComponent):
             )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
                 y4_wing - y2_wing
-            )
+            ) * (np.tan(dihedral_angle) ** 2 + 1)
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.5
