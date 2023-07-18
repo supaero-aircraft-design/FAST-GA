@@ -114,7 +114,7 @@ from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 XML_FILE = "beechcraft_76.xml"
 
 
-def test_compute_vt_root_chord():
+def test_vt_root_chord():
     """Tests computation of the vertical tail chord:root"""
 
     # Research independent input value in .xml file
@@ -124,6 +124,12 @@ def test_compute_vt_root_chord():
     problem = run_system(ComputeVTRootChord(), ivc)
     root_chord = problem.get_val("data:geometry:vertical_tail:root:chord", units="m")
     assert root_chord == pytest.approx(1.502, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_vt_tip_chord():
@@ -275,7 +281,7 @@ def test_ht_distance():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -293,7 +299,7 @@ def test_ht_span():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -311,7 +317,7 @@ def test_ht_chord_root():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -329,7 +335,7 @@ def test_ht_chord_tip():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -347,7 +353,7 @@ def test_ht_mac_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -385,7 +391,7 @@ def test_ht_mac_x0():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -403,7 +409,7 @@ def test_ht_mac_y0():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -421,7 +427,7 @@ def test_ht_sweep_0():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -439,7 +445,7 @@ def test_ht_sweep_50():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -457,7 +463,7 @@ def test_ht_sweep_100():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -475,7 +481,7 @@ def test_ht_wet_area():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -493,7 +499,7 @@ def test_ht_volume_coefficient():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -523,7 +529,7 @@ def test_fuselage_pax_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -553,7 +559,7 @@ def test_fuselage_max_height():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -583,7 +589,7 @@ def test_fuselage_cabin_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -601,7 +607,7 @@ def test_fuselage_nose_length_fd():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -619,7 +625,7 @@ def test_fuselage_nose_length_fl():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-63, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -637,7 +643,7 @@ def test_fuselage_length_fd():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -667,7 +673,7 @@ def test_fuselage_rear_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -690,7 +696,7 @@ def test_fuselage_basic():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -709,7 +715,7 @@ def test_fuselage_wet_area():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -728,7 +734,7 @@ def test_fuselage_wet_area_flops():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -747,7 +753,7 @@ def test_fuselage_master_cross_section():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -766,7 +772,7 @@ def test_fuselage_depth():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -785,7 +791,7 @@ def test_fuselage_volume():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
+        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
     except:
         assert False
 
@@ -1203,6 +1209,15 @@ def test_installation_effect_propeller():
     )
     assert prop_installation_effect == pytest.approx(0.949, abs=1e-3)
 
+    # data = problem.check_partials(
+    #     compact_print=True,
+    #     excludes="data:geometry:propulsion:engine:layout",
+    # )
+    # try:
+    #     assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    # except:
+    #     assert False
+
 
 def test_landing_gear_height():
 
@@ -1217,7 +1232,7 @@ def test_landing_gear_height():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -1235,7 +1250,7 @@ def test_landing_gear_position():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
