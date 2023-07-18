@@ -42,7 +42,7 @@ class ComputeAftCGMac(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:CG:aft:MAC_position")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -53,3 +53,32 @@ class ComputeAftCGMac(om.ExplicitComponent):
         cg_max_aft_mac = max(ground_conditions_aft, flight_conditions_aft) + margin_aft
 
         outputs["data:weight:aircraft:CG:aft:MAC_position"] = cg_max_aft_mac
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        ground_conditions_aft = inputs["data:weight:aircraft:CG:ground_condition:max:MAC_position"]
+        flight_conditions_aft = inputs["data:weight:aircraft:CG:flight_condition:max:MAC_position"]
+
+        partials[
+            "data:weight:aircraft:CG:aft:MAC_position",
+            "settings:weight:aircraft:CG:aft:MAC_position:margin",
+        ] = 1.0
+
+        if ground_conditions_aft > flight_conditions_aft:
+            partials[
+                "data:weight:aircraft:CG:aft:MAC_position",
+                "data:weight:aircraft:CG:ground_condition:max:MAC_position",
+            ] = 1.0
+            partials[
+                "data:weight:aircraft:CG:aft:MAC_position",
+                "data:weight:aircraft:CG:flight_condition:max:MAC_position",
+            ] = 0.0
+        else:
+            partials[
+                "data:weight:aircraft:CG:aft:MAC_position",
+                "data:weight:aircraft:CG:ground_condition:max:MAC_position",
+            ] = 0.0
+            partials[
+                "data:weight:aircraft:CG:aft:MAC_position",
+                "data:weight:aircraft:CG:flight_condition:max:MAC_position",
+            ] = 1.0

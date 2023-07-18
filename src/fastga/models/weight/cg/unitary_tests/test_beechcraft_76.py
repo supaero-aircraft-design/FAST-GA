@@ -316,6 +316,12 @@ def test_compute_cg_payload_pax():
     x_cg_pl = problem.get_val("data:weight:payload:PAX:CG:x", units="m")
     assert x_cg_pl == pytest.approx(3.47, abs=1e-1)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_payload_rear_fret():
     """Tests computation of payload (rear fret) center of gravity."""
@@ -327,6 +333,12 @@ def test_compute_cg_payload_rear_fret():
     x_cg_rear_fret = problem.get_val("data:weight:payload:rear_fret:CG:x", units="m")
     assert x_cg_rear_fret == pytest.approx(4.42, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_payload_front_fret():
     """Tests computation of payload (front fret) center of gravity."""
@@ -337,6 +349,12 @@ def test_compute_cg_payload_front_fret():
     problem = run_system(ComputeFrontFretCG(), ivc)
     x_cg_front_fret = problem.get_val("data:weight:payload:front_fret:CG:x", units="m")
     assert x_cg_front_fret == pytest.approx(0.0, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_cg_ratio_aft():
@@ -389,6 +407,12 @@ def test_compute_aft_cg_ratio_mac():
     cg_ratio_aft = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
     assert cg_ratio_aft == pytest.approx(0.369, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_fwd_cg_ratio():
     """Tests computation of maximum (forward) center of gravity ratio."""
@@ -399,6 +423,12 @@ def test_compute_fwd_cg_ratio():
     problem = run_system(ComputeForwardCGMac(), ivc)
     cg_ratio_fwd = problem.get_val("data:weight:aircraft:CG:fwd:MAC_position")
     assert cg_ratio_fwd == pytest.approx(0.152, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_complete_cg():
