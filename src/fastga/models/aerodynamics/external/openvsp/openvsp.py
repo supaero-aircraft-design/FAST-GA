@@ -136,7 +136,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             _,
             _,
             _,
-            _,
+            _
         ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, aoa_angle)
         return float(cl_alpha_wing + cl_alpha_htp)
 
@@ -175,7 +175,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         coeff_k_htp parameters.
         """
         #initialize
-        results = []
+        results = [None] * 16
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
 
@@ -273,7 +273,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     y_vector_htp,
                     cl_vector_htp,
                     coeff_k_htp,
-                    s_ref_wing,
+                    s_ref_wing
                 ]
                 self.save_results(result_file_path, results)
                 
@@ -857,6 +857,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
     @staticmethod
     def search_results(result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
+        result_file_path = None 
+        saved_area_ratio = 1.0
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
                 "sweep25_wing",
@@ -905,7 +907,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                             break
                     idx += 1
 
-        return None, 1.0
+        return result_file_path, saved_area_ratio
 
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
@@ -1199,7 +1201,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             y_vector_htp,
             cl_vector_htp,
             coeff_k_htp,
-            s_ref_wing,
+            s_ref_wing
         )
 
 
