@@ -13,14 +13,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SUBMODEL_TANK_CG
 
 
 @oad.RegisterSubmodel(SUBMODEL_TANK_CG, "fastga.submodel.weight.cg.propulsion.tank.legacy")
-class ComputeTankCG(ExplicitComponent):
+class ComputeTankCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Fuel tank center of gravity estimation"""
 
