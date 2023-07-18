@@ -38,7 +38,7 @@ class ComputeVTRootChord(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
 
-        self.declare_partials("data:geometry:vertical_tail:root:chord", "*", method="fd")
+        self.declare_partials("data:geometry:vertical_tail:root:chord", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -49,3 +49,19 @@ class ComputeVTRootChord(om.ExplicitComponent):
         root_chord = s_v * 2 / (1 + taper_v) / b_v
 
         outputs["data:geometry:vertical_tail:root:chord"] = root_chord
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        s_v = float(inputs["data:geometry:vertical_tail:area"])
+        taper_v = inputs["data:geometry:vertical_tail:taper_ratio"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        partials[
+            "data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:area"
+        ] = 2 / (b_v * (taper_v + 1))
+        partials[
+            "data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:taper_ratio"
+        ] = -(2 * s_v) / (b_v * (taper_v + 1) ** 2)
+        partials["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:span"] = -(
+            2 * s_v
+        ) / (b_v ** 2 * (taper_v + 1))

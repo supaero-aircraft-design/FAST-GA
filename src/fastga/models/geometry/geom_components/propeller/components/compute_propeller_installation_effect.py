@@ -45,7 +45,15 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             "propeller",
         )
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="*",
+            wrt=[
+                "data:geometry:propeller:diameter",
+                "data:geometry:fuselage:master_cross_section",
+                "data:geometry:propulsion:nacelle:master_cross_section",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -74,3 +82,53 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         outputs[
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
         ] = effective_advance_ratio
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        engine_layout = inputs["data:geometry:propulsion:engine:layout"]
+        disk_diameter = inputs["data:geometry:propeller:diameter"]
+
+        if engine_layout == 3.0:
+            cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
+            
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:fuselage:master_cross_section",
+            ] = -127 / (125 * disk_diameter ** 2 * np.pi)
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:propulsion:nacelle:master_cross_section",
+            ] = 0.0
+        elif engine_layout == 1.0 or engine_layout == 2.0:
+            cowling_master_cross_section = inputs[
+                "data:geometry:propulsion:nacelle:master_cross_section"
+            ]
+
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:propulsion:nacelle:master_cross_section",
+            ] = -127 / (125 * disk_diameter ** 2 * np.pi)
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:fuselage:master_cross_section",
+            ] = 0.0
+        else:
+            cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
+            warnings.warn(
+                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
+                    engine_layout
+                )
+            )
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:fuselage:master_cross_section",
+            ] = -127 / (125 * disk_diameter ** 2 * np.pi)
+            partials[
+                "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+                "data:geometry:propulsion:nacelle:master_cross_section",
+            ] = 0.0
+
+        partials[
+            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+            "data:geometry:propeller:diameter",
+        ] = (254 * cowling_master_cross_section) / (125 * disk_diameter ** 3 * np.pi) 
