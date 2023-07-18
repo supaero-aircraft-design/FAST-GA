@@ -38,7 +38,7 @@ class ComputeVTMacX25Local(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -51,3 +51,47 @@ class ComputeVTMacX25Local(om.ExplicitComponent):
         x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
 
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        tmp = 3 * root_chord + 3 * tip_chord
+
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:root:chord",
+        ] = (
+            (root_chord + 2 * tip_chord) / (4 * tmp)
+            + (root_chord / 4 - tip_chord / 4 + b_v * np.tan(sweep_25_vt)) / tmp
+            - (
+                3
+                * (root_chord + 2 * tip_chord)
+                * (root_chord / 4 - tip_chord / 4 + b_v * np.tan(sweep_25_vt))
+            )
+            / tmp ** 2
+        )
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:tip:chord",
+        ] = (
+            (2 * (root_chord / 4 - tip_chord / 4 + b_v * np.tan(sweep_25_vt))) / tmp
+            - (root_chord + 2 * tip_chord) / (4 * tmp)
+            - (
+                3
+                * (root_chord + 2 * tip_chord)
+                * (root_chord / 4 - tip_chord / 4 + b_v * np.tan(sweep_25_vt))
+            )
+            / tmp ** 2
+        )
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:sweep_25",
+        ] = (b_v * (root_chord + 2 * tip_chord) * (np.tan(sweep_25_vt) ** 2 + 1)) / tmp
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:span",
+        ] = (np.tan(sweep_25_vt) * (root_chord + 2 * tip_chord)) / tmp

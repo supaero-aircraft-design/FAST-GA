@@ -35,7 +35,7 @@ class ComputeVTMacLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -50,3 +50,23 @@ class ComputeVTMacLength(om.ExplicitComponent):
         )
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
+        ] = (2 * (2 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord)) - (
+            2 * (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+        ) / (
+            3 * (root_chord + tip_chord) ** 2
+        )
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
+        ] = (2 * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord)) - (
+            2 * (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+        ) / (
+            3 * (root_chord + tip_chord) ** 2
+        )

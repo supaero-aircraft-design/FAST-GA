@@ -36,7 +36,7 @@ class ComputeVTMacZ(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:MAC:z", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -47,3 +47,21 @@ class ComputeVTMacZ(om.ExplicitComponent):
         z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
 
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        tmp = 3 * root_chord + 3 * tip_chord
+
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
+            b_v / tmp - (6 * b_v * (root_chord / 2 + tip_chord)) / tmp ** 2
+        )
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
+            2 * b_v
+        ) / tmp - (6 * b_v * (root_chord / 2 + tip_chord)) / tmp ** 2
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
+            2 * (root_chord / 2 + tip_chord)
+        ) / tmp

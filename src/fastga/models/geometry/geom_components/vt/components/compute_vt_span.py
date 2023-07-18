@@ -35,11 +35,7 @@ class ComputeVTSpan(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:span", units="m")
 
-        self.declare_partials(
-            "data:geometry:vertical_tail:span",
-            ["data:geometry:vertical_tail:aspect_ratio", "data:geometry:vertical_tail:area"],
-            method="fd",
-        )
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -50,3 +46,24 @@ class ComputeVTSpan(om.ExplicitComponent):
         b_v = np.sqrt(max(lambda_vt * s_v, 0.1))
 
         outputs["data:geometry:vertical_tail:span"] = b_v
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        lambda_vt = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
+        s_v = float(inputs["data:geometry:vertical_tail:area"])
+
+        if lambda_vt * s_v >= 0.1:
+
+            partials[
+                "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"
+            ] = s_v / (2 * np.sqrt(lambda_vt * s_v))
+            partials[
+                "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"
+            ] = lambda_vt / (2 * np.sqrt(lambda_vt * s_v))
+
+        else:
+
+            partials[
+                "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"
+            ] = 0.0
+            partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = 0.0

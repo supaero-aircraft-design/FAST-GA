@@ -37,7 +37,7 @@ class ComputeVTTipChord(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:tip:chord", units="m")
 
-        self.declare_partials("data:geometry:vertical_tail:tip:chord", "*", method="fd")
+        self.declare_partials("data:geometry:vertical_tail:tip:chord", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -47,3 +47,15 @@ class ComputeVTTipChord(om.ExplicitComponent):
         tip_chord = root_chord * taper_v
 
         outputs["data:geometry:vertical_tail:tip:chord"] = tip_chord
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        taper_v = inputs["data:geometry:vertical_tail:taper_ratio"]
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+
+        partials[
+            "data:geometry:vertical_tail:tip:chord", "data:geometry:vertical_tail:taper_ratio"
+        ] = root_chord
+        partials[
+            "data:geometry:vertical_tail:tip:chord", "data:geometry:vertical_tail:root:chord"
+        ] = taper_v
