@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 import fastoad.api as oad
 
@@ -23,7 +23,7 @@ from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
 @oad.RegisterSubmodel(
     SUBMODEL_NAVIGATION_SYSTEMS_CG, "fastga.submodel.weight.cg.system.navigation_system.legacy"
 )
-class ComputeNavigationSystemsCG(ExplicitComponent):
+class ComputeNavigationSystemsCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Navigation systems center of gravity estimation."""
 
@@ -33,7 +33,7 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
