@@ -14,7 +14,8 @@
 
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+
+import openmdao.api as om
 
 import fastoad.api as oad
 
@@ -24,7 +25,7 @@ from ..constants import SUBMODEL_FLIGHT_CONTROLS_CG
 @oad.RegisterSubmodel(
     SUBMODEL_FLIGHT_CONTROLS_CG, "fastga.submodel.weight.cg.airframe.flight_controls.legacy"
 )
-class ComputeFlightControlCG(ExplicitComponent):
+class ComputeFlightControlCG(om.ExplicitComponent):
     """
     Control surfaces center of gravity estimation.
 

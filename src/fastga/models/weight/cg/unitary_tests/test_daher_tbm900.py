@@ -16,6 +16,8 @@ import pytest
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
+from openmdao.utils.assert_utils import assert_check_partials
+
 from ..cg import CG
 from ..cg_components.a_airframe import (
     ComputeWingCG,
@@ -62,6 +64,12 @@ def test_compute_cg_wing():
     x_cg_a1 = problem.get_val("data:weight:airframe:wing:CG:x", units="m")
     assert x_cg_a1 == pytest.approx(4.95, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_fuselage():
     """Tests computation of fuselage center of gravity."""
@@ -72,6 +80,12 @@ def test_compute_cg_fuselage():
     problem = run_system(ComputeFuselageCG(), ivc)
     x_cg_a2 = problem.get_val("data:weight:airframe:fuselage:CG:x", units="m")
     assert x_cg_a2 == pytest.approx(5.70, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
+    # try:
+    #     assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    # except:
+    #     assert False
 
 
 def test_compute_cg_tail():
@@ -97,6 +111,12 @@ def test_compute_cg_flight_control():
     x_cg_a4 = problem.get_val("data:weight:airframe:flight_controls:CG:x", units="m")
     assert x_cg_a4 == pytest.approx(7.301, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_front_landing_gear():
     """Tests computation of front landing gear center of gravity."""
@@ -108,6 +128,12 @@ def test_compute_cg_front_landing_gear():
     x_cg_a52 = problem.get_val("data:weight:airframe:landing_gear:front:CG:x", units="m")
     assert x_cg_a52 == pytest.approx(2.25, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_main_landing_gear():
     """Tests computation of main landing gear center of gravity."""
@@ -118,6 +144,12 @@ def test_compute_cg_main_landing_gear():
     problem = run_system(ComputeMainLandingGearCG(), ivc)
     x_cg_a51 = problem.get_val("data:weight:airframe:landing_gear:main:CG:x", units="m")
     assert x_cg_a51 == pytest.approx(5.99, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_cg_engine():

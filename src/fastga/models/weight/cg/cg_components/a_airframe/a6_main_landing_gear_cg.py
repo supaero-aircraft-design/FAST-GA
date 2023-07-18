@@ -19,10 +19,6 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_MAIN_LANDING_GEAR_CG
 
-# oad.RegisterSubmodel.active_models[
-#     SUBMODEL_LANDING_GEAR_CG
-# ] = "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
-
 
 @oad.RegisterSubmodel(
     SUBMODEL_MAIN_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.main.legacy"
