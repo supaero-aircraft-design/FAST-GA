@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 import fastoad.api as oad
 
@@ -23,7 +23,7 @@ from ..constants import SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG
 @oad.RegisterSubmodel(
     SUBMODEL_LIFE_SUPPORT_SYSTEMS_CG, "fastga.submodel.weight.cg.system.life_support_system.legacy"
 )
-class ComputeLifeSupportCG(ExplicitComponent):
+class ComputeLifeSupportCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Life support systems center of gravity estimation."""
 
@@ -33,7 +33,7 @@ class ComputeLifeSupportCG(ExplicitComponent):
 
         self.add_output("data:weight:systems:life_support:air_conditioning:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

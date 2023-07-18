@@ -38,7 +38,21 @@ class ComputeHydraulicPowerSystemCG(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:weight:systems:power:hydraulic_systems:CG:x",
+            "data:geometry:fuselage:length",
+            val=0.5,
+        )
+        self.declare_partials(
+            "data:weight:systems:power:hydraulic_systems:CG:x",
+            "data:geometry:fuselage:front_length",
+            val=0.5,
+        )
+        self.declare_partials(
+            "data:weight:systems:power:hydraulic_systems:CG:x",
+            "data:geometry:fuselage:rear_length",
+            val=-0.5,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
