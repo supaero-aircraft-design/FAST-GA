@@ -30,7 +30,7 @@ class ComputeWingL4(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:tip:chord", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -40,3 +40,13 @@ class ComputeWingL4(om.ExplicitComponent):
         l4_wing = l1_wing * taper_ratio
 
         outputs["data:geometry:wing:tip:chord"] = l4_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+
+        partials["data:geometry:wing:tip:chord", "data:geometry:wing:taper_ratio"] = l1_wing
+        partials[
+            "data:geometry:wing:tip:chord", "data:geometry:wing:root:virtual_chord"
+        ] = taper_ratio

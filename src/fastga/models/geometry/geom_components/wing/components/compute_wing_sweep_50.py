@@ -31,7 +31,7 @@ class ComputeWingSweep50(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:sweep_50", units="rad")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -41,4 +41,40 @@ class ComputeWingSweep50(om.ExplicitComponent):
 
         outputs["data:geometry:wing:sweep_50"] = np.arctan(
             np.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
+        sweep_0 = inputs["data:geometry:wing:sweep_0"]
+
+        partials["data:geometry:wing:sweep_50", "data:geometry:wing:aspect_ratio"] = -(
+            2 * (taper_ratio_wing - 1)
+        ) / (
+            wing_ar ** 2
+            * (
+                (
+                    np.tan(sweep_0)
+                    + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1))
+                )
+                ** 2
+                + 1
+            )
+            * (taper_ratio_wing + 1)
+        )
+        partials["data:geometry:wing:sweep_50", "data:geometry:wing:taper_ratio"] = (
+            2 / (wing_ar * (taper_ratio_wing + 1))
+            - (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1) ** 2)
+        ) / (
+            (np.tan(sweep_0) + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1)))
+            ** 2
+            + 1
+        )
+        partials["data:geometry:wing:sweep_50", "data:geometry:wing:sweep_0"] = (
+            np.tan(sweep_0) ** 2 + 1
+        ) / (
+            (np.tan(sweep_0) + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1)))
+            ** 2
+            + 1
         )

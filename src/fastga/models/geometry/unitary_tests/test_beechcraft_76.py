@@ -932,7 +932,7 @@ def test_geometry_wing_z_tip():
     problem.check_partials(compact_print=True)
 
 
-def test_geometry_wing_l1():
+def test_wing_l1():
     """Tests computation of the wing chords (l1)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -943,8 +943,14 @@ def test_geometry_wing_l1():
     wing_l1 = problem.get_val("data:geometry:wing:root:virtual_chord", units="m")
     assert wing_l1 == pytest.approx(1.455, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_l2():
+
+def test_wing_l2():
     """Tests computation of the wing chords (l2)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -955,8 +961,14 @@ def test_geometry_wing_l2():
     wing_l2 = problem.get_val("data:geometry:wing:root:chord", units="m")
     assert wing_l2 == pytest.approx(1.455, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_l3():
+
+def test_wing_l3():
     """Tests computation of the wing chords (l3)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -969,8 +981,14 @@ def test_geometry_wing_l3():
         1.455, abs=1e-2
     )  # point 3 and 2 equal (previous version ignored)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_l4():
+
+def test_wing_l4():
     """Tests computation of the wing chords (l4)"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -980,6 +998,12 @@ def test_geometry_wing_l4():
     problem = run_system(ComputeWingL4(), ivc)
     wing_l4 = problem.get_val("data:geometry:wing:tip:chord", units="m")
     assert wing_l4 == pytest.approx(1.455, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_geometry_wing_x_kink():
@@ -1055,7 +1079,7 @@ def test_geometry_wing_b50():
     assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
 
 
-def test_geometry_wing_mac_length():
+def test_wing_mac_length():
     """Tests computation of the wing mean aerodynamic chord length"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -1066,8 +1090,14 @@ def test_geometry_wing_mac_length():
     wing_l0 = problem.get_val("data:geometry:wing:MAC:length", units="m")
     assert wing_l0 == pytest.approx(1.453, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_mac_x_pos():
+
+def test_wing_mac_x_pos():
     """Tests computation of the wing mean aerodynamic chord x local"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -1078,8 +1108,14 @@ def test_geometry_wing_mac_x_pos():
     wing_x0 = problem.get_val("data:geometry:wing:MAC:leading_edge:x:local", units="m")
     assert wing_x0 == pytest.approx(0.0, abs=1e-3)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_mac_y_pos():
+
+def test_wing_mac_y_pos():
     """Tests computation of the wing mean aerodynamic chord y position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -1089,6 +1125,12 @@ def test_geometry_wing_mac_y_pos():
     problem = run_system(ComputeWingMacY(), ivc)
     wing_y0 = problem.get_val("data:geometry:wing:MAC:y", units="m")
     assert wing_y0 == pytest.approx(2.899, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_geometry_wing_sweep_0():
@@ -1103,7 +1145,7 @@ def test_geometry_wing_sweep_0():
     assert sweep_0 == pytest.approx(0.0, abs=1e-1)
 
 
-def test_geometry_wing_sweep_50():
+def test_wing_sweep_50():
     """Test computation of the wing sweep at l/c=50%"""
 
     # Define input values calculated from other modules
@@ -1113,6 +1155,12 @@ def test_geometry_wing_sweep_50():
     problem = run_system(ComputeWingSweep50(), ivc)
     sweep_50 = problem.get_val("data:geometry:wing:sweep_50", units="deg")
     assert sweep_50 == pytest.approx(0.0, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_geometry_wing_sweep_100_inner():
@@ -1151,7 +1199,7 @@ def test_geometry_wing_wet_area():
     assert wet_area == pytest.approx(32.411, abs=1e-3)
 
 
-def test_geometry_wing_outer_area():
+def test_wing_outer_area():
     """Tests computation of the wing outer area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -1161,6 +1209,12 @@ def test_geometry_wing_outer_area():
     problem = run_system(ComputeWingOuterArea(), ivc)
     area_pf = problem.get_val("data:geometry:wing:outer_area", units="m**2")
     assert area_pf == pytest.approx(15.145, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_geometry_wing_mfw_simple():

@@ -36,7 +36,7 @@ class ComputeWingMacX(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:MAC:leading_edge:x:local", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -50,3 +50,32 @@ class ComputeWingMacX(om.ExplicitComponent):
         x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2 * l4_wing + l2_wing))) / (3 * wing_area)
 
         outputs["data:geometry:wing:MAC:leading_edge:x:local"] = x0_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        wing_area = inputs["data:geometry:wing:area"]
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+
+        partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:area"] = (
+            x4_wing * (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3 * wing_area ** 2)
+        partials[
+            "data:geometry:wing:MAC:leading_edge:x:local",
+            "data:geometry:wing:tip:leading_edge:x:local",
+        ] = -((l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:y"] = -(
+            x4_wing * (l2_wing + 2 * l4_wing)
+        ) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:y"] = (
+            x4_wing * (l2_wing + 2 * l4_wing)
+        ) / (3 * wing_area)
+        partials[
+            "data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:chord"
+        ] = -(x4_wing * (y2_wing - y4_wing)) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:chord"] = -(
+            2 * x4_wing * (y2_wing - y4_wing)
+        ) / (3 * wing_area)
