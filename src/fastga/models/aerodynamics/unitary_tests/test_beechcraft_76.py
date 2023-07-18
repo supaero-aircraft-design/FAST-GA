@@ -140,10 +140,10 @@ def test_cd0_low_speed():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
-    reason="No XFOIL executable available",
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+#    reason="No XFOIL executable available",
+#)
 def test_polar():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar(
@@ -362,9 +362,9 @@ def test_vlm_comp_low_speed():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
 def test_openvsp_comp_high_speed():
     """Tests openvsp components @ high speed."""
     comp_high_speed(
@@ -386,9 +386,9 @@ def test_openvsp_comp_high_speed():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
 def test_openvsp_comp_low_speed():
     """Tests openvsp components @ low speed."""
     y_vector_wing = np.array(
@@ -704,9 +704,9 @@ def test_cnbeta():
     cnbeta(XML_FILE, cn_beta_fus=-0.05511128)
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
 def test_slipstream_openvsp_cruise():
     """Compute slipstream @ high speed."""
     y_vector_prop_on = np.array(
@@ -827,9 +827,9 @@ def test_slipstream_openvsp_cruise():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
 def test_slipstream_openvsp_low_speed():
     """Compute slipstream @ low speed."""
     y_vector_prop_on = np.array(
@@ -1148,35 +1148,35 @@ def test_cm_alpha_fus():
     cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.18329318)
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
 def test_high_speed_connection_openvsp():
     """Tests high speed components connection."""
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
 
 
-@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+#@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_high_speed_connection_vlm():
     """Tests high speed components connection."""
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
-)
-def test_low_speed_connection_openvsp():
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+#)
+def test_low_speed_connection_openvsp(): 
     """Tests low speed components connection."""
     low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
 
 
-@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+#@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_low_speed_connection_vlm():
     """Tests low speed components connection."""
     low_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)
 
 
-@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+#@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_v_n_diagram():
     # load all inputs
     velocity_vect = np.array(
