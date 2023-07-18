@@ -32,7 +32,7 @@ class ComputeWingL1(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:root:virtual_chord", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -44,3 +44,24 @@ class ComputeWingL1(om.ExplicitComponent):
         l1_wing = wing_area / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio))
 
         outputs["data:geometry:wing:root:virtual_chord"] = l1_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        wing_area = inputs["data:geometry:wing:area"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+
+        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:area"] = 1 / (
+            2 * y2_wing - (y2_wing - y4_wing) * (taper_ratio + 1)
+        )
+        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:root:y"] = (
+            wing_area * (taper_ratio - 1)
+        ) / (2 * y2_wing - (y2_wing - y4_wing) * (taper_ratio + 1)) ** 2
+        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:tip:y"] = (
+            -(wing_area * (taper_ratio + 1))
+            / (2 * y2_wing - (y2_wing - y4_wing) * (taper_ratio + 1)) ** 2
+        )
+        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:taper_ratio"] = (
+            wing_area * (y2_wing - y4_wing)
+        ) / (2 * y2_wing - (y2_wing - y4_wing) * (taper_ratio + 1)) ** 2

@@ -35,7 +35,7 @@ class ComputeWingMacLength(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:MAC:length", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -51,3 +51,31 @@ class ComputeWingMacLength(om.ExplicitComponent):
         ) * (2 / (3 * wing_area))
 
         outputs["data:geometry:wing:MAC:length"] = l0_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        wing_area = inputs["data:geometry:wing:area"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+
+        partials["data:geometry:wing:MAC:length", "data:geometry:wing:area"] = (
+            2
+            * (
+                (y2_wing - y4_wing) * (l2_wing ** 2 + l2_wing * l4_wing + l4_wing ** 2)
+                - 3 * l2_wing ** 2 * y2_wing
+            )
+        ) / (3 * wing_area ** 2)
+        partials["data:geometry:wing:MAC:length", "data:geometry:wing:root:y"] = -(
+            2 * (-2 * l2_wing ** 2 + l2_wing * l4_wing + l4_wing ** 2)
+        ) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:length", "data:geometry:wing:tip:y"] = (
+            2 * (l2_wing ** 2 + l2_wing * l4_wing + l4_wing ** 2)
+        ) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:length", "data:geometry:wing:root:chord"] = (
+            2 * (6 * l2_wing * y2_wing - (2 * l2_wing + l4_wing) * (y2_wing - y4_wing))
+        ) / (3 * wing_area)
+        partials["data:geometry:wing:MAC:length", "data:geometry:wing:tip:chord"] = -(
+            2 * (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3 * wing_area)
