@@ -120,7 +120,7 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     if score_criteria == 'compute_time' or score_criteria == 'use_time':
 
         # Check if the function has already run by reading the tmp_saved_single_module_timings file. Otherwise time for each individual module will be timed at every swap. not necessary
-        modules_times = total_time_of_modules(score_criteria) 
+        modules_times = total_time_of_modules(score_criteria, WORK_FOLDER_PATH) 
       
 
         #find how many times they run
