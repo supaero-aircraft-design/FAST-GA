@@ -176,6 +176,12 @@ def test_compute_cg_fuel_lines():
     x_cg_b2 = problem.get_val("data:weight:propulsion:fuel_lines:CG:x", units="m")
     assert x_cg_b2 == pytest.approx(2.063, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_tank():
     """Tests tank center of gravity."""
@@ -186,6 +192,12 @@ def test_compute_cg_tank():
     problem = run_system(ComputeTankCG(), ivc)
     x_cg_b3 = problem.get_val("data:weight:propulsion:tank:CG:x", units="m")
     assert x_cg_b3 == pytest.approx(3.13, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_cg_fuel_propulsion():
