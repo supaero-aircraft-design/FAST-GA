@@ -58,4 +58,4 @@ class ComputeAvionicsSystemsWeightFromUninstalled(om.ExplicitComponent):
 
         partials[
             "data:weight:systems:avionics:mass", "data:weight:systems:avionics:mass_uninstalled"
-        ] = (2.11 * 0.993 * uninstalled_avionics ** -0.067)
+        ] = (1.96863/(uninstalled_avionics**(0.067)))

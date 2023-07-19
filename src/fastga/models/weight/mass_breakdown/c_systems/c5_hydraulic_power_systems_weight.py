@@ -39,7 +39,7 @@ class ComputeHydraulicWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=0.007)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
