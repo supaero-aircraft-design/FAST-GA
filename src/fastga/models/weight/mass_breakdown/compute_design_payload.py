@@ -40,7 +40,7 @@ class ComputeDesignPayload(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:payload", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -49,3 +49,15 @@ class ComputeDesignPayload(om.ExplicitComponent):
         luggage_mass_design = inputs["data:TLAR:luggage_mass_design"]
 
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        npax_design = inputs["data:TLAR:NPAX_design"] + 2.0
+        mass_per_pax = inputs["settings:weight:aircraft:payload:design_mass_per_passenger"]
+
+        partials["data:weight:aircraft:payload", "data:TLAR:NPAX_design"] = mass_per_pax
+        partials[
+            "data:weight:aircraft:payload",
+            "settings:weight:aircraft:payload:design_mass_per_passenger",
+        ] = npax_design
+        partials["data:weight:aircraft:payload", "data:TLAR:luggage_mass_design"] = 1.0

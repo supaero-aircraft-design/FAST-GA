@@ -38,7 +38,7 @@ class ComputeMaxPayload(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:max_payload", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -47,3 +47,17 @@ class ComputeMaxPayload(om.ExplicitComponent):
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
         outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
+        max_mass_per_pax = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
+
+        partials[
+            "data:weight:aircraft:max_payload", "data:geometry:cabin:seats:passenger:NPAX_max"
+        ] = max_mass_per_pax
+        partials[
+            "data:weight:aircraft:max_payload",
+            "settings:weight:aircraft:payload:max_mass_per_passenger",
+        ] = npax_max
+        partials["data:weight:aircraft:max_payload", "data:geometry:cabin:luggage:mass_max"] = 1.0
