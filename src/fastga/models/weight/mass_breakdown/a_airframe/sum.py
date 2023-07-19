@@ -19,7 +19,8 @@ import fastoad.api as oad
 from .constants import (
     SUBMODEL_WING_MASS,
     SUBMODEL_FUSELAGE_MASS,
-    SUBMODEL_TAIL_MASS,
+    SUBMODEL_HORIZONTAL_TAIL_MASS,
+    SUBMODEL_VERTICAL_TAIL_MASS,
     SUBMODEL_FLIGHT_CONTROLS_MASS,
     SUBMODEL_LANDING_GEAR_MASS,
     SUBMODEL_PAINT_MASS,
@@ -42,8 +43,13 @@ class AirframeWeight(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "empennage_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_MASS),
+            "horizontal_tail_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HORIZONTAL_TAIL_MASS),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "vertical_tail_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VERTICAL_TAIL_MASS),
             promotes=["*"],
         )
         self.add_subsystem(

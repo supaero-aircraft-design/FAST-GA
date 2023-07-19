@@ -14,7 +14,8 @@
 
 SUBMODEL_WING_MASS = "submodel.weight.mass.airframe.wing"
 SUBMODEL_FUSELAGE_MASS = "submodel.weight.mass.airframe.fuselage"
-SUBMODEL_TAIL_MASS = "submodel.weight.mass.airframe.tail"
+SUBMODEL_HORIZONTAL_TAIL_MASS = "submodel.weight.mass.airframe.horizontal_tail"
+SUBMODEL_VERTICAL_TAIL_MASS = "submodel.weight.mass.airframe.vertical_tail"
 SUBMODEL_FLIGHT_CONTROLS_MASS = "submodel.weight.mass.airframe.flight_controls"
 SUBMODEL_LANDING_GEAR_MASS = "submodel.weight.mass.airframe.landing_gear"
 SUBMODEL_PAINT_MASS = "submodel.weight.mass.airframe.paint"

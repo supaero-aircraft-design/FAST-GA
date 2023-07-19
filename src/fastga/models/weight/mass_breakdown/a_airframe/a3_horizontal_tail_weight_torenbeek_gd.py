@@ -1,0 +1,58 @@
+"""
+Estimation of tail weight.
+"""
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  FAST is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import numpy as np
+import openmdao.api as om
+
+import fastoad.api as oad
+
+from .constants import SUBMODEL_HORIZONTAL_TAIL_MASS
+
+
+@oad.RegisterSubmodel(SUBMODEL_HORIZONTAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.horizontal_tail.torenbeek_gd")
+class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
+    """
+    Weight estimation for tail weight
+
+    Based on a statistical analysis. See :cite:`roskampart5:1985` traditionally used on
+    commercial aircraft but found to work fairly well on high performance GA aircraft. Should
+    only be used with aircraft having a diving speed above 250 KEAS.
+    """
+
+    def setup(self):
+
+        self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
+        self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", units="kn")
+
+        self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
+
+        self.declare_partials("*", "*", method="fd")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        area_ht = inputs["data:geometry:horizontal_tail:area"]
+        vd = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
+        sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
+
+        a31 = area_ht * (3.81 * area_ht ** 0.2 * vd / (1000.0 * np.cos(sweep_25)) - 0.287)
+        # Mass formula in lb
+
+        outputs["data:weight:airframe:horizontal_tail:mass"] = (
+            a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
+        )
+
