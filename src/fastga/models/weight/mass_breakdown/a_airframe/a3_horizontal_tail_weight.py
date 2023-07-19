@@ -20,15 +20,15 @@ import openmdao.api as om
 from stdatm import Atmosphere
 import fastoad.api as oad
 
-from .constants import SUBMODEL_TAIL_MASS
+from .constants import SUBMODEL_HORIZONTAL_TAIL_MASS
 
 oad.RegisterSubmodel.active_models[
-    SUBMODEL_TAIL_MASS
-] = "fastga.submodel.weight.mass.airframe.tail.legacy"
+    SUBMODEL_HORIZONTAL_TAIL_MASS
+] = "fastga.submodel.weight.mass.airframe.horizontal_tail.legacy"
 
 
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
-class ComputeTailWeight(om.ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_HORIZONTAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.horizontal_tail.legacy")
+class ComputeHorizontalTailWeight(om.ExplicitComponent):
     """
     Weight estimation for tail weight
 
@@ -41,7 +41,6 @@ class ComputeTailWeight(om.ExplicitComponent):
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
-        self.add_input("data:weight:airframe:vertical_tail:k_factor", val=1.0)
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
@@ -51,15 +50,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
 
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="ft**2")
-        self.add_input("data:geometry:vertical_tail:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
-        self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -92,29 +83,4 @@ class ComputeTailWeight(om.ExplicitComponent):
 
         outputs["data:weight:airframe:horizontal_tail:mass"] = (
             a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
-        )
-
-        has_t_tail = inputs["data:geometry:has_T_tail"]
-        area_vt = inputs["data:geometry:vertical_tail:area"]
-        t_c_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
-        taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
-
-        a32 = (
-            0.073
-            * (1.0 + 0.2 * has_t_tail)
-            * (
-                (sizing_factor_ultimate * mtow) ** 0.376
-                * dynamic_pressure ** 0.122
-                * area_vt ** 0.873
-                * (100.0 * t_c_vt / np.cos(sweep_25_vt * np.pi / 180.0)) ** -0.49
-                * (ar_vt / (np.cos(sweep_25_vt * np.pi / 180.0)) ** 2.0) ** 0.357
-                * taper_vt ** 0.039
-            )
-        )
-        # Mass formula in lb
-
-        outputs["data:weight:airframe:vertical_tail:mass"] = (
-            a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
