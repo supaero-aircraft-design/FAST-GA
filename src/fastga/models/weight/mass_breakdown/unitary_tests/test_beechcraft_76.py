@@ -17,9 +17,12 @@ Test module for mass breakdown functions.
 import pytest
 
 from ..a_airframe import (
-    ComputeTailWeight,
-    ComputeTailWeightGD,
-    ComputeTailWeightTorenbeekGD,
+    ComputeHorizontalTailWeight,
+    ComputeVerticalTailWeight,
+    ComputeHorizontalTailWeightGD,
+    ComputeVerticalTailWeightGD,
+    ComputeHorizontalTailWeightTorenbeekGD,
+    ComputeVerticalTailWeightTorenbeekGD,
     ComputeFlightControlsWeight,
     ComputeFlightControlsWeightFLOPS,
     ComputeFuselageWeight,
@@ -354,41 +357,78 @@ def test_compute_fuselage_mass_analytical():
     assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(169.67, abs=1e-2)
 
 
-def test_compute_empennage_weight():
-    """Tests empennage weight computation from sample XML data."""
+def test_compute_horizontal_tail_weight():
+    """Tests horizontal_tail weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeTailWeight()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHorizontalTailWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeTailWeight(), ivc)
+    problem = run_system(ComputeHorizontalTailWeight(), ivc)
     weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
     assert weight_a31 == pytest.approx(19.81, abs=1e-2)
+
+
+def test_compute_vertical_tail_weight():
+    """Tests vertical_tail weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVerticalTailWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVerticalTailWeight(), ivc)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(11.81, abs=1e-2)
 
 
-def test_compute_empennage_weight_gd():
-    """Tests empennage weight computation from sample XML data."""
+def test_compute_horizontal_tail_weight_gd():
+    """Tests horizontal_tail weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeTailWeightGD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHorizontalTailWeightGD()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeTailWeightGD(), ivc)
+    problem = run_system(ComputeHorizontalTailWeightGD(), ivc)
     weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
     assert weight_a31 == pytest.approx(14.00, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_compute_vertical_tail_weight_gd():
+    """Tests vertical_tail weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVerticalTailWeightGD()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVerticalTailWeightGD(), ivc)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(11.63, abs=1e-2)
 
 
-def test_compute_empennage_weight_torenbeek_gd():
-    """Tests empennage weight computation from sample XML data."""
+def test_compute_horizontal_tail_weight_torenbeek_gd():
+    """Tests horizontal_tail weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeTailWeightTorenbeekGD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeHorizontalTailWeightTorenbeekGD()), __file__, XML_FILE
+    )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeTailWeightTorenbeekGD(), ivc)
+    problem = run_system(ComputeHorizontalTailWeightTorenbeekGD(), ivc)
     weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
     assert weight_a31 == pytest.approx(25.76, abs=1e-2)
+
+
+def test_compute_vertical_tail_weight_torenbeek_gd():
+    """Tests vertical_tail weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeVerticalTailWeightTorenbeekGD()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVerticalTailWeightTorenbeekGD(), ivc)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(11.63, abs=1e-2)
 
