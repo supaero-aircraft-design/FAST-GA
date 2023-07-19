@@ -40,7 +40,7 @@ class ComputeElectricWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:power:electric_systems:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -50,3 +50,16 @@ class ComputeElectricWeight(om.ExplicitComponent):
         c12 = 426.0 * ((m_fuel_lines + m_iae) / 1000.0) ** 0.51  # mass formula in lb
 
         outputs["data:weight:systems:power:electric_systems:mass"] = c12
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
+        m_iae = inputs["data:weight:systems:avionics:mass"]
+
+        partials[
+            "data:weight:systems:power:electric_systems:mass",
+            "data:weight:propulsion:fuel_lines:mass",
+        ] = 10863 / (50000 * (m_fuel_lines / 1000 + m_iae / 1000) ** (49 / 100))
+        partials[
+            "data:weight:systems:power:electric_systems:mass", "data:weight:systems:avionics:mass"
+        ] = 10863 / (50000 * (m_fuel_lines / 1000 + m_iae / 1000) ** (49 / 100))

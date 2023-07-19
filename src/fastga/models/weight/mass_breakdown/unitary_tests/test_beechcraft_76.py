@@ -393,7 +393,7 @@ def test_compute_flight_controls_weight():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -410,7 +410,7 @@ def test_compute_flight_controls_weight_flops():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -440,7 +440,7 @@ def test_compute_paint_weight():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -518,7 +518,7 @@ def test_compute_fuel_lines_weight_flops():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -573,6 +573,12 @@ def test_compute_avionics_systems_weight_from_uninstalled():
     weight_c3 = problem.get_val("data:weight:systems:avionics:mass", units="kg")
     assert weight_c3 == pytest.approx(33.37, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_electric_power_system_weight():
     """Tests electric power system weight computation from sample XML data."""
@@ -585,6 +591,12 @@ def test_compute_electric_power_system_weight():
     weight_c12 = problem.get_val("data:weight:systems:power:electric_systems:mass", units="kg")
     assert weight_c12 == pytest.approx(84.29, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_hydraulic_power_system_weight():
     """Tests hydraulic power system weight computation from sample XML data."""
@@ -596,6 +608,12 @@ def test_compute_hydraulic_power_system_weight():
     problem = run_system(ComputeHydraulicWeight(), ivc)
     weight_c13 = problem.get_val("data:weight:systems:power:hydraulic_systems:mass", units="kg")
     assert weight_c13 == pytest.approx(12.383, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_life_support_systems_weight():
