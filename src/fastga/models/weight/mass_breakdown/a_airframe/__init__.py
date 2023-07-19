@@ -16,13 +16,14 @@
 
 from .a1_wing_weight import ComputeWingWeight
 from .a1_wing_weight_analytical import ComputeWingMassAnalytical
-from .a2_fuselage_weight import (
-    ComputeFuselageWeight,
-    ComputeFuselageWeightRaymer,
-    ComputeFuselageWeightRoskam,
-)
+from .a2_fuselage_weight import ComputeFuselageWeight
+from .a2_fuselage_weight_raymer import ComputeFuselageWeightRaymer
+from .a2_fuselage_weight_roskam import ComputeFuselageWeightRoskam
 from .a2_fuselage_weight_analytical import ComputeFuselageMassAnalytical
-from .a3_tail_weight import ComputeTailWeight, ComputeTailWeightGD, ComputeTailWeightTorenbeekGD
-from .a4_flight_control_weight import ComputeFlightControlsWeight, ComputeFlightControlsWeightFLOPS
+from .a3_tail_weight import ComputeTailWeight
+from .a3_tail_weight_gd import ComputeTailWeightGD
+from .a3_tail_weight_torenbeek_gd import ComputeTailWeightTorenbeekGD
+from .a4_flight_control_weight import ComputeFlightControlsWeight
+from .a4_flight_control_weight_flops import ComputeFlightControlsWeightFLOPS
 from .a5_landing_gear_weight import ComputeLandingGearWeight
 from .a7_paint_weight import ComputePaintWeight
