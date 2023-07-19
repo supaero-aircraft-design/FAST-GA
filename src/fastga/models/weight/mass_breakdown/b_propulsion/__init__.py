@@ -12,6 +12,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .b1_2_oil_weight import ComputeOilWeight
-from .b1_engine_weight import ComputeEngineWeight, ComputeEngineWeightRaymer
-from .b2_fuel_lines_weight import ComputeFuelLinesWeight, ComputeFuelLinesWeightFLOPS
+from .b1_engine_weight import ComputeEngineWeight
+from .b1_engine_weight_raymer import ComputeEngineWeightRaymer
+from .b2_fuel_lines_weight import ComputeFuelLinesWeight
+from .b2_fuel_lines_weight_flops import ComputeFuelLinesWeightFLOPS
 from .b3_unusable_fuel_weight import ComputeUnusableFuelWeight

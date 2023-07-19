@@ -20,19 +20,16 @@ import fastoad.api as oad
 
 from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_INSTALLED_ENGINE_MASS
-] = "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
-
 
 @oad.RegisterSubmodel(
-    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
+    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.raymer"
 )
-class ComputeEngineWeight(om.ExplicitComponent):
+class ComputeEngineWeightRaymer(om.ExplicitComponent):
     """
     Engine weight estimation calling wrapper
 
-    Based on a statistical analysis. See :cite:`raymer:2012`, Table 15.2.
+    Based on a statistical analysis. See :cite:`raymer:2012` Formula 15.52, can also be found in
+    :cite:`roskampart5:1985` USAF method.
     """
 
     def __init__(self, **kwargs):
@@ -56,10 +53,11 @@ class ComputeEngineWeight(om.ExplicitComponent):
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
-        # This should give the UNINSTALLED weight
-        uninstalled_engine_weight = propulsion_model.compute_weight()
         k_b1 = inputs["settings:weight:propulsion:engine:k_factor"]
 
-        b_1 = 1.4 * uninstalled_engine_weight
+        # This should give the UNINSTALLED weight in lbs !
+        uninstalled_engine_weight = propulsion_model.compute_weight()
+
+        b_1 = 2.575 * uninstalled_engine_weight ** 0.922
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
