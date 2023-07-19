@@ -104,6 +104,12 @@ def test_compute_design_payload():
     problem = run_system(ComputeDesignPayload(), ivc)
     assert problem["data:weight:aircraft:payload"] == pytest.approx(390.0, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_max_payload():
 
@@ -113,6 +119,12 @@ def test_compute_max_payload():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeMaxPayload(), ivc)
     assert problem["data:weight:aircraft:max_payload"] == pytest.approx(450.0, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_wing_weight():
@@ -769,9 +781,9 @@ def test_evaluate_mlw():
     ivc = get_indep_var_comp(list_inputs(ComputeMLW()), __file__, XML_FILE)
 
     # noinspection PyTypeChecker
-    mass_computation = run_system(ComputeMLW(), ivc)
+    problem = run_system(ComputeMLW(), ivc)
 
-    mlw = mass_computation.get_val("data:weight:aircraft:MLW", units="kg")
+    mlw = problem.get_val("data:weight:aircraft:MLW", units="kg")
     assert mlw == pytest.approx(1769, abs=1)
 
 
@@ -781,10 +793,16 @@ def test_evaluate_zfw():
     ivc = get_indep_var_comp(list_inputs(ComputeZFW()), __file__, XML_FILE)
 
     # noinspection PyTypeChecker
-    mass_computation = run_system(ComputeZFW(), ivc)
+    problem = run_system(ComputeZFW(), ivc)
 
-    zfw = mass_computation.get_val("data:weight:aircraft:ZFW", units="kg")
+    zfw = problem.get_val("data:weight:aircraft:ZFW", units="kg")
     assert zfw == pytest.approx(1508, abs=1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_evaluate_mzfw():
@@ -793,10 +811,16 @@ def test_evaluate_mzfw():
     ivc = get_indep_var_comp(list_inputs(ComputeMZFW()), __file__, XML_FILE)
 
     # noinspection PyTypeChecker
-    mass_computation = run_system(ComputeMZFW(), ivc)
+    problem = run_system(ComputeMZFW(), ivc)
 
-    mzfw = mass_computation.get_val("data:weight:aircraft:MZFW", units="kg")
+    mzfw = problem.get_val("data:weight:aircraft:MZFW", units="kg")
     assert mzfw == pytest.approx(1568, abs=1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_web_mass():
