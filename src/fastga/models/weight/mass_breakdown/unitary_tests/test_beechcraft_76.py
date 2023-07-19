@@ -88,6 +88,8 @@ from ..update_mzfw import ComputeMZFW
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
+from openmdao.utils.assert_utils import assert_check_partials
+
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 XML_FILE = "beechcraft_76.xml"
@@ -125,6 +127,12 @@ def test_compute_wing_weight():
         174.95, abs=1e-2
     )  # difference because of integer conversion error
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+    except:
+        assert False
+
 
 def test_compute_fuselage_weight():
     """Tests fuselage weight computation from sample XML data."""
@@ -135,6 +143,12 @@ def test_compute_fuselage_weight():
     problem = run_system(ComputeFuselageWeight(), ivc)
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
     assert weight_a2 == pytest.approx(156.31, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_fuselage_weight_raymer():
@@ -377,6 +391,12 @@ def test_compute_flight_controls_weight():
     weight_a4 = problem.get_val("data:weight:airframe:flight_controls:mass", units="kg")
     assert weight_a4 == pytest.approx(31.80, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+    except:
+        assert False
+
 
 def test_compute_flight_controls_weight_flops():
     """Tests flight controls weight computation from sample XML data."""
@@ -387,6 +407,12 @@ def test_compute_flight_controls_weight_flops():
     problem = run_system(ComputeFlightControlsWeightFLOPS(), ivc)
     weight_a4 = problem.get_val("data:weight:airframe:flight_controls:mass", units="kg")
     assert weight_a4 == pytest.approx(30.67, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+    except:
+        assert False
 
 
 def test_compute_landing_gear_weight():
@@ -411,6 +437,12 @@ def test_compute_paint_weight():
     problem = run_system(ComputePaintWeight(), ivc)
     weight_a7 = problem.get_val("data:weight:airframe:paint:mass", units="kg")
     assert weight_a7 == pytest.approx(27.13, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+    except:
+        assert False
 
 
 def test_compute_airframe_weight():

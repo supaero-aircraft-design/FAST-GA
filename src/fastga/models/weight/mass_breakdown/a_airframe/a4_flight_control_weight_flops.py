@@ -92,41 +92,29 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
         dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed ** 2.0 * 0.0208854
 
         partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
-            0.404
-            * wing_area ** 0.317
-            * 602.0
-            * (mtow / 1000.0) ** -0.398
-            * n_ult ** 0.525
-            * dynamic_pressure ** 0.345
-        )
+            30401 * dynamic_pressure ** (69 / 200) * n_ult ** (21 / 40) * wing_area ** (317 / 1000)
+        ) / (125000000 * (mtow / 1000) ** (199 / 500))
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = (
-            0.404
-            * wing_area ** 0.317
-            * (mtow / 1000.0) ** -0.602
-            * 0.525
-            * n_ult ** -0.475
-            * dynamic_pressure ** 0.345
+            2121
+            * dynamic_pressure ** (69 / 200)
+            * wing_area ** (317 / 1000)
+            * (mtow / 1000) ** (301 / 500)
+        ) / (
+            10000 * n_ult ** (19 / 40)
         )
-        partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
-            0.404
-            * 0.317
-            * wing_area ** -0.683
-            * (mtow / 1000.0) ** 0.602
-            * n_ult ** 0.525
-            * dynamic_pressure ** 0.345
-        )
+        partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:area"] = (
+            32017
+            * dynamic_pressure ** (69 / 200)
+            * n_ult ** (21 / 40)
+            * (mtow / 1000) ** (301 / 500)
+        ) / (250000 * wing_area ** (683 / 1000))
         d_a4_d_q = (
-            0.404
-            * 0.345
-            * wing_area ** 0.317
-            * (mtow / 1000.0) ** 0.602
-            * n_ult ** 0.525
-            * dynamic_pressure ** -0.655
-        )
-        d_q_d_vd = atm.density * atm.true_airspeed * 0.0208854
+            6969 * n_ult ** (21 / 40) * wing_area ** (317 / 1000) * (mtow / 1000) ** (301 / 500)
+        ) / (50000 * dynamic_pressure ** (131 / 200))
+        d_q_d_vd = atm.density * atm.true_airspeed * 0.0208854 * np.sqrt(1.225 / atm.density)
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
