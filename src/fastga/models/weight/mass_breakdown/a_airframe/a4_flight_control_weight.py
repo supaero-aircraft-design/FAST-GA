@@ -36,6 +36,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
     """
 
     def setup(self):
+
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="ft")
@@ -46,6 +47,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         span = inputs["data:geometry:wing:span"]
@@ -57,37 +59,27 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         outputs["data:weight:airframe:flight_controls:mass"] = a4
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
+
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         span = inputs["data:geometry:wing:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
-        partials[
-            "data:weight:airframe:flight_controls:mass", "data:geometry:fuselage:length"
-        ] = 0.053 * (1.536 * fus_length ** 0.536 * span ** 0.371 * (n_ult * mtow * 1e-4) ** 0.80)
-        partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:span"] = 0.053 * (
-            fus_length ** 1.536 * 0.371 * span ** -0.629 * (n_ult * mtow * 1e-4) ** 0.80
-        )
-        partials[
-            "data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"
-        ] = 0.053 * (
-            fus_length ** 1.536
-            * 0.371
-            * span ** -0.629
-            * n_ult ** 0.80
-            * 0.80
-            * mtow ** -0.2
-            * 1e-4 ** 0.80
-        )
+        partials["data:weight:airframe:flight_controls:mass", "data:geometry:fuselage:length"] = (
+            1272
+            * fus_length ** (67 / 125)
+            * span ** (371 / 1000)
+            * ((mtow * n_ult) / 10000) ** (4 / 5)
+        ) / 15625
+        partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:span"] = (
+            19663 * fus_length ** (192 / 125) * ((mtow * n_ult) / 10000) ** (4 / 5)
+        ) / (1000000 * span ** (629 / 1000))
+        partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
+            53 * fus_length ** (192 / 125) * n_ult * span ** (371 / 1000)
+        ) / (12500000 * ((mtow * n_ult) / 10000) ** (1 / 5))
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
-        ] = 0.053 * (
-            fus_length ** 1.536
-            * 0.371
-            * span ** -0.629
-            * n_ult ** -0.2
-            * 0.80
-            * mtow ** 0.80
-            * 1e-4 ** 0.80
+        ] = (53 * fus_length ** (192 / 125) * mtow * span ** (371 / 1000)) / (
+            12500000 * ((mtow * n_ult) / 10000) ** (1 / 5)
         )
