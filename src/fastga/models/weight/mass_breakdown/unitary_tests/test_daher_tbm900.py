@@ -500,6 +500,12 @@ def test_compute_fuel_lines_weight_flops():
     weight_b2 = problem.get_val("data:weight:propulsion:fuel_lines:mass", units="kg")
     assert weight_b2 == pytest.approx(38.91, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
+    except:
+        assert False
+
 
 def test_compute_unusable_fuel_weight():
     """Tests engine weight computation from sample XML data."""
