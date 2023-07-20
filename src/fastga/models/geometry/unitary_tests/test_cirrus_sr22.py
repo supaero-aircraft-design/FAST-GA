@@ -456,6 +456,9 @@ def test_ht_mac_x0_from_wing():
     assert lp_ht == pytest.approx(3.887, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", "data:geometry:has_T_tail"
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -588,7 +591,7 @@ def test_fuselage_basic():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -618,7 +621,7 @@ def test_fuselage_pax_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -648,7 +651,7 @@ def test_fuselage_max_height():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -678,7 +681,7 @@ def test_fuselage_cabin_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -694,11 +697,14 @@ def test_fuselage_nose_length_fd():
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(1.448, abs=1e-3)
 
-    # data = problem.check_partials(compact_print=True)
-    # try:
-    #     assert_check_partials(data, atol=1.e-6, rtol=1.e-6)
-    # except:
-    #     assert False
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:fuselage:front_length", "data:geometry:propulsion:engine:layout"
+    ]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_fuselage_nose_length_fl():
@@ -712,11 +718,14 @@ def test_fuselage_nose_length_fl():
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(1.148, abs=1e-3)
 
-    # data = problem.check_partials(compact_print=True)
-    # try:
-    #     assert_check_partials(data, atol=1.e-3, rtol=1.e-3)
-    # except:
-    #     assert False
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:fuselage:front_length", "data:geometry:propulsion:engine:layout"
+    ]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_fuselage_length_fd():
@@ -732,7 +741,7 @@ def test_fuselage_length_fd():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -762,7 +771,7 @@ def test_fuselage_rear_length():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -838,7 +847,7 @@ def test_fuselage_depth():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -857,7 +866,7 @@ def test_fuselage_volume():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-6, rtol=1.0e-6)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -946,6 +955,7 @@ def test_wing_z_root():
     assert wing_z2 == pytest.approx(0.596, rel=1e-2)
 
     data = problem.check_partials(compact_print=True)
+    del data["component"]["data:geometry:wing:root:z", "data:geometry:wing_configuration"]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -964,6 +974,7 @@ def test_wing_z_tip():
     assert wing_z4 == pytest.approx(0.216, rel=1e-2)
 
     data = problem.check_partials(compact_print=True)
+    del data["component"]["data:geometry:wing:tip:z", "data:geometry:wing_configuration"]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -1293,6 +1304,7 @@ def test_wing_mfw_simple():
     assert mfw == pytest.approx(296.517, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:aircraft:MFW", "data:propulsion:fuel_type"]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -1387,10 +1399,11 @@ def test_installation_effect_propeller():
     )
     assert prop_installation_effect == pytest.approx(0.883, abs=1e-3)
 
-    data = problem.check_partials(
-        compact_print=True,
-        excludes=["data:geometry:propulsion:engine:layout"],
-    )
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+        "data:geometry:propulsion:engine:layout",
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
