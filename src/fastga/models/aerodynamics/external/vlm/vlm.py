@@ -270,7 +270,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 cl_alpha_wing,
                 y_vector_wing,
                 cl_vector_wing,
-                chord_vector_wing,  
+                chord_vector_wing,
                 coef_k_wing,
             ) = self.post_processing_wing(
                 width_max,
@@ -364,35 +364,23 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
             # Read values from result file ---------------------------------------------------------
-            data = self.read_results(result_file_path)
-            saved_area_wing = float(data.loc["saved_ref_area", 0])
-            cl_0_wing = float(data.loc["cl_0_wing", 0])
-            cl_x_wing = float(data.loc["cl_X_wing", 0])
-            cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
-            cm_0_wing = float(data.loc["cm_0_wing", 0])
-            y_vector_wing = np.array(
-                [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-            ) * np.sqrt(sref_wing / saved_area_wing)
-            cl_vector_wing = np.array(
-                [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
-            )
-            chord_vector_wing = np.array(
-                [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-            ) * np.sqrt(sref_wing / saved_area_wing)
-            coef_k_wing = float(data.loc["coef_k_wing", 0])
-            cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-            cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
-                area_ratio / saved_area_ratio
-            )
-            y_vector_htp = np.array(
-                [float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(",")]
-            )
-            cl_vector_htp = np.array(
-                [float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")]
-            )
-            coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
+            (
+                cl_0_wing,
+                cl_x_wing,
+                cl_alpha_wing,
+                cm_0_wing,
+                y_vector_wing,
+                cl_vector_wing,
+                chord_vector_wing,
+                coef_k_wing,
+                cl_0_htp,
+                cl_aoa_htp,
+                cl_alpha_htp,
+                cl_alpha_htp_isolated,
+                y_vector_htp,
+                cl_vector_htp,
+                coef_k_htp,
+            ) = self.read_value_from_data(result_file_path, sref_wing, area_ratio, saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -1254,4 +1242,49 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             coef_k_htp,
             y_vector_htp,
             cl_vector_htp,
+        )
+
+    def read_value_from_data(self, result_file_path, sref_wing, area_ratio, saved_area_ratio):
+        data = self.read_results(result_file_path)
+        saved_area_wing = float(data.loc["saved_ref_area", 0])
+        cl_0_wing = float(data.loc["cl_0_wing", 0])
+        cl_x_wing = float(data.loc["cl_X_wing", 0])
+        cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
+        cm_0_wing = float(data.loc["cm_0_wing", 0])
+        y_vector_wing = np.array(
+            [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
+        ) * np.sqrt(sref_wing / saved_area_wing)
+        cl_vector_wing = np.array(
+            [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
+        )
+        chord_vector_wing = np.array(
+            [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
+        ) * np.sqrt(sref_wing / saved_area_wing)
+        coef_k_wing = float(data.loc["coef_k_wing", 0])
+        cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
+            area_ratio / saved_area_ratio
+        )
+        y_vector_htp = np.array([float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(",")])
+        cl_vector_htp = np.array([float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")])
+        coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
+
+        return (
+            cl_0_wing,
+            cl_x_wing,
+            cl_alpha_wing,
+            cm_0_wing,
+            y_vector_wing,
+            cl_vector_wing,
+            chord_vector_wing,
+            coef_k_wing,
+            cl_0_htp,
+            cl_aoa_htp,
+            cl_alpha_htp,
+            cl_alpha_htp_isolated,
+            y_vector_htp,
+            cl_vector_htp,
+            coef_k_htp,
         )
