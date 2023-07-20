@@ -1147,21 +1147,21 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cdp_wing_airfoil,
     ):
         """_summary_
-
+        Calculate aerodynamic characteristic with VLM results
         Args:
-            width_max (_type_): _description_
-            span_wing (_type_): _description_
-            mach (_type_): _description_
-            dihedral_angle (_type_): _description_
-            wing_0 (_type_): _description_
-            wing_aoa (_type_): _description_
-            aoa_angle (_type_): _description_
-            aspect_ratio_wing (_type_): _description_
-            cl_wing_airfoil (_type_): _description_
-            cdp_wing_airfoil (_type_): _description_
+            width_max (_float_): maximun wi
+            span_wing (_float_): _description_
+            mach (_float_): mach number
+            dihedral_angle (_float_): wing dihedral angle 
+            wing_0 (_float_): wing aerodynamic characteristics with zero angle of attack 
+            wing_aoa (_float_): wing aerodynamic characteristics with specific angle of attack
+            aoa_angle (_float_): angle of attakc data list  
+            aspect_ratio_wing (_float_): wing aspect ratio
+            cl_wing_airfoil (_list_): lift coefficient data of wing respect to different angle of attack
+            cdp_wing_airfoil (_list_): pressure drag coefficient data of wing respect to different angle of attack 
 
         Returns:
-            _type_: _description_
+            _list_: post-processed data for other use
         """
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
         beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
@@ -1218,20 +1218,22 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         htp_aoa,
     ):
         """_summary_
-
+        Calculate aerodynamic characteristic with VLM results
         Args:
-            beta (_type_): _description_
-            aspect_ratio_htp (_type_): _description_
-            area_ratio (_type_): _description_
-            mach (_type_): _description_
-            aoa_angle (_type_): _description_
-            cl_htp_airfoil (_type_): _description_
-            cdp_htp_airfoil (_type_): _description_
-            htp_0 (_type_): _description_
-            htp_aoa (_type_): _description_
+            beta (_float_): sweep angle of horizontal stabilizer
+            aspect_ratio_htp (_float_): wing aspect ratio
+            area_ratio (_float_): area ratio between wing and horizontal stabilizer
+            mach (_float_): mack number
+            aoa_angle (_list_): angle of attakc data list 
+            cl_htp_airfoil (_list_): lift coefficient data of horizontal stabilizer respect to different angle of attack
+            cdp_htp_airfoil (_list_): pressure drag coefficient data of horizontal stabilizer respect to different angle of attack
+            htp_0 (_list_): horizontal stabilizer aerodynamic charateristic data list
+                            with zero angle of attack
+            htp_aoa (_list_): horizontal stabilizer aerodynamic charateristic data list
+                              with specified angle of attack
 
         Returns:
-            _type_: _description_
+            _list_: post-processed data for other use
         """
         cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
         cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
@@ -1259,12 +1261,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def read_value_from_data(self, result_file_path, sref_wing, area_ratio, saved_area_ratio):
         """_summary_
-
+        Read existed data to speed up the process
         Args:
-            result_file_path (_type_): _description_
-            sref_wing (_type_): _description_
-            area_ratio (_type_): _description_
-            saved_area_ratio (_type_): _description_
+            result_file_path (_path_): computation result path
+            sref_wing (_float_): wing reference area
+            area_ratio (_float_): area ratio between wing and horizontal stabilizer 
+            saved_area_ratio (_float_): 
 
         Returns:
             _type_: _description_
@@ -1315,14 +1317,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def resize_wing_vector(self, y_vector_wing, cl_vector_wing, chord_vector_wing):
         """_summary_
-
+        Resize wing vector for later use in other model 
         Args:
-            y_vector_wing (_type_): _description_
-            cl_vector_wing (_type_): _description_
-            chord_vector_wing (_type_): _description_
+            y_vector_wing (_list_): wing position data 
+            cl_vector_wing (_list_): wing lift coefficient data
+            chord_vector_wing (_list_): wing chord length data 
 
         Returns:
-            _type_: _description_
+            _list_: reformed wing data
         """
         if SPAN_MESH_POINT < len(y_vector_wing):
             y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
@@ -1339,13 +1341,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def resize_htp_vector(self, y_vector_htp, cl_vector_htp):
         """_summary_
-
+        Resize horizontal stabilizer vector for later use in other model 
         Args:
-            y_vector_htp (_type_): _description_
-            cl_vector_htp (_type_): _description_
+            y_vector_htp (_list_): horizontal stabilizer poistion data
+            cl_vector_htp (_list_): horizontal lift coefficient data
 
         Returns:
-            _type_: _description_
+            _list_: reform horizontal stabilizer data
         """
         if SPAN_MESH_POINT < len(y_vector_htp):
             y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
