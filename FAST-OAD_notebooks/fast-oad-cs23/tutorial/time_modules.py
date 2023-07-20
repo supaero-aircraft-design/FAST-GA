@@ -13,17 +13,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
     import sys
     import contextlib
     import xml.etree.ElementTree as ET
-
-    def find_id_value(dictionary):
-        if 'id' in dictionary:
-            return dictionary['id']
-        else:
-            for value in dictionary.values():
-                if isinstance(value, dict):
-                    id_value = find_id_value(value)
-                    if id_value is not None:
-                        return id_value
-        return None
+    from configuration_optimizer import find_id_value
 
     # Define relative path
     #WORK_FOLDER_PATH = "workdir" ##########################################TODO: ELIMINATE FROM HERE, pass as argument

@@ -7,14 +7,15 @@ model:
   propeller:
     id: fastga.aerodynamics.propeller
   aircraft_sizing:
-    weight:
-      id: fastga.weight.legacy
-      propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    mtow:
-      id: fastga.loop.mtow
     geometry:
       id: fastga.geometry.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+    aerodynamics_lowspeed:
+      id: fastga.aerodynamics.lowspeed.legacy
+      propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+      result_folder_path: ./workdir
+      use_openvsp: false
+      compute_slipstream: false
     aerodynamics_highspeed:
       id: fastga.aerodynamics.highspeed.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
@@ -22,22 +23,21 @@ model:
       use_openvsp: false
       compute_mach_interpolation: false
       compute_slipstream: false
-    aerodynamics_lowspeed:
-      id: fastga.aerodynamics.lowspeed.legacy
+    weight:
+      id: fastga.weight.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-      result_folder_path: ./workdir
-      use_openvsp: false
-      compute_slipstream: false
-    hq:
-        tail_sizing:
-            id: fastga.handling_qualities.tail_sizing
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        static_margin:
-            id: fastga.handling_qualities.static_margin
     performance:
       id: fastga.performances.mission
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
       out_file: ./workdir/mda_mission_results.csv
+    hq:
+      tail_sizing:
+        id: fastga.handling_qualities.tail_sizing
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+      static_margin:
+        id: fastga.handling_qualities.static_margin
+    mtow:
+      id: fastga.loop.mtow
     wing_position:
       id: fastga.loop.wing_position
     wing_area:
