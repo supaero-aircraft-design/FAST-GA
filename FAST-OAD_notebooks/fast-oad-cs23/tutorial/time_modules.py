@@ -130,7 +130,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
                 # Append the new element to the <geometry> element
                 geometry_element.append(new_element)
             else:
-                sys.exit("<geometry> element not found in the XML structure. Couls not compute weight times")
+                sys.exit("<geometry> element not found in the XML structure. Could not compute weight times")
 
             # Save the modified XML back to a file
             WEIGHT_PATH = pth.join(WORK_FOLDER_PATH, 'config_opti_tmp', str(module), 'data')
@@ -139,7 +139,6 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
             WEIGHT_SOURCE_FILE = pth.join(WEIGHT_PATH, 'beechcraft_76.xml')
             tree.write(WEIGHT_SOURCE_FILE)
 
-    
             api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, WEIGHT_SOURCE_FILE, overwrite=True)
 
             executions_time = []

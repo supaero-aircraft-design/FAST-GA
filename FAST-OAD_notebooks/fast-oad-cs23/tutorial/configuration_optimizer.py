@@ -218,7 +218,7 @@ swap = 'single' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
     #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.  
     #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
     #'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
-score_criteria = 'compute_time'  
+score_criteria = 'count_feedbacks'  
 ############################################
 
 try:
