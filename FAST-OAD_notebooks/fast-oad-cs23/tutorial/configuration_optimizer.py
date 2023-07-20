@@ -111,7 +111,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             # Move last node to top position, displacing others
             shifted_element = keys_list.pop(-1-swap_position)
             keys_list.insert(0, shifted_element)
-
+            
             if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
                 print('Trying order: ', keys_list)
                 #Generate new config file with proposed order
@@ -156,7 +156,6 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
         if not improvement:
             swap_position = swap_position + 1
         
-
     keys_list = best_order
     existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
     #add back solvers, if they were there
@@ -299,7 +298,7 @@ swap = 'single' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
     #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.  
     #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
     #'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
-score_criteria = 'count_feedbacks'  
+score_criteria = 'compute_time'  
 ############################################
 
 try:
