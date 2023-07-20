@@ -111,40 +111,47 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             # Move last node to top position, displacing others
             shifted_element = keys_list.pop(-1-swap_position)
             keys_list.insert(0, shifted_element)
-            print('Trying order: ', keys_list)
-            #Generate new config file with proposed order
-            with open(CONFIGURATION_FILE, 'r') as file:
-                existing_data = yaml.safe_load(file) 
-            existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
-            with open(CONFIGURATION_FILE, 'w') as file:
-                yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
 
-            #convert config file to problem and then to dictionary, as input for feedback_extractor
-            conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-            problem = conf.get_problem()
-            problem.setup()
-            problem.final_setup()
-            #convert problem to dictionary, as input for feedback_extractor
-            case_id=None
-            model_data = _get_viewer_data(problem, case_id=case_id)
+            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+                print('Trying order: ', keys_list)
+                #Generate new config file with proposed order
+                with open(CONFIGURATION_FILE, 'r') as file:
+                    existing_data = yaml.safe_load(file) 
+                existing_data['model']['aircraft_sizing'] = {key: config_dictionary[key] for key in keys_list if key in config_dictionary}
+                with open(CONFIGURATION_FILE, 'w') as file:
+                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
 
-            #evaluate the score of the proposed order
-            score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)
-            
-            if score < best_score:
-                best_score = score
-                best_order = keys_list
-                improvement = True
-                swap_position = 0
-                print('Swap Kept')
-                print('Current order: ', best_order)
-                break
+                #convert config file to problem and then to dictionary, as input for feedback_extractor
+                conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+                problem = conf.get_problem()
+                problem.setup()
+                problem.final_setup()
+                #convert problem to dictionary, as input for feedback_extractor
+                case_id=None
+                model_data = _get_viewer_data(problem, case_id=case_id)
 
+                #evaluate the score of the proposed order
+                score = feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH)
+                
+                if score < best_score:
+                    best_score = score
+                    best_order = keys_list
+                    improvement = True
+                    swap_position = 0
+                    print('Swap Kept')
+                    print('Current order: ', best_order)
+                    break
+
+                else:
+                    shifted_element = keys_list.pop(0) #undo the change because the order is worst than the best proposed
+                    keys_list.insert(-1-swap_position, shifted_element)
+                    print('Swap reverted')
+                    print('Current order: ', keys_list)
             else:
-                shifted_element = keys_list.pop(0)
+                print('\n\n FOR DEBUG: BAD ORDER', keys_list)
+                shifted_element = keys_list.pop(0) #undo the change because the order would not run (invalid order)
                 keys_list.insert(-1-swap_position, shifted_element)
-                print('Swap reverted')
-                print('Current order: ', keys_list)
+                
 
         if not improvement:
             swap_position = swap_position + 1
@@ -182,6 +189,80 @@ def hybrid_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
     return keys_list
 
 
+def find_id_value(dictionary):
+    if 'id' in dictionary:
+        return dictionary['id']
+    else:
+        for value in dictionary.values():
+            if isinstance(value, dict):
+                id_value = find_id_value(value)
+                if id_value is not None:
+                    return id_value
+    return None
+
+def is_valid_order(keys_list, dictionary):
+    # Check the restrictions
+    
+    list_of_ids = []
+    for key in keys_list:
+        list_of_ids.append(find_id_value(dictionary[key]))
+    
+    id_indices = {id: list_of_ids.index(id) for id in list_of_ids}# if id in list_of_ids else None for id in list_of_ids}
+
+    # Check the restrictions
+    def get_module_index(module_id):
+        return id_indices[module_id] if module_id in id_indices else None
+
+    def is_id_starts_with(prefix, id_indices):
+        return any(id_index.startswith(prefix) for id_index in id_indices)
+
+    # Check the restrictions
+    if (is_id_starts_with('fastga.handling_qualities.', id_indices) and
+       (is_id_starts_with('fastga.geometry.', id_indices) or is_id_starts_with('fastga.aerodynamics.', id_indices))):
+        handling_qualities_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.handling_qualities.')]
+        geometry_aerodynamics_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.') or id.startswith('fastga.aerodynamics.')]
+        if any(hq_index < geo_aero_index for hq_index in handling_qualities_indices for geo_aero_index in geometry_aerodynamics_indices):
+            return False
+
+    if (get_module_index('fastga.loop.wing_position') is not None and
+       get_module_index('fastga.weight.legacy') is not None):
+        if get_module_index('fastga.loop.wing_position') < get_module_index('fastga.weight.legacy'):
+            return False
+
+    if (is_id_starts_with('fastga.performances.', id_indices) and
+       is_id_starts_with('fastga.aerodynamics.', id_indices)):
+        performances_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.performances.')]
+        aerodynamics_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.aerodynamics.')]
+        if any(performances_index < aerodynamics_index for performances_index in performances_indices for aerodynamics_index in aerodynamics_indices if performances_index is not None and aerodynamics_index is not None):
+            return False
+
+    if (is_id_starts_with('fastga.performances.', id_indices) and
+       (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
+        performances_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.performances.')]
+        wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
+        if any(performances_index > wing_area_wing_pos_index for performances_index in performances_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if performances_index is not None and wing_area_wing_pos_index is not None):
+            return False
+
+    if (is_id_starts_with('fastga.geometry.', id_indices) and
+       is_id_starts_with('fastga.aerodynamics.', id_indices)):
+        geometry_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.')]
+        aerodynamics_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.aerodynamics.')]
+        if any(geometry_index > aerodynamics_index for geometry_index in geometry_indices for aerodynamics_index in aerodynamics_indices if geometry_index is not None and aerodynamics_index is not None):
+            return False
+
+    if (is_id_starts_with('fastga.geometry.', id_indices) and
+       (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
+        geometry_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.')]
+        wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
+        if any(geometry_index > wing_area_wing_pos_index for geometry_index in geometry_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if geometry_index is not None and wing_area_wing_pos_index is not None):
+            return False
+
+    if (get_module_index('fastga.weight.legacy') is not None and
+       get_module_index('fastga.loop.mtow') is not None):
+        if get_module_index('fastga.weight.legacy') > get_module_index('fastga.loop.mtow'):
+            return False
+
+    return True
 
 ####################################################################################################################################################################################
 #End of the functions
