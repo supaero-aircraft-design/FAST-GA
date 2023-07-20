@@ -19,17 +19,18 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from .constants import SUBMODEL_LANDING_GEAR_MASS
+from .constants import SUBMODEL_FRONT_LANDING_GEAR_MASS
 
 oad.RegisterSubmodel.active_models[
-    SUBMODEL_LANDING_GEAR_MASS
-] = "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+    SUBMODEL_FRONT_LANDING_GEAR_MASS
+] = "fastga.submodel.weight.mass.airframe.front_landing_gear.legacy"
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_MASS, "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+    SUBMODEL_FRONT_LANDING_GEAR_MASS,
+    "fastga.submodel.weight.mass.airframe.front_landing_gear.legacy",
 )
-class ComputeLandingGearWeight(om.ExplicitComponent):
+class ComputeFrontLandingGearWeight(om.ExplicitComponent):
     """
     Weight estimation for landing gears
 
@@ -45,7 +46,6 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:wing_configuration", val=np.nan)
 
-        self.add_output("data:weight:airframe:landing_gear:main:mass", units="lb")
         self.add_output("data:weight:airframe:landing_gear:front:mass", units="lb")
 
         self.declare_partials("*", "*", method="fd")
@@ -83,12 +83,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             weight_reduction_factor = 1.0
 
         if wing_config == 3.0:
-            mlg_weight *= 1.08
             nlg_weight *= 1.08
 
-        outputs["data:weight:airframe:landing_gear:main:mass"] = (
-            mlg_weight * weight_reduction_factor
-        )
         outputs["data:weight:airframe:landing_gear:front:mass"] = (
             nlg_weight * weight_reduction_factor
         )
