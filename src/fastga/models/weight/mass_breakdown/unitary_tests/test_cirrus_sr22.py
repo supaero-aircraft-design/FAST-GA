@@ -176,6 +176,12 @@ def test_compute_fuselage_weight_raymer():
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
     assert weight_a2 == pytest.approx(110.00, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_fuselage_weight_roskam():
     """Tests fuselage weight computation from sample XML data."""
@@ -187,7 +193,12 @@ def test_compute_fuselage_weight_roskam():
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
     assert weight_a2 == pytest.approx(59.57, abs=1e-2)
 
-    problem.check_partials(compact_print=True)
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:airframe:fuselage:mass", "data:geometry:wing_configuration"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_shell_mass():
