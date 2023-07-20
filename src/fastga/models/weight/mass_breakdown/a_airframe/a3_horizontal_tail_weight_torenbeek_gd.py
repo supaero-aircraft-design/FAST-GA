@@ -22,7 +22,10 @@ import fastoad.api as oad
 from .constants import SUBMODEL_HORIZONTAL_TAIL_MASS
 
 
-@oad.RegisterSubmodel(SUBMODEL_HORIZONTAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.horizontal_tail.torenbeek_gd")
+@oad.RegisterSubmodel(
+    SUBMODEL_HORIZONTAL_TAIL_MASS,
+    "fastga.submodel.weight.mass.airframe.horizontal_tail.torenbeek_gd",
+)
 class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
     """
     Weight estimation for tail weight
@@ -41,7 +44,7 @@ class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -56,3 +59,29 @@ class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
             a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
         )
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        area_ht = inputs["data:geometry:horizontal_tail:area"]
+        vd = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
+        sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
+        k_factor = inputs["data:weight:airframe:horizontal_tail:k_factor"]
+
+        a31 = area_ht * (3.81 * area_ht ** 0.2 * vd / (1000.0 * np.cos(sweep_25)) - 0.287)
+        # Mass formula in lb
+
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
+        ] = k_factor * ((0.004572 * area_ht ** (0.2) * vd) / np.cos(sweep_25) - 0.287)
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:mission:sizing:cs23:characteristic_speed:vd",
+        ] = k_factor * ((0.00381 * area_ht ** (1.2)) / np.cos(sweep_25))
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:sweep_25"
+        ] = k_factor * (
+            (0.00381 * area_ht ** (1.2) * vd * np.sin(sweep_25)) / np.cos(sweep_25) ** 2
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:weight:airframe:horizontal_tail:k_factor",
+        ] = a31

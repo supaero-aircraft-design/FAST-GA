@@ -23,7 +23,9 @@ import fastoad.api as oad
 from .constants import SUBMODEL_VERTICAL_TAIL_MASS
 
 
-@oad.RegisterSubmodel(SUBMODEL_VERTICAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.vertical_tail.gd")
+@oad.RegisterSubmodel(
+    SUBMODEL_VERTICAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.vertical_tail.gd"
+)
 class ComputeVerticalTailWeightGD(om.ExplicitComponent):
     """
     Weight estimation for tail weight
@@ -52,7 +54,7 @@ class ComputeVerticalTailWeightGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -92,3 +94,334 @@ class ComputeVerticalTailWeightGD(om.ExplicitComponent):
         outputs["data:weight:airframe:vertical_tail:mass"] = (
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+
+        has_t_tail = inputs["data:geometry:has_T_tail"]
+        area_vt = inputs["data:geometry:vertical_tail:area"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        rudder_chord_ratio = inputs["data:geometry:vertical_tail:rudder:chord_ratio"]
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
+        taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
+        v_h = inputs["data:TLAR:v_max_sl"]
+
+        k_factor = inputs["data:weight:airframe:vertical_tail:k_factor"]
+
+        atm0 = Atmosphere(0)
+        atm0.true_airspeed = v_h
+        mach_h = atm0.mach
+
+        a32 = (
+            0.19
+            * (
+                (1 + has_t_tail) ** 0.5
+                * (sizing_factor_ultimate * mtow) ** 0.363
+                * area_vt ** 1.089
+                * mach_h ** 0.601
+                * lp_vt ** -0.726
+                * (1 + rudder_chord_ratio) ** 0.217
+                * ar_vt ** 0.337
+                * (1 + taper_vt) ** 0.363
+                * np.cos(sweep_25_vt) ** -0.484
+            )
+            ** 1.014
+        )
+        # Mass formula in lb
+
+        partials[
+            "data:weight:airframe:vertical_tail:mass",
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+        ] = k_factor * (
+            (
+                0.06994
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * mtow
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (
+                lp_vt ** 0.7260
+                * np.cos(sweep_25_vt) ** 0.4840
+                * (mtow * sizing_factor_ultimate) ** 0.6370
+            )
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:weight:aircraft:MTOW"
+        ] = k_factor * (
+            (
+                0.06994
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * sizing_factor_ultimate
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (
+                lp_vt ** 0.7260
+                * np.cos(sweep_25_vt) ** 0.4840
+                * (mtow * sizing_factor_ultimate) ** 0.6370
+            )
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:geometry:has_T_tail"
+        ] = k_factor * (
+            (
+                0.09633
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840 * (has_t_tail + 1.0) ** 0.5)
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:area"
+        ] = k_factor * (
+            (
+                0.2098
+                * ar_vt ** 0.3370
+                * area_vt ** 0.0890
+                * mach_h ** 0.6010
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = k_factor * (
+            -(
+                0.1399
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (lp_vt ** 1.7260 * np.cos(sweep_25_vt) ** 0.4840)
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass",
+            "data:geometry:vertical_tail:rudder:chord_ratio",
+        ] = k_factor * (
+            (
+                0.04181
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * (has_t_tail + 1.0) ** 0.5
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (
+                lp_vt ** 0.7260
+                * np.cos(sweep_25_vt) ** 0.4840
+                * (rudder_chord_ratio + 1.0) ** 0.7830
+            )
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:sweep_25"
+        ] = k_factor * (
+            (
+                0.09325
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * np.sin(sweep_25_vt)
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 1.4840)
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:aspect_ratio"
+        ] = k_factor * (
+            (
+                0.06493
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (taper_vt + 1.0) ** 0.3630
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (ar_vt ** 0.6630 * lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:taper_ratio"
+        ] = k_factor * (
+            (
+                0.06994
+                * ar_vt ** 0.3370
+                * area_vt ** 1.0890
+                * mach_h ** 0.6010
+                * (has_t_tail + 1.0) ** 0.5
+                * (rudder_chord_ratio + 1.0) ** 0.2170
+                * (mtow * sizing_factor_ultimate) ** 0.3630
+                * (
+                    (
+                        ar_vt ** 0.3370
+                        * area_vt ** 1.0890
+                        * mach_h ** 0.6010
+                        * (has_t_tail + 1.0) ** 0.5
+                        * (rudder_chord_ratio + 1.0) ** 0.2170
+                        * (taper_vt + 1.0) ** 0.3630
+                        * (mtow * sizing_factor_ultimate) ** 0.3630
+                    )
+                    / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+                )
+                ** 0.0140
+            )
+            / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840 * (taper_vt + 1.0) ** 0.6370)
+        )
+        d_a32_d_mach = (
+            0.1158
+            * ar_vt ** 0.3370
+            * area_vt ** 1.0890
+            * (has_t_tail + 1.0) ** 0.5
+            * (rudder_chord_ratio + 1.0) ** 0.2170
+            * (taper_vt + 1.0) ** 0.3630
+            * (mtow * sizing_factor_ultimate) ** 0.3630
+            * (
+                (
+                    ar_vt ** 0.3370
+                    * area_vt ** 1.0890
+                    * mach_h ** 0.6010
+                    * (has_t_tail + 1.0) ** 0.5
+                    * (rudder_chord_ratio + 1.0) ** 0.2170
+                    * (taper_vt + 1.0) ** 0.3630
+                    * (mtow * sizing_factor_ultimate) ** 0.3630
+                )
+                / (lp_vt ** 0.7260 * np.cos(sweep_25_vt) ** 0.4840)
+            )
+            ** 0.0140
+        ) / (lp_vt ** 0.7260 * mach_h ** (399 / 1000) * np.cos(sweep_25_vt) ** 0.4840)
+        d_mach_d_vh = 1 / atm0.speed_of_sound
+        partials["data:weight:airframe:vertical_tail:mass", "data:TLAR:v_max_sl"] = k_factor * (
+            d_a32_d_mach * d_mach_d_vh
+        )
+        partials[
+            "data:weight:airframe:vertical_tail:mass", "data:weight:airframe:vertical_tail:k_factor"
+        ] = a32
