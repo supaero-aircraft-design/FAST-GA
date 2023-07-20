@@ -780,7 +780,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp["x_le"] = x_le
         # Launch common code
         self._generate_common(self.htp)
-    @jit(parallel=True)
+    
     def _generate_common(self, dictionary):
         """Common code shared between wing and htp to calculate geometry/aero parameters.
         
@@ -958,7 +958,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panel_angle_vect = dictionary["panel_angle_vect"]
 
         dictionary["panel_angle_vect"] = panel_angle_vect + twist_tile
-    @jit(parallel=True)
+    
     def generate_curvature(self, dictionary, file_name):
         """Generates curvature corresponding to the airfoil contained in .af file."""
         x_panel = dictionary["x_panel"]
@@ -990,7 +990,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["panel_angle_vect"] = panelangle_vect
         dictionary["panel_angle"] = panelangle
         dictionary["z"] = z_panel
-    @jit(parallel=True)
+    #@jit(parallel=True)
     def apply_deflection(self, inputs, deflection_angle):
         """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]."""
 
@@ -1064,6 +1064,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @staticmethod
     def search_results(result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
+        #default value
+        result_file_path= None
+        saved_area_ratio = 1.0
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
                 "sweep25_wing",
@@ -1110,7 +1113,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                             break
                     idx += 1
 
-        return None, 1.0
+        return result_file_path, saved_area_ratio
 
     @staticmethod
     def save_geometry(result_folder_path, geometry_set):
