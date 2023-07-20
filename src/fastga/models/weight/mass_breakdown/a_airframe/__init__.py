@@ -28,5 +28,6 @@ from .a3_vertical_tail_weight_gd import ComputeVerticalTailWeightGD
 from .a3_vertical_tail_weight_torenbeek_gd import ComputeVerticalTailWeightTorenbeekGD
 from .a4_flight_control_weight import ComputeFlightControlsWeight
 from .a4_flight_control_weight_flops import ComputeFlightControlsWeightFLOPS
-from .a5_landing_gear_weight import ComputeLandingGearWeight
+from .a5_front_landing_gear_weight import ComputeFrontLandingGearWeight
+from .a5_main_landing_gear_weight import ComputeMainLandingGearWeight
 from .a7_paint_weight import ComputePaintWeight

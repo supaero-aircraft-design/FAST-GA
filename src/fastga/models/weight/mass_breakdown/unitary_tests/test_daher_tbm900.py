@@ -30,7 +30,8 @@ from ..a_airframe import (
     ComputeFuselageWeightRoskam,
     ComputeFuselageMassAnalytical,
     ComputeWingWeight,
-    ComputeLandingGearWeight,
+    ComputeFrontLandingGearWeight,
+    ComputeMainLandingGearWeight,
     ComputeWingMassAnalytical,
     ComputePaintWeight,
 )
@@ -492,17 +493,26 @@ def test_compute_flight_controls_weight_flops():
         assert False
 
 
-def test_compute_landing_gear_weight():
-    """Tests landing gear weight computation from sample XML data."""
+def test_compute_front_landing_gear_weight():
+    """Tests front landing gear weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeLandingGearWeight()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeFrontLandingGearWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeLandingGearWeight(), ivc)
-    weight_a51 = problem.get_val("data:weight:airframe:landing_gear:main:mass", units="kg")
-    assert weight_a51 == pytest.approx(114.19, abs=1e-2)
+    problem = run_system(ComputeFrontLandingGearWeight(), ivc)
     weight_a52 = problem.get_val("data:weight:airframe:landing_gear:front:mass", units="kg")
     assert weight_a52 == pytest.approx(39.16, abs=1e-2)
+
+
+def test_compute_main_landing_gear_weight():
+    """Tests main landing gear weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeMainLandingGearWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMainLandingGearWeight(), ivc)
+    weight_a51 = problem.get_val("data:weight:airframe:landing_gear:main:mass", units="kg")
+    assert weight_a51 == pytest.approx(114.19, abs=1e-2)
 
 
 def test_compute_paint_weight():

@@ -22,7 +22,8 @@ from .constants import (
     SUBMODEL_HORIZONTAL_TAIL_MASS,
     SUBMODEL_VERTICAL_TAIL_MASS,
     SUBMODEL_FLIGHT_CONTROLS_MASS,
-    SUBMODEL_LANDING_GEAR_MASS,
+    SUBMODEL_FRONT_LANDING_GEAR_MASS,
+    SUBMODEL_MAIN_LANDING_GEAR_MASS,
     SUBMODEL_PAINT_MASS,
 )
 
@@ -58,8 +59,13 @@ class AirframeWeight(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "landing_gear_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_MASS),
+            "front_landing_gear_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_FRONT_LANDING_GEAR_MASS),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "main_landing_gear_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_MAIN_LANDING_GEAR_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
