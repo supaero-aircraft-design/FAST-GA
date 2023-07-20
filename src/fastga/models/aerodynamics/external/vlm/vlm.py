@@ -43,11 +43,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         super().__init__(**kwargs)
         self.wing = None
         self.htp = None
-        self.n_x = None #number of chordwise panel
+        self.n_x = None  # number of chordwise panel
         self.ny1 = None
         self.ny2 = None
         self.ny3 = None
-        self.n_y = None #number of semi-spanwise panel
+        self.n_y = None  # number of semi-spanwise panel
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -162,11 +162,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
-        
+
              ^
               y |                Points defining the panel
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
-        P3--B---|-----P4         Reference: 
+        P3--B---|-----P4         Reference:
         |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
         |   |   |     |          p.394-398
         T1  |   +--P--T2---->
@@ -262,51 +262,48 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             htp_aoa_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
 
             # Post-process wing data ---------------------------------------------------------------
-            k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
-            beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
-            cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
-            cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
-            cm_0_wing = float(wing_0["cm"] * k_fus / beta)
-            cl_alpha_wing = ((cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
-                dihedral_angle
-            ) ** 2.0
-
-            # The correction on the effect of dihedral angle cannot be taken into account by
-            # modifying the generation of panel since only the surfaces of the panel and their
-            # aoa impact the computation, so we will stick with this "post processing" of the
-            # dihedral
-
-            y_vector_wing = wing_aoa["y_vector"]
-            cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus / beta).tolist()
-            chord_vector_wing = wing_aoa["chord_vector"]
-            cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
-            if mach <= 0.4:
-                coef_e = wing_aoa["coef_e"]
-            else:
-                coef_e = wing_aoa["coef_e"] * (
-                    -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-                )  # Mach correction
-            cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
-            coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
-            k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
-            coef_e = float(coef_e * k_fus)
-            coef_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coef_e))
+            (
+                beta,
+                cl_0_wing,
+                cl_x_wing,
+                cm_0_wing,
+                cl_alpha_wing,
+                y_vector_wing,
+                cl_vector_wing,
+                chord_vector_wing,  
+                coef_k_wing,
+            ) = self.post_processing_wing(
+                width_max,
+                span_wing,
+                mach,
+                dihedral_angle,
+                wing_0,
+                wing_aoa,
+                aoa_angle,
+                aspect_ratio_wing,
+                cl_wing_airfoil,
+                cdp_wing_airfoil,
+            )
 
             # Post-process HTP-aircraft data -------------------------------------------------------
-            cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
-            cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
-            cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-            cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
-            if mach <= 0.4:
-                coef_e = htp_aoa["coef_e"]
-            else:
-                coef_e = htp_aoa["coef_e"] * (
-                    -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-                )  # Mach correction
-            cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
-            coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
-            y_vector_htp = htp_aoa["y_vector"]
-            cl_vector_htp = (np.array(htp_aoa["cl_vector"]) / beta * area_ratio).tolist()
+            (
+                cl_0_htp,
+                cl_aoa_htp,
+                cl_alpha_htp,
+                coef_k_htp,
+                y_vector_htp,
+                cl_vector_htp,
+            ) = self.post_processing_htp_ac(
+                beta,
+                aspect_ratio_htp,
+                area_ratio,
+                mach,
+                aoa_angle,
+                cl_htp_airfoil,
+                cdp_htp_airfoil,
+                htp_0,
+                htp_aoa,
+            )
 
             # Post-process HTP-isolated data -------------------------------------------------------
             cl_alpha_htp_isolated = (
@@ -776,21 +773,21 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp["x_le"] = x_le
         # Launch common code
         self._generate_common(self.htp)
-    
+
     def _generate_common(self, dictionary):
         """Common code shared between wing and htp to calculate geometry/aero parameters.
-        
+
                 ^
               y |                Points defining the panel
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
-        P3--B---|-----P4         Reference: 
+        P3--B---|-----P4         Reference:
         |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
         |   |   |     |          p.394-398
         T1  |   +--P--T2---->
         |   |         |     x
         |   |         |
         P2--A--------P1
-        
+
         """
         # Initial data (zero matrix/array)
         x_le = dictionary["x_le"]
@@ -954,7 +951,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         panel_angle_vect = dictionary["panel_angle_vect"]
 
         dictionary["panel_angle_vect"] = panel_angle_vect + twist_tile
-    
+
     def generate_curvature(self, dictionary, file_name):
         """Generates curvature corresponding to the airfoil contained in .af file."""
         x_panel = dictionary["x_panel"]
@@ -986,7 +983,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         dictionary["panel_angle_vect"] = panelangle_vect
         dictionary["panel_angle"] = panelangle
         dictionary["z"] = z_panel
-    #@jit(parallel=True)
+
     def apply_deflection(self, inputs, deflection_angle):
         """Apply panel angle deflection due to flaps angle [UNUSED: deflection_angle=0.0]."""
 
@@ -1060,8 +1057,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     @staticmethod
     def search_results(result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
-        #default value
-        result_file_path= None
+        # default value
+        result_file_path = None
         saved_area_ratio = 1.0
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
@@ -1167,3 +1164,94 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         labels = data.to_numpy()[:, 0].tolist()
 
         return pd.DataFrame(values, index=labels)
+
+    def post_processing_wing(
+        self,
+        width_max,
+        span_wing,
+        mach,
+        dihedral_angle,
+        wing_0,
+        wing_aoa,
+        aoa_angle,
+        aspect_ratio_wing,
+        cl_wing_airfoil,
+        cdp_wing_airfoil,
+    ):
+        k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
+        beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
+        cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
+        cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
+        cm_0_wing = float(wing_0["cm"] * k_fus / beta)
+        cl_alpha_wing = ((cl_x_wing - cl_0_wing) / (aoa_angle * np.pi / 180)) * np.cos(
+            dihedral_angle
+        ) ** 2.0
+
+        # The correction on the effect of dihedral angle cannot be taken into account by
+        # modifying the generation of panel since only the surfaces of the panel and their
+        # aoa impact the computation, so we will stick with this "post processing" of the
+        # dihedral
+
+        y_vector_wing = wing_aoa["y_vector"]
+        cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus / beta).tolist()
+        chord_vector_wing = wing_aoa["chord_vector"]
+        cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
+        if mach <= 0.4:
+            coef_e = wing_aoa["coef_e"]
+        else:
+            coef_e = wing_aoa["coef_e"] * (
+                -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
+            )  # Mach correction
+        cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
+        coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
+        k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
+        coef_e = float(coef_e * k_fus)
+        coef_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coef_e))
+
+        return (
+            beta,
+            cl_0_wing,
+            cl_x_wing,
+            cm_0_wing,
+            cl_alpha_wing,
+            y_vector_wing,
+            cl_vector_wing,
+            chord_vector_wing,
+            coef_k_wing,
+        )
+
+    def post_processing_htp_ac(
+        self,
+        beta,
+        aspect_ratio_htp,
+        area_ratio,
+        mach,
+        aoa_angle,
+        cl_htp_airfoil,
+        cdp_htp_airfoil,
+        htp_0,
+        htp_aoa,
+    ):
+        cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
+        cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
+        cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
+        cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
+        if mach <= 0.4:
+            coef_e = htp_aoa["coef_e"]
+        else:
+            coef_e = htp_aoa["coef_e"] * (
+                -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
+            )  # Mach correction
+        cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
+        coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
+        y_vector_htp = htp_aoa["y_vector"]
+        cl_vector_htp = (np.array(htp_aoa["cl_vector"]) / beta * area_ratio).tolist()
+
+        return (
+            cl_0_htp,
+            cl_aoa_htp,
+            cl_alpha_htp,
+            coef_k_htp,
+            y_vector_htp,
+            cl_vector_htp,
+        )
