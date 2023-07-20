@@ -158,10 +158,10 @@ def test_polar():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
-    reason="No XFOIL executable available",
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+#    reason="No XFOIL executable available",
+#)
 def test_polar_with_ext_folder():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_ext_folder(
@@ -176,10 +176,10 @@ def test_polar_with_ext_folder():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
-    reason="No XFOIL executable available (or skipped)",
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+#    reason="No XFOIL executable available (or skipped)",
+#)
 def test_airfoil_slope():
     """Tests polar execution (XFOIL) @ low speed."""
     airfoil_slope_xfoil(
@@ -203,11 +203,11 @@ def test_airfoil_slope_wt_xfoil():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS,
-    reason="No XFOIL executable available: VLM basic function not computed with "
-    "empty result folder (or skipped)",
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS,
+#    reason="No XFOIL executable available: VLM basic function not computed with "
+#    "empty result folder (or skipped)",
+#)
 def test_vlm_comp_high_speed():
     """Tests vlm components @ high speed."""
     comp_high_speed(
@@ -229,11 +229,11 @@ def test_vlm_comp_high_speed():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS,
-    reason="No XFOIL executable available: VLM basic function not computed with "
-    "empty result folder (or skipped)",
-)
+#@pytest.mark.skipif(
+#    system() != "Windows" or SKIP_STEPS,
+#    reason="No XFOIL executable available: VLM basic function not computed with "
+#    "empty result folder (or skipped)",
+#)
 def test_vlm_comp_low_speed():
     """Tests vlm components @ low speed."""
     y_vector_wing = np.array(
