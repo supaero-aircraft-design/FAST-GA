@@ -18,11 +18,7 @@ import os
 import os.path as pth
 import warnings
 from typing import Optional
-from numba import jit
 
-# Initialize Numba
-from numba import config
-config.THREADING_LAYER = 'omp'
 import numpy as np
 import openmdao.api as om
 import pandas as pd
