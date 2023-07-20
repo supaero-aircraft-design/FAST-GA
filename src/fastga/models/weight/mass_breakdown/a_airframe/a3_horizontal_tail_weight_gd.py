@@ -22,7 +22,9 @@ import fastoad.api as oad
 from .constants import SUBMODEL_HORIZONTAL_TAIL_MASS
 
 
-@oad.RegisterSubmodel(SUBMODEL_HORIZONTAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.horizontal_tail.gd")
+@oad.RegisterSubmodel(
+    SUBMODEL_HORIZONTAL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.horizontal_tail.gd"
+)
 class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
     """
     Weight estimation for tail weight
@@ -48,21 +50,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
-        self.declare_partials(
-            of="data:weight:airframe:horizontal_tail:mass",
-            wrt=[
-                "data:weight:aircraft:MTOW",
-                "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
-                "data:geometry:horizontal_tail:area",
-                "data:geometry:horizontal_tail:thickness_ratio",
-                "data:geometry:horizontal_tail:root:chord",
-                "data:geometry:horizontal_tail:span",
-                "data:geometry:horizontal_tail:MAC:length",
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-                "data:weight:airframe:horizontal_tail:k_factor",
-            ],
-            method="fd",
-        )
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -93,3 +81,138 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
         outputs["data:weight:airframe:horizontal_tail:mass"] = (
             a31 * inputs["data:weight:airframe:horizontal_tail:k_factor"]
         )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+
+        area_ht = inputs["data:geometry:horizontal_tail:area"]
+        span_ht = inputs["data:geometry:horizontal_tail:span"]
+        t_c_ht = inputs["data:geometry:horizontal_tail:thickness_ratio"]
+        root_chord_ht = inputs["data:geometry:horizontal_tail:root:chord"]
+        mac_ht = inputs["data:geometry:horizontal_tail:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        k_factor = inputs["data:weight:airframe:horizontal_tail:k_factor"]
+
+        root_thickness = t_c_ht * root_chord_ht
+
+        a31 = (
+            0.0034
+            * (
+                (sizing_factor_ultimate * mtow) ** 0.813
+                * area_ht ** 0.584
+                * (span_ht / root_thickness) ** 0.033
+                * (mac_ht / lp_ht) ** 0.28
+            )
+            ** 0.915
+        )
+        # Mass formula in lb
+
+        tmp = (
+            area_ht ** 0.5840
+            * (mtow * sizing_factor_ultimate) ** 0.8130
+            * (mac_ht / lp_ht) ** 0.2800
+            * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+        ) ** 0.0850
+
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+        ] = k_factor * (
+            (
+                0.0025292
+                * area_ht ** 0.5840
+                * mtow
+                * (mac_ht / lp_ht) ** 0.2800
+                * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+            )
+            / ((mtow * sizing_factor_ultimate) ** 0.1870 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:weight:aircraft:MTOW"
+        ] = k_factor * (
+            (
+                0.0025292
+                * area_ht ** 0.5840
+                * sizing_factor_ultimate
+                * (mac_ht / lp_ht) ** 0.2800
+                * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+            )
+            / ((mtow * sizing_factor_ultimate) ** 0.1870 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
+        ] = k_factor * (
+            (
+                0.0018168
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (mac_ht / lp_ht) ** 0.2800
+                * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+            )
+            / (area_ht ** 0.4160 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:span"
+        ] = k_factor * (
+            (
+                0.00010266
+                * area_ht ** 0.5840
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (mac_ht / lp_ht) ** 0.2800
+            )
+            / (root_chord_ht * t_c_ht * (span_ht / (root_chord_ht * t_c_ht)) ** 0.9670 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:geometry:horizontal_tail:thickness_ratio",
+        ] = k_factor * (
+            -(
+                0.00010266
+                * area_ht ** 0.5840
+                * span_ht
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (mac_ht / lp_ht) ** 0.2800
+            )
+            / (root_chord_ht * t_c_ht ** 2 * (span_ht / (root_chord_ht * t_c_ht)) ** 0.9670 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:root:chord"
+        ] = k_factor * (
+            -(
+                0.00010266
+                * area_ht ** 0.5840
+                * span_ht
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (mac_ht / lp_ht) ** 0.2800
+            )
+            / (root_chord_ht ** 2 * t_c_ht * (span_ht / (root_chord_ht * t_c_ht)) ** 0.9670 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:MAC:length"
+        ] = k_factor * (
+            (
+                0.00087108
+                * area_ht ** 0.5840
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+            )
+            / (lp_ht * (mac_ht / lp_ht) ** 0.7200 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = k_factor * (
+            -(
+                0.00087108
+                * area_ht ** 0.5840
+                * mac_ht
+                * (mtow * sizing_factor_ultimate) ** 0.8130
+                * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
+            )
+            / (lp_ht ** 2 * (mac_ht / lp_ht) ** 0.7200 * tmp)
+        )
+        partials[
+            "data:weight:airframe:horizontal_tail:mass",
+            "data:weight:airframe:horizontal_tail:k_factor",
+        ] = a31

@@ -365,6 +365,12 @@ def test_compute_horizontal_tail_weight():
     weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
     assert weight_a31 == pytest.approx(13.84, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_vertical_tail_weight():
     """Tests vertical_tail weight computation from sample XML data."""
@@ -375,6 +381,12 @@ def test_compute_vertical_tail_weight():
     problem = run_system(ComputeVerticalTailWeight(), ivc)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(9.29, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_horizontal_tail_weight_gd():
@@ -404,6 +416,12 @@ def test_compute_vertical_tail_weight_gd():
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(6.78, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_horizontal_tail_weight_torenbeek_gd():
     """Tests horizontal_tail weight computation from sample XML data."""
@@ -417,6 +435,12 @@ def test_compute_horizontal_tail_weight_torenbeek_gd():
     weight_a31 = problem.get_val("data:weight:airframe:horizontal_tail:mass", units="kg")
     assert weight_a31 == pytest.approx(14.83, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_vertical_tail_weight_torenbeek_gd():
     """Tests vertical_tail weight computation from sample XML data."""
@@ -429,6 +453,12 @@ def test_compute_vertical_tail_weight_torenbeek_gd():
     problem = run_system(ComputeVerticalTailWeightTorenbeekGD(), ivc)
     weight_a32 = problem.get_val("data:weight:airframe:vertical_tail:mass", units="kg")
     assert weight_a32 == pytest.approx(6.78, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_flight_controls_weight():
