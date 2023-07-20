@@ -163,7 +163,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
 
-             ^
+                ^
               y |                Points defining the panel
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
         P3--B---|-----P4         Reference:
@@ -314,30 +314,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             )
 
             # Resize vectors -----------------------------------------------------------------------
-            if SPAN_MESH_POINT < len(y_vector_wing):
-                y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
-                cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
-                chord_vector_wing = np.interp(y_interp, y_vector_wing, chord_vector_wing)
-                y_vector_wing = y_interp
-                warnings.warn(
-                    "Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!"
-                )
-            else:
-                additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-                y_vector_wing.extend(additional_zeros)
-                cl_vector_wing.extend(additional_zeros)
-                chord_vector_wing.extend(additional_zeros)
-            if SPAN_MESH_POINT < len(y_vector_htp):
-                y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
-                cl_vector_htp = np.interp(y_interp, y_vector_htp, cl_vector_htp)
-                y_vector_htp = y_interp
-                warnings.warn(
-                    "Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!"
-                )
-            else:
-                additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-                y_vector_htp.extend(additional_zeros)
-                cl_vector_htp.extend(additional_zeros)
+            (y_vector_wing, cl_vector_wing, chord_vector_wing) = self.resize_wing_vector(
+                y_vector_wing, cl_vector_wing, chord_vector_wing
+            )
+            (y_vector_htp, cl_vector_htp) = self.resize_htp_vector(y_vector_htp, cl_vector_htp)
 
             # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
@@ -1166,6 +1146,23 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_wing_airfoil,
         cdp_wing_airfoil,
     ):
+        """_summary_
+
+        Args:
+            width_max (_type_): _description_
+            span_wing (_type_): _description_
+            mach (_type_): _description_
+            dihedral_angle (_type_): _description_
+            wing_0 (_type_): _description_
+            wing_aoa (_type_): _description_
+            aoa_angle (_type_): _description_
+            aspect_ratio_wing (_type_): _description_
+            cl_wing_airfoil (_type_): _description_
+            cdp_wing_airfoil (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
         beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
         cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
@@ -1220,6 +1217,22 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         htp_0,
         htp_aoa,
     ):
+        """_summary_
+
+        Args:
+            beta (_type_): _description_
+            aspect_ratio_htp (_type_): _description_
+            area_ratio (_type_): _description_
+            mach (_type_): _description_
+            aoa_angle (_type_): _description_
+            cl_htp_airfoil (_type_): _description_
+            cdp_htp_airfoil (_type_): _description_
+            htp_0 (_type_): _description_
+            htp_aoa (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         cl_0_htp = float(htp_0["cl"]) / beta * area_ratio
         cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
@@ -1245,6 +1258,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )
 
     def read_value_from_data(self, result_file_path, sref_wing, area_ratio, saved_area_ratio):
+        """_summary_
+
+        Args:
+            result_file_path (_type_): _description_
+            sref_wing (_type_): _description_
+            area_ratio (_type_): _description_
+            saved_area_ratio (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         data = self.read_results(result_file_path)
         saved_area_wing = float(data.loc["saved_ref_area", 0])
         cl_0_wing = float(data.loc["cl_0_wing", 0])
@@ -1288,3 +1312,48 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
             coef_k_htp,
         )
+
+    def resize_wing_vector(self, y_vector_wing, cl_vector_wing, chord_vector_wing):
+        """_summary_
+
+        Args:
+            y_vector_wing (_type_): _description_
+            cl_vector_wing (_type_): _description_
+            chord_vector_wing (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        if SPAN_MESH_POINT < len(y_vector_wing):
+            y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
+            cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
+            chord_vector_wing = np.interp(y_interp, y_vector_wing, chord_vector_wing)
+            y_vector_wing = y_interp
+            warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
+        else:
+            additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
+            y_vector_wing.extend(additional_zeros)
+            cl_vector_wing.extend(additional_zeros)
+            chord_vector_wing.extend(additional_zeros)
+        return (y_vector_wing, cl_vector_wing, chord_vector_wing)
+
+    def resize_htp_vector(self, y_vector_htp, cl_vector_htp):
+        """_summary_
+
+        Args:
+            y_vector_htp (_type_): _description_
+            cl_vector_htp (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        if SPAN_MESH_POINT < len(y_vector_htp):
+            y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
+            cl_vector_htp = np.interp(y_interp, y_vector_htp, cl_vector_htp)
+            y_vector_htp = y_interp
+            warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
+        else:
+            additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
+            y_vector_htp.extend(additional_zeros)
+            cl_vector_htp.extend(additional_zeros)
+        return (y_vector_htp, cl_vector_htp)
