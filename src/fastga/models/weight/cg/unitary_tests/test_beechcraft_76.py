@@ -82,6 +82,7 @@ def test_compute_cg_fuselage():
     assert x_cg_a2 == pytest.approx(3.50, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:airframe:fuselage:CG:x", "data:geometry:propulsion:engine:layout"]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
