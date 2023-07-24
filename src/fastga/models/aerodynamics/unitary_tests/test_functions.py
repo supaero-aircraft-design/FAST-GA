@@ -395,6 +395,111 @@ def polar(
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
 
+def polar_single_aoa(
+    XML_FILE: str,
+    mach_high_speed: float,
+    reynolds_high_speed: float,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+):
+    """Tests polar execution (XFOIL) @ low speed!"""
+    
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_high_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=1.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )    
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+    cl, cdp = reshape_polar(cl, cdp)
+    cl, cdp = reshape_polar(cl, cdp)
+    cl_1 = cl[0]
+    cdp_1 = cdp[0]
+    
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_high_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=1.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    xfoil_comp.options["single_AoA"] = True
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_s = problem["xfoil:CL"]
+    cdp_s = problem["xfoil:CDp"]
+    assert cl_1 == pytest.approx(cl_s, abs=1e-4)
+    assert cdp_1 == pytest.approx(cdp_s, abs=1e-4)
+    
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )    
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+    cl, cdp = reshape_polar(cl, cdp)
+    cl, cdp = reshape_polar(cl, cdp)
+    cl_5 = cl[0]
+    cdp_5 = cdp[0]
+    
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    xfoil_comp.options["single_AoA"] = True
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_s = problem["xfoil:CL"]
+    cdp_s = problem["xfoil:CDp"]
+    assert cl_5 == pytest.approx(cl_s, abs=1e-4)
+    assert cdp_5 == pytest.approx(cdp_s, abs=1e-4)
+    
 
 def polar_ext_folder(
     XML_FILE: str,
