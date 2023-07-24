@@ -52,6 +52,7 @@ from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
 from ..cg_components.most_aft_cg_mac import ComputeAftCGMac
 from ..cg_components.most_aft_cg_x import ComputeAftCGX
 from ..cg_components.most_forward_cg_mac import ComputeForwardCGMac
+from ..cg_components.most_forward_cg_x import ComputeForwardCGX
 
 from .dummy_engines import ENGINE_WRAPPER_SR22 as ENGINE_WRAPPER
 
@@ -426,8 +427,8 @@ def test_compute_aft_cg_x():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeAftCGX(), ivc)
-    cg_ratio_aft = problem.get_val("data:weight:aircraft:CG:aft:x", units="m")
-    assert cg_ratio_aft == pytest.approx(2.914, abs=1e-3)
+    aft_cg_x = problem.get_val("data:weight:aircraft:CG:aft:x", units="m")
+    assert aft_cg_x == pytest.approx(2.914, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
     try:
@@ -445,6 +446,23 @@ def test_compute_fwd_cg_ratio():
     problem = run_system(ComputeForwardCGMac(), ivc)
     cg_ratio_fwd = problem.get_val("data:weight:aircraft:CG:fwd:MAC_position")
     assert cg_ratio_fwd == pytest.approx(0.052, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_compute_fwd_cg_x():
+    """Tests computation of maximum (forward) center of gravity x coordinate."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeForwardCGX()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeForwardCGX(), ivc)
+    fwd_cg_x = problem.get_val("data:weight:aircraft:CG:fwd:x", units="m")
+    assert fwd_cg_x == pytest.approx(2.603, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
     try:
