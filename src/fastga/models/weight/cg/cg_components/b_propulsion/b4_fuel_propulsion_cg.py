@@ -35,6 +35,8 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:CG:x", units="m")
 
+        self.declare_partials("*", "*", method="exact")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
@@ -48,3 +50,28 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
         )
 
         outputs["data:weight:propulsion:CG:x"] = cg_propulsion
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
+        fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
+
+        engine_mass = inputs["data:weight:propulsion:engine:mass"]
+        fuel_lines_mass = inputs["data:weight:propulsion:fuel_lines:mass"]
+
+        partials[
+            "data:weight:propulsion:CG:x", "data:weight:propulsion:engine:CG:x"
+        ] = engine_mass / (engine_mass + fuel_lines_mass)
+        partials[
+            "data:weight:propulsion:CG:x", "data:weight:propulsion:fuel_lines:CG:x"
+        ] = fuel_lines_mass / (engine_mass + fuel_lines_mass)
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:engine:mass"] = (
+            engine_cg / (engine_mass + fuel_lines_mass)
+            - (engine_cg * engine_mass + fuel_lines_cg * fuel_lines_mass)
+            / (engine_mass + fuel_lines_mass) ** 2
+        )
+        partials["data:weight:propulsion:CG:x", "data:weight:propulsion:fuel_lines:mass"] = (
+            fuel_lines_cg / (engine_mass + fuel_lines_mass)
+            - (engine_cg * engine_mass + fuel_lines_cg * fuel_lines_mass)
+            / (engine_mass + fuel_lines_mass) ** 2
+        )
