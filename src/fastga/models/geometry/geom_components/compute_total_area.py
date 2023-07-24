@@ -36,7 +36,7 @@ class ComputeTotalArea(om.ExplicitComponent):
 
         self.add_output("data:geometry:aircraft:wet_area", units="m**2")
 
-        self.declare_partials("data:geometry:aircraft:wet_area", "*", method="fd")
+        self.declare_partials("data:geometry:aircraft:wet_area", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wet_area_wing = inputs["data:geometry:wing:wet_area"]
@@ -51,3 +51,18 @@ class ComputeTotalArea(om.ExplicitComponent):
         )
 
         outputs["data:geometry:aircraft:wet_area"] = wet_area_total
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wet_area_nac = inputs["data:geometry:propulsion:nacelle:wet_area"]
+        nacelle_nb = inputs["data:geometry:propulsion:engine:count"]
+
+        partials["data:geometry:aircraft:wet_area", "data:geometry:wing:wet_area"] = 1.0
+        partials["data:geometry:aircraft:wet_area", "data:geometry:fuselage:wet_area"] = 1.0
+        partials["data:geometry:aircraft:wet_area", "data:geometry:horizontal_tail:wet_area"] = 1.0
+        partials["data:geometry:aircraft:wet_area", "data:geometry:vertical_tail:wet_area"] = 1.0
+        partials[
+            "data:geometry:aircraft:wet_area", "data:geometry:propulsion:nacelle:wet_area"
+        ] = nacelle_nb
+        partials[
+            "data:geometry:aircraft:wet_area", "data:geometry:propulsion:engine:count"
+        ] = wet_area_nac
