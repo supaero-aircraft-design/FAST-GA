@@ -32,7 +32,7 @@ from ..cg_components.b_propulsion import (
     ComputeEngineCG,
     ComputeFuelLinesCG,
     ComputeTankCG,
-    FuelPropulsionCG,
+    ComputeFuelPropulsionCG,
 )
 from ..cg_components.c_systems import (
     ComputeElectricPowerSystemCG,
@@ -226,10 +226,10 @@ def test_compute_cg_tank():
 def test_compute_cg_fuel_propulsion():
     """Tests whole fuel propulsion center of gravity."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(FuelPropulsionCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeFuelPropulsionCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(FuelPropulsionCG(), ivc)
+    problem = run_system(ComputeFuelPropulsionCG(), ivc)
     x_cg_b3 = problem.get_val("data:weight:propulsion:CG:x", units="m")
     assert x_cg_b3 == pytest.approx(2.37, abs=1e-2)
 
