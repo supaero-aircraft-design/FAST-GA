@@ -17,16 +17,6 @@
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import (
-    ComputeHTSpan,
-    ComputeHTRootChord,
-    ComputeHTTipChord,
-)
-from .components import (
-    ComputeHTSweep0,
-    ComputeHTSweep50,
-    ComputeHTSweep100,
-)
 from .constants import (
     SUBMODEL_HT_WET_AREA,
     SUBMODEL_HT_WET_DISTANCE,
@@ -36,6 +26,12 @@ from .constants import (
     SUBMODEL_HT_MAC_Y,
     SUBMODEL_HT_MAC_X_LOCAL,
     SUBMODEL_HT_MAC_X_WING,
+    SUBMODEL_HT_SPAN,
+    SUBMODEL_HT_ROOT_CHORD,
+    SUBMODEL_HT_TIP_CHORD,
+    SUBMODEL_HT_SWEEP_0,
+    SUBMODEL_HT_SWEEP_50,
+    SUBMODEL_HT_SWEEP_100,
 )
 
 
@@ -44,9 +40,17 @@ class ComputeHorizontalTailGeometryFD(om.Group):
 
     def setup(self):
 
-        self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
-        self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
-        self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
+        self.add_subsystem(
+            "ht_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SPAN), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_root_chord",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_ROOT_CHORD),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ht_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_TIP_CHORD), promotes=["*"]
+        )
         self.add_subsystem(
             "ht_mac_length",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_LENGTH),
@@ -60,9 +64,15 @@ class ComputeHorizontalTailGeometryFD(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_X_LOCAL),
             promotes=["*"],
         )
-        self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
-        self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
-        self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])
+        self.add_subsystem(
+            "ht_sweep_0", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_0), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_sweep_50", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_50), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_sweep_100", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_100), promotes=["*"]
+        )
         self.add_subsystem(
             "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )
@@ -86,9 +96,17 @@ class ComputeHorizontalTailGeometryFL(om.Group):
 
     def setup(self):
 
-        self.add_subsystem("ht_span", ComputeHTSpan(), promotes=["*"])
-        self.add_subsystem("ht_root_chord", ComputeHTRootChord(), promotes=["*"])
-        self.add_subsystem("ht_tip_chord", ComputeHTTipChord(), promotes=["*"])
+        self.add_subsystem(
+            "ht_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SPAN), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_root_chord",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_ROOT_CHORD),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "ht_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_TIP_CHORD), promotes=["*"]
+        )
         self.add_subsystem(
             "ht_mac_length",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_LENGTH),
@@ -107,9 +125,15 @@ class ComputeHorizontalTailGeometryFL(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_MAC_X_WING),
             promotes=["*"],
         )
-        self.add_subsystem("ht_sweep_0", ComputeHTSweep0(), promotes=["*"])
-        self.add_subsystem("ht_sweep_50", ComputeHTSweep50(), promotes=["*"])
-        self.add_subsystem("ht_sweep_100", ComputeHTSweep100(), promotes=["*"])
+        self.add_subsystem(
+            "ht_sweep_0", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_0), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_sweep_50", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_50), promotes=["*"]
+        )
+        self.add_subsystem(
+            "ht_sweep_100", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP_100), promotes=["*"]
+        )
         self.add_subsystem(
             "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
         )
