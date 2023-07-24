@@ -531,7 +531,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
         cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
-        htp_e = cl_htp ** 2 / (np.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avod 0.0 division
+        htp_e = cl_htp ** 2 / (np.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avoid 0.0 division
         cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
         cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
 
@@ -906,10 +906,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         Add the twist on the lifting surface assuming a linear variation between y_start and y_end.
 
-        :param dictionary: dictionary which contains the point coordinates of the lifting surface
-        :param twist: wing twist variation between root and tip, <0 when tip is pointed downwards
-        :param y_start: y coordinate of the start of linear twist
-        :param y_end:y coordinate of the end of linear twist
+        @param dictionary: dictionary which contains the point coordinates of the lifting surface
+        @param twist: wing twist variation between root and tip, <0 when tip is pointed downwards
+        @param y_start: y coordinate of the start of linear twist
+        @param y_end:y coordinate of the end of linear twist
         """
 
         y_panel = dictionary["y_panel"][: self.n_y]

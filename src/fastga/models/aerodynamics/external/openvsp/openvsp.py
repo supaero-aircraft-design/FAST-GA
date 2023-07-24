@@ -136,7 +136,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             _,
             _,
             _,
-            _
+            _,
         ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, aoa_angle)
         return float(cl_alpha_wing + cl_alpha_htp)
 
