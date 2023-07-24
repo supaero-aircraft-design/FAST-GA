@@ -54,6 +54,8 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
 
         self.add_output("data:weight:propulsion:unusable_fuel:mass", units="lb")
 
+        self.declare_partials("*", "*", method="exact")
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         n_eng = inputs["data:geometry:propulsion:engine:count"]
@@ -79,3 +81,28 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
         )
 
         outputs["data:weight:propulsion:unusable_fuel:mass"] = b3
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
+        mfw = inputs["data:weight:aircraft:MFW"]
+        n_tank = 2.0
+
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        flight_point = oad.FlightPoint(
+            mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
+        )  # with engine_setting as EngineSetting
+        propulsion_model.compute_flight_points(flight_point)
+
+        sl_thrust_newton = float(flight_point.thrust)
+        sl_thrust_lbs = sl_thrust_newton / lbf
+        sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
+
+        partials[
+            "data:weight:propulsion:unusable_fuel:mass", "data:geometry:propulsion:engine:count"
+        ] = (11.5 * sl_thrust_lbs_per_engine ** 0.2)
+        partials["data:weight:propulsion:unusable_fuel:mass", "data:geometry:wing:area"] = 0.07
+        partials["data:weight:propulsion:unusable_fuel:mass", "data:weight:aircraft:MFW"] = (
+            0.448 * n_tank
+        ) / mfw ** 0.72
