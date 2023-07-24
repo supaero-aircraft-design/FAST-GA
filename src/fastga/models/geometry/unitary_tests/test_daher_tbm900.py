@@ -497,7 +497,7 @@ def test_ht_sweep_0():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-1, rtol=1.0e-1)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
@@ -533,7 +533,7 @@ def test_ht_sweep_100():
 
     data = problem.check_partials(compact_print=True)
     try:
-        assert_check_partials(data, atol=1.0e-1, rtol=1.0e-1)
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 

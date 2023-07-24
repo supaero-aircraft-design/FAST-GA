@@ -62,25 +62,23 @@ class ComputeHTSweep100(om.ExplicitComponent):
 
         half_span = b_h / 2.0
 
-        tmp_100 = half_span / (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
-
-        d_tmp_100_d_half_span = (
-            (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
-            - half_span * np.tan(sweep_25)
-        ) / tmp_100 ** 2.0
-        d_tmp_100_d_rc = (tmp_100 ** 2.0) / half_span * 0.75
-        d_tmp_100_d_tc = -(tmp_100 ** 2.0) / half_span * 0.75
-        d_tmp_100_d_sweep = -(tmp_100 ** 2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
+        tmp = (3 * tip_chord) / 4 - (3 * root_chord) / 4 + half_span * np.tan(sweep_25)
 
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:span"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_half_span / 2.0)
+        ] = (
+            -(1 / tmp - (half_span * np.tan(sweep_25)) / tmp ** 2)
+            / (half_span ** 2 / tmp ** 2 + 1)
+            / 2
+        )
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:root:chord"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_rc)
+        ] = -(3 * half_span) / (4 * (half_span ** 2 / tmp ** 2 + 1) * tmp ** 2)
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:tip:chord"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_tc)
+        ] = (3 * half_span) / (4 * (half_span ** 2 / tmp ** 2 + 1) * tmp ** 2)
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:sweep_25"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_sweep)
+        ] = (half_span ** 2 * (np.tan(sweep_25) ** 2 + 1)) / (
+            (half_span ** 2 / tmp ** 2 + 1) * tmp ** 2
+        )
