@@ -47,7 +47,7 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -61,3 +61,16 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
         b_1 = 2.575 * uninstalled_engine_weight ** 0.922
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        # This should give the UNINSTALLED weight in lbs !
+        uninstalled_engine_weight = propulsion_model.compute_weight()
+
+        b_1 = 2.575 * uninstalled_engine_weight ** 0.922
+
+        partials[
+            "data:weight:propulsion:engine:mass", "settings:weight:propulsion:engine:k_factor"
+        ] = b_1

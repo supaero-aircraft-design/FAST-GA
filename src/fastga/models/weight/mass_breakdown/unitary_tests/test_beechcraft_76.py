@@ -571,6 +571,13 @@ def test_compute_oil_weight():
     weight_b1_2 = problem.get_val("data:weight:propulsion:engine_oil:mass", units="kg")
     assert weight_b1_2 == pytest.approx(8.90, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:propulsion:engine_oil:mass", "data:geometry:propulsion:engine:count"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_engine_weight():
     """Tests engine weight computation from sample XML data."""
@@ -584,6 +591,13 @@ def test_compute_engine_weight():
     weight_b1 = problem.get_val("data:weight:propulsion:engine:mass", units="kg")
     assert weight_b1 == pytest.approx(357.41, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_engine_weight_raymer():
     """Tests engine weight computation from sample XML data."""
@@ -596,6 +610,13 @@ def test_compute_engine_weight_raymer():
     problem = run_system(ComputeEngineWeightRaymer(propulsion_id=ENGINE_WRAPPER), ivc)
     weight_b1 = problem.get_val("data:weight:propulsion:engine:mass", units="kg")
     assert weight_b1 == pytest.approx(401.13, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_fuel_lines_weight():
@@ -647,6 +668,12 @@ def test_compute_unusable_fuel_weight():
     problem = run_system(ComputeUnusableFuelWeight(propulsion_id=ENGINE_WRAPPER), ivc)
     weight_b3 = problem.get_val("data:weight:propulsion:unusable_fuel:mass", units="kg")
     assert weight_b3 == pytest.approx(56.10, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_propulsion_weight():
