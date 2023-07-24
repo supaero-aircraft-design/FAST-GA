@@ -263,7 +263,7 @@ def test_vt_mac_position_fl():
         assert False
 
 
-def test_compute_vt_sweep_0():
+def test_vt_sweep_0():
     """Tests computation of the vertical tail sweep at l/c=0%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -273,6 +273,12 @@ def test_compute_vt_sweep_0():
     problem = run_system(ComputeVTSweep0(), ivc)
     sweep_0 = problem.get_val("data:geometry:vertical_tail:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(44.84, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_vt_sweep_50():
@@ -293,7 +299,7 @@ def test_vt_sweep_50():
         assert False
 
 
-def test_compute_vt_sweep_100():
+def test_vt_sweep_100():
     """Tests computation of the vertical tail sweep at l/c=100%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -303,6 +309,12 @@ def test_compute_vt_sweep_100():
     problem = run_system(ComputeVTSweep100(), ivc)
     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(20.45, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_vt_wet_area():
