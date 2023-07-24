@@ -15,8 +15,14 @@
 import numpy as np
 
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_FUEL_LINES_CG
 
 
+@oad.RegisterSubmodel(
+    SUBMODEL_FUEL_LINES_CG, "fastga.submodel.weight.cg.propulsion.fuel_lines.legacy"
+)
 class ComputeFuelLinesCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Fuel lines center of gravity estimation"""
