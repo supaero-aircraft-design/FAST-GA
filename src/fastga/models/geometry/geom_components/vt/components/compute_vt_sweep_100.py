@@ -36,7 +36,7 @@ class ComputeVTSweep100(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:sweep_100", units="deg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -58,3 +58,36 @@ class ComputeVTSweep100(om.ExplicitComponent):
         )
 
         outputs["data:geometry:vertical_tail:sweep_100"] = sweep_100
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        tmp = (3 * tip_chord) / 4 - (3 * root_chord) / 4 + b_v * np.tan((sweep_25 * np.pi) / 180)
+
+        partials[
+            "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:root:chord"
+        ] = -(135 * b_v) / (np.pi * (b_v ** 2 / tmp ** 2 + 1) * tmp ** 2)
+        partials[
+            "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:tip:chord"
+        ] = (135 * b_v) / (np.pi * (b_v ** 2 / tmp ** 2 + 1) * tmp ** 2)
+        partials[
+            "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:sweep_25"
+        ] = (b_v ** 2 * (np.tan((np.pi * sweep_25) / 180) ** 2 + 1)) / (
+            (b_v ** 2 / tmp ** 2 + 1) * tmp ** 2
+        )
+        partials["data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:span"] = -(
+            180
+            * (
+                1
+                / (
+                    (3 * tip_chord) / 4
+                    - (3 * root_chord) / 4
+                    + b_v * np.tan((np.pi * sweep_25) / 180)
+                )
+                - (b_v * np.tan((np.pi * sweep_25) / 180)) / tmp ** 2
+            )
+        ) / (np.pi * (b_v ** 2 / tmp ** 2 + 1))
