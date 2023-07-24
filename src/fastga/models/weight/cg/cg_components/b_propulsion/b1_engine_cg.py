@@ -16,10 +16,14 @@ import numpy as np
 
 import warnings
 
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SUBMODEL_ENGINE_CG
 
 
-class ComputeEngineCG(ExplicitComponent):
+@oad.RegisterSubmodel(SUBMODEL_ENGINE_CG, "fastga.submodel.weight.cg.propulsion.engine.legacy")
+class ComputeEngineCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Engine(s) center of gravity estimation"""
 

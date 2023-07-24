@@ -17,9 +17,13 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
+from ..constants import SUBMODEL_FUEL_PROPULSION_CG
 
+
+@oad.RegisterSubmodel(
+    SUBMODEL_FUEL_PROPULSION_CG, "fastga.submodel.weight.cg.propulsion.fuel_propulsion.legacy"
+)
 class ComputeFuelPropulsionCG(om.ExplicitComponent):
-
     def setup(self):
 
         self.add_input("data:weight:propulsion:engine:CG:x", units="m", val=np.nan)
@@ -32,7 +36,7 @@ class ComputeFuelPropulsionCG(om.ExplicitComponent):
         self.add_output("data:weight:propulsion:CG:x", units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         engine_cg = inputs["data:weight:propulsion:engine:CG:x"]
         fuel_lines_cg = inputs["data:weight:propulsion:fuel_lines:CG:x"]
 
