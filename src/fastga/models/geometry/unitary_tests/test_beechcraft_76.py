@@ -37,6 +37,7 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageNPAX,
     ComputeFuselagePAXLength,
     ComputeFuselageRearLength,
+    ComputePlaneLength,
 )
 from ..geom_components.wing.components import (
     ComputeWingB50,
@@ -733,6 +734,24 @@ def test_fuselage_rear_length():
     problem = run_system(ComputeFuselageRearLength(), ivc)
     fuselage_lar = problem.get_val("data:geometry:fuselage:rear_length", units="m")
     assert fuselage_lar == pytest.approx(4.225, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_plane_length():
+    """Tests computation of the plane length"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputePlaneLength()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputePlaneLength(), ivc)
+    fuselage_lar = problem.get_val("data:geometry:aircraft:length", units="m")
+    assert fuselage_lar == pytest.approx(9.520, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
     try:
