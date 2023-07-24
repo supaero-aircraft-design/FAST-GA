@@ -170,6 +170,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
+        @param comp_opt == 1 (wing)
+        @param comp_opt == 2 (htp)
+        @param comp_opt == 3 (A/C)
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coeff_k_htp parameters.
@@ -204,9 +207,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 result_file_path = self.save_geometry(result_folder_path, geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
-            # comp_opt = 1 (wing)
-            # comp_opt = 2 (htp)
-            # comp_opt = 3 (A/C)
+            # comp_opt == 1 (wing)
+            # comp_opt == 2 (htp)
+            # comp_opt == 3 (A/C)
             wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=1)
             
             wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt=1)
@@ -295,6 +298,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
+        @param comp_opt == 1 (wing)
+        @param comp_opt == 2 (htp)
+        @param comp_opt == 3 (A/C)
         @return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
