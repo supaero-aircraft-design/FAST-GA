@@ -31,9 +31,9 @@ from .constants import (
     SUBMODEL_FUSELAGE_NOSE_LENGTH_FD,
     SUBMODEL_FUSELAGE_LENGTH_FL,
     SUBMODEL_FUSELAGE_LENGTH_FD,
-    SUBMODEL_FUSELAGE_PLANE_LENGTH,
     SUBMODEL_FUSELAGE_REAR_LENGTH,
     SUBMODEL_FUSELAGE_DIMENSIONS_BASIC,
+    SUBMODEL_PLANE_LENGTH,
 )
 
 from fastga.models.options import CABIN_SIZING_OPTION
@@ -163,7 +163,7 @@ class ComputeFuselageLegacy(om.Group):
             )
             self.add_subsystem(
                 "compute_fuselage_plane_length",
-                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_PLANE_LENGTH),
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_PLANE_LENGTH),
                 promotes=["*"],
             )
             self.add_subsystem(

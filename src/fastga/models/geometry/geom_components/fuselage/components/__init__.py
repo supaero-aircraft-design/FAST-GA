@@ -28,5 +28,5 @@ from .compute_fuselage_length_fd import ComputeFuselageLengthFD
 from .compute_fuselage_length_fl import ComputeFuselageLengthFL
 from .compute_fuselage_nose_length_fd import ComputeFuselageNoseLengthFD
 from .compute_fuselage_nose_length_fl import ComputeFuselageNoseLengthFL
-from .compute_fuselage_plane_length import ComputeFuselagePlaneLength
+from .compute_plane_length import ComputePlaneLength
 from .compute_fuselage_rear_length import ComputeFuselageRearLength
