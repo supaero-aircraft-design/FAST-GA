@@ -31,7 +31,7 @@ class ComputeWingSweep0(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:sweep_0", units="rad")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -42,3 +42,21 @@ class ComputeWingSweep0(om.ExplicitComponent):
         sweep_0 = np.arctan2(x4_wing, (y4_wing - y2_wing))
 
         outputs["data:geometry:wing:sweep_0"] = sweep_0
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+
+        tmp = y2_wing - y4_wing
+
+        partials[
+            "data:geometry:wing:sweep_0", "data:geometry:wing:tip:leading_edge:x:local"
+        ] = -1 / ((x4_wing ** 2 / tmp ** 2 + 1) * tmp)
+        partials["data:geometry:wing:sweep_0", "data:geometry:wing:root:y"] = x4_wing / (
+            (x4_wing ** 2 / tmp ** 2 + 1) * tmp ** 2
+        )
+        partials["data:geometry:wing:sweep_0", "data:geometry:wing:tip:y"] = -x4_wing / (
+            (x4_wing ** 2 / tmp ** 2 + 1) * tmp ** 2
+        )

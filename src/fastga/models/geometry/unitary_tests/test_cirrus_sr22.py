@@ -1180,7 +1180,7 @@ def test_wing_x_absolute_tip():
         assert False
 
 
-def test_geometry_wing_b50():
+def test_wing_b50():
     """Tests computation of the wing B50"""
 
     # Define input values calculated from other modules
@@ -1196,6 +1196,12 @@ def test_geometry_wing_b50():
     problem = run_system(ComputeWingB50(), ivc)
     wing_b_50 = problem.get_val("data:geometry:wing:b_50", units="m")
     assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_wing_mac_length():
@@ -1252,7 +1258,7 @@ def test_wing_mac_y_pos():
         assert False
 
 
-def test_geometry_wing_sweep_0():
+def test_wing_sweep_0():
     """Test computation of the wing sweep at l/c=0%"""
 
     # Define input values calculated from other modules
@@ -1262,6 +1268,12 @@ def test_geometry_wing_sweep_0():
     problem = run_system(ComputeWingSweep0(), ivc)
     sweep_0 = problem.get_val("data:geometry:wing:sweep_0", units="deg")
     assert sweep_0 == pytest.approx(2.044, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_wing_sweep_50():
@@ -1282,7 +1294,7 @@ def test_wing_sweep_50():
         assert False
 
 
-def test_geometry_wing_sweep_100_inner():
+def test_wing_sweep_100_inner():
     """Test computation of the wing sweep at l/c=100% (inner)"""
 
     # Define input values calculated from other modules
@@ -1293,8 +1305,14 @@ def test_geometry_wing_sweep_100_inner():
     sweep_100_inner = problem.get_val("data:geometry:wing:sweep_100_inner", units="deg")
     assert sweep_100_inner == pytest.approx(-6.11, abs=1e-1)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
-def test_geometry_wing_sweep_100_outer():
+
+def test_wing_sweep_100_outer():
     """Test computation of the wing sweep at l/c=100% (outer)"""
 
     # Define input values calculated from other modules
@@ -1304,6 +1322,12 @@ def test_geometry_wing_sweep_100_outer():
     problem = run_system(ComputeWingSweep100Outer(), ivc)
     sweep_100_outer = problem.get_val("data:geometry:wing:sweep_100_outer", units="deg")
     assert sweep_100_outer == pytest.approx(-6.11, abs=1e-1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_wing_wet_area():
