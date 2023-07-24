@@ -37,7 +37,7 @@ class ComputeAftCGX(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:CG:aft:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -48,3 +48,16 @@ class ComputeAftCGX(om.ExplicitComponent):
         outputs["data:weight:aircraft:CG:aft:x"] = (
             mac_position - 0.25 * l0_wing + cg_max_aft_mac * l0_wing
         )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        l0_wing = inputs["data:geometry:wing:MAC:length"]
+        cg_max_aft_mac = inputs["data:weight:aircraft:CG:aft:MAC_position"]
+
+        partials["data:weight:aircraft:CG:aft:x", "data:geometry:wing:MAC:length"] = (
+            -0.25 + cg_max_aft_mac
+        )
+        partials["data:weight:aircraft:CG:aft:x", "data:geometry:wing:MAC:at25percent:x"] = 1.0
+        partials[
+            "data:weight:aircraft:CG:aft:x", "data:weight:aircraft:CG:aft:MAC_position"
+        ] = l0_wing
