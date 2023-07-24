@@ -1447,7 +1447,7 @@ def test_landing_gear_position():
         assert False
 
 
-def test_geometry_total_area():
+def test_total_area():
     """Tests computation of the total area"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -1457,6 +1457,12 @@ def test_geometry_total_area():
     problem = run_system(ComputeTotalArea(), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(98.410, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_complete_geometry_FD():
