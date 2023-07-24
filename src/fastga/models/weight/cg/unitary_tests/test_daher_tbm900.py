@@ -22,7 +22,8 @@ from ..cg import CG
 from ..cg_components.a_airframe import (
     ComputeWingCG,
     ComputeFuselageCG,
-    ComputeTailCG,
+    ComputeHTcg,
+    ComputeVTcg,
     ComputeFlightControlCG,
     ComputeFrontLandingGearCG,
     ComputeMainLandingGearCG,
@@ -91,17 +92,39 @@ def test_compute_cg_fuselage():
         assert False
 
 
-def test_compute_cg_tail():
-    """Tests computation of tail center(s) of gravity."""
+def test_compute_cg_ht():
+    """Tests computation of horizontal tail center of gravity."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeTailCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTcg()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeTailCG(), ivc)
+    problem = run_system(ComputeHTcg(), ivc)
     x_cg_a31 = problem.get_val("data:weight:airframe:horizontal_tail:CG:x", units="m")
     assert x_cg_a31 == pytest.approx(10.42, abs=1e-2)
+    
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_compute_cg_vt():
+    """Tests computation of vertical tail center of gravity."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVTcg()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTcg(), ivc)
     x_cg_a32 = problem.get_val("data:weight:airframe:vertical_tail:CG:x", units="m")
     assert x_cg_a32 == pytest.approx(9.51, abs=1e-2)
+    
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:airframe:vertical_tail:CG:x", "data:geometry:has_T_tail"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_cg_flight_control():

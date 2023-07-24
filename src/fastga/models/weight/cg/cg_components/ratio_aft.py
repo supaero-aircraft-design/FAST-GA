@@ -22,7 +22,8 @@ import fastoad.api as oad
 from ..cg_components.constants import (
     SUBMODEL_WING_CG,
     SUBMODEL_FUSELAGE_CG,
-    SUBMODEL_TAIL_CG,
+    SUBMODEL_HORIZONTAL_TAIL_CG,
+    SUBMODEL_VERTICAL_TAIL_CG,
     SUBMODEL_FLIGHT_CONTROLS_CG,
     SUBMODEL_MAIN_LANDING_GEAR_CG,
     SUBMODEL_FRONT_LANDING_GEAR_CG,
@@ -51,7 +52,10 @@ class ComputeCGRatioAircraftEmpty(om.Group):
             "fuselage_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "tail_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_CG), promotes=["*"]
+            "horizontal_tail_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_HORIZONTAL_TAIL_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "vertical_tail_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_VERTICAL_TAIL_CG), promotes=["*"]
         )
         self.add_subsystem(
             "flight_control_cg",

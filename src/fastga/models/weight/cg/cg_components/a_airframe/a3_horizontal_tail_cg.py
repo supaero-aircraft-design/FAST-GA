@@ -1,5 +1,5 @@
 """
-    Estimation of tail center(s) of gravity.
+    Estimation of horizontal tail's center of gravity.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -20,16 +20,12 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_TAIL_CG
+from ..constants import SUBMODEL_HORIZONTAL_TAIL_CG
 
 
-@oad.RegisterSubmodel(SUBMODEL_TAIL_CG, "fastga.submodel.weight.cg.airframe.tail.legacy")
-class ComputeTailCG(om.Group):
-    def setup(self):
-        self.add_subsystem("compute_ht", ComputeHTcg(), promotes=["*"])
-        self.add_subsystem("compute_vt", ComputeVTcg(), promotes=["*"])
-
-
+@oad.RegisterSubmodel(
+    SUBMODEL_HORIZONTAL_TAIL_CG, "fastga.submodel.weight.cg.airframe.horizontal_tail.legacy"
+)
 class ComputeHTcg(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
@@ -55,7 +51,7 @@ class ComputeHTcg(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -74,47 +70,34 @@ class ComputeHTcg(om.ExplicitComponent):
 
         outputs["data:weight:airframe:horizontal_tail:CG:x"] = x_cg_31
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-class ComputeVTcg(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Vertical tail center of gravity estimation."""
+        b_h = inputs["data:geometry:horizontal_tail:span"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
 
-    def setup(self):
-        self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
-        self.add_input(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
-        )
-        self.add_input("data:geometry:vertical_tail:MAC:at25percent:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
-        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
-
-        self.add_output("data:weight:airframe:vertical_tail:CG:x", units="m")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
-        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
-        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
-        mac_vt = inputs["data:geometry:vertical_tail:MAC:length"]
-        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
-        x0_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:local"]
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        b_v = inputs["data:geometry:vertical_tail:span"]
-        has_t_tail = inputs["data:geometry:has_T_tail"]
-
-        if has_t_tail:
-            l_cg_vt = (1.0 - 0.55) * (root_chord - tip_chord) + tip_chord
-            x_cg_vt = 0.55 * b_v * np.tan(sweep_25_vt / 180.0 * np.pi) + 0.42 * l_cg_vt
-
-        else:
-            l_cg_vt = (1.0 - 0.38) * (root_chord - tip_chord) + tip_chord
-            x_cg_vt = 0.38 * b_v * np.tan(sweep_25_vt / 180.0 * np.pi) + 0.42 * l_cg_vt
-
-        x_cg_32 = lp_vt + fa_length - 0.25 * mac_vt + (x_cg_vt - x0_vt)
-
-        outputs["data:weight:airframe:vertical_tail:CG:x"] = x_cg_32
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:root:chord"
+        ] = 0.2604
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:tip:chord"
+        ] = 0.1596
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:span"
+        ] = 0.38 * np.tan((np.pi * sweep_25_ht) / 180)
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:sweep_25"
+        ] = (19 / 9000 * b_h * np.pi * (np.tan((np.pi * sweep_25_ht) / 180) ** 2 + 1))
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:wing:MAC:at25percent:x"
+        ] = 1.0
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = 1.0
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:MAC:length"
+        ] = -0.25
+        partials[
+            "data:weight:airframe:horizontal_tail:CG:x",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+        ] = -1.0

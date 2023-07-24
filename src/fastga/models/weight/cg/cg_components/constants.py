@@ -14,7 +14,8 @@
 
 SUBMODEL_WING_CG = "submodel.weight.cg.airframe.wing"
 SUBMODEL_FUSELAGE_CG = "submodel.weight.cg.airframe.fuselage"
-SUBMODEL_TAIL_CG = "submodel.weight.cg.airframe.tail"
+SUBMODEL_HORIZONTAL_TAIL_CG = "submodel.weight.cg.airframe.horizontal_tail"
+SUBMODEL_VERTICAL_TAIL_CG = "submodel.weight.cg.airframe.vertical_tail"
 SUBMODEL_FLIGHT_CONTROLS_CG = "submodel.weight.cg.airframe.flight_controls"
 SUBMODEL_MAIN_LANDING_GEAR_CG = "submodel.weight.cg.airframe.landing_gear.main"
 SUBMODEL_FRONT_LANDING_GEAR_CG = "submodel.weight.cg.airframe.landing_gear.front"
