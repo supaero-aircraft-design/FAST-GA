@@ -79,6 +79,7 @@ from ..geom_components.ht.components import (
     ComputeHTSweep0,
     ComputeHTSweep50,
     ComputeHTSweep100,
+    ComputeHTEfficiency,
 )
 from ..geom_components.vt.components import (
     ComputeVTRootChord,
@@ -534,6 +535,24 @@ def test_ht_sweep_100():
     data = problem.check_partials(compact_print=True)
     try:
         assert_check_partials(data, atol=1.0e-1, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_ht_efficiency():
+    """Tests computation of the horizontal tail efficiency"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    ivc = get_indep_var_comp(list_inputs(ComputeHTEfficiency()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeHTEfficiency(), ivc)
+    sweep_100 = problem.get_val("data:aerodynamics:horizontal_tail:efficiency")
+    assert sweep_100 == pytest.approx(0.9, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
 
