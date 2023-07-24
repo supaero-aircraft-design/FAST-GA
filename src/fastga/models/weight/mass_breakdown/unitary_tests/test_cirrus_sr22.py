@@ -606,6 +606,16 @@ def test_compute_fuel_lines_weight():
     weight_b2 = problem.get_val("data:weight:propulsion:fuel_lines:mass", units="kg")
     assert weight_b2 == pytest.approx(31.30, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:propulsion:fuel_lines:mass", "data:propulsion:fuel_type"]
+    del data["component"][
+        "data:weight:propulsion:fuel_lines:mass", "data:geometry:propulsion:engine:count"
+    ]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_fuel_lines_weight_flops():
     """Tests fuel lines weight computation from sample XML data."""
@@ -660,6 +670,15 @@ def test_compute_avionics_systems_weight():
     problem = run_system(ComputeAvionicsSystemsWeight(), ivc)
     weight_c3 = problem.get_val("data:weight:systems:avionics:mass", units="kg")
     assert weight_c3 == pytest.approx(59.874, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:weight:systems:avionics:mass", "data:geometry:propulsion:engine:count"
+    ]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_compute_avionics_systems_weight_from_uninstalled():
@@ -817,6 +836,15 @@ def test_compute_passenger_seats_weight():
         49.82, abs=1e-2
     )  # additional 2 pilots seats (differs from old version)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:weight:furniture:passenger_seats:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
+    ]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_furniture_weight():
     """Tests propulsion weight computation from sample XML data"""
@@ -874,6 +902,13 @@ def test_evaluate_mlw():
 
     mlw = problem.get_val("data:weight:aircraft:MLW", units="kg")
     assert mlw == pytest.approx(1613, abs=1)
+
+    data = problem.check_partials(compact_print=True)
+    del data["component"]["data:weight:aircraft:MLW", "data:TLAR:v_cruise"]
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
 
 
 def test_evaluate_zfw():

@@ -49,7 +49,7 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
         self.declare_partials(
-            "data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW", method="fd"
+            "data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW", method="exact"
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -85,3 +85,27 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
         )  # mass formula in lb
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
+        engine_nb = inputs["data:geometry:propulsion:engine:count"]
+        fuel_mass = inputs["data:weight:aircraft:MFW"]
+        fuel_type = inputs["data:propulsion:fuel_type"]
+
+        if fuel_type == 1.0:
+            m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
+        elif fuel_type == 2.0:
+            m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
+        elif fuel_type == 3.0:
+            m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
+        else:
+            m_vol_fuel = 718.9
+            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+
+        k_fsp = m_vol_fuel * 0.008345
+        # In lbs/gal
+
+        partials["data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW"] = (
+            1.4056 * engine_nb ** 0.157 * tank_nb ** 0.242
+        ) / (k_fsp * (fuel_mass / k_fsp) ** 0.274)
