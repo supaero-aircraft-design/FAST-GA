@@ -233,6 +233,12 @@ def test_compute_cg_fuel_propulsion():
     x_cg_b3 = problem.get_val("data:weight:propulsion:CG:x", units="m")
     assert x_cg_b3 == pytest.approx(2.37, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
 
 def test_compute_cg_electric_power_systems():
     """Tests computation of electric power systems center of gravity."""
