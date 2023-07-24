@@ -260,8 +260,19 @@ class XfoilPolar(ExternalCodeComp):
             step (_float_): steps between each angle of attack in XFoil calculation
         """
         parser = InputFileGenerator()
+        invicid = self.options["Invicid_calculation"]
         viscid = not self.options["Invicid_calculation"]
         single_AoA = self.options["single_AoA"]
+        #Check the computation options and select different script templates 
+        if invicid:
+            _INPUT_FILE_NAME = "polar_session_inv.txt"
+        elif viscid:
+            _INPUT_FILE_NAME = "polar_session.txt"
+        if single_AoA and invicid:
+            _INPUT_FILE_NAME = "polar_session_single_AoA_inv.txt"
+        elif single_AoA:
+            _INPUT_FILE_NAME = "polar_session_single_AoA.txt"
+        
         # input command to run XFoil
         with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
             parser.set_template_file(str(input_template_path))
@@ -622,98 +633,25 @@ class XfoilPolar(ExternalCodeComp):
         Returns:
             _path_: result data path 
         """
-        result_file = self.identify_negative_angle_option()
-        result_file = self.identify_single_aoa_option()
-        result_file = self.identify_inviscid_option()
-        return result_file
-    
-    def identify_negative_angle_option(self):
-        # change to csv for later usage
-        """_summary_
-        identify negative angel of attack option and congigure the 
-        file naming
-        Returns:
-            _path_: result data path
-        """
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(
-                    ".af", "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END])))
-                )
-                + "S.csv",
-            )
+            negative_angle_badge = "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END]))) + "S"
         else:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-        return result_file
-    
-    def identify_single_aoa_option(self):
-        """_summary_
-        identify negative single angel of attack option and 
-        congigure the file naming
-        Returns:
-            _path_: result data path
-        """
+            negative_angle_badge = ""
         if self.options["single_AoA"]:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".csv", "") + "_single_aoa.csv",
-            )
+            single_aoa_badge = "_S_AOA"
         else:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".csv", "") + "_multi_aoa.csv",
-            ) 
-        return result_file
-    
-    def identify_inviscid_option(self):
-        """_summary_
-        identify inviscid calculation option and 
-        congigure the file naming
-        Returns:
-            _path_: result data path
-        """
+            single_aoa_badge = ""
         if self.options["Invicid_calculation"]:
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".csv", "") + "_inviscid.csv",
-            )
+            invicid_badge = "_inv"
         else:
-            result_file = pth.join(
+            invicid_badge = ""
+        naming = negative_angle_badge + single_aoa_badge + invicid_badge
+        result_file = pth.join(
                 pth.split(os.path.realpath(__file__))[0],
                 "resources",
-                self.options["airfoil_file"].replace(".af", "") + ".csv",
-            )
-            result_file = pth.join(
-                pth.split(os.path.realpath(__file__))[0],
-                "resources",
-                self.options["airfoil_file"].replace(".csv", "") + "_viscous.csv",
-            )
+                self.options["airfoil_file"].replace(".af", naming)+ ".csv")
         return result_file
-    
+      
     def post_processing_fill_value(self, result_array_p, result_array_n):
         """_summary_
         Filling value after XFoil calculation
