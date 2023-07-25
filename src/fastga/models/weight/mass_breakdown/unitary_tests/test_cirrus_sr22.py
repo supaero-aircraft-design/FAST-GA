@@ -89,6 +89,7 @@ from ..compute_maximum_payload import ComputeMaxPayload
 from ..update_mlw import ComputeMLW
 from ..update_zfw import ComputeZFW
 from ..update_mzfw import ComputeMZFW
+from ..update_mtow import UpdateMTOW
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -570,7 +571,9 @@ def test_compute_oil_weight():
     assert weight_b1_2 == pytest.approx(2.836, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    del data["component"]["data:weight:propulsion:engine_oil:mass", "data:geometry:propulsion:engine:count"]
+    del data["component"][
+        "data:weight:propulsion:engine_oil:mass", "data:geometry:propulsion:engine:count"
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -590,7 +593,9 @@ def test_compute_engine_weight():
     assert weight_b1 == pytest.approx(330.21, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    del data["component"]["data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"]
+    del data["component"][
+        "data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -610,7 +615,9 @@ def test_compute_engine_weight_raymer():
     assert weight_b1 == pytest.approx(372.90, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    del data["component"]["data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"]
+    del data["component"][
+        "data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -966,6 +973,24 @@ def test_evaluate_mzfw():
 
     mzfw = problem.get_val("data:weight:aircraft:MZFW", units="kg")
     assert mzfw == pytest.approx(1426, abs=1)
+
+    data = problem.check_partials(compact_print=True)
+    try:
+        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+    except:
+        assert False
+
+
+def test_update_mtow():
+    """Tests Maximum Take-Off Weight calculation from sample XML data."""
+
+    ivc = get_indep_var_comp(list_inputs(UpdateMTOW()), __file__, XML_FILE)
+
+    # noinspection PyTypeChecker
+    problem = run_system(UpdateMTOW(), ivc)
+
+    mzfw = problem.get_val("data:weight:aircraft:MTOW", units="kg")
+    assert mzfw == pytest.approx(1613, abs=1)
 
     data = problem.check_partials(compact_print=True)
     try:
