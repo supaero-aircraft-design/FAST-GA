@@ -1020,10 +1020,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         Assign float arrray to variable for later length modification
         Args:
             inputs (_list_): _description_
-            wing_0 (_list_): wing aerodynamic parameters with zero angel of attack
-            wing_aoa (_list_): wing aerodynamic parameters with freestream angel of attack
+            wing_0 (_list_): wing aerodynamic parameters with zero angle of attack
+            wing_aoa (_list_): wing aerodynamic parameters with freestream angle of attack
             s_ref_wing (_float_): wing reference surfance area
-            aoa_angle (_float_): freestream angel of attack
+            aoa_angle (_float_): freestream angle of attack
 
         Returns:
             _list_: length-unmodified wing aerodynamic paramter arrays
@@ -1069,7 +1069,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                                         without consider the the wing downwash
             htp_aoa_isolated (_list_): horizontal satbilizer aerodynamic parameters with freestream
                                 angle of attack without consider the the wing downwash
-            aoa_angle (_float_): freestream angel of attack
+            aoa_angle (_float_): freestream angle of attack
             area_ratio (_float_): area ratio between wing and horizontal stabilizer
 
         Returns:

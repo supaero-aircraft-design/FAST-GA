@@ -25,6 +25,7 @@ from .test_functions import (
     cd0_low_speed,
     polar,
     polar_single_aoa,
+    polar_ext_folder_inv,
     airfoil_slope_wt_xfoil,
     airfoil_slope_xfoil,
     comp_high_speed,
@@ -184,6 +185,14 @@ def test_polar_with_ext_folder():
         cdp_1_high_speed=0.30059597156398105,
         cl_max_2d=1.6241,
         cdp_1_low_speed=0.005250849056603773,
+    )
+    
+def test_polar_with_ext_folder_inv():
+    """Tests polar execution (XFOIL) @ high and low speed."""
+    polar_ext_folder_inv(
+        XML_FILE,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
     )
 
 
