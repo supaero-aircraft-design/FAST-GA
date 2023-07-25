@@ -656,7 +656,7 @@ class XfoilPolar(ExternalCodeComp):
         """_summary_
         Filling value after XFoil calculation
         Args:
-            result_array_p (_array_): results with positive angel of attacks
+            result_array_p (_array_): results with positive angle of attacks
             result_array_n (_array_): results with negative angle of attacks
 
         Returns:
