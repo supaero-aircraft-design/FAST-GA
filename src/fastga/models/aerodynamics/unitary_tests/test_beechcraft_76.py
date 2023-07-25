@@ -25,6 +25,7 @@ from .test_functions import (
     cd0_low_speed,
     polar,
     polar_single_aoa,
+    polar_single_aoa_inv,
     polar_ext_folder_inv,
     airfoil_slope_wt_xfoil,
     airfoil_slope_xfoil,
@@ -162,6 +163,17 @@ def test_polar():
 def test_polar_single_AoA():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_single_aoa(
+        XML_FILE,
+        mach_high_speed=0.245,
+        reynolds_high_speed=4571770 * 1.549,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+        
+    )
+
+def test_polar_single_AoA_inv():
+    """Tests polar execution (XFOIL) @ high and low speed."""
+    polar_single_aoa_inv(
         XML_FILE,
         mach_high_speed=0.245,
         reynolds_high_speed=4571770 * 1.549,
