@@ -40,7 +40,7 @@ class ComputeVTXTip(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:tip:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -53,3 +53,24 @@ class ComputeVTXTip(om.ExplicitComponent):
         x_tip = b_v * np.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
 
         outputs["data:geometry:vertical_tail:tip:x"] = x_tip
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        partials[
+            "data:geometry:vertical_tail:tip:x", "data:geometry:vertical_tail:sweep_25"
+        ] = b_v * (np.tan(sweep_25_vt) ** 2.0 + 1.0)
+        partials["data:geometry:vertical_tail:tip:x", "data:geometry:vertical_tail:span"] = np.tan(
+            sweep_25_vt
+        )
+        partials["data:geometry:vertical_tail:tip:x", "data:geometry:wing:MAC:at25percent:x"] = 1.0
+        partials[
+            "data:geometry:vertical_tail:tip:x",
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+        ] = -1.0
+        partials[
+            "data:geometry:vertical_tail:tip:x",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = 1.0
