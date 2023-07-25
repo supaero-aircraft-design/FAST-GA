@@ -26,3 +26,4 @@ from .compute_vt_sweep_0 import ComputeVTSweep0
 from .compute_vt_sweep_50 import ComputeVTSweep50
 from .compute_vt_sweep_100 import ComputeVTSweep100
 from .compute_vt_wet_area import ComputeVTWetArea
+from .compute_vt_tip_x_pos import ComputeVTXTip

@@ -94,6 +94,7 @@ from ..geom_components.vt.components import (
     ComputeVTSweep50,
     ComputeVTSweep100,
     ComputeVTWetArea,
+    ComputeVTXTip,
 )
 from ..geom_components.nacelle.components import (
     ComputeNacelleDimension,
@@ -150,6 +151,21 @@ def test_vt_tip_chord():
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
+
+
+def test_vt_tip_x():
+    """Tests computation of the vertical tail tip x position"""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeVTXTip()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeVTXTip(), ivc)
+    tip_x = problem.get_val("data:geometry:vertical_tail:tip:x", units="m")
+    assert tip_x == pytest.approx(8.138, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_span():
