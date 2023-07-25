@@ -51,6 +51,8 @@ from ..cg_components.most_aft_cg_mac import ComputeAftCGMac
 from ..cg_components.most_aft_cg_x import ComputeAftCGX
 from ..cg_components.most_forward_cg_mac import ComputeForwardCGMac
 from ..cg_components.most_forward_cg_x import ComputeForwardCGX
+from ..cg_components.aircraft_empty_mass import ComputeEmptyMass
+from ..cg_components.aircraft_empty_cg_x import ComputeCG
 
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
@@ -396,10 +398,6 @@ def test_compute_cg_ratio_aft():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeCGRatioAircraftEmpty(), ivc)
-    empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
-    assert empty_mass == pytest.approx(1109.06, abs=1e-2)
-    cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
-    assert cg_x == pytest.approx(3.23, abs=1e-2)
     cg_mac_pos = problem["data:weight:aircraft:empty:CG:MAC_position"]
     assert cg_mac_pos == pytest.approx(0.09, abs=1e-2)
 
@@ -495,6 +493,35 @@ def test_compute_fwd_cg_x():
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
         assert False
+
+
+def test_compute_aircraft_empty_mass():
+    """Tests computation of aircraft empty mass."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeEmptyMass()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEmptyMass(), ivc)
+    empty_mass = problem.get_val("data:weight:aircraft_empty:mass", units="kg")
+    assert empty_mass == pytest.approx(1109.06, abs=1.0e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_aircraft_empty_cg_x():
+    """Tests computation of aircraft empty center of gravity x coordinate."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeCG()), __file__, XML_FILE)
+    ivc.add_output("data:weight:systems:recording:CG:x", 6.88, units="m")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeCG(), ivc)
+    cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
+    assert cg_x == pytest.approx(3.20, abs=1.0e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_complete_cg():
