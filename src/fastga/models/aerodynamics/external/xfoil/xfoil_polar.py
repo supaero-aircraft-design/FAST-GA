@@ -721,39 +721,21 @@ class XfoilPolar(ExternalCodeComp):
         
         try:
             # Post-processing
-            (
-                alpha,
-                cl,
-                cd,
-                cdp,
-                cm,
-                cl_max_2d,
-                cl_min_2d,
-                cd_min_2d,
-                error,
-            ) = self.post_processing_fill_value(result_array_p, result_array_n)
+            (alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error,) = self.post_processing_fill_value(result_array_p, result_array_n)
+
         except:
             self.options[OPTION_ITER_LIMIT] = 10 * self.options[OPTION_ITER_LIMIT]
-            (
-                result_array_p,
-                result_array_n,
-                result_folder_path,
-                tmp_directory,
-                tmp_result_file_path,
-            ) = self.run_XFoil(inputs, outputs, reynolds, mach)
-            # Post-processing
-            (
-                alpha,
-                cl,
-                cd,
-                cdp,
-                cm,
-                cl_max_2d,
-                cl_min_2d,
-                cd_min_2d,
-                error,
-            ) = self.post_processing_fill_value(result_array_p, result_array_n)
+        
+        # Rerun XFoil
+            (result_array_p, result_array_n, result_folder_path, tmp_directory, tmp_result_file_path,) = self.run_XFoil(inputs, outputs, reynolds, mach)
 
+        # Try post processing again
+            try:
+                (alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error,) = self.post_processing_fill_value(result_array_p, result_array_n)  
+            except:
+                # Custom error message
+                print("Error: Xfoil failed to converge, please increase the iteration limit")
+                raise
         return (
             alpha,
             cl,
