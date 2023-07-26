@@ -90,7 +90,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
 
         if engine_layout == 3.0:
             cowling_master_cross_section = inputs["data:geometry:fuselage:master_cross_section"]
-            
+
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
@@ -131,4 +131,4 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         partials[
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             "data:geometry:propeller:diameter",
-        ] = (254 * cowling_master_cross_section) / (125 * disk_diameter ** 3 * np.pi) 
+        ] = (254 * cowling_master_cross_section) / (125 * disk_diameter ** 3 * np.pi)

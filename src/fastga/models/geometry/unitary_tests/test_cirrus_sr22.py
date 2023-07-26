@@ -1487,6 +1487,12 @@ def test_position_propeller():
     x_prop_from_le_result = 2.5397
     assert abs(x_prop_from_le - x_prop_from_le_result) < 1e-3
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:propulsion:nacelle:from_LE", "data:geometry:propulsion:engine:layout"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
 
 def test_installation_effect_propeller():
     """Tests computation propeller effective advance ratio factor computation"""
