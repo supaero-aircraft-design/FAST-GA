@@ -23,9 +23,9 @@ from ..cg_components.constants import SUBMODEL_AIRCRAFT_X_CG
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_X_CG, "fastga.submodel.weight.cg.aircraft_empty.x.legacy")
-class ComputeCG(om.ExplicitComponent):
+class ComputeAircraftXCG(om.ExplicitComponent):
     """
-    Computes aircraft empty center of gravity.
+    Computes X-position of aircraft empty center of gravity.
     """
 
     def initialize(self):
@@ -81,7 +81,7 @@ class ComputeCG(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft_empty:CG:x", units="m")
 
-        self.declare_partials("data:weight:aircraft_empty:CG:x", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

@@ -46,13 +46,15 @@ from ..cg_components.payload_front_fret_cg import ComputeFrontFretCG
 from ..cg_components.payload_rear_fret_cg import ComputeRearFretCG
 from ..cg_components.payload_pax_cg import ComputePaxCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
-from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
+from ..cg_components.aircraft_empty_cg_ratio import ComputeCGRatio
 from ..cg_components.most_aft_cg_mac import ComputeAftCGMac
 from ..cg_components.most_aft_cg_x import ComputeAftCGX
 from ..cg_components.most_forward_cg_mac import ComputeForwardCGMac
 from ..cg_components.most_forward_cg_x import ComputeForwardCGX
 from ..cg_components.aircraft_empty_mass import ComputeEmptyMass
-from ..cg_components.aircraft_empty_cg_x import ComputeCG
+from ..cg_components.aircraft_empty_cg_x import ComputeAircraftXCG
+from ..cg_components.aircraft_empty_cg_z import ComputeAircraftZCG
+from ..cg_components.engine_cg_z import ComputeEngineZCG
 
 from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 
@@ -85,9 +87,11 @@ def test_compute_cg_fuselage():
     problem = run_system(ComputeFuselageCG(), ivc)
     x_cg_a2 = problem.get_val("data:weight:airframe:fuselage:CG:x", units="m")
     assert x_cg_a2 == pytest.approx(5.70, abs=1e-2)
-    
+
     data = problem.check_partials(compact_print=True)
-    del data["component"]["data:weight:airframe:fuselage:CG:x", "data:geometry:propulsion:engine:layout"]
+    del data["component"][
+        "data:weight:airframe:fuselage:CG:x", "data:geometry:propulsion:engine:layout"
+    ]
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
     except:
@@ -103,7 +107,7 @@ def test_compute_cg_ht():
     problem = run_system(ComputeHTcg(), ivc)
     x_cg_a31 = problem.get_val("data:weight:airframe:horizontal_tail:CG:x", units="m")
     assert x_cg_a31 == pytest.approx(10.42, abs=1e-2)
-    
+
     data = problem.check_partials(compact_print=True)
     try:
         assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
@@ -120,7 +124,7 @@ def test_compute_cg_vt():
     problem = run_system(ComputeVTcg(), ivc)
     x_cg_a32 = problem.get_val("data:weight:airframe:vertical_tail:CG:x", units="m")
     assert x_cg_a32 == pytest.approx(9.51, abs=1e-2)
-    
+
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:weight:airframe:vertical_tail:CG:x", "data:geometry:has_T_tail"]
     try:
@@ -394,12 +398,15 @@ def test_compute_cg_payload_front_fret():
 def test_compute_cg_ratio_aft():
     """Tests computation of center of gravity with aft estimation."""
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeCGRatioAircraftEmpty()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeCGRatio()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeCGRatioAircraftEmpty(), ivc)
+    problem = run_system(ComputeCGRatio(), ivc)
     cg_mac_pos = problem["data:weight:aircraft:empty:CG:MAC_position"]
-    assert cg_mac_pos == pytest.approx(0.36, abs=1e-2)
+    assert cg_mac_pos == pytest.approx(0.34, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_load_case():
@@ -512,10 +519,10 @@ def test_compute_aircraft_empty_mass():
 def test_compute_aircraft_empty_cg_x():
     """Tests computation of aircraft empty center of gravity x coordinate."""
     # Define the independent input values that should be filled if basic function is chosen
-    ivc = get_indep_var_comp(list_inputs(ComputeCG()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeAircraftXCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeCG(), ivc)
+    problem = run_system(ComputeAircraftXCG(), ivc)
     cg_x = problem.get_val("data:weight:aircraft_empty:CG:x", units="m")
     assert cg_x == pytest.approx(4.88, abs=1e-2)
 
@@ -523,19 +530,29 @@ def test_compute_aircraft_empty_cg_x():
     assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
-def test_complete_cg():
-    """Run computation of all models."""
-    # with data from file
-    ivc = get_indep_var_comp(list_inputs(CG(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE)
+def test_compute_aircraft_empty_cg_z():
+    """Tests computation of aircraft empty center of gravity z coordinate."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeAircraftZCG()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    # noinspection PyTypeChecker
-    problem = run_system(CG(propulsion_id=ENGINE_WRAPPER), ivc, check=True)
-    cg_global = problem.get_val("data:weight:aircraft:CG:aft:x", units="m")
-    assert cg_global == pytest.approx(5.10, abs=1e-3)
-    cg_ratio = problem.get_val("data:weight:aircraft:CG:aft:MAC_position")
-    assert cg_ratio == pytest.approx(0.486, abs=1e-3)
-    z_cg_empty_ac = problem.get_val("data:weight:aircraft_empty:CG:z", units="m")
-    assert z_cg_empty_ac == pytest.approx(1.457, abs=1e-3)
-    z_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:z", units="m")
-    assert z_cg_b1 == pytest.approx(1.385, abs=1e-2)
+    problem = run_system(ComputeAircraftZCG(), ivc)
+    cg_z = problem.get_val("data:weight:aircraft_empty:CG:z", units="m")
+    assert cg_z == pytest.approx(1.429, abs=1e-3)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_engine_cg_z():
+    """Tests computation of engine center of gravity z coordinate."""
+    # Define the independent input values that should be filled if basic function is chosen
+    ivc = get_indep_var_comp(list_inputs(ComputeEngineZCG()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeEngineZCG(), ivc)
+    engine_cg_z = problem.get_val("data:weight:propulsion:engine:CG:z", units="m")
+    assert engine_cg_z == pytest.approx(1.385, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)

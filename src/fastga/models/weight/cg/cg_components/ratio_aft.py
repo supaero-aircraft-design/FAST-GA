@@ -14,7 +14,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
 
 import fastoad.api as oad
@@ -38,7 +37,10 @@ from ..cg_components.constants import (
     SUBMODEL_AIRCRAFT_X_CG_RATIO,
     SUBMODEL_AIRCRAFT_Z_CG,
     SUBMODEL_AIRCRAFT_EMPTY_MASS,
+    SUBMODEL_ENGINE_Z_CG,
 )
+
+from ..cg_components.aircraft_empty_cg_ratio import ComputeCGRatio
 
 
 @oad.RegisterSubmodel(
@@ -118,112 +120,12 @@ class ComputeCGRatioAircraftEmpty(om.Group):
         self.add_subsystem(
             "z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
         )
-        self.add_subsystem("cg_ratio", CGRatio(), promotes=["*"])
+        self.add_subsystem(
+            "engine_z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_ENGINE_Z_CG), promotes=["*"]
+        )
         self.add_subsystem(
             "total_mass_empty",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_EMPTY_MASS),
             promotes=["*"],
         )
-
-
-class CGRatio(om.ExplicitComponent):
-    def setup(self):
-        self.add_input("data:weight:aircraft_empty:CG:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-
-        self.add_output("data:weight:aircraft:empty:CG:MAC_position")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        x_cg_all = inputs["data:weight:aircraft_empty:CG:x"]
-        wing_position = inputs["data:geometry:wing:MAC:at25percent:x"]
-        mac = inputs["data:geometry:wing:MAC:length"]
-
-        outputs["data:weight:aircraft:empty:CG:MAC_position"] = (
-            x_cg_all - wing_position + 0.25 * mac
-        ) / mac
-
-
-@oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_Z_CG, "fastga.submodel.weight.cg.aircraft_empty.z.legacy")
-class ComputeZCG(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare(
-            "mass_names",
-            [
-                "data:weight:airframe:wing:mass",
-                "data:weight:airframe:fuselage:mass",
-                "data:weight:airframe:horizontal_tail:mass",
-                "data:weight:airframe:vertical_tail:mass",
-                "data:weight:airframe:flight_controls:mass",
-                "data:weight:airframe:landing_gear:main:mass",
-                "data:weight:airframe:landing_gear:front:mass",
-                "data:weight:propulsion:engine:mass",
-                "data:weight:propulsion:fuel_lines:mass",
-                "data:weight:systems:power:electric_systems:mass",
-                "data:weight:systems:power:hydraulic_systems:mass",
-                "data:weight:systems:life_support:air_conditioning:mass",
-                "data:weight:systems:avionics:mass",
-                "data:weight:furniture:passenger_seats:mass",
-            ],
-        )
-
-    def setup(self):
-        for mass_name in self.options["mass_names"]:
-            self.add_input(mass_name, val=np.nan, units="kg")
-
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-
-        self.add_output("data:weight:aircraft_empty:CG:z", units="m")
-        self.add_output("data:weight:propulsion:engine:CG:z", units="m")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
-        height_max = inputs["data:geometry:fuselage:maximum_height"][0]
-        prop_dia = inputs["data:geometry:propeller:diameter"][0]
-        lg_height = inputs["data:geometry:landing_gear:height"][0]
-        ht_height = inputs["data:geometry:horizontal_tail:z:from_wingMAC25"][0]
-        vt_span = inputs["data:geometry:vertical_tail:span"][0]
-        l0_wing = inputs["data:geometry:wing:MAC:length"][0]
-        thickness_ratio = inputs["data:geometry:wing:thickness_ratio"][0]
-
-        # TODO : For now we assume low wings only, change later
-        cg_wing = lg_height + thickness_ratio * l0_wing / 2.0
-        cg_fuselage = lg_height + height_max / 2.0
-        cg_horizontal_tail = cg_wing + ht_height
-        cg_vertical_tail = cg_fuselage + vt_span / 2.0
-        # TODO : To be changed depending we want or not the case where LG are retractable
-        cg_landing_gear = lg_height / 2.0
-        # CS 23 gives a minimum ground clearance of 18 cm for nose wheel landing gear, but TB20,
-        # SR22, BE76 all use a 23 cm clearance as recommended for tail wheel landing gear
-        cg_engine = 0.23 + prop_dia / 2.0
-        cg_fuel_lines = (cg_engine + cg_wing) / 2.0
-        cgs = np.array(
-            [
-                cg_wing,
-                cg_fuselage,
-                cg_horizontal_tail,
-                cg_vertical_tail,
-                cg_fuselage,
-                cg_landing_gear,
-                cg_landing_gear,
-                cg_engine,
-                cg_fuel_lines,
-                cg_fuselage,
-                cg_fuselage,
-                cg_fuselage,
-                cg_fuselage,
-                cg_fuselage,
-            ]
-        )
-
-        weight_moment = np.dot(cgs, masses)
-        z_cg_empty_aircraft = weight_moment / np.sum(masses)
-
-        outputs["data:weight:aircraft_empty:CG:z"] = z_cg_empty_aircraft
-        outputs["data:weight:propulsion:engine:CG:z"] = cg_engine
+        self.add_subsystem("cg_ratio", ComputeCGRatio(), promotes=["*"])
