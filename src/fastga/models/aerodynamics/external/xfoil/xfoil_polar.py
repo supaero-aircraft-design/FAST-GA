@@ -160,9 +160,8 @@ class XfoilPolar(ExternalCodeComp):
                 result_folder_path,
                 tmp_directory,
                 tmp_result_file_path,
-            ) = self.run_XFoil(inputs, outputs, reynolds, mach)            
-            try:
-                # Post-processing
+            ) = self.run_XFoil(inputs, outputs, reynolds, mach)
+            if single_AoA:
                 (
                     alpha,
                     cl,
@@ -173,30 +172,22 @@ class XfoilPolar(ExternalCodeComp):
                     cl_min_2d,
                     cd_min_2d,
                     error,
-                ) = self.post_processing_fill_value(result_array_p, result_array_n)
-            except:
-                self.options[OPTION_ITER_LIMIT] = 10 * self.options[OPTION_ITER_LIMIT]
-                (
-                    result_array_p,
-                    result_array_n,
-                    result_folder_path,
-                    tmp_directory,
-                    tmp_result_file_path,
-                ) = self.run_XFoil(inputs, outputs, reynolds, mach)
-                # Post-processing
-                (
-                    alpha,
-                    cl,
-                    cd,
-                    cdp,
-                    cm,
-                    cl_max_2d,
-                    cl_min_2d,
-                    cd_min_2d,
-                    error,
-                ) = self.post_processing_fill_value(result_array_p, result_array_n)
+                ) = self.xfoil_single_aoa_convergence_check(
+                    inputs, outputs, reynolds, mach, result_array_p, result_array_n
+                )
 
             if multiple_AoA:
+                (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+                ) = self.post_processing_fill_value(result_array_p, result_array_n)
                 # Fix output length if needed
                 alpha, cl, cd, cdp, cm = self.fix_mutiple_aoa_output_length(alpha, cl, cd, cdp, cm)
 
@@ -723,6 +714,57 @@ class XfoilPolar(ExternalCodeComp):
             cm = result_array_p["CM"].tolist()
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error
+
+    def xfoil_single_aoa_convergence_check(
+        self, inputs, outputs, reynolds, mach, result_array_p, result_array_n
+    ):
+        
+        try:
+            # Post-processing
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+            ) = self.post_processing_fill_value(result_array_p, result_array_n)
+        except:
+            self.options[OPTION_ITER_LIMIT] = 10 * self.options[OPTION_ITER_LIMIT]
+            (
+                result_array_p,
+                result_array_n,
+                result_folder_path,
+                tmp_directory,
+                tmp_result_file_path,
+            ) = self.run_XFoil(inputs, outputs, reynolds, mach)
+            # Post-processing
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+            ) = self.post_processing_fill_value(result_array_p, result_array_n)
+
+        return (
+            alpha,
+            cl,
+            cd,
+            cdp,
+            cm,
+            cl_max_2d,
+            cl_min_2d,
+            cd_min_2d,
+            error,
+        )
 
     def define_outputs(
         self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
