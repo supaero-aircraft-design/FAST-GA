@@ -28,12 +28,12 @@ from ...constants import SUBMODEL_NACELLE_GEOMETRY
 class ComputeNacelleGeometry(om.Group):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""
-    
+
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        
+
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "comp_nacelle_y_pos",
@@ -47,6 +47,8 @@ class ComputeNacelleGeometry(om.Group):
         )
         self.add_subsystem(
             "comp_nacelle_dimension",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_DIMENSION, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_NACELLE_DIMENSION, options=propulsion_option
+            ),
             promotes=["*"],
         )

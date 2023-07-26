@@ -55,7 +55,22 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:nacelle:y",
         )
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="*",
+            wrt=[
+                "data:geometry:wing:tip:y",
+                "data:geometry:wing:tip:leading_edge:x:local",
+                "data:geometry:wing:root:y",
+                "data:geometry:wing:MAC:leading_edge:x:local",
+                "data:geometry:wing:MAC:at25percent:x",
+                "data:geometry:wing:MAC:length",
+                "data:geometry:fuselage:length",
+                "data:geometry:fuselage:rear_length",
+                "data:geometry:propulsion:nacelle:length",
+                "data:geometry:propulsion:nacelle:y",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -95,3 +110,109 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
             )
 
         outputs["data:geometry:propulsion:nacelle:x"] = x_nacelle_array
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        y2_wing = float(inputs["data:geometry:wing:root:y"])
+        x4_wing = float(inputs["data:geometry:wing:tip:leading_edge:x:local"])
+        y4_wing = float(inputs["data:geometry:wing:tip:y"])
+
+        if prop_layout == 1.0:
+            y_nacelle_array = inputs["data:geometry:propulsion:nacelle:y"]
+            d_x_nacelle_d_y2_wing = np.copy(y_nacelle_array)
+            d_x_nacelle_d_x4_wing = np.copy(y_nacelle_array)
+            d_x_nacelle_d_y4_wing = np.copy(y_nacelle_array)
+            d_x_nacelle_d_y_nacelle = np.zeros((len(y_nacelle_array), len(y_nacelle_array)))
+
+            for idx, y_nacelle in enumerate(y_nacelle_array):
+                if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
+                    d_x_nacelle_d_y2_wing[idx] = (
+                        x4_wing
+                        * (-(y4_wing - y2_wing) + (y_nacelle - y2_wing))
+                        / (y4_wing - y2_wing) ** 2
+                    )
+                    d_x_nacelle_d_x4_wing[idx] = (y_nacelle - y2_wing) / (y4_wing - y2_wing)
+                    d_x_nacelle_d_y4_wing[idx] = (
+                        -x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2.0
+                    )
+                    d_x_nacelle_d_y_nacelle[idx, idx] = x4_wing / (y4_wing - y2_wing)
+                else:  # Nacelle in the straight part of the wing
+                    d_x_nacelle_d_y2_wing[idx] = 0.0
+                    d_x_nacelle_d_x4_wing[idx] = 0.0
+                    d_x_nacelle_d_y4_wing[idx] = 0.0
+
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:length"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:length"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:rear_length"
+            ] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:root:y"
+            ] = d_x_nacelle_d_y2_wing
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:leading_edge:x:local"
+            ] = -1.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:length"] = -0.25
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:at25percent:x"
+            ] = 1.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:leading_edge:x:local"
+            ] = d_x_nacelle_d_x4_wing
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:y"
+            ] = d_x_nacelle_d_y4_wing
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:y"
+            ] = d_x_nacelle_d_y_nacelle
+
+        elif prop_layout == 2.0:
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:length"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:length"] = 1.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:rear_length"
+            ] = -0.1
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:root:y"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:leading_edge:x:local"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:length"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:at25percent:x"
+            ] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:leading_edge:x:local"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:y"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:y"
+            ] = 0.0
+
+        else:
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:length"
+            ] = 1.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:length"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:fuselage:rear_length"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:root:y"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:leading_edge:x:local"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:length"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:MAC:at25percent:x"
+            ] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:leading_edge:x:local"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:x", "data:geometry:wing:tip:y"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:nacelle:y"
+            ] = 0.0

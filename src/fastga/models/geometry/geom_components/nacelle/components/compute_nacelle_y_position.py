@@ -47,7 +47,16 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             copy_shape="data:geometry:propulsion:engine:y_ratio",
         )
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="*",
+            wrt=[
+                "data:geometry:wing:span",
+                "data:geometry:propulsion:engine:y_ratio",
+                "data:geometry:fuselage:maximum_width",
+                "data:geometry:propulsion:nacelle:width",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -73,3 +82,45 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             )
 
         outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
+        span = inputs["data:geometry:wing:span"]
+        y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
+
+        if prop_layout == 1.0:
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = (
+                y_ratio / 2.0
+            )
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:y_ratio"
+            ] = (span / 2.0)
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
+            ] = 0.0
+        elif prop_layout == 2.0:
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
+            ] = 0.8
+            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:y_ratio"
+            ] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
+            ] = 0.5
+        else:
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
+            ] = 0.0
+            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:y_ratio"
+            ] = 0.0
+            partials[
+                "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
+            ] = 0.0

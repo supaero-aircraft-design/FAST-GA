@@ -1449,6 +1449,12 @@ def test_x_position_nacelle():
     x_nacelle_result = 1.148
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:propulsion:nacelle:x", "data:geometry:propulsion:engine:layout"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
 
 def test_y_position_nacelle():
     """Tests computation of the nacelle and pylons component y position"""
@@ -1461,6 +1467,12 @@ def test_y_position_nacelle():
     y_nacelle = problem.get_val("data:geometry:propulsion:nacelle:y", units="m")
     y_nacelle_result = 0.0
     assert abs(y_nacelle - y_nacelle_result) < 1e-3
+
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:layout"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_position_propeller():
