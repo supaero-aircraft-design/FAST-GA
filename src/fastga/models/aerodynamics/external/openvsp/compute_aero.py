@@ -42,7 +42,7 @@ class ComputeAEROopenvsp(Group):
         self.options.declare(
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
-
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
     def setup(self):
         self.add_subsystem(
             "comp_unit_reynolds",
@@ -59,6 +59,7 @@ class ComputeAEROopenvsp(Group):
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
+                input_angle_of_attack = self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
