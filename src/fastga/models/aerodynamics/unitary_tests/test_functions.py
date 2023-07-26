@@ -543,7 +543,7 @@ def polar_single_aoa_inv(
     ivc.add_output("xfoil:reynolds", reynolds_high_speed)
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=1.0, iter_limit=100, xfoil_exe_path=xfoil_path
+        alpha_start=1.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )
     xfoil_comp.options["single_AoA"] = True
     xfoil_comp.options["Invicid_calculation"] = True
@@ -567,7 +567,7 @@ def polar_single_aoa_inv(
 
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=5.0, alpha_end=10.0, iter_limit=100, xfoil_exe_path=xfoil_path
+        alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )    
     xfoil_comp.options["Invicid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
