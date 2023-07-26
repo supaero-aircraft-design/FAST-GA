@@ -26,7 +26,7 @@ from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
 _LOGGER = logging.getLogger(__name__)
 
-INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
+DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
 class ComputeAEROopenvsp(Group):
@@ -69,7 +69,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
-        self.options.declare("input_angle_of_attack", default=10.0, types=float)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
         
     def setup(self):
         super().setup()

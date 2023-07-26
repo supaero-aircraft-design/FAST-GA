@@ -149,7 +149,7 @@ class XfoilPolar(ExternalCodeComp):
         # Modify file type respect to negaive AoA/ inviscod/single AoA options
         result_file = self.define_result_file_path()
         multiple_AoA = not self.options["single_AoA"]
-        if pth.exists(result_file) and multiple_AoA:
+        if pth.exists(result_file):
             interpolated_result = self.interpolation_for_exist_data(result_file, mach, reynolds)
         # reslut_array_p(+AoA), reslut_array_n(-AoA)
         if interpolated_result is None:
