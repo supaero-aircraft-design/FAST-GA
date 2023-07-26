@@ -72,10 +72,7 @@ def test_compute_cg_wing():
     assert x_cg_a1 == pytest.approx(4.95, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_fuselage():
@@ -92,10 +89,7 @@ def test_compute_cg_fuselage():
     del data["component"][
         "data:weight:airframe:fuselage:CG:x", "data:geometry:propulsion:engine:layout"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_ht():
@@ -109,10 +103,7 @@ def test_compute_cg_ht():
     assert x_cg_a31 == pytest.approx(10.42, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_vt():
@@ -127,10 +118,7 @@ def test_compute_cg_vt():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:weight:airframe:vertical_tail:CG:x", "data:geometry:has_T_tail"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_flight_control():
@@ -144,10 +132,7 @@ def test_compute_cg_flight_control():
     assert x_cg_a4 == pytest.approx(7.301, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_front_landing_gear():
@@ -161,10 +146,7 @@ def test_compute_cg_front_landing_gear():
     assert x_cg_a52 == pytest.approx(2.25, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_main_landing_gear():
@@ -178,10 +160,7 @@ def test_compute_cg_main_landing_gear():
     assert x_cg_a51 == pytest.approx(5.99, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_engine():
@@ -206,10 +185,7 @@ def test_compute_cg_fuel_lines():
     assert x_cg_b2 == pytest.approx(3.48, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_tank():
@@ -223,10 +199,7 @@ def test_compute_cg_tank():
     assert x_cg_b3 == pytest.approx(4.74, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_fuel_propulsion():
@@ -240,10 +213,7 @@ def test_compute_cg_fuel_propulsion():
     assert x_cg_b3 == pytest.approx(2.37, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_electric_power_systems():
@@ -258,10 +228,7 @@ def test_compute_cg_electric_power_systems():
     assert x_cg_c12 == pytest.approx(4.99, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_hydraulic_power_systems():
@@ -276,10 +243,7 @@ def test_compute_cg_hydraulic_power_systems():
     assert x_cg_c13 == pytest.approx(4.99, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_life_support_systems():
@@ -293,10 +257,7 @@ def test_compute_cg_life_support_systems():
     assert x_cg_c22 == pytest.approx(3.0, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_navigation_systems():
@@ -310,10 +271,7 @@ def test_compute_cg_navigation_systems():
     assert x_cg_c3 == pytest.approx(3.35, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_recording_systems():
@@ -327,10 +285,7 @@ def test_compute_cg_recording_systems():
     assert x_cg_c3 == pytest.approx(8.86, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_passenger_seats():
@@ -355,10 +310,7 @@ def test_compute_cg_payload_pax():
     assert x_cg_pl == pytest.approx(5.43, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_payload_rear_fret():
@@ -372,10 +324,7 @@ def test_compute_cg_payload_rear_fret():
     assert x_cg_rear_fret == pytest.approx(7.3, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_payload_front_fret():
@@ -389,10 +338,7 @@ def test_compute_cg_payload_front_fret():
     assert x_cg_front_fret == pytest.approx(0.0, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_cg_ratio_aft():
@@ -445,10 +391,7 @@ def test_compute_aft_cg_ratio():
     assert cg_ratio_aft == pytest.approx(0.482, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_aft_cg_x():
@@ -462,10 +405,7 @@ def test_compute_aft_cg_x():
     assert aft_cg_x == pytest.approx(5.095, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fwd_cg_ratio():
@@ -479,10 +419,7 @@ def test_compute_fwd_cg_ratio():
     assert cg_ratio_fwd == pytest.approx(0.252, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fwd_cg_x():
@@ -496,10 +433,7 @@ def test_compute_fwd_cg_x():
     assert fwd_cg_x == pytest.approx(4.745, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_aircraft_empty_mass():

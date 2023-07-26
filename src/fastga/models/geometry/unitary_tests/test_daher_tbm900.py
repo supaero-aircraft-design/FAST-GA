@@ -128,10 +128,7 @@ def test_vt_root_chord():
     assert root_chord == pytest.approx(2.019, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_tip_chord():
@@ -146,10 +143,7 @@ def test_vt_tip_chord():
     assert tip_chord == pytest.approx(0.754, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_tip_x():
@@ -179,10 +173,7 @@ def test_vt_span():
     assert span == pytest.approx(2.056, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_mac_length():
@@ -197,10 +188,7 @@ def test_vt_mac_length():
     assert length == pytest.approx(1.495, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_mac_x25_local():
@@ -215,10 +203,7 @@ def test_vt_mac_x25_local():
     assert vt_x0 == pytest.approx(0.869, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_mac_z():
@@ -233,10 +218,7 @@ def test_vt_mac_z():
     assert vt_z0 == pytest.approx(0.874, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_mac_position():
@@ -253,10 +235,7 @@ def test_vt_mac_position():
     assert lp_vt == pytest.approx(5.54, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_mac_position_fl():
@@ -273,10 +252,7 @@ def test_vt_mac_position_fl():
     assert lp_vt == pytest.approx(5.638, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_sweep_0():
@@ -291,10 +267,7 @@ def test_vt_sweep_0():
     assert sweep_0 == pytest.approx(44.84, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_sweep_50():
@@ -309,10 +282,7 @@ def test_vt_sweep_50():
     assert sweep_50 == pytest.approx(20.45, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_sweep_100():
@@ -327,10 +297,7 @@ def test_vt_sweep_100():
     assert sweep_100 == pytest.approx(20.45, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_vt_wet_area():
@@ -345,10 +312,7 @@ def test_vt_wet_area():
     assert wet_area == pytest.approx(6.00, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_distance():
@@ -363,10 +327,7 @@ def test_ht_distance():
     assert lp_vt == pytest.approx(0.0, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_span():
@@ -381,10 +342,7 @@ def test_ht_span():
     assert span == pytest.approx(4.978, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_chord_root():
@@ -399,10 +357,7 @@ def test_ht_chord_root():
     assert root_chord == pytest.approx(1.162, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_chord_tip():
@@ -417,10 +372,7 @@ def test_ht_chord_tip():
     assert tip_chord == pytest.approx(0.824, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_ht_aspect_ratio():
@@ -447,10 +399,7 @@ def test_ht_mac_length():
     assert length == pytest.approx(1.010, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_mac_x0():
@@ -465,10 +414,7 @@ def test_ht_mac_x0():
     assert ht_x0 == pytest.approx(0.041, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_mac_x0_from_wing():
@@ -488,10 +434,7 @@ def test_ht_mac_x0_from_wing():
     del data["component"][
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", "data:geometry:has_T_tail"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_mac_y0():
@@ -506,10 +449,7 @@ def test_ht_mac_y0():
     assert ht_y0 == pytest.approx(1.178, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_sweep_0():
@@ -524,10 +464,7 @@ def test_ht_sweep_0():
     assert sweep_0 == pytest.approx(2.017, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_sweep_50():
@@ -542,10 +479,7 @@ def test_ht_sweep_50():
     assert sweep_50 == pytest.approx(-2.017, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_sweep_100():
@@ -560,10 +494,7 @@ def test_ht_sweep_100():
     assert sweep_100 == pytest.approx(173.967, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_efficiency():
@@ -578,10 +509,7 @@ def test_ht_efficiency():
     assert sweep_100 == pytest.approx(0.9, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_wet_area():
@@ -596,10 +524,7 @@ def test_ht_wet_area():
     assert wet_area == pytest.approx(10.38, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_ht_volume_coefficient():
@@ -614,10 +539,7 @@ def test_ht_volume_coefficient():
     assert vol_coeff == pytest.approx(0.998, rel=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_basic():
@@ -637,10 +559,7 @@ def test_fuselage_basic():
     assert fuselage_lcabin == pytest.approx(3.762, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_npax():
@@ -668,10 +587,7 @@ def test_fuselage_pax_length():
     assert fuselage_lpax == pytest.approx(3.2, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_max_width():
@@ -698,10 +614,7 @@ def test_fuselage_max_height():
     assert fuselage_height_max == pytest.approx(1.5, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_luggage_length():
@@ -728,10 +641,7 @@ def test_fuselage_cabin_length():
     assert fuselage_lcabin == pytest.approx(4.7, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_nose_length_fd():
@@ -749,10 +659,7 @@ def test_fuselage_nose_length_fd():
     del data["component"][
         "data:geometry:fuselage:front_length", "data:geometry:propulsion:engine:layout"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_nose_length_fl():
@@ -770,10 +677,7 @@ def test_fuselage_nose_length_fl():
     del data["component"][
         "data:geometry:fuselage:front_length", "data:geometry:propulsion:engine:layout"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_length_fd():
@@ -788,10 +692,7 @@ def test_fuselage_length_fd():
     assert fuselage_length == pytest.approx(11.038, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_length_fl():
@@ -818,10 +719,7 @@ def test_fuselage_rear_length():
     assert fuselage_lar == pytest.approx(3.74, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_wet_area():
@@ -837,10 +735,7 @@ def test_fuselage_wet_area():
     assert fuselage_wet_area == pytest.approx(42.311, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_wet_area_flops():
@@ -856,10 +751,7 @@ def test_fuselage_wet_area_flops():
     assert fuselage_wet_area == pytest.approx(38.296, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_master_cross_section():
@@ -875,10 +767,7 @@ def test_fuselage_master_cross_section():
     assert fuselage_master_cross_section == pytest.approx(1.730, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_depth():
@@ -894,10 +783,7 @@ def test_fuselage_depth():
     assert avg_fuselage_depth == pytest.approx(0.404, rel=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_volume():
@@ -913,10 +799,7 @@ def test_fuselage_volume():
     assert avg_fuselage_depth == pytest.approx(13.784, rel=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_toc_root():
@@ -931,10 +814,7 @@ def test_wing_toc_root():
     assert toc_root == pytest.approx(0.181, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_toc_kink():
@@ -949,10 +829,7 @@ def test_wing_toc_kink():
     assert toc_kink == pytest.approx(0.137, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_toc_tip():
@@ -967,10 +844,7 @@ def test_wing_toc_tip():
     assert toc_tip == pytest.approx(0.125, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_geometry_wing_y():
@@ -1003,10 +877,7 @@ def test_wing_l1():
     assert wing_l1 == pytest.approx(1.791, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_l2():
@@ -1021,10 +892,7 @@ def test_wing_l2():
     assert wing_l2 == pytest.approx(1.791, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_l3():
@@ -1041,10 +909,7 @@ def test_wing_l3():
     )  # point 3 and 2 equal (previous version ignored)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_l4():
@@ -1059,10 +924,7 @@ def test_wing_l4():
     assert wing_l4 == pytest.approx(1.096, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_z_root():
@@ -1078,10 +940,7 @@ def test_wing_z_root():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:geometry:wing:root:z", "data:geometry:wing_configuration"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_z_tip():
@@ -1097,10 +956,7 @@ def test_wing_z_tip():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:geometry:wing:tip:z", "data:geometry:wing_configuration"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_x_kink():
@@ -1115,10 +971,7 @@ def test_wing_x_kink():
     assert wing_x3 == pytest.approx(0.0, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_x_tip():
@@ -1133,10 +986,7 @@ def test_wing_x_tip():
     assert wing_x4 == pytest.approx(0.175, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_x_absolute_mac():
@@ -1151,10 +1001,7 @@ def test_wing_x_absolute_mac():
     assert wing_x0_abs == pytest.approx(4.361, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_x_absolute_tip():
@@ -1172,10 +1019,7 @@ def test_wing_x_absolute_tip():
     assert wing_x4_abs == pytest.approx(4.467, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_b50():
@@ -1196,10 +1040,7 @@ def test_wing_b50():
     assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_mac_length():
@@ -1214,10 +1055,7 @@ def test_wing_mac_length():
     assert wing_l0 == pytest.approx(1.522, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_mac_x_pos():
@@ -1232,10 +1070,7 @@ def test_wing_mac_x_pos():
     assert wing_x0 == pytest.approx(0.070, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_mac_y_pos():
@@ -1250,10 +1085,7 @@ def test_wing_mac_y_pos():
     assert wing_y0 == pytest.approx(2.800, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_sweep_0():
@@ -1268,10 +1100,7 @@ def test_wing_sweep_0():
     assert sweep_0 == pytest.approx(1.85, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_sweep_50():
@@ -1286,10 +1115,7 @@ def test_wing_sweep_50():
     assert sweep_50 == pytest.approx(-1.53, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_sweep_100_inner():
@@ -1304,10 +1130,7 @@ def test_wing_sweep_100_inner():
     assert sweep_100_inner == pytest.approx(-5.53, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_sweep_100_outer():
@@ -1322,10 +1145,7 @@ def test_wing_sweep_100_outer():
     assert sweep_100_outer == pytest.approx(-5.53, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_wet_area():
@@ -1340,10 +1160,7 @@ def test_wing_wet_area():
     assert wet_area == pytest.approx(33.462, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_outer_area():
@@ -1358,10 +1175,7 @@ def test_wing_outer_area():
     assert area_pf == pytest.approx(15.636, abs=1e-1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_wing_mfw_simple():
@@ -1377,10 +1191,7 @@ def test_wing_mfw_simple():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:weight:aircraft:MFW", "data:propulsion:fuel_type"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_geometry_wing_mfw_advanced():
@@ -1494,10 +1305,7 @@ def test_installation_effect_propeller():
         "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
         "data:geometry:propulsion:engine:layout",
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_landing_gear_height():
@@ -1512,10 +1320,7 @@ def test_landing_gear_height():
     assert lg_height == pytest.approx(0.947, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_landing_gear_position():
@@ -1530,10 +1335,7 @@ def test_landing_gear_position():
     assert lg_position == pytest.approx(1.816, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_total_area():
@@ -1548,10 +1350,7 @@ def test_total_area():
     assert total_surface == pytest.approx(98.410, abs=1e-3)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_complete_geometry_FD():

@@ -110,10 +110,7 @@ def test_compute_design_payload():
     assert problem["data:weight:aircraft:payload"] == pytest.approx(355.0, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_max_payload():
@@ -126,10 +123,7 @@ def test_compute_max_payload():
     assert problem["data:weight:aircraft:max_payload"] == pytest.approx(420.0, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_wing_weight():
@@ -145,10 +139,7 @@ def test_compute_wing_weight():
     )  # difference because of integer conversion error
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=7.0e-3, rtol=7.0e-3)
 
 
 def test_compute_fuselage_weight():
@@ -162,10 +153,7 @@ def test_compute_fuselage_weight():
     assert weight_a2 == pytest.approx(129.86, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fuselage_weight_raymer():
@@ -179,10 +167,7 @@ def test_compute_fuselage_weight_raymer():
     assert weight_a2 == pytest.approx(110.00, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fuselage_weight_roskam():
@@ -197,10 +182,7 @@ def test_compute_fuselage_weight_roskam():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:weight:airframe:fuselage:mass", "data:geometry:wing_configuration"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_shell_mass():
@@ -379,10 +361,7 @@ def test_compute_horizontal_tail_weight():
     assert weight_a31 == pytest.approx(13.84, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_vertical_tail_weight():
@@ -396,10 +375,7 @@ def test_compute_vertical_tail_weight():
     assert weight_a32 == pytest.approx(9.29, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_horizontal_tail_weight_gd():
@@ -413,10 +389,7 @@ def test_compute_horizontal_tail_weight_gd():
     assert weight_a31 == pytest.approx(9.90, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_vertical_tail_weight_gd():
@@ -430,10 +403,7 @@ def test_compute_vertical_tail_weight_gd():
     assert weight_a32 == pytest.approx(6.78, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_horizontal_tail_weight_torenbeek_gd():
@@ -449,10 +419,7 @@ def test_compute_horizontal_tail_weight_torenbeek_gd():
     assert weight_a31 == pytest.approx(14.83, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_vertical_tail_weight_torenbeek_gd():
@@ -468,10 +435,7 @@ def test_compute_vertical_tail_weight_torenbeek_gd():
     assert weight_a32 == pytest.approx(6.78, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_flight_controls_weight():
@@ -485,10 +449,7 @@ def test_compute_flight_controls_weight():
     assert weight_a4 == pytest.approx(22.32, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_flight_controls_weight_flops():
@@ -502,10 +463,7 @@ def test_compute_flight_controls_weight_flops():
     assert weight_a4 == pytest.approx(25.95, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_front_landing_gear_weight():
@@ -559,10 +517,7 @@ def test_compute_paint_weight():
     assert weight_a7 == pytest.approx(19.56, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_airframe_weight():
@@ -592,10 +547,7 @@ def test_compute_oil_weight():
     del data["component"][
         "data:weight:propulsion:engine_oil:mass", "data:geometry:propulsion:engine:count"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_engine_weight():
@@ -614,10 +566,7 @@ def test_compute_engine_weight():
     del data["component"][
         "data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_engine_weight_raymer():
@@ -636,10 +585,7 @@ def test_compute_engine_weight_raymer():
     del data["component"][
         "data:weight:propulsion:engine:mass", "data:geometry:propulsion:engine:count"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fuel_lines_weight():
@@ -657,10 +603,7 @@ def test_compute_fuel_lines_weight():
     del data["component"][
         "data:weight:propulsion:fuel_lines:mass", "data:geometry:propulsion:engine:count"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_fuel_lines_weight_flops():
@@ -674,10 +617,7 @@ def test_compute_fuel_lines_weight_flops():
     assert weight_b2 == pytest.approx(20.84, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_unusable_fuel_weight():
@@ -693,10 +633,7 @@ def test_compute_unusable_fuel_weight():
     assert weight_b3 == pytest.approx(33.25, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_propulsion_weight():
@@ -727,10 +664,7 @@ def test_compute_avionics_systems_weight():
     del data["component"][
         "data:weight:systems:avionics:mass", "data:geometry:propulsion:engine:count"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_avionics_systems_weight_from_uninstalled():
@@ -747,10 +681,7 @@ def test_compute_avionics_systems_weight_from_uninstalled():
     assert weight_c3 == pytest.approx(33.37, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_electric_power_system_weight():
@@ -765,10 +696,7 @@ def test_compute_electric_power_system_weight():
     assert weight_c12 == pytest.approx(85.25, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_hydraulic_power_system_weight():
@@ -783,10 +711,7 @@ def test_compute_hydraulic_power_system_weight():
     assert weight_c13 == pytest.approx(11.29, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_life_support_systems_weight():
@@ -892,10 +817,7 @@ def test_compute_passenger_seats_weight():
     del data["component"][
         "data:weight:furniture:passenger_seats:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
     ]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_furniture_weight():
@@ -957,10 +879,7 @@ def test_evaluate_mlw():
 
     data = problem.check_partials(compact_print=True)
     del data["component"]["data:weight:aircraft:MLW", "data:TLAR:v_cruise"]
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_evaluate_zfw():
@@ -975,10 +894,7 @@ def test_evaluate_zfw():
     assert zfw == pytest.approx(1361, abs=1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_evaluate_mzfw():
@@ -993,10 +909,7 @@ def test_evaluate_mzfw():
     assert mzfw == pytest.approx(1426, abs=1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_update_mtow():
@@ -1011,10 +924,7 @@ def test_update_mtow():
     assert mzfw == pytest.approx(1613, abs=1)
 
     data = problem.check_partials(compact_print=True)
-    try:
-        assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-    except:
-        assert False
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_web_mass():
