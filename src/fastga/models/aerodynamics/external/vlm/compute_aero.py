@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
-INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
+DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
 class ComputeAEROvlm(Group):
@@ -187,7 +187,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         super().initialize()
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
-        self.options.declare("input_angle_of_attack", default=10.0, types=float)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
     def setup(self):
 
         super().setup()
