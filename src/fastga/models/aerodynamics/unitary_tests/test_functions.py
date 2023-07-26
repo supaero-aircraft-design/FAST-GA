@@ -395,6 +395,7 @@ def polar(
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
 
+
 def polar_single_aoa(
     XML_FILE: str,
     mach_high_speed: float,
@@ -403,7 +404,7 @@ def polar_single_aoa(
     reynolds_low_speed: float,
 ):
     """Tests polar execution (XFOIL) @ low speed!"""
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -415,7 +416,7 @@ def polar_single_aoa(
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=1.0, alpha_end=10.0, iter_limit=100, xfoil_exe_path=xfoil_path
-    )    
+    )
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
@@ -428,7 +429,7 @@ def polar_single_aoa(
     cl, cdp = reshape_polar(cl, cdp)
     cl_1 = cl[0]
     cdp_1 = cdp[0]
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -437,9 +438,7 @@ def polar_single_aoa(
     ivc.add_output("xfoil:mach", mach_high_speed)
     ivc.add_output("xfoil:reynolds", reynolds_high_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=1.0, iter_limit=100, xfoil_exe_path=xfoil_path
-    )
+    xfoil_comp = XfoilPolar(alpha_start=1.0, iter_limit=100, xfoil_exe_path=xfoil_path)
     xfoil_comp.options["single_AoA"] = True
     problem = run_system(xfoil_comp, ivc)
 
@@ -451,7 +450,7 @@ def polar_single_aoa(
     cdp_s = problem["xfoil:CDp"]
     assert cl_1 == pytest.approx(cl_s, abs=1e-4)
     assert cdp_1 == pytest.approx(cdp_s, abs=1e-4)
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -463,7 +462,7 @@ def polar_single_aoa(
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )    
+    )
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
@@ -476,7 +475,7 @@ def polar_single_aoa(
     cl, cdp = reshape_polar(cl, cdp)
     cl_5 = cl[0]
     cdp_5 = cdp[0]
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -485,9 +484,7 @@ def polar_single_aoa(
     ivc.add_output("xfoil:mach", mach_low_speed)
     ivc.add_output("xfoil:reynolds", reynolds_low_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
+    xfoil_comp = XfoilPolar(alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path)
     xfoil_comp.options["single_AoA"] = True
     problem = run_system(xfoil_comp, ivc)
 
@@ -499,7 +496,8 @@ def polar_single_aoa(
     cdp_s = problem["xfoil:CDp"]
     assert cl_5 == pytest.approx(cl_s, abs=1e-4)
     assert cdp_5 == pytest.approx(cdp_s, abs=1e-4)
-    
+
+
 def polar_single_aoa_inv(
     XML_FILE: str,
     mach_high_speed: float,
@@ -508,7 +506,7 @@ def polar_single_aoa_inv(
     reynolds_low_speed: float,
 ):
     """Tests polar execution (XFOIL) @ low speed!"""
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -520,7 +518,7 @@ def polar_single_aoa_inv(
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=1.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )    
+    )
     xfoil_comp.options["Invicid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
     # Retrieve polar results from temporary folder
@@ -529,11 +527,11 @@ def polar_single_aoa_inv(
     # Check obtained value(s) is/(are) correct
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
-    #cl, cdp = reshape_polar(cl, cdp)
-    #cl, cdp = reshape_polar(cl, cdp)
+    # cl, cdp = reshape_polar(cl, cdp)
+    # cl, cdp = reshape_polar(cl, cdp)
     cl_1 = cl[0]
     cdp_1 = cdp[0]
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -542,9 +540,7 @@ def polar_single_aoa_inv(
     ivc.add_output("xfoil:mach", mach_high_speed)
     ivc.add_output("xfoil:reynolds", reynolds_high_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=1.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
+    xfoil_comp = XfoilPolar(alpha_start=1.0, iter_limit=20, xfoil_exe_path=xfoil_path)
     xfoil_comp.options["single_AoA"] = True
     xfoil_comp.options["Invicid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
@@ -556,8 +552,8 @@ def polar_single_aoa_inv(
     cdp_s = problem["xfoil:CDp"]
     assert cl_1 == pytest.approx(cl_s, abs=1e-4)
     assert cdp_1 == pytest.approx(cdp_s, abs=1e-4)
-    
-     # Transfer saved polar results to temporary folder
+
+    # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
     # Define low-speed parameters (with .xml file and additional inputs)
@@ -568,7 +564,7 @@ def polar_single_aoa_inv(
     # Run problem
     xfoil_comp = XfoilPolar(
         alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )    
+    )
     xfoil_comp.options["Invicid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
     # Retrieve polar results from temporary folder
@@ -577,11 +573,11 @@ def polar_single_aoa_inv(
     # Check obtained value(s) is/(are) correct
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
-    #cl, cdp = reshape_polar(cl, cdp)
-    #cl, cdp = reshape_polar(cl, cdp)
+    # cl, cdp = reshape_polar(cl, cdp)
+    # cl, cdp = reshape_polar(cl, cdp)
     cl_5 = cl[0]
     cdp_5 = cdp[0]
-    
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
@@ -590,9 +586,7 @@ def polar_single_aoa_inv(
     ivc.add_output("xfoil:mach", mach_low_speed)
     ivc.add_output("xfoil:reynolds", reynolds_low_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
+    xfoil_comp = XfoilPolar(alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path)
     xfoil_comp.options["Invicid_calculation"] = True
     xfoil_comp.options["single_AoA"] = True
     problem = run_system(xfoil_comp, ivc)
@@ -602,11 +596,10 @@ def polar_single_aoa_inv(
 
     # Check obtained value(s) is/(are) correct
     cl_s = problem["xfoil:CL"]
-    cdp_s = problem["xfoil:CDp"] 
+    cdp_s = problem["xfoil:CDp"]
     assert cl_5 == pytest.approx(cl_s, abs=1e-4)
     assert cdp_5 == pytest.approx(cdp_s, abs=1e-4)
-   
-    
+
 
 def polar_ext_folder(
     XML_FILE: str,
@@ -682,6 +675,7 @@ def polar_ext_folder(
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
 
+
 def polar_ext_folder_inv(
     XML_FILE: str,
     mach_low_speed: float,
@@ -717,8 +711,8 @@ def polar_ext_folder_inv(
     # Check obtained value(s) is/(are) correct
     cl_1 = problem["xfoil:CL"]
     cdp_1 = problem["xfoil:CDp"]
-    #cl_1, cdp_1 = reshape_polar(cl, cdp)
-    
+    # cl_1, cdp_1 = reshape_polar(cl, cdp)
+
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
     shutil.copy(
@@ -748,10 +742,10 @@ def polar_ext_folder_inv(
     # Check obtained value(s) is/(are) correct
     cl_2 = problem["xfoil:CL"]
     cdp_2 = problem["xfoil:CDp"]
-    #cl_2, cdp_2 = reshape_polar(cl, cdp)
+    # cl_2, cdp_2 = reshape_polar(cl, cdp)
     assert cl_1[0] == pytest.approx(cl_2, abs=1e-4)
     assert cdp_1[0] == pytest.approx(cdp_2, abs=1e-4)
-    
+
 
 def airfoil_slope_wt_xfoil(
     XML_FILE: str,
@@ -845,26 +839,26 @@ def compute_aero(
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROopenvsp(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        openvsp_comp = ComputeAEROopenvsp(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack = 10.0,
         )
+        
+        problem = run_system(openvsp_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROopenvsp(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        openvsp_comp = ComputeAEROopenvsp(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack = 10.0,
         )
+
+        problem = run_system(openvsp_comp, ivc)
         stop = time.time()
     else:
         # noinspection PyTypeChecker
@@ -875,26 +869,26 @@ def compute_aero(
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROvlm(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        vlm_comp = ComputeAEROvlm(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack = 10.0,
         )
+        
+        problem = run_system(vlm_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROvlm(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        vlm_comp = ComputeAEROvlm(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack = 10.0,
         )
+        
+        problem = run_system(vlm_comp, ivc)
         stop = time.time()
     duration_2nd_run = stop - start
 
