@@ -518,6 +518,15 @@ def test_compute_front_landing_gear_weight():
     weight_a52 = problem.get_val("data:weight:airframe:landing_gear:front:mass", units="kg")
     assert weight_a52 == pytest.approx(16.49, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:weight:airframe:landing_gear:front:mass", "data:geometry:landing_gear:type"
+    ]
+    del data["component"][
+        "data:weight:airframe:landing_gear:front:mass", "data:geometry:wing_configuration"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
 
 def test_compute_main_landing_gear_weight():
     """Tests main landing gear weight computation from sample XML data."""
@@ -528,6 +537,15 @@ def test_compute_main_landing_gear_weight():
     problem = run_system(ComputeMainLandingGearWeight(), ivc)
     weight_a51 = problem.get_val("data:weight:airframe:landing_gear:main:mass", units="kg")
     assert weight_a51 == pytest.approx(39.68, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:weight:airframe:landing_gear:main:mass", "data:geometry:landing_gear:type"
+    ]
+    del data["component"][
+        "data:weight:airframe:landing_gear:main:mass", "data:geometry:wing_configuration"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_paint_weight():
