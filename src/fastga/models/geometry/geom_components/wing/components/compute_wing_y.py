@@ -42,7 +42,7 @@ class ComputeWingSpan(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:span", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -52,6 +52,18 @@ class ComputeWingSpan(om.ExplicitComponent):
         span = np.sqrt(lambda_wing * wing_area)
 
         outputs["data:geometry:wing:span"] = span
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
+        wing_area = inputs["data:geometry:wing:area"]
+
+        span = np.sqrt(lambda_wing * wing_area)
+
+        partials["data:geometry:wing:span", "data:geometry:wing:aspect_ratio"] = (
+            0.5 * wing_area / span
+        )
+        partials["data:geometry:wing:span", "data:geometry:wing:area"] = 0.5 * lambda_wing / span
 
 
 class ComputeWingRootY(om.ExplicitComponent):
@@ -63,7 +75,7 @@ class ComputeWingRootY(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:root:y", units="m")
 
-        self.declare_partials("*", "*", val=0.5)
+        self.declare_partials(of="*", wrt="*", val=0.5)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -83,7 +95,7 @@ class ComputeWingTipY(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:tip:y", units="m")
 
-        self.declare_partials("*", "*", val=0.5)
+        self.declare_partials(of="*", wrt="*", val=0.5)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -104,7 +116,7 @@ class ComputeWingKinkY(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:kink:y", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -114,3 +126,11 @@ class ComputeWingKinkY(om.ExplicitComponent):
         y3_wing = y4_wing * wing_break
 
         outputs["data:geometry:wing:kink:y"] = y3_wing
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        wing_break = inputs["data:geometry:wing:kink:span_ratio"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+
+        partials["data:geometry:wing:kink:y", "data:geometry:wing:kink:span_ratio"] = y4_wing
+        partials["data:geometry:wing:kink:y", "data:geometry:wing:tip:y"] = wing_break

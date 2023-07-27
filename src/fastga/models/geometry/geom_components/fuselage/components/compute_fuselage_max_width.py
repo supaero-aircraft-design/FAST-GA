@@ -42,7 +42,7 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:maximum_width", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -58,3 +58,59 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
         b_f = 2 * radius
 
         outputs["data:geometry:fuselage:maximum_width"] = b_f
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+
+        w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
+        w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
+        seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
+        w_aisle = inputs["data:geometry:cabin:aisle_width"]
+
+        if (2 * w_pilot_seats) > (seats_p_row * w_pass_seats + w_aisle):
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:pilot:width"
+            ] = 2.12
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:passenger:width"
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:maximum_width",
+                "data:geometry:cabin:seats:passenger:count_by_row",
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:aisle_width"
+            ] = 0.0
+
+        elif (2 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:pilot:width"
+            ] = 0.0
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:passenger:width"
+            ] = (1.06 * seats_p_row)
+            partials[
+                "data:geometry:fuselage:maximum_width",
+                "data:geometry:cabin:seats:passenger:count_by_row",
+            ] = (
+                1.06 * w_pass_seats
+            )
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:aisle_width"
+            ] = 1.06
+
+        else:
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:pilot:width"
+            ] = 2.12
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:passenger:width"
+            ] = (1.06 * seats_p_row)
+            partials[
+                "data:geometry:fuselage:maximum_width",
+                "data:geometry:cabin:seats:passenger:count_by_row",
+            ] = (
+                1.06 * w_pass_seats
+            )
+            partials[
+                "data:geometry:fuselage:maximum_width", "data:geometry:cabin:aisle_width"
+            ] = 1.06
