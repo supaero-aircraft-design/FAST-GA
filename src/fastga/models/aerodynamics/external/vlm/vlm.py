@@ -23,7 +23,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from stdatm import Atmosphere
-
+import numba
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
@@ -706,6 +706,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             x_le,
         )
 
+        # Mirror the right side to define the left side for y_panel, x_le and chord 
         y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
         chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
         x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
@@ -731,6 +732,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord = root_chord + (tip_chord - root_chord) * y_panel / semi_span
         x_le = y_panel * (root_chord - tip_chord) / (4 * semi_span)
 
+        # Mirror the right side to define the left side for  y_panel, x_le and chord 
         y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
         chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
         x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
@@ -789,7 +791,23 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             panelsurf[i * self.n_y : (i + 1) * self.n_y] = (
                 panelspan[: self.n_y] * panelchord[i * self.n_y : (i + 1) * self.n_y]
             )
+            # right side
 
+            # point A for the right-half
+            x_1[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, : self.n_y] + 0.25 * (
+                x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y]
+            )
+
+            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
+
+            # point B for the right-half
+            x_2[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, 1 : self.n_y + 1] + 0.25 * (
+                x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1]
+            )
+
+            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
+
+            # point P for the right-half
             x_c[i * self.n_y : (i + 1) * self.n_y] = (
                 x_panel[i, : self.n_y] + x_panel[i, 1 : self.n_y + 1]
             ) * 0.5 + 0.75 * panelchord[i * self.n_y : (i + 1) * self.n_y]
@@ -798,9 +816,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_panel[: self.n_y] + y_panel[1 : self.n_y + 1]
             ) * 0.5
 
-            x_1[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, : self.n_y] + 0.25 * (
-                x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y]
-            )
+            # letf side
+
+            # point A for the left-half
             x_1[
                 self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
             ] = x_panel[i, self.n_y + 1 : 2 * self.n_y + 1] + 0.25 * (
@@ -808,9 +826,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 - x_panel[i, self.n_y + 1 : 2 * self.n_y + 1]
             )
 
-            x_2[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, 1 : self.n_y + 1] + 0.25 * (
-                x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1]
-            )
+            y_1[
+                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
+            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
+
+            # point B for the left-half
             x_2[
                 self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
             ] = np.concatenate(
@@ -826,13 +846,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     )[1:],
                 )
             )
-
-            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
-            y_1[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
-
-            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
             y_2[
                 self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
             ] = np.concatenate(
@@ -842,52 +855,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 )
             )
         # Calculate remaining characteristic points (Left side)
-
+        # point P for the left-half
         x_c[self.n_x * self.n_y :] = x_c[: self.n_x * self.n_y]
         y_c[self.n_x * self.n_y :] = -y_c[: self.n_x * self.n_y]
-
-        # Aerodynamic coefficients computation (Right side)
-        for i in range(self.n_x * self.n_y):
-            for j in range(self.n_x * self.n_y):
-                # Right wing
-                coeff_1 = x_c[i] - x_1[j]
-                coeff_2 = y_c[i] - y_1[j]
-                coeff_3 = x_c[i] - x_2[j]
-                coeff_4 = y_c[i] - y_2[j]
-                coeff_5 = np.sqrt(coeff_1 ** 2 + coeff_2 ** 2)
-                coeff_6 = np.sqrt(coeff_3 ** 2 + coeff_4 ** 2)
-                coeff_7 = x_2[j] - x_1[j]
-                coeff_8 = y_2[j] - y_1[j]
-                coeff_10 = (coeff_7 * coeff_1 + coeff_8 * coeff_2) / coeff_5 - (
-                    coeff_7 * coeff_3 + coeff_8 * coeff_4
-                ) / coeff_6
-                coeff_11 = (1 + coeff_3 / coeff_6) / coeff_4 - (1 + coeff_1 / coeff_5) / coeff_2
-                if coeff_1 * coeff_4 - coeff_2 * coeff_3 != 0:
-                    aic[i, j] = (coeff_10 / (coeff_1 * coeff_4 - coeff_2 * coeff_3)) / (4 * np.pi)
-                aic_wake[i, j] = coeff_11 / (4 * np.pi)
-                aic[i, j] = aic[i, j] + coeff_11 / (4 * np.pi)
-        # Aerodynamic coefficients computation (Left side)
-        for i in range(self.n_x * self.n_y):
-            for j in range(self.n_x * self.n_y):
-                # Left wing
-                coeff_1 = x_c[i] - x_1[self.n_x * self.n_y + j]
-                coeff_2 = y_c[i] - y_1[self.n_x * self.n_y + j]
-                coeff_3 = x_c[i] - x_2[self.n_x * self.n_y + j]
-                coeff_4 = y_c[i] - y_2[self.n_x * self.n_y + j]
-                coeff_5 = np.sqrt(coeff_1 ** 2 + coeff_2 ** 2)
-                coeff_6 = np.sqrt(coeff_3 ** 2 + coeff_4 ** 2)
-                coeff_7 = x_2[self.n_x * self.n_y + j] - x_1[self.n_x * self.n_y + j]
-                coeff_8 = y_2[self.n_x * self.n_y + j] - y_1[self.n_x * self.n_y + j]
-                coeff_9 = (coeff_7 * coeff_1 + coeff_8 * coeff_2) / coeff_5 - (
-                    coeff_7 * coeff_3 + coeff_8 * coeff_4
-                ) / coeff_6
-                coeff_10 = (1 + coeff_3 / coeff_6) / coeff_4 - (1 + coeff_1 / coeff_5) / coeff_2
-                if coeff_1 * coeff_4 - coeff_2 * coeff_3 != 0:
-                    aic[i, j] = aic[i, j] + (coeff_9 / (coeff_1 * coeff_4 - coeff_2 * coeff_3)) / (
-                        4 * np.pi
-                    )
-                aic_wake[i, j] = aic_wake[i, j] + coeff_10 / (4 * np.pi)
-                aic[i, j] = aic[i, j] + coeff_10 / (4 * np.pi)
+        n_x = self.n_x
+        n_y = self.n_y
+        # Aerodynamic coefficients computation
+        aic, aic_wake = self.aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y)
         # Save data
         dictionary["x_panel"] = x_panel
         dictionary["panel_span"] = panelspan
@@ -1152,13 +1126,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             width_max (_float_): maximun wi
             span_wing (_float_): _description_
             mach (_float_): mach number
-            dihedral_angle (_float_): wing dihedral angle 
-            wing_0 (_float_): wing aerodynamic characteristics with zero angle of attack 
+            dihedral_angle (_float_): wing dihedral angle
+            wing_0 (_float_): wing aerodynamic characteristics with zero angle of attack
             wing_aoa (_float_): wing aerodynamic characteristics with specific angle of attack
-            aoa_angle (_float_): angle of attakc data list  
+            aoa_angle (_float_): angle of attakc data list
             aspect_ratio_wing (_float_): wing aspect ratio
             cl_wing_airfoil (_list_): lift coefficient data of wing respect to different angle of attack
-            cdp_wing_airfoil (_list_): pressure drag coefficient data of wing respect to different angle of attack 
+            cdp_wing_airfoil (_list_): pressure drag coefficient data of wing respect to different angle of attack
 
         Returns:
             _list_: post-processed data for other use
@@ -1224,7 +1198,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             aspect_ratio_htp (_float_): wing aspect ratio
             area_ratio (_float_): area ratio between wing and horizontal stabilizer
             mach (_float_): mack number
-            aoa_angle (_list_): angle of attakc data list 
+            aoa_angle (_list_): angle of attakc data list
             cl_htp_airfoil (_list_): lift coefficient data of horizontal stabilizer respect to different angle of attack
             cdp_htp_airfoil (_list_): pressure drag coefficient data of horizontal stabilizer respect to different angle of attack
             htp_0 (_list_): horizontal stabilizer aerodynamic charateristic data list
@@ -1265,8 +1239,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         Args:
             result_file_path (_path_): computation result path
             sref_wing (_float_): wing reference area
-            area_ratio (_float_): area ratio between wing and horizontal stabilizer 
-            saved_area_ratio (_float_): 
+            area_ratio (_float_): area ratio between wing and horizontal stabilizer
+            saved_area_ratio (_float_):
 
         Returns:
             _type_: _description_
@@ -1317,11 +1291,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def resize_wing_vector(self, y_vector_wing, cl_vector_wing, chord_vector_wing):
         """_summary_
-        Resize wing vector for later use in other model 
+        Resize wing vector for later use in other model
         Args:
-            y_vector_wing (_list_): wing position data 
+            y_vector_wing (_list_): wing position data
             cl_vector_wing (_list_): wing lift coefficient data
-            chord_vector_wing (_list_): wing chord length data 
+            chord_vector_wing (_list_): wing chord length data
 
         Returns:
             _list_: reformed wing data
@@ -1341,7 +1315,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def resize_htp_vector(self, y_vector_htp, cl_vector_htp):
         """_summary_
-        Resize horizontal stabilizer vector for later use in other model 
+        Resize horizontal stabilizer vector for later use in other model
         Args:
             y_vector_htp (_list_): horizontal stabilizer poistion data
             cl_vector_htp (_list_): horizontal lift coefficient data
@@ -1359,3 +1333,52 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_htp.extend(additional_zeros)
             cl_vector_htp.extend(additional_zeros)
         return (y_vector_htp, cl_vector_htp)
+
+    def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
+        for i in range(n_x * n_y):
+            for j in range(n_x * n_y):
+                # Right wing
+                coeff_1_r = x_c[i] - x_1[j]
+                coeff_2_r = y_c[i] - y_1[j]
+                coeff_3_r = x_c[i] - x_2[j]
+                coeff_4_r = y_c[i] - y_2[j]
+                coeff_5_r = np.sqrt(coeff_1_r ** 2 + coeff_2_r ** 2)
+                coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
+                coeff_7_r = x_2[j] - x_1[j]
+                coeff_8_r = y_2[j] - y_1[j]
+                coeff_10_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
+                    coeff_7_r * coeff_3_r + coeff_8_r * coeff_4_r
+                ) / coeff_6_r
+                coeff_11_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
+                    1 + coeff_1_r / coeff_5_r
+                ) / coeff_2_r
+                if coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r != 0:
+                    aic[i, j] = (coeff_10_r / (coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r)) / (
+                        4 * np.pi
+                    )
+                aic_wake[i, j] = coeff_11_r / (4 * np.pi)
+                aic[i, j] = aic[i, j] + coeff_11_r / (4 * np.pi)
+
+                # Left wing
+                coeff_1_l = x_c[i] - x_1[self.n_x * self.n_y + j]
+                coeff_2_l = y_c[i] - y_1[self.n_x * self.n_y + j]
+                coeff_3_l = x_c[i] - x_2[self.n_x * self.n_y + j]
+                coeff_4_l = y_c[i] - y_2[self.n_x * self.n_y + j]
+                coeff_5_l = np.sqrt(coeff_1_l ** 2 + coeff_2_l ** 2)
+                coeff_6_l = np.sqrt(coeff_3_l ** 2 + coeff_4_l ** 2)
+                coeff_7_l = x_2[self.n_x * self.n_y + j] - x_1[self.n_x * self.n_y + j]
+                coeff_8_l = y_2[self.n_x * self.n_y + j] - y_1[self.n_x * self.n_y + j]
+                coeff_9_l = (coeff_7_l * coeff_1_l + coeff_8_l * coeff_2_l) / coeff_5_l - (
+                    coeff_7_l * coeff_3_l + coeff_8_l * coeff_4_l
+                ) / coeff_6_l
+                coeff_10_l = (1 + coeff_3_l / coeff_6_l) / coeff_4_l - (
+                    1 + coeff_1_l / coeff_5_l
+                ) / coeff_2_l
+                if coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l != 0:
+                    aic[i, j] = aic[i, j] + (
+                        coeff_9_l / (coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l)
+                    ) / (4 * np.pi)
+                aic_wake[i, j] = aic_wake[i, j] + coeff_10_l / (4 * np.pi)
+                aic[i, j] = aic[i, j] + coeff_10_l / (4 * np.pi)
+
+        return aic, aic_wake
