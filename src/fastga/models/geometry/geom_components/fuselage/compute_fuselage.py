@@ -88,8 +88,8 @@ class ComputeFuselageAlternate(om.Group):
             )
         else:
             self.add_subsystem(
-                "compute_fuselage_dim", 
-                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC), 
+                "compute_fuselage_dim",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC),
                 promotes=["*"],
             )
         self.add_subsystem(
@@ -173,8 +173,8 @@ class ComputeFuselageLegacy(om.Group):
             )
         else:
             self.add_subsystem(
-                "compute_fuselage_dim", 
-                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC), 
+                "compute_fuselage_dim",
+                oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DIMENSIONS_BASIC),
                 promotes=["*"],
             )
         self.add_subsystem(
