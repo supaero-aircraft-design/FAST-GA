@@ -120,31 +120,3 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
                 * (1.0 / 2.0)
                 / (0.8 * np.pi * r_i ** 3.0)
             )
-
-        else:
-            partials[
-                "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
-            ] = (-2.0 * (luggage_mass_max / luggage_density) / (0.8 * np.pi * w_pilot_seats ** 3))
-            partials[
-                "data:geometry:fuselage:luggage_length",
-                "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = (
-                -2.0
-                * (luggage_mass_max / luggage_density)
-                * (w_pass_seats / 2.0)
-                / (0.8 * np.pi * r_i ** 3.0)
-            )
-            partials[
-                "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:passenger:width"
-            ] = (
-                -2.0
-                * (luggage_mass_max / luggage_density)
-                * (seats_p_row / 2.0)
-                / (0.8 * np.pi * r_i ** 3.0)
-            )
-            partials["data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"] = (
-                -2.0
-                * (luggage_mass_max / luggage_density)
-                * (1.0 / 2.0)
-                / (0.8 * np.pi * r_i ** 3.0)
-            )
