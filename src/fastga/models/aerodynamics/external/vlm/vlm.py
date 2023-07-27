@@ -655,7 +655,25 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_htp(inputs)
 
     def _generate_wing(self, inputs):
-        """Generates the coordinates for VLM calculations and aic matrix of the wing."""
+        """Generates the coordinates for VLM calculations and aic matrix of the wing.
+        Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
+                | \            and chords 1 and 2 representing a wing segment
+                |  \           that complies with the VLM theory, returns the
+                |   + Pf       points and panels of the mesh:
+          chord1|   |
+                |   |             - Points are given as a list of Np elements,
+                |   |chord2         being Np the number of points of the mesh.
+                +---+
+                |                 - Panels are given as a list of list of NP
+                x 				      elements, each element composed of 4 points,
+                                    where NP is the number of panels of the mesh.
+                x - chordwise
+                    direction    The corner points of each panel are arranged in a
+                y - spanwise     clockwise fashion following this order:
+                    direction
+            x_le array identifies the x-coordinate of Pi and Pf along the span-direction
+        
+        """
         y2_wing = inputs["data:geometry:wing:root:y"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
         root_chord = inputs["data:geometry:wing:root:chord"]
@@ -718,7 +736,26 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self._generate_common(self.wing)
 
     def _generate_htp(self, inputs):
-        """Generates the coordinates for VLM calculations and AIC matrix of the htp."""
+        """Generates the coordinates for VLM calculations and AIC matrix of the htp.
+             Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
+                | \            and chords 1 and 2 representing a wing segment
+                |  \           that complies with the VLM theory, returns the
+                |   + Pf       points and panels of the mesh:
+          chord1|   |
+                |   |             - Points are given as a list of Np elements,
+                |   |chord2         being Np the number of points of the mesh.
+                +---+
+                |                 - Panels are given as a list of list of NP
+                x 				      elements, each element composed of 4 points,
+                                    where NP is the number of panels of the mesh.
+                x - chordwise
+                    direction    The corner points of each panel are arranged in a
+                y - spanwise     clockwise fashion following this order:
+                    direction
+            x_le array identifies the x-coordinate of Pi and Pf along the span-direction
+
+   
+        """
         semi_span = inputs["data:geometry:horizontal_tail:span"] / 2.0
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
