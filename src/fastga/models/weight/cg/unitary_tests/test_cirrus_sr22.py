@@ -176,6 +176,18 @@ def test_compute_cg_engine():
     x_cg_b1 = problem.get_val("data:weight:propulsion:engine:CG:x", units="m")
     assert x_cg_b1 == pytest.approx(0.99, abs=1e-2)
 
+    data = problem.check_partials(compact_print=True)
+    del data["component"][
+        "data:weight:propulsion:engine:CG:x", "data:geometry:propulsion:engine:layout"
+    ]
+    del data["component"][
+        "data:weight:propulsion:engine:CG:x", "data:geometry:propulsion:engine:count"
+    ]
+    del data["component"][
+        "data:weight:propulsion:engine:CG:x", "data:geometry:propulsion:nacelle:x"
+    ]
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
 
 def test_compute_cg_fuel_lines():
     """Tests fuel lines center of gravity."""
