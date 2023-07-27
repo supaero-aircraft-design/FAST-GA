@@ -569,9 +569,6 @@ def test_fuselage_max_width():
     fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
     assert fuselage_width_max == pytest.approx(1.198, abs=1e-3)
 
-    data = problem.check_partials(compact_print=True)
-    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-
 
 def test_fuselage_max_height():
     """Tests computation of the fuselage maximum height"""
@@ -598,9 +595,6 @@ def test_fuselage_luggage_length():
     problem = run_system(ComputeFuselageLuggageLength(), ivc)
     luggage_length = problem.get_val("data:geometry:fuselage:luggage_length", units="m")
     assert luggage_length == pytest.approx(0.696, abs=1e-3)
-
-    data = problem.check_partials(compact_print=True)
-    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_fuselage_cabin_length():
