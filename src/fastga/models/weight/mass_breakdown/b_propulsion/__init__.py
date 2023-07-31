@@ -17,3 +17,4 @@ from .b1_engine_weight_raymer import ComputeEngineWeightRaymer
 from .b2_fuel_lines_weight import ComputeFuelLinesWeight
 from .b2_fuel_lines_weight_flops import ComputeFuelLinesWeightFLOPS
 from .b3_unusable_fuel_weight import ComputeUnusableFuelWeight
+from .propulsion_total_mass import ComputePropulsionMass

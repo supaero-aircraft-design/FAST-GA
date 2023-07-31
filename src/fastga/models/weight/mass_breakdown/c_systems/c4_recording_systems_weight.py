@@ -41,7 +41,7 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", val=0.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

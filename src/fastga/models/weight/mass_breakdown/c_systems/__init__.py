@@ -18,3 +18,4 @@ from .c2_life_support_systems_weight_flops import ComputeLifeSupportSystemsWeigh
 from .c3_avionics_systems_weight import ComputeAvionicsSystemsWeight
 from .c3_avionics_systems_from_uninstalled_weight import ComputeAvionicsSystemsWeightFromUninstalled
 from .c4_recording_systems_weight import ComputeRecordingSystemsWeight
+from .systems_total_mass import ComputeSystemMass
