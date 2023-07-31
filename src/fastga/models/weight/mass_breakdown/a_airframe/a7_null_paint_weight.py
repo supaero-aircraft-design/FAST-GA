@@ -25,7 +25,7 @@ oad.RegisterSubmodel.active_models[
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
-class ComputeNoPaintWeight(om.ExplicitComponent):
+class ComputeNoPaintWeight(om.IndepVarComp):
     """
     Paint weight estimation.
 
@@ -41,38 +41,8 @@ class ComputeNoPaintWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:paint:mass", units="lb")
 
+        self.declare_partials(of="*", wrt="*", val=0.0)
+
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
-
-@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
-class ComputePaintWeight(om.ExplicitComponent):
-    """
-    Paint weight estimation.
-
-    Component that returns the paint weight by using a value of surface density for the paint.
-    """
-
-    def setup(self):
-        self.add_input("data:geometry:aircraft:wet_area", val=np.nan, units="m**2")
-        self.add_input("settings:weight:airframe:paint:surface_density", val=0.33, units="kg/m**2")
-
-        self.add_output("data:weight:airframe:paint:mass", units="kg")
-
-        self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        outputs["data:weight:airframe:paint:mass"] = (
-            inputs["data:geometry:aircraft:wet_area"]
-            * inputs["settings:weight:airframe:paint:surface_density"]
-        )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        partials["data:weight:airframe:paint:mass", "data:geometry:aircraft:wet_area"] = inputs[
-            "settings:weight:airframe:paint:surface_density"
-        ]
-        partials[
-            "data:weight:airframe:paint:mass", "settings:weight:airframe:paint:surface_density"
-        ] = inputs["data:geometry:aircraft:wet_area"]

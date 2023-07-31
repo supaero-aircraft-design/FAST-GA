@@ -28,6 +28,7 @@ from .constants import (
 )
 
 from ..constants import SUBMODEL_AIRFRAME_MASS
+from ..a_airframe import ComputeAirframeMass
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
@@ -73,22 +74,4 @@ class AirframeWeight(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_PAINT_MASS),
             promotes=["*"],
         )
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:airframe:mass",
-            [
-                "data:weight:airframe:wing:mass",
-                "data:weight:airframe:fuselage:mass",
-                "data:weight:airframe:horizontal_tail:mass",
-                "data:weight:airframe:vertical_tail:mass",
-                "data:weight:airframe:flight_controls:mass",
-                "data:weight:airframe:landing_gear:main:mass",
-                "data:weight:airframe:landing_gear:front:mass",
-                "data:weight:airframe:paint:mass",
-            ],
-            units="kg",
-            desc="Mass of the airframe",
-        )
-
-        self.add_subsystem("airframe_weight_sum", weight_sum, promotes=["*"])
+        self.add_subsystem("airframe_weight_sum", ComputeAirframeMass(), promotes=["*"])

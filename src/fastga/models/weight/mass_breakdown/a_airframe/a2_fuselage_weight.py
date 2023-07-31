@@ -51,7 +51,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -107,7 +107,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = k_factor * (
             (
-                0.00020643
+                2.0643e-4
                 * mtow
                 * (0.32808 * fus_length) ** 0.857
                 * (0.01 * v_max_sl) ** 0.338
@@ -117,15 +117,15 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                     * (0.32808 * fus_length) ** 0.857
                     * (0.01 * v_max_sl) ** 0.338
                     * (maximum_width + maximum_height)
-                    * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 )
                 ** 0.1
             )
-            / (0.00001 * mtow * sizing_factor_ultimate) ** 0.714
+            / (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.714
         )
         partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = k_factor * (
             (
-                0.00020643
+                2.0643e-4
                 * sizing_factor_ultimate
                 * (0.32808 * fus_length) ** 0.857
                 * (0.01 * v_max_sl) ** 0.338
@@ -135,11 +135,11 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                     * (0.32808 * fus_length) ** 0.857
                     * (0.01 * v_max_sl) ** 0.338
                     * (maximum_width + maximum_height)
-                    * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 )
                 ** 0.1
             )
-            / (0.00001 * mtow * sizing_factor_ultimate) ** 0.714
+            / (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.714
         )
         partials[
             "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"
@@ -147,13 +147,13 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             72.17848
             * (0.328084 * fus_length) ** 0.857
             * (0.01 * v_max_sl) ** 0.338
-            * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+            * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
             * (
                 0.328084
                 * (0.328084 * fus_length) ** 0.857
                 * (0.01 * v_max_sl) ** 0.338
                 * (maximum_width + maximum_height)
-                * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
             )
             ** 0.1
         )
@@ -163,13 +163,13 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             72.17848
             * (0.328084 * fus_length) ** 0.857
             * (0.01 * v_max_sl) ** 0.338
-            * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+            * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
             * (
                 0.328084
                 * (0.328084 * fus_length) ** 0.857
                 * (0.01 * v_max_sl) ** 0.338
                 * (maximum_width + maximum_height)
-                * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
             )
             ** 0.1
         )
@@ -180,13 +180,13 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 20.294
                 * (0.01 * v_max_sl) ** 0.338
                 * (maximum_width + maximum_height)
-                * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 * (
                     0.32808
                     * (0.32808 * fus_length) ** 0.857
                     * (0.01 * v_max_sl) ** 0.338
                     * (maximum_width + maximum_height)
-                    * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 )
                 ** 0.1
             )
@@ -197,13 +197,13 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 0.24396
                 * (0.32808 * fus_length) ** 0.857
                 * (maximum_width + maximum_height)
-                * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 * (
                     0.32808
                     * (0.32808 * fus_length) ** 0.857
                     * (0.01 * v_max_sl) ** 0.338
                     * (maximum_width + maximum_height)
-                    * (0.00001 * mtow * sizing_factor_ultimate) ** 0.286
+                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
                 )
                 ** 0.1
             )

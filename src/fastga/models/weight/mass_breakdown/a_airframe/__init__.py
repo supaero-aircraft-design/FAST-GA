@@ -31,3 +31,4 @@ from .a4_flight_control_weight_flops import ComputeFlightControlsWeightFLOPS
 from .a5_front_landing_gear_weight import ComputeFrontLandingGearWeight
 from .a5_main_landing_gear_weight import ComputeMainLandingGearWeight
 from .a7_paint_weight import ComputePaintWeight
+from .airframe_total_mass import ComputeAirframeMass

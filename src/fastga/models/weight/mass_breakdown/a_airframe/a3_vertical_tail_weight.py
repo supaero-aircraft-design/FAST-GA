@@ -55,7 +55,25 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:vertical_tail:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(
+            of="*",
+            wrt=[
+                "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+                "data:weight:aircraft:MTOW",
+                "data:weight:airframe:vertical_tail:k_factor",
+                "data:TLAR:v_cruise",
+                "data:geometry:has_T_tail",
+                "data:geometry:vertical_tail:area",
+                "data:geometry:vertical_tail:thickness_ratio",
+                "data:geometry:vertical_tail:sweep_25",
+                "data:geometry:vertical_tail:aspect_ratio",
+                "data:geometry:vertical_tail:taper_ratio",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            of="*", wrt="data:mission:sizing:main_route:cruise:altitude", method="fd", step=1.0e2
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -133,16 +151,16 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
         ] = k_factor * (
             (
                 0.376
-                * area_vt ** 0.8730
+                * area_vt ** 0.873
                 * mtow
-                * taper_vt ** 0.0390
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * taper_vt ** 0.039
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                (mtow * sizing_factor_ultimate) ** 0.6240
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+                (mtow * sizing_factor_ultimate) ** 0.624
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
             )
         )
         partials[
@@ -150,78 +168,61 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
         ] = k_factor * (
             (
                 0.376
-                * area_vt ** 0.8730
+                * area_vt ** 0.873
                 * sizing_factor_ultimate
-                * taper_vt ** 0.0390
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * taper_vt ** 0.039
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                (mtow * sizing_factor_ultimate) ** 0.6240
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+                (mtow * sizing_factor_ultimate) ** 0.624
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
             )
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:TLAR:v_cruise"] = k_factor * (
             (
                 0.002548
-                * area_vt ** 0.8730
+                * area_vt ** 0.873
                 * rho_cruise
-                * taper_vt ** 0.0390
+                * taper_vt ** 0.039
                 * v_cruise_ktas
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
             )
             / (
-                ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.8780
+                ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.878
             )
         )
-        d_a32_d_rho_cruise = (
-            0.001274
-            * area_vt ** 0.8730
-            * taper_vt ** 0.0390
-            * v_cruise_ktas ** 2
-            * (mtow * sizing_factor_ultimate) ** 0.3760
-            * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
-            * (0.0146 * has_t_tail + 0.073)
-        ) / (
-            ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
-            * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.8780
-        )
-        d_rho_cruise_d_cruise_alt = 2.3e-6  # lb/ft**4
-        partials[
-            "data:weight:airframe:vertical_tail:mass",
-            "data:mission:sizing:main_route:cruise:altitude",
-        ] = k_factor * (d_a32_d_rho_cruise * d_rho_cruise_d_cruise_alt)
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:has_T_tail"
         ] = k_factor * (
             (
                 0.0146
-                * area_vt ** 0.8730
-                * taper_vt ** 0.0390
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * area_vt ** 0.873
+                * taper_vt ** 0.039
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
-            / ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+            / ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:area"
         ] = k_factor * (
             (
                 0.873
-                * taper_vt ** 0.0390
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * taper_vt ** 0.039
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
                 area_vt ** (127 / 1000)
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
             )
         )
         partials[
@@ -229,16 +230,16 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
         ] = k_factor * (
             -(
                 49.0
-                * area_vt ** 0.8730
-                * taper_vt ** 0.0390
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.01745329252 * sweep_25_vt) ** 2) ** 0.3570
+                * area_vt ** 0.873
+                * taper_vt ** 0.039
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.0104427 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.0104427 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                np.cos(0.01745329252 * sweep_25_vt)
-                * ((100.0 * t_c_vt) / np.cos(0.01745329252 * sweep_25_vt)) ** 1.4900
+                np.cos(np.pi / 180.0 * sweep_25_vt)
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 1.49
             )
         )
         partials[
@@ -247,32 +248,32 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
             (
                 0.012462
                 * ar_vt
-                * area_vt ** 0.8730
-                * taper_vt ** 0.0390
-                * np.sin(0.017453 * sweep_25_vt)
-                * (mtow * sizing_factor_ultimate) ** 0.3760
+                * area_vt ** 0.873
+                * taper_vt ** 0.039
+                * np.sin(np.pi / 180.0 * sweep_25_vt)
+                * (mtow * sizing_factor_ultimate) ** 0.376
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                np.cos(0.017453 * sweep_25_vt) ** 3
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.6430
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+                np.cos(np.pi / 180.0 * sweep_25_vt) ** 3
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.643
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
             )
             - (
                 0.85521
-                * area_vt ** 0.8730
+                * area_vt ** 0.873
                 * t_c_vt
-                * taper_vt ** 0.0390
-                * np.sin(0.017453 * sweep_25_vt)
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * taper_vt ** 0.039
+                * np.sin(np.pi / 180.0 * sweep_25_vt)
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                np.cos(0.017453 * sweep_25_vt) ** 2
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 1.4900
+                np.cos(np.pi / 180.0 * sweep_25_vt) ** 2
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 1.49
             )
         )
         partials[
@@ -280,16 +281,16 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
         ] = k_factor * (
             (
                 0.357
-                * area_vt ** 0.8730
-                * taper_vt ** 0.0390
-                * (mtow * sizing_factor_ultimate) ** 0.3760
+                * area_vt ** 0.873
+                * taper_vt ** 0.039
+                * (mtow * sizing_factor_ultimate) ** 0.376
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
             / (
-                np.cos(0.017453 * sweep_25_vt) ** 2
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.6430
-                * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900
+                np.cos(np.pi / 180.0 * sweep_25_vt) ** 2
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.643
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
             )
         )
         partials[
@@ -297,13 +298,16 @@ class ComputeVerticalTailWeight(om.ExplicitComponent):
         ] = k_factor * (
             (
                 0.039
-                * area_vt ** 0.8730
-                * (mtow * sizing_factor_ultimate) ** 0.3760
-                * (ar_vt / np.cos(0.017453 * sweep_25_vt) ** 2) ** 0.3570
+                * area_vt ** 0.873
+                * (mtow * sizing_factor_ultimate) ** 0.376
+                * (ar_vt / np.cos(np.pi / 180.0 * sweep_25_vt) ** 2) ** 0.357
                 * (0.0146 * has_t_tail + 0.073)
-                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.1220
+                * (0.010443 * rho_cruise * v_cruise_ktas ** 2) ** 0.122
             )
-            / (taper_vt ** 0.9610 * ((100.0 * t_c_vt) / np.cos(0.017453 * sweep_25_vt)) ** 0.4900)
+            / (
+                taper_vt ** 0.9610
+                * ((100.0 * t_c_vt) / np.cos(np.pi / 180.0 * sweep_25_vt)) ** 0.49
+            )
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:weight:airframe:vertical_tail:k_factor"

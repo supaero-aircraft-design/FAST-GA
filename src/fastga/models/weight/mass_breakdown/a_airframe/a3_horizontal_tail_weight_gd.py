@@ -50,7 +50,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -156,7 +156,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:span"
         ] = k_factor * (
             (
-                0.00010266
+                1.0266e-4
                 * area_ht ** 0.5840
                 * (mtow * sizing_factor_ultimate) ** 0.8130
                 * (mac_ht / lp_ht) ** 0.2800
@@ -168,7 +168,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
             "data:geometry:horizontal_tail:thickness_ratio",
         ] = k_factor * (
             -(
-                0.00010266
+                1.0266e-4
                 * area_ht ** 0.5840
                 * span_ht
                 * (mtow * sizing_factor_ultimate) ** 0.8130
@@ -180,7 +180,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:root:chord"
         ] = k_factor * (
             -(
-                0.00010266
+                1.0266e-4
                 * area_ht ** 0.5840
                 * span_ht
                 * (mtow * sizing_factor_ultimate) ** 0.8130
@@ -192,7 +192,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:MAC:length"
         ] = k_factor * (
             (
-                0.00087108
+                8.7108e-4
                 * area_ht ** 0.5840
                 * (mtow * sizing_factor_ultimate) ** 0.8130
                 * (span_ht / (root_chord_ht * t_c_ht)) ** 0.0330
@@ -204,7 +204,7 @@ class ComputeHorizontalTailWeightGD(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
         ] = k_factor * (
             -(
-                0.00087108
+                8.7108e-4
                 * area_ht ** 0.5840
                 * mac_ht
                 * (mtow * sizing_factor_ultimate) ** 0.8130
