@@ -111,7 +111,6 @@ def double_swap_algorithm(
         file.flush()
     return keys_list
 
-
 def single_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
@@ -373,10 +372,11 @@ swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRI
 score_criteria = "compute_time"
 ############################################
 
-# try:
-#    os.remove('tmp_saved_single_module_timings.txt')
-# except FileNotFoundError:
-#    pass
+if score_criteria == "compute_time":
+    try:
+        os.remove('tmp_saved_single_module_timings.txt')
+    except FileNotFoundError:
+        pass 
 try:
     # remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, "config_opti_tmp"))
