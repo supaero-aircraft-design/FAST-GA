@@ -19,35 +19,30 @@ import fastoad.api as oad
 
 from .constants import SUBMODEL_PAINT_MASS
 
+oad.RegisterSubmodel.active_models[
+    SUBMODEL_PAINT_MASS
+] = "fastga.submodel.weight.mass.airframe.paint.no_paint"
 
-@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
-class ComputePaintWeight(om.IndepVarComp):
+
+@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
+class ComputeNoPaintWeight(om.IndepVarComp):
     """
     Paint weight estimation.
 
-    Component that returns the paint weight by using a value of surface density for the paint.
+    Component that returns 0 kg of paint as for most aircraft this weight is negligible but kept
+    as default submodels so that it doesn't change previous computation.
     """
 
     def setup(self):
+        # In theory this component does not need an input as it will always return 0 but to
+        # properly define the component we need to declare it even if it is not used. This
+        # "ghost" input was chosen as it will be used for the actual component
         self.add_input("data:geometry:aircraft:wet_area", val=np.nan, units="m**2")
-        self.add_input("settings:weight:airframe:paint:surface_density", val=0.33, units="kg/m**2")
 
-        self.add_output("data:weight:airframe:paint:mass", units="kg")
+        self.add_output("data:weight:airframe:paint:mass", units="lb")
 
-        self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
+        self.declare_partials(of="*", wrt="*", val=0.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        outputs["data:weight:airframe:paint:mass"] = (
-            inputs["data:geometry:aircraft:wet_area"]
-            * inputs["settings:weight:airframe:paint:surface_density"]
-        )
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        partials["data:weight:airframe:paint:mass", "data:geometry:aircraft:wet_area"] = inputs[
-            "settings:weight:airframe:paint:surface_density"
-        ]
-        partials[
-            "data:weight:airframe:paint:mass", "settings:weight:airframe:paint:surface_density"
-        ] = inputs["data:geometry:aircraft:wet_area"]
+        outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]

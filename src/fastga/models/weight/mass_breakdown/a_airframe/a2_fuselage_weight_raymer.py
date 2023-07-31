@@ -59,8 +59,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
         self.declare_partials(
-            "*",
-            [
+            of="*",
+            wrt=[
                 "data:geometry:fuselage:length",
                 "data:geometry:fuselage:front_length",
                 "data:geometry:fuselage:rear_length",
@@ -76,7 +76,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             method="exact",
         )
         self.declare_partials(
-            "*", "data:mission:sizing:main_route:cruise:altitude", method="fd", step=1.0e2
+            of="*", wrt="data:mission:sizing:main_route:cruise:altitude", method="fd", step=1.0e2
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

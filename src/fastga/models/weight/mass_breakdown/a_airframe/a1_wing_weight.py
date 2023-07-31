@@ -46,7 +46,7 @@ class ComputeWingWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:wing:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -100,127 +100,99 @@ class ComputeWingWeight(om.ExplicitComponent):
         )
 
         tmp = (
-            np.sqrt(v_max_sl / 500 + 1)
-            * (wing_area / 100) ** (61 / 100)
-            * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-            * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
-            * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
-        ) ** (7 / 1000)
+            (0.01 * wing_area) ** 0.61
+            * (0.002 * v_max_sl + 1.0) ** 0.5
+            * ((0.5 * taper_ratio + 0.5) / thickness_ratio) ** 0.36
+            * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+            * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
+        ) ** 0.007
 
         partials[
             "data:weight:airframe:wing:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = (
             (
-                312875433
+                6.2575e-4
                 * mtow
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
             )
-            / (500000000000 * ((mtow * sizing_factor_ultimate) / 100000) ** (7 / 20) * tmp)
-            * k_factor
-        )
+            / ((1.0e-5 * mtow * sizing_factor_ultimate) ** 0.35 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:area"] = (
             (
-                1468107801
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                0.58724
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (2500000000 * (wing_area / 100) ** (39 / 100) * tmp)
-            * k_factor
-        )
+            / ((0.01 * wing_area) ** 0.39 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:taper_ratio"] = (
             (
-                216606069
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                17.328
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (
-                12500000
-                * thickness_ratio
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (16 / 25)
-                * tmp
-            )
-            * k_factor
-        )
+            / (thickness_ratio * ((0.5 * taper_ratio + 0.5) / thickness_ratio) ** 0.64 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:thickness_ratio"] = (
             -(
-                216606069
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (taper_ratio + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                17.32848552
+                * (taper_ratio + 1.0)
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (
-                12500000
-                * thickness_ratio ** 2
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (16 / 25)
-                * tmp
-            )
-            * k_factor
-        )
+            / (thickness_ratio ** 2 * ((0.5 * taper_ratio + 0.5) / thickness_ratio) ** 0.64 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:weight:aircraft:MTOW"] = (
             (
-                312875433
+                6.2575e-4
                 * sizing_factor_ultimate
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
             )
-            / (500000000000 * ((mtow * sizing_factor_ultimate) / 100000) ** (7 / 20) * tmp)
-            * k_factor
-        )
+            / ((1.0e-5 * mtow * sizing_factor_ultimate) ** 0.35 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:aspect_ratio"] = (
             (
-                1371838437
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                54.874
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (
-                25000000
-                * np.cos(sweep_25) ** 2
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (43 / 100)
-                * tmp
-            )
-            * k_factor
-        )
+            / (np.cos(sweep_25) ** 2 * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.43 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:sweep_25"] = (
             (
-                1371838437
+                109.75
                 * aspect_ratio
                 * np.sin(sweep_25)
-                * np.sqrt(v_max_sl / 500 + 1)
-                * (wing_area / 100) ** (61 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                * (0.01 * wing_area) ** 0.61
+                * (0.002 * v_max_sl + 1.0) ** 0.5
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (
-                12500000
-                * np.cos(sweep_25) ** 3
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (43 / 100)
-                * tmp
-            )
-            * k_factor
-        )
+            / (np.cos(sweep_25) ** 3 * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.43 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:TLAR:v_max_sl"] = (
             (
-                24067341
-                * (wing_area / 100) ** (61 / 100)
-                * (aspect_ratio / np.cos(sweep_25) ** 2) ** (57 / 100)
-                * ((taper_ratio + 1) / (2 * thickness_ratio)) ** (9 / 25)
-                * ((mtow * sizing_factor_ultimate) / 100000) ** (13 / 20)
+                0.096269
+                * (0.01 * wing_area) ** 0.61
+                * (aspect_ratio / np.cos(sweep_25) ** 2) ** 0.57
+                * ((0.5 * (taper_ratio + 1.0)) / thickness_ratio) ** 0.36
+                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.65
             )
-            / (250000000 * np.sqrt(v_max_sl / 500 + 1) * tmp)
-            * k_factor
-        )
+            / ((0.002 * v_max_sl + 1.0) ** 0.5 * tmp)
+        ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:weight:airframe:wing:k_factor"] = a1

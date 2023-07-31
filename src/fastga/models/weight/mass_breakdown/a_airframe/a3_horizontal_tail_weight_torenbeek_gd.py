@@ -44,7 +44,7 @@ class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -71,15 +71,15 @@ class ComputeHorizontalTailWeightTorenbeekGD(om.ExplicitComponent):
 
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
-        ] = k_factor * ((0.004572 * area_ht ** (0.2) * vd) / np.cos(sweep_25) - 0.287)
+        ] = k_factor * ((0.004572 * area_ht ** 0.2 * vd) / np.cos(sweep_25) - 0.287)
         partials[
             "data:weight:airframe:horizontal_tail:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
-        ] = k_factor * ((0.00381 * area_ht ** (1.2)) / np.cos(sweep_25))
+        ] = k_factor * ((0.00381 * area_ht ** 1.2) / np.cos(sweep_25))
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:sweep_25"
         ] = k_factor * (
-            (0.00381 * area_ht ** (1.2) * vd * np.sin(sweep_25)) / np.cos(sweep_25) ** 2
+            (0.00381 * area_ht ** 1.2 * vd * np.sin(sweep_25)) / np.cos(sweep_25) ** 2.0
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass",
