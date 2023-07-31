@@ -73,15 +73,22 @@ from ..b_propulsion import (
 )
 from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
-    ComputeLifeSupportSystemsWeight,
-    ComputeLifeSupportSystemsWeightFLOPS,
     ComputeAvionicsSystemsWeight,
     ComputeElectricWeight,
     ComputeHydraulicWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
     ComputeRecordingSystemsWeight,
     ComputeSystemMass,
+    ComputeAirConditioningSystemsWeight,
+    ComputeAirConditioningSystemsWeightFLOPS,
+    ComputeAntiIcingSystemsWeight,
+    ComputeAntiIcingSystemsWeightFLOPS,
+    ComputeFixedOxygenSystemsWeight,
+    ComputeFixedOxygenSystemsWeightFLOPS,
+    ComputeOtherLifeSupportSystemsWeight,
 )
+from ..c_systems.c2_life_support_systems_weight import ComputeLifeSupportSystemsWeight
+from ..c_systems.c2_life_support_systems_weight_flops import ComputeLifeSupportSystemsWeightFLOPS
 from ..c_systems.sum import SystemsWeight
 from ..d_furniture import ComputePassengerSeatsWeight, ComputeFurnitureMass
 from ..d_furniture.sum import FurnitureWeight
@@ -779,6 +786,53 @@ def test_compute_life_support_systems_weight():
     assert weight_c27 == pytest.approx(0.0, abs=1e-2)
 
 
+def test_compute_air_conditioning_systems_weight():
+    """Tests air conditioning systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeAirConditioningSystemsWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAirConditioningSystemsWeight(), ivc)
+    weight_c22 = problem.get_val(
+        "data:weight:systems:life_support:air_conditioning:mass", units="kg"
+    )
+    assert weight_c22 == pytest.approx(42.94, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_anti_icing_systems_weight():
+    """Tests anti icing systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeAntiIcingSystemsWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAntiIcingSystemsWeight(), ivc)
+    weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
+    assert weight_c23 == pytest.approx(0.0, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_fixed_oxygen_weight():
+    """Tests fixed oxygen weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFixedOxygenSystemsWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFixedOxygenSystemsWeight(), ivc)
+    weight_c26 = problem.get_val("data:weight:systems:life_support:fixed_oxygen:mass", units="kg")
+    assert weight_c26 == pytest.approx(8.40, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
 def test_compute_life_support_systems_weight_flops():
     """Tests life support systems weight computation from sample XML data."""
 
@@ -809,6 +863,84 @@ def test_compute_life_support_systems_weight_flops():
     assert weight_c26 == pytest.approx(8.40, abs=1e-2)
     weight_c27 = problem.get_val("data:weight:systems:life_support:security_kits:mass", units="kg")
     assert weight_c27 == pytest.approx(0.0, abs=1e-2)
+
+
+def test_compute_air_conditioning_systems_weight_flops():
+    """Tests air conditioning systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeAirConditioningSystemsWeightFLOPS()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAirConditioningSystemsWeightFLOPS(), ivc)
+    weight_c22 = problem.get_val(
+        "data:weight:systems:life_support:air_conditioning:mass", units="kg"
+    )
+    assert weight_c22 == pytest.approx(27.00, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_anti_icing_systems_weight_flops():
+    """Tests anti icing systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeAntiIcingSystemsWeightFLOPS()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAntiIcingSystemsWeightFLOPS(), ivc)
+    weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
+    assert weight_c23 == pytest.approx(28.68, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_fixed_oxygen_weight_flops():
+    """Tests fixed oxygen weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFixedOxygenSystemsWeightFLOPS()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFixedOxygenSystemsWeightFLOPS(), ivc)
+    weight_c26 = problem.get_val("data:weight:systems:life_support:fixed_oxygen:mass", units="kg")
+    assert weight_c26 == pytest.approx(8.40, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_other_life_support_systems_weight():
+    """Tests other life support systems weight computation from sample XML data."""
+
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeOtherLifeSupportSystemsWeight()), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeOtherLifeSupportSystemsWeight(), ivc)
+    weight_c21 = problem.get_val("data:weight:systems:life_support:insulation:mass", units="kg")
+    assert weight_c21 == pytest.approx(0.0, abs=1e-2)
+    weight_c24 = problem.get_val(
+        "data:weight:systems:life_support:internal_lighting:mass", units="kg"
+    )
+    assert weight_c24 == pytest.approx(0.0, abs=1e-2)
+    weight_c25 = problem.get_val(
+        "data:weight:systems:life_support:seat_installation:mass", units="kg"
+    )
+    assert weight_c25 == pytest.approx(0.0, abs=1e-2)
+    weight_c27 = problem.get_val("data:weight:systems:life_support:security_kits:mass", units="kg")
+    assert weight_c27 == pytest.approx(0.0, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
 
 
 def test_compute_recording_systems_weight():
