@@ -437,8 +437,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
         c_p = -2 / v_inf * np.divide(gamma, panelchord)
-        for i in range(self.n_x):
-            c_p[i * self.n_y] = c_p[i * self.n_y] * 1
         cl_wing = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
@@ -526,8 +524,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
         c_p = -2 / v_inf * np.divide(gamma, panelchord)
-        for i in range(self.n_x):
-            c_p[i * self.n_y] = c_p[i * self.n_y] * 1
         cl_htp = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
@@ -1142,15 +1138,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus / beta).tolist()
         chord_vector_wing = wing_aoa["chord_vector"]
         cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
+        # Mach correction
         if mach <= 0.4:
             coef_e = wing_aoa["coef_e"]
         else:
             coef_e = wing_aoa["coef_e"] * (
                 -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-            )  # Mach correction
+            )  
         cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
         coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
-        k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
+        # Fuselage correction
+        k_fus = 1 - 2 * (width_max / span_wing) ** 2  
         coef_e = float(coef_e * k_fus)
         coef_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coef_e))
 
@@ -1200,12 +1198,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cl_aoa_htp = float(htp_aoa["cl"]) / beta * area_ratio
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
         cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
+        # Mach correction
         if mach <= 0.4:
             coef_e = htp_aoa["coef_e"]
         else:
             coef_e = htp_aoa["coef_e"] * (
                 -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-            )  # Mach correction
+            )  
         cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
         coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
         y_vector_htp = htp_aoa["y_vector"]
@@ -1320,7 +1319,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_htp.extend(additional_zeros)
             cl_vector_htp.extend(additional_zeros)
         return (y_vector_htp, cl_vector_htp)
-    #@numba.njit(parallel=True)
+    
     def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
         for i in range(n_x * n_y):
             for j in range(n_x * n_y):
@@ -1346,6 +1345,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 aic_wake[i, j] = coeff_11_r / (4 * np.pi)
                 aic[i, j] = aic[i, j] + coeff_11_r / (4 * np.pi)
 
+                
                 # Left wing
                 coeff_1_l = x_c[i] - x_1[self.n_x * self.n_y + j]
                 coeff_2_l = y_c[i] - y_1[self.n_x * self.n_y + j]
@@ -1367,9 +1367,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     ) / (4 * np.pi)
                 aic_wake[i, j] = aic_wake[i, j] + coeff_10_l / (4 * np.pi)
                 aic[i, j] = aic[i, j] + coeff_10_l / (4 * np.pi)
-
+                
         return aic, aic_wake
-    #@numba.njit(parallel=True)
+    
     def panle_point_calculation(
         self,
         x_panel,
