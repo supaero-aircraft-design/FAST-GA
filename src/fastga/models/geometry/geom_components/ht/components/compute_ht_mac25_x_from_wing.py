@@ -47,8 +47,8 @@ class ComputeHTMacX25Wing(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
         self.declare_partials(
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            [
+            of="*",
+            wrt=[
                 "data:geometry:horizontal_tail:root:chord",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",
                 "data:geometry:fuselage:length",

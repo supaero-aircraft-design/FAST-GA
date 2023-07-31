@@ -45,7 +45,7 @@ class ComputeFuselageDepth(om.ExplicitComponent):
             desc="Average fuselage depth at the vertical tail location",
         )
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

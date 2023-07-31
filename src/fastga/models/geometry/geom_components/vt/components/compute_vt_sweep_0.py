@@ -34,7 +34,7 @@ class ComputeVTSweep0(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:sweep_0", units="deg")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

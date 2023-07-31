@@ -51,7 +51,7 @@ class ComputeWingZTip(om.ExplicitComponent):
         )
 
         self.declare_partials(
-            of="data:geometry:wing:tip:z",
+            of="*",
             wrt=[
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:tip:y",

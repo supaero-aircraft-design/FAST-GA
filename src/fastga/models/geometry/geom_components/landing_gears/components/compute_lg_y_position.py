@@ -37,10 +37,10 @@ class ComputeLGPosition(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:y", units="m")
 
         self.declare_partials(
-            "data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width", val=0.5
+            of="data:geometry:landing_gear:y", wrt="data:geometry:fuselage:maximum_width", val=0.5
         )
         self.declare_partials(
-            "data:geometry:landing_gear:y", "data:geometry:landing_gear:height", val=1.2
+            of="data:geometry:landing_gear:y", wrt="data:geometry:landing_gear:height", val=1.2
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

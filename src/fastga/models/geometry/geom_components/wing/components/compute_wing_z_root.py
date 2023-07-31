@@ -48,7 +48,7 @@ class ComputeWingZRoot(om.ExplicitComponent):
         )
 
         self.declare_partials(
-            of="data:geometry:wing:root:z",
+            of="*",
             wrt=[
                 "data:geometry:wing:root:thickness_ratio",
                 "data:geometry:wing:root:chord",

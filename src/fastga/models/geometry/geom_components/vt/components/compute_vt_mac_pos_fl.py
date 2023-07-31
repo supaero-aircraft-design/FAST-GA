@@ -44,19 +44,13 @@ class ComputeVTMacPositionFL(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
 
+        self.declare_partials(of="*", wrt="data:geometry:wing:MAC:at25percent:x", val=-1.0)
         self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:wing:MAC:at25percent:x",
-            val=-1.0,
-        )
-        self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:vertical_tail:MAC:at25percent:x:absolute",
-            val=1.0,
-        )
-        self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            of="*",
+            wrt=[
+                "data:geometry:vertical_tail:MAC:at25percent:x:absolute",
+                "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            ],
             val=1.0,
         )
 
