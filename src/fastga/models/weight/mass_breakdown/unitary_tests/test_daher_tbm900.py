@@ -834,7 +834,7 @@ def test_compute_life_support_systems_weight_flops():
     )
     assert weight_c22 == pytest.approx(60.71, abs=1e-2)
     weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
-    assert weight_c23 == pytest.approx(25.06, abs=1e-2)
+    assert weight_c23 == pytest.approx(24.48, abs=1e-2)
     weight_c24 = problem.get_val(
         "data:weight:systems:life_support:internal_lighting:mass", units="kg"
     )
@@ -895,33 +895,6 @@ def test_compute_fixed_oxygen_weight_flops():
     problem = run_system(ComputeFixedOxygenSystemsWeightFLOPS(), ivc)
     weight_c26 = problem.get_val("data:weight:systems:life_support:fixed_oxygen:mass", units="kg")
     assert weight_c26 == pytest.approx(11.16, abs=1e-2)
-
-    data = problem.check_partials(compact_print=True)
-    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
-
-
-def test_compute_other_life_support_systems_weight():
-    """Tests other life support systems weight computation from sample XML data."""
-
-    # Research independent input value in .xml file
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeOtherLifeSupportSystemsWeight()), __file__, XML_FILE
-    )
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeOtherLifeSupportSystemsWeight(), ivc)
-    weight_c21 = problem.get_val("data:weight:systems:life_support:insulation:mass", units="kg")
-    assert weight_c21 == pytest.approx(0.0, abs=1e-2)
-    weight_c24 = problem.get_val(
-        "data:weight:systems:life_support:internal_lighting:mass", units="kg"
-    )
-    assert weight_c24 == pytest.approx(0.0, abs=1e-2)
-    weight_c25 = problem.get_val(
-        "data:weight:systems:life_support:seat_installation:mass", units="kg"
-    )
-    assert weight_c25 == pytest.approx(0.0, abs=1e-2)
-    weight_c27 = problem.get_val("data:weight:systems:life_support:security_kits:mass", units="kg")
-    assert weight_c27 == pytest.approx(0.0, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
     assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)

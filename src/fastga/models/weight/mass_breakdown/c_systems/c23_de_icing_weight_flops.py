@@ -16,7 +16,6 @@ Estimation of anti icing systems weight.
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 
 class ComputeAntiIcingSystemsWeightFLOPS(om.ExplicitComponent):
@@ -37,18 +36,7 @@ class ComputeAntiIcingSystemsWeightFLOPS(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:life_support:de_icing:mass", units="lb")
 
-        self.declare_partials(
-            of="data:weight:systems:life_support:de_icing:mass",
-            wrt=[
-                "data:geometry:fuselage:maximum_width",
-                "data:geometry:wing:span",
-                "data:geometry:wing:sweep_25",
-                "data:geometry:propulsion:nacelle:height",
-                "data:geometry:propulsion:nacelle:width",
-                "data:geometry:propulsion:engine:count",
-            ],
-            method="exact",
-        )
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

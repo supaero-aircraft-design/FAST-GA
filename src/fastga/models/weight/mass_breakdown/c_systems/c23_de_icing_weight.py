@@ -16,7 +16,6 @@ Estimation of anti icing systems weight.
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 
 class ComputeAntiIcingSystemsWeight(om.ExplicitComponent):

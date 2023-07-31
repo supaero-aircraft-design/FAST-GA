@@ -14,9 +14,7 @@ Estimation of life support systems weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 
 class ComputeOtherLifeSupportSystemsWeight(om.ExplicitComponent):
@@ -29,23 +27,11 @@ class ComputeOtherLifeSupportSystemsWeight(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
-
-        self.add_output("data:weight:systems:life_support:insulation:mass", units="lb")
-        self.add_output("data:weight:systems:life_support:internal_lighting:mass", units="lb")
-        self.add_output("data:weight:systems:life_support:seat_installation:mass", units="lb")
-        self.add_output("data:weight:systems:life_support:security_kits:mass", units="lb")
-
-        self.declare_partials(of="*", wrt="*", val=0.0)
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        c21 = 0.0 * inputs["data:weight:aircraft:MTOW"]
-        c24 = 0.0 * inputs["data:weight:aircraft:MTOW"]
-        c25 = 0.0 * inputs["data:weight:aircraft:MTOW"]
-        c27 = 0.0 * inputs["data:weight:aircraft:MTOW"]
-
-        outputs["data:weight:systems:life_support:insulation:mass"] = c21
-        outputs["data:weight:systems:life_support:internal_lighting:mass"] = c24
-        outputs["data:weight:systems:life_support:seat_installation:mass"] = c25
-        outputs["data:weight:systems:life_support:security_kits:mass"] = c27
+        self.add_output("data:weight:systems:life_support:insulation:mass", val=0.0, units="lb")
+        self.add_output(
+            "data:weight:systems:life_support:internal_lighting:mass", val=0.0, units="lb"
+        )
+        self.add_output(
+            "data:weight:systems:life_support:seat_installation:mass", val=0.0, units="lb"
+        )
+        self.add_output("data:weight:systems:life_support:security_kits:mass", val=0.0, units="lb")
