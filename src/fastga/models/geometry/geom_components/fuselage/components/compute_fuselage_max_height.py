@@ -36,7 +36,7 @@ class ComputeFuselageMaxHeight(om.ExplicitComponent):
 
         self.add_output("data:geometry:fuselage:maximum_height", units="m")
 
-        self.declare_partials("*", "*", val=1.0)
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

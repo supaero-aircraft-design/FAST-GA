@@ -40,8 +40,11 @@ class ComputeFuselageNoseLengthFL(om.ExplicitComponent):
         self.add_output("data:geometry:fuselage:front_length", units="m")
 
         self.declare_partials(
-            "*",
-            ["data:geometry:propulsion:nacelle:length", "data:geometry:fuselage:maximum_height"],
+            of="*",
+            wrt=[
+                "data:geometry:propulsion:nacelle:length",
+                "data:geometry:fuselage:maximum_height",
+            ],
             method="exact",
         )
 

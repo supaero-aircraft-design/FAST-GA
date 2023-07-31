@@ -37,8 +37,8 @@ class ComputeHTDistance(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:z:from_wingMAC25", units="m")
 
         self.declare_partials(
-            "data:geometry:horizontal_tail:z:from_wingMAC25",
-            ["data:geometry:vertical_tail:span", "data:geometry:has_T_tail"],
+            of="data:geometry:horizontal_tail:z:from_wingMAC25",
+            wrt=["data:geometry:vertical_tail:span", "data:geometry:has_T_tail"],
             method="exact",
         )
 

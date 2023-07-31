@@ -29,9 +29,7 @@ class ComputeWingL3(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:kink:chord", units="m")
 
-        self.declare_partials(
-            "data:geometry:wing:kink:chord", "data:geometry:wing:root:chord", val=1.0
-        )
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

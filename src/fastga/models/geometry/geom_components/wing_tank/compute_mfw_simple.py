@@ -40,8 +40,8 @@ class ComputeMFWSimple(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:MFW", units="kg")
 
         self.declare_partials(
-            "data:weight:aircraft:MFW",
-            [
+            of="*",
+            wrt=[
                 "data:geometry:wing:area",
                 "data:geometry:wing:root:chord",
                 "data:geometry:wing:tip:chord",

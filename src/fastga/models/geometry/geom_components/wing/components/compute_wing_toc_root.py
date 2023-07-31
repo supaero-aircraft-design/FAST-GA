@@ -32,7 +32,7 @@ class ComputeWingTocRoot(om.ExplicitComponent):
 
         self.add_output("data:geometry:wing:root:thickness_ratio")
 
-        self.declare_partials("*", "*", val=1.24)
+        self.declare_partials(of="*", wrt="*", val=1.24)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

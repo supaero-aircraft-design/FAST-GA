@@ -38,7 +38,7 @@ class ComputeVTRootChord(om.ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:root:chord", units="m")
 
-        self.declare_partials("data:geometry:vertical_tail:root:chord", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

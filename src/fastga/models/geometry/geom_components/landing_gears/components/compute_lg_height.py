@@ -36,7 +36,7 @@ class ComputeLGHeight(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:height", units="m")
 
         self.declare_partials(
-            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", val=0.41
+            of="data:geometry:landing_gear:height", wrt="data:geometry:propeller:diameter", val=0.41
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
