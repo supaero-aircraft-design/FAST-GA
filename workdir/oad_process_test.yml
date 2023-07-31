@@ -7,6 +7,18 @@ model:
   propeller:
     id: fastga.aerodynamics.propeller
   aircraft_sizing:
+    wing_area:
+      id: fastga.loop.wing_area
+    wing_position:
+      id: fastga.loop.wing_position
+    mtow:
+      id: fastga.loop.mtow
+    hq:
+      tail_sizing:
+        id: fastga.handling_qualities.tail_sizing
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+      static_margin:
+        id: fastga.handling_qualities.static_margin
     performance:
       id: fastga.performances.mission
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
@@ -30,18 +42,6 @@ model:
     weight:
       id: fastga.weight.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    wing_area:
-      id: fastga.loop.wing_area
-    wing_position:
-      id: fastga.loop.wing_position
-    mtow:
-      id: fastga.loop.mtow
-    hq:
-      tail_sizing:
-        id: fastga.handling_qualities.tail_sizing
-        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-      static_margin:
-        id: fastga.handling_qualities.static_margin
 optimization:
   design_variables:
   - name: data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25
