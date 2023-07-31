@@ -105,8 +105,8 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
 
-        self.add_output("data:aerodynamics:wing:root:low_speed:reynolds")
-        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
+        self.add_output("data:aerodynamics:wing:root:low_speed:reynolds", val = 1.5e6)
+        self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds", val = 1e6)
         self.add_output("xfoil:mach")
 
         self.declare_partials("*", "*", method="fd")

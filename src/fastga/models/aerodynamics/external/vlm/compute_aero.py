@@ -153,10 +153,10 @@ class ComputeLocalReynolds(ExplicitComponent):
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
 
         if self.options["low_speed_aero"]:
-            self.add_output("data:aerodynamics:wing:low_speed:reynolds")
+            self.add_output("data:aerodynamics:wing:low_speed:reynolds", val = 1e6)
             self.add_output("data:aerodynamics:horizontal_tail:low_speed:reynolds")
         else:
-            self.add_output("data:aerodynamics:wing:cruise:reynolds")
+            self.add_output("data:aerodynamics:wing:cruise:reynolds", val = 1.5e6)
             self.add_output("data:aerodynamics:horizontal_tail:cruise:reynolds")
 
         self.declare_partials("*", "*", method="fd")

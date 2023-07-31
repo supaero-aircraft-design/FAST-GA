@@ -77,7 +77,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
             executions_time = []
 
             print('\n   Starting timings of: ', module)
-            for _ in range(20): #run them individually 20 times, to have a good average
+            for _ in range(15): #run them individually 20 times, to have a good average
 
                 starting = time.time()
 
@@ -134,7 +134,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
             executions_time = []
 
             print('\n   Starting timings of: ', module)
-            for _ in range(20): #run them individually 20 times, to have a good average
+            for _ in range(15): #run them individually 20 times, to have a good average
 
                 starting = time.time()
 

@@ -36,7 +36,7 @@ from ..constants import SUBMODEL_CLIMB, SUBMODEL_CLIMB_SPEED
 _LOGGER = logging.getLogger(__name__)
 
 POINTS_NB_CLIMB = 100
-MAX_CALCULATION_TIME = 15  # time in seconds
+MAX_CALCULATION_TIME = 20  # time in seconds
 
 oad.RegisterSubmodel.active_models[
     SUBMODEL_CLIMB
