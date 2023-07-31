@@ -37,7 +37,7 @@ class ComputeRecordingSystemsCG(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

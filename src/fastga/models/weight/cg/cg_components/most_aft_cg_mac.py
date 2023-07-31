@@ -42,7 +42,7 @@ class ComputeAftCGMac(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:CG:aft:MAC_position")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

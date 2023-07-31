@@ -33,7 +33,7 @@ class ComputeLifeSupportCG(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:life_support:air_conditioning:CG:x", units="m")
 
-        self.declare_partials("*", "*", val=1.0)
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

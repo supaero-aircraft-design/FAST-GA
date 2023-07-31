@@ -35,10 +35,14 @@ class ComputeFuelLinesCG(om.ExplicitComponent):
         self.add_output("data:weight:propulsion:fuel_lines:CG:x", units="m")
 
         self.declare_partials(
-            "data:weight:propulsion:fuel_lines:CG:x", "data:weight:propulsion:engine:CG:x", val=0.5
+            of="data:weight:propulsion:fuel_lines:CG:x",
+            wrt="data:weight:propulsion:engine:CG:x",
+            val=0.5,
         )
         self.declare_partials(
-            "data:weight:propulsion:fuel_lines:CG:x", "data:weight:propulsion:tank:CG:x", val=0.5
+            of="data:weight:propulsion:fuel_lines:CG:x",
+            wrt="data:weight:propulsion:tank:CG:x",
+            val=0.5,
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):

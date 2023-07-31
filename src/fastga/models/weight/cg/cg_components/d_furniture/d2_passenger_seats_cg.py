@@ -36,7 +36,7 @@ class ComputePassengerSeatsCG(ExplicitComponent):
 
         self.add_output("data:weight:furniture:passenger_seats:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
