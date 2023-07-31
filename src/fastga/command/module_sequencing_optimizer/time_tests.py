@@ -1,4 +1,5 @@
 import warnings
+
 warnings.filterwarnings(action="ignore")
 
 import os.path as pth
@@ -17,11 +18,11 @@ SRC_FOLDER_PATH = "src/fastga/source_files"
 times_module = []
 
 for i in range(3):
-    print('Loop : ', i)
+    print("Loop : ", i)
     try:
         os.remove(WORK_FOLDER_PATH, "problem_outputs_test.xml")
     except:
-        print('nothing removed')
+        print("nothing removed")
     # Define files
 
     CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
@@ -31,8 +32,12 @@ for i in range(3):
 
     starting = time.time()
     eval_problem = api_cs25.evaluate_problem(CONFIGURATION_FILE, overwrite=True)
-    optim_problem = api_cs25.optimize_problem(CONFIGURATION_FILE, overwrite=True)                             
-    
+    optim_problem = api_cs25.optimize_problem(CONFIGURATION_FILE, overwrite=True)
+
     times_module.append(time.time() - starting)
 
-print('\n double swap count problem without opt ran in ', sum(times_module)/len(times_module) , ' seconds \n')
+print(
+    "\n double swap count problem without opt ran in ",
+    sum(times_module) / len(times_module),
+    " seconds \n",
+)

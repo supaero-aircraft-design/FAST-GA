@@ -111,6 +111,7 @@ def double_swap_algorithm(
         file.flush()
     return keys_list
 
+
 def single_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
@@ -217,6 +218,7 @@ def single_swap_algorithm(
         file.flush()
     return keys_list
 
+
 def hybrid_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
@@ -242,6 +244,7 @@ def hybrid_swap_algorithm(
         model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria
     )
     return keys_list
+
 
 def is_valid_order(keys_list, dictionary):
     # Check the restrictions
@@ -374,9 +377,9 @@ score_criteria = "compute_time"
 
 if score_criteria == "compute_time":
     try:
-        os.remove('tmp_saved_single_module_timings.txt')
+        os.remove("tmp_saved_single_module_timings.txt")
     except FileNotFoundError:
-        pass 
+        pass
 try:
     # remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, "config_opti_tmp"))

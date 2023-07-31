@@ -14,7 +14,6 @@ def feedback_extractor(
     import os
     import json
 
-
     # definition of the function to output an n2-ordered list of all the variables in the problem
     # The dictionary is actually an alternation of lists of dicts where eahc dicht has the key 'children', which contains a list of dicts, and so on
     def process_variables(children_list, prefix=""):
@@ -89,7 +88,7 @@ def feedback_extractor(
                     "wing_position": 1.0157811045646667,
                     "wing_area": 1.1173424243927002,
                 }
-        else:  # compute modules times for your particular machine, solver, etc.  
+        else:  # compute modules times for your particular machine, solver, etc.
             modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
 
         return modules_times
