@@ -16,7 +16,6 @@ Estimation of fixed oxygen systems weight.
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 
 class ComputeFixedOxygenSystemsWeight(om.ExplicitComponent):
@@ -32,11 +31,7 @@ class ComputeFixedOxygenSystemsWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:systems:life_support:fixed_oxygen:mass", units="lb")
 
-        self.declare_partials(
-            of="data:weight:systems:life_support:fixed_oxygen:mass",
-            wrt="data:geometry:cabin:seats:passenger:NPAX_max",
-            method="exact",
-        )
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

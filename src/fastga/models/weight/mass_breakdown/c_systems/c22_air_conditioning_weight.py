@@ -16,7 +16,6 @@ Estimation of air conditioning system weight.
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from stdatm import Atmosphere
 
@@ -40,7 +39,7 @@ class ComputeAirConditioningSystemsWeight(om.ExplicitComponent):
         self.add_output("data:weight:systems:life_support:air_conditioning:mass", units="lb")
 
         self.declare_partials(
-            of="data:weight:systems:life_support:air_conditioning:mass",
+            of="*",
             wrt=[
                 "data:geometry:cabin:seats:passenger:NPAX_max",
                 "data:weight:aircraft:MTOW",
@@ -50,12 +49,7 @@ class ComputeAirConditioningSystemsWeight(om.ExplicitComponent):
             method="exact",
         )
         self.declare_partials(
-            of="data:weight:systems:life_support:air_conditioning:mass",
-            wrt=[
-                "data:mission:sizing:main_route:cruise:altitude",
-            ],
-            method="fd",
-            step=1e2,
+            of="*", wrt="data:mission:sizing:main_route:cruise:altitude", method="fd", step=1e2
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
