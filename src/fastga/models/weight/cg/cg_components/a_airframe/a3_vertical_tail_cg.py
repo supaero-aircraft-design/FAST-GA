@@ -47,8 +47,8 @@ class ComputeVTcg(om.ExplicitComponent):
         self.add_output("data:weight:airframe:vertical_tail:CG:x", units="m")
 
         self.declare_partials(
-            "data:weight:airframe:vertical_tail:CG:x",
-            [
+            of="data:weight:airframe:vertical_tail:CG:x",
+            wrt=[
                 "data:geometry:vertical_tail:MAC:length",
                 "data:geometry:vertical_tail:root:chord",
                 "data:geometry:vertical_tail:tip:chord",

@@ -51,8 +51,8 @@ class ComputeEngineCG(om.ExplicitComponent):
         self.add_output("data:weight:propulsion:engine:CG:x", units="m")
 
         self.declare_partials(
-            "data:weight:propulsion:engine:CG:x",
-            [
+            of="data:weight:propulsion:engine:CG:x",
+            wrt=[
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:root:chord",
                 "data:geometry:wing:tip:y",

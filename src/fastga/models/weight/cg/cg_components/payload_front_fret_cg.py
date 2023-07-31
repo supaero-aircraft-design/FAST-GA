@@ -35,7 +35,7 @@ class ComputeFrontFretCG(om.ExplicitComponent):
 
         self.add_output("data:weight:payload:front_fret:CG:x", units="m")
 
-        self.declare_partials("*", "*", val=0.0)
+        self.declare_partials(of="*", wrt="*", val=0.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

@@ -60,8 +60,7 @@ class ComputeEmptyMass(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft_empty:mass", units="kg")
 
-        for mass_name in self.options["mass_names"]:
-            self.declare_partials("data:weight:aircraft_empty:mass", mass_name, val=1.0)
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

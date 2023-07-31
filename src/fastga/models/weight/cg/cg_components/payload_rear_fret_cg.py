@@ -38,13 +38,19 @@ class ComputeRearFretCG(om.ExplicitComponent):
         self.add_output("data:weight:payload:rear_fret:CG:x", units="m")
 
         self.declare_partials(
-            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:front_length", val=1.0
+            of="data:weight:payload:rear_fret:CG:x",
+            wrt="data:geometry:fuselage:front_length",
+            val=1.0,
         )
         self.declare_partials(
-            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:PAX_length", val=1.0
+            of="data:weight:payload:rear_fret:CG:x",
+            wrt="data:geometry:fuselage:PAX_length",
+            val=1.0,
         )
         self.declare_partials(
-            "data:weight:payload:rear_fret:CG:x", "data:geometry:fuselage:luggage_length", val=0.5
+            of="data:weight:payload:rear_fret:CG:x",
+            wrt="data:geometry:fuselage:luggage_length",
+            val=0.5,
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
