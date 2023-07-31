@@ -433,17 +433,18 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )  # avoid V=0 m/s crashes
 
         # Calculate all the aerodynamic parameters
-        aoa_angle = aoa_angle * np.pi / 180
+        panelsurf_sum = np.sum(panelsurf)
+        aoa_angle = np.deg2rad(aoa_angle)
         alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
         c_p = -2 / v_inf * np.divide(gamma, panelchord)
-        cl_wing = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
+        cl_wing = -np.sum(c_p * panelsurf) / panelsurf_sum
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
-        cdi_wing = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
+        cdi_wing = np.sum(cdind_panel * panelsurf) / panelsurf_sum
         wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955  # !!!: manual correction?
         cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
-        cm_wing = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
+        cm_wing = np.sum(cmpanel * panelsurf) / panelsurf_sum
 
         # Calculate curves
         wing_cl_vect = []
@@ -520,17 +521,18 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )  # avoid V=0 m/s crashes
 
         # Calculate all the aerodynamic parameters
-        aoa_angle = aoa_angle * np.pi / 180
-        alpha = np.add(panelangle_vect, aoa_angle)
+        panelsurf_sum = np.sum(panelsurf)
+        aoa_angle = np.deg2rad(aoa_angle)
+        alpha = np.add(panelangle_vect, aoa_angle) 
         gamma = -np.dot(aic_inv, alpha) * v_inf
         c_p = -2 / v_inf * np.divide(gamma, panelchord)
-        cl_htp = -np.sum(c_p * panelsurf) / np.sum(panelsurf)
+        cl_htp = -np.sum(c_p * panelsurf) / panelsurf_sum
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
-        cdi_htp = np.sum(cdind_panel * panelsurf) / np.sum(panelsurf)
+        cdi_htp = np.sum(cdind_panel * panelsurf) / panelsurf_sum
         htp_e = cl_htp ** 2 / (np.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avoid 0.0 division
         cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
-        cm_htp = np.sum(cmpanel * panelsurf) / np.sum(panelsurf)
+        cm_htp = np.sum(cmpanel * panelsurf) / panelsurf_sum
 
         # Calculate curves
         htp_cl_vect = []
