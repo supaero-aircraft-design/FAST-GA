@@ -39,8 +39,8 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
         self.add_output("data:weight:furniture:passenger_seats:mass", units="lb")
 
         self.declare_partials(
-            "data:weight:furniture:passenger_seats:mass",
-            "data:weight:aircraft:MTOW",
+            of="data:weight:furniture:passenger_seats:mass",
+            wrt="data:weight:aircraft:MTOW",
             method="exact",
         )
 

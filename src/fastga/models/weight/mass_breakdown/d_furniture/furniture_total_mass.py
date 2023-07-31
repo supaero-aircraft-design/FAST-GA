@@ -21,9 +21,9 @@ class ComputeFurnitureMass(om.ExplicitComponent):
     """
     Computes the aircraft's furniture total mass.
     """
-        
+
     def setup(self):
-        
+
         self.add_input("data:weight:furniture:passenger_seats:mass", val=np.nan, units="kg")
 
         self.add_output("data:weight:furniture:mass", units="kg")
@@ -31,5 +31,5 @@ class ComputeFurnitureMass(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         outputs["data:weight:furniture:mass"] = inputs["data:weight:furniture:passenger_seats:mass"]
