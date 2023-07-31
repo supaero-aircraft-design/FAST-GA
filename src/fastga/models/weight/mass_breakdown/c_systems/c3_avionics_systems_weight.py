@@ -47,8 +47,8 @@ class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
         self.declare_partials(
-            "data:weight:systems:avionics:mass",
-            ["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
+            of="data:weight:systems:avionics:mass",
+            wrt=["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
             method="exact",
         )
 

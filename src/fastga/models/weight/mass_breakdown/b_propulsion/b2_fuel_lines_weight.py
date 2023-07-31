@@ -49,7 +49,9 @@ class ComputeFuelLinesWeight(om.ExplicitComponent):
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
         self.declare_partials(
-            "data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW", method="exact"
+            of="data:weight:propulsion:fuel_lines:mass",
+            wrt="data:weight:aircraft:MFW",
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
