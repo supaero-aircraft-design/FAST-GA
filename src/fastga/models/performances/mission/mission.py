@@ -119,7 +119,7 @@ class UpdateFW(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:descent:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:taxi_in:fuel", np.nan, units="kg")
 
-        self.add_output("data:mission:sizing:fuel", val=0.0, units="kg")
+        self.add_output("data:mission:sizing:fuel", val=256, units="kg")##################
 
         self.declare_partials("*", "*", method="fd")
 

@@ -46,8 +46,8 @@ class _ComputeStaticMargin(om.ExplicitComponent):
         self.add_input("data:aerodynamics:cruise:neutral_point:stick_fixed:x", val=np.nan)
         self.add_input("data:aerodynamics:cruise:neutral_point:stick_free:x", val=np.nan)
 
-        self.add_output("data:handling_qualities:stick_fixed_static_margin")
-        self.add_output("data:handling_qualities:stick_free_static_margin")
+        self.add_output("data:handling_qualities:stick_fixed_static_margin", val=0.1)
+        self.add_output("data:handling_qualities:stick_free_static_margin", val=0.1)
 
         self.declare_partials("*", "*", method="fd")
 
@@ -56,5 +56,8 @@ class _ComputeStaticMargin(om.ExplicitComponent):
         ac_ratio_fixed = inputs["data:aerodynamics:cruise:neutral_point:stick_fixed:x"]
         ac_ratio_free = inputs["data:aerodynamics:cruise:neutral_point:stick_free:x"]
 
+        #print("\n\n FOR DEBUG HQ: CG RATIO", cg_ratio)
+        #print("\n\n FOR DEBUG HQ: stick fixed static margin", ac_ratio_fixed - cg_ratio)
+        #print("\n\n FOR DEBUG HQ: stick free static margin", ac_ratio_free - cg_ratio)
         outputs["data:handling_qualities:stick_fixed_static_margin"] = ac_ratio_fixed - cg_ratio
         outputs["data:handling_qualities:stick_free_static_margin"] = ac_ratio_free - cg_ratio

@@ -7,7 +7,7 @@ from fastga.command import api as api_cs23
 import yaml
 import shutil
 import time
-from feedback_extractor import *
+from feedback_extractor import feedback_extractor
 
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
@@ -112,7 +112,7 @@ def single_swap_algorithm(problem_dictionary, config_dictionary, CONFIGURATION_F
             shifted_element = keys_list.pop(-1-swap_position)
             keys_list.insert(0, shifted_element)
             
-            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+            if True: #if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
                 print('Trying order: ', keys_list)
                 #Generate new config file with proposed order
                 with open(CONFIGURATION_FILE, 'r') as file:
@@ -199,6 +199,7 @@ def find_id_value(dictionary):
                     return id_value
     return None
 
+
 def is_valid_order(keys_list, dictionary):
     # Check the restrictions
     
@@ -216,18 +217,19 @@ def is_valid_order(keys_list, dictionary):
         return any(id_index.startswith(prefix) for id_index in id_indices)
 
     # Check the restrictions
-    if (is_id_starts_with('fastga.handling_qualities.', id_indices) and
-       (is_id_starts_with('fastga.geometry.', id_indices) or is_id_starts_with('fastga.aerodynamics.', id_indices))):
-        handling_qualities_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.handling_qualities.')]
-        geometry_aerodynamics_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.') or id.startswith('fastga.aerodynamics.')]
-        if any(hq_index < geo_aero_index for hq_index in handling_qualities_indices for geo_aero_index in geometry_aerodynamics_indices):
-            return False
+    #if (is_id_starts_with('fastga.handling_qualities.', id_indices) and
+    #   (is_id_starts_with('fastga.geometry.', id_indices) or is_id_starts_with('fastga.aerodynamics.', id_indices))):
+    #    handling_qualities_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.handling_qualities.')]
+    #    geometry_aerodynamics_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.') or id.startswith('fastga.aerodynamics.')]
+    #    if any(hq_index < geo_aero_index for hq_index in handling_qualities_indices for geo_aero_index in geometry_aerodynamics_indices):
+    #        return False
 
-    if (get_module_index('fastga.loop.wing_position') is not None and
-       get_module_index('fastga.weight.legacy') is not None):
-        if get_module_index('fastga.loop.wing_position') < get_module_index('fastga.weight.legacy'):
-            return False
+    #if (get_module_index('fastga.loop.wing_position') is not None and
+    #   get_module_index('fastga.weight.legacy') is not None):
+    #    if get_module_index('fastga.loop.wing_position') < get_module_index('fastga.weight.legacy'):
+    #        return False
 
+    #Aero has to be computed before performance
     if (is_id_starts_with('fastga.performances.', id_indices) and
        is_id_starts_with('fastga.aerodynamics.', id_indices)):
         performances_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.performances.')]
@@ -235,13 +237,14 @@ def is_valid_order(keys_list, dictionary):
         if any(performances_index < aerodynamics_index for performances_index in performances_indices for aerodynamics_index in aerodynamics_indices if performances_index is not None and aerodynamics_index is not None):
             return False
 
-    if (is_id_starts_with('fastga.performances.', id_indices) and
-       (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
-        performances_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.performances.')]
-        wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
-        if any(performances_index > wing_area_wing_pos_index for performances_index in performances_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if performances_index is not None and wing_area_wing_pos_index is not None):
-            return False
+    #if (is_id_starts_with('fastga.performances.', id_indices) and
+    #   (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
+    #    performances_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.performances.')]
+    #    wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
+    #    if any(performances_index > wing_area_wing_pos_index for performances_index in performances_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if performances_index is not None and wing_area_wing_pos_index is not None):
+    #        return False
 
+    #Geometry has to be computed before aero
     if (is_id_starts_with('fastga.geometry.', id_indices) and
        is_id_starts_with('fastga.aerodynamics.', id_indices)):
         geometry_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.')]
@@ -249,12 +252,12 @@ def is_valid_order(keys_list, dictionary):
         if any(geometry_index > aerodynamics_index for geometry_index in geometry_indices for aerodynamics_index in aerodynamics_indices if geometry_index is not None and aerodynamics_index is not None):
             return False
 
-    if (is_id_starts_with('fastga.geometry.', id_indices) and
-       (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
-        geometry_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.')]
-        wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
-        if any(geometry_index > wing_area_wing_pos_index for geometry_index in geometry_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if geometry_index is not None and wing_area_wing_pos_index is not None):
-            return False
+    #if (is_id_starts_with('fastga.geometry.', id_indices) and
+    #   (get_module_index('fastga.loop.wing_area') is not None or get_module_index('fastga.loop.wing_position') is not None)):
+    #    geometry_indices = [get_module_index(id) for id in id_indices if id.startswith('fastga.geometry.')]
+    #    wing_area_wing_pos_indices = [get_module_index('fastga.loop.wing_area'), get_module_index('fastga.loop.wing_position')]
+    #    if any(geometry_index > wing_area_wing_pos_index for geometry_index in geometry_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if geometry_index is not None and wing_area_wing_pos_index is not None):
+    #        return False
 
     if (get_module_index('fastga.weight.legacy') is not None and
        get_module_index('fastga.loop.mtow') is not None):
@@ -293,7 +296,7 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = 'single' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = 'double' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 #Optimize using as score: 
     #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.  
     #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
@@ -301,10 +304,10 @@ swap = 'single' #Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 score_criteria = 'compute_time'  
 ############################################
 
-try:
-    os.remove('tmp_saved_single_module_timings.txt')
-except FileNotFoundError:
-    pass
+#try:
+#    os.remove('tmp_saved_single_module_timings.txt')
+#except FileNotFoundError:
+#    pass
 try:
     #remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))
@@ -359,10 +362,10 @@ else:
     print('Not possible sry') 
 
 print('\nYour configuration file has been overwritten with optimal order. Time taken', time.time() - start, 'seconds')
-try:
-    os.remove('tmp_saved_single_module_timings.txt')
-except FileNotFoundError:
-    pass
+#try:
+#    os.remove('tmp_saved_single_module_timings.txt')
+#except FileNotFoundError:
+#    pass
 try:
     #remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, 'config_opti_tmp'))

@@ -58,22 +58,26 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
 
     def total_time_of_modules(score_criteria, WORK_FOLDER_PATH):
         if score_criteria == 'use_time': #use pre-ran times for each individual module
-            modules_times = {
-                "geometry": 1.7216651797294618,
-                "aerodynamics_lowspeed" : 2.5686846733093263,
-                "aerodynamics_highspeed" : 2.165796732902527,
-                "weight" : 3.7698839783668516,
-                "performance" : 24.092622423171996,
-                "hq" : 13.180185759067536,
-                "mtow" : 1.0099695563316344,
-                "wing_position" : 1.0157811045646667,
-                "wing_area" : 1.1173424243927002,
-            }
+            if os.path.exists('tmp_saved_single_module_timings.txt'):
+                with open('tmp_saved_single_module_timings.txt', 'r') as file:
+                    module_times = json.loads(file.read())
+            else:
+                print('\n Using pre-run module times. These may be different for your machine. It is recommended to run first with the option: compute_time')
+                modules_times = {
+                    "geometry": 1.7216651797294618,
+                    "aerodynamics_lowspeed" : 2.5686846733093263,
+                    "aerodynamics_highspeed" : 2.165796732902527,
+                    "weight" : 3.7698839783668516,
+                    "performance" : 24.092622423171996,
+                    "hq" : 13.180185759067536,
+                    "mtow" : 1.0099695563316344,
+                    "wing_position" : 1.0157811045646667,
+                    "wing_area" : 1.1173424243927002,
+                }
         else: #compute modules times for your particular machine, solver, etc.
             modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
         
 
-        #return score as sum (time*times they run).
         return modules_times
 
     def run_once(func):
@@ -119,7 +123,6 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     
     if score_criteria == 'compute_time' or score_criteria == 'use_time':
 
-        # Check if the function has already run by reading the tmp_saved_single_module_timings file. Otherwise time for each individual module will be timed at every swap. not necessary
         modules_times = total_time_of_modules(score_criteria, WORK_FOLDER_PATH) 
       
 
@@ -149,7 +152,7 @@ def feedback_extractor(model_data, config_dictionary, CONFIGURATION_FILE, score_
     elif score_criteria == 'count_feedbacks':
         score = len(list_of_BLC_in_feedback) 
     else:
-        sys.exit('\nScore criteria not valid. please choose compute_time, use_time or count_feedbacks')
+        sys.exit('\nScore criteria not valid. Please choose compute_time, use_time or count_feedbacks')
 
 
     print('Score: ', score)
