@@ -25,6 +25,7 @@ from .constants import (
 )
 
 from ..constants import SUBMODEL_SYSTEMS_MASS
+from ..c_systems import ComputeSystemMass
 
 
 @oad.RegisterSubmodel(SUBMODEL_SYSTEMS_MASS, "fastga.submodel.weight.mass.systems.legacy")
@@ -57,25 +58,4 @@ class SystemsWeight(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_RECORDING_SYSTEM_MASS),
             promotes=["*"],
         )
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:systems:mass",
-            [
-                "data:weight:systems:power:electric_systems:mass",
-                "data:weight:systems:power:hydraulic_systems:mass",
-                "data:weight:systems:life_support:air_conditioning:mass",
-                "data:weight:systems:life_support:insulation:mass",
-                "data:weight:systems:life_support:de_icing:mass",
-                "data:weight:systems:life_support:internal_lighting:mass",
-                "data:weight:systems:life_support:seat_installation:mass",
-                "data:weight:systems:life_support:fixed_oxygen:mass",
-                "data:weight:systems:life_support:security_kits:mass",
-                "data:weight:systems:avionics:mass",
-                "data:weight:systems:recording:mass",
-            ],
-            units="kg",
-            desc="Mass of aircraft systems",
-        )
-
-        self.add_subsystem("systems_weight_sum", weight_sum, promotes=["*"])
+        self.add_subsystem("systems_weight_sum", ComputeSystemMass(), promotes=["*"])
