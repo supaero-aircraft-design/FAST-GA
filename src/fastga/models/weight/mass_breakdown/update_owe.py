@@ -25,6 +25,8 @@ from .constants import (
     SUBMODEL_OWE,
 )
 
+from .compute_owe import ComputeOWE
+
 
 @oad.RegisterSubmodel(SUBMODEL_OWE, "fastga.submodel.weight.mass.owe.legacy")
 class ComputeOperatingWeightEmpty(om.Group):
@@ -59,21 +61,4 @@ class ComputeOperatingWeightEmpty(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_FURNITURE_MASS),
             promotes=["*"],
         )
-
-        owe_sum = om.AddSubtractComp()
-        owe_sum.add_equation(
-            "data:weight:aircraft:OWE",
-            [
-                "data:weight:airframe:mass",
-                "data:weight:propulsion:mass",
-                "data:weight:systems:mass",
-                "data:weight:furniture:mass",
-            ],
-            units="kg",
-            desc="Mass of aircraft",
-        )
-        self.add_subsystem(
-            "OWE_sum",
-            owe_sum,
-            promotes=["*"],
-        )
+        self.add_subsystem("owe_sum", ComputeOWE(), promotes=["*"])
