@@ -1433,6 +1433,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         n_y,
     ):
 
+        """
+        Calculate the coordinate value of each geometry points in each panel.
+        Store this value into position arrays for later AIC matrix computation.
+        """
         for i in range(n_x + 1):
             x_panel[i, :] = x_le + chord * i / n_x
 
