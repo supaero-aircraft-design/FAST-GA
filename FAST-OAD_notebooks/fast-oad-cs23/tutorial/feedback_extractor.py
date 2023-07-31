@@ -72,6 +72,7 @@ def feedback_extractor(
             if os.path.exists("tmp_saved_single_module_timings.txt"):
                 with open("tmp_saved_single_module_timings.txt", "r") as file:
                     module_times = json.loads(file.read())
+                    return module_times
             else:
                 print(
                     "\n Using pre-run module times. These may be different for your machine. It is recommended to run first with the option: compute_time"
@@ -88,6 +89,10 @@ def feedback_extractor(
                     "wing_area": 1.1173424243927002,
                 }
         else:  # compute modules times for your particular machine, solver, etc.
+            try:
+                os.remove('tmp_saved_single_module_timings.txt')
+            except FileNotFoundError:
+                pass   
             modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
 
         return modules_times

@@ -14,7 +14,17 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
     import sys
     import contextlib
     import xml.etree.ElementTree as ET
-    from configuration_optimizer import find_id_value
+
+    def find_id_value(dictionary):
+        if "id" in dictionary:
+            return dictionary["id"]
+        else:
+            for value in dictionary.values():
+                if isinstance(value, dict):
+                    id_value = find_id_value(value)
+                    if id_value is not None:
+                        return id_value
+        return None
 
     # Obtaining the modules for this version of fastoad
     command = "fastoad list_modules"

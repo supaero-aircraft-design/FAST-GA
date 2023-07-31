@@ -8,6 +8,7 @@ import yaml
 import shutil
 import time
 from feedback_extractor import feedback_extractor
+from time_modules import time_modules
 
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
@@ -217,7 +218,6 @@ def single_swap_algorithm(
         file.flush()
     return keys_list
 
-
 def hybrid_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
@@ -244,25 +244,12 @@ def hybrid_swap_algorithm(
     )
     return keys_list
 
-
-def find_id_value(dictionary):
-    if "id" in dictionary:
-        return dictionary["id"]
-    else:
-        for value in dictionary.values():
-            if isinstance(value, dict):
-                id_value = find_id_value(value)
-                if id_value is not None:
-                    return id_value
-    return None
-
-
 def is_valid_order(keys_list, dictionary):
     # Check the restrictions
 
     list_of_ids = []
     for key in keys_list:
-        list_of_ids.append(find_id_value(dictionary[key]))
+        list_of_ids.append(time_modules().find_id_value(dictionary[key]))
 
     id_indices = {
         id: list_of_ids.index(id) for id in list_of_ids
@@ -378,7 +365,7 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = "double"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
 #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
