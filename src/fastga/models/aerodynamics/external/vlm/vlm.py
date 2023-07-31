@@ -1323,6 +1323,47 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return (y_vector_htp, cl_vector_htp)
     
     def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
+        """
+        
+                ^
+              y |                Points defining the panel
+                |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
+        P3--B---|-----P4         Reference:
+        |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
+        |   |   |     |          p.394-398
+        T1  |   +--P--T2---->       
+        |   |         |     x
+        |   |         |
+        P2--A--------P1
+        
+        #The P point is the center point of all the panel, in AIC matrix construction. For each linear 
+         equations in the AIC linear system, each P point of each panel needs is oconsidered (double for loop).  
+        
+        coeff_9 =  
+        (x_2 - x_1) * (x_c - x_1) + (y_2 - y_1) * (y_c - y_1)
+        -----------------------------------------------------  
+            sqrt[(x_c - x_1)** 2 + (y_c - y_1) ** 2]
+
+        - 
+
+        (x_2 - x_1) * (x_c - x_2) + (y_2 - y_1) * (y_c - y_2)
+        -----------------------------------------------------
+            sqrt[(x_c - x_2)** 2 + (y_c - y_2) ** 2]
+
+
+        coeff_10 =
+        {1 + (x_c - x_2) / sqrt[(x_c - x_2)** 2 + (y_c - y_2) ** 2]} 
+        ------------------------------------------------------------
+                                (y_c - y_2)
+
+        -
+
+        {1 + (x_c - x_1) / sqrt[(x_c - x_1)** 2 + (y_c - y_1) ** 2]}
+        ------------------------------------------------------------ 
+                                (y_2 - y_1)
+        
+        
+        """
         for i in range(n_x * n_y):
             for j in range(n_x * n_y):
                 # Right wing
@@ -1334,18 +1375,19 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
                 coeff_7_r = x_2[j] - x_1[j]
                 coeff_8_r = y_2[j] - y_1[j]
-                coeff_10_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
+                coeff_9_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
                     coeff_7_r * coeff_3_r + coeff_8_r * coeff_4_r
                 ) / coeff_6_r
-                coeff_11_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
+                coeff_10_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
                     1 + coeff_1_r / coeff_5_r
                 ) / coeff_2_r
+                #cross(outer) product between vector <CA> and vector vector <CB>
                 if coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r != 0:
-                    aic[i, j] = (coeff_10_r / (coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r)) / (
+                    aic[i, j] = (coeff_9_r / (coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r)) / (
                         4 * np.pi
                     )
-                aic_wake[i, j] = coeff_11_r / (4 * np.pi)
-                aic[i, j] = aic[i, j] + coeff_11_r / (4 * np.pi)
+                aic_wake[i, j] = coeff_10_r / (4 * np.pi)
+                aic[i, j] = aic[i, j] + coeff_10_r / (4 * np.pi)
 
                 
                 # Left wing
@@ -1363,6 +1405,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 coeff_10_l = (1 + coeff_3_l / coeff_6_l) / coeff_4_l - (
                     1 + coeff_1_l / coeff_5_l
                 ) / coeff_2_l
+                #cross(outer) product between vector <CA> and vector vector <CB>
                 if coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l != 0:
                     aic[i, j] = aic[i, j] + (
                         coeff_9_l / (coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l)
