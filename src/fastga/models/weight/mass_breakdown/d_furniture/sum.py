@@ -20,6 +20,8 @@ from .constants import SUBMODEL_SEATS_MASS
 
 from ..constants import SUBMODEL_FURNITURE_MASS
 
+from ..d_furniture import ComputeFurnitureMass
+
 
 @oad.RegisterSubmodel(SUBMODEL_FURNITURE_MASS, "fastga.submodel.weight.mass.furniture.legacy")
 class FurnitureWeight(om.Group):
@@ -33,17 +35,4 @@ class FurnitureWeight(om.Group):
             oad.RegisterSubmodel.get_submodel(SUBMODEL_SEATS_MASS),
             promotes=["*"],
         )
-
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
-            "data:weight:furniture:mass",
-            [
-                "data:weight:furniture:passenger_seats:mass",
-                "data:weight:furniture:passenger_seats:mass",
-            ],
-            scaling_factors=[0.5, 0.5],
-            units="kg",
-            desc="Mass of aircraft furniture",
-        )
-
-        self.add_subsystem("furniture_weight_sum", weight_sum, promotes=["*"])
+        self.add_subsystem("furniture_weight_sum", ComputeFurnitureMass(), promotes=["*"])

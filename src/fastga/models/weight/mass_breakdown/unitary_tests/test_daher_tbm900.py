@@ -34,6 +34,7 @@ from ..a_airframe import (
     ComputeMainLandingGearWeight,
     ComputeWingMassAnalytical,
     ComputePaintWeight,
+    ComputeAirframeMass,
 )
 from ..a_airframe.wing_components import (
     ComputeWebMass,
@@ -68,6 +69,7 @@ from ..b_propulsion import (
     ComputeEngineWeight,
     ComputeEngineWeightRaymer,
     ComputeUnusableFuelWeight,
+    ComputePropulsionMass,
 )
 from ..b_propulsion.sum import PropulsionWeight
 from ..c_systems import (
@@ -78,9 +80,10 @@ from ..c_systems import (
     ComputeHydraulicWeight,
     ComputeAvionicsSystemsWeightFromUninstalled,
     ComputeRecordingSystemsWeight,
+    ComputeSystemMass,
 )
 from ..c_systems.sum import SystemsWeight
-from ..d_furniture import ComputePassengerSeatsWeight
+from ..d_furniture import ComputePassengerSeatsWeight, ComputeFurnitureMass
 from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown
 from ..update_owe import ComputeOperatingWeightEmpty
@@ -90,6 +93,7 @@ from ..update_mlw import ComputeMLW
 from ..update_zfw import ComputeZFW
 from ..update_mzfw import ComputeMZFW
 from ..update_mtow import UpdateMTOW
+from ..compute_owe import ComputeOWE
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -509,6 +513,21 @@ def test_compute_paint_weight():
 def test_compute_airframe_weight():
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeAirframeMass()), __file__, XML_FILE)
+    ivc.add_output("data:weight:airframe:paint:mass", val=32.47, units="kg")
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeAirframeMass(), ivc)
+    weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
+    assert weight_a == pytest.approx(1096.42, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_airframe_weight_group():
+    """Tests airframe weight computation as a group from sample XML data."""
+    # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -624,6 +643,20 @@ def test_compute_unusable_fuel_weight():
 
 def test_compute_propulsion_weight():
     """Tests propulsion weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputePropulsionMass()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputePropulsionMass(), ivc)
+    weight_b = problem.get_val("data:weight:propulsion:mass", units="kg")
+    assert weight_b == pytest.approx(371.64, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_propulsion_weight_group():
+    """Tests propulsion weight computation as a group from sample XML data."""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(PropulsionWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
@@ -778,6 +811,21 @@ def test_compute_systems_weight():
     """Tests propulsion weight computation from sample XML data."""
 
     # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeSystemMass()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeSystemMass(), ivc)
+    weight_b = problem.get_val("data:weight:systems:mass", units="kg")
+    assert weight_b == pytest.approx(351.99, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_systems_weight_group():
+    """Tests propulsion weight computation as a group from sample XML data."""
+
+    # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(SystemsWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -810,6 +858,21 @@ def test_compute_furniture_weight():
     """Tests propulsion weight computation from sample XML data."""
 
     # Research independent input value in .xml file
+    ivc = get_indep_var_comp(list_inputs(ComputeFurnitureMass()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeFurnitureMass(), ivc)
+    weight_b = problem.get_val("data:weight:furniture:mass", units="kg")
+    assert weight_b == pytest.approx(295.00, abs=1e-2)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_compute_furniture_weight_group():
+    """Tests propulsion weight computation as a group from sample XML data."""
+
+    # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(FurnitureWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -820,6 +883,21 @@ def test_compute_furniture_weight():
 
 def test_evaluate_owe():
     """Tests a simple evaluation of Operating Weight Empty from sample XML data."""
+
+    ivc = get_indep_var_comp(list_inputs(ComputeOWE()), __file__, XML_FILE)
+
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeOWE(), ivc)
+
+    oew = problem.get_val("data:weight:aircraft:OWE", units="kg")
+    assert oew == pytest.approx(2115, abs=1)
+
+    data = problem.check_partials(compact_print=True)
+    assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)
+
+
+def test_evaluate_owe_group():
+    """Tests a simple evaluation of Operating Weight Empty as a group from sample XML data."""
 
     ivc = get_indep_var_comp(
         list_inputs(ComputeOperatingWeightEmpty(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
