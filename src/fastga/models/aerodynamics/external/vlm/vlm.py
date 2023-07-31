@@ -24,6 +24,7 @@ import openmdao.api as om
 import pandas as pd
 from stdatm import Atmosphere
 import numba
+from numba import njit, prange
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
@@ -724,7 +725,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             x_le,
         )
 
-        # Mirror the right side to define the left side for y_panel, x_le and chord 
+        # Mirror the right side to define the left side for y_panel, x_le and chord
         y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
         chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
         x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
@@ -769,7 +770,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         chord = root_chord + (tip_chord - root_chord) * y_panel / semi_span
         x_le = y_panel * (root_chord - tip_chord) / (4 * semi_span)
 
-        # Mirror the right side to define the left side for  y_panel, x_le and chord 
+        # Mirror the right side to define the left side for  y_panel, x_le and chord
         y_panel[self.n_y + 1 :] = -y_panel[1 : self.n_y + 1]
         chord[self.n_y + 1 :] = chord[1 : self.n_y + 1]
         x_le[self.n_y + 1 :] = x_le[1 : self.n_y + 1]
@@ -811,92 +812,41 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         y_2 = dictionary["y2"]
         aic = dictionary["aic"]
         aic_wake = dictionary["aic_wake"]
-        # Calculate panel corners x-coordinate
-        for i in range(self.n_x + 1):
-            x_panel[i, :] = x_le + chord * i / self.n_x
 
-        # Calculate panel span with symmetry
-        panelspan = y_panel[1:] - y_panel[:-1]
-        panelspan[self.n_y :] = panelspan[: self.n_y]
-
-        # Calculate characteristic points (Right and left side)
-        for i in range(self.n_x):
-            panelchord[i * self.n_y : (i + 1) * self.n_y] = 0.5 * (
-                (x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y])
-                + (x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1])
-            )
-            panelsurf[i * self.n_y : (i + 1) * self.n_y] = (
-                panelspan[: self.n_y] * panelchord[i * self.n_y : (i + 1) * self.n_y]
-            )
-            # right side
-
-            # point A for the right-half
-            x_1[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, : self.n_y] + 0.25 * (
-                x_panel[i + 1, : self.n_y] - x_panel[i, : self.n_y]
-            )
-
-            y_1[i * self.n_y : (i + 1) * self.n_y] = y_panel[: self.n_y]
-
-            # point B for the right-half
-            x_2[i * self.n_y : (i + 1) * self.n_y] = x_panel[i, 1 : self.n_y + 1] + 0.25 * (
-                x_panel[i + 1, 1 : self.n_y + 1] - x_panel[i, 1 : self.n_y + 1]
-            )
-
-            y_2[i * self.n_y : (i + 1) * self.n_y] = y_panel[1 : self.n_y + 1]
-
-            # point P for the right-half
-            x_c[i * self.n_y : (i + 1) * self.n_y] = (
-                x_panel[i, : self.n_y] + x_panel[i, 1 : self.n_y + 1]
-            ) * 0.5 + 0.75 * panelchord[i * self.n_y : (i + 1) * self.n_y]
-
-            y_c[i * self.n_y : (i + 1) * self.n_y] = (
-                y_panel[: self.n_y] + y_panel[1 : self.n_y + 1]
-            ) * 0.5
-
-            # letf side
-
-            # point A for the left-half
-            x_1[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = x_panel[i, self.n_y + 1 : 2 * self.n_y + 1] + 0.25 * (
-                x_panel[i + 1, self.n_y + 1 : 2 * self.n_y + 1]
-                - x_panel[i, self.n_y + 1 : 2 * self.n_y + 1]
-            )
-
-            y_1[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = y_panel[self.n_y + 1 : 2 * self.n_y + 1]
-
-            # point B for the left-half
-            x_2[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = np.concatenate(
-                (
-                    np.array([x_panel[i, 0] + 0.25 * (x_panel[i + 1, 0] - x_panel[i, 0])]),
-                    (
-                        x_panel[i, self.n_y : 2 * self.n_y]
-                        + 0.25
-                        * (
-                            x_panel[i + 1, self.n_y : 2 * self.n_y]
-                            - x_panel[i, self.n_y : 2 * self.n_y]
-                        )
-                    )[1:],
-                )
-            )
-            y_2[
-                self.n_x * self.n_y + i * self.n_y : self.n_x * self.n_y + (i + 1) * self.n_y
-            ] = np.concatenate(
-                (
-                    np.array([0.0]),
-                    y_panel[self.n_y + 1 : 2 * self.n_y],
-                )
-            )
-        # Calculate remaining characteristic points (Left side)
-        # point P for the left-half
-        x_c[self.n_x * self.n_y :] = x_c[: self.n_x * self.n_y]
-        y_c[self.n_x * self.n_y :] = -y_c[: self.n_x * self.n_y]
         n_x = self.n_x
         n_y = self.n_y
+        # calculate panel geometry and coordinate value
+        (
+            x_panel,
+            y_panel,
+            x_le,
+            chord,
+            panelchord,
+            panelspan,
+            panelsurf,
+            x_1,
+            y_1,
+            x_2,
+            y_2,
+            x_c,
+            y_c,
+        ) = self.panle_point_calculation(
+            x_panel,
+            y_panel,
+            x_le,
+            chord,
+            panelchord,
+            panelsurf,
+            x_1,
+            y_1,
+            x_2,
+            y_2,
+            x_c,
+            y_c,
+            n_x,
+            n_y,
+        )
+
         # Aerodynamic coefficients computation
         aic, aic_wake = self.aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y)
         # Save data
@@ -1370,7 +1320,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_htp.extend(additional_zeros)
             cl_vector_htp.extend(additional_zeros)
         return (y_vector_htp, cl_vector_htp)
-
+    #@numba.njit(parallel=True)
     def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
         for i in range(n_x * n_y):
             for j in range(n_x * n_y):
@@ -1419,3 +1369,89 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 aic[i, j] = aic[i, j] + coeff_10_l / (4 * np.pi)
 
         return aic, aic_wake
+    #@numba.njit(parallel=True)
+    def panle_point_calculation(
+        self,
+        x_panel,
+        y_panel,
+        x_le,
+        chord,
+        panelchord,
+        panelsurf,
+        x_1,
+        y_1,
+        x_2,
+        y_2,
+        x_c,
+        y_c,
+        n_x,
+        n_y,
+    ):
+
+        for i in range(n_x + 1):
+            x_panel[i, :] = x_le + chord * i / n_x
+
+        # Calculate panel span with symmetry
+        panelspan = y_panel[1:] - y_panel[:-1]
+        panelspan[n_y:] = panelspan[:n_y]
+
+        # Calculate characteristic points (Right and left side)
+        for i in range(n_x):
+            panelchord[i * n_y : (i + 1) * n_y] = 0.5 * (
+                (x_panel[i + 1, :n_y] - x_panel[i, :n_y])
+                + (x_panel[i + 1, 1 : n_y + 1] - x_panel[i, 1 : n_y + 1])
+            )
+            panelsurf[i * n_y : (i + 1) * n_y] = (
+                panelspan[:n_y] * panelchord[i * n_y : (i + 1) * n_y]
+            )
+            # right side
+
+            # point A for the right-half
+            x_1[i * n_y : (i + 1) * n_y] = x_panel[i, :n_y] + 0.25 * (
+                x_panel[i + 1, :n_y] - x_panel[i, :n_y]
+            )
+
+            y_1[i * n_y : (i + 1) * n_y] = y_panel[:n_y]
+
+            # point B for the right-half
+            x_2[i * n_y : (i + 1) * n_y] = x_panel[i, 1 : n_y + 1] + 0.25 * (
+                x_panel[i + 1, 1 : n_y + 1] - x_panel[i, 1 : n_y + 1]
+            )
+
+            y_2[i * n_y : (i + 1) * n_y] = y_panel[1 : n_y + 1]
+
+            # point P for the right-half
+            x_c[i * n_y : (i + 1) * n_y] = (
+                x_panel[i, :n_y] + x_panel[i, 1 : n_y + 1]
+            ) * 0.5 + 0.75 * panelchord[i * n_y : (i + 1) * n_y]
+
+            y_c[i * n_y : (i + 1) * n_y] = (y_panel[:n_y] + y_panel[1 : n_y + 1]) * 0.5
+
+            # letf side
+
+            # point A for the left-half
+            x_1[n_x * n_y + i * n_y : n_x * n_y + (i + 1) * n_y] = x_panel[
+                i, n_y + 1 : 2 * n_y + 1
+            ] + 0.25 * (x_panel[i + 1, n_y + 1 : 2 * n_y + 1] - x_panel[i, n_y + 1 : 2 * n_y + 1])
+
+            y_1[n_x * n_y + i * n_y : n_x * n_y + (i + 1) * n_y] = y_panel[n_y + 1 : 2 * n_y + 1]
+
+            # point B for the left-half
+            x_2[n_x * n_y + i * n_y : n_x * n_y + (i + 1) * n_y] = np.concatenate(
+                (
+                    np.array([x_panel[i, 0] + 0.25 * (x_panel[i + 1, 0] - x_panel[i, 0])]),
+                    (
+                        x_panel[i, n_y : 2 * n_y]
+                        + 0.25 * (x_panel[i + 1, n_y : 2 * n_y] - x_panel[i, n_y : 2 * n_y])
+                    )[1:],
+                )
+            )
+            y_2[n_x * n_y + i * n_y : n_x * n_y + (i + 1) * n_y] = np.concatenate(
+                (np.array([0.0]), y_panel[n_y + 1 : 2 * n_y],)
+            )
+        # Calculate remaining characteristic points (Left side)
+        # point P for the left-half
+        x_c[n_x * n_y :] = x_c[: n_x * n_y]
+        y_c[n_x * n_y :] = -y_c[: n_x * n_y]
+
+        return (x_panel, y_panel, x_le, chord, panelchord,panelspan, panelsurf, x_1, y_1, x_2, y_2, x_c, y_c)
