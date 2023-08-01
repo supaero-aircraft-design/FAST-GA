@@ -8,7 +8,7 @@ import yaml
 import shutil
 import time
 from feedback_extractor import feedback_extractor
-from time_modules import time_modules
+from time_modules import find_id_value
 
 from fastoad.io.configuration import FASTOADProblemConfigurator
 from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
@@ -41,6 +41,11 @@ def double_swap_algorithm(
         counter = counter + 1
         print("\nLoop nº: ", counter)
         improvement = False
+
+        #Load config file into dictionary:
+        with open(CONFIGURATION_FILE, "r") as file:
+            existing_data = yaml.safe_load(file)
+
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
 
@@ -50,45 +55,51 @@ def double_swap_algorithm(
                 keys_list[i],
             )
 
-            print("Trying order: ", keys_list)
-            # Generate new config file with proposed order
-            with open(CONFIGURATION_FILE, "r") as file:
-                existing_data = yaml.safe_load(file)
             existing_data["model"]["aircraft_sizing"] = {
-                key: config_dictionary[key] for key in keys_list if key in config_dictionary
+                key: config_dictionary[key] for key in keys_list if key in config_dictionary #fill dict with new order
             }
-            with open(CONFIGURATION_FILE, "w") as file:
-                yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
-            # convert config file to problem and then to dictionary, as input for feedback_extractor
-            conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-            problem = conf.get_problem()
-            problem.setup()
-            problem.final_setup()
-            # convert problem to dictionary, as input for feedback_extractor
-            case_id = None
-            model_data = _get_viewer_data(problem, case_id=case_id)
+            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+                print("Trying order: ", keys_list)
 
-            # evaluate the score of the proposed order
-            score = feedback_extractor(
-                model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH
-            )
+                # Generate new config file with proposed order
+                with open(CONFIGURATION_FILE, "w") as file:
+                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+                # convert config file to problem and then to dictionary, as input for feedback_extractor
+                conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+                problem = conf.get_problem()
+                problem.setup()
+                problem.final_setup()
+                # convert problem to dictionary, as input for feedback_extractor
+                case_id = None
+                model_data = _get_viewer_data(problem, case_id=case_id)
 
-            if score < best_score:
-                best_score = score
-                best_order = keys_list
-                improvement = True
-                swap_position = 0
-                print("Swap Kept")
-                print("Current order: ", best_order)
-                break
+                # evaluate the score of the proposed order
+                score = feedback_extractor(
+                    model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH
+                )
 
+                if score < best_score:
+                    best_score = score
+                    best_order = keys_list
+                    improvement = True
+                    swap_position = 0
+                    print("Swap Kept")
+                    print("Current order: ", best_order)
+                    break
+
+                else:
+                    keys_list[i], keys_list[-1 - swap_position] = (
+                        keys_list[-1 - swap_position],
+                        keys_list[i],
+                    )  # Revert the swap
+                    print("Swap reverted")
+                    print("Current order: ", keys_list)
             else:
+                print("\n\n FOR DEBUG: BAD ORDER", keys_list)
                 keys_list[i], keys_list[-1 - swap_position] = (
-                    keys_list[-1 - swap_position],
-                    keys_list[i],
-                )  # Revert the swap
-                print("Swap reverted")
-                print("Current order: ", keys_list)
+                        keys_list[-1 - swap_position],
+                        keys_list[i],
+                    )  # Revert the swap because order would not have run
 
         if not improvement:
             swap_position = swap_position + 1
@@ -136,6 +147,10 @@ def single_swap_algorithm(
         counter = counter + 1
         print("Loop: nº", counter)
         improvement = False
+        # Generate new config file with proposed order
+        with open(CONFIGURATION_FILE, "r") as file:
+            existing_data = yaml.safe_load(file)
+
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
 
@@ -143,18 +158,14 @@ def single_swap_algorithm(
             shifted_element = keys_list.pop(-1 - swap_position)
             keys_list.insert(0, shifted_element)
 
-            if (
-                True
-            ):  # if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+            existing_data["model"]["aircraft_sizing"] = {
+                key: config_dictionary[key] for key in keys_list if key in config_dictionary #fill dict with new order
+            }
+            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
                 print("Trying order: ", keys_list)
-                # Generate new config file with proposed order
-                with open(CONFIGURATION_FILE, "r") as file:
-                    existing_data = yaml.safe_load(file)
-                existing_data["model"]["aircraft_sizing"] = {
-                    key: config_dictionary[key] for key in keys_list if key in config_dictionary
-                }
+
                 with open(CONFIGURATION_FILE, "w") as file:
-                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False) #write config file with new order if it's valid
 
                 # convert config file to problem and then to dictionary, as input for feedback_extractor
                 conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
@@ -251,7 +262,7 @@ def is_valid_order(keys_list, dictionary):
 
     list_of_ids = []
     for key in keys_list:
-        list_of_ids.append(time_modules().find_id_value(dictionary[key]))
+        list_of_ids.append(find_id_value(dictionary[key]))
 
     id_indices = {
         id: list_of_ids.index(id) for id in list_of_ids
@@ -327,12 +338,12 @@ def is_valid_order(keys_list, dictionary):
     #    if any(geometry_index > wing_area_wing_pos_index for geometry_index in geometry_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if geometry_index is not None and wing_area_wing_pos_index is not None):
     #        return False
 
-    if (
-        get_module_index("fastga.weight.legacy") is not None
-        and get_module_index("fastga.loop.mtow") is not None
-    ):
-        if get_module_index("fastga.weight.legacy") > get_module_index("fastga.loop.mtow"):
-            return False
+    #if (
+    #    get_module_index("fastga.weight.legacy") is not None
+    #    and get_module_index("fastga.loop.mtow") is not None
+    #):
+    #    if get_module_index("fastga.weight.legacy") > get_module_index("fastga.loop.mtow"):
+    #        return False
 
     return True
 
@@ -372,7 +383,7 @@ swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRI
 #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
 #'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
-score_criteria = "compute_time"
+score_criteria = "use_time"
 ############################################
 
 if score_criteria == "compute_time":

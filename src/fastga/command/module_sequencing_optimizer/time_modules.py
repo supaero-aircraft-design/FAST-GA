@@ -1,3 +1,14 @@
+def find_id_value(dictionary):
+    if "id" in dictionary:
+        return dictionary["id"]
+    else:
+        for value in dictionary.values():
+            if isinstance(value, dict):
+                id_value = find_id_value(value)
+                if id_value is not None:
+                    return id_value
+    return None
+
 def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PATH):
 
     import os.path as pth
@@ -14,17 +25,6 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
     import sys
     import contextlib
     import xml.etree.ElementTree as ET
-
-    def find_id_value(dictionary):
-        if "id" in dictionary:
-            return dictionary["id"]
-        else:
-            for value in dictionary.values():
-                if isinstance(value, dict):
-                    id_value = find_id_value(value)
-                    if id_value is not None:
-                        return id_value
-        return None
 
     # Obtaining the modules for this version of fastoad
     command = "fastoad list_modules"
@@ -108,7 +108,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
             executions_time = []
 
             print("\n   Starting timings of: ", module)
-            for _ in range(15):  # run them individually 20 times, to have a good average
+            for _ in range(10):  # run them individually 20 times, to have a good average
 
                 starting = time.time()
 
@@ -171,7 +171,7 @@ def time_modules(config_dictionary, ORIGINAL_CONFIGURATION_FILE, WORK_FOLDER_PAT
             executions_time = []
 
             print("\n   Starting timings of: ", module)
-            for _ in range(15):  # run them individually 20 times, to have a good average
+            for _ in range(10):  # run them individually 20 times, to have a good average
 
                 starting = time.time()
 
