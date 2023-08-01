@@ -655,7 +655,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def _generate_wing(self, inputs):
         """Generates the coordinates for VLM calculations and aic matrix of the wing.
-        Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
+             Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
                 | \            and chords 1 and 2 representing a wing segment
                 |  \           that complies with the VLM theory, returns the
                 |   + Pf       points and panels of the mesh:

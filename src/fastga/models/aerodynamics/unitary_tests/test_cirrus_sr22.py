@@ -29,6 +29,8 @@ from .test_functions import (
     airfoil_slope_xfoil,
     comp_high_speed,
     comp_low_speed,
+    comp_high_speed_input_aoa,
+    comp_low_speed_input_aoa,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
@@ -237,6 +239,13 @@ def test_vlm_comp_high_speed():
         mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
     )
 
+def test_vlm_comp_high_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_high_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=False,
+    )
 
 #@pytest.mark.skipif(
 #    system() != "Windows" or SKIP_STEPS,
@@ -370,6 +379,13 @@ def test_vlm_comp_low_speed():
         cl_vector_htp=cl_vector_htp,
     )
 
+def test_vlm_comp_low_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_low_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=False,
+    )
 
 #@pytest.mark.skipif(
 #    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
@@ -394,6 +410,13 @@ def test_openvsp_comp_high_speed():
         mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
     )
 
+def test_openvsp_comp_high_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_high_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=True,
+    )
 
 #@pytest.mark.skipif(
 #    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
@@ -605,6 +628,13 @@ def test_openvsp_comp_low_speed():
         cl_vector_htp=cl_vector_htp,
     )
 
+def test_openvsp_comp_low_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_low_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=True,
+    )
 
 def test_2d_hinge_moment():
     """Tests tail hinge-moments."""

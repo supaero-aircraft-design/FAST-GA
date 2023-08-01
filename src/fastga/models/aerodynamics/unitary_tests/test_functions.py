@@ -843,9 +843,8 @@ def compute_aero(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
-            input_angle_of_attack = 10.0,
         )
-        
+
         problem = run_system(openvsp_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
@@ -855,7 +854,6 @@ def compute_aero(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
-            input_angle_of_attack = 10.0,
         )
 
         problem = run_system(openvsp_comp, ivc)
@@ -873,9 +871,8 @@ def compute_aero(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
-            input_angle_of_attack = 10.0,
         )
-        
+
         problem = run_system(vlm_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
@@ -885,9 +882,97 @@ def compute_aero(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
-            input_angle_of_attack = 10.0,
         )
-        
+
+        problem = run_system(vlm_comp, ivc)
+        stop = time.time()
+    duration_2nd_run = stop - start
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Remove existing result files
+    results_folder.cleanup()
+
+    # Check obtained value(s) is/(are) correct
+    assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
+
+    # Return problem for complementary values check
+    return problem
+
+
+def comp_aero_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+    mach_interpolation: bool,
+    low_speed_aero: bool,
+):
+    """Compute aero components!"""
+    # Create result temporary directory
+    results_folder = _create_tmp_directory()
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file
+    if use_openvsp:
+        # noinspection PyTypeChecker
+        ivc = get_indep_var_comp(
+            list_inputs(ComputeAEROopenvsp(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+        )
+
+        # Run problem twice
+        start = time.time()
+        # noinspection PyTypeChecker
+        openvsp_comp = ComputeAEROopenvsp(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(openvsp_comp, ivc)
+        stop = time.time()
+        duration_1st_run = stop - start
+        start = time.time()
+        # noinspection PyTypeChecker
+        openvsp_comp = ComputeAEROopenvsp(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(openvsp_comp, ivc)
+        stop = time.time()
+    else:
+        # noinspection PyTypeChecker
+        ivc = get_indep_var_comp(
+            list_inputs(ComputeAEROvlm(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+        )
+
+        # Run problem twice
+        start = time.time()
+        # noinspection PyTypeChecker
+        vlm_comp = ComputeAEROvlm(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(vlm_comp, ivc)
+        stop = time.time()
+        duration_1st_run = stop - start
+        start = time.time()
+        # noinspection PyTypeChecker
+        vlm_comp = ComputeAEROvlm(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
         problem = run_system(vlm_comp, ivc)
         stop = time.time()
     duration_2nd_run = stop - start
@@ -962,6 +1047,56 @@ def comp_high_speed(
             ] == pytest.approx(coeff_k_htp, abs=1e-4)
 
 
+def comp_high_speed_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+):
+
+    """Tests components @ high speed!"""
+    for mach_interpolation in [True, False]:
+        problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
+        problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, mach_interpolation, False)
+        # Check obtained value(s) is/(are) correct
+        if mach_interpolation:
+            assert problem[
+                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
+            ] == pytest.approx(
+                problem_input_aoa["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"],
+                abs=1e-2,
+            )
+            assert problem[
+                "data:aerodynamics:aircraft:mach_interpolation:mach_vector"
+            ] == pytest.approx(
+                problem_input_aoa["data:aerodynamics:aircraft:mach_interpolation:mach_vector"],
+                abs=1e-2,
+            )
+        else:
+            assert problem.get_val(
+                "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
+            assert problem.get_val(
+                "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
+            assert problem.get_val(
+                "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
+
+
 def comp_low_speed(
     XML_FILE: str,
     use_openvsp: bool,
@@ -1030,6 +1165,39 @@ def comp_low_speed(
     )
     assert np.max(np.abs(y_vector_htp - y)) <= 1e-3
     assert np.max(np.abs(cl_vector_htp - cl)) <= 1e-3
+
+
+def comp_low_speed_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+):
+    """Tests components @ low speed!"""
+    problem = compute_aero(XML_FILE, use_openvsp, False, True)
+    problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, False, True)
+    # Check obtained value(s) is/(are) correct
+
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1"),
+        abs=1e-2,
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
+        ),
+        abs=1e-2,
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
+        ),
+        abs=1e-2,
+    )
 
 
 def hinge_moment_2d(XML_FILE: str, ch_alpha_2d: float, ch_delta_2d: float):
