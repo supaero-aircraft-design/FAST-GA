@@ -20,21 +20,16 @@ import numpy as np
 
 
 class ComputeOWE(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare(
-            "mass_names",
-            [
-                "data:weight:airframe:mass",
-                "data:weight:propulsion:mass",
-                "data:weight:systems:mass",
-                "data:weight:furniture:mass",
-            ],
-        )
+    """
+    Computes the aircraft operating empty weight.
+    """
 
     def setup(self):
 
-        for mass_name in self.options["mass_names"]:
-            self.add_input(mass_name, val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:propulsion:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:systems:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:furniture:mass", val=np.nan, units="kg")
 
         self.add_output("data:weight:aircraft:OWE", units="kg")
 
@@ -42,6 +37,9 @@ class ComputeOWE(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
+        m_airframe = inputs["data:weight:airframe:mass"]
+        m_propulsion = inputs["data:weight:propulsion:mass"]
+        m_systems = inputs["data:weight:systems:mass"]
+        m_furniture = inputs["data:weight:furniture:mass"]
 
-        outputs["data:weight:aircraft:OWE"] = np.sum(masses)
+        outputs["data:weight:aircraft:OWE"] = m_airframe + m_propulsion + m_systems + m_furniture
