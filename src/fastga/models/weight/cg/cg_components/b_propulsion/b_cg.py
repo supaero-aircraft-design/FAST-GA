@@ -18,7 +18,6 @@ import fastoad.api as oad
 from ..constants import (
     SUBMODEL_ENGINE_CG,
     SUBMODEL_FUEL_LINES_CG,
-    SUBMODEL_TANK_CG,
     SUBMODEL_FUEL_PROPULSION_CG,
     SUBMODEL_PROPULSION_CG,
 )
