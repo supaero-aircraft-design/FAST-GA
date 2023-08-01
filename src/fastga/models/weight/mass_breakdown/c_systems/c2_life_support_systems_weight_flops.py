@@ -23,7 +23,6 @@ from ..c_systems import (
     ComputeAirConditioningSystemsWeightFLOPS,
     ComputeAntiIcingSystemsWeightFLOPS,
     ComputeFixedOxygenSystemsWeightFLOPS,
-    ComputeOtherLifeSupportSystemsWeight,
 )
 
 
@@ -54,7 +53,4 @@ class ComputeLifeSupportSystemsWeightFLOPS(om.Group):
         )
         self.add_subsystem(
             "c26_fixed_oxygen", ComputeFixedOxygenSystemsWeightFLOPS(), promotes=["*"]
-        )
-        self.add_subsystem(
-            "other_life_support_systems", ComputeOtherLifeSupportSystemsWeight(), promotes=["*"]
         )

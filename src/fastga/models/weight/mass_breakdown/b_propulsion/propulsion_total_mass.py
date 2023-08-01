@@ -18,19 +18,14 @@ import numpy as np
 
 
 class ComputePropulsionMass(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare(
-            "mass_names",
-            [
-                "data:weight:propulsion:engine:mass",
-                "data:weight:propulsion:fuel_lines:mass",
-            ],
-        )
+    """
+    Computes the aircraft's propulsion system total mass.
+    """
 
     def setup(self):
 
-        for mass_name in self.options["mass_names"]:
-            self.add_input(mass_name, val=np.nan, units="kg")
+        self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:propulsion:fuel_lines:mass", val=np.nan, units="kg")
 
         self.add_output(
             "data:weight:propulsion:mass", units="kg", desc="Mass of aircraft propulsions"
@@ -40,6 +35,7 @@ class ComputePropulsionMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
+        m_engine = inputs["data:weight:propulsion:engine:mass"]
+        m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
 
-        outputs["data:weight:propulsion:mass"] = np.sum(masses)
+        outputs["data:weight:propulsion:mass"] = m_engine + m_fuel_lines

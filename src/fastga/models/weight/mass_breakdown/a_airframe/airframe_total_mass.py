@@ -22,25 +22,16 @@ class ComputeAirframeMass(om.ExplicitComponent):
     Computes the airframe total mass.
     """
 
-    def initialize(self):
-        self.options.declare(
-            "mass_names",
-            [
-                "data:weight:airframe:wing:mass",
-                "data:weight:airframe:fuselage:mass",
-                "data:weight:airframe:horizontal_tail:mass",
-                "data:weight:airframe:vertical_tail:mass",
-                "data:weight:airframe:flight_controls:mass",
-                "data:weight:airframe:landing_gear:main:mass",
-                "data:weight:airframe:landing_gear:front:mass",
-                "data:weight:airframe:paint:mass",
-            ],
-        )
-
     def setup(self):
 
-        for mass_name in self.options["mass_names"]:
-            self.add_input(mass_name, val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:wing:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:fuselage:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:horizontal_tail:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:vertical_tail:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:flight_controls:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:landing_gear:front:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:airframe:paint:mass", val=np.nan, units="kg")
 
         self.add_output("data:weight:airframe:mass", units="kg", desc="Mass of the airframe")
 
@@ -48,6 +39,15 @@ class ComputeAirframeMass(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
+        m_wing = inputs["data:weight:airframe:wing:mass"]
+        m_fuse = inputs["data:weight:airframe:fuselage:mass"]
+        m_ht = inputs["data:weight:airframe:horizontal_tail:mass"]
+        m_vt = inputs["data:weight:airframe:vertical_tail:mass"]
+        m_fc = inputs["data:weight:airframe:flight_controls:mass"]
+        m_mlg = inputs["data:weight:airframe:landing_gear:main:mass"]
+        m_nlg = inputs["data:weight:airframe:landing_gear:front:mass"]
+        m_paint = inputs["data:weight:airframe:paint:mass"]
 
-        outputs["data:weight:airframe:mass"] = np.sum(masses)
+        outputs["data:weight:airframe:mass"] = (
+            m_wing + m_fuse + m_ht + m_vt + m_fc + m_mlg + m_nlg + m_paint
+        )
