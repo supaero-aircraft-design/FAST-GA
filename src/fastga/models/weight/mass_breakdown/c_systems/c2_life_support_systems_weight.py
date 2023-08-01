@@ -25,7 +25,6 @@ from ..c_systems import (
     ComputeAirConditioningSystemsWeight,
     ComputeAntiIcingSystemsWeight,
     ComputeFixedOxygenSystemsWeight,
-    ComputeOtherLifeSupportSystemsWeight,
 )
 
 oad.RegisterSubmodel.active_models[
@@ -57,6 +56,3 @@ class ComputeLifeSupportSystemsWeight(om.Group):
         self.add_subsystem("c22_ac_system", ComputeAirConditioningSystemsWeight(), promotes=["*"])
         self.add_subsystem("c23_anti_icing_system", ComputeAntiIcingSystemsWeight(), promotes=["*"])
         self.add_subsystem("c26_fixed_oxygen", ComputeFixedOxygenSystemsWeight(), promotes=["*"])
-        self.add_subsystem(
-            "other_life_support_systems", ComputeOtherLifeSupportSystemsWeight(), promotes=["*"]
-        )
