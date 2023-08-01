@@ -45,6 +45,7 @@ class ComputeAEROvlm(Group):
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+        self.options.declare("timer",default=False, types=bool)
     def setup(self):
         self.add_subsystem(
             "comp_unit_reynolds",
@@ -139,6 +140,9 @@ class ComputeAEROvlm(Group):
             )
             self.connect("htp_polar_hs.xfoil:CL", "data:aerodynamics:horizontal_tail:cruise:CL")
             self.connect("htp_polar_hs.xfoil:CDp", "data:aerodynamics:horizontal_tail:cruise:CDp")
+        
+        if self.options["timer"]:
+            self.add_output("data:aerodynamics:vlm:running_durations")
 
 
 class ComputeLocalReynolds(ExplicitComponent):
@@ -189,6 +193,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+        self.options.declare("timer",default=False, types=bool)
     def setup(self):
 
         super().setup()
@@ -248,6 +253,8 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
                     shape=MACH_NB_PTS + 1,
                     units="rad**-1",
                 )
+        if self.options["timer"]:
+            self.add_output("data:aerodynamics:vlm:running_durations")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -332,3 +339,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
                 outputs[
                     "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
                 ] = cl_alpha_interp
+        
+        #Modifiy here
+        #if self.options["timer"]:
+        #    outputs["data:aerodynamics:vlm:running_durations"] = compute_aero_coeff.durations

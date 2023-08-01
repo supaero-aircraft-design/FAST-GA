@@ -58,6 +58,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("timer",default=False, types=bool)
 
     def setup(self):
 
