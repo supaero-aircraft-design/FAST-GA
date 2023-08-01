@@ -1,6 +1,7 @@
 def feedback_extractor(
     model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH, INFO=False
 ):
+    #print('FOR DEBUG, CONFIG DICT INSIDE FEEDBK EXT is: ', config_dictionary)
     # TODO: if info is false, only compute the number, not save every src tgt pair
 
     import time
@@ -146,7 +147,7 @@ def feedback_extractor(
         # find how many times they run
         modules_in_feedback = extract_module(result_list)
         keys_order = list(config_dictionary.keys())
-        print("FOR DEBUG: keys order is ", keys_order)
+        #print("FOR DEBUG: keys order is ", keys_order)
 
         rerun_counts = {
             key: 0 for key in keys_order
@@ -178,7 +179,7 @@ def feedback_extractor(
             "\nScore criteria not valid. Please choose compute_time, use_time or count_feedbacks"
         )
 
-    print("Score: ", score)
+    print("Score: ",score)
 
     if INFO:
         print("\n There are", len(list_of_blc_in_feedback), "feedback connections \n")
