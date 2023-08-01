@@ -74,8 +74,9 @@ def double_swap_algorithm(
                 model_data = _get_viewer_data(problem, case_id=case_id)
 
                 # evaluate the score of the proposed order
+                #print('FOR DEBUG IN DOUBLE SWAP, CONFIG DICTIONARY IS:, (check if fame order as trying order)', config_dictionary)
                 score = feedback_extractor(
-                    model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH
+                    model_data, existing_data["model"]["aircraft_sizing"], CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH#######################################################################################################################################################################################################################################
                 )
 
                 if score < best_score:
@@ -95,7 +96,7 @@ def double_swap_algorithm(
                     print("Swap reverted")
                     print("Current order: ", keys_list)
             else:
-                print("\n\n FOR DEBUG: BAD ORDER", keys_list)
+                #print("\n\n FOR DEBUG: BAD ORDER", keys_list)
                 keys_list[i], keys_list[-1 - swap_position] = (
                         keys_list[-1 - swap_position],
                         keys_list[i],
@@ -179,7 +180,7 @@ def single_swap_algorithm(
                 # evaluate the score of the proposed order
                 score = feedback_extractor(
                     model_data,
-                    config_dictionary,
+                    existing_data["model"]["aircraft_sizing"],
                     CONFIGURATION_FILE,
                     score_criteria,
                     WORK_FOLDER_PATH,
@@ -202,7 +203,7 @@ def single_swap_algorithm(
                     print("Swap reverted")
                     print("Current order: ", keys_list)
             else:
-                print("\n\n FOR DEBUG: BAD ORDER", keys_list)
+                #print("\n\n FOR DEBUG: BAD ORDER", keys_list)
                 shifted_element = keys_list.pop(
                     0
                 )  # undo the change because the order would not run (invalid order)
@@ -378,7 +379,7 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "double"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
 #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
