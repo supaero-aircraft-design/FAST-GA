@@ -62,7 +62,6 @@ class ComputeAircraftZCG(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-        self.add_input("data:weight:aircraft_empty:mass", val=np.nan, units="kg")
 
         self.add_output("data:weight:aircraft_empty:CG:z", units="m")
 
@@ -109,7 +108,7 @@ class ComputeAircraftZCG(om.ExplicitComponent):
         )
 
         weight_moment = np.dot(cgs, masses)
-        z_cg_empty_aircraft = weight_moment / inputs["data:weight:aircraft_empty:mass"]
+        z_cg_empty_aircraft = weight_moment / np.sum(masses)
 
         outputs["data:weight:aircraft_empty:CG:z"] = z_cg_empty_aircraft
 
@@ -122,7 +121,9 @@ class ComputeAircraftZCG(om.ExplicitComponent):
         vt_span = inputs["data:geometry:vertical_tail:span"][0]
         l0_wing = inputs["data:geometry:wing:MAC:length"][0]
         thickness_ratio = inputs["data:geometry:wing:thickness_ratio"][0]
-        total_mass = inputs["data:weight:aircraft_empty:mass"][0]
+
+        masses = [inputs[mass_name][0] for mass_name in self.options["mass_names"]]
+        total_mass = np.sum(masses)
 
         # TODO : For now we assume low wings only, change later
         cg_wing = lg_height + thickness_ratio * l0_wing / 2.0
@@ -152,6 +153,11 @@ class ComputeAircraftZCG(om.ExplicitComponent):
                 cg_fuselage,
             ]
         )
+
+        for cg, mass_name in zip(cgs, self.options["mass_names"]):
+            partials["data:weight:aircraft_empty:CG:z", mass_name] = (
+                cg * total_mass - np.dot(cgs, masses)
+            ) / total_mass ** 2.0
 
         mass_inputs_for_cg_fuselage = np.array(
             [
@@ -189,11 +195,6 @@ class ComputeAircraftZCG(om.ExplicitComponent):
         )
         d_z_cg_d_cg_lg = np.sum(mass_inputs_for_cg_lg) / total_mass
 
-        weight_moment = 0.0
-        for cg, mass_name in zip(cgs, self.options["mass_names"]):
-            partials["data:weight:aircraft_empty:CG:z", mass_name] = cg / total_mass
-            weight_moment += cg * inputs[mass_name]
-
         partials["data:weight:aircraft_empty:CG:z", "data:geometry:fuselage:maximum_height"] = (
             d_z_cg_d_cg_fuselage * 0.5
         )
@@ -214,7 +215,4 @@ class ComputeAircraftZCG(om.ExplicitComponent):
         )
         partials["data:weight:aircraft_empty:CG:z", "data:geometry:wing:thickness_ratio"] = (
             d_z_cg_d_cg_wing * l0_wing / 2.0
-        )
-        partials["data:weight:aircraft_empty:CG:z", "data:weight:aircraft_empty:mass"] = (
-            -weight_moment / total_mass ** 2.0
         )
