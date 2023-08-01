@@ -47,7 +47,7 @@ class ComputeMaxMinCGRatio(ExplicitComponent):
         self.add_output("data:weight:aircraft:CG:aft:MAC_position", val=0.25)
         self.add_output("data:weight:aircraft:CG:fwd:MAC_position", val=0.50)
 
-        self.add_output("data:weight:aircraft:CG:aft:x", val=3.6, units="m")
+        self.add_output("data:weight:aircraft:CG:aft:x", val=3.4, units="m")
         self.add_output("data:weight:aircraft:CG:fwd:x", val=3.6, units="m")
 
         self.declare_partials("*", "*", method="fd")

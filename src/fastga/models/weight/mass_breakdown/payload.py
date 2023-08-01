@@ -45,10 +45,10 @@ class ComputePayload(om.ExplicitComponent):
             desc="Maximum value of mass per passenger",
         )
 
-        self.add_output("data:weight:aircraft:payload", units="kg")
-        self.add_output("data:weight:aircraft:max_payload", units="kg")
-        #self.add_output("data:weight:aircraft:payload", val=666.78, units="kg")
-        #self.add_output("data:weight:aircraft:max_payload", val=800,  units="kg")
+        #self.add_output("data:weight:aircraft:payload", units="kg")
+        #self.add_output("data:weight:aircraft:max_payload", units="kg")
+        self.add_output("data:weight:aircraft:payload", val=666.78, units="kg")
+        self.add_output("data:weight:aircraft:max_payload", val=800,  units="kg")
 
         self.declare_partials("*", "*", method="fd")
 

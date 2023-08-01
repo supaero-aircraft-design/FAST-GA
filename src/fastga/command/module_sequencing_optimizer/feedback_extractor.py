@@ -29,7 +29,7 @@ def feedback_extractor(
                 )  # recursive call of the function to reach the last
         return variables
 
-    def extract_BLC(
+    def extract_blc(
         data,
     ):  # extracts the Bottom level components to which the feedbacking variables belong
         result = []
@@ -131,12 +131,12 @@ def feedback_extractor(
             result_list.append(data)
             distance_of_BLC.append(
                 src_position - tgt_position
-            )  # register also how far apart they are
+            )  # register also how far apart they are - (at the time this is not used)
 
     # extract the BLCs from the variables
-    list_of_BLC_in_feedback = extract_BLC(result_list)
-    list_of_BLC_in_feedback = [
-        (a, b) for (a, b) in list_of_BLC_in_feedback if "fastoad_shaper" not in (a, b)
+    list_of_blc_in_feedback = extract_blc(result_list)
+    list_of_blc_in_feedback = [
+        (a, b) for (a, b) in list_of_blc_in_feedback if "fastoad_shaper" not in (a, b)
     ]  # remove fastoad_shaper from feedback counts
 
     if score_criteria == "compute_time" or score_criteria == "use_time":
@@ -146,6 +146,7 @@ def feedback_extractor(
         # find how many times they run
         modules_in_feedback = extract_module(result_list)
         keys_order = list(config_dictionary.keys())
+        print("FOR DEBUG: keys order is ", keys_order)
 
         rerun_counts = {
             key: 0 for key in keys_order
@@ -171,7 +172,7 @@ def feedback_extractor(
         score = total_time
 
     elif score_criteria == "count_feedbacks":
-        score = len(list_of_BLC_in_feedback)
+        score = len(list_of_blc_in_feedback)
     else:
         sys.exit(
             "\nScore criteria not valid. Please choose compute_time, use_time or count_feedbacks"
@@ -180,13 +181,13 @@ def feedback_extractor(
     print("Score: ", score)
 
     if INFO:
-        print("\n There are", len(list_of_BLC_in_feedback), "feedback connections \n")
+        print("\n There are", len(list_of_blc_in_feedback), "feedback connections \n")
 
         # Prints the source and target of the feedback loop, along with the distance (in number of BLCs) that separates them
         print("Feedback loops:")
         loop_counter = 1
         loop_set = set()
-        for pair in list_of_BLC_in_feedback:
+        for pair in list_of_blc_in_feedback:
             loop_set.add(pair)
             print(
                 f"{loop_counter}. {pair[0]} -> {pair[1]} | {distance_of_BLC[loop_counter-1]} BLCs"
