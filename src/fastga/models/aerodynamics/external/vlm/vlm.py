@@ -405,7 +405,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Generate geometries
-        self._run(inputs)
+        self._run(inputs,run_opt="wing")
 
         # Get inputs
         aspect_ratio = float(inputs["data:geometry:wing:aspect_ratio"])
@@ -499,7 +499,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Generate geometries
-        self._run(inputs)
+        self._run(inputs,run_opt="htp")
 
         # Get inputs
         aspect_ratio = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
@@ -607,7 +607,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return wing, htp, aircraft
 
-    def _run(self, inputs):
+    def _run(self, inputs,run_opt="wing"):
 
         wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
 
@@ -649,10 +649,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp = copy.deepcopy(self.wing)
 
         # Generate WING
-        self._generate_wing(inputs)
-
+        if run_opt == "wing":
+            self._generate_wing(inputs)
+        else: 
         # Generate HTP
-        self._generate_htp(inputs)
+            self._generate_htp(inputs)
 
     def _generate_wing(self, inputs):
         """Generates the coordinates for VLM calculations and aic matrix of the wing.
