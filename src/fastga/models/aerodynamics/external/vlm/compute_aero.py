@@ -141,8 +141,6 @@ class ComputeAEROvlm(Group):
             self.connect("htp_polar_hs.xfoil:CL", "data:aerodynamics:horizontal_tail:cruise:CL")
             self.connect("htp_polar_hs.xfoil:CDp", "data:aerodynamics:horizontal_tail:cruise:CDp")
         
-        if self.options["timer"]:
-            self.add_output("data:aerodynamics:vlm:running_durations")
 
 
 class ComputeLocalReynolds(ExplicitComponent):
@@ -340,6 +338,4 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
                     "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
                 ] = cl_alpha_interp
         
-        #Modifiy here
-        #if self.options["timer"]:
-        #    outputs["data:aerodynamics:vlm:running_durations"] = compute_aero_coeff.durations
+        
