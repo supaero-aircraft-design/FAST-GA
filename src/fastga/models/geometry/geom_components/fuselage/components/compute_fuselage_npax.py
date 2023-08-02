@@ -37,7 +37,7 @@ class ComputeFuselageNPAX(om.ExplicitComponent):
 
         self.add_output("data:geometry:cabin:NPAX")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 

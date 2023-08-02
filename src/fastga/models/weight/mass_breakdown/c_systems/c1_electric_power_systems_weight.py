@@ -59,7 +59,7 @@ class ComputeElectricWeight(om.ExplicitComponent):
         partials[
             "data:weight:systems:power:electric_systems:mass",
             "data:weight:propulsion:fuel_lines:mass",
-        ] = 10863 / (50000 * (m_fuel_lines / 1000 + m_iae / 1000) ** (49 / 100))
+        ] = 217.26 / (1000 * ((m_fuel_lines + m_iae) / 1000) ** 0.49)
         partials[
             "data:weight:systems:power:electric_systems:mass", "data:weight:systems:avionics:mass"
-        ] = 10863 / (50000 * (m_fuel_lines / 1000 + m_iae / 1000) ** (49 / 100))
+        ] = 217.26 / (1000 * ((m_fuel_lines + m_iae) / 1000) ** 0.49)
