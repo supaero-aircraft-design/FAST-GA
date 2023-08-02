@@ -21,7 +21,7 @@ from ..constants import SUBMODEL_WING_THICKNESS_RATIO_KINK
 
 # TODO: computes relative thickness and generates profiles --> decompose
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_THICKNESS_RATIO_KINK, "fastga.submodel.geometry.wing.thickness_ratio.kink"
+    SUBMODEL_WING_THICKNESS_RATIO_KINK, "fastga.submodel.geometry.wing.thickness_ratio.kink.legacy"
 )
 class ComputeWingTocKink(om.ExplicitComponent):
     """Wing kink ToC estimation."""

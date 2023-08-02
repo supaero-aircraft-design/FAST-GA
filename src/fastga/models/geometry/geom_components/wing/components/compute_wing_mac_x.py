@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_WING_MAC_X
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_MAC_X, "fastga.submodel.geometry.wing.mac.x")
+@oad.RegisterSubmodel(SUBMODEL_WING_MAC_X, "fastga.submodel.geometry.wing.mac.x.legacy")
 class ComputeWingMacX(om.ExplicitComponent):
     """
     Compute x coordinate (local) of the leading edge of the wing MAC.

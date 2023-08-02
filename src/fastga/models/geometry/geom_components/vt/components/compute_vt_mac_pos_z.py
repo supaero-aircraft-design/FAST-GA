@@ -22,7 +22,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_VT_POSITION_Z
 
 
-@oad.RegisterSubmodel(SUBMODEL_VT_POSITION_Z, "fastga.submodel.geometry.vertical_tail.position.z")
+@oad.RegisterSubmodel(SUBMODEL_VT_POSITION_Z, "fastga.submodel.geometry.vertical_tail.position.z.legacy")
 class ComputeVTMacZ(om.ExplicitComponent):
     """
     Compute z coordinate of the vertical tail's MAC.

@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_WING_L1
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_L1, "fastga.submodel.geometry.wing.l1")
+@oad.RegisterSubmodel(SUBMODEL_WING_L1, "fastga.submodel.geometry.wing.l1.legacy")
 class ComputeWingL1(om.ExplicitComponent):
     """Estimate l1 wing chord."""
 
