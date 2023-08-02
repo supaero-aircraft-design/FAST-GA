@@ -20,32 +20,29 @@ import openmdao.api as om
 class ComputeSystemMass(om.ExplicitComponent):
     """
     Computes the aircraft's systems total mass.
-
-    By default, the insulation system, internal lighting system, and permanent security kits are neglected. However, users could define these values in the input data.
-    Seats and installation of crew are already evaluated within d2_passenger_seats_weight.
     """
 
     def setup(self):
 
-        self.add_input("data:weight:systems:power:electric_systems:mass", val=np.nan, units="lb")
-        self.add_input("data:weight:systems:power:hydraulic_systems:mass", val=np.nan, units="lb")
+        self.add_input("data:weight:systems:power:electric_systems:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:systems:power:hydraulic_systems:mass", val=np.nan, units="kg")
         self.add_input(
-            "data:weight:systems:life_support:air_conditioning:mass", val=np.nan, units="lb"
+            "data:weight:systems:life_support:air_conditioning:mass", val=np.nan, units="kg"
         )
-        self.add_input("data:weight:systems:life_support:de_icing:mass", val=np.nan, units="lb")
-        self.add_input("data:weight:systems:life_support:fixed_oxygen:mass", val=np.nan, units="lb")
-        self.add_input("data:weight:systems:life_support:insulation:mass", val=0.0, units="lb")
+        self.add_input("data:weight:systems:life_support:de_icing:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:systems:life_support:fixed_oxygen:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:systems:life_support:insulation:mass", val=0.0, units="kg")
         self.add_input(
-            "data:weight:systems:life_support:internal_lighting:mass", val=0.0, units="lb"
+            "data:weight:systems:life_support:internal_lighting:mass", val=0.0, units="kg"
         )
         self.add_input(
-            "data:weight:systems:life_support:seat_installation:mass", val=0.0, units="lb"
+            "data:weight:systems:life_support:seat_installation:mass", val=0.0, units="kg"
         )
-        self.add_input("data:weight:systems:life_support:security_kits:mass", val=0.0, units="lb")
-        self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
-        self.add_input("data:weight:systems:recording:mass", val=np.nan, units="lb")
+        self.add_input("data:weight:systems:life_support:security_kits:mass", val=0.0, units="kg")
+        self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="kg")
+        self.add_input("data:weight:systems:recording:mass", val=np.nan, units="kg")
 
-        self.add_output("data:weight:systems:mass", units="lb", desc="Mass of aircraft systems")
+        self.add_output("data:weight:systems:mass", units="kg", desc="Mass of aircraft systems")
 
         self.declare_partials(of="*", wrt="*", val=1.0)
 
