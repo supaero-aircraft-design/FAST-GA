@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_WING_SWEEP_50
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_SWEEP_50, "fastga.submodel.geometry.wing.sweep.50")
+@oad.RegisterSubmodel(SUBMODEL_WING_SWEEP_50, "fastga.submodel.geometry.wing.sweep.50.legacy")
 class ComputeWingSweep50(om.ExplicitComponent):
     """Estimation of wing sweep at l/c=50%"""
 

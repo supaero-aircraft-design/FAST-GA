@@ -22,7 +22,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_VT_MAC_LENGTH
 
 
-@oad.RegisterSubmodel(SUBMODEL_VT_MAC_LENGTH, "fastga.submodel.geometry.vertical_tail.mac_length")
+@oad.RegisterSubmodel(SUBMODEL_VT_MAC_LENGTH, "fastga.submodel.geometry.vertical_tail.mac_length.legacy")
 class ComputeVTMacLength(om.ExplicitComponent):
     """
     Compute MAC length of the vertical tail.

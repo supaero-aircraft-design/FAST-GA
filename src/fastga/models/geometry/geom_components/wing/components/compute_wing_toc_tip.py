@@ -21,7 +21,7 @@ from ..constants import SUBMODEL_WING_THICKNESS_RATIO_TIP
 
 # TODO: computes relative thickness and generates profiles --> decompose
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_THICKNESS_RATIO_TIP, "fastga.submodel.geometry.wing.thickness_ratio.tip"
+    SUBMODEL_WING_THICKNESS_RATIO_TIP, "fastga.submodel.geometry.wing.thickness_ratio.tip.legacy"
 )
 class ComputeWingTocTip(om.ExplicitComponent):
     """Wing tip ToC estimation."""

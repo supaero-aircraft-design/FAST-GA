@@ -20,7 +20,7 @@ from ..constants import SUBMODEL_WING_SWEEP_100_INNER
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_SWEEP_100_INNER, "fastga.submodel.geometry.wing.sweep.100_inner"
+    SUBMODEL_WING_SWEEP_100_INNER, "fastga.submodel.geometry.wing.sweep.100_inner.legacy"
 )
 class ComputeWingSweep100Inner(om.ExplicitComponent):
     """Estimation of inner wing sweep at l/c=100%"""

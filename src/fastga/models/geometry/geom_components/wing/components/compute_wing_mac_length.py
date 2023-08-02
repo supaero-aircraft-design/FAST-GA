@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_WING_MAC_LENGTH
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_MAC_LENGTH, "fastga.submodel.geometry.wing.mac.length")
+@oad.RegisterSubmodel(SUBMODEL_WING_MAC_LENGTH, "fastga.submodel.geometry.wing.mac.length.legacy")
 class ComputeWingMacLength(om.ExplicitComponent):
     """
     Compute MAC length of the wing.
