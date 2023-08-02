@@ -38,11 +38,7 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:furniture:passenger_seats:mass", units="lb")
 
-        self.declare_partials(
-            of="data:weight:furniture:passenger_seats:mass",
-            wrt="data:weight:aircraft:MTOW",
-            method="exact",
-        )
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
@@ -65,3 +61,7 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
         partials["data:weight:furniture:passenger_seats:mass", "data:weight:aircraft:MTOW"] = (
             0.20147 * n_occ ** 1.145
         ) / mtow ** 0.511
+        partials[
+            "data:weight:furniture:passenger_seats:mass",
+            "data:geometry:cabin:seats:passenger:NPAX_max",
+        ] = (0.47174 * n_occ ** 0.145 * mtow ** 0.489)
