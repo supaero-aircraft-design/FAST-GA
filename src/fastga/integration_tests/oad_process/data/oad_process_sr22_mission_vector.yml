@@ -1,0 +1,57 @@
+title: Sample OAD Process applied to cirrus SR22
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+
+# Input and output files
+input_file: ../results/oad_process_inputs.xml
+output_file: ../results/oad_process_outputs.xml
+
+# Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
+driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
+
+model:
+    propeller:
+        id: fastga.aerodynamics.propeller
+    aircraft_sizing:
+        nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
+        linear_solver: om.DirectSolver()
+        geometry:
+            id: fastga.geometry.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        aerodynamics_lowspeed:
+            id: fastga.aerodynamics.lowspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            result_folder_path: D:/tmp
+            compute_slipstream: false
+        aerodynamics_highspeed:
+            id: fastga.aerodynamics.highspeed.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            result_folder_path : D:/tmp
+            compute_mach_interpolation : false
+            compute_slipstream : false
+        weight:
+            id: fastga.weight.legacy
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        performance:
+            id: fastga.performances.mission_vector
+            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        hq:
+            tail_sizing:
+                id: fastga.handling_qualities.tail_sizing
+                propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+            static_margin:
+                id: fastga.handling_qualities.static_margin
+        mtow:
+            id: fastga.loop.mtow
+        wing_position:
+            id: fastga.loop.wing_position
+        wing_area:
+            id: fastga.loop.wing_area
+    stability_derivatives:
+        id: fastga.aerodynamics.stability_derivatives.legacy
+
+submodels:
+    submodel.geometry.vertical_tail.position.fd: null
+    submodel.geometry.fuselage.wet_area: fastga.submodel.geometry.fuselage.wet_area.flops

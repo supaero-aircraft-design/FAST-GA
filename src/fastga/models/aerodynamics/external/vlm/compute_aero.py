@@ -45,7 +45,6 @@ class ComputeAEROvlm(Group):
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
-        self.options.declare("timer",default=False, types=bool)
     def setup(self):
         self.add_subsystem(
             "comp_unit_reynolds",
@@ -191,7 +190,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
-        self.options.declare("timer",default=False, types=bool)
+        
     def setup(self):
 
         super().setup()
@@ -251,8 +250,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
                     shape=MACH_NB_PTS + 1,
                     units="rad**-1",
                 )
-        if self.options["timer"]:
-            self.add_output("data:aerodynamics:vlm:running_durations")
+        
 
         self.declare_partials("*", "*", method="fd")
 
@@ -287,7 +285,7 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-        ) = self.compute_aero_coeff(inputs, altitude, mach, INPUT_AOA)
+        ) = self.compute_aero_coeff(inputs, altitude, mach, INPUT_AOA, comp_opt="ac")
 
         if self.options["low_speed_aero"]:
             pass
