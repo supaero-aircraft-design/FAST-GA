@@ -1,0 +1,440 @@
+<FASTOAD_model>
+  <data>
+    <TLAR>
+      <NPAX_design is_input="True">4.0<!--top-level requirement: number of passengers for the design mission, assuming a classic eco/business class repartition--></NPAX_design>
+      <luggage_mass_design units="kg" is_input="True">150.0<!--top-level requirement: luggage mass per passenger for the design mission--></luggage_mass_design>
+      <range units="NM" is_input="True">1100.0<!--top-level requirement: design range--></range>
+      <v_approach units="kn" is_input="True">85.0<!--top-level requirement: approach speed--></v_approach>
+      <v_cruise units="kn" is_input="True">320.0<!--top-level requirement: cruise speed--></v_cruise>
+    </TLAR>
+    <geometry>
+      <has_T_tail is_input="True">0.0<!--0=horizontal tail is attached to fuselage / 1=horizontal tail is attached to top of vertical tail--></has_T_tail>
+      <wing_configuration is_input="True">1.0</wing_configuration>
+      <cabin>
+        <max_differential_pressure units="Pa" is_input="True">42747.5<!--0 = unpressurized / !=0 = pressurized and value of the maximum supported differential of pressure--></max_differential_pressure>
+        <pressurized is_input="True">1.0<!--Cabin pressurization; 0.0 for no pressurization, 1.0 for pressurization--></pressurized>
+        <doors>
+          <height units="m" is_input="True">0.9</height>
+          <number is_input="True">2.0</number>
+          <width units="m" is_input="True">0.61</width>
+        </doors>
+        <luggage>
+          <mass_max units="kg" is_input="True">150.0<!--maximum luggage mass--></mass_max>
+        </luggage>
+        <windows>
+          <height units="m" is_input="True">0.25</height>
+          <number is_input="True">6.0</number>
+          <width units="m" is_input="True">0.2</width>
+        </windows>
+        <seats>
+          <passenger>
+            <NPAX_max is_input="True">4.0<!--maximum seating capability of the aircraft--></NPAX_max>
+            <count_by_row is_input="True">2.0<!--passenger seats per row--></count_by_row>
+            <length units="m" is_input="True">1.1<!--passenger seats length--></length>
+          </passenger>
+          <pilot>
+            <length units="m" is_input="True">1.0<!--pilot seats length--></length>
+          </pilot>
+        </seats>
+      </cabin>
+      <flap>
+        <chord_ratio is_input="True">0.26<!--mean value of (flap chord)/(section chord)--></chord_ratio>
+      </flap>
+      <fuselage>
+        <PAX_length units="m" is_input="True">3.2<!--length of the passenger compartment--></PAX_length>
+        <front_length units="m" is_input="True">3.0<!--length of the front cone of the aircraft--></front_length>
+        <length units="m" is_input="True">10.736<!--total length of the aircraft--></length>
+        <luggage_length units="m" is_input="True">0.8<!--length of the luggage compartment--></luggage_length>
+        <maximum_height units="m" is_input="True">1.62<!--maximum fuselage height--></maximum_height>
+        <maximum_width units="m" is_input="True">1.36<!--maximum fuselage width--></maximum_width>
+        <rear_length units="m" is_input="True">3.74<!--length of the rear cone of the aircraft--></rear_length>
+      </fuselage>
+      <horizontal_tail>
+        <aspect_ratio is_input="True">5.01<!--horizontal tail aspect ratio--></aspect_ratio>
+        <elevator_chord_ratio is_input="True">0.39<!--elevator chord ratio--></elevator_chord_ratio>
+        <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of horizontal tail--></sweep_25>
+        <taper_ratio is_input="True">0.7<!--taper ratio of horizontal tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.12<!--thickness ratio of horizontal tail--></thickness_ratio>
+        <MAC>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m" is_input="True">5.54<!--distance along X between 25% MAC of wing and 25% MAC of horizontal tail--></from_wingMAC25>
+            </x>
+          </at25percent>
+        </MAC>
+      </horizontal_tail>
+      <landing_gear>
+        <type is_input="True">1.0<!--0=non-retractable / 1=retractable--></type>
+      </landing_gear>
+      <propeller>
+        <average_rpm is_input="True">2000.0<!--average rotation speed of the propeller--></average_rpm>
+        <blades_number is_input="True">5.0<!--number of blades on the propeller--></blades_number>
+        <chord_vect units="m" is_input="True">[0.1, 0.1, 0.17, 0.23, 0.26, 0.275, 0.28, 0.265, 0.22, 0.158]<!--propeller chord defined at radius ratio points--></chord_vect>
+        <depth units="m" is_input="True">0.7<!--depth of the propeller--></depth>
+        <diameter units="m" is_input="True">2.31<!--propeller diameter--></diameter>
+        <hub_diameter units="m" is_input="True">0.472<!--propeller hub diameter--></hub_diameter>
+        <radius_ratio_vect is_input="True">[0.01, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]<!--propeller radius ratio points--></radius_ratio_vect>
+        <sweep_vect units="deg" is_input="True">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.2, 3.4, 5.0]<!--propeller sweep angle defined at radius ratio points--></sweep_vect>
+        <twist_vect units="deg" is_input="True">[20.0, 20.0, 15.5, 10.0, 5.0, 1.0, -2.0, -4.0, -5.0, -5.5]<!--propeller twist angle defined at radius ratio points--></twist_vect>
+      </propeller>
+      <vertical_tail>
+        <aspect_ratio is_input="True">1.48<!--aspect ratio of vertical tail--></aspect_ratio>
+        <sweep_25 units="deg" is_input="True">40.0<!--sweep angle at 25% chord of vertical tail--></sweep_25>
+        <taper_ratio is_input="True">0.37<!--taper ratio of vertical tail--></taper_ratio>
+        <thickness_ratio is_input="True">0.12<!--thickness ratio of vertical tail--></thickness_ratio>
+        <max_thickness>
+          <x_ratio is_input="True">0.3<!--position of the point of maximum thickness as a ratio of vertical tail chord--></x_ratio>
+        </max_thickness>
+        <rudder>
+          <chord_ratio is_input="True">0.38<!--flap rudder as a percentage of the wing
+				  chord--></chord_ratio>
+          <max_deflection units="deg" is_input="True">35.0<!--rudder maximum deflection--></max_deflection>
+        </rudder>
+        <MAC>
+          <at25percent>
+            <x>
+              <from_wingMAC25 units="m" is_input="True">4.7<!--distance along X between 25% MAC of wing and 25% MAC of vertical tail--></from_wingMAC25>
+            </x>
+          </at25percent>
+        </MAC>
+      </vertical_tail>
+      <wing>
+        <aspect_ratio is_input="True">8.22<!--wing aspect ratio--></aspect_ratio>
+        <dihedral units="deg">6.5</dihedral>
+        <twist units="deg">-2.0</twist>
+        <sweep_25 units="deg" is_input="True">0.0<!--sweep angle at 25% chord of wing--></sweep_25>
+        <taper_ratio is_input="True">0.61<!--taper ratio of wing--></taper_ratio>
+        <thickness_ratio is_input="True">0.146<!--mean thickness ratio of wing--></thickness_ratio>
+        <aileron>
+          <chord_ratio is_input="True">0.25<!--aileron chord as a percentage of the wing chord--></chord_ratio>
+          <max_deflection units="deg" is_input="True">25.0<!--aileron deflection--></max_deflection>
+          <span_ratio is_input="True">0.164<!--aileron span as a percentage of the wing span--></span_ratio>
+        </aileron>
+        <kink>
+          <span_ratio is_input="True">0.0<!--ratio (Y-position of kink)/(semi-span)--></span_ratio>
+        </kink>
+        <root>
+          <thickness_ratio is_input="True">0.16<!--thickness ratio at wing root--></thickness_ratio>
+        </root>
+        <tip>
+          <thickness_ratio is_input="True">0.133<!--thickness ratio at wing tip--></thickness_ratio>
+        </tip>
+      </wing>
+      <cockpit>
+        <windows>
+          <height units="m" is_input="True">0.55</height>
+          <width units="m" is_input="True">1.1</width>
+        </windows>
+      </cockpit>
+      <propulsion>
+        <engine>
+          <count is_input="True">1.0<!--number of engine--></count>
+          <layout is_input="True">3.0<!--position of engines (1=under the wing / 2=rear fuselage / 3=nose)--></layout>
+          <y_ratio is_input="True">0.0<!--engine position along wing span (if layout=1-2)--></y_ratio>
+        </engine>
+        <tank>
+          <LE_chord_percentage is_input="True">0.05<!--distance between the leading edge and the start of the wing tank as a percentage of the wing chord--></LE_chord_percentage>
+          <TE_chord_percentage is_input="True">0.05<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
+          <y_ratio_tank_beginning is_input="True">0.11<!--start of the tank as a percentage of the wing span--></y_ratio_tank_beginning>
+          <y_ratio_tank_end is_input="True">0.99<!--end of the tank as a percentage of the wing span--></y_ratio_tank_end>
+        </tank>
+      </propulsion>
+    </geometry>
+    <propulsion>
+      <fuel_type is_input="True">3.0<!--1=Avgas ICE engine / 2=Diesel ICE engine / 3=Jet A1--></fuel_type>
+      <max_rpm units="min**-1" is_input="True">2000.0<!--maximum number of rotation per minute on the engine--></max_rpm>
+      <turboprop>
+        <design_point>
+          <OPR is_input="True">12.0<!--overall pressure ratio at the turboprop design point--></OPR>
+          <altitude units="m" is_input="True">0.0<!--altitude of the turboprop design point--></altitude>
+          <mach is_input="True">0.0<!--mach number at the turboprop design point--></mach>
+          <power units="hp" is_input="True">1825.0<!--desired turboprop thermodynamic power at the design point--></power>
+          <turbine_entry_temperature units="degK" is_input="True">1400.0<!--turboprop turbine entry temperature at the design point--></turbine_entry_temperature>
+        </design_point>
+        <off_design>
+          <bleed_usage is_input="True">1.0<!--usage of the bleed in off-design point, 0 for "low" or 1 for "high"--></bleed_usage>
+          <itt_limit units="degK" is_input="True">1125.0<!--inter turbine temperature limitation in off-design point--></itt_limit>
+          <opr_limit is_input="True">12.5<!--pressure ratio limitation in off-design point--></opr_limit>
+          <power_limit units="W" is_input="True">634000.0<!--mechanical power limitation in off-design point--></power_limit>
+        </off_design>
+      </turboprop>
+    </propulsion>
+    <aerodynamics>
+      <propeller>
+        <mach is_input="True">0.0<!--mach number used to compute the polar of the airfoil used in the propeller computation--></mach>
+        <reynolds is_input="True">1000000.0<!--reynolds number used to compute the polar of the airfoil used in the propeller computation--></reynolds>
+      </propeller>
+      <cooling>
+        <cruise>
+          <CD0 is_input="True">0.002301<!--profile drag due to cooling in cruise conditions--></CD0>
+        </cruise>
+        <low_speed>
+          <CD0 is_input="True">0.002301<!--profile drag due to cooling in low speed conditions--></CD0>
+        </low_speed>
+      </cooling>
+      <flaps>
+        <landing>
+          <CL is_input="True">1.3125<!--lift coefficient increment due to flaps deployment in landing configuration--></CL>
+          <CL_max is_input="True">1.05<!--maximum lift coefficient increment due to flaps deployment in landing configuration--></CL_max>
+          <CM is_input="True">-0.24648012559668536<!--additional pitching moment coefficient ue to the deployment of flaps in landing configuration--></CM>
+        </landing>
+        <takeoff>
+          <CD is_input="True">0.0016913911094004637<!--additional drag coefficient due to flaps deployment in takeoff configuration--></CD>
+          <CL is_input="True">0.5211347517730497<!--lift coefficient increment due to flaps deployment in takeoff configuration--></CL>
+          <CL_max is_input="True">0.22<!--maximum lift coefficient increment due to flaps deployment in takeoff configuration--></CL_max>
+          <CM is_input="True">-0.08448449127122522<!--additional pitching moment coefficient due to the deployment of flaps in takeoff configuration--></CM>
+        </takeoff>
+      </flaps>
+    </aerodynamics>
+    <handling_qualities>
+      <static_margin>
+        <target is_input="True">0.23<!--aircraft static margin--></target>
+      </static_margin>
+    </handling_qualities>
+    <weight>
+      <aircraft>
+        <max_payload units="kg" is_input="True">650.0<!--max payload weight--></max_payload>
+        <payload units="kg" is_input="True">480.0<!--design payload weight--></payload>
+      </aircraft>
+      <airframe>
+        <horizontal_tail>
+          <k_factor is_input="True">1.0<!--proportional corrective factor for horizontal tail mass--></k_factor>
+        </horizontal_tail>
+        <paint>
+          <mass units="kg" is_input="True">1.0<!--Mass of the airframe_inp_data:weight:airframe:paint:mass--></mass>
+        </paint>
+        <vertical_tail>
+          <k_factor is_input="True">1.0<!--proportional corrective factor for vertical tail mass--></k_factor>
+        </vertical_tail>
+        <wing>
+          <punctual_mass>
+            <mass is_input="True">0.0<!--mass of the punctual masses on the wing used for wing load computation--></mass>
+            <y_ratio is_input="True">0.0<!--position (as a percent of wing semi-span) of the punctual masses on the wing used for wing load computation, only positive ratio will be considered--></y_ratio>
+          </punctual_mass>
+        </wing>
+      </airframe>
+      <furniture>
+        <passenger_seats>
+          <mass units="kg" is_input="True">295.0<!--passenger/pilot seats total mass--></mass>
+        </passenger_seats>
+      </furniture>
+      <systems>
+        <recording>
+          <mass units="kg" is_input="True">40.0<!--Mass of aircraft systems_inp_data:weight:systems:recording:mass--></mass>
+        </recording>
+      </systems>
+    </weight>
+    <mission>
+      <sizing>
+        <cs23>
+          <safety_factor is_input="True">1.5</safety_factor>
+          <characteristic_speed>
+            <va units="knot" is_input="True">160.0</va>
+            <vc units="knot" is_input="True">270.0</vc>
+            <vd units="knot" is_input="True">320.0<!--limit speed--></vd>
+          </characteristic_speed>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">5.7<!--ultimate load factor that the aircraft will experience (default value is 5.7)--></ultimate_aircraft>
+            <ultimate_mtow>
+              <negative is_input="True">-2.25</negative>
+              <positive is_input="True">5.7</positive>
+            </ultimate_mtow>
+            <ultimate_mzfw>
+              <negative is_input="True">-2.25</negative>
+              <positive is_input="True">5.7</positive>
+            </ultimate_mzfw>
+          </sizing_factor>
+        </cs23>
+        <initial_climb>
+          <energy units="W*h" is_input="False">0.0</energy>
+        </initial_climb>
+        <landing>
+          <elevator_angle units="deg" is_input="True">-30.0<!--elevator maximum angle during landing phase in sizing mission--></elevator_angle>
+          <target_sideslip units="deg" is_input="True">15.0</target_sideslip>
+        </landing>
+        <takeoff>
+          <elevator_angle units="deg" is_input="True">-30.0<!--elevator maximum angle during takeoff phase in sizing mission--></elevator_angle>
+          <energy units="W*h" is_input="False">0.0</energy>
+          <friction_coefficient_no_brake is_input="True">0.03<!--friction coefficient used during the computation of the takeoff phase--></friction_coefficient_no_brake>
+          <thrust_rate is_input="True">1.0<!--thrust rate during takeoff phase--></thrust_rate>
+        </takeoff>
+        <taxi_in>
+          <duration units="s" is_input="True">300.0<!--duration of taxi in phase--></duration>
+          <speed units="kn" is_input="True">20.0<!--ground velocity during taxi in phase--></speed>
+          <thrust_rate is_input="True">0.2<!--thrust rate during taxi in phase--></thrust_rate>
+        </taxi_in>
+        <taxi_out>
+          <duration units="s" is_input="True">300.0<!--duration of taxi out phase--></duration>
+          <speed units="kn" is_input="True">20.0<!--ground velocity during taxi out phase--></speed>
+          <thrust_rate is_input="True">0.2<!--thrust rate during taxi out phase--></thrust_rate>
+        </taxi_out>
+        <main_route>
+          <climb>
+            <v_cas units="knot" is_input="True">124.0</v_cas>
+            <climb_rate>
+              <cruise_level units="ft/min" is_input="True">1200.0<!--target climb rate at the end of climb--></cruise_level>
+              <sea_level units="ft/min" is_input="True">2065.0<!--target climb rate at sea level--></sea_level>
+            </climb_rate>
+          </climb>
+          <cruise>
+            <altitude units="ft" is_input="True">28000.0<!--altitude during cruise phase in sizing mission--></altitude>
+          </cruise>
+          <descent>
+            <descent_rate units="ft/min" is_input="True">-1500.0<!--target descent rate for the aircraft--></descent_rate>
+            <v_cas units="knot" is_input="True">230.0</v_cas>
+          </descent>
+          <reserve>
+            <duration units="min" is_input="True">45.0<!--reserve fuel to extend cruise phase duration--></duration>
+          </reserve>
+        </main_route>
+      </sizing>
+      <landing>
+        <cs23>
+          <sizing_factor>
+            <ultimate_aircraft is_input="True">6.0</ultimate_aircraft>
+          </sizing_factor>
+        </cs23>
+      </landing>
+    </mission>
+  </data>
+  <settings>
+    <geometry>
+      <fuel_tanks>
+        <depth is_input="True">0.9<!--Average tank depth to the max wing profile depth. The value depends on the shape of the section profile and the allowance made for structure. Typical values lie between 0.5 and 0.8--></depth>
+      </fuel_tanks>
+      <fuselage>
+        <min_skin_thickness units="m" is_input="True">0.0005</min_skin_thickness>
+        <cone>
+          <taper_ratio is_input="True">0.2</taper_ratio>
+        </cone>
+      </fuselage>
+    </geometry>
+    <handling_qualities>
+      <rudder>
+        <safety_margin is_input="True">0.2<!--Ratio of the total rudder deflection not used in the computation of the VT area to leave a safety margin--></safety_margin>
+      </rudder>
+    </handling_qualities>
+    <materials>
+      <aluminium>
+        <density units="kg/m**3" is_input="True">2780.0<!--Aluminum material density--></density>
+        <max_compression_stress units="Pa" is_input="True">-247000000.0<!--Aluminum maximum compression stress--></max_compression_stress>
+        <max_shear_stress units="Pa" is_input="True">165000000.0<!--Aluminum maximum shear stress--></max_shear_stress>
+        <max_tension_stress units="Pa" is_input="True">330000000.0<!--Aluminum maximum tension stress--></max_tension_stress>
+        <shear_modulus units="Pa" is_input="True">28000000000.0<!--Aluminum shear modulus--></shear_modulus>
+        <surface_density units="kg/m**2" is_input="True">9.6<!--Aluminum surface density--></surface_density>
+      </aluminium>
+      <insulation>
+        <area_density units="kg/m**2" is_input="True">1.3</area_density>
+      </insulation>
+      <fuselage>
+        <skin>
+          <density units="kg/m**3" is_input="True">2780.0</density>
+          <max_shear_stress units="Pa" is_input="True">105000000.0</max_shear_stress>
+          <sigma_02 units="MPa" is_input="True">110.0<!--elasticity limit of the material--></sigma_02>
+          <sigma_max units="MPa" is_input="True">180.0<!--ultimate tensile strength of the material--></sigma_max>
+          <young_modulus units="GPa" is_input="True">69.5</young_modulus>
+        </skin>
+        <stringer>
+          <density units="kg/m**3" is_input="True">2780.0</density>
+          <young_modulus units="GPa" is_input="True">68.0</young_modulus>
+        </stringer>
+      </fuselage>
+    </materials>
+    <propulsion>
+      <turboprop>
+        <electric_power_offtake units="kW" is_input="True">10.0<!--power used for electrical generation obtained from the HP shaft--></electric_power_offtake>
+        <bleed>
+          <inter_compressor is_input="True">0.04<!--total compressor airflow extracted after the first  compression stage (in station 25)--></inter_compressor>
+          <turbine_cooling is_input="True">0.05<!--percentage of the total aspirated airflow used for turbine cooling (fixed)--></turbine_cooling>
+        </bleed>
+        <design_point>
+          <first_stage_pressure_ratio is_input="True">0.25<!--ratio of the first stage pressure ratio to the OPR at the design point--></first_stage_pressure_ratio>
+          <mach_exhaust is_input="True">0.4<!--mach number at the exhaust in the design point--></mach_exhaust>
+        </design_point>
+        <efficiency>
+          <combustion units="J/kg" is_input="True">41097000.0<!--fuel energy content--></combustion>
+          <first_compressor_stage is_input="True">0.85<!--first compressor stage polytropic efficiency--></first_compressor_stage>
+          <gearbox is_input="True">0.98<!--power shaft mechanical efficiency--></gearbox>
+          <high_pressure_axe is_input="True">0.98<!--high pressure axe mechanical efficiency--></high_pressure_axe>
+          <high_pressure_turbine is_input="True">0.86<!--high pressure turbine  polytropic efficiency--></high_pressure_turbine>
+          <power_turbine is_input="True">0.86<!--power turbine  polytropic efficiency--></power_turbine>
+          <second_compressor_stage is_input="True">0.86<!--second compressor stage polytropic efficiency--></second_compressor_stage>
+        </efficiency>
+        <pressure_loss>
+          <combustion_chamber is_input="True">0.95<!--combustion chamber pressure loss--></combustion_chamber>
+          <inlet is_input="True">0.8<!--inlet total pressure loss--></inlet>
+        </pressure_loss>
+      </turboprop>
+    </propulsion>
+    <weight>
+      <aircraft>
+        <MLW_MZFW_ratio is_input="True">1.16</MLW_MZFW_ratio>
+        <CG>
+          <range is_input="True">0.23<!--distance between front position and aft position of CG, as ratio of mean aerodynamic chord (allows to have front position of CG, as currently, FAST-OAD estimates only the aft position of CG)--></range>
+          <aft>
+            <MAC_position>
+              <margin is_input="True">0.0<!--Added margin for getting most aft CG position, as ratio of mean aerodynamic chord--></margin>
+            </MAC_position>
+          </aft>
+          <fwd>
+            <MAC_position>
+              <margin is_input="True">0.0<!--Added margin for getting most fwd CG position, as ratio of mean aerodynamic chord--></margin>
+            </MAC_position>
+          </fwd>
+        </CG>
+        <payload>
+          <design_mass_per_passenger units="kg" is_input="True">77.0<!--design payload mass carried by passenger--></design_mass_per_passenger>
+        </payload>
+      </aircraft>
+      <airframe>
+        <paint>
+          <surface_density units="kg/m**2" is_input="True">0.33</surface_density>
+        </paint>
+        <fuselage>
+          <floor>
+            <area_density units="kg/m**2" is_input="True">6.11</area_density>
+          </floor>
+          <reinforcements>
+            <mass_fraction is_input="True">0.2</mass_fraction>
+          </reinforcements>
+        </fuselage>
+        <landing_gear>
+          <front>
+            <weight_ratio is_input="True">0.24<!--part of aircraft weight that is supported by front landing gear--></weight_ratio>
+          </front>
+        </landing_gear>
+      </airframe>
+      <propulsion>
+        <tank>
+          <CG>
+            <from_wingMAC25 is_input="True">0.0<!--distance between the tank CG and 25 percent of wing MAC as a ratio of the wing MAC--></from_wingMAC25>
+          </CG>
+        </tank>
+      </propulsion>
+    </weight>
+    <wing>
+      <structure>
+        <F_COMP is_input="True">0.0<!--Composite utilisation factor; 1.0 for max composite utilisation, 0.0 for min utilisation--></F_COMP>
+        <secondary_mass_ratio is_input="True">0.25<!--Ratio of the mass of the secondary structure and the primary structure (between 0.25 and 0.30 according to literature--></secondary_mass_ratio>
+      </structure>
+      <airfoil>
+        <flanges>
+          <height_ratio is_input="True">0.93<!--ratio of the height between the two flanges and the the thickness of the airfoil, depends on the airfoil--></height_ratio>
+        </flanges>
+        <skin>
+          <d_wingbox is_input="True">0.33<!--ratio of the wingbox working depth/airfoil chord--></d_wingbox>
+          <ka is_input="True">0.92<!--Correction coefficient needed to account for the hypothesis of a rectangular wingbox--></ka>
+        </skin>
+      </airfoil>
+    </wing>
+    <mission>
+      <sizing>
+        <main_route>
+          <reserve>
+            <k_factor is_input="True">0.5<!--fudge factor on the reserve computation, can be used to adjust the model mainly to take into account different speed and altitudes--></k_factor>
+          </reserve>
+        </main_route>
+      </sizing>
+    </mission>
+  </settings>
+</FASTOAD_model>

@@ -58,7 +58,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-        self.options.declare("timer",default=False, types=bool)
+        
 
     def setup(self):
 
@@ -129,7 +129,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             _,
             _,
             _,
-        ) = self.compute_aero_coeff(inputs, altitude, mach, aoa_angle)
+        ) = self.compute_aero_coeff(inputs, altitude, mach, aoa_angle, comp_opt="ac")
         return float(cl_alpha_wing + cl_alpha_htp)
 
     def compute_cl_alpha_mach(self, inputs, aoa_angle, altitude, cruise_mach):
@@ -152,7 +152,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return mach_interp, cl_alpha_interp
 
-    def compute_aero_coeff(self, inputs, altitude, mach, aoa_angle):
+    def compute_aero_coeff(self, inputs, altitude, mach, aoa_angle, comp_opt="ac"):
         """
         Function that computes in VLM environment all the aerodynamic parameters @0° and
         aoa_angle and calculate the associated derivatives.
@@ -222,6 +222,22 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             decimals=6,
         )
 
+        # output initilaization
+        cl_0_wing=[]
+        cl_x_wing=[]
+        cl_alpha_wing=[]
+        cm_0_wing=[]
+        y_vector_wing=[]
+        cl_vector_wing=[]
+        chord_vector_wing=[]
+        coef_k_wing=[]
+        cl_0_htp=[]
+        cl_aoa_htp=[]
+        cl_alpha_htp=[]
+        cl_alpha_htp_isolated=[]
+        y_vector_htp=[]
+        cl_vector_htp=[]
+        coef_k_htp=[]
         # Search if results already exist:
         result_folder_path = self.options["result_folder_path"]
         result_file_path = None
@@ -244,82 +260,90 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 result_file_path = self.save_geometry(result_folder_path, geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
-            wing_0 = self.compute_wing(
-                inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
-            )
-            wing_aoa = self.compute_wing(
-                inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
-            )
+            if comp_opt == "ac" or comp_opt == "wing":
+                wing_0 = self.compute_wing(
+                    inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
+                )
+                wing_aoa = self.compute_wing(
+                    inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
+                )
 
             # Compute complete aircraft @ 0°/X° angle of attack
-            _, htp_0, _ = self.compute_aircraft(
-                inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
-            )
-            _, htp_aoa, _ = self.compute_aircraft(
-                inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
-            )
+            if comp_opt == "ac" or comp_opt == "htp":
+                _, htp_0, _ = self.compute_aircraft(
+                    inputs, altitude, mach, 0.0, flaps_angle=0.0, use_airfoil=True
+                )
+                _, htp_aoa, _ = self.compute_aircraft(
+                    inputs, altitude, mach, aoa_angle, flaps_angle=0.0, use_airfoil=True
+                )
 
             # Compute isolated HTP @ 0°/X° angle of attack
-            htp_0_isolated = self.compute_htp(inputs, altitude, mach, 0.0, use_airfoil=True)
-            htp_aoa_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
-
+            if comp_opt == "ac" or comp_opt == "htp":
+                htp_0_isolated = self.compute_htp(inputs, altitude, mach, 0.0, use_airfoil=True)
+                htp_aoa_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
+                
             # Post-process wing data ---------------------------------------------------------------
-            (
-                beta,
-                cl_0_wing,
-                cl_x_wing,
-                cm_0_wing,
-                cl_alpha_wing,
-                y_vector_wing,
-                cl_vector_wing,
-                chord_vector_wing,
-                coef_k_wing,
-            ) = self.post_processing_wing(
-                width_max,
-                span_wing,
-                mach,
-                dihedral_angle,
-                wing_0,
-                wing_aoa,
-                aoa_angle,
-                aspect_ratio_wing,
-                cl_wing_airfoil,
-                cdp_wing_airfoil,
-            )
+            if comp_opt == "ac" or comp_opt == "wing":
+                (
+                    beta,
+                    cl_0_wing,
+                    cl_x_wing,
+                    cm_0_wing,
+                    cl_alpha_wing,
+                    y_vector_wing,
+                    cl_vector_wing,
+                    chord_vector_wing,
+                    coef_k_wing,
+                ) = self.post_processing_wing(
+                    width_max,
+                    span_wing,
+                    mach,
+                    dihedral_angle,
+                    wing_0,
+                    wing_aoa,
+                    aoa_angle,
+                    aspect_ratio_wing,
+                    cl_wing_airfoil,
+                    cdp_wing_airfoil,
+                )
 
             # Post-process HTP-aircraft data -------------------------------------------------------
-            (
-                cl_0_htp,
-                cl_aoa_htp,
-                cl_alpha_htp,
-                coef_k_htp,
-                y_vector_htp,
-                cl_vector_htp,
-            ) = self.post_processing_htp_ac(
-                beta,
-                aspect_ratio_htp,
-                area_ratio,
-                mach,
-                aoa_angle,
-                cl_htp_airfoil,
-                cdp_htp_airfoil,
-                htp_0,
-                htp_aoa,
-            )
+            if comp_opt == "ac" or comp_opt == "htp":
+                (
+                    cl_0_htp,
+                    cl_aoa_htp,
+                    cl_alpha_htp,
+                    coef_k_htp,
+                    y_vector_htp,
+                    cl_vector_htp,
+                ) = self.post_processing_htp_ac(
+                    beta,
+                    aspect_ratio_htp,
+                    area_ratio,
+                    mach,
+                    aoa_angle,
+                    cl_htp_airfoil,
+                    cdp_htp_airfoil,
+                    htp_0,
+                    htp_aoa,
+                )
 
             # Post-process HTP-isolated data -------------------------------------------------------
-            cl_alpha_htp_isolated = (
-                float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
-                / beta
-                * area_ratio
-                / (aoa_angle * np.pi / 180)
-            )
+            if comp_opt == "ac" or comp_opt == "htp":
+                cl_alpha_htp_isolated = (
+                    float(htp_aoa_isolated["cl"] - htp_0_isolated["cl"])
+                    / beta
+                    * area_ratio
+                    / (aoa_angle * np.pi / 180)
+                )
 
             # Resize vectors -----------------------------------------------------------------------
-            (y_vector_wing, cl_vector_wing, chord_vector_wing) = self.resize_wing_vector(
-                y_vector_wing, cl_vector_wing, chord_vector_wing
-            )
-            (y_vector_htp, cl_vector_htp) = self.resize_htp_vector(y_vector_htp, cl_vector_htp)
+            if comp_opt == "ac" or comp_opt == "wing":
+                (y_vector_wing, cl_vector_wing, chord_vector_wing) = self.resize_wing_vector(
+                    y_vector_wing, cl_vector_wing, chord_vector_wing
+                )
+            if comp_opt == "ac" or comp_opt == "htp":
+                (y_vector_htp, cl_vector_htp) = self.resize_htp_vector(y_vector_htp, cl_vector_htp)
 
             # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
@@ -624,8 +648,35 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.ny3 = self.ny2  # n° of panels in the un-flapped exterior portion of the wing
 
         self.n_y = int(self.ny1 + self.ny2 + self.ny3)
+
+        # Generate WING
+        if run_opt == "wing":
+            self.wing = {
+            "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
+            "y_panel": np.zeros(2 * self.n_y + 1),
+            "z": np.zeros(self.n_x + 1),
+            "x_le": np.zeros(2 * self.n_y + 1),
+            "chord": np.zeros(2 * self.n_y + 1),
+            "panel_span": np.zeros(2 * self.n_y),
+            "panel_chord": np.zeros(self.n_x * self.n_y),
+            "panel_surf": np.zeros(self.n_x * self.n_y),
+            "x_c": np.zeros(self.n_x * 2 * self.n_y),
+            "yc": np.zeros(self.n_x * 2 * self.n_y),
+            "x1": np.zeros(self.n_x * 2 * self.n_y),
+            "x2": np.zeros(self.n_x * 2 * self.n_y),
+            "y1": np.zeros(self.n_x * 2 * self.n_y),
+            "y2": np.zeros(self.n_x * 2 * self.n_y),
+            "panel_angle": np.zeros(self.n_x),
+            "panel_angle_vect": np.zeros(self.n_x * self.n_y),
+            "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+            "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+            }
+            self._generate_wing(inputs)
+        
+        # Generate HTP
+        if run_opt == "htp":
         # Define elements
-        self.wing = {
+            self.htp = {
             "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
             "y_panel": np.zeros(2 * self.n_y + 1),
             "z": np.zeros(self.n_x + 1),
@@ -645,14 +696,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
             "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
         }
-        # Duplicate for HTP
-        self.htp = copy.deepcopy(self.wing)
-
-        # Generate WING
-        if run_opt == "wing":
-            self._generate_wing(inputs)
-        else: 
-        # Generate HTP
             self._generate_htp(inputs)
 
     def _generate_wing(self, inputs):
