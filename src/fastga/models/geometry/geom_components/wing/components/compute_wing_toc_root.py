@@ -21,7 +21,7 @@ from ..constants import SUBMODEL_WING_THICKNESS_RATIO_ROOT
 
 # TODO: computes relative thickness and generates profiles --> decompose
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_THICKNESS_RATIO_ROOT, "fastga.submodel.geometry.wing.thickness_ratio.root.legacy"
+    SUBMODEL_WING_THICKNESS_RATIO_ROOT, "fastga.submodel.geometry.wing.thickness_ratio_root.legacy"
 )
 class ComputeWingTocRoot(om.ExplicitComponent):
     """Wing root ToC estimation."""

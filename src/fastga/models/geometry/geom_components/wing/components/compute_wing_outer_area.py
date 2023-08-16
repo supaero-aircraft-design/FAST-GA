@@ -19,7 +19,7 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_WING_OUTER_AREA
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_OUTER_AREA, "fastga.submodel.geometry.wing.area.outer.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_OUTER_AREA, "fastga.submodel.geometry.wing.outer_area.legacy")
 class ComputeWingOuterArea(om.ExplicitComponent):
     """Wing outer area estimation."""
 

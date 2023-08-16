@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_WING_THICKNESS_RATIO_ROOT = "submodel.geometry.wing.thickness_ratio.root"
-SUBMODEL_WING_THICKNESS_RATIO_KINK = "submodel.geometry.wing.thickness_ratio.kink"
-SUBMODEL_WING_THICKNESS_RATIO_TIP = "submodel.geometry.wing.thickness_ratio.tip"
+SUBMODEL_WING_THICKNESS_RATIO_ROOT = "submodel.geometry.wing.thickness_ratio_root"
+SUBMODEL_WING_THICKNESS_RATIO_KINK = "submodel.geometry.wing.thickness_ratio_kink"
+SUBMODEL_WING_THICKNESS_RATIO_TIP = "submodel.geometry.wing.thickness_ratio_tip"
 SUBMODEL_WING_SPAN = "submodel.geometry.wing.span"
 SUBMODEL_WING_ROOT_HEIGHT = "submodel.geometry.wing.height.root"
 SUBMODEL_WING_TIP_HEIGHT = "submodel.geometry.wing.height.tip"
@@ -37,5 +37,6 @@ SUBMODEL_WING_SWEEP_0 = "submodel.geometry.wing.sweep.0"
 SUBMODEL_WING_SWEEP_50 = "submodel.geometry.wing.sweep.50"
 SUBMODEL_WING_SWEEP_100_INNER = "submodel.geometry.wing.sweep.100_inner"
 SUBMODEL_WING_SWEEP_100_OUTER = "submodel.geometry.wing.sweep.100_outer"
-SUBMODEL_WING_WET_AREA = "submodel.geometry.wing.area.wet"
-SUBMODEL_WING_OUTER_AREA = "submodel.geometry.wing.area.outer"
+SUBMODEL_WING_WET_AREA = "submodel.geometry.wing.wet_area"
+SUBMODEL_WING_OUTER_AREA = "submodel.geometry.wing.outer_area"
+SUBMODEL_WING_THICKNESS_RATIO = "submodel.geometry.wing.thickness_ratio"
