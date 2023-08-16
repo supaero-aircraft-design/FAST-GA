@@ -610,10 +610,16 @@ class XfoilPolar(ExternalCodeComp):
                     min(upper_reynolds) - max(lower_reynolds)
                 )
                 # Search for common alpha range for linear interpolation
-                alpha_lower = string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]).ravel()
-                alpha_lower  = alpha_lower.tolist()
-                alpha_upper = string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]).ravel()
-                alpha_upper  = alpha_upper.tolist()
+                alpha_lower = (
+                    np.array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                    .ravel()
+                    .tolist()
+                )
+                alpha_upper = (
+                    np.array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                    .ravel()
+                    .tolist()
+                )
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                 interpolated_result.loc["alpha", index_lower_reynolds] = str(
                     alpha_shared.tolist()
@@ -621,8 +627,8 @@ class XfoilPolar(ExternalCodeComp):
                 labels.remove("alpha")
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).ravel()
-                    upper_value = string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).ravel()
+                    lower_value = np.array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).ravel()
+                    upper_value = np.array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).ravel()
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
                     if np.size(lower_value) == len(alpha_lower):
@@ -854,17 +860,13 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = np.array(
-            np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
-        ).ravel()
-        cl_min_2d = np.array(
-            np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
-        ).ravel()
-        ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
-        CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
-        CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
-        CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
-        CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
+        cl_max_2d = np.arrayinterpolated_result.loc["cl_max_2d", :].to_numpy()[0].ravel()
+        cl_min_2d = np.array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
+        ALPHA = np.array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
+        CL = np.array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
+        CD = np.array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
+        CDP = np.array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
+        CM = np.array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
