@@ -60,8 +60,8 @@ class ComputeAirConditioningSystemsWeightFLOPS(om.ExplicitComponent):
         m_iae = inputs["data:weight:systems:avionics:mass"]
         limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        fus_width = inputs["data:geometry:fuselage:maximum_width"]
-        fus_height = inputs["data:geometry:fuselage:maximum_height"]
+        fus_height = inputs["data:geometry:fuselage:maximum_width"]
+        fus_width = inputs["data:geometry:fuselage:maximum_height"]
 
         fus_planform = fus_width * inputs["data:geometry:fuselage:length"]
 

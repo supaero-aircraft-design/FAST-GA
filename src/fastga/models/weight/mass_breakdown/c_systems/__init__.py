@@ -12,7 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from .c1_electric_power_systems_weight import ComputeElectricWeight
-from .c5_hydraulic_power_systems_weight import ComputeHydraulicWeight
+from .c1_hydraulic_power_systems_weight import ComputeHydraulicWeight
 from .c22_air_conditioning_weight import ComputeAirConditioningSystemsWeight
 from .c22_air_conditioning_weight_flops import ComputeAirConditioningSystemsWeightFLOPS
 from .c23_de_icing_weight import ComputeAntiIcingSystemsWeight
