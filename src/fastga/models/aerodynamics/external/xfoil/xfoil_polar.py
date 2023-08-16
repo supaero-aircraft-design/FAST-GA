@@ -563,6 +563,7 @@ class XfoilPolar(ExternalCodeComp):
         Returns:
             _list_: interpolated result list
         """
+        interpolated_result = None
         data_saved = pd.read_csv(result_file)
         values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
         labels = data_saved.to_numpy()[:, 0].tolist()
@@ -609,20 +610,10 @@ class XfoilPolar(ExternalCodeComp):
                     min(upper_reynolds) - max(lower_reynolds)
                 )
                 # Search for common alpha range for linear interpolation
-                alpha_lower = (
-                    np.array(
-                        np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                    )
-                    .ravel()
-                    .tolist()
-                )
-                alpha_upper = (
-                    np.array(
-                        np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                    )
-                    .ravel()
-                    .tolist()
-                )
+                alpha_lower = string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0]).ravel()
+                alpha_lower  = alpha_lower.tolist()
+                alpha_upper = string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0]).ravel()
+                alpha_upper  = alpha_upper.tolist()
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                 interpolated_result.loc["alpha", index_lower_reynolds] = str(
                     alpha_shared.tolist()
@@ -630,12 +621,8 @@ class XfoilPolar(ExternalCodeComp):
                 labels.remove("alpha")
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = np.array(
-                        np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                    ).ravel()
-                    upper_value = np.array(
-                        np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                    ).ravel()
+                    lower_value = string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).ravel()
+                    upper_value = string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).ravel()
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
                     if np.size(lower_value) == len(alpha_lower):
@@ -647,7 +634,6 @@ class XfoilPolar(ExternalCodeComp):
                         )
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
-
         return interpolated_result
 
     def define_result_file_path(self):
