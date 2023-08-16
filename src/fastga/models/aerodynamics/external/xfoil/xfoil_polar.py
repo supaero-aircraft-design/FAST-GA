@@ -146,6 +146,7 @@ class XfoilPolar(ExternalCodeComp):
         no_file = True
         data_saved = None
         interpolated_result = None
+        interpolated = False
         # Modify file type respect to negaive AoA/ inviscod/single AoA options
         result_file = self.define_result_file_path()
         multiple_AoA = not self.options["single_AoA"]
@@ -153,8 +154,9 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(result_file):
             no_file = False
             interpolated_result = self.interpolation_for_exist_data(result_file, mach, reynolds)
+            interpolated = True
         # reslut_array_p(+AoA), reslut_array_n(-AoA)
-        if interpolated_result is None:
+        if not interpolated:
             (
                 result_array_p,
                 result_array_n,
@@ -592,8 +594,12 @@ class XfoilPolar(ExternalCodeComp):
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
-                index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
+                index_lower_reynolds = index_mach[
+                    np.where(reynolds_vect == max(lower_reynolds))[0]
+                ]
+                index_upper_reynolds = index_mach[
+                    np.where(reynolds_vect == min(upper_reynolds))[0]
+                ]
                 lower_values = data_reduced.loc[labels, index_lower_reynolds]
                 upper_values = data_reduced.loc[labels, index_upper_reynolds]
                 # Initialise values with lower reynolds
@@ -603,39 +609,46 @@ class XfoilPolar(ExternalCodeComp):
                     min(upper_reynolds) - max(lower_reynolds)
                 )
                 # Search for common alpha range for linear interpolation
-                
-                aoa_lower = string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                alpha_lower = aoa_lower.tolist()
-                
-                aoa_upper = string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                alpha_upper = aoa_upper.tolist()
-                
+                alpha_lower = (
+                    np.array(
+                        np.matrix(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                    )
+                    .ravel()
+                    .tolist()
+                )
+                alpha_upper = (
+                    np.array(
+                        np.matrix(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                    )
+                    .ravel()
+                    .tolist()
+                )
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                interpolated_result.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
+                interpolated_result.loc["alpha", index_lower_reynolds] = str(
+                    alpha_shared.tolist()
+                )
                 labels.remove("alpha")
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
                     lower_value = np.array(
-                        lower_values.loc[label, index_lower_reynolds].to_numpy()[0],
-                        dtype=np.float64,
+                        np.matrix(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
                     ).ravel()
                     upper_value = np.array(
-                        upper_values.loc[label, index_upper_reynolds].to_numpy()[0],
-                        dtype=np.float64,
+                        np.matrix(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
                     ).ravel()
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
-                    # aoa_upper = string_2_float_array(alpha_upper)
-                    # aoa_lower = string_2_float_array(alpha_lower)
                     if np.size(lower_value) == len(alpha_lower):
-                        lower_value = np.interp(alpha_shared, aoa_lower, lower_value)
-                        upper_value = np.interp(alpha_shared, aoa_upper, upper_value)
-                        return lower_value, upper_value
+                        lower_value = np.interp(
+                            alpha_shared, np.array(alpha_lower), lower_value
+                        )
+                        upper_value = np.interp(
+                            alpha_shared, np.array(alpha_upper), upper_value
+                        )
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
-                    return interpolated_result
 
-                return interpolated_result
+        return interpolated_result
 
     def define_result_file_path(self):
         """_summary_
@@ -855,13 +868,17 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
-        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
-        ALPHA = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
-        CL = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
-        CD = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
-        CDP = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
-        CM = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
+        cl_max_2d = np.array(
+            np.matrix(interpolated_result.loc["cl_max_2d", :].to_numpy()[0])
+        ).ravel()
+        cl_min_2d = np.array(
+            np.matrix(interpolated_result.loc["cl_min_2d", :].to_numpy()[0])
+        ).ravel()
+        ALPHA = np.array(np.matrix(interpolated_result.loc["alpha", :].to_numpy()[0])).ravel()
+        CL = np.array(np.matrix(interpolated_result.loc["cl", :].to_numpy()[0])).ravel()
+        CD = np.array(np.matrix(interpolated_result.loc["cd", :].to_numpy()[0])).ravel()
+        CDP = np.array(np.matrix(interpolated_result.loc["cdp", :].to_numpy()[0])).ravel()
+        CM = np.array(np.matrix(interpolated_result.loc["cm", :].to_numpy()[0])).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
