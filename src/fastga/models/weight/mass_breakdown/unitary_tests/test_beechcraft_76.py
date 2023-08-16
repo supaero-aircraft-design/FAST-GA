@@ -847,7 +847,7 @@ def test_compute_life_support_systems_weight_flops():
     )
     assert weight_c22 == pytest.approx(27.00, abs=1e-2)
     weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
-    assert weight_c23 == pytest.approx(28.99, abs=1e-2)
+    assert weight_c23 == pytest.approx(28.68, abs=1e-2)
     weight_c26 = problem.get_val("data:weight:systems:life_support:fixed_oxygen:mass", units="kg")
     assert weight_c26 == pytest.approx(8.40, abs=1e-2)
 
@@ -880,7 +880,7 @@ def test_compute_anti_icing_systems_weight_flops():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeAntiIcingSystemsWeightFLOPS(), ivc)
     weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
-    assert weight_c23 == pytest.approx(28.99, abs=1e-2)
+    assert weight_c23 == pytest.approx(28.68, abs=1e-2)
 
     data = problem.check_partials(compact_print=True)
     assert_check_partials(data, atol=1.0e-3, rtol=1.0e-3)

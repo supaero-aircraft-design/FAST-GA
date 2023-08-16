@@ -27,7 +27,7 @@ class ComputeAntiIcingSystemsWeightFLOPS(om.ExplicitComponent):
 
     def setup(self):
 
-        self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="ft")
+        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="ft")
         self.add_input("data:geometry:wing:span", val=np.nan, units="ft")
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:propulsion:nacelle:height", val=np.nan, units="ft")
@@ -40,7 +40,7 @@ class ComputeAntiIcingSystemsWeightFLOPS(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        fus_width = inputs["data:geometry:fuselage:maximum_height"]
+        fus_width = inputs["data:geometry:fuselage:maximum_width"]
         span = inputs["data:geometry:wing:span"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         engine_number = inputs["data:geometry:propulsion:engine:count"]
@@ -92,5 +92,5 @@ class ComputeAntiIcingSystemsWeightFLOPS(om.ExplicitComponent):
         )
         partials[
             "data:weight:systems:life_support:de_icing:mass",
-            "data:geometry:fuselage:maximum_height",
+            "data:geometry:fuselage:maximum_width",
         ] = 1.5
