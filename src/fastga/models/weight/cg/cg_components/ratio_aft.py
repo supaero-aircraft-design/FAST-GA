@@ -123,9 +123,9 @@ class ComputeCGRatioAircraftEmpty(om.Group):
             "x_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
+            "engine_z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_ENGINE_Z_CG), promotes=["*"]
         )
         self.add_subsystem(
-            "engine_z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_ENGINE_Z_CG), promotes=["*"]
+            "z_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_Z_CG), promotes=["*"]
         )
         self.add_subsystem("cg_ratio", ComputeCGRatio(), promotes=["*"])
