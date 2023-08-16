@@ -42,6 +42,9 @@ class ComputeVerticalTailGeometryFD(om.Group):
     def setup(self):
 
         self.add_subsystem(
+            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
+        )
+        self.add_subsystem(
             "vt_root_chord",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD),
             promotes=["*"],
@@ -50,21 +53,18 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
-        )
-        self.add_subsystem(
             "comp_vt_mac_length_fd",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_MAC_LENGTH),
             promotes=["*"],
         )
         self.add_subsystem(
-            "comp_vt_z_pos_fd",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_Z),
+            "comp_vt_x_pos_local_fd",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_X25_LOCAL),
             promotes=["*"],
         )
         self.add_subsystem(
-            "comp_vt_x_pos_local_fd",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_X25_LOCAL),
+            "comp_vt_z_pos_fd",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_Z),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -92,15 +92,15 @@ class ComputeVerticalTailGeometryFL(om.Group):
     def setup(self):
 
         self.add_subsystem(
+            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
+        )
+        self.add_subsystem(
             "vt_root_chord",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_ROOT_CHORD),
             promotes=["*"],
         )
         self.add_subsystem(
             "vt_tip_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_TIP_CHORD), promotes=["*"]
-        )
-        self.add_subsystem(
-            "vt_span", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SPAN), promotes=["*"]
         )
         self.add_subsystem(
             "comp_vt_mac_length_fl",
@@ -118,13 +118,13 @@ class ComputeVerticalTailGeometryFL(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "comp_vt_x_pos_from_wing_25MAC_fl",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
+            "comp_vt_x_pos_tip_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_TIP_X),
             promotes=["*"],
         )
         self.add_subsystem(
-            "comp_vt_x_pos_tip_fl",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_TIP_X),
+            "comp_vt_x_pos_from_wing_25MAC_fl",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
             promotes=["*"],
         )
         self.add_subsystem(

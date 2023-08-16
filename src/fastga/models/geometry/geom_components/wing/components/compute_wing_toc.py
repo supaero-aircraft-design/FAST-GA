@@ -1,4 +1,4 @@
-"""Estimation of wing kink ToC."""
+"""Estimation of wing ToC."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,32 +12,40 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import openmdao.api as om
+
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_THICKNESS_RATIO_KINK
+from ..constants import (
+    SUBMODEL_WING_THICKNESS_RATIO,
+    SUBMODEL_WING_THICKNESS_RATIO_ROOT,
+    SUBMODEL_WING_THICKNESS_RATIO_KINK,
+    SUBMODEL_WING_THICKNESS_RATIO_TIP,
+)
 
 
 # TODO: computes relative thickness and generates profiles --> decompose
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_THICKNESS_RATIO_KINK, "fastga.submodel.geometry.wing.thickness_ratio_kink.legacy"
+    SUBMODEL_WING_THICKNESS_RATIO, "fastga.submodel.geometry.wing.thickness_ratio.legacy"
 )
-class ComputeWingTocKink(om.ExplicitComponent):
-    """Wing kink ToC estimation."""
+class ComputeWingToc(om.Group):
+    # TODO: Document hypothesis. Cite sources
+    """Wing ToC estimation."""
 
     def setup(self):
 
-        self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
-
-        self.add_output("data:geometry:wing:kink:thickness_ratio")
-
-        self.declare_partials(of="*", wrt="*", val=0.94)
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        el_aero = inputs["data:geometry:wing:thickness_ratio"]
-
-        el_break = 0.94 * el_aero
-
-        outputs["data:geometry:wing:kink:thickness_ratio"] = el_break
+        self.add_subsystem(
+            "root",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_ROOT),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "kink",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_KINK),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "tip",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_TIP),
+            promotes=["*"],
+        )
