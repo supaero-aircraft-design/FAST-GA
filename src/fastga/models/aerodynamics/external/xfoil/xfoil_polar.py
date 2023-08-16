@@ -140,7 +140,7 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
-
+        
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
         no_file = True
@@ -151,6 +151,7 @@ class XfoilPolar(ExternalCodeComp):
         multiple_AoA = not self.options["single_AoA"]
         single_AoA = self.options["single_AoA"]
         if pth.exists(result_file):
+            no_file = False
             interpolated_result = self.interpolation_for_exist_data(result_file, mach, reynolds)
         # reslut_array_p(+AoA), reslut_array_n(-AoA)
         if interpolated_result is None:
@@ -178,15 +179,15 @@ class XfoilPolar(ExternalCodeComp):
 
             if multiple_AoA:
                 (
-                alpha,
-                cl,
-                cd,
-                cdp,
-                cm,
-                cl_max_2d,
-                cl_min_2d,
-                cd_min_2d,
-                error,
+                    alpha,
+                    cl,
+                    cd,
+                    cdp,
+                    cm,
+                    cl_max_2d,
+                    cl_min_2d,
+                    cd_min_2d,
+                    error,
                 ) = self.post_processing_fill_value(result_array_p, result_array_n)
                 # Fix output length if needed
                 alpha, cl, cd, cdp, cm = self.fix_mutiple_aoa_output_length(alpha, cl, cd, cdp, cm)
@@ -560,7 +561,6 @@ class XfoilPolar(ExternalCodeComp):
         Returns:
             _list_: interpolated result list
         """
-        no_file = False
         data_saved = pd.read_csv(result_file)
         values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
         labels = data_saved.to_numpy()[:, 0].tolist()
@@ -603,32 +603,33 @@ class XfoilPolar(ExternalCodeComp):
                     min(upper_reynolds) - max(lower_reynolds)
                 )
                 # Search for common alpha range for linear interpolation
-                alpha_lower = (
-                    np.array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                    .ravel()
-                    .tolist()
-                )
-                alpha_upper = (
-                    np.array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                    .ravel()
-                    .tolist()
-                )
+                
+                aoa_lower = string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                alpha_lower = aoa_lower.tolist()
+                
+                aoa_upper = string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                alpha_upper = aoa_upper.tolist()
+                
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                 interpolated_result.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
                 labels.remove("alpha")
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
                     lower_value = np.array(
-                        lower_values.loc[label, index_lower_reynolds].to_numpy()[0]
+                        lower_values.loc[label, index_lower_reynolds].to_numpy()[0],
+                        dtype=np.float64,
                     ).ravel()
                     upper_value = np.array(
-                        upper_values.loc[label, index_upper_reynolds].to_numpy()[0]
+                        upper_values.loc[label, index_upper_reynolds].to_numpy()[0],
+                        dtype=np.float64,
                     ).ravel()
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
+                    # aoa_upper = string_2_float_array(alpha_upper)
+                    # aoa_lower = string_2_float_array(alpha_lower)
                     if np.size(lower_value) == len(alpha_lower):
-                        lower_value = np.interp(alpha_shared, np.array(alpha_lower), lower_value)
-                        upper_value = np.interp(alpha_shared, np.array(alpha_upper), upper_value)
+                        lower_value = np.interp(alpha_shared, aoa_lower, lower_value)
+                        upper_value = np.interp(alpha_shared, aoa_upper, upper_value)
                         return lower_value, upper_value
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
@@ -643,18 +644,15 @@ class XfoilPolar(ExternalCodeComp):
         Returns:
             _path_: result data path
         """
+        negative_angle_badge = ""
+        single_aoa_badge = ""
+        invicid_badge = ""
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
             negative_angle_badge = "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END]))) + "S"
-        else:
-            negative_angle_badge = ""
         if self.options["single_AoA"]:
             single_aoa_badge = "_S_AOA"
-        else:
-            single_aoa_badge = ""
         if self.options["Invicid_calculation"]:
             invicid_badge = "_inv"
-        else:
-            invicid_badge = ""
         naming = negative_angle_badge + single_aoa_badge + invicid_badge
         result_file = pth.join(
             pth.split(os.path.realpath(__file__))[0],
@@ -718,20 +716,46 @@ class XfoilPolar(ExternalCodeComp):
     def xfoil_single_aoa_convergence_check(
         self, inputs, outputs, reynolds, mach, result_array_p, result_array_n
     ):
-        
+
         try:
             # Post-processing
-            (alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error,) = self.post_processing_fill_value(result_array_p, result_array_n)
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+            ) = self.post_processing_fill_value(result_array_p, result_array_n)
 
         except:
             self.options[OPTION_ITER_LIMIT] = 10 * self.options[OPTION_ITER_LIMIT]
-        
-        # Rerun XFoil
-            (result_array_p, result_array_n, result_folder_path, tmp_directory, tmp_result_file_path,) = self.run_XFoil(inputs, outputs, reynolds, mach)
 
-        # Try post processing again
+            # Rerun XFoil
+            (
+                result_array_p,
+                result_array_n,
+                result_folder_path,
+                tmp_directory,
+                tmp_result_file_path,
+            ) = self.run_XFoil(inputs, outputs, reynolds, mach)
+
+            # Try post processing again
             try:
-                (alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error,) = self.post_processing_fill_value(result_array_p, result_array_n)  
+                (
+                    alpha,
+                    cl,
+                    cd,
+                    cdp,
+                    cm,
+                    cl_max_2d,
+                    cl_min_2d,
+                    cd_min_2d,
+                    error,
+                ) = self.post_processing_fill_value(result_array_p, result_array_n)
             except:
                 # Custom error message
                 print("Error: Xfoil failed to converge, please increase the iteration limit")
@@ -808,17 +832,11 @@ class XfoilPolar(ExternalCodeComp):
             alpha = alpha_interp
             warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
         else:
-            additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(alpha)))
-            alpha.extend(additional_zeros)
-            alpha = np.array(alpha)
-            cl.extend(additional_zeros)
-            cl = np.array(cl)
-            cd.extend(additional_zeros)
-            cd = np.array(cd)
-            cdp.extend(additional_zeros)
-            cdp = np.array(cdp)
-            cm.extend(additional_zeros)
-            cm = np.array(cm)
+            alpha = add_zeros(alpha)
+            cl = add_zeros(cl)
+            cd = add_zeros(cd)
+            cdp = add_zeros(cdp)
+            cm = add_zeros(cm)
 
         return alpha, cl, cd, cdp, cm
 
@@ -837,13 +855,13 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = np.array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
-        cl_min_2d = np.array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
-        ALPHA = np.array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
-        CL = np.array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
-        CD = np.array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
-        CDP = np.array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
-        CM = np.array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
+        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
+        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
+        ALPHA = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
+        CL = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
+        CD = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
+        CDP = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
+        CM = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
@@ -853,27 +871,11 @@ class XfoilPolar(ExternalCodeComp):
             cdp = np.interp(alpha, ALPHA, CDP)
             cm = np.interp(alpha, ALPHA, CM)
         else:
-            additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(ALPHA)))
-            alpha = ALPHA.tolist()
-            alpha.extend(additional_zeros)
-            # noinspection PyTypeChecker
-            alpha = np.asarray(alpha)
-            cl = CL.tolist()
-            cl.extend(additional_zeros)
-            # noinspection PyTypeChecker
-            cl = np.asarray(cl)
-            cd = CD.tolist()
-            cd.extend(additional_zeros)
-            # noinspection PyTypeChecker
-            cd = np.asarray(cd)
-            cdp = CDP.tolist()
-            cdp.extend(additional_zeros)
-            # noinspection PyTypeChecker
-            cdp = np.asarray(cdp)
-            cm = CM.tolist()
-            cm.extend(additional_zeros)
-            # noinspection PyTypeChecker
-            cm = np.asarray(cm)
+            alpha = add_zeros(ALPHA)
+            cl = add_zeros(CL)
+            cd = add_zeros(CD)
+            cdp = add_zeros(CDP)
+            cm = add_zeros(CM)
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
 
@@ -923,3 +925,15 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(self.stderr):
             stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
             shutil.move(self.stderr, stderr_file_path)
+
+def string_to_array(arr):
+    arr = np.array([float(v) for v in arr.strip('[]').split(',')])
+    return arr
+
+def add_zeros(arr):
+    additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(arr)))
+    if not isinstance(arr,list):
+        arr = arr.tolist()
+    arr.extend(additional_zeros)
+    arr = np.asarray(arr)
+    return arr

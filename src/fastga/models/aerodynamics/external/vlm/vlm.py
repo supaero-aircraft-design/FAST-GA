@@ -467,7 +467,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
         cdi_wing = np.sum(cdind_panel * panelsurf) / panelsurf_sum
-        wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955  # !!!: manual correction?
+        wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955  
         cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
         cm_wing = np.sum(cmpanel * panelsurf) / panelsurf_sum
 
