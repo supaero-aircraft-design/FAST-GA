@@ -22,11 +22,7 @@ from fastga.models.performances.mission.dynamic_equilibrium import DynamicEquili
 
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_EQUILIBRATED_POLAR
 
-@oad.RegisterSubmodel(
-    SUBMODEL_EQUILIBRATED_POLAR, "fastga.submodel.aerodynamics.cl_cd_polar.equilibrated.legacy"
-)
 class ComputeEquilibratedPolar(DynamicEquilibrium):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
