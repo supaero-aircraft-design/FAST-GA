@@ -68,7 +68,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
-        self.add_output("data:weight:aircraft:MFW", val = 270, units="kg")
+        self.add_output("data:weight:aircraft:MFW", val=270, units="kg")
 
         self.declare_partials("*", "*", method="fd")
 

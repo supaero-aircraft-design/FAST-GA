@@ -56,7 +56,7 @@ class UpdateWingArea(om.ExplicitComponent):
             "Looping on wing area with new value equal to %f",
             max(wing_area_mission, wing_area_approach),
         )
-        #print("\n\n FOR DEBUG GOOD: WING AREA IS ", max(wing_area_mission, wing_area_approach))
+        # print("\n\n FOR DEBUG GOOD: WING AREA IS ", max(wing_area_mission, wing_area_approach))
 
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
 

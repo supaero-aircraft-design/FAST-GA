@@ -76,8 +76,8 @@ class ComputeMaxMinCGRatio(ExplicitComponent):
 
         outputs["data:weight:aircraft:CG:aft:MAC_position"] = cg_max_aft_mac
         outputs["data:weight:aircraft:CG:fwd:MAC_position"] = cg_min_fwd_mac
-        #print("\n\n FOR DEBUG GOOD: CG max aft is: ", cg_max_aft_mac)
-        #print("\n\n FOR DEBUG GOOD: CG min fwd is: ", cg_min_fwd_mac)
+        # print("\n\n FOR DEBUG GOOD: CG max aft is: ", cg_max_aft_mac)
+        # print("\n\n FOR DEBUG GOOD: CG min fwd is: ", cg_min_fwd_mac)
 
         outputs["data:weight:aircraft:CG:aft:x"] = (
             mac_position - 0.25 * l0_wing + cg_max_aft_mac * l0_wing

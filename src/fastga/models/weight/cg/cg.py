@@ -57,8 +57,6 @@ class CG(om.Group):
         self.add_subsystem(
             "tank_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
         )
-        
-        
 
         # Solvers setup
         self.nonlinear_solver.options["debug_print"] = True

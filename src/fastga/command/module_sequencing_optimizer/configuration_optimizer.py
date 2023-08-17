@@ -1,9 +1,10 @@
 import os.path as pth
 import os
 import sys
-#import openmdao.api as om
-#from fastoad import api as api_cs25
-#from fastga.command import api as api_cs23
+
+# import openmdao.api as om
+# from fastoad import api as api_cs25
+# from fastga.command import api as api_cs23
 import yaml
 import shutil
 import time
@@ -42,7 +43,7 @@ def double_swap_algorithm(
         print("\nLoop nº: ", counter)
         improvement = False
 
-        #Load config file into dictionary:
+        # Load config file into dictionary:
         with open(CONFIGURATION_FILE, "r") as file:
             existing_data = yaml.safe_load(file)
 
@@ -56,9 +57,13 @@ def double_swap_algorithm(
             )
 
             existing_data["model"]["aircraft_sizing"] = {
-                key: config_dictionary[key] for key in keys_list if key in config_dictionary #fill dict with new order
+                key: config_dictionary[key]
+                for key in keys_list
+                if key in config_dictionary  # fill dict with new order
             }
-            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+            if is_valid_order(
+                keys_list, config_dictionary
+            ):  # check if order is valid according to restrictions set in function
                 print("Trying order: ", keys_list)
 
                 # Generate new config file with proposed order
@@ -69,7 +74,6 @@ def double_swap_algorithm(
                 conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
                 problem = conf.get_problem()
 
-
                 problem.setup()
                 problem.final_setup()
                 # convert problem to dictionary, as input for feedback_extractor
@@ -77,9 +81,13 @@ def double_swap_algorithm(
                 model_data = _get_viewer_data(problem, case_id=case_id)
 
                 # evaluate the score of the proposed order
-                #print('FOR DEBUG IN DOUBLE SWAP, CONFIG DICTIONARY IS:, (check if fame order as trying order)', config_dictionary)
+                # print('FOR DEBUG IN DOUBLE SWAP, CONFIG DICTIONARY IS:, (check if fame order as trying order)', config_dictionary)
                 score = feedback_extractor(
-                    model_data, existing_data["model"]["aircraft_sizing"], CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH#######################################################################################################################################################################################################################################
+                    model_data,
+                    existing_data["model"]["aircraft_sizing"],
+                    CONFIGURATION_FILE,
+                    score_criteria,
+                    WORK_FOLDER_PATH,  #######################################################################################################################################################################################################################################
                 )
 
                 if score < best_score:
@@ -99,11 +107,11 @@ def double_swap_algorithm(
                     print("Swap reverted")
                     print("Current order: ", keys_list)
             else:
-                #print("\n\n FOR DEBUG: BAD ORDER", keys_list)
+                # print("\n\n FOR DEBUG: BAD ORDER", keys_list)
                 keys_list[i], keys_list[-1 - swap_position] = (
-                        keys_list[-1 - swap_position],
-                        keys_list[i],
-                    )  # Revert the swap because order would not have run
+                    keys_list[-1 - swap_position],
+                    keys_list[i],
+                )  # Revert the swap because order would not have run
 
         if not improvement:
             swap_position = swap_position + 1
@@ -145,7 +153,7 @@ def single_swap_algorithm(
     print("____________________________________\n")
     print("Starting order: ", keys_list)
     counter = 0
-    
+
     if len(keys_list) < 2:
         sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
     while counter < len(keys_list):
@@ -161,17 +169,23 @@ def single_swap_algorithm(
         for i in range(len(keys_list) - 1):
 
             # Move last node to top position, displacing others (single swap)
-            shifted_element = keys_list.pop(-1-counter)
+            shifted_element = keys_list.pop(-1 - counter)
             keys_list.insert(swap_position, shifted_element)
 
             existing_data["model"]["aircraft_sizing"] = {
-                key: config_dictionary[key] for key in keys_list if key in config_dictionary #fill dict with new order
+                key: config_dictionary[key]
+                for key in keys_list
+                if key in config_dictionary  # fill dict with new order
             }
-            if is_valid_order(keys_list, config_dictionary): #check if order is valid according to restrictions set in function
+            if is_valid_order(
+                keys_list, config_dictionary
+            ):  # check if order is valid according to restrictions set in function
                 print("Trying order: ", keys_list)
 
                 with open(CONFIGURATION_FILE, "w") as file:
-                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False) #write config file with new order if it's valid
+                    yaml.dump(
+                        existing_data, file, default_flow_style=False, sort_keys=False
+                    )  # write config file with new order if it's valid
 
                 # convert config file to problem and then to dictionary, as input for feedback_extractor
                 conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
@@ -201,21 +215,27 @@ def single_swap_algorithm(
                     break
 
                 else:
-                    shifted_element = keys_list.pop(swap_position)  # undo the change because the order is worst than the best proposed
-                    keys_list.insert(len(keys_list)-counter, shifted_element)
-                    swap_position = swap_position + 1 ###########################################################
+                    shifted_element = keys_list.pop(
+                        swap_position
+                    )  # undo the change because the order is worst than the best proposed
+                    keys_list.insert(len(keys_list) - counter, shifted_element)
+                    swap_position = (
+                        swap_position + 1
+                    )  ###########################################################
                     print("Swap reverted")
                     print("Current order: ", keys_list, "\n")
             else:
-                #print("\n\n FOR DEBUG: BAD ORDER", keys_list)
-                shifted_element = keys_list.pop(swap_position)  # undo the change because the order would not run (invalid order)
+                # print("\n\n FOR DEBUG: BAD ORDER", keys_list)
+                shifted_element = keys_list.pop(
+                    swap_position
+                )  # undo the change because the order would not run (invalid order)
                 keys_list.insert(len(keys_list) - counter, shifted_element)
                 swap_position = swap_position + 1
 
         if not improvement:
-            counter = counter + 1 
+            counter = counter + 1
 
-    keys_list = best_order # Get the best order found so far
+    keys_list = best_order  # Get the best order found so far
     existing_data["model"]["aircraft_sizing"] = {
         key: config_dictionary[key] for key in keys_list if key in config_dictionary
     }
@@ -307,27 +327,27 @@ def is_valid_order(keys_list, dictionary):
             for aerodynamics_index in aerodynamics_indices
             if performances_index is not None and aerodynamics_index is not None
         ):
-            print('FOR DEBUG: Avoided aero > performance violation')
+            print("FOR DEBUG: Avoided aero > performance violation")
             return False
 
-    #wing area has to be computed before geometry
-#    if is_id_starts_with("fastga.loop.wing_area.", id_indices) and is_id_starts_with(
-#        "fastga.geometry.", id_indices
-#    ):
-#        geometry_indices = [
-#            get_module_index(id) for id in id_indices if id.startswith("fastga.geometry.")
-#        ]
-#        wing_area_indices = [
-#            get_module_index(id) for id in id_indices if id.startswith("fastga.loop.wing_area.")
-#        ]
-#        if any(
-#            wing_area_index > geometry_index
-#            for wing_area_index in wing_area_indices
-#            for geometry_index in geometry_indices
-#            if wing_area_index is not None and geometry_index is not None
-#        ):
-#            print('FOR DEBUG: Avoided wing_area > geo violation')
-#            return False
+    # wing area has to be computed before geometry
+    #    if is_id_starts_with("fastga.loop.wing_area.", id_indices) and is_id_starts_with(
+    #        "fastga.geometry.", id_indices
+    #    ):
+    #        geometry_indices = [
+    #            get_module_index(id) for id in id_indices if id.startswith("fastga.geometry.")
+    #        ]
+    #        wing_area_indices = [
+    #            get_module_index(id) for id in id_indices if id.startswith("fastga.loop.wing_area.")
+    #        ]
+    #        if any(
+    #            wing_area_index > geometry_index
+    #            for wing_area_index in wing_area_indices
+    #            for geometry_index in geometry_indices
+    #            if wing_area_index is not None and geometry_index is not None
+    #        ):
+    #            print('FOR DEBUG: Avoided wing_area > geo violation')
+    #            return False
 
     # Geometry has to be computed before aero
     if is_id_starts_with("fastga.geometry.", id_indices) and is_id_starts_with(
@@ -345,7 +365,7 @@ def is_valid_order(keys_list, dictionary):
             for aerodynamics_index in aerodynamics_indices
             if geometry_index is not None and aerodynamics_index is not None
         ):
-            print('FOR DEBUG: Avoided geo > aero violation')
+            print("FOR DEBUG: Avoided geo > aero violation")
             return False
 
     # if (is_id_starts_with('fastga.geometry.', id_indices) and
@@ -355,10 +375,10 @@ def is_valid_order(keys_list, dictionary):
     #    if any(geometry_index > wing_area_wing_pos_index for geometry_index in geometry_indices for wing_area_wing_pos_index in wing_area_wing_pos_indices if geometry_index is not None and wing_area_wing_pos_index is not None):
     #        return False
 
-    #if (
+    # if (
     #    get_module_index("fastga.weight.legacy") is not None
     #    and get_module_index("fastga.loop.mtow") is not None
-    #):
+    # ):
     #    if get_module_index("fastga.weight.legacy") > get_module_index("fastga.loop.mtow"):
     #        return False
 
