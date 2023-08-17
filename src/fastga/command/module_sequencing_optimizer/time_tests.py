@@ -14,30 +14,29 @@ import time
 # Define relative path
 DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
-SRC_FOLDER_PATH = "src/fastga/source_files"
 times_module = []
 
-for i in range(3):
+try:
+    os.remove(WORK_FOLDER_PATH, "problem_outputs.xml")
+except:
+    print("nothing removed")
+# Define files
+
+CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
+SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
+
+api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
+
+for i in range(2):
     print("Loop : ", i)
-    try:
-        os.remove(WORK_FOLDER_PATH, "problem_outputs_test.xml")
-    except:
-        print("nothing removed")
-    # Define files
-
-    CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
-    SOURCE_FILE = pth.join(DATA_FOLDER_PATH, "beechcraft_76.xml")
-
-    api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
 
     starting = time.time()
     eval_problem = api_cs25.evaluate_problem(CONFIGURATION_FILE, overwrite=True)
     optim_problem = api_cs25.optimize_problem(CONFIGURATION_FILE, overwrite=True)
-
     times_module.append(time.time() - starting)
 
 print(
-    "\n double swap count problem without opt ran in ",
+    "\n sample problem with opt ran in ",
     sum(times_module) / len(times_module),
     " seconds \n",
 )
