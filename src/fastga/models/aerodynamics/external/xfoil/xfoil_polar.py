@@ -154,9 +154,8 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(result_file):
             no_file = False
             interpolated_result = self.interpolation_for_exist_data(result_file, mach, reynolds)
-            interpolated = True
         # reslut_array_p(+AoA), reslut_array_n(-AoA)
-        if not interpolated:
+        if interpolated_result is None:
             (
                 result_array_p,
                 result_array_n,
@@ -587,13 +586,18 @@ class XfoilPolar(ExternalCodeComp):
         reynolds_vect = np.array(
             [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
         )
-        index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
+        
+        index_reynolds = index_mach[np.where(reynolds_vect == reynolds)]
         if len(index_reynolds) == 1:
             interpolated_result = data_reduced.loc[labels, index_reynolds]
         # Else search for lower/upper Reynolds
         else:
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
+            _LOGGER.debug("lower_reynolds = %s " , lower_reynolds)
+            _LOGGER.debug("lower_reynolds type = %s " ,type(lower_reynolds))
+            _LOGGER.debug("upper_reynolds = %s " , upper_reynolds)
+            _LOGGER.debug("upper_reynolds type = %s " ,type(upper_reynolds))
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
                 index_lower_reynolds = index_mach[
                     np.where(reynolds_vect == max(lower_reynolds))[0]
@@ -611,12 +615,12 @@ class XfoilPolar(ExternalCodeComp):
                 )
                 # Search for common alpha range for linear interpolation
                 alpha_lower = (
-                    np.array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                    string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
                     .ravel()
                     .tolist()
                 )
                 alpha_upper = (
-                    np.array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                    string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
                     .ravel()
                     .tolist()
                 )
@@ -624,21 +628,41 @@ class XfoilPolar(ExternalCodeComp):
                 interpolated_result.loc["alpha", index_lower_reynolds] = str(
                     alpha_shared.tolist()
                 )
+                
+                _LOGGER.debug("alpha_lower = %s " , np.array(alpha_lower))
+                _LOGGER.debug("alpha_lower type = %s " ,type(np.array(alpha_lower)))
+                _LOGGER.debug("alpha_lower size = %s " ,np.size(np.array(alpha_lower)))
+                _LOGGER.debug("alpha_upper = %s " , np.array(alpha_upper))
+                _LOGGER.debug("alpha_upper type = %s " ,type(np.array(alpha_upper)))
+                _LOGGER.debug("alpha_upper size = %s " ,np.size(np.array(alpha_upper)))
+                _LOGGER.debug("alpha_shared = %s " , alpha_shared)
+                _LOGGER.debug("alpha_shared type = %s " ,type(alpha_shared))
+                
                 labels.remove("alpha")
+                
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = np.array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).ravel()
-                    upper_value = np.array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).ravel()
+                    lower_value = string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).astype(np.float64).ravel()
+                    upper_value = string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).astype(np.float64).ravel()
+                    _LOGGER.debug("label = %s " , label)
+                    _LOGGER.debug("lower_value = %s " , lower_values)
+                    _LOGGER.debug("lower_value type = %s " ,type(lower_values))
+                    #_LOGGER.debug("lower_value size = %s " ,np.size(lower_values))
+                    _LOGGER.debug("upper_value = %s " , upper_values)
+                    _LOGGER.debug("upper_value type = %s " ,type(upper_values))
+                    #_LOGGER.debug("upper_value size = %s " ,np.size(upper_values))
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
                     if np.size(lower_value) == len(alpha_lower):
                         lower_value = np.interp(
-                            alpha_shared, np.array(alpha_lower), lower_value
+                            alpha_shared, np.array(alpha_lower), lower_value,
                         )
                         upper_value = np.interp(
-                            alpha_shared, np.array(alpha_upper), upper_value
+                            alpha_shared, np.array(alpha_upper), upper_value,
                         )
+                        
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
+                    _LOGGER.debug("value = %s " , value)
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
         return interpolated_result
 
@@ -664,6 +688,7 @@ class XfoilPolar(ExternalCodeComp):
             "resources",
             self.options["airfoil_file"].replace(".af", naming) + ".csv",
         )
+        _LOGGER.debug(self.options["airfoil_file"].replace(".af", naming) + ".csv")
         return result_file
 
     def post_processing_fill_value(self, result_array_p, result_array_n):
@@ -860,13 +885,13 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = np.arrayinterpolated_result.loc["cl_max_2d", :].to_numpy()[0].ravel()
-        cl_min_2d = np.array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
-        ALPHA = np.array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
-        CL = np.array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
-        CD = np.array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
-        CDP = np.array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
-        CM = np.array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
+        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
+        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
+        ALPHA = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
+        CL = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
+        CD = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
+        CDP = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
+        CM = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
@@ -934,6 +959,7 @@ class XfoilPolar(ExternalCodeComp):
 def string_to_array(arr):
     arr = np.array([float(v) for v in arr.strip('[]').split(',')])
     return arr
+
 
 def add_zeros(arr):
     additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(arr)))
