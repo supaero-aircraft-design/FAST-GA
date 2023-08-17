@@ -124,8 +124,8 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
-        #print('\n\n MACH NUMBER IS: ', mach)
-        #print('\n\n REYNOLDS NUMBER IS: ', reynolds)
+        #print('\n\n FOR DEBUG MACH NUMBER IS: ', mach)
+        #print('\n\n FOR DEBUG REYNOLDS NUMBER IS: ', reynolds)
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
@@ -181,7 +181,7 @@ class XfoilPolar(ExternalCodeComp):
             # Else search for lower/upper Reynolds
             else:
                 #print('\n\n I AM HERE BECAUSE reynolds is not in the reynolds_vec')
-                #print('\n\n REYNOLDS_VECT IS ', reynolds_vect)
+                #print('\n\n FOR DEBUG REYNOLDS_VECT IS ', reynolds_vect)
                 lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
                 upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
 
@@ -244,7 +244,6 @@ class XfoilPolar(ExternalCodeComp):
                         interpolated_result.loc[label, index_lower_reynolds] = str(value)
 
         if interpolated_result is None:
-            #print('!!!!!!!!!!!!!COULD NOT INTERPOLATE REYNOLDS!!!!!!!!!!!')
             # Create result folder first (if it must fail, let it fail as soon as possible)
             result_folder_path = self.options[OPTION_RESULT_FOLDER_PATH]
             if result_folder_path != "":

@@ -16,7 +16,7 @@ def feedback_extractor(
     import json
 
     # definition of the function to output an n2-ordered list of all the variables in the problem
-    # The dictionary is actually an alternation of lists of dicts where eahc dicht has the key 'children', which contains a list of dicts, and so on
+    # The dictionary is actually an alternation of lists of dicts where each dict has the key 'children', which contains a list of dicts, and so on
     def process_variables(children_list, prefix=""):
         variables = []
         for child in children_list:
