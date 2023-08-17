@@ -38,7 +38,7 @@ class ComputeMFWSimple(ExplicitComponent):
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
 
-        self.add_output("data:weight:aircraft:MFW", val = 270, units="kg")
+        self.add_output("data:weight:aircraft:MFW", val=270, units="kg")
 
         self.declare_partials(
             "data:weight:aircraft:MFW",
