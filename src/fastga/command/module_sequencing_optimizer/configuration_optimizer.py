@@ -267,6 +267,7 @@ def hybrid_swap_algorithm(
     # Setup the problem again with the updated order from the double swap
     conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
     problem = conf.get_problem()
+
     problem.setup()
     problem.final_setup()
     case_id = None
