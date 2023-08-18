@@ -19,6 +19,8 @@ from openmdao.utils.om_warnings import issue_warning
 def double_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
+    conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+    problem = conf.get_problem()
 
     dict_with_solvers = config_dictionary.copy()
     config_dictionary.pop("nonlinear_solver", None)
@@ -35,6 +37,10 @@ def double_swap_algorithm(
     print("Starting order: ", keys_list)
     counter = 0
 
+    # Load config file into dictionary:
+    with open(CONFIGURATION_FILE, "r") as file:
+        existing_data = yaml.safe_load(file)
+
     swap_position = 0
     if len(keys_list) < 2:
         sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
@@ -42,10 +48,6 @@ def double_swap_algorithm(
         counter = counter + 1
         print("\nLoop nº: ", counter)
         improvement = False
-
-        # Load config file into dictionary:
-        with open(CONFIGURATION_FILE, "r") as file:
-            existing_data = yaml.safe_load(file)
 
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
@@ -66,14 +68,11 @@ def double_swap_algorithm(
             ):  # check if order is valid according to restrictions set in function
                 print("Trying order: ", keys_list)
 
-                # Generate new config file with proposed order
-                with open(CONFIGURATION_FILE, "w") as file:
-                    yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
-                # convert config file to problem and then to dictionary, as input for feedback_extractor
-
-                conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-                problem = conf.get_problem()
-
+                problem.setup()
+                #CHANGE ORDER IN THE OPENMDAO PROBLEM WITHOUT TOUCHING CONFIG FILE
+                ac_sizing=problem.model.aircraft_sizing
+                ac_sizing.set_order(list(existing_data["model"]["aircraft_sizing"].keys()))
+                print('FOR DEBUG: I made it through the reordering')
                 problem.setup()
                 problem.final_setup()
                 # convert problem to dictionary, as input for feedback_extractor
@@ -140,6 +139,9 @@ def single_swap_algorithm(
     problem_dictionary, config_dictionary, CONFIGURATION_FILE, score_criteria
 ):
 
+    conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+    problem = conf.get_problem()
+
     dict_with_solvers = config_dictionary.copy()
     config_dictionary.pop("nonlinear_solver", None)
     config_dictionary.pop("linear_solver", None)
@@ -154,16 +156,16 @@ def single_swap_algorithm(
     print("Starting order: ", keys_list)
     counter = 0
 
+    # Load config file into dictionary:
+    with open(CONFIGURATION_FILE, "r") as file:
+        existing_data = yaml.safe_load(file)
+
     if len(keys_list) < 2:
         sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
     while counter < len(keys_list):
         swap_position = 0
         print("Loop: nº", counter)
         improvement = False
-
-        # Generate new config file with proposed order
-        with open(CONFIGURATION_FILE, "r") as file:
-            existing_data = yaml.safe_load(file)
 
         # Find a better position for the last node
         for i in range(len(keys_list) - 1):
@@ -182,16 +184,12 @@ def single_swap_algorithm(
             ):  # check if order is valid according to restrictions set in function
                 print("Trying order: ", keys_list)
 
-                with open(CONFIGURATION_FILE, "w") as file:
-                    yaml.dump(
-                        existing_data, file, default_flow_style=False, sort_keys=False
-                    )  # write config file with new order if it's valid
-
-                # convert config file to problem and then to dictionary, as input for feedback_extractor
-                conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-                problem = conf.get_problem()
+                #CHANGE ORDER IN THE OPENMDAO PROBLEM WITHOUT TOUCHING CONFIG FILE
+                ac_sizing=problem.model.aircraft_sizing
+                ac_sizing.set_order(list(existing_data["model"]["aircraft_sizing"].keys()))
+                print('FOR DEBUG: I made it through the reordering')
                 problem.setup()
-                problem.final_setup()
+                problem.final_setup()       
                 # convert problem to dictionary, as input for feedback_extractor
                 case_id = None
                 model_data = _get_viewer_data(problem, case_id=case_id)
@@ -416,7 +414,7 @@ start = time.time()
 
 ############################################
 optimization_level = 1
-swap = "hybrid"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
 #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
