@@ -44,39 +44,18 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
     # noinspection PyTypeChecker
     def setup(self):
         self.add_subsystem(
-            "comp_local_reynolds_airfoil_wing",
-            ComputeLocalReynoldsWing(),
-            promotes=[
-                "data:aerodynamics:low_speed:unit_reynolds",
-                "data:geometry:wing:MAC:length",
-                "data:aerodynamics:wing:MAC:low_speed:reynolds",
-            ],
-        )
-        self.add_subsystem(
-            "comp_local_reynolds_airfoil_htp",
-            ComputeLocalReynoldsHorizontalTail(),
-            promotes=[
-                "data:aerodynamics:low_speed:unit_reynolds",
-                "data:geometry:horizontal_tail:MAC:length",
-                "data:aerodynamics:horizontal_tail:efficiency",
-                "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
-            ],
-        )
-        self.add_subsystem(
-            "comp_local_reynolds_airfoil_vtp",
-            ComputeLocalReynoldsVerticalTail(),
-            promotes=[
-                "data:aerodynamics:low_speed:unit_reynolds",
-                "data:aerodynamics:horizontal_tail:efficiency",
-                "data:geometry:vertical_tail:MAC:length",
-                "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
-            ],
-        )
-        self.add_subsystem(
-            "comp_local_reynolds_airfoil_mach",
-            ComputeLocalReynoldsXfoilMach(),
+            "comp_local_reynolds_airfoil",
+            ComputeLocalReynolds(),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
+                "data:aerodynamics:low_speed:unit_reynolds",
+                "data:geometry:wing:MAC:length",
+                "data:geometry:horizontal_tail:MAC:length",
+                "data:aerodynamics:horizontal_tail:efficiency",
+                "data:geometry:vertical_tail:MAC:length",
+                "data:aerodynamics:wing:MAC:low_speed:reynolds",
+                "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
+                "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
             ],
         )
 
@@ -113,16 +92,16 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
 
         self.add_subsystem("airfoil_lift_slope", _ComputeAirfoilLiftCurveSlope(), promotes=["*"])
 
-        self.connect("comp_local_reynolds_airfoil_mach.xfoil:mach", "wing_airfoil_slope.xfoil:mach")
+        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "wing_airfoil_slope.xfoil:mach")
         self.connect(
             "data:aerodynamics:wing:MAC:low_speed:reynolds", "wing_airfoil_slope.xfoil:reynolds"
         )
-        self.connect("comp_local_reynolds_airfoil_mach.xfoil:mach", "htp_airfoil_slope.xfoil:mach")
+        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "htp_airfoil_slope.xfoil:mach")
         self.connect(
             "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
             "htp_airfoil_slope.xfoil:reynolds",
         )
-        self.connect("comp_local_reynolds_airfoil_mach.xfoil:mach", "vtp_airfoil_slope.xfoil:mach")
+        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "vtp_airfoil_slope.xfoil:mach")
         self.connect(
             "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
             "vtp_airfoil_slope.xfoil:reynolds",
@@ -136,12 +115,20 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
         self.connect("vtp_airfoil_slope.xfoil:CL", "xfoil:vertical_tail:CL")
 
 
-class ComputeLocalReynoldsWing(om.ExplicitComponent):
+class ComputeLocalReynolds(om.ExplicitComponent):
     def setup(self):
+        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
+        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9)
+        self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
 
         self.add_output("data:aerodynamics:wing:MAC:low_speed:reynolds")
+        self.add_output("data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds")
+        self.add_output("data:aerodynamics:vertical_tail:MAC:low_speed:reynolds")
+
+        self.add_output("xfoil:mach")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -150,53 +137,16 @@ class ComputeLocalReynoldsWing(om.ExplicitComponent):
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:MAC:length"]
         )
-
-
-class ComputeLocalReynoldsHorizontalTail(om.ExplicitComponent):
-    def setup(self):
-        self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-        self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9)
-
-        self.add_output("data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:horizontal_tail:MAC:length"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-
-
-class ComputeLocalReynoldsVerticalTail(om.ExplicitComponent):
-    def setup(self):
-        self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
-        self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=0.9)
-        self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
-
-        self.add_output("data:aerodynamics:vertical_tail:MAC:low_speed:reynolds")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:vertical_tail:MAC:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:vertical_tail:MAC:length"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-
-
-class ComputeLocalReynoldsXfoilMach(om.ExplicitComponent):
-    def setup(self):
-        self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-
-        self.add_output("xfoil:mach")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 

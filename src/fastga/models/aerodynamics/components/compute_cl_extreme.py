@@ -22,28 +22,19 @@ from fastga.models.aerodynamics.constants import SUBMODEL_CL_EXTREME
 @oad.RegisterSubmodel(
     SUBMODEL_CL_EXTREME, "fastga.submodel.aerodynamics.aircraft.extreme_lift_coefficient.legacy"
 )
-class ComputeAircraftMaxCl(om.Group):
+class ComputeAircraftMaxCl(om.ExplicitComponent):
     """
     Add high-lift contribution (flaps)
     """
 
     def setup(self):
 
-        self.add_subsystem("comp_cl_max_takeoff", ComputeCLMaxTakeoff(), promotes=["*"])
-        self.add_subsystem("comp_cl_max_landing", ComputeCLMaxLanding(), promotes=["*"])
-
-
-class ComputeCLMaxTakeoff(om.ExplicitComponent):
-    """
-    Add high-lift contribution for takeoff phase
-    """
-
-    def setup(self):
-
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL_max", val=np.nan)
+        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan)
 
         self.add_output("data:aerodynamics:aircraft:takeoff:CL_max")
+        self.add_output("data:aerodynamics:aircraft:landing:CL_max")
 
         self.declare_partials(
             "data:aerodynamics:aircraft:takeoff:CL_max",
@@ -55,26 +46,6 @@ class ComputeCLMaxTakeoff(om.ExplicitComponent):
             "data:aerodynamics:flaps:takeoff:CL_max",
             val=1.0,
         )
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
-        cl_max_takeoff = cl_max_clean + inputs["data:aerodynamics:flaps:takeoff:CL_max"]
-        
-        outputs["data:aerodynamics:aircraft:takeoff:CL_max"] = cl_max_takeoff
-
-
-class ComputeCLMaxLanding(om.ExplicitComponent):
-    """
-    Add high-lift contribution for landing phase
-    """
-
-    def setup(self):
-
-        self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
-        self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan)
-
-        self.add_output("data:aerodynamics:aircraft:landing:CL_max")
 
         self.declare_partials(
             "data:aerodynamics:aircraft:landing:CL_max",
@@ -88,8 +59,10 @@ class ComputeCLMaxLanding(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        
+
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
+        cl_max_takeoff = cl_max_clean + inputs["data:aerodynamics:flaps:takeoff:CL_max"]
         cl_max_landing = cl_max_clean + inputs["data:aerodynamics:flaps:landing:CL_max"]
-        
+
+        outputs["data:aerodynamics:aircraft:takeoff:CL_max"] = cl_max_takeoff
         outputs["data:aerodynamics:aircraft:landing:CL_max"] = cl_max_landing
