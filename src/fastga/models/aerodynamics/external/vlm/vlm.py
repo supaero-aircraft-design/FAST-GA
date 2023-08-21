@@ -18,7 +18,7 @@ import os
 import os.path as pth
 import warnings
 from typing import Optional
-import timeit
+
 import numpy as np
 import openmdao.api as om
 import pandas as pd
@@ -777,7 +777,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.wing["chord"] = chord
         self.wing["x_le"] = x_le
         # Launch common code
-        _LOGGER.debug("wing")
         self._generate_common(self.wing)
 
     def _generate_htp(self, inputs):
@@ -824,7 +823,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp["chord"] = chord
         self.htp["x_le"] = x_le
         # Launch common code
-        _LOGGER.debug("htp")
         self._generate_common(self.htp)
 
     def _generate_common(self, dictionary):
@@ -891,11 +889,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             n_x,
             n_y,
         )
-        #_LOGGER.debug("y_c = %s", y_c)
-        start = timeit.default_timer()
+
+        
         aic, aic_wake = self.aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y)
-        end = timeit.default_timer()
-        _LOGGER.debug("AIC computation time = %s", (end-start))
+        
         # Save data
         dictionary["x_panel"] = x_panel
         dictionary["panel_span"] = panelspan
@@ -1454,6 +1451,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         ) / coeff_2_l
         aic_wake = coeff_10_r / (4 * np.pi) + coeff_10_l / (4 * np.pi)
         aic = coeff_10_l / (4 * np.pi) + coeff_10_r / (4 * np.pi) 
+        """
         for i in range((n_x * n_y)*(n_x * n_y)):
             if coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i] != 0:
                     aic[i] = aic[i] +(coeff_9_r[i] / (coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i])) / (
@@ -1463,6 +1461,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     aic[i] = aic[i] +(coeff_9_l[i] / (coeff_1_l[i] * coeff_4_l[i] - coeff_2_l[i] * coeff_3_l[i])) / (
                         4 * np.pi
                     )
+        """
+        # Calculate cross products
+        den_r = coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r
+        den_l = coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l
+
+        # Create masks
+        mask_r = den_r != 0
+        mask_l = den_l != 0 
+        # Update aic 
+        aic[mask_r] = aic[mask_r] + coeff_9_r[mask_r] / den_r[mask_r] / (4 * np.pi)
+        aic[mask_l] = aic[mask_l] + coeff_9_l[mask_l] / den_l[mask_l] / (4 * np.pi)
         # reshape into 2D array for later matrix computation
         aic = aic.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
         aic_wake = aic_wake.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
@@ -1493,7 +1502,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         for i in range(n_x + 1):
             x_panel[i, :] = x_le + chord * i / n_x
-
+        #x = np.arange(n_x+1)[:, None] / n_x
+        #x_panel = x_le[None, :] + x * chord[None, :]
+        
         # Calculate panel span with symmetry
         panelspan = y_panel[1:] - y_panel[:-1]
         panelspan[n_y:] = panelspan[:n_y]
