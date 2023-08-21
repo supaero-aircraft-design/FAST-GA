@@ -98,23 +98,21 @@ class ComputeMFWSimple(om.ExplicitComponent):
             m_vol_fuel = 718.9
             warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
 
+        ave_thickness = (
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
+        )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:area"] = (
-            3
-            * m_vol_fuel
-            * (
-                (7 * root_chord * root_thickness_ratio) / 20
-                + (7 * tip_chord * tip_thickness_ratio) / 20
-            )
-        ) / 10
+            0.3 * ave_thickness * m_vol_fuel
+        )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:root:chord"] = (
-            21 * m_vol_fuel * root_thickness_ratio * wing_area
-        ) / 200
+            0.105 * m_vol_fuel * root_thickness_ratio * wing_area
+        )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:tip:chord"] = (
-            21 * m_vol_fuel * tip_thickness_ratio * wing_area
-        ) / 200
+            0.105 * m_vol_fuel * tip_thickness_ratio * wing_area
+        )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:root:thickness_ratio"] = (
-            21 * m_vol_fuel * root_chord * wing_area
-        ) / 200
+            0.105 * m_vol_fuel * root_chord * wing_area
+        )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:tip:thickness_ratio"] = (
-            21 * m_vol_fuel * tip_chord * wing_area
-        ) / 200
+            0.105 * m_vol_fuel * tip_chord * wing_area
+        )

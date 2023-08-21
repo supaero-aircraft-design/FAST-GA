@@ -44,7 +44,7 @@ class ComputeHTSweep50(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
-        sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_ht * ((1.0 - taper_ht) / (1.0 + taper_ht)))
 
         outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
 
@@ -56,20 +56,24 @@ class ComputeHTSweep50(om.ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -(2 * (taper_ht - 1)) / (
+        ] = -(2.0 * (taper_ht - 1.0)) / (
             ar_ht ** 2
-            * ((np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1)
-            * (taper_ht + 1)
+            * (
+                (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0
+                + 1.0
+            )
+            * (taper_ht + 1.0)
         )
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:taper_ratio"
         ] = (
-            2 / (ar_ht * (taper_ht + 1)) - (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1) ** 2)
+            2.0 / (ar_ht * (taper_ht + 1.0))
+            - (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0) ** 2.0)
         ) / (
-            (np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1
+            (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0 + 1.0
         )
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
-        ] = (np.tan(sweep_0) ** 2 + 1) / (
-            (np.tan(sweep_0) + (2 * (taper_ht - 1)) / (ar_ht * (taper_ht + 1))) ** 2 + 1
+        ] = (np.tan(sweep_0) ** 2.0 + 1.0) / (
+            (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0 + 1.0
         )

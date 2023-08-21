@@ -45,7 +45,7 @@ class ComputeHTMacLength(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
 
         mac_ht = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord ** 2.0 + root_chord * tip_chord + tip_chord ** 2.0)
             / (tip_chord + root_chord)
             * 2
             / 3

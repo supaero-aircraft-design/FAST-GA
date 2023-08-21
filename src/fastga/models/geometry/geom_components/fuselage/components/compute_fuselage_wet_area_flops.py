@@ -59,17 +59,17 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"
-        ] = h_f * np.pi * (fus_length / (b_f * h_f) ** 0.5 - 17 / 10) - (
+        ] = h_f * np.pi * (fus_length / (b_f * h_f) ** 0.5 - 1.7) - (
             np.pi * b_f * fus_length * h_f ** 2
         ) / (
-            2 * (b_f * h_f) ** 1.5
+            2.0 * (b_f * h_f) ** 1.5
         )
         partials[
             "data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"
-        ] = b_f * np.pi * (fus_length / (b_f * h_f) ** 0.5 - 17 / 10) - (
-            np.pi * b_f ** 2 * fus_length * h_f
+        ] = b_f * np.pi * (fus_length / (b_f * h_f) ** 0.5 - 1.7) - (
+            np.pi * b_f ** 2.0 * fus_length * h_f
         ) / (
-            2 * (b_f * h_f) ** 1.5
+            2.0 * (b_f * h_f) ** 1.5
         )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
             np.pi * b_f * h_f

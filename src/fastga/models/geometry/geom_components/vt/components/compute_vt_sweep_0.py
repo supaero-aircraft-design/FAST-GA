@@ -64,21 +64,22 @@ class ComputeVTSweep0(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        tmp = root_chord / 4 - tip_chord / 4 + b_v * np.tan((sweep_25 * np.pi) / 180)
+        tmp = root_chord / 4.0 - tip_chord / 4.0 + b_v * np.tan((sweep_25 * np.pi) / 180.0)
 
         partials[
             "data:geometry:vertical_tail:sweep_0", "data:geometry:vertical_tail:root:chord"
-        ] = (45 * b_v) / (np.pi * (b_v ** 2 / tmp ** 2 + 1) * tmp ** 2)
+        ] = (45.0 * b_v) / (np.pi * (b_v ** 2.0 / tmp ** 2.0 + 1.0) * tmp ** 2.0)
         partials[
             "data:geometry:vertical_tail:sweep_0", "data:geometry:vertical_tail:tip:chord"
-        ] = -(45 * b_v) / (np.pi * (b_v ** 2 / tmp ** 2 + 1) * tmp ** 2)
+        ] = -(45.0 * b_v) / (np.pi * (b_v ** 2.0 / tmp ** 2.0 + 1.0) * tmp ** 2.0)
         partials["data:geometry:vertical_tail:sweep_0", "data:geometry:vertical_tail:sweep_25"] = (
-            b_v ** 2 * (np.tan((np.pi * sweep_25) / 180) ** 2 + 1)
-        ) / ((b_v ** 2 / tmp ** 2 + 1) * tmp ** 2)
+            b_v ** 2.0 * (np.tan((np.pi * sweep_25) / 180.0) ** 2.0 + 1.0)
+        ) / ((b_v ** 2.0 / tmp ** 2.0 + 1.0) * tmp ** 2.0)
         partials["data:geometry:vertical_tail:sweep_0", "data:geometry:vertical_tail:span"] = -(
-            180
+            180.0
             * (
-                1 / (root_chord / 4 - tip_chord / 4 + b_v * np.tan((np.pi * sweep_25) / 180))
-                - (b_v * np.tan((np.pi * sweep_25) / 180)) / tmp ** 2
+                1.0
+                / (root_chord / 4.0 - tip_chord / 4.0 + b_v * np.tan((np.pi * sweep_25) / 180.0))
+                - (b_v * np.tan((np.pi * sweep_25) / 180.0)) / tmp ** 2
             )
-        ) / (np.pi * (b_v ** 2 / tmp ** 2 + 1))
+        ) / (np.pi * (b_v ** 2.0 / tmp ** 2.0 + 1.0))

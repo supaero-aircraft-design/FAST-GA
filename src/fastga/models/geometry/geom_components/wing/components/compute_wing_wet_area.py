@@ -39,7 +39,7 @@ class ComputeWingWetArea(om.ExplicitComponent):
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
         width_max = inputs["data:geometry:fuselage:maximum_width"]
 
-        wet_area_wing = 2 * (wing_area - width_max * l1_wing) * 1.07
+        wet_area_wing = 2.0 * (wing_area - width_max * l1_wing) * 1.07
 
         outputs["data:geometry:wing:wet_area"] = wet_area_wing
 

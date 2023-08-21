@@ -68,5 +68,5 @@ class ComputeWingXTip(om.ExplicitComponent):
             "data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:tip:chord"
         ] = -0.25
         partials["data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:sweep_25"] = -(
-            np.tan(sweep_25) ** 2 + 1
+            np.tan(sweep_25) ** 2.0 + 1.0
         ) * (y2_wing - y4_wing)

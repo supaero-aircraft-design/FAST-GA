@@ -43,7 +43,7 @@ class ComputeHTRootChord(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        root_chord = s_h * 2 / (1 + taper_ht) / b_h
+        root_chord = s_h * 2.0 / (1.0 + taper_ht) / b_h
 
         outputs["data:geometry:horizontal_tail:root:chord"] = root_chord
 
@@ -55,10 +55,10 @@ class ComputeHTRootChord(om.ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:area"
-        ] = 2 / (b_h * (taper_ht + 1))
+        ] = 2.0 / (b_h * (taper_ht + 1.0))
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:taper_ratio"
-        ] = -(2 * s_h) / (b_h * (taper_ht + 1) ** 2)
+        ] = -(2.0 * s_h) / (b_h * (taper_ht + 1.0) ** 2.0)
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:span"
-        ] = -(2 * s_h) / (b_h ** 2 * (taper_ht + 1))
+        ] = -(2.0 * s_h) / (b_h ** 2.0 * (taper_ht + 1.0))

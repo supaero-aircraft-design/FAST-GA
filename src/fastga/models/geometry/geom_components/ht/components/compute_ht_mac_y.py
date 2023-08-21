@@ -44,7 +44,7 @@ class ComputeHTMacY(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
+        y0_ht = (b_h * (0.5 * root_chord + tip_chord)) / (3.0 * (root_chord + tip_chord))
 
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
 
@@ -56,7 +56,7 @@ class ComputeHTMacY(om.ExplicitComponent):
 
         partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
             0.5 * root_chord + tip_chord
-        ) / (3 * (root_chord + tip_chord))
+        ) / (3.0 * (root_chord + tip_chord))
         partials[
             "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:root:chord"
         ] = (-b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0))

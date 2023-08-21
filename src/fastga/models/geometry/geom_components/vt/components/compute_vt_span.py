@@ -56,10 +56,10 @@ class ComputeVTSpan(om.ExplicitComponent):
 
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"
-            ] = s_v / (2 * np.sqrt(lambda_vt * s_v))
+            ] = s_v / (2.0 * np.sqrt(lambda_vt * s_v))
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"
-            ] = lambda_vt / (2 * np.sqrt(lambda_vt * s_v))
+            ] = lambda_vt / (2.0 * np.sqrt(lambda_vt * s_v))
 
         else:
 

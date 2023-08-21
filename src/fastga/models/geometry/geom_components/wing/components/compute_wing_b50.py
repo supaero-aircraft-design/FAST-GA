@@ -61,21 +61,21 @@ class ComputeWingB50(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
 
         sweep_50 = np.arctan2((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing), (y4_wing - y2_wing))
-        d_b50_d_span = 1 / np.cos(sweep_50)
+        d_b50_d_span = 1.0 / np.cos(sweep_50)
 
         partials["data:geometry:wing:b_50", "data:geometry:wing:tip:leading_edge:x:local"] = (
-            span * (l4_wing - l1_wing + 2 * x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+            span * (l4_wing - l1_wing + 2.0 * x4_wing)
+        ) / (2.0 * d_b50_d_span * (y2_wing - y4_wing) ** 2.0)
         partials["data:geometry:wing:b_50", "data:geometry:wing:root:y"] = -(
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
+            span * (l4_wing / 2.0 - l1_wing / 2.0 + x4_wing) ** 2.0
         ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
         partials["data:geometry:wing:b_50", "data:geometry:wing:tip:y"] = (
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
+            span * (l4_wing / 2.0 - l1_wing / 2.0 + x4_wing) ** 2.0
         ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
         partials["data:geometry:wing:b_50", "data:geometry:wing:root:virtual_chord"] = -(
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+            span * (l4_wing / 2.0 - l1_wing / 2.0 + x4_wing)
+        ) / (2.0 * d_b50_d_span * (y2_wing - y4_wing) ** 2.0)
         partials["data:geometry:wing:b_50", "data:geometry:wing:tip:chord"] = (
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+            span * (l4_wing / 2.0 - l1_wing / 2.0 + x4_wing)
+        ) / (2.0 * d_b50_d_span * (y2_wing - y4_wing) ** 2.0)
         partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = d_b50_d_span

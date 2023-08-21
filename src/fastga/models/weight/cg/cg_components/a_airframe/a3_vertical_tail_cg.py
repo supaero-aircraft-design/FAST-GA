@@ -100,10 +100,10 @@ class ComputeVTcg(om.ExplicitComponent):
             ] = 0.231
             partials[
                 "data:weight:airframe:vertical_tail:CG:x", "data:geometry:vertical_tail:sweep_25"
-            ] = (11 / 3600 * b_v * np.pi * (np.tan((np.pi * sweep_25_vt) / 180) ** 2 + 1))
+            ] = (0.003055 * b_v * np.pi * (np.tan((np.pi * sweep_25_vt) / 180.0) ** 2.0 + 1.0))
             partials[
                 "data:weight:airframe:vertical_tail:CG:x", "data:geometry:vertical_tail:span"
-            ] = 0.55 * np.tan((np.pi * sweep_25_vt) / 180)
+            ] = 0.55 * np.tan((np.pi * sweep_25_vt) / 180.0)
 
         else:
             partials[
@@ -114,10 +114,10 @@ class ComputeVTcg(om.ExplicitComponent):
             ] = 0.1596
             partials[
                 "data:weight:airframe:vertical_tail:CG:x", "data:geometry:vertical_tail:sweep_25"
-            ] = (19 / 9000 * b_v * np.pi * (np.tan((np.pi * sweep_25_vt) / 180) ** 2 + 1))
+            ] = (0.002111 * b_v * np.pi * (np.tan((np.pi * sweep_25_vt) / 180.0) ** 2.0 + 1.0))
             partials[
                 "data:weight:airframe:vertical_tail:CG:x", "data:geometry:vertical_tail:span"
-            ] = 0.38 * np.tan((np.pi * sweep_25_vt) / 180)
+            ] = 0.38 * np.tan((np.pi * sweep_25_vt) / 180.0)
 
         partials[
             "data:weight:airframe:vertical_tail:CG:x",

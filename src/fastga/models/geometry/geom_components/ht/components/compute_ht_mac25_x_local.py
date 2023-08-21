@@ -48,8 +48,8 @@ class ComputeHTMacX25(om.ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
-        x0_ht = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
+        tmp = root_chord * 0.25 + b_h / 2.0 * np.tan(sweep_25_ht) - tip_chord * 0.25
+        x0_ht = (tmp * (root_chord + 2.0 * tip_chord)) / (3.0 * (root_chord + tip_chord))
 
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
 
@@ -60,13 +60,13 @@ class ComputeHTMacX25(om.ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
+        tmp = root_chord * 0.25 + b_h / 2.0 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
         d_tmp_d_tc = -0.25
         d_tmp_d_bh = 0.5 * np.tan(sweep_25_ht)
-        d_tmp_d_sweep = b_h / 2 * (1.0 + np.tan(sweep_25_ht) ** 2.0)
+        d_tmp_d_sweep = b_h / 2.0 * (1.0 + np.tan(sweep_25_ht) ** 2.0)
 
-        tmp_2 = (root_chord + 2 * tip_chord) / (3 * (root_chord + tip_chord))
+        tmp_2 = (root_chord + 2.0 * tip_chord) / (3.0 * (root_chord + tip_chord))
         d_tmp_2_d_rc = -tip_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
         d_tmp_2_d_tc = root_chord / (3.0 * (root_chord + tip_chord) ** 2.0)
 

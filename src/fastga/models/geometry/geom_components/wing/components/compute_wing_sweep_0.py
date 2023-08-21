@@ -53,10 +53,10 @@ class ComputeWingSweep0(om.ExplicitComponent):
 
         partials[
             "data:geometry:wing:sweep_0", "data:geometry:wing:tip:leading_edge:x:local"
-        ] = -1 / ((x4_wing ** 2 / tmp ** 2 + 1) * tmp)
+        ] = -1.0 / ((x4_wing ** 2.0 / tmp ** 2.0 + 1.0) * tmp)
         partials["data:geometry:wing:sweep_0", "data:geometry:wing:root:y"] = x4_wing / (
-            (x4_wing ** 2 / tmp ** 2 + 1) * tmp ** 2
+            (x4_wing ** 2.0 / tmp ** 2.0 + 1.0) * tmp ** 2.0
         )
         partials["data:geometry:wing:sweep_0", "data:geometry:wing:tip:y"] = -x4_wing / (
-            (x4_wing ** 2 / tmp ** 2 + 1) * tmp ** 2
+            (x4_wing ** 2.0 / tmp ** 2.0 + 1.0) * tmp ** 2.0
         )

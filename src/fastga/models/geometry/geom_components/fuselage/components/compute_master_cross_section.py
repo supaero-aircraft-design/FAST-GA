@@ -53,7 +53,7 @@ class ComputeMasterCrossSection(om.ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
-        ] = (np.pi * h_f) / 4
+        ] = (np.pi * h_f) / 4.0
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
-        ] = (np.pi * b_f) / 4
+        ] = (np.pi * b_f) / 4.0

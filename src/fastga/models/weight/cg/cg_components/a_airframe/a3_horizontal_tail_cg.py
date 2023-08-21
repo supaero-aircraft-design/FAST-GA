@@ -83,10 +83,10 @@ class ComputeHTcg(om.ExplicitComponent):
         ] = 0.1596
         partials[
             "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:span"
-        ] = 0.38 * np.tan((np.pi * sweep_25_ht) / 180)
+        ] = 0.38 * np.tan((np.pi * sweep_25_ht) / 180.0)
         partials[
             "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:horizontal_tail:sweep_25"
-        ] = (19 / 9000 * b_h * np.pi * (np.tan((np.pi * sweep_25_ht) / 180) ** 2 + 1))
+        ] = (0.00211 * b_h * np.pi * (np.tan((np.pi * sweep_25_ht) / 180.0) ** 2.0 + 1.0))
         partials[
             "data:weight:airframe:horizontal_tail:CG:x", "data:geometry:wing:MAC:at25percent:x"
         ] = 1.0

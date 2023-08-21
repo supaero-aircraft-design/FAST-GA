@@ -37,19 +37,19 @@ class ComputeWingOuterArea(om.ExplicitComponent):
 
         wing_area = inputs["data:geometry:wing:area"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2
+        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
 
-        s_pf = wing_area - 2 * l1_wing * y1_wing
+        s_pf = wing_area - 2.0 * l1_wing * y1_wing
 
         outputs["data:geometry:wing:outer_area"] = s_pf
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
 
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2
+        y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
 
         partials["data:geometry:wing:outer_area", "data:geometry:wing:area"] = 1.0
         partials["data:geometry:wing:outer_area", "data:geometry:wing:root:virtual_chord"] = (
-            -2 * y1_wing
+            -2.0 * y1_wing
         )
         partials["data:geometry:wing:outer_area", "data:geometry:fuselage:maximum_width"] = -l1_wing

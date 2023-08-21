@@ -58,10 +58,12 @@ class ComputeHTSpan(om.ExplicitComponent):
         aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
         if aspect_ratio * s_h < 0.1:
-            partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = 0
+            partials[
+                "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"
+            ] = 0.0
             partials[
                 "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
-            ] = 0
+            ] = 0.0
         else:
             partials[
                 "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"
