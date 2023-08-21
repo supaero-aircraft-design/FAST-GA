@@ -18,7 +18,7 @@ import os
 import os.path as pth
 import warnings
 from typing import Optional
-
+import timeit
 import numpy as np
 import openmdao.api as om
 import pandas as pd
@@ -777,6 +777,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.wing["chord"] = chord
         self.wing["x_le"] = x_le
         # Launch common code
+        _LOGGER.debug("wing")
         self._generate_common(self.wing)
 
     def _generate_htp(self, inputs):
@@ -823,6 +824,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.htp["chord"] = chord
         self.htp["x_le"] = x_le
         # Launch common code
+        _LOGGER.debug("htp")
         self._generate_common(self.htp)
 
     def _generate_common(self, dictionary):
@@ -889,9 +891,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             n_x,
             n_y,
         )
-
-        # Aerodynamic coefficients computation
+        #_LOGGER.debug("y_c = %s", y_c)
+        start = timeit.default_timer()
         aic, aic_wake = self.aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y)
+        end = timeit.default_timer()
+        _LOGGER.debug("AIC computation time = %s", (end-start))
         # Save data
         dictionary["x_panel"] = x_panel
         dictionary["panel_span"] = panelspan
@@ -1409,54 +1413,59 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         
         
         """
-        for i in range(n_x * n_y):
-            for j in range(n_x * n_y):
-                # Right wing
-                coeff_1_r = x_c[i] - x_1[j]
-                coeff_2_r = y_c[i] - y_1[j]
-                coeff_3_r = x_c[i] - x_2[j]
-                coeff_4_r = y_c[i] - y_2[j]
-                coeff_5_r = np.sqrt(coeff_1_r ** 2 + coeff_2_r ** 2)
-                coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
-                coeff_7_r = x_2[j] - x_1[j]
-                coeff_8_r = y_2[j] - y_1[j]
-                coeff_9_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
-                    coeff_7_r * coeff_3_r + coeff_8_r * coeff_4_r
-                ) / coeff_6_r
-                coeff_10_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
-                    1 + coeff_1_r / coeff_5_r
-                ) / coeff_2_r
-                #cross(outer) product between vector <CA> and vector vector <CB>
-                if coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r != 0:
-                    aic[i, j] = (coeff_9_r / (coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r)) / (
+        midpoint = len(x_c) // 2
+        x_c = x_c[:midpoint]
+        y_c = y_c[:midpoint]
+        x_1_r = x_1[:midpoint]
+        y_1_r = y_1[:midpoint]
+        x_2_r = x_2[:midpoint]
+        y_2_r = y_2[:midpoint]
+        x_1_l = x_1[midpoint:]
+        y_1_l = y_1[midpoint:]
+        x_2_l = x_2[midpoint:]
+        y_2_l = y_2[midpoint:]
+        coeff_1_r = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_1_r, len(x_1_r))
+        coeff_2_r = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_1_r, len(y_1_r))
+        coeff_3_r = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_2_r, len(x_2_r))
+        coeff_4_r = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_2_r, len(y_2_r))
+        coeff_5_r = np.sqrt(coeff_1_r ** 2 + coeff_2_r ** 2)
+        coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
+        coeff_7_r = np.tile(x_2_r, len(x_2_r)) - np.tile(x_1_r, len(x_1_r))
+        coeff_8_r = np.tile(y_2_r, len(y_2_r)) - np.tile(y_1_r, len(y_1_r))
+        coeff_9_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
+            coeff_7_r * coeff_3_r + coeff_8_r * coeff_4_r
+        ) / coeff_6_r
+        coeff_10_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
+            1 + coeff_1_r / coeff_5_r
+        ) / coeff_2_r
+        coeff_1_l = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_1_l, len(x_1_l))
+        coeff_2_l = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_1_l, len(y_1_l))
+        coeff_3_l = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_2_l, len(x_2_l))
+        coeff_4_l = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_2_l, len(y_2_l))
+        coeff_5_l = np.sqrt(coeff_1_l ** 2 + coeff_2_l ** 2)
+        coeff_6_l = np.sqrt(coeff_3_l ** 2 + coeff_4_l ** 2)
+        coeff_7_l = np.tile(x_2_l, len(x_2_l)) - np.tile(x_1_l, len(x_1_l))
+        coeff_8_l = np.tile(y_2_l, len(y_2_l)) - np.tile(y_1_l, len(y_1_l))
+        coeff_9_l = (coeff_7_l * coeff_1_l + coeff_8_l * coeff_2_l) / coeff_5_l - (
+            coeff_7_l * coeff_3_l + coeff_8_l * coeff_4_l
+        ) / coeff_6_l
+        coeff_10_l = (1 + coeff_3_l / coeff_6_l) / coeff_4_l - (
+            1 + coeff_1_l / coeff_5_l
+        ) / coeff_2_l
+        aic_wake = coeff_10_r / (4 * np.pi) + coeff_10_l / (4 * np.pi)
+        aic = coeff_10_l / (4 * np.pi) + coeff_10_r / (4 * np.pi) 
+        for i in range((n_x * n_y)*(n_x * n_y)):
+            if coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i] != 0:
+                    aic[i] = aic[i] +(coeff_9_r[i] / (coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i])) / (
                         4 * np.pi
                     )
-                aic_wake[i, j] = coeff_10_r / (4 * np.pi)
-                aic[i, j] = aic[i, j] + coeff_10_r / (4 * np.pi)
-
-                
-                # Left wing
-                coeff_1_l = x_c[i] - x_1[self.n_x * self.n_y + j]
-                coeff_2_l = y_c[i] - y_1[self.n_x * self.n_y + j]
-                coeff_3_l = x_c[i] - x_2[self.n_x * self.n_y + j]
-                coeff_4_l = y_c[i] - y_2[self.n_x * self.n_y + j]
-                coeff_5_l = np.sqrt(coeff_1_l ** 2 + coeff_2_l ** 2)
-                coeff_6_l = np.sqrt(coeff_3_l ** 2 + coeff_4_l ** 2)
-                coeff_7_l = x_2[self.n_x * self.n_y + j] - x_1[self.n_x * self.n_y + j]
-                coeff_8_l = y_2[self.n_x * self.n_y + j] - y_1[self.n_x * self.n_y + j]
-                coeff_9_l = (coeff_7_l * coeff_1_l + coeff_8_l * coeff_2_l) / coeff_5_l - (
-                    coeff_7_l * coeff_3_l + coeff_8_l * coeff_4_l
-                ) / coeff_6_l
-                coeff_10_l = (1 + coeff_3_l / coeff_6_l) / coeff_4_l - (
-                    1 + coeff_1_l / coeff_5_l
-                ) / coeff_2_l
-                #cross(outer) product between vector <CA> and vector vector <CB>
-                if coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l != 0:
-                    aic[i, j] = aic[i, j] + (
-                        coeff_9_l / (coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l)
-                    ) / (4 * np.pi)
-                aic_wake[i, j] = aic_wake[i, j] + coeff_10_l / (4 * np.pi)
-                aic[i, j] = aic[i, j] + coeff_10_l / (4 * np.pi)
+            if coeff_1_l[i] * coeff_4_l[i] - coeff_2_l[i] * coeff_3_l[i] != 0:
+                    aic[i] = aic[i] +(coeff_9_l[i] / (coeff_1_l[i] * coeff_4_l[i] - coeff_2_l[i] * coeff_3_l[i])) / (
+                        4 * np.pi
+                    )
+        # reshape into 2D array for later matrix computation
+        aic = aic.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
+        aic_wake = aic_wake.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
                 
         return aic, aic_wake
     
