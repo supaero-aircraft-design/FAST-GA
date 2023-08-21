@@ -57,20 +57,20 @@ class ComputeWingSweep100Outer(om.ExplicitComponent):
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
-        tmp = (l4_wing - l2_wing + x4_wing) ** 2 / (y2_wing - y4_wing) ** 2 + 1
+        tmp = (l4_wing - l2_wing + x4_wing) ** 2.0 / (y2_wing - y4_wing) ** 2.0 + 1.0
 
         partials[
             "data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:leading_edge:x:local"
-        ] = -1 / (tmp * (y2_wing - y4_wing))
+        ] = -1.0 / (tmp * (y2_wing - y4_wing))
         partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:root:y"] = (
             l4_wing - l2_wing + x4_wing
-        ) / (tmp * (y2_wing - y4_wing) ** 2)
+        ) / (tmp * (y2_wing - y4_wing) ** 2.0)
         partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:y"] = -(
             l4_wing - l2_wing + x4_wing
-        ) / (tmp * (y2_wing - y4_wing) ** 2)
-        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:root:chord"] = 1 / (
+        ) / (tmp * (y2_wing - y4_wing) ** 2.0)
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:root:chord"] = 1.0 / (
             tmp * (y2_wing - y4_wing)
         )
-        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:chord"] = -1 / (
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:chord"] = -1.0 / (
             tmp * (y2_wing - y4_wing)
         )

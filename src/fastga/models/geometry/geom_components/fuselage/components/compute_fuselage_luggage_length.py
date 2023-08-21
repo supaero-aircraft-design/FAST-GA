@@ -53,11 +53,11 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
-        w_cabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
+        w_cabin = max(2.0 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         r_i = w_cabin / 2
 
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2)
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2.0)
 
         outputs["data:geometry:fuselage:luggage_length"] = l_lug
 
@@ -69,19 +69,19 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
-        w_cabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
+        w_cabin = max(2.0 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         r_i = w_cabin / 2
 
         luggage_density = 161.0  # In kg/m3
 
         partials[
             "data:geometry:fuselage:luggage_length", "data:geometry:cabin:luggage:mass_max"
-        ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i ** 2))
+        ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i ** 2.0))
 
-        if (2 * w_pilot_seats) > (seats_p_row * w_pass_seats + w_aisle):
+        if (2.0 * w_pilot_seats) > (seats_p_row * w_pass_seats + w_aisle):
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
-            ] = (-2.0 * (luggage_mass_max / luggage_density) / (0.8 * np.pi * w_pilot_seats ** 3))
+            ] = (-2.0 * (luggage_mass_max / luggage_density) / (0.8 * np.pi * w_pilot_seats ** 3.0))
             partials[
                 "data:geometry:fuselage:luggage_length",
                 "data:geometry:cabin:seats:passenger:count_by_row",
@@ -93,7 +93,7 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"
             ] = 0.0
 
-        elif (2 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
+        elif (2.0 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
             ] = 0.0

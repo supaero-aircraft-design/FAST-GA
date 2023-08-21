@@ -22,7 +22,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_VT_POSITION_Z
 
 
-@oad.RegisterSubmodel(SUBMODEL_VT_POSITION_Z, "fastga.submodel.geometry.vertical_tail.position.z.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_VT_POSITION_Z, "fastga.submodel.geometry.vertical_tail.position.z.legacy"
+)
 class ComputeVTMacZ(om.ExplicitComponent):
     """
     Compute z coordinate of the vertical tail's MAC.
@@ -44,7 +46,7 @@ class ComputeVTMacZ(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
+        z0_vt = (2.0 * b_v * (0.5 * root_chord + tip_chord)) / (3.0 * (root_chord + tip_chord))
 
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt
 
@@ -54,14 +56,14 @@ class ComputeVTMacZ(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        tmp = 3 * root_chord + 3 * tip_chord
+        tmp = 3.0 * root_chord + 3.0 * tip_chord
 
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
-            b_v / tmp - (6 * b_v * (root_chord / 2 + tip_chord)) / tmp ** 2
+            b_v / tmp - (6.0 * b_v * (root_chord / 2.0 + tip_chord)) / tmp ** 2.0
         )
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
-            2 * b_v
-        ) / tmp - (6 * b_v * (root_chord / 2 + tip_chord)) / tmp ** 2
+            2.0 * b_v
+        ) / tmp - (6.0 * b_v * (root_chord / 2.0 + tip_chord)) / tmp ** 2.0
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
-            2 * (root_chord / 2 + tip_chord)
+            2.0 * (root_chord / 2.0 + tip_chord)
         ) / tmp

@@ -52,21 +52,6 @@ class ComputeWingGeometry(om.Group):
     """Wing geometry estimation."""
 
     def setup(self):
-        # self.add_subsystem(
-        #     "wing_toc_root",
-        #     oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_ROOT),
-        #     promotes=["*"],
-        # )
-        # self.add_subsystem(
-        #     "wing_toc_kink",
-        #     oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_KINK),
-        #     promotes=["*"],
-        # )
-        # self.add_subsystem(
-        #     "wing_toc_tip",
-        #     oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO_TIP),
-        #     promotes=["*"],
-        # )
         self.add_subsystem(
             "wing_toc",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_THICKNESS_RATIO),

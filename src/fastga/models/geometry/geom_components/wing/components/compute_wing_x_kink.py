@@ -70,5 +70,5 @@ class ComputeWingXKink(om.ExplicitComponent):
             "data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:kink:chord"
         ] = -0.25
         partials["data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:sweep_25"] = -(
-            np.tan(sweep_25) ** 2 + 1
+            np.tan(sweep_25) ** 2.0 + 1.0
         ) * (y2_wing - y3_wing)

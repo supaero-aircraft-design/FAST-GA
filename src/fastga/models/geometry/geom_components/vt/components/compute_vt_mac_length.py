@@ -22,7 +22,9 @@ import fastoad.api as oad
 from ..constants import SUBMODEL_VT_MAC_LENGTH
 
 
-@oad.RegisterSubmodel(SUBMODEL_VT_MAC_LENGTH, "fastga.submodel.geometry.vertical_tail.mac_length.legacy")
+@oad.RegisterSubmodel(
+    SUBMODEL_VT_MAC_LENGTH, "fastga.submodel.geometry.vertical_tail.mac_length.legacy"
+)
 class ComputeVTMacLength(om.ExplicitComponent):
     """
     Compute MAC length of the vertical tail.
@@ -43,7 +45,7 @@ class ComputeVTMacLength(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
 
         mac_vt = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord ** 2.0 + root_chord * tip_chord + tip_chord ** 2.0)
             / (tip_chord + root_chord)
             * 2.0
             / 3.0
@@ -58,15 +60,15 @@ class ComputeVTMacLength(om.ExplicitComponent):
 
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
-        ] = (2 * (2 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord)) - (
-            2 * (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+        ] = (2.0 * (2.0 * root_chord + tip_chord)) / (3.0 * (root_chord + tip_chord)) - (
+            2.0 * (root_chord ** 2.0 + root_chord * tip_chord + tip_chord ** 2.0)
         ) / (
-            3 * (root_chord + tip_chord) ** 2
+            3.0 * (root_chord + tip_chord) ** 2.0
         )
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
-        ] = (2 * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord)) - (
-            2 * (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+        ] = (2.0 * (root_chord + 2.0 * tip_chord)) / (3.0 * (root_chord + tip_chord)) - (
+            2.0 * (root_chord ** 2.0 + root_chord * tip_chord + tip_chord ** 2.0)
         ) / (
-            3 * (root_chord + tip_chord) ** 2
+            3.0 * (root_chord + tip_chord) ** 2.0
         )

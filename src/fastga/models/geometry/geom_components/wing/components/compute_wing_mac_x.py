@@ -47,7 +47,7 @@ class ComputeWingMacX(om.ExplicitComponent):
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
-        x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2 * l4_wing + l2_wing))) / (3 * wing_area)
+        x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2.0 * l4_wing + l2_wing))) / (3.0 * wing_area)
 
         outputs["data:geometry:wing:MAC:leading_edge:x:local"] = x0_wing
 
@@ -61,21 +61,21 @@ class ComputeWingMacX(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:area"] = (
-            x4_wing * (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
-        ) / (3 * wing_area ** 2)
+            x4_wing * (l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area ** 2.0)
         partials[
             "data:geometry:wing:MAC:leading_edge:x:local",
             "data:geometry:wing:tip:leading_edge:x:local",
-        ] = -((l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)) / (3 * wing_area)
+        ] = -((l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:y"] = -(
-            x4_wing * (l2_wing + 2 * l4_wing)
-        ) / (3 * wing_area)
+            x4_wing * (l2_wing + 2.0 * l4_wing)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:y"] = (
-            x4_wing * (l2_wing + 2 * l4_wing)
-        ) / (3 * wing_area)
+            x4_wing * (l2_wing + 2.0 * l4_wing)
+        ) / (3.0 * wing_area)
         partials[
             "data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:chord"
-        ] = -(x4_wing * (y2_wing - y4_wing)) / (3 * wing_area)
+        ] = -(x4_wing * (y2_wing - y4_wing)) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:chord"] = -(
-            2 * x4_wing * (y2_wing - y4_wing)
-        ) / (3 * wing_area)
+            2.0 * x4_wing * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area)

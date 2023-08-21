@@ -40,7 +40,7 @@ class ComputeWingSweep50(om.ExplicitComponent):
         sweep_0 = inputs["data:geometry:wing:sweep_0"]
 
         outputs["data:geometry:wing:sweep_50"] = np.arctan(
-            np.tan(sweep_0) - 2 / wing_ar * ((1 - taper_ratio_wing) / (1 + taper_ratio_wing))
+            np.tan(sweep_0) - 2.0 / wing_ar * ((1.0 - taper_ratio_wing) / (1.0 + taper_ratio_wing))
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
@@ -50,31 +50,37 @@ class ComputeWingSweep50(om.ExplicitComponent):
         sweep_0 = inputs["data:geometry:wing:sweep_0"]
 
         partials["data:geometry:wing:sweep_50", "data:geometry:wing:aspect_ratio"] = -(
-            2 * (taper_ratio_wing - 1)
+            2.0 * (taper_ratio_wing - 1.0)
         ) / (
-            wing_ar ** 2
+            wing_ar ** 2.0
             * (
                 (
                     np.tan(sweep_0)
-                    + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1))
+                    + (2.0 * (taper_ratio_wing - 1.0)) / (wing_ar * (taper_ratio_wing + 1.0))
                 )
-                ** 2
-                + 1
+                ** 2.0
+                + 1.0
             )
-            * (taper_ratio_wing + 1)
+            * (taper_ratio_wing + 1.0)
         )
         partials["data:geometry:wing:sweep_50", "data:geometry:wing:taper_ratio"] = (
-            2 / (wing_ar * (taper_ratio_wing + 1))
-            - (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1) ** 2)
+            2.0 / (wing_ar * (taper_ratio_wing + 1.0))
+            - (2.0 * (taper_ratio_wing - 1.0)) / (wing_ar * (taper_ratio_wing + 1.0) ** 2.0)
         ) / (
-            (np.tan(sweep_0) + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1)))
-            ** 2
-            + 1
+            (
+                np.tan(sweep_0)
+                + (2.0 * (taper_ratio_wing - 1.0)) / (wing_ar * (taper_ratio_wing + 1.0))
+            )
+            ** 2.0
+            + 1.0
         )
         partials["data:geometry:wing:sweep_50", "data:geometry:wing:sweep_0"] = (
-            np.tan(sweep_0) ** 2 + 1
+            np.tan(sweep_0) ** 2.0 + 1.0
         ) / (
-            (np.tan(sweep_0) + (2 * (taper_ratio_wing - 1)) / (wing_ar * (taper_ratio_wing + 1)))
-            ** 2
-            + 1
+            (
+                np.tan(sweep_0)
+                + (2.0 * (taper_ratio_wing - 1.0)) / (wing_ar * (taper_ratio_wing + 1.0))
+            )
+            ** 2.0
+            + 1.0
         )
