@@ -18,6 +18,7 @@ import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.components import ComputeMachInterpolation
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
@@ -35,7 +36,6 @@ from .constants import (
     SUBMODEL_DOWNWASH,
     SUBMODEL_CY_BETA,
     SUBMODEL_CN_BETA,
-    SUBMODEL_MACH_INTERPOLATION,
 )
 
 
@@ -86,10 +86,10 @@ class AerodynamicsHighSpeed(Group):
                 )
                 self.add_subsystem(
                     "mach_interpolation_roskam",
-                    oad.RegisterSubmodel.get_submodel(SUBMODEL_MACH_INTERPOLATION,
-                        options={"airfoil_folder_path": self.options["airfoil_folder_path"],
-                        "wing_airfoil_file": self.options["wing_airfoil"],
-                        "htp_airfoil_file": self.options["htp_airfoil"]},
+                    ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
                     ),
                     promotes=["*"],
                 )
@@ -124,10 +124,10 @@ class AerodynamicsHighSpeed(Group):
                 )
                 self.add_subsystem(
                     "mach_interpolation_roskam",
-                    oad.RegisterSubmodel.get_submodel(SUBMODEL_MACH_INTERPOLATION,
-                        options={"airfoil_folder_path": self.options["airfoil_folder_path"],
-                        "wing_airfoil_file": self.options["wing_airfoil"],
-                        "htp_airfoil_file": self.options["htp_airfoil"]},
+                    ComputeMachInterpolation(
+                        airfoil_folder_path=self.options["airfoil_folder_path"],
+                        wing_airfoil_file=self.options["wing_airfoil"],
+                        htp_airfoil_file=self.options["htp_airfoil"],
                     ),
                     promotes=["*"],
                 )
