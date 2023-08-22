@@ -1,0 +1,42 @@
+import os.path as pth
+import os
+import openmdao.api as om
+import subprocess
+import os.path as pth
+import os
+import sys
+
+# import openmdao.api as om
+# from fastoad import api as api_cs25
+# from fastga.command import api as api_cs23
+import yaml
+import shutil
+import time
+from feedback_extractor import feedback_extractor
+from time_modules import find_id_value
+
+from fastoad.io.configuration import FASTOADProblemConfigurator
+from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
+from openmdao.utils.om_warnings import issue_warning
+
+WORK_FOLDER_PATH = "workdir"
+
+CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
+#OR 
+#Define Problem (this is a placeholder problem created from a config file, you can give it your own problem)
+conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+problem = conf.get_problem()
+
+list_of_modules = problem.model.aircraft_sizing._proc_info.keys()
+
+problem.model.aircraft_sizing.list_of_modules[i]
+
+problem.setup()
+problem.final_setup()
+
+'''command = "fastoad eval problem"
+# Run the command and capture the output
+result = subprocess.run(command, shell=True, capture_output=True, text=True)
+# Access the output using the 'stdout' attribute
+list_modules = result.stdout'''
+

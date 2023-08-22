@@ -34,9 +34,7 @@ def double_swap_algorithm(
             keys_list.remove("linear_solver")
         except: 
             pass
-        print("DEBUG 1")
-
-
+       
     
     if CONFIGURATION_FILE is not None:
         conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
@@ -51,7 +49,6 @@ def double_swap_algorithm(
         keys = config_dictionary.keys()
         keys_list = list(keys)
 
-
     
     # convert problem to dictionary viewer data
     case_id = None
@@ -63,17 +60,16 @@ def double_swap_algorithm(
         err_msg = str(err)
         issue_warning(err_msg)
 
-    print("DEBUG 2")
+
     if CONFIGURATION_FILE is not None:
         best_score = feedback_extractor(
-            viewer_model_data, score_criteria, WORK_FOLDER_PATH, config_dictionary, CONFIGURATION_FILE
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
         )  # Initial score of the dictionary
     else:
         best_score = feedback_extractor(
-            viewer_model_data, score_criteria, WORK_FOLDER_PATH, problem = problem
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, problem = problem
         )  # Initial score of the dictionary
 
-    print("DEBUG 3")
     
     best_order = keys_list.copy()  # Initial order of keys
     print("\n Starting DOUBLE swap")
@@ -81,10 +77,6 @@ def double_swap_algorithm(
     print("Starting order: ", keys_list)
     counter = 0
 
-    # Load config file into dictionary:
-    with open(CONFIGURATION_FILE, "r") as file:
-        existing_data = yaml.safe_load(file)
-        
 
     swap_position = 0
     if len(keys_list) < 2:
@@ -103,21 +95,19 @@ def double_swap_algorithm(
                 keys_list[i],
             )
 
-            existing_data["model"]["aircraft_sizing"] = {
-                key: config_dictionary[key]
-                for key in keys_list
-                if key in config_dictionary  # fill dict with new order
-            }
-            if is_valid_order(
-                keys_list, config_dictionary
-            ):  # check if order is valid according to restrictions set in function
+            if CONFIGURATION_FILE is not None:
+                checking_order = True
+            else:
+                checking_order = False
+
+
+            if is_valid_order(keys_list, config_dictionary) or (checking_order == False):  # check if order is valid according to restrictions set in function, or skip check if using non-config file based problem
                 print("Trying order: ", keys_list)
 
                 problem.setup()
                 #CHANGE ORDER IN THE OPENMDAO PROBLEM WITHOUT TOUCHING CONFIG FILE
                 ac_sizing=problem.model.aircraft_sizing
-                ac_sizing.set_order(list(existing_data["model"]["aircraft_sizing"].keys()))
-                print('FOR DEBUG: I made it through the reordering')
+                ac_sizing.set_order(keys_list)
                 problem.setup()
                 problem.final_setup()
                 # convert problem to dictionary, as input for feedback_extractor
@@ -126,13 +116,15 @@ def double_swap_algorithm(
 
                 # evaluate the score of the proposed order
                 # print('FOR DEBUG IN DOUBLE SWAP, CONFIG DICTIONARY IS:, (check if fame order as trying order)', config_dictionary)
-                score = feedback_extractor(
-                    viewer_model_data,
-                    existing_data["model"]["aircraft_sizing"],
-                    CONFIGURATION_FILE,
-                    score_criteria,
-                    WORK_FOLDER_PATH,  #######################################################################################################################################################################################################################################
-                )
+
+                if CONFIGURATION_FILE is not None:
+                    score = feedback_extractor(
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+                    )  # Initial score of the dictionary
+                else:
+                    score = feedback_extractor(
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, problem = problem
+                    )  # Initial score of the dictionary
 
                 if score < best_score:
                     best_score = score
@@ -161,21 +153,22 @@ def double_swap_algorithm(
             swap_position = swap_position + 1
 
     keys_list = best_order  # Get the best order found so far
-    existing_data["model"]["aircraft_sizing"] = {
-        key: config_dictionary[key] for key in keys_list if key in config_dictionary
-    }
-    # add back solvers, if they were there
-    if "nonlinear_solver" in dict_with_solvers.keys():
-        existing_data["model"]["aircraft_sizing"]["nonlinear_solver"] = dict_with_solvers[
-            "nonlinear_solver"
-        ]
-    if "linear_solver" in dict_with_solvers:
-        existing_data["model"]["aircraft_sizing"]["linear_solver"] = dict_with_solvers[
-            "linear_solver"
-        ]
-    with open(CONFIGURATION_FILE, "w") as file:
-        yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
-        file.flush()
+    if CONFIGURATION_FILE is not None: #Write new config file
+        existing_data = {
+            key: config_dictionary[key] for key in keys_list if key in config_dictionary
+        }
+        # add back solvers, if they were there
+        if "nonlinear_solver" in dict_with_solvers.keys():
+            existing_data["nonlinear_solver"] = dict_with_solvers[
+                "nonlinear_solver"
+            ]
+        if "linear_solver" in dict_with_solvers:
+            existing_data["linear_solver"] = dict_with_solvers[
+                "linear_solver"
+            ]
+        with open(CONFIGURATION_FILE, "w") as file:
+            yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+            file.flush()
 
     return keys_list
 
@@ -183,40 +176,61 @@ def double_swap_algorithm(
 def single_swap_algorithm(
     score_criteria, CONFIGURATION_FILE = None, config_dictionary = None, problem = None
 ):
-    if CONFIGURATION_FILE is not None:
-        conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-        problem = conf.get_problem()
-
+    
     if problem is not None:
         problem.setup()
         problem.final_setup()
-        # convert problem to dictionary viewer data
-        case_id = None
-        try:
-            viewer_model_data = _get_viewer_data(problem, case_id=case_id)
-            err_msg = ""
-        except TypeError as err:
-            viewer_model_data = {}
-            err_msg = str(err)
-            issue_warning(err_msg)
 
-    dict_with_solvers = config_dictionary.copy()
-    config_dictionary.pop("nonlinear_solver", None)
-    config_dictionary.pop("linear_solver", None)
-    keys = config_dictionary.keys()
-    best_score = feedback_extractor(
-        viewer_model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH
-    )  # Initial score of the dictionary
-    keys_list = list(keys)
+        keys_list = list(problem.model.aircraft_sizing._proc_info.keys())
+
+        try:
+            keys_list.remove("nonlinear_solver")
+        except: 
+            pass
+        try:
+            keys_list.remove("linear_solver")
+        except: 
+            pass
+
+    if CONFIGURATION_FILE is not None:
+        conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
+        problem = conf.get_problem()
+        problem.setup()
+        problem.final_setup()
+
+        dict_with_solvers = config_dictionary.copy()
+        config_dictionary.pop("nonlinear_solver", None)
+        config_dictionary.pop("linear_solver", None)
+
+        keys = config_dictionary.keys()
+        keys_list = list(keys)
+
+    # convert problem to dictionary viewer data
+    case_id = None
+    try:
+        viewer_model_data = _get_viewer_data(problem, case_id=case_id)
+        err_msg = ""
+    except TypeError as err:
+        viewer_model_data = {}
+        err_msg = str(err)
+        issue_warning(err_msg)
+
+
+    if CONFIGURATION_FILE is not None:
+        best_score = feedback_extractor(
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+        )  # Initial score of the dictionary
+    else:
+        best_score = feedback_extractor(
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, problem = problem
+        )  # Initial score of the dictionary
+
     best_order = keys_list.copy()  # Initial order of keys
     print("\n Starting SINGLE swap")
     print("____________________________________\n")
     print("Starting order: ", keys_list)
     counter = 0
 
-    # Load config file into dictionary:
-    with open(CONFIGURATION_FILE, "r") as file:
-        existing_data = yaml.safe_load(file)
 
     if len(keys_list) < 2:
         sys.exit("\n Error: Less than two modules in aircraft_sizing. No sequencing to optimize.\n")
@@ -232,20 +246,17 @@ def single_swap_algorithm(
             shifted_element = keys_list.pop(-1 - counter)
             keys_list.insert(swap_position, shifted_element)
 
-            existing_data["model"]["aircraft_sizing"] = {
-                key: config_dictionary[key]
-                for key in keys_list
-                if key in config_dictionary  # fill dict with new order
-            }
-            if is_valid_order(
-                keys_list, config_dictionary
-            ):  # check if order is valid according to restrictions set in function
-                print("Trying order: ", keys_list)
+            if CONFIGURATION_FILE is not None:
+                checking_order = True
+            else:
+                checking_order = False
 
+            if is_valid_order(keys_list, config_dictionary) or (checking_order == False):  # check if order is valid according to restrictions set in function, or skip check if using non-config file based problem
+                print("Trying order: ", keys_list)
+                problem.setup()
                 #CHANGE ORDER IN THE OPENMDAO PROBLEM WITHOUT TOUCHING CONFIG FILE
                 ac_sizing=problem.model.aircraft_sizing
-                ac_sizing.set_order(list(existing_data["model"]["aircraft_sizing"].keys()))
-                print('FOR DEBUG: I made it through the reordering')
+                ac_sizing.set_order(keys_list)
                 problem.setup()
                 problem.final_setup()       
                 # convert problem to dictionary, as input for feedback_extractor
@@ -253,13 +264,15 @@ def single_swap_algorithm(
                 viewer_model_data = _get_viewer_data(problem, case_id=case_id)
 
                 # evaluate the score of the proposed order
-                score = feedback_extractor(
-                    viewer_model_data,
-                    existing_data["model"]["aircraft_sizing"],
-                    CONFIGURATION_FILE,
-                    score_criteria,
-                    WORK_FOLDER_PATH,
-                )
+                if CONFIGURATION_FILE is not None:
+                    score = feedback_extractor(
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+                    )  # Initial score of the dictionary
+                else:
+                    score = feedback_extractor(
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, problem = problem
+                    )  # Initial score of the dictionary
+
 
                 if score < best_score:
                     best_score = score
@@ -277,7 +290,7 @@ def single_swap_algorithm(
                     keys_list.insert(len(keys_list) - counter, shifted_element)
                     swap_position = (
                         swap_position + 1
-                    )  ###########################################################
+                    )  
                     print("Swap reverted")
                     print("Current order: ", keys_list, "\n")
             else:
@@ -291,22 +304,24 @@ def single_swap_algorithm(
         if not improvement:
             counter = counter + 1
 
+
     keys_list = best_order  # Get the best order found so far
-    existing_data["model"]["aircraft_sizing"] = {
-        key: config_dictionary[key] for key in keys_list if key in config_dictionary
-    }
-    # add back solvers, if they were there
-    if "nonlinear_solver" in dict_with_solvers.keys():
-        existing_data["model"]["aircraft_sizing"]["nonlinear_solver"] = dict_with_solvers[
-            "nonlinear_solver"
-        ]
-    if "linear_solver" in dict_with_solvers:
-        existing_data["model"]["aircraft_sizing"]["linear_solver"] = dict_with_solvers[
-            "linear_solver"
-        ]
-    with open(CONFIGURATION_FILE, "w") as file:
-        yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
-        file.flush()
+    if CONFIGURATION_FILE is not None: #Write new config file
+        existing_data = {
+            key: config_dictionary[key] for key in keys_list if key in config_dictionary
+        }
+        # add back solvers, if they were there
+        if "nonlinear_solver" in dict_with_solvers.keys():
+            existing_data["nonlinear_solver"] = dict_with_solvers[
+                "nonlinear_solver"
+            ]
+        if "linear_solver" in dict_with_solvers:
+            existing_data["linear_solver"] = dict_with_solvers[
+                "linear_solver"
+            ]
+        with open(CONFIGURATION_FILE, "w") as file:
+            yaml.dump(existing_data, file, default_flow_style=False, sort_keys=False)
+            file.flush()
     return keys_list
 
 
@@ -354,6 +369,7 @@ def hybrid_swap_algorithm(
 
 def is_valid_order(keys_list, dictionary):#review
     # Check the restrictions
+    if dictionary == None: return False
 
     list_of_ids = []
     for key in keys_list:
@@ -483,7 +499,7 @@ problem = conf.get_problem() #User: Change this line if you want to use a proble
 
 
 optimization_level = 1
-swap = "double"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
 #'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 #'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
@@ -541,7 +557,7 @@ if optimization_level == 1:
             ],
         )
 
-    use_config_file  = False ##########FOR DEBUG ###############
+    use_config_file  = False ########## FOR DEBUG ###############
     if swap == "DOUBLE" or swap == "double":
         if use_config_file:
             double_swap_algorithm(
@@ -553,20 +569,20 @@ if optimization_level == 1:
             )
     elif swap == "SINGLE" or swap == "single":
         if use_config_file:
-            single_swap_algorithm(
+            best_order = single_swap_algorithm(
                 score_criteria, CONFIGURATION_FILE, aircraft_sizing_data,
             )
         else:
-            single_swap_algorithm(
+            best_order = single_swap_algorithm(
                 score_criteria, problem = problem
             )
     elif swap == "HYBRID" or swap == "hybrid":
         if use_config_file:
-            hybrid_swap_algorithm(
+            best_order = hybrid_swap_algorithm(
                 score_criteria, CONFIGURATION_FILE, aircraft_sizing_data
             )
         else:
-            hybrid_swap_algorithm(
+            best_order = hybrid_swap_algorithm(
                 score_criteria, problem = problem
             )
     else:
@@ -580,11 +596,16 @@ if optimization_level == 1:
 else:
     print("Not possible sry")
 
-print(
+if use_config_file == True:
+    print(
     "\nYour configuration file has been overwritten with optimal order. Time taken",
     time.time() - start,
-    "seconds",
-)
+    "seconds"
+    )
+else:       
+    print("__________________________\n Algorithm finished. Time taken", time.time() - start, "seconds")
+    print("\t The best order for your problem is: ", best_order)
+    print(" Call modules in this order when building your problem \n __________________________")
 # try:
 #    os.remove('tmp_saved_single_module_timings.txt')
 # except FileNotFoundError:
