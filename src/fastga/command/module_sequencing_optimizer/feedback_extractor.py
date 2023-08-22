@@ -1,8 +1,6 @@
 def feedback_extractor(
-    model_data, config_dictionary, CONFIGURATION_FILE, score_criteria, WORK_FOLDER_PATH, INFO=False
+    model_data, score_criteria, WORK_FOLDER_PATH, config_dictionary=None, CONFIGURATION_FILE=None, problem = None, INFO=False
 ):
-    # print('FOR DEBUG, CONFIG DICT INSIDE FEEDBK EXT is: ', config_dictionary)
-    # TODO: if info is false, only compute the number, not save every src tgt pair
 
     import time
     from time_modules import time_modules

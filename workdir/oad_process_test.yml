@@ -32,16 +32,16 @@ model:
     weight:
       id: fastga.weight.legacy
       propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-    performance:
-      id: fastga.performances.mission
-      propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-      out_file: ./workdir/mda_mission_results.csv
     hq:
       tail_sizing:
         id: fastga.handling_qualities.tail_sizing
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine
       static_margin:
         id: fastga.handling_qualities.static_margin
+    performance:
+      id: fastga.performances.mission
+      propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+      out_file: ./workdir/mda_mission_results.csv
     nonlinear_solver: om.NonlinearBlockGS(maxiter=50, iprint=2, rtol=1e-3, debug_print=True,
       reraise_child_analysiserror=True)
     linear_solver: om.DirectSolver()
