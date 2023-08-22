@@ -248,9 +248,8 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
         cl_vector_prop_off.extend(additional_zeros)
         y_vector_prop_off.extend(additional_zeros)
 
-        cl_diff = []
-        for i in range(len(cl_vector_prop_on)):
-            cl_diff.append(round(cl_vector_prop_on[i] - cl_vector_prop_off[i], 4))
+        cl_diff = np.round(np.asarray(cl_vector_prop_on) - np.asarray(cl_vector_prop_off), 4).tolist()
+
 
         if self.options["low_speed_aero"]:
             outputs[
