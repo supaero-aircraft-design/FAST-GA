@@ -1,5 +1,5 @@
 def feedback_extractor(
-    model_data, score_criteria, WORK_FOLDER_PATH, config_dictionary=None, CONFIGURATION_FILE=None, problem = None, INFO=False
+    model_data, score_criteria, WORK_FOLDER_PATH, orig_list_of_keys=None, CONFIGURATION_FILE=None, problem = None, INFO=False
 ):
 
     import time
@@ -88,7 +88,7 @@ def feedback_extractor(
                     "wing_area": 1.1173424243927002,
                 }
         else:  # compute modules times for your particular machine, solver, etc.
-            modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
+            modules_times = time_modules(orig_list_of_keys, CONFIGURATION_FILE, WORK_FOLDER_PATH)
 
         return modules_times
 
@@ -144,7 +144,7 @@ def feedback_extractor(
 
         # find how many times they run
         modules_in_feedback = extract_module(result_list)
-        keys_order = list(config_dictionary.keys())
+        keys_order = orig_list_of_keys
         # print("FOR DEBUG: keys order is ", keys_order)
 
         rerun_counts = {
