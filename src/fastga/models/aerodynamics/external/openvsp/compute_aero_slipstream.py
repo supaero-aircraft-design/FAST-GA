@@ -234,7 +234,7 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
         wing_rotor = self.compute_wing_rotor(
             inputs, outputs, altitude, mach, alpha_max, inputs["thrust"], inputs["shaft_power"]
         )
-        wing = self.compute_ac(inputs, outputs, altitude, mach, alpha_max, comp_opt=1)
+        wing = self.compute_ac(inputs, outputs, altitude, mach, alpha_max, comp_opt="wing")
 
         cl_vector_prop_on = wing_rotor["cl_vector"]
         y_vector_prop_on = wing_rotor["y_vector"]

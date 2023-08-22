@@ -170,9 +170,6 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @param comp_opt == 1 (wing)
-        @param comp_opt == 2 (htp)
-        @param comp_opt == 3 (A/C)
         @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coeff_k_htp parameters.
@@ -207,24 +204,21 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 result_file_path = self.save_geometry(result_folder_path, geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
-            # comp_opt == 1 (wing)
-            # comp_opt == 2 (htp)
-            # comp_opt == 3 (A/C)
-            wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=1)
+            wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
             
-            wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt=1)
+            wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing")
             # Compute complete aircraft @ 0°/X° angle of attack
             
-            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=3)
+            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt = "ac")
             
-            _, htp_aoa, _ = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt=3)
+            _, htp_aoa, _ = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt = "ac")
 
             # Compute isolated HTP @ 0°/X° angle of attack
             
-            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt=2)
+            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt = "htp")
             
             htp_aoa_isolated = self.compute_ac(
-                inputs, outputs, altitude, mach, aoa_angle, comp_opt=2
+                inputs, outputs, altitude, mach, aoa_angle, comp_opt = "htp"
             )
 
             # Post-process wing data ---------------------------------------------------------------
@@ -287,7 +281,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             results = self.assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing)
         return results
 
-    def compute_ac(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt=1):
+    def compute_ac(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
         """
         Function that computes in OpenVSP environment the wing, horizontal stablizer(htp), and complete aircraft (considering wing and
         horizontal tail plan) and returns the different aerodynamic parameters. The downwash is
@@ -298,9 +292,6 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @param comp_opt == 1 (wing)
-        @param comp_opt == 2 (htp)
-        @param comp_opt == 3 (A/C)
         @return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
@@ -369,17 +360,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
         # Define the list of necessary input files: geometry script and foil file for wing, HTP, and aircraft
-        if comp_opt == 1:
+        if comp_opt == "wing":
             input_file_list = [
                 pth.join(target_directory, INPUT_WING_SCRIPT),
                 pth.join(target_directory, self.options["wing_airfoil_file"]),
             ]
-        elif comp_opt == 2:
+        elif comp_opt == "htp":
             input_file_list = [
                 pth.join(target_directory, INPUT_HTP_SCRIPT),
                 pth.join(target_directory, self.options["htp_airfoil_file"]),
             ]
-        elif comp_opt == 3:
+        elif comp_opt == "ac":
             input_file_list = [
                 pth.join(target_directory, INPUT_AIRCRAFT_SCRIPT),
                 pth.join(target_directory, self.options["wing_airfoil_file"]),
@@ -392,29 +383,29 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # noinspection PyTypeChecker
         copy_resource_folder(openvsp3201, target_directory)
         if self.options["airfoil_folder_path"] is None:
-            if comp_opt == 1:
+            if comp_opt == "wing":
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
-            elif comp_opt == 2:
+            elif comp_opt == "htp":
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
-            elif comp_opt == 3:
+            elif comp_opt == "ac":
                 # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
                 # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
         else:
-            if comp_opt == 1:
+            if comp_opt == "wing":
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["wing_airfoil_file"],
                     target_directory,
                 )
-            elif comp_opt == 2:
+            elif comp_opt == "htp":
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["htp_airfoil_file"],
                     target_directory,
                 )
-            elif comp_opt == 3:
+            elif comp_opt == "ac":
                 # noinspection PyTypeChecker
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
@@ -432,21 +423,21 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         batch_file = open(self.options["command"][0], "w+")
         batch_file.write("@echo off\n")
 
-        if comp_opt == 1:
+        if comp_opt == "wing":
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
                 + pth.join(target_directory, INPUT_WING_SCRIPT)
                 + " >nul 2>nul\n"
             )
-        elif comp_opt == 2:
+        elif comp_opt == "htp":
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
                 + pth.join(target_directory, INPUT_HTP_SCRIPT)
                 + " >nul 2>nul\n"
             )
-        elif comp_opt == 3:
+        elif comp_opt == "ac":
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
@@ -459,7 +450,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         # STEP 3/XX - OPEN THE TEMPLATE SCRIPT FOR GEOMETRY GENERATION, MODIFY VALUES AND SAVE TO
         # WORKDIR #################################################################################
-        if comp_opt == 1:
+        if comp_opt == "wing":
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -501,7 +492,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
-        elif comp_opt == 2:
+        elif comp_opt == "htp":
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -533,7 +524,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
-        elif comp_opt == 3:
+        elif comp_opt == "ac":
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -629,7 +620,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
 
-            if comp_opt == 1:
+            if comp_opt == "wing":
                 parser.mark_anchor("Sref")
                 parser.transfer_var(float(s_ref_wing), 0, 3)
                 parser.mark_anchor("Cref")
@@ -639,7 +630,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 parser.mark_anchor("X_cg")
                 parser.transfer_var(float(fa_length), 0, 3)
                 reynolds = reynolds_wing
-            elif comp_opt == 2:
+            elif comp_opt == "htp":
                 parser.mark_anchor("Sref")
                 parser.transfer_var(float(s_ref_htp), 0, 3)
                 parser.mark_anchor("Cref")
@@ -649,7 +640,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 parser.mark_anchor("X_cg")
                 parser.transfer_var(float(fa_length + lp_htp), 0, 3)
                 reynolds = reynolds_htp
-            elif comp_opt == 3:
+            elif comp_opt == "ac":
                 parser.mark_anchor("Sref")
                 parser.transfer_var(float(s_ref_wing), 0, 3)
                 parser.mark_anchor("Cref")
@@ -678,7 +669,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         # STEP 8/XX - READ FILES, RETURN RESULTS (AND CLEAR TEMPORARY WORKDIR) #####################
         ############################################################################################
-        if comp_opt == 1:
+        if comp_opt == "wing":
             # Open .lod file and extract data
             wing_y_vect = []
             wing_chord_vect = []
@@ -728,7 +719,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "coeff_e": wing_e,
             }
             output_result = wing
-        elif comp_opt == 2:
+        elif comp_opt == "htp":
             # Open .lod file and extract data
             htp_y_vect = []
             htp_cl_vect = []
@@ -775,7 +766,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "coeff_e": htp_e,
             }
             output_result=htp
-        elif comp_opt == 3:
+        elif comp_opt == "ac":
             # Open .lod file and extract data
             wing_y_vect = []
             wing_cl_vect = []
