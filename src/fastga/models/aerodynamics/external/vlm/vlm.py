@@ -970,9 +970,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         z_panel = np.zeros(self.n_x + 1)
         z_panel_no_flaps = copy.deepcopy(self.wing["z"])
-        mask = x_panel[:,0] <= x_start
-        z_panel = z_panel_no_flaps - np.sin(deflection_angle) * (x_panel[:,0] - x_start)
-        z_panel[mask] = z_panel_no_flaps[mask]
+        for i in range(self.n_x + 1):
+            if x_panel[i, 0] > x_start:
+                z_panel[i] = z_panel_no_flaps[i] - np.sin(deflection_angle) * (
+                    x_panel[i, 0] - x_start
+                )
+            else:
+                z_panel[i] = z_panel_no_flaps[i]
 
         # At this point z_panel contains the z coordinate of the flapped part of the wing,
         # panel angle vector should not change in the un-flapped part
@@ -986,6 +990,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         for j in range(self.ny1, self.ny1 + self.ny2):
             for i in range(self.n_x):
                 panelangle_vect[i * self.n_y + j] = panelangle[i]
+
         # Save results
         self.wing["panel_angle_vect"] = panelangle_vect
         self.wing["panel_angle"] = panelangle
