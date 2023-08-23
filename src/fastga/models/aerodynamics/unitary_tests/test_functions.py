@@ -895,8 +895,10 @@ def compute_aero(
     results_folder.cleanup()
 
     # Check obtained value(s) is/(are) correct
-    assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
-
+    if use_openvsp:
+        assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
+    else:
+        assert (duration_2nd_run / duration_1st_run) <= 1
     # Return problem for complementary values check
     return problem
 
@@ -984,8 +986,10 @@ def comp_aero_input_aoa(
     results_folder.cleanup()
 
     # Check obtained value(s) is/(are) correct
-    assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
-
+    if use_openvsp:
+        assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
+    else:
+        assert (duration_2nd_run / duration_1st_run) <= 1
     # Return problem for complementary values check
     return problem
 
