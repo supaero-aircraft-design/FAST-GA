@@ -340,30 +340,31 @@ def hybrid_swap_algorithm(
         conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
         problem = conf.get_problem()
 
-    if problem is not None:
-        problem.setup()
-        problem.final_setup()
-        # convert problem to dictionary viewer data
-        case_id = None
-        try:
-            viewer_model_data = _get_viewer_data(problem, case_id=case_id)
-            err_msg = ""
-        except TypeError as err:
-            viewer_model_data = {}
-            err_msg = str(err)
-            issue_warning(err_msg)
 
     problem.setup()
     problem.final_setup()
-    case_id = None
-    viewer_model_data = _get_viewer_data(problem, case_id=case_id)
-    with open(CONFIGURATION_FILE, "r") as file:
-        yaml_data = yaml.safe_load(file)
-        aircraft_sizing_data = yaml_data["model"]["aircraft_sizing"]
+    # convert problem to dictionary viewer data
 
-    keys_list = single_swap_algorithm(
-        viewer_model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria
-    )
+    case_id = None
+    try:
+        viewer_model_data = _get_viewer_data(problem, case_id=case_id)
+        err_msg = ""
+    except TypeError as err:
+        viewer_model_data = {}
+        err_msg = str(err)
+        issue_warning(err_msg)
+
+    if CONFIGURATION_FILE is not None:
+        with open(CONFIGURATION_FILE, "r") as file:
+            yaml_data = yaml.safe_load(file)
+            aircraft_sizing_data = yaml_data["model"]["aircraft_sizing"]
+        keys_list = single_swap_algorithm(
+            viewer_model_data, aircraft_sizing_data, CONFIGURATION_FILE, score_criteria
+        )
+    else:
+        single_swap_algorithm(
+                score_criteria, problem = problem
+            )
     return keys_list
 
 
@@ -475,40 +476,40 @@ def is_valid_order(keys_list, dictionary):#review
 ####################################################################################################################################################################################
 # End of the functions
 ####################################################################################################################################################################################
-
-#START OF USER AREA
-############################################
-
-# Define relative path
-WORK_FOLDER_PATH = "workdir"
 CONFIGURATION_FILE = None
-##
 
-# Define file if using one. If not, comment line
+####################################################################################################################################
+#START OF USER AREA
+####################################################################################################################################
+
+#---- 1. ---- Define relative path for your working directory
+WORK_FOLDER_PATH = "workdir"
+
+
+#---- 2. ---- Choose between using a configuration file or setting up an MDAO problem
+## -- 2.1. -- Define file if using one. If not, comment line
 CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
-if CONFIGURATION_FILE: 
-    use_config_file = True
-#
-#OR
-#  
-#Define Problem (this is a placeholder problem created from a config file, you can give it your own problem)
+## OR
+## -- 2.2 .-- Define Problem (this is a placeholder problem created from a config file, you can give it your own problem adding subsystems manually)
 conf = FASTOADProblemConfigurator(CONFIGURATION_FILE) #User: Change this line if you want to use a problem without a config file
 problem = conf.get_problem() #User: Change this line if you want to use a problem without a config file
 
-##
 
-
+#---- 3. ---- Define Optimization level (always 1 for now), type of swapping algorithm for optimization and the score criteria of the potential solutions (see description below)
 optimization_level = 1
-swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "hybrid"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
-#'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
-#'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
-#'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
+##'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
+##'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
+##'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
 score_criteria = "use_time"
-############################################
+
+####################################################################################################################################
 #END OF USER AREA
+####################################################################################################################################
 
-
+if CONFIGURATION_FILE: 
+    use_config_file = True
 
 start = time.time()
 
@@ -591,10 +592,9 @@ if optimization_level == 1:
 # TODO::::
 # elif Optimization_level == 2:
 # elif Optimization_level == 3:
-# elif Optimization_level == 4:
-# elif Optimization_level == 5:
+
 else:
-    print("Not possible sry")
+    print("Not possible to use optimization levels over 1 yet sorry")
 
 if use_config_file == True:
     print(
@@ -606,10 +606,7 @@ else:
     print("__________________________\n Algorithm finished. Time taken", time.time() - start, "seconds")
     print("\t The best order for your problem is: ", best_order)
     print(" Call modules in this order when building your problem \n __________________________")
-# try:
-#    os.remove('tmp_saved_single_module_timings.txt')
-# except FileNotFoundError:
-#    pass
+
 try:
     # remove all temporary config files created for unitary timing
     shutil.rmtree(pth.join(WORK_FOLDER_PATH, "config_opti_tmp"))
