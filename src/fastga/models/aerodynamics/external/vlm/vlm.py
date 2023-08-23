@@ -873,7 +873,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_2,
             x_c,
             y_c,
-        ) = self.panle_point_calculation(
+        ) = self.panel_point_calculation(
             x_panel,
             y_panel,
             x_le,
@@ -1478,7 +1478,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 
         return aic, aic_wake
     
-    def panle_point_calculation(
+    def panel_point_calculation(
         self,
         x_panel,
         y_panel,
