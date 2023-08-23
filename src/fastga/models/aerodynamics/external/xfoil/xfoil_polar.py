@@ -22,7 +22,7 @@ from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Tuple
-
+import numba 
 import numpy as np
 import pandas as pd
 
@@ -936,9 +936,9 @@ class XfoilPolar(ExternalCodeComp):
             stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
             shutil.move(self.stderr, stderr_file_path)
 
+@numba.jit
 def string_to_array(arr):
-    arr = np.array([float(v) for v in arr.strip('[]').split(',')])
-    return arr
+  return np.array(arr.strip('[]').split(','), dtype=np.float)
 
 
 def add_zeros(arr):
