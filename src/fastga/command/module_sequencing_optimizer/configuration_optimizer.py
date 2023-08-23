@@ -63,7 +63,7 @@ def double_swap_algorithm(
 
     if CONFIGURATION_FILE is not None:
         best_score = feedback_extractor(
-            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE, config_dictionary
         )  # Initial score of the dictionary
     else:
         best_score = feedback_extractor(
@@ -119,7 +119,7 @@ def double_swap_algorithm(
 
                 if CONFIGURATION_FILE is not None:
                     score = feedback_extractor(
-                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE, config_dictionary
                     )  # Initial score of the dictionary
                 else:
                     score = feedback_extractor(
@@ -218,7 +218,7 @@ def single_swap_algorithm(
 
     if CONFIGURATION_FILE is not None:
         best_score = feedback_extractor(
-            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+            viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE, config_dictionary
         )  # Initial score of the dictionary
     else:
         best_score = feedback_extractor(
@@ -266,7 +266,7 @@ def single_swap_algorithm(
                 # evaluate the score of the proposed order
                 if CONFIGURATION_FILE is not None:
                     score = feedback_extractor(
-                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE
+                        viewer_model_data, score_criteria, WORK_FOLDER_PATH, keys_list, CONFIGURATION_FILE, config_dictionary
                     )  # Initial score of the dictionary
                 else:
                     score = feedback_extractor(
@@ -473,7 +473,6 @@ def is_valid_order(keys_list, dictionary):#review
     return True
 
 
-
 ####################################################################################################################################################################################
 # End of the functions
 ####################################################################################################################################################################################
@@ -498,12 +497,12 @@ problem = conf.get_problem() #User: Change this line if you want to use a proble
 
 #---- 3. ---- Define Optimization level (always 1 for now), type of swapping algorithm for optimization and the score criteria of the potential solutions (see description below)
 optimization_level = 1
-swap = "hybrid"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
+swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRID
 # Optimize using as score:
 ##'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 ##'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
 ##'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
-score_criteria = "use_time"
+score_criteria = "compute_time"
 
 ####################################################################################################################################
 #END OF USER AREA
