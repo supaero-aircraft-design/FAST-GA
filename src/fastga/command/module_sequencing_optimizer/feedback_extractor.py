@@ -1,5 +1,5 @@
 def feedback_extractor(
-    model_data, score_criteria, WORK_FOLDER_PATH, orig_list_of_keys=None, CONFIGURATION_FILE=None, problem = None, INFO=False
+    model_data, score_criteria, WORK_FOLDER_PATH, orig_list_of_keys, CONFIGURATION_FILE=None, config_dictionary=None, problem = None, INFO=False
 ):
 
     import time
@@ -74,7 +74,7 @@ def feedback_extractor(
                     return module_times
             else:
                 print(
-                    "\n Using pre-run module times. These may be different for your machine. It is recommended to run first with the option: compute_time"
+                    "\n Warning: Using pre-run module times to compute score. These may be different for your machine. It is recommended to run first with the option: compute_time\n "
                 )
                 modules_times = {
                     "geometry": 1.7216651797294618,
@@ -88,7 +88,10 @@ def feedback_extractor(
                     "wing_area": 1.1173424243927002,
                 }
         else:  # compute modules times for your particular machine, solver, etc.
-            modules_times = time_modules(orig_list_of_keys, CONFIGURATION_FILE, WORK_FOLDER_PATH)
+            if CONFIGURATION_FILE is not None:
+                modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
+            else:
+                modules_times = time_modules(problem = problem)
 
         return modules_times
 
