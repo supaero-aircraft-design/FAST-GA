@@ -207,16 +207,15 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
             model.add_subsystem("inputs", inputs, promotes = ["*"])
             model.add_subsystem("component", component_to_extract, promotes=["*"])
 
-            starting = time.time()
+            for _ in range(15):  # run them individually 15 times, to have a good average
+                starting = time.time()
 
+                with contextlib.redirect_stdout(None):  # supresses outputs by terminal of each small case execution
+                    problem_copy.run_model
 
+                problem_copy.write_outputs
 
-            with contextlib.redirect_stdout(None):  # supresses outputs by terminal of each small case execution
-                problem_copy.run_model
-
-            problem_copy.write_outputs
-
-            executions_time.append(time.time() - starting)
+                executions_time.append(time.time() - starting)
 
             module_times[module] = sum(executions_time) / len(executions_time)
 
