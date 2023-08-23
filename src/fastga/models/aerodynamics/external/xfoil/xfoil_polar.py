@@ -942,9 +942,7 @@ def string_to_array(arr):
 
 
 def add_zeros(arr):
-    additional_zeros = list(np.zeros(POLAR_POINT_COUNT - len(arr)))
-    if not isinstance(arr,list):
-        arr = arr.tolist()
-    arr.extend(additional_zeros)
     arr = np.asarray(arr)
-    return arr
+    zeros = np.zeros(POLAR_POINT_COUNT - len(arr))
+    return np.append(arr, zeros)
+  
