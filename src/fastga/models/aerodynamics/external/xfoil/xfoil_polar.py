@@ -611,12 +611,12 @@ class XfoilPolar(ExternalCodeComp):
                 )
                 # Search for common alpha range for linear interpolation
                 alpha_lower = (
-                    string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
+                    _string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
                     .ravel()
                     .tolist()
                 )
                 alpha_upper = (
-                    string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
+                    _string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
                     .ravel()
                     .tolist()
                 )
@@ -629,8 +629,8 @@ class XfoilPolar(ExternalCodeComp):
                 
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).astype(np.float64).ravel()
-                    upper_value = string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).astype(np.float64).ravel()
+                    lower_value = _string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).astype(np.float64).ravel()
+                    upper_value = _string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).astype(np.float64).ravel()
 
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
@@ -842,11 +842,11 @@ class XfoilPolar(ExternalCodeComp):
             alpha = alpha_interp
             warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
         else:
-            alpha = add_zeros(alpha)
-            cl = add_zeros(cl)
-            cd = add_zeros(cd)
-            cdp = add_zeros(cdp)
-            cm = add_zeros(cm)
+            alpha = _add_zeros(alpha)
+            cl = _add_zeros(cl)
+            cd = _add_zeros(cd)
+            cdp = _add_zeros(cdp)
+            cm = _add_zeros(cm)
 
         return alpha, cl, cd, cdp, cm
 
@@ -865,13 +865,13 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
-        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
-        ALPHA = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
-        CL = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
-        CD = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
-        CDP = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
-        CM = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
+        cl_max_2d = _string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
+        cl_min_2d = _string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
+        ALPHA = _string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
+        CL = _string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
+        CD = _string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
+        CDP = _string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
+        CM = _string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
@@ -881,11 +881,11 @@ class XfoilPolar(ExternalCodeComp):
             cdp = np.interp(alpha, ALPHA, CDP)
             cm = np.interp(alpha, ALPHA, CM)
         else:
-            alpha = add_zeros(ALPHA)
-            cl = add_zeros(CL)
-            cd = add_zeros(CD)
-            cdp = add_zeros(CDP)
-            cm = add_zeros(CM)
+            alpha = _add_zeros(ALPHA)
+            cl = _add_zeros(CL)
+            cd = _add_zeros(CD)
+            cdp = _add_zeros(CDP)
+            cm = _add_zeros(CM)
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
 
@@ -937,11 +937,11 @@ class XfoilPolar(ExternalCodeComp):
             shutil.move(self.stderr, stderr_file_path)
 
 @numba.jit
-def string_to_array(arr):
+def _string_to_array(arr):
   return np.array(arr.strip('[]').split(','), dtype=np.float)
 
 
-def add_zeros(arr):
+def _add_zeros(arr):
     arr = np.asarray(arr)
     zeros = np.zeros(POLAR_POINT_COUNT - len(arr))
     return np.append(arr, zeros)
