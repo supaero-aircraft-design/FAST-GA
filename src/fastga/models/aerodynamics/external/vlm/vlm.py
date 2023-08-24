@@ -23,7 +23,7 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from stdatm import Atmosphere
-import numba
+import numba as nb
 from numba import njit, prange
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS

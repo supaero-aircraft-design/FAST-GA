@@ -16,7 +16,7 @@ import os
 import os.path as pth
 import warnings
 from importlib.resources import path
-
+import numba as nb
 import numpy as np
 import pandas as pd
 
@@ -1113,9 +1113,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # longer
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-            y_vector_wing.extend(additional_zeros)
-            cl_vector_wing.extend(additional_zeros)
-            chord_vector_wing.extend(additional_zeros)
+            y_vector_wing = add_zeros(y_vector_wing,additional_zeros)
+            cl_vector_wing = add_zeros(cl_vector_wing,additional_zeros)
+            chord_vector_wing = add_zeros(chord_vector_wing,additional_zeros)
 
         return y_vector_wing, cl_vector_wing, chord_vector_wing
 
@@ -1137,8 +1137,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-            y_vector_htp.extend(additional_zeros)
-            cl_vector_htp.extend(additional_zeros)
+            y_vector_htp = add_zeros(y_vector_htp,additional_zeros)
+            cl_vector_htp = add_zeros(cl_vector_htp,additional_zeros)
 
         return y_vector_htp, cl_vector_htp
 
@@ -1668,3 +1668,16 @@ def generate_wing_rotor_file(engine_count: int):
     file.close()
 
     return rotor_template_file_name
+
+@nb.njit
+def add_zeros_nb(arr, zeros):
+    arr = nb.typed.List(arr)
+    zeros = nb.typed.List(zeros)
+    arr.extend(zeros)
+    return arr
+
+@nb.njit
+def add_zeros(arr, zeros):
+    arr = np.asarray(arr)
+    zeros = np.asarray(zeros)
+    return add_zeros_nb(arr, zeros)
