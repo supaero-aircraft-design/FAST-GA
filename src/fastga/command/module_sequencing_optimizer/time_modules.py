@@ -14,9 +14,9 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
 
     import os.path as pth
     import os
+    import openmdao.api as om
     from fastoad import api as api_cs25
     # from fastga.command import api as api_cs23
-    import subprocess
     import time
     import yaml
     import shutil
@@ -26,37 +26,27 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
     import xml.etree.ElementTree as ET
     from tests.testing_utilities import get_indep_var_comp, list_inputs
 
-    if ORIGINAL_CONFIGURATION_FILE is not None:
+    NEW_SOURCE_FILE = pth.join("src/fastga/command/module_sequencing_optimizer/data/oad_process_outputs.xml")
 
-        # Obtaining the modules for this version of fastoad
-        command = "fastoad list_modules"
-        # Run the command and capture the output
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        # Access the output using the 'stdout' attribute
-        list_modules = result.stdout
-        module_path_pairs = re.findall(r"\|\s*([^|]+)\s*\|\s*([^|]+)\s*\|", list_modules)
-        module_path_pairs = [(module.strip(), path.strip()) for module, path in module_path_pairs]
+    if ORIGINAL_CONFIGURATION_FILE is not None:
 
         # initialize empty dict for storing module times
         module_times = dict.fromkeys(config_dictionary, 0)
+        
 
         print("\n   Calculating individual times for your modules... \n")
-        for (
-            module
-        ) in (
-            config_dictionary.keys()
-        ):  # iterate over each module present in the configuration file we are trying to optimize
+        for module in config_dictionary.keys():  # iterate over each module present in the configuration file we are trying to optimize
 
             # generate the configuration file with single module (no optimization and no propeller)
             NEW_CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "config_opti_tmp", str(module))
             if not pth.isdir(NEW_CONFIGURATION_FILE):
                 os.makedirs(NEW_CONFIGURATION_FILE)
             shutil.copy(ORIGINAL_CONFIGURATION_FILE, NEW_CONFIGURATION_FILE)
-            FOLDER_WITH_CSVS_SRC = WORK_FOLDER_PATH + "/workdir"
-            FOLDER_WITH_CSVS_TGT = NEW_CONFIGURATION_FILE + "/workdir"
-            shutil.copytree(
-                FOLDER_WITH_CSVS_SRC, FOLDER_WITH_CSVS_TGT, dirs_exist_ok=True
-            )  # copy needed csv files to new config file path
+            #FOLDER_WITH_CSVS_SRC = WORK_FOLDER_PATH + "/workdir"
+            #FOLDER_WITH_CSVS_TGT = NEW_CONFIGURATION_FILE + "/workdir"
+            #shutil.copytree(
+            #    FOLDER_WITH_CSVS_SRC, FOLDER_WITH_CSVS_TGT, dirs_exist_ok=True
+            #)  # copy needed csv files to new config file path
             NEW_CONFIGURATION_FILE = pth.join(
                 NEW_CONFIGURATION_FILE, os.path.basename(ORIGINAL_CONFIGURATION_FILE)
             )
@@ -76,117 +66,39 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
                     del data["optimization"]  # no optimization
                 if "propeller" in data["model"]:
                     del data["model"]["propeller"]  # no propeller
-                yaml.dump(data, file, default_flow_style=False, sort_keys=False)
+                yaml.dump(data, file, default_flow_style=False, sort_keys=False)            
 
-            # Fetch the appropriate SOURCE file from unitary_tests of each module, with the paths to the modules listed by the fastoad list_modules ran before
+            api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, NEW_SOURCE_FILE, overwrite=True)
 
-            # Find the id or ids of the module in question
-            id_of_module = find_id_value(config_dictionary[module])
+            executions_time = []
 
-            # Find the path to its folder
-            path_to_id_of_module = next(
-                (pair[1] for pair in module_path_pairs if id_of_module in pair[0]), None
-            )
-            # Find the path to its unitary tests folder, which contains the source file
-            index = path_to_id_of_module.index("/models")  # Find the index of "/models"
-            next_folder_index = path_to_id_of_module.find(
-                "/", index + len("/models") + 1
-            )  # Find the index of the folder immediately after models
+            print("\n   Starting timings of: ", module)
+            for _ in range(15):  # run them individually 15 times, to have a good average
 
-            if id_of_module != "fastga.weight.legacy":
+                starting = time.time()
 
-                NEW_SOURCE_FILE = (
-                    path_to_id_of_module[:next_folder_index] + "/unitary_tests/data/beechcraft_76.xml"
-                )  # add the path to the source file used for the unitary test of module being timed
-                if id_of_module == "fastga.loop.mtow":
-                    NEW_SOURCE_FILE = (
-                        path_to_id_of_module[:next_folder_index]
-                        + "/mass_breakdown/unitary_tests/data/beechcraft_76.xml"
-                    )  # add the path to the source file used for the unitary test of module being timed
+                # Supressing terminal outputs of modules:
 
-                ###############################
-                api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, NEW_SOURCE_FILE, overwrite=True)
+                # Save the original standard output and standard error
+                original_stdout = sys.stdout
+                original_stderr = sys.stderr
+                # Redirect standard output and standard error to the null device
+                sys.stdout = open(os.devnull, "w")
+                sys.stderr = open(os.devnull, "w")
+                with contextlib.redirect_stdout(
+                    None
+                ):  # supresses outputs by terminal of each small case execution
+                    api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
+                # Restore the original standard output and standard error
+                sys.stdout = original_stdout
+                sys.stderr = original_stderr
 
-                executions_time = []
+                executions_time.append(time.time() - starting)
 
-                print("\n   Starting timings of: ", module)
-                for _ in range(15):  # run them individually 15 times, to have a good average
+            module_times[module] = sum(executions_time) / len(executions_time)
+            print("\n       Average time of ", module, ": ", module_times[module], " seconds\n")
 
-                    starting = time.time()
-
-                    # Supressing terminal outputs of modules:
-
-                    # Save the original standard output and standard error
-                    original_stdout = sys.stdout
-                    original_stderr = sys.stderr
-                    # Redirect standard output and standard error to the null device
-                    sys.stdout = open(os.devnull, "w")
-                    sys.stderr = open(os.devnull, "w")
-                    with contextlib.redirect_stdout(
-                        None
-                    ):  # supresses outputs by terminal of each small case execution
-                        api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
-                    # Restore the original standard output and standard error
-                    sys.stdout = original_stdout
-                    sys.stderr = original_stderr
-
-                    executions_time.append(time.time() - starting)
-
-                module_times[module] = sum(executions_time) / len(executions_time)
-                print("\n       Average time of ", module, ": ", module_times[module], " seconds\n")
-
-            elif id_of_module == "fastga.weight.legacy":
-
-                CG_SOURCE_FILE = (
-                    path_to_id_of_module[:next_folder_index]
-                    + "/cg/unitary_tests/data/beechcraft_76.xml"
-                )  # add the path to the source file used for the unitary test of module being timed
-
-                # we have to include a missing line to the source file in FAST-GA/src/fastga/models/weight/cg, so weight can run on its own
-                tree = ET.parse(CG_SOURCE_FILE)
-                root = tree.getroot()
-
-                # Find the <geometry> element
-                geometry_element = root.find("data/geometry")
-                if geometry_element is not None:
-                    # Create missing element
-                    new_element = ET.Element("wing_configuration")
-                    new_element.set("is_input", "True")
-                    new_element.text = "1.0"
-
-                    # Append the new element to the <geometry> element
-                    geometry_element.append(new_element)
-                else:
-                    sys.exit(
-                        "<geometry> element not found in the XML structure. Could not compute weight times"
-                    )
-
-                # Save the modified XML back to a file
-                WEIGHT_PATH = pth.join(WORK_FOLDER_PATH, "config_opti_tmp", str(module), "data")
-                if not pth.isdir(WEIGHT_PATH):
-                    os.makedirs(WEIGHT_PATH)
-                WEIGHT_SOURCE_FILE = pth.join(WEIGHT_PATH, "beechcraft_76.xml")
-                tree.write(WEIGHT_SOURCE_FILE)
-
-                api_cs25.generate_inputs(NEW_CONFIGURATION_FILE, WEIGHT_SOURCE_FILE, overwrite=True)
-
-                executions_time = []
-
-                print("\n   Starting timings of: ", module)
-                for _ in range(15):  # run them individually 15 times, to have a good average
-
-                    starting = time.time()
-
-                    with contextlib.redirect_stdout(
-                        None
-                    ):  # supresses outputs by terminal of each small case execution
-                        api_cs25.evaluate_problem(NEW_CONFIGURATION_FILE, overwrite=True)
-
-                    executions_time.append(time.time() - starting)
-
-                module_times[module] = sum(executions_time) / len(executions_time)
-
-                print("\n       Average time of ", module, ": ", module_times[module], " seconds\n")
+            
 
         try:
             # remove all temporary config files created for unitary timing
@@ -196,33 +108,32 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
     else: #if user selects option to run from openmdao problem and not config file
         executions_time = []
 
-        problem_copy = problem
-        model = problem_copy.model
+        problem_copy = om.Problem()
+        model = problem.model
 
         modules_in_problem = list(model.aircraft_sizing._proc_info.keys())
-        print(modules_in_problem)
+
 
         for module in modules_in_problem:
 
-            component_to_extract = "model.aircraft_sizing." + module
-            component_to_extract = globals()[component_to_extract]
+
+            component_to_extract =  getattr(problem.model.aircraft_sizing, module)
+            #component_to_extract = globals()[component_to_extract]
 
             list_of_variables = list_inputs(model)
-            
-            #api_cs25.generate_source.data_files()
+        
 
-            inputs = get_indep_var_comp(list_of_variables, "/Users/BielGaliot/Documents/GitHub/FAST-GA/src/fastga/source_data_files/problem_outputs_Beechcraft_800nm_mda.xml")
+            inputs = get_indep_var_comp(list_of_variables, "src/fastga/command/module_sequencing_optimizer/", "oad_process_outputs.xml")
 
-            model.add_subsystem("inputs", inputs, promotes = ["*"])
-            model.add_subsystem("component", component_to_extract, promotes=["*"])
+            problem_copy.model.add_subsystem("inputs", inputs, promotes = ["*"])
+            problem_copy.model.add_subsystem("component", component_to_extract, promotes=["*"])
 
             for _ in range(15):  # run them individually 15 times, to have a good average
                 starting = time.time()
 
                 with contextlib.redirect_stdout(None):  # supresses outputs by terminal of each small case execution
                     problem_copy.run_model
-
-                problem_copy.write_outputs
+                    #problem_copy.write_outputs
 
                 executions_time.append(time.time() - starting)
 
