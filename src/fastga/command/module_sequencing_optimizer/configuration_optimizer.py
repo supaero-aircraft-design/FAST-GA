@@ -415,7 +415,7 @@ def is_valid_order(keys_list, dictionary):#review
             for aerodynamics_index in aerodynamics_indices
             if performances_index is not None and aerodynamics_index is not None
         ):
-            print("FOR DEBUG: Avoided aero > performance violation")
+            print("Avoided aero > performance violation")
             return False
 
     # wing area has to be computed before geometry
@@ -453,7 +453,7 @@ def is_valid_order(keys_list, dictionary):#review
             for aerodynamics_index in aerodynamics_indices
             if geometry_index is not None and aerodynamics_index is not None
         ):
-            print("FOR DEBUG: Avoided geo > aero violation")
+            print("Avoided geo > aero violation")
             return False
 
     # if (is_id_starts_with('fastga.geometry.', id_indices) and
@@ -502,7 +502,7 @@ swap = "single"  # Optimize using swap algorithm type: SINGLE or DOUBLE or HYBRI
 ##'use_time' pre-recorded single-module times multiplied by the times they run in feedbacks. Not all modules are present.
 ##'compute_time' live-recorded single-module times multiplied by the times they run in feedbacks - this will take longer as it has to run all your modules individually a few times
 ##'count_feedbacks' the count of how many feedback loops your config file has - quick and effective, for quick testing, or for general (but not thorough) optimization
-score_criteria = "compute_time"
+score_criteria = "use_time"
 
 ####################################################################################################################################
 #END OF USER AREA

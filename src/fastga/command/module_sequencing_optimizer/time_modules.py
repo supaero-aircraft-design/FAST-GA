@@ -24,6 +24,7 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
     import sys
     import contextlib
     import xml.etree.ElementTree as ET
+    from tests.testing_utilities import get_indep_var_comp, list_inputs
 
     if ORIGINAL_CONFIGURATION_FILE is not None:
 
@@ -194,15 +195,23 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
             pass
     else: #if user selects option to run from openmdao problem and not config file
         executions_time = []
-        problem_copy = problem
 
+        problem_copy = problem
         model = problem_copy.model
 
         modules_in_problem = list(model.aircraft_sizing._proc_info.keys())
+        print(modules_in_problem)
 
         for module in modules_in_problem:
+
             component_to_extract = "model.aircraft_sizing." + module
-            inputs = problem.model.fastoad_inputs
+            component_to_extract = globals()[component_to_extract]
+
+            list_of_variables = list_inputs(model)
+            
+            #api_cs25.generate_source.data_files()
+
+            inputs = get_indep_var_comp(list_of_variables, "/Users/BielGaliot/Documents/GitHub/FAST-GA/src/fastga/source_data_files/problem_outputs_Beechcraft_800nm_mda.xml")
 
             model.add_subsystem("inputs", inputs, promotes = ["*"])
             model.add_subsystem("component", component_to_extract, promotes=["*"])

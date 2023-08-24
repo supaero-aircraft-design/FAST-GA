@@ -1,42 +1,33 @@
+import warnings
+
+warnings.filterwarnings(action="ignore")
+
 import os.path as pth
 import os
 import openmdao.api as om
-import subprocess
-import os.path as pth
-import os
-import sys
-
-# import openmdao.api as om
-# from fastoad import api as api_cs25
-# from fastga.command import api as api_cs23
-import yaml
+from fastoad import api as api_cs25
+from fastga.command import api as api_cs23
+import logging
+from fastoad.gui import VariableViewer
 import shutil
-import time
-from feedback_extractor import feedback_extractor
-from time_modules import find_id_value
 
-from fastoad.io.configuration import FASTOADProblemConfigurator
-from openmdao.visualization.n2_viewer.n2_viewer import _get_viewer_data
-from openmdao.utils.om_warnings import issue_warning
-
+# Define relative path
+DATA_FOLDER_PATH = "data"
 WORK_FOLDER_PATH = "workdir"
 
+# Remove work folder
+
+# Define files
 CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
-#OR 
-#Define Problem (this is a placeholder problem created from a config file, you can give it your own problem)
-conf = FASTOADProblemConfigurator(CONFIGURATION_FILE)
-problem = conf.get_problem()
+#CONFIGURATION_FILE = "/Users/BielGaliot/Documents/GitHub/FAST-GA/integration_tests/oad_process/data/oad_process_be76.yml"
+SOURCE_FILE = "/Users/BielGaliot/Documents/GitHub/FAST-GA/integration_tests/oad_process/results/oad_process_outputs.xml"
 
-list_of_modules = problem.model.aircraft_sizing._proc_info.keys()
+# For having log messages on screen
+logging.basicConfig(level=logging.INFO, format="%(levelname)-8s: %(message)s")
 
-problem.model.aircraft_sizing.list_of_modules[i]
+api_cs25.generate_inputs(CONFIGURATION_FILE, SOURCE_FILE, overwrite=True)
+eval_problem = api_cs25.evaluate_problem(CONFIGURATION_FILE, overwrite=True)
 
-problem.setup()
-problem.final_setup()
-
-'''command = "fastoad eval problem"
-# Run the command and capture the output
-result = subprocess.run(command, shell=True, capture_output=True, text=True)
-# Access the output using the 'stdout' attribute
-list_modules = result.stdout'''
-
+OUTPUT_FILE = pth.join(WORK_FOLDER_PATH, "problem_outputs.xml")
+Beechcraft_OUTPUT_FILE = pth.join(WORK_FOLDER_PATH, "problem_outputs_Beechcraft_800nm_mda.xml")
+shutil.copy(OUTPUT_FILE, Beechcraft_OUTPUT_FILE)
