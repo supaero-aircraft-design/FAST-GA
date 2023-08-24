@@ -1447,17 +1447,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         ) / coeff_2_l
         aic_wake = coeff_10_r / (4 * np.pi) + coeff_10_l / (4 * np.pi)
         aic = coeff_10_l / (4 * np.pi) + coeff_10_r / (4 * np.pi) 
-        """
-        for i in range((n_x * n_y)*(n_x * n_y)):
-            if coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i] != 0:
-                    aic[i] = aic[i] +(coeff_9_r[i] / (coeff_1_r[i] * coeff_4_r[i] - coeff_2_r[i] * coeff_3_r[i])) / (
-                        4 * np.pi
-                    )
-            if coeff_1_l[i] * coeff_4_l[i] - coeff_2_l[i] * coeff_3_l[i] != 0:
-                    aic[i] = aic[i] +(coeff_9_l[i] / (coeff_1_l[i] * coeff_4_l[i] - coeff_2_l[i] * coeff_3_l[i])) / (
-                        4 * np.pi
-                    )
-        """
+       
         # Calculate cross products
         den_r = coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r
         den_l = coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l
