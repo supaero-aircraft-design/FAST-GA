@@ -1407,38 +1407,52 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         
         """
         midpoint = len(x_c) // 2
+        
         x_c = x_c[:midpoint]
+        x_c = np.repeat(x_c[:, np.newaxis], midpoint, axis=1).ravel()
         y_c = y_c[:midpoint]
+        y_c = np.repeat(y_c[:, np.newaxis], midpoint, axis=1).ravel()
         x_1_r = x_1[:midpoint]
+        x_1_r = np.tile(x_1_r, len(x_1_r))
         y_1_r = y_1[:midpoint]
+        y_1_r = np.tile(y_1_r, len(y_1_r))
         x_2_r = x_2[:midpoint]
+        x_2_r = np.tile(x_2_r, len(x_2_r))
         y_2_r = y_2[:midpoint]
+        y_2_r = np.tile(y_2_r, len(y_2_r))
         x_1_l = x_1[midpoint:]
+        x_1_l = np.tile(x_1_l, len(x_1_l))
         y_1_l = y_1[midpoint:]
+        y_1_l = np.tile(y_1_l, len(y_1_l))
         x_2_l = x_2[midpoint:]
+        x_2_l = np.tile(x_2_l, len(x_2_l))
         y_2_l = y_2[midpoint:]
-        coeff_1_r = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_1_r, len(x_1_r))
-        coeff_2_r = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_1_r, len(y_1_r))
-        coeff_3_r = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_2_r, len(x_2_r))
-        coeff_4_r = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_2_r, len(y_2_r))
+        y_2_l = np.tile(y_2_l, len(y_2_l))
+        
+        
+        
+        coeff_1_r = x_c - x_1_r
+        coeff_2_r = y_c - y_1_r
+        coeff_3_r = x_c - x_2_r
+        coeff_4_r = y_c - y_2_r
         coeff_5_r = np.sqrt(coeff_1_r ** 2 + coeff_2_r ** 2)
         coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
-        coeff_7_r = np.tile(x_2_r, len(x_2_r)) - np.tile(x_1_r, len(x_1_r))
-        coeff_8_r = np.tile(y_2_r, len(y_2_r)) - np.tile(y_1_r, len(y_1_r))
+        coeff_7_r = x_2_r - x_1_r
+        coeff_8_r = y_2_r - y_1_r
         coeff_9_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
             coeff_7_r * coeff_3_r + coeff_8_r * coeff_4_r
         ) / coeff_6_r
         coeff_10_r = (1 + coeff_3_r / coeff_6_r) / coeff_4_r - (
             1 + coeff_1_r / coeff_5_r
         ) / coeff_2_r
-        coeff_1_l = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_1_l, len(x_1_l))
-        coeff_2_l = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_1_l, len(y_1_l))
-        coeff_3_l = np.repeat(x_c[:, np.newaxis], len(x_c), axis=1).ravel() - np.tile(x_2_l, len(x_2_l))
-        coeff_4_l = np.repeat(y_c[:, np.newaxis], len(y_c), axis=1).ravel() - np.tile(y_2_l, len(y_2_l))
+        coeff_1_l = x_c - x_1_l
+        coeff_2_l = y_c - y_1_l
+        coeff_3_l = x_c - x_2_l
+        coeff_4_l = y_c - y_2_l
         coeff_5_l = np.sqrt(coeff_1_l ** 2 + coeff_2_l ** 2)
         coeff_6_l = np.sqrt(coeff_3_l ** 2 + coeff_4_l ** 2)
-        coeff_7_l = np.tile(x_2_l, len(x_2_l)) - np.tile(x_1_l, len(x_1_l))
-        coeff_8_l = np.tile(y_2_l, len(y_2_l)) - np.tile(y_1_l, len(y_1_l))
+        coeff_7_l = x_2_l - x_1_l
+        coeff_8_l = y_2_l - y_1_l
         coeff_9_l = (coeff_7_l * coeff_1_l + coeff_8_l * coeff_2_l) / coeff_5_l - (
             coeff_7_l * coeff_3_l + coeff_8_l * coeff_4_l
         ) / coeff_6_l
