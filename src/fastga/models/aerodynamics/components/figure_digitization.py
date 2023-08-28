@@ -26,42 +26,17 @@ from scipy import interpolate
 
 from . import resources
 
-DELTA_CD_PLAIN_FLAP = "delta_drag_plain_flap.csv"
 K_PLAIN_FLAP = "k_plain_flap.csv"
-CL_DELTA_TH_PLAIN_FLAP = "cl_delta_th_plain_flap.csv"
-K_CL_DELTA_PLAIN_FLAP = "k_cl_delta_plain_flap.csv"
-K_SINGLE_SLOT = "k_single_slot.csv"
-BASE_INCREMENT_CL_MAX = "base_increment.csv"
-K1 = "k1.csv"
-K2 = "k2.csv"
-K3 = "k3.csv"
-KB_FLAPS = "kb_flaps.csv"
-A_DELTA_AIRFOIL = "a_delta_airfoil.csv"
-K_A_DELTA = "k_a_delta.csv"
-K_P_FLAPS = "k_p.csv"
-DELTA_CM_DELTA_CL_REF = "delta_cm_delta_cl_ref.csv"
 K_DELTA = "k_delta.csv"
 K_AR_FUSELAGE = "k_ar_fuselage.csv"
-K_VH = "k_vh.csv"
-K_CH_ALPHA = "k_ch_alpha.csv"
-CH_ALPHA_TH = "ch_alpha_th.csv"
-K_CH_DELTA = "k_ch_delta.csv"
-CH_DELTA_TH = "ch_delta_th.csv"
-K_FUS = "k_fus.csv"
 CL_BETA_SWEEP = "cl_beta_sweep_contribution.csv"
 K_M_LAMBDA = "sweep_compressibility_correction.csv"
-K_FUSELAGE = "cl_beta_fuselage_correction.csv"
 CL_BETA_AR = "cl_beta_ar_contribution.csv"
 CL_BETA_GAMMA = "cl_beta_dihedral_contribution.csv"
-K_M_GAMMA = "dihedral_compressibility_correction.csv"
-K_TWIST = "twist_correction.csv"
 K_ROLL_DAMPING = "cl_p_roll_damping_parameter.csv"
-K_CDI_ROLL_DAMPING = "cl_p_cdi_roll_damping.csv"
 CL_R_LIFT_PART_A = "cl_r_lift_effect_part_a.csv"
 CL_R_LIFT_PART_B = "cl_r_lift_effect_part_b.csv"
-CL_R_TWIST_EFFECT = "cl_r_twist_effect.csv"
 CN_DELTA_A_K_A = "cn_delta_a_correlation_cst.csv"
-CN_P_TWIST = "cn_p_twist_contribution.csv"
 CN_R_LIFT_EFFECT = "cn_r_lift_effect.csv"
 CN_R_DRAG_EFFECT = "cn_r_drag_effect.csv"
 
@@ -87,42 +62,25 @@ class FigureDigitization(om.ExplicitComponent):
         :return delta_cd_flap: profile drag increment due to the deployment of flaps.
         """
 
-        file = pth.join(resources.__path__[0], DELTA_CD_PLAIN_FLAP)
-        db = read_csv(file)
-
-        x_15 = db["DELTA_F_15_X"]
-        y_15 = db["DELTA_F_15_Y"]
-        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
-        x_15 = x_15[np.logical_not(errors)].tolist()
-        y_15 = y_15[np.logical_not(errors)].tolist()
-
-        x_60 = db["DELTA_F_60_X"]
-        y_60 = db["DELTA_F_60_Y"]
-        errors = np.logical_or(np.isnan(x_60), np.isnan(y_60))
-        x_60 = x_60[np.logical_not(errors)].tolist()
-        y_60 = y_60[np.logical_not(errors)].tolist()
-
-        if chord_ratio != np.clip(
-            chord_ratio, min(min(x_15), min(x_60)), max(max(x_15), max(x_60))
-        ):
+        if chord_ratio != np.clip(chord_ratio, 0.1, 0.3):
             _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
-
-        x_value_00 = 0.0
-        x_value_15 = interpolate.interp1d(x_15, y_15)(
-            np.clip(float(chord_ratio), min(x_15), max(x_15))
-        )
-        x_value_60 = interpolate.interp1d(x_60, y_60)(
-            np.clip(float(chord_ratio), min(x_60), max(x_60))
-        )
 
         if control_deflection != np.clip(control_deflection, 0.0, 60.0):
             _LOGGER.warning(
                 "Control surface deflection outside of the range in Roskam's book, value clipped"
             )
 
-        delta_cd_flap = interpolate.interp1d(
-            [0.0, 15.0, 60.0], [x_value_00, x_value_15, x_value_60], kind="quadratic"
-        )(np.clip(control_deflection, 0.0, 60.0))
+        control_deflection = np.clip(control_deflection, 0.0, 60.0)
+        chord_ratio = np.clip(chord_ratio, 0.1, 0.3)
+
+        delta_cd_flap = (
+            -0.00203
+            + 0.0001448 * control_deflection ** 2.0 * chord_ratio
+            + 0.01083 * control_deflection * chord_ratio ** 2.0
+            + 0.08919 * chord_ratio
+            - 0.42947 * chord_ratio ** 2.0
+            + 0.72158 * chord_ratio ** 3.0
+        )
 
         return delta_cd_flap
 
@@ -222,58 +180,40 @@ class FigureDigitization(om.ExplicitComponent):
         :return cl_delta: theoretical airfoil lift effectiveness of the plain flap.
         """
 
-        file = pth.join(resources.__path__[0], CL_DELTA_TH_PLAIN_FLAP)
-        db = read_csv(file)
-
-        x_0 = db["X_0"]
-        y_0 = db["Y_0"]
-        errors = np.logical_or(np.isnan(x_0), np.isnan(y_0))
-        x_0 = x_0[np.logical_not(errors)].tolist()
-        y_0 = y_0[np.logical_not(errors)].tolist()
-        x_04 = db["X_04"]
-        y_04 = db["Y_04"]
-        errors = np.logical_or(np.isnan(x_04), np.isnan(y_04))
-        x_04 = x_04[np.logical_not(errors)].tolist()
-        y_04 = y_04[np.logical_not(errors)].tolist()
-        x_10 = db["X_10"]
-        y_10 = db["Y_10"]
-        errors = np.logical_or(np.isnan(x_10), np.isnan(y_10))
-        x_10 = x_10[np.logical_not(errors)].tolist()
-        y_10 = y_10[np.logical_not(errors)].tolist()
-        x_15 = db["X_15"]
-        y_15 = db["Y_15"]
-        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
-        x_15 = x_15[np.logical_not(errors)].tolist()
-        y_15 = y_15[np.logical_not(errors)].tolist()
-        cld_thk0 = interpolate.interp1d(x_0, y_0)
-        cld_thk04 = interpolate.interp1d(x_04, y_04)
-        cld_thk10 = interpolate.interp1d(x_10, y_10)
-        cld_thk15 = interpolate.interp1d(x_15, y_15)
-
-        if (
-            (chord_ratio != np.clip(chord_ratio, min(x_0), max(x_0)))
-            or (chord_ratio != np.clip(chord_ratio, min(x_04), max(x_04)))
-            or (chord_ratio != np.clip(chord_ratio, min(x_10), max(x_10)))
-            or (chord_ratio != np.clip(chord_ratio, min(x_15), max(x_15)))
-        ):
+        if chord_ratio != np.clip(chord_ratio, 0.05, 0.5):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
-
-        cld_t = [
-            float(cld_thk0(np.clip(chord_ratio, min(x_0), max(x_0)))),
-            float(cld_thk04(np.clip(chord_ratio, min(x_04), max(x_04)))),
-            float(cld_thk10(np.clip(chord_ratio, min(x_10), max(x_10)))),
-            float(cld_thk15(np.clip(chord_ratio, min(x_15), max(x_15)))),
-        ]
 
         if thickness != np.clip(thickness, 0.0, 0.15):
             _LOGGER.warning(
                 "Thickness ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        cl_delta_th = interpolate.interp1d([0.0, 0.04, 0.1, 0.15], cld_t)(
-            np.clip(thickness, 0.0, 0.15)
+        thickness = np.clip(thickness, 0.0, 0.15)
+        chord_ratio = np.clip(chord_ratio, 0.05, 0.5)
+
+        cl_delta_th = (
+            0.39403
+            + 22.40938 * chord_ratio
+            - 76.09814 * chord_ratio ** 2.0
+            - 16.06188 * thickness * chord_ratio
+            + 205.57323 * chord_ratio ** 3.0
+            + 1.75898 * thickness
+            - 312.43784 * chord_ratio ** 4.0
+            + 192.52783 * chord_ratio ** 5.0
+            + 329.31357 * thickness * chord_ratio ** 4.0
+            - 6702.89145 * thickness ** 4.0 * chord_ratio
+            + 1273.34256 * thickness ** 3.0 * chord_ratio
+            - 296.20629 * thickness ** 2.0 * chord_ratio ** 2.0
+            + 616.07146 * thickness ** 3.0 * chord_ratio ** 2.0
+            - 401.79093 * thickness * chord_ratio ** 3.0
+            + 170.05976 * thickness * chord_ratio ** 2.0
+            + 92.84439 * thickness ** 5.0
+            - 17.93677 * thickness ** 2.0
+            + 251.43186 * thickness ** 2.0 * chord_ratio ** 3.0
+            + 0.39403
+            + 455.44427 * thickness ** 4.0
         )
 
         return cl_delta_th
@@ -292,40 +232,16 @@ class FigureDigitization(om.ExplicitComponent):
         flap lift.
         """
 
-        file = pth.join(resources.__path__[0], K_CL_DELTA_PLAIN_FLAP)
-        db = read_csv(file)
-
         # Figure 10.64 b
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = db["K_CL_ALPHA"]
-        errors = np.isnan(k_cl_alpha_data)
-        k_cl_alpha_data = k_cl_alpha_data[np.logical_not(errors)].tolist()
-        k_cl_delta_min_data = db["K_CL_DELTA_MIN"]
-        errors = np.isnan(k_cl_delta_min_data)
-        k_cl_delta_min_data = k_cl_delta_min_data[np.logical_not(errors)].tolist()
-        k_cl_delta_max_data = db["K_CL_DELTA_MAX"]
-        errors = np.isnan(k_cl_delta_max_data)
-        k_cl_delta_max_data = k_cl_delta_max_data[np.logical_not(errors)].tolist()
-
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
+            float(airfoil_lift_coefficient / cl_alpha_th), 0.7, 1.0
         ):
             _LOGGER.warning(
                 "Airfoil lift slope ratio value outside of the range in Roskam's book, "
                 "value clipped"
             )
-
-        k_cl_alpha = np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
-        )
-
-        k_cl_delta_min = interpolate.interp1d(k_cl_alpha_data, k_cl_delta_min_data)(k_cl_alpha)
-        k_cl_delta_max = interpolate.interp1d(k_cl_alpha_data, k_cl_delta_max_data)(k_cl_alpha)
 
         if chord_ratio != np.clip(chord_ratio, 0.05, 0.5):
             _LOGGER.warning(
@@ -333,8 +249,19 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.05, 0.5)
-        k_cl_delta = interpolate.interp1d([0.05, 0.5], [k_cl_delta_min, k_cl_delta_max])(
-            chord_ratio
+        k_cl_alpha = np.clip(airfoil_lift_coefficient / cl_alpha_th, 0.7, 1.0)
+
+        k_cl_delta = 10.0 ** (
+            0.00014
+            - 0.39775 * np.log10(chord_ratio) * np.log10(k_cl_alpha) ** 2.0
+            + 0.96887 * np.log10(k_cl_alpha)
+            - 1.06182 * np.log10(chord_ratio) * np.log10(k_cl_alpha)
+            - 15.84119 * np.log10(k_cl_alpha) ** 3.0
+            + 4.70862 * np.log10(chord_ratio) ** 2.0 * np.log10(k_cl_alpha) ** 3.0
+            + 90.62652 * np.log10(chord_ratio) * np.log10(k_cl_alpha) ** 6.0
+            - 32881.41822 * np.log10(k_cl_alpha) ** 7.0
+            - 328.18865 * np.log10(k_cl_alpha) ** 4.0
+            + 0.00009 * np.log10(chord_ratio) ** 7.0
         )
 
         return k_cl_delta
@@ -352,70 +279,34 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_prime: lift effectiveness factor of a single slotted flap.
         """
 
-        file = pth.join(resources.__path__[0], K_SINGLE_SLOT)
-        db = read_csv(file)
-
-        x_15 = db["X_15"]
-        y_15 = db["Y_15"]
-        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
-        x_15 = x_15[np.logical_not(errors)].tolist()
-        y_15 = y_15[np.logical_not(errors)].tolist()
-        k_chord_15 = interpolate.interp1d(x_15, y_15)
-
-        x_20 = db["X_20"]
-        y_20 = db["Y_20"]
-        errors = np.logical_or(np.isnan(x_20), np.isnan(y_20))
-        x_20 = x_20[np.logical_not(errors)].tolist()
-        y_20 = y_20[np.logical_not(errors)].tolist()
-        k_chord_20 = interpolate.interp1d(x_20, y_20)
-
-        x_25 = db["X_25"]
-        y_25 = db["Y_25"]
-        errors = np.logical_or(np.isnan(x_25), np.isnan(y_25))
-        x_25 = x_25[np.logical_not(errors)].tolist()
-        y_25 = y_25[np.logical_not(errors)].tolist()
-        k_chord_25 = interpolate.interp1d(x_25, y_25)
-
-        x_30 = db["X_30"]
-        y_30 = db["Y_30"]
-        errors = np.logical_or(np.isnan(x_30), np.isnan(y_30))
-        x_30 = x_30[np.logical_not(errors)].tolist()
-        y_30 = y_30[np.logical_not(errors)].tolist()
-        k_chord_30 = interpolate.interp1d(x_30, y_30)
-
-        x_40 = db["X_40"]
-        y_40 = db["Y_40"]
-        errors = np.logical_or(np.isnan(x_40), np.isnan(y_40))
-        x_40 = x_40[np.logical_not(errors)].tolist()
-        y_40 = y_40[np.logical_not(errors)].tolist()
-        k_chord_40 = interpolate.interp1d(x_40, y_40)
-
-        if (
-            (float(flap_angle) != np.clip(float(flap_angle), min(x_15), max(x_15)))
-            or (float(flap_angle) != np.clip(float(flap_angle), min(x_20), max(x_20)))
-            or (float(flap_angle) != np.clip(float(flap_angle), min(x_25), max(x_25)))
-            or (float(flap_angle) != np.clip(float(flap_angle), min(x_30), max(x_30)))
-            or (float(flap_angle) != np.clip(float(flap_angle), min(x_40), max(x_40)))
-        ):
-            _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
-
-        k_chord = [
-            k_chord_15(np.clip(float(flap_angle), min(x_15), max(x_15))),
-            k_chord_20(np.clip(float(flap_angle), min(x_20), max(x_20))),
-            k_chord_25(np.clip(float(flap_angle), min(x_25), max(x_25))),
-            k_chord_30(np.clip(float(flap_angle), min(x_30), max(x_30))),
-            k_chord_40(np.clip(float(flap_angle), min(x_40), max(x_40))),
-        ]
-
         if float(chord_ratio) != np.clip(float(chord_ratio), 0.15, 0.4):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        k_prime = float(
-            interpolate.interp1d([0.15, 0.20, 0.25, 0.3, 0.4], k_chord)(
-                np.clip(float(chord_ratio), 0.15, 0.4)
-            )
+        if float(flap_angle) != np.clip(float(flap_angle), 0.0, 80.0):
+            _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
+
+        chord_ratio = np.clip(float(chord_ratio), 0.15, 0.4)
+        flap_angle = np.clip(flap_angle, 0.0, 80.0) * 0.01
+        # flap angle is scaled by 0.01 to ease the surrogate modeling process
+
+        k_prime = (
+            0.10882
+            + 0.43162 * flap_angle
+            + 1.81636 * chord_ratio
+            + 23.23625 * chord_ratio ** 3.0 * flap_angle ** 2.0
+            - 59.51140 * flap_angle ** 6.0
+            - 6.54618 * flap_angle ** 2.0
+            - 3.64380 * chord_ratio ** 3.0
+            - 0.33308 * chord_ratio * flap_angle ** 2.0
+            - 3.60115 * chord_ratio ** 3.0 * flap_angle
+            + 126.71624 * flap_angle ** 5.0
+            - 98.81282 * flap_angle ** 4.0
+            + 35.78080 * flap_angle ** 3.0
+            + 17.85760 * chord_ratio * flap_angle ** 5.0
+            - 16.51125 * chord_ratio * flap_angle ** 4.0
+            - 18.63048 * chord_ratio ** 3.0 * flap_angle ** 3.0
         )
 
         return k_prime
@@ -433,45 +324,73 @@ class FigureDigitization(om.ExplicitComponent):
         :return: delta_cl_base.
         """
 
-        file = pth.join(resources.__path__[0], BASE_INCREMENT_CL_MAX)
-        db = read_csv(file)
-
-        x_plain = db["X_PLAIN_FLAP"]
-        y_plain = db["Y_PLAIN_FLAP"]
-        errors = np.logical_or(np.isnan(x_plain), np.isnan(y_plain))
-        x_plain = x_plain[np.logical_not(errors)].tolist()
-        y_plain = y_plain[np.logical_not(errors)].tolist()
-
-        x_single_slot = db["X_SINGLE_SLOT"]
-        y_single_slot = db["Y_SINGLE_SLOT"]
-        errors = np.logical_or(np.isnan(x_single_slot), np.isnan(y_single_slot))
-        x_single_slot = x_single_slot[np.logical_not(errors)].tolist()
-        y_single_slot = y_single_slot[np.logical_not(errors)].tolist()
-
         if flap_type == 0.0:
-            base_increment = interpolate.interp1d(x_plain, y_plain)
-            if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
+            if thickness_ratio != np.clip(thickness_ratio, 0.97561, 19.96748):
                 _LOGGER.warning(
                     "Thickness ratio value outside of the range in Roskam's book, value clipped"
                 )
-            delta_cl_max_base = base_increment(np.clip(thickness_ratio, min(x_plain), max(x_plain)))
-        elif flap_type == 1.0:
-            base_increment = interpolate.interp1d(x_single_slot, y_single_slot)
-            if thickness_ratio != np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot)):
-                _LOGGER.warning(
-                    "Thickness ratio value outside of the range in Roskam's book, value clipped"
-                )
-            delta_cl_max_base = base_increment(
-                np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot))
+
+            thickness_ratio = np.clip(thickness_ratio, 0.97561, 19.96748) / 2.0
+            # thickness_ratio is scaled to ease the surrogate modeling process
+
+            delta_cl_max_base = 10.0 ** (
+                -0.00855
+                - 4184.27800 * np.log10(thickness_ratio) ** 8.0
+                - 3.01891 * np.log10(thickness_ratio)
+                + 1043.18454 * np.log10(thickness_ratio) ** 15.0
+                - 200.83494 * np.log10(thickness_ratio) ** 3.0
+                - 3054.84080 * np.log10(thickness_ratio) ** 14.0
+                + 1614.23260 * np.log10(thickness_ratio) ** 5.0
+                + 7913.55910 * np.log10(thickness_ratio) ** 7.0
+                + 43.50709 * np.log10(thickness_ratio) ** 2.0
+                + 151.14820 * np.log10(thickness_ratio) ** 4.0
+                + 2425.33784 * np.log10(thickness_ratio) ** 13.0
+                - 5747.78286 * np.log10(thickness_ratio) ** 6.0
             )
+
+        elif flap_type == 1.0:
+            if thickness_ratio != np.clip(thickness_ratio, 0.97561, 19.96748):
+                _LOGGER.warning(
+                    "Thickness ratio value outside of the range in Roskam's book, value clipped"
+                )
+
+            thickness_ratio = np.clip(thickness_ratio, 0.97561, 19.96748) / 2.0
+            # thickness_ratio is scaled to ease the surrogate modeling process
+
+            delta_cl_max_base = 10.0 ** (
+                0.00401
+                + 0.53332 * np.log10(thickness_ratio) ** 4.0
+                + 22.42966 * np.log10(thickness_ratio) ** 20.0
+                - 0.20865 * np.log10(thickness_ratio) ** 5.0
+                - 45.52539 * np.log10(thickness_ratio) ** 19.0
+                + 23.05475 * np.log10(thickness_ratio) ** 18.0
+                - 0.06516 * np.log10(thickness_ratio) ** 2.0
+            )
+
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            base_increment = interpolate.interp1d(x_plain, y_plain)
-            if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
+            if thickness_ratio != np.clip(thickness_ratio, 0.97561, 19.96748):
                 _LOGGER.warning(
                     "Thickness ratio value outside of the range in Roskam's book, value clipped"
                 )
-            delta_cl_max_base = base_increment(np.clip(thickness_ratio, min(x_plain), max(x_plain)))
+
+            thickness_ratio = np.clip(thickness_ratio, 0.97561, 19.96748) / 2.0
+            # thickness_ratio is scaled to ease the surrogate modeling process
+
+            delta_cl_max_base = 10.0 ** (
+                -0.00855
+                - 4184.27800 * np.log10(thickness_ratio) ** 8.0
+                - 3.01891 * np.log10(thickness_ratio)
+                + 1043.18454 * np.log10(thickness_ratio) ** 15.0
+                - 200.83494 * np.log10(thickness_ratio) ** 3.0
+                - 3054.84080 * np.log10(thickness_ratio) ** 14.0
+                + 1614.23260 * np.log10(thickness_ratio) ** 5.0
+                + 7913.55910 * np.log10(thickness_ratio) ** 7.0
+                + 43.50709 * np.log10(thickness_ratio) ** 2.0
+                + 151.14820 * np.log10(thickness_ratio) ** 4.0
+                + 2425.33784 * np.log10(thickness_ratio) ** 13.0
+                - 5747.78286 * np.log10(thickness_ratio) ** 6.0
+            )
 
         return delta_cl_max_base
 
@@ -491,29 +410,22 @@ class FigureDigitization(om.ExplicitComponent):
         configuration.
         """
 
-        file = pth.join(resources.__path__[0], K1)
-        db = read_csv(file)
-
-        if flap_type == 1.0 or flap_type == 0.0:
-            x = db["X_PLAIN_SINGLE_SPLIT"]
-            y = db["Y_PLAIN_SINGLE_SPLIT"]
-            errors = np.logical_or(np.isnan(x), np.isnan(y))
-            x = x[np.logical_not(errors)].tolist()
-            y = y[np.logical_not(errors)].tolist()
-        else:
+        if flap_type != 1.0 and flap_type != 0.0:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            x = db["X_PLAIN_SINGLE_SPLIT"]
-            y = db["Y_PLAIN_SINGLE_SPLIT"]
-            errors = np.logical_or(np.isnan(x), np.isnan(y))
-            x = x[np.logical_not(errors)].tolist()
-            y = y[np.logical_not(errors)].tolist()
 
-        if float(chord_ratio) != np.clip(float(chord_ratio), min(x), max(x)):
+        if float(chord_ratio) != np.clip(float(chord_ratio), 0.0, 30.0):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        k1 = interpolate.interp1d(x, y)(np.clip(float(chord_ratio), min(x), max(x)))
+        chord_ratio = np.clip(float(chord_ratio), 0.0, 30.0)
+        k1 = (
+            -1.47218e-6 * chord_ratio ** 4.0
+            + 1.29646e-4 * chord_ratio ** 3.0
+            - 4.77302e-3 * chord_ratio ** 2.0
+            + 1.01777e-1 * chord_ratio
+            - 2.72363e-03
+        )
 
         return k1
 
@@ -531,46 +443,51 @@ class FigureDigitization(om.ExplicitComponent):
         reference configuration.
         """
 
-        file = pth.join(resources.__path__[0], K2)
-        db = read_csv(file)
-
-        x_plain = db["X_PLAIN_FLAP"]
-        y_plain = db["Y_PLAIN_FLAP"]
-        errors = np.logical_or(np.isnan(x_plain), np.isnan(y_plain))
-        x_plain = x_plain[np.logical_not(errors)].tolist()
-        y_plain = y_plain[np.logical_not(errors)].tolist()
-
-        x_single_slot = db["X_SINGLE_SLOT"]
-        y_single_slot = db["Y_SINGLE_SLOT"]
-        errors = np.logical_or(np.isnan(x_single_slot), np.isnan(y_single_slot))
-        x_single_slot = x_single_slot[np.logical_not(errors)].tolist()
-        y_single_slot = y_single_slot[np.logical_not(errors)].tolist()
-
         if flap_type == 0.0:
-            k2_interp = interpolate.interp1d(x_plain, y_plain)
-            if angle != np.clip(angle, min(x_plain), max(x_plain)):
+            if angle != np.clip(angle, 0.0, 60.0):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
+            angle = np.clip(angle, 0.0, 60.0)
+            k2 = (
+                3.51465e-8 * angle ** 4.0
+                - 1.99067e-6 * angle ** 3.0
+                - 3.26243e-4 * angle ** 2.0
+                + 3.58225e-2 * angle
+                - 1.14952e-03
+            )
+
         elif flap_type == 1.0:
-            k2_interp = interpolate.interp1d(x_single_slot, y_single_slot)
-            if angle != np.clip(angle, min(x_single_slot), max(x_single_slot)):
+            if angle != np.clip(angle, 0.0, 45.0):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_single_slot), max(x_single_slot)))
+            angle = np.clip(angle, 0.0, 45.0)
+            k2 = (
+                3.16011e-8 * angle ** 4.0
+                - 3.44449e-6 * angle ** 3.0
+                - 1.85964e-4 * angle ** 2.0
+                + 3.07683e-2 * angle
+                + 1.76491e-01
+            )
+
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            k2_interp = interpolate.interp1d(x_plain, y_plain)
-            if angle != np.clip(angle, min(x_plain), max(x_plain)):
+            if angle != np.clip(angle, 0.0, 60.0):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
+            angle = np.clip(angle, 0.0, 60.0)
+            angle = (
+                3.51465e-8 * angle ** 4.0
+                - 1.99067e-6 * angle ** 3.0
+                - 3.26243e-4 * angle ** 2.0
+                + 3.58225e-2 * angle
+                - 1.14952e-03
+            )
 
         return k2
 
@@ -586,27 +503,25 @@ class FigureDigitization(om.ExplicitComponent):
         :return k3: correction factor to account flap motion correction.
         """
 
-        file = pth.join(resources.__path__[0], K3)
-        db = read_csv(file)
-
         if flap_type == 0.0:
             k3 = 1.0
         elif flap_type == 1.0:
-            x = db["X_SINGLE_SLOT"]
-            y = db["Y_SINGLE_SLOT"]
-            errors = np.logical_or(np.isnan(x), np.isnan(y))
-            x = x[np.logical_not(errors)].tolist()
-            y = y[np.logical_not(errors)].tolist()
             reference_angle = 45.0
-            if float(angle / reference_angle) != np.clip(
-                float(angle / reference_angle), min(x), max(x)
-            ):
+            if float(angle / reference_angle) != np.clip(float(angle / reference_angle), 0.0, 1.0):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped, reference value is %f",
                     reference_angle,
                 )
-            k3 = interpolate.interp1d(x, y)(np.clip(float(angle / reference_angle), min(x), max(x)))
+            angle_ratio = np.clip(float(angle / reference_angle), 0.0, 1.0)
+            k3 = (
+                0.722572 * angle_ratio ** 4.0
+                - 1.58742 * angle_ratio ** 3.0
+                + 0.701810 * angle_ratio ** 2.0
+                + 1.14872 * angle_ratio
+                + 1.57847e-02
+            )
+
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
             k3 = 1.0
@@ -634,64 +549,28 @@ class FigureDigitization(om.ExplicitComponent):
                 "Taper ratio value outside of the range in Roskam's book, value clipped"
             )
 
+        if eta_in != np.clip(eta_in, 0.0, 1.0):
+            _LOGGER.warning(
+                "Flap inward position ratio value outside of the range in Roskam's book, "
+                "value clipped"
+            )
+
+        if eta_out != np.clip(eta_out, 0.0, 1.0):
+            _LOGGER.warning(
+                "Flap inward position ratio value outside of the range in Roskam's book, "
+                "value clipped"
+            )
+
         taper_ratio = np.clip(taper_ratio, 0.0, 1.0)
-        file = pth.join(resources.__path__[0], KB_FLAPS)
-        db = read_csv(file)
 
-        x_0 = db["X_0"]
-        y_0 = db["Y_0"]
-        errors = np.logical_or(np.isnan(x_0), np.isnan(y_0))
-        x_0 = x_0[np.logical_not(errors)].tolist()
-        y_0 = y_0[np.logical_not(errors)].tolist()
-        x_05 = db["X_0.5"]
-        y_05 = db["Y_0.5"]
-        errors = np.logical_or(np.isnan(x_05), np.isnan(y_05))
-        x_05 = x_05[np.logical_not(errors)].tolist()
-        y_05 = y_05[np.logical_not(errors)].tolist()
-        x_1 = db["X_1"]
-        y_1 = db["Y_1"]
-        errors = np.logical_or(np.isnan(x_1), np.isnan(y_1))
-        x_1 = x_1[np.logical_not(errors)].tolist()
-        y_1 = y_1[np.logical_not(errors)].tolist()
-        k_taper0 = interpolate.interp1d(x_0, y_0)
-        k_taper05 = interpolate.interp1d(x_05, y_05)
-        k_taper1 = interpolate.interp1d(x_1, y_1)
+        eta_in = np.clip(eta_in, 0.0, 1.0) + 1.0
+        eta_out = np.clip(eta_out, 0.0, 1.0) + 1.0
+        # eta_in and eta_out are translated to ease the surrogate modeling process
 
-        if (
-            (eta_in != np.clip(eta_in, min(x_0), max(x_0)))
-            or (eta_in != np.clip(eta_in, min(x_05), max(x_05)))
-            or (eta_in != np.clip(eta_in, min(x_1), max(x_1)))
-        ):
-            _LOGGER.warning(
-                "Flap inward position ratio value outside of the range in Roskam's book, "
-                "value clipped"
-            )
+        k_b_in = _k_b(taper_ratio, eta_in)
+        k_b_out = _k_b(taper_ratio, eta_out)
 
-        k_eta = [
-            float(k_taper0(np.clip(eta_in, min(x_0), max(x_0)))),
-            float(k_taper05(np.clip(eta_in, min(x_05), max(x_05)))),
-            float(k_taper1(np.clip(eta_in, min(x_1), max(x_1)))),
-        ]
-        kb_in = interpolate.interp1d([0.0, 0.5, 1.0], k_eta)(taper_ratio)
-
-        if (
-            (eta_out != np.clip(eta_out, min(x_0), max(x_0)))
-            or (eta_out != np.clip(eta_out, min(x_05), max(x_05)))
-            or (eta_out != np.clip(eta_out, min(x_1), max(x_1)))
-        ):
-            _LOGGER.warning(
-                "Flap inward position ratio value outside of the range in Roskam's book, "
-                "value clipped"
-            )
-
-        k_eta = [
-            float(k_taper0(np.clip(eta_out, min(x_0), max(x_0)))),
-            float(k_taper05(np.clip(eta_out, min(x_05), max(x_05)))),
-            float(k_taper1(np.clip(eta_out, min(x_1), max(x_1)))),
-        ]
-        kb_out = interpolate.interp1d([0.0, 0.5, 1.0], k_eta)(taper_ratio)
-
-        return float(kb_out - kb_in)
+        return float(k_b_out - k_b_in)
 
     @staticmethod
     @functools.lru_cache(maxsize=128)
@@ -706,21 +585,29 @@ class FigureDigitization(om.ExplicitComponent):
         :return: kb factor contribution to 3D lift.
         """
 
-        file = pth.join(resources.__path__[0], A_DELTA_AIRFOIL)
-        db = read_csv(file)
-
-        x = db["X"]
-        y = db["Y"]
-        errors = np.logical_or(np.isnan(x), np.isnan(y))
-        x = x[np.logical_not(errors)].tolist()
-        y = y[np.logical_not(errors)].tolist()
-
         if chord_ratio != np.clip(chord_ratio, 0.0, 1.0):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        a_delta = interpolate.interp1d(x, y)(np.clip(float(chord_ratio), 0.0, 1.0))
+        chord_ratio = (np.clip(float(chord_ratio), 0.0, 1.0) + 1.0) / 2.0
+        # chord_ratio is translated and scaled just to ease the surrogate modeling process
+
+        a_delta = (
+            2.0
+            * 10.0
+            ** (
+                0.00203
+                - 41.69445 * np.log10(chord_ratio) ** 3.0
+                - 445675063.98145 * np.log10(chord_ratio) ** 12.0
+                - 6.50632 * np.log10(chord_ratio) ** 2.0
+                - 482857663.42795 * np.log10(chord_ratio) ** 11.0
+                - 199107455.19802 * np.log10(chord_ratio) ** 10.0
+                - 37297404.99141 * np.log10(chord_ratio) ** 9.0
+                - 2709421.52197 * np.log10(chord_ratio) ** 8.0
+            )
+            - 1.0
+        )
 
         return a_delta
 
@@ -737,93 +624,63 @@ class FigureDigitization(om.ExplicitComponent):
         parameter.
         """
 
-        file = pth.join(resources.__path__[0], K_A_DELTA)
-        db = read_csv(file)
-
         if float(aspect_ratio) != np.clip(float(aspect_ratio), 0.0, 10.0):
             _LOGGER.warning(
                 "Aspect ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        x_01 = db["X_01"]
-        y_01 = db["Y_01"]
-        errors = np.logical_or(np.isnan(x_01), np.isnan(y_01))
-        x_01 = x_01[np.logical_not(errors)].tolist()
-        y_01 = y_01[np.logical_not(errors)].tolist()
-        y1 = interpolate.interp1d(x_01, y_01)(np.clip(float(aspect_ratio), min(x_01), max(x_01)))
-
-        x_02 = db["X_02"]
-        y_02 = db["Y_02"]
-        errors = np.logical_or(np.isnan(x_02), np.isnan(y_02))
-        x_02 = x_02[np.logical_not(errors)].tolist()
-        y_02 = y_02[np.logical_not(errors)].tolist()
-        y2 = interpolate.interp1d(x_02, y_02)(np.clip(float(aspect_ratio), min(x_02), max(x_02)))
-        x_03 = db["X_03"]
-        y_03 = db["Y_03"]
-        errors = np.logical_or(np.isnan(x_03), np.isnan(y_03))
-        x_03 = x_03[np.logical_not(errors)].tolist()
-        y_03 = y_03[np.logical_not(errors)].tolist()
-        y3 = interpolate.interp1d(x_03, y_03)(np.clip(float(aspect_ratio), min(x_03), max(x_03)))
-
-        x_04 = db["X_04"]
-        y_04 = db["Y_04"]
-        errors = np.logical_or(np.isnan(x_04), np.isnan(y_04))
-        x_04 = x_04[np.logical_not(errors)].tolist()
-        y_04 = y_04[np.logical_not(errors)].tolist()
-        y4 = interpolate.interp1d(x_04, y_04)(np.clip(float(aspect_ratio), min(x_04), max(x_04)))
-
-        x_05 = db["X_05"]
-        y_05 = db["Y_05"]
-        errors = np.logical_or(np.isnan(x_05), np.isnan(y_05))
-        x_05 = x_05[np.logical_not(errors)].tolist()
-        y_05 = y_05[np.logical_not(errors)].tolist()
-        y5 = interpolate.interp1d(x_05, y_05)(np.clip(float(aspect_ratio), min(x_05), max(x_05)))
-
-        x_06 = db["X_06"]
-        y_06 = db["Y_06"]
-        errors = np.logical_or(np.isnan(x_06), np.isnan(y_06))
-        x_06 = x_06[np.logical_not(errors)].tolist()
-        y_06 = y_06[np.logical_not(errors)].tolist()
-        y6 = interpolate.interp1d(x_06, y_06)(np.clip(float(aspect_ratio), min(x_06), max(x_06)))
-
-        x_07 = db["X_07"]
-        y_07 = db["Y_07"]
-        errors = np.logical_or(np.isnan(x_07), np.isnan(y_07))
-        x_07 = x_07[np.logical_not(errors)].tolist()
-        y_07 = y_07[np.logical_not(errors)].tolist()
-        y7 = interpolate.interp1d(x_07, y_07)(np.clip(float(aspect_ratio), min(x_07), max(x_07)))
-
-        x_08 = db["X_08"]
-        y_08 = db["Y_08"]
-        errors = np.logical_or(np.isnan(x_08), np.isnan(y_08))
-        x_08 = x_08[np.logical_not(errors)].tolist()
-        y_08 = y_08[np.logical_not(errors)].tolist()
-        y8 = interpolate.interp1d(x_08, y_08)(np.clip(float(aspect_ratio), min(x_08), max(x_08)))
-
-        x_09 = db["X_09"]
-        y_09 = db["Y_09"]
-        errors = np.logical_or(np.isnan(x_09), np.isnan(y_09))
-        x_09 = x_09[np.logical_not(errors)].tolist()
-        y_09 = y_09[np.logical_not(errors)].tolist()
-        y9 = interpolate.interp1d(x_09, y_09)(np.clip(float(aspect_ratio), min(x_09), max(x_09)))
-
-        x_10 = db["X_10"]
-        y_10 = db["Y_10"]
-        errors = np.logical_or(np.isnan(x_10), np.isnan(y_10))
-        x_10 = x_10[np.logical_not(errors)].tolist()
-        y_10 = y_10[np.logical_not(errors)].tolist()
-        y10 = interpolate.interp1d(x_10, y_10)(np.clip(float(aspect_ratio), min(x_10), max(x_10)))
-
-        x = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-        y = [y1, y2, y3, y4, y5, y6, y7, y8, y9, y10]
-
-        if a_delta_airfoil != np.clip(a_delta_airfoil, 0.0, 1.0):
+        if a_delta_airfoil != np.clip(a_delta_airfoil, 0.1, 1.0):
             _LOGGER.warning(
                 "Control surface effectiveness ratio value outside of the range in "
                 "Roskam's book, value clipped"
             )
 
-        k_a_delta = interpolate.interp1d(x, y)(np.clip(a_delta_airfoil, 0.1, 1.0))
+        aspect_ratio = np.clip(aspect_ratio, 0.0, 10.0) * 0.1 + 1.0
+        a_delta_airfoil = np.clip(a_delta_airfoil, 0.1, 1.0) + 1.0
+        # aspect_ratio and a_delta_airfoil are translated and scaled just to ease the surrogate modeling process
+
+        k_a_delta = 10.0 ** (
+            0.84171
+            - 1.67074 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio)
+            - 12610.80614 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio) ** 2.0
+            - 6.79137 * np.log10(a_delta_airfoil)
+            - 13.89834 * np.log10(aspect_ratio)
+            - 251937.79952 * np.log10(a_delta_airfoil) ** 3.0 * np.log10(aspect_ratio) ** 3.0
+            - 380640.28988 * np.log10(a_delta_airfoil) ** 4.0 * np.log10(aspect_ratio) ** 4.0
+            + 264.68115 * np.log10(aspect_ratio) ** 2.0
+            + 1161.59281 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio)
+            - 3479.56140 * np.log10(aspect_ratio) ** 3.0
+            + 2592.40455 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio) ** 4.0
+            + 27657.09600 * np.log10(aspect_ratio) ** 4.0
+            - 124736.18274 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio) ** 5.0
+            - 134260.92969 * np.log10(aspect_ratio) ** 5.0
+            + 113920.17524 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio) ** 6.0
+            - 8823.60640 * np.log10(a_delta_airfoil) ** 3.0 * np.log10(aspect_ratio)
+            - 204.54218 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 2.0
+            + 120306.00346 * np.log10(a_delta_airfoil) ** 7.0 * np.log10(aspect_ratio)
+            + 7804.57981 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 3.0
+            + 392202.02583 * np.log10(aspect_ratio) ** 6.0
+            + 33762.73280 * np.log10(a_delta_airfoil) ** 2.0 * np.log10(aspect_ratio) ** 3.0
+            - 635236.22141 * np.log10(aspect_ratio) ** 7.0
+            - 60732.94975 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 4.0
+            + 92171.07536 * np.log10(a_delta_airfoil) ** 3.0 * np.log10(aspect_ratio) ** 2.0
+            + 19420.77192 * np.log10(a_delta_airfoil) ** 3.0 * np.log10(aspect_ratio) ** 5.0
+            + 215063.41304 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 5.0
+            + 225469.01479 * np.log10(a_delta_airfoil) ** 3.0 * np.log10(aspect_ratio) ** 4.0
+            + 438721.38201 * np.log10(aspect_ratio) ** 8.0
+            + 23967.79400 * np.log10(a_delta_airfoil) ** 4.0 * np.log10(aspect_ratio)
+            - 100510.87507 * np.log10(a_delta_airfoil) ** 6.0 * np.log10(aspect_ratio)
+            + 262794.28735 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 7.0
+            - 142671.53143 * np.log10(a_delta_airfoil) ** 6.0 * np.log10(aspect_ratio) ** 2.0
+            - 439178.68850 * np.log10(a_delta_airfoil) ** 5.0 * np.log10(aspect_ratio) ** 3.0
+            - 280635.47114 * np.log10(a_delta_airfoil) ** 4.0 * np.log10(aspect_ratio) ** 2.0
+            + 598274.37658 * np.log10(a_delta_airfoil) ** 4.0 * np.log10(aspect_ratio) ** 3.0
+            + 893.12627 * np.log10(a_delta_airfoil) ** 8.0
+            + 26.89563 * np.log10(a_delta_airfoil) ** 2.0
+            + 358478.23331 * np.log10(a_delta_airfoil) ** 5.0 * np.log10(aspect_ratio) ** 2.0
+            - 373439.21464 * np.log10(a_delta_airfoil) * np.log10(aspect_ratio) ** 6.0
+            - 47.45450 * np.log10(a_delta_airfoil) ** 3.0
+        )
 
         return k_a_delta
 
@@ -843,9 +700,7 @@ class FigureDigitization(om.ExplicitComponent):
         if flap_chord_ratio != np.clip(flap_chord_ratio, 0.0, 1.0):
             _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
 
-        x_cp_c_prime = interpolate.interp1d([0.0, 1.0], [0.5, 0.25])(
-            np.clip(flap_chord_ratio, 0.0, 1.0)
-        )
+        x_cp_c_prime = -0.25 * np.clip(flap_chord_ratio, 0.0, 1.0) + 0.5
 
         return x_cp_c_prime
 
@@ -862,49 +717,17 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_p: partial span factor.
         """
 
-        file = pth.join(resources.__path__[0], K_P_FLAPS)
-        db = read_csv(file)
-
-        eta_in_1_0 = FigureDigitization.interpolate_database(
-            db, "taper_1_0_X", "taper_1_0_Y", eta_in
-        )
-        eta_out_1_0 = FigureDigitization.interpolate_database(
-            db, "taper_1_0_X", "taper_1_0_Y", eta_out
-        )
-
-        eta_in_0_5 = FigureDigitization.interpolate_database(
-            db, "taper_0_5_X", "taper_0_5_Y", eta_in
-        )
-        eta_out_0_5 = FigureDigitization.interpolate_database(
-            db, "taper_0_5_X", "taper_0_5_Y", eta_out
-        )
-
-        eta_in_0_333 = FigureDigitization.interpolate_database(
-            db, "taper_0_333_X", "taper_0_333_Y", eta_in
-        )
-        eta_out_0_333 = FigureDigitization.interpolate_database(
-            db, "taper_0_333_X", "taper_0_333_Y", eta_out
-        )
-
-        eta_in_0_25 = FigureDigitization.interpolate_database(
-            db, "taper_0_25_X", "taper_0_25_Y", eta_in
-        )
-        eta_out_0_25 = FigureDigitization.interpolate_database(
-            db, "taper_0_25_X", "taper_0_25_Y", eta_out
-        )
-
-        taper_array = [0.25, 0.333, 0.5, 1.0]
-        eta_in_array = [eta_in_0_25, eta_in_0_333, eta_in_0_5, eta_in_1_0]
-        eta_out_array = [eta_out_0_25, eta_out_0_333, eta_out_0_5, eta_out_1_0]
-
         if taper_ratio != np.clip(taper_ratio, 0.25, 1.0):
             _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
 
-        k_p = interpolate.interp1d(taper_array, eta_out_array)(
-            np.clip(taper_ratio, 0.25, 1.0)
-        ) - interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
+        taper_ratio = np.clip(taper_ratio, 0.25, 1.0)
+        eta_in = np.clip(eta_in, 0.0, 1.0)
+        eta_out = np.clip(eta_out, 0.0, 1.0)
 
-        return k_p
+        k_p_in = _k_p(taper_ratio, eta_in)
+        k_p_out = _k_p(taper_ratio, eta_out)
+
+        return k_p_out - k_p_in
 
     @staticmethod
     @functools.lru_cache(maxsize=128)
@@ -922,67 +745,28 @@ class FigureDigitization(om.ExplicitComponent):
         if chord_ratio != np.clip(chord_ratio, 0.05, 0.4):
             _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
 
-        file = pth.join(resources.__path__[0], DELTA_CM_DELTA_CL_REF)
-        db = read_csv(file)
-
-        x_21 = db["TOC_21_X"]
-        y_21 = db["TOC_21_Y"]
-        errors = np.logical_or(np.isnan(x_21), np.isnan(y_21))
-        x_21 = x_21[np.logical_not(errors)].tolist()
-        y_21 = y_21[np.logical_not(errors)].tolist()
-        k_21 = interpolate.interp1d(x_21, y_21)(np.clip(chord_ratio, min(x_21), max(x_21)))
-
-        x_18 = db["TOC_18_X"]
-        y_18 = db["TOC_18_Y"]
-        errors = np.logical_or(np.isnan(x_18), np.isnan(y_18))
-        x_18 = x_18[np.logical_not(errors)].tolist()
-        y_18 = y_18[np.logical_not(errors)].tolist()
-        k_18 = interpolate.interp1d(x_18, y_18)(np.clip(chord_ratio, min(x_18), max(x_18)))
-
-        x_15 = db["TOC_15_X"]
-        y_15 = db["TOC_15_Y"]
-        errors = np.logical_or(np.isnan(x_15), np.isnan(y_15))
-        x_15 = x_15[np.logical_not(errors)].tolist()
-        y_15 = y_15[np.logical_not(errors)].tolist()
-        k_15 = interpolate.interp1d(x_15, y_15)(np.clip(chord_ratio, min(x_15), max(x_15)))
-
-        x_12 = db["TOC_12_X"]
-        y_12 = db["TOC_12_Y"]
-        errors = np.logical_or(np.isnan(x_12), np.isnan(y_12))
-        x_12 = x_12[np.logical_not(errors)].tolist()
-        y_12 = y_12[np.logical_not(errors)].tolist()
-        k_12 = interpolate.interp1d(x_12, y_12)(np.clip(chord_ratio, min(x_12), max(x_12)))
-
-        x_09 = db["TOC_09_X"]
-        y_09 = db["TOC_09_Y"]
-        errors = np.logical_or(np.isnan(x_09), np.isnan(y_09))
-        x_09 = x_09[np.logical_not(errors)].tolist()
-        y_09 = y_09[np.logical_not(errors)].tolist()
-        k_09 = interpolate.interp1d(x_09, y_09)(np.clip(chord_ratio, min(x_09), max(x_09)))
-
-        x_06 = db["TOC_06_X"]
-        y_06 = db["TOC_06_Y"]
-        errors = np.logical_or(np.isnan(x_06), np.isnan(y_06))
-        x_06 = x_06[np.logical_not(errors)].tolist()
-        y_06 = y_06[np.logical_not(errors)].tolist()
-        k_06 = interpolate.interp1d(x_06, y_06)(np.clip(chord_ratio, min(x_06), max(x_06)))
-
-        x_03 = db["TOC_03_X"]
-        y_03 = db["TOC_03_Y"]
-        errors = np.logical_or(np.isnan(x_03), np.isnan(y_03))
-        x_03 = x_03[np.logical_not(errors)].tolist()
-        y_03 = y_03[np.logical_not(errors)].tolist()
-        k_03 = interpolate.interp1d(x_03, y_03)(np.clip(chord_ratio, min(x_03), max(x_03)))
-
-        toc_array = [0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21]
-        k_array = [k_03, k_06, k_09, k_12, k_15, k_18, k_21]
-
-        if thickness_ratio != np.clip(thickness_ratio, 0.03, 0.4):
+        if thickness_ratio != np.clip(thickness_ratio, 0.03, 0.21):
             _LOGGER.warning(
                 "Thickness to chord ratio outside of the range in Roskam's book, " "value clipped"
             )
 
-        k = interpolate.interp1d(toc_array, k_array)(np.clip(thickness_ratio, 0.03, 0.4))
+        chord_ratio = np.clip(chord_ratio, 0.05, 0.4)
+        thickness_ratio = np.clip(thickness_ratio, 0.03, 0.21)
+
+        k = (
+            -0.61953
+            + 1.52483 * chord_ratio
+            + 1.65991 * thickness_ratio
+            + 9.16051 * thickness_ratio * chord_ratio ** 2.0
+            - 7.73053 * thickness_ratio * chord_ratio
+            - 0.55584 * chord_ratio ** 2.0
+            - 2280.12581 * thickness_ratio ** 7.0
+            + 3561.86293 * thickness_ratio ** 6.0 * chord_ratio
+            + 282.52088 * thickness_ratio ** 4.0 * chord_ratio ** 3.0
+            - 2.34977 * chord_ratio ** 3.0
+            - 1822.09526 * thickness_ratio ** 5.0 * chord_ratio ** 2.0
+            + 5.48933 * chord_ratio ** 6.0
+        )
 
         return k
 
@@ -1113,19 +897,20 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_vh: impact of area ratio on effective aspect ratio.
         """
 
-        file = pth.join(resources.__path__[0], K_VH)
-        db = read_csv(file)
-
-        x = db["X"]
-        y = db["Y"]
-        errors = np.logical_or(np.isnan(x), np.isnan(y))
-        x = x[np.logical_not(errors)].tolist()
-        y = y[np.logical_not(errors)].tolist()
-
-        if float(area_ratio) != np.clip(float(area_ratio), min(x), max(x)):
+        if float(area_ratio) != np.clip(float(area_ratio), 0.0, 2.0):
             _LOGGER.warning("Area ratio value outside of the range in Roskam's book, value clipped")
 
-        k_vh = interpolate.interp1d(x, y)(np.clip(float(area_ratio), min(x), max(x)))
+        area_ratio = np.clip(float(area_ratio), 0.0, 2.0)
+
+        k_vh = (
+            0.1604 * area_ratio ** 6.0
+            - 1.0202 * area_ratio ** 5.0
+            + 2.4252 * area_ratio ** 4.0
+            - 2.4621 * area_ratio ** 3.0
+            + 0.3819 * area_ratio ** 2.0
+            + 1.4554 * area_ratio
+            - 0.0137
+        )
 
         return k_vh
 
@@ -1144,9 +929,6 @@ class FigureDigitization(om.ExplicitComponent):
         AOA.
         """
 
-        file = pth.join(resources.__path__[0], K_CH_ALPHA)
-        db = read_csv(file)
-
         # Figure 10.64 b
         if thickness_ratio != np.clip(thickness_ratio, 0.0, 0.2):
             _LOGGER.warning(
@@ -1154,37 +936,32 @@ class FigureDigitization(om.ExplicitComponent):
             )
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = db["K_CL_ALPHA"]
-        errors = np.isnan(k_cl_alpha_data)
-        k_cl_alpha_data = k_cl_alpha_data[np.logical_not(errors)].tolist()
-        k_ch_alpha_min_data = db["K_CH_ALPHA_MIN"]
-        errors = np.isnan(k_ch_alpha_min_data)
-        k_ch_alpha_min_data = k_ch_alpha_min_data[np.logical_not(errors)].tolist()
-        k_ch_alpha_max_data = db["K_CH_ALPHA_MAX"]
-        errors = np.isnan(k_ch_alpha_max_data)
-        k_ch_alpha_max_data = k_ch_alpha_max_data[np.logical_not(errors)].tolist()
-
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
+            float(airfoil_lift_coefficient / cl_alpha_th), 0.7, 1.0
         ):
             _LOGGER.warning(
                 "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of "
                 "the range in Roskam's book, value clipped"
             )
 
-        k_cl_alpha = np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
-        )
-
-        k_ch_alpha_min = interpolate.interp1d(k_cl_alpha_data, k_ch_alpha_min_data)(k_cl_alpha)
-        k_ch_alpha_max = interpolate.interp1d(k_cl_alpha_data, k_ch_alpha_max_data)(k_cl_alpha)
-
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        k_ch_alpha = interpolate.interp1d([0.1, 0.4], [k_ch_alpha_min, k_ch_alpha_max])(chord_ratio)
+        k_cl_alpha = np.clip(float(airfoil_lift_coefficient / cl_alpha_th), 0.7, 1.0)
+
+        k_ch_alpha = (
+            10.0
+            ** (
+                0.30178
+                + 0.94741 * np.log10(k_cl_alpha)
+                - 116.71747 * np.log10(chord_ratio) * np.log10(k_cl_alpha) ** 3.0
+                + 0.00137 * np.log10(chord_ratio)
+                - 74.35653 * np.log10(chord_ratio) ** 2.0 * np.log10(k_cl_alpha) ** 3.0
+                + 0.38937 * np.log10(chord_ratio) ** 2.0 * np.log10(k_cl_alpha)
+                + 0.66420 * np.log10(chord_ratio) ** 2.0 * np.log10(k_cl_alpha) ** 2.0
+                + 1.30055 * np.log10(k_cl_alpha) ** 2.0
+                + 0.19129 * np.log10(chord_ratio) ** 4.0 * np.log10(k_cl_alpha)
+            )
+            - 1.0
+        )
 
         return k_ch_alpha
 
@@ -1200,40 +977,32 @@ class FigureDigitization(om.ExplicitComponent):
         :return ch_alpha: theoretical hinge moment derivative due to AOA.
         """
 
-        file = pth.join(resources.__path__[0], CH_ALPHA_TH)
-        db = read_csv(file)
-
-        thickness_ratio_data = db["THICKNESS_RATIO"]
-        errors = np.isnan(thickness_ratio_data)
-        thickness_ratio_data = thickness_ratio_data[np.logical_not(errors)].tolist()
-        ch_alpha_min_data = db["CH_ALPHA_MIN"]
-        errors = np.isnan(ch_alpha_min_data)
-        ch_alpha_min_data = ch_alpha_min_data[np.logical_not(errors)].tolist()
-        ch_alpha_max_data = db["CH_ALPHA_MAX"]
-        errors = np.isnan(ch_alpha_max_data)
-        ch_alpha_max_data = ch_alpha_max_data[np.logical_not(errors)].tolist()
-
-        if float(thickness_ratio) != np.clip(
-            float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
-        ):
-            _LOGGER.warning(
-                "Thickness ratio value outside of the range in Roskam's book, value clipped"
-            )
-
-        ch_alpha_min = interpolate.interp1d(thickness_ratio_data, ch_alpha_min_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
-        )
-        ch_alpha_max = interpolate.interp1d(thickness_ratio_data, ch_alpha_max_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
-        )
-
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
+        if thickness_ratio != np.clip(thickness_ratio, 0.0, 0.16):
+            _LOGGER.warning(
+                "Thickness ratio value outside of the range in Roskam's book, value clipped"
+            )
+
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        ch_alpha_th = interpolate.interp1d([0.1, 0.4], [ch_alpha_min, ch_alpha_max])(chord_ratio)
+        thickness_ratio = np.clip(thickness_ratio, 0.0, 0.16)
+
+        ch_alpha_th = (
+            -0.24651
+            - 0.21079 * chord_ratio ** 3.0
+            + 1.14770 * thickness_ratio
+            - 1.04870 * chord_ratio ** 2.0 * thickness_ratio
+            - 539.59855 * thickness_ratio ** 4.0
+            + 159.55277 * thickness_ratio ** 3.0
+            - 13.82122 * thickness_ratio ** 2.0
+            - 0.08529 * chord_ratio ** 4.0
+            - 0.50251 * chord_ratio ** 2.0
+            - 1.01159 * chord_ratio
+            - 0.44413 * chord_ratio ** 3.0 * thickness_ratio
+        )
 
         return ch_alpha_th
 
@@ -1252,9 +1021,6 @@ class FigureDigitization(om.ExplicitComponent):
         factor.
         """
 
-        file = pth.join(resources.__path__[0], K_CH_DELTA)
-        db = read_csv(file)
-
         # Figure 10.64 b
         if thickness_ratio != np.clip(thickness_ratio, 0.0, 0.2):
             _LOGGER.warning(
@@ -1263,38 +1029,13 @@ class FigureDigitization(om.ExplicitComponent):
 
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = db["K_CL_ALPHA"]
-        errors = np.isnan(k_cl_alpha_data)
-        k_cl_alpha_data = k_cl_alpha_data[np.logical_not(errors)].tolist()
-        k_ch_delta_min_data = db["K_CH_DELTA_MIN"]
-        errors = np.isnan(k_ch_delta_min_data)
-        k_ch_delta_min_data = k_ch_delta_min_data[np.logical_not(errors)].tolist()
-        k_ch_delta_avg_data = db["K_CH_DELTA_AVG"]
-        errors = np.isnan(k_ch_delta_avg_data)
-        k_ch_delta_avg_data = k_ch_delta_avg_data[np.logical_not(errors)].tolist()
-        k_ch_delta_max_data = db["K_CH_DELTA_MAX"]
-        errors = np.isnan(k_ch_delta_max_data)
-        k_ch_delta_max_data = k_ch_delta_max_data[np.logical_not(errors)].tolist()
-
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
+            float(airfoil_lift_coefficient / cl_alpha_th), 0.6, 1.0
         ):
             _LOGGER.warning(
                 "Airfoil lift coefficient to theoretical lift coefficient ratio value outside of "
                 "the range in Roskam's book, value clipped"
             )
-
-        k_cl_alpha = np.clip(
-            float(airfoil_lift_coefficient / cl_alpha_th),
-            min(k_cl_alpha_data),
-            max(k_cl_alpha_data),
-        )
-
-        k_ch_delta_min = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_min_data)(k_cl_alpha)
-        k_ch_delta_avg = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_avg_data)(k_cl_alpha)
-        k_ch_delta_max = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_max_data)(k_cl_alpha)
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
@@ -1302,9 +1043,20 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        k_ch_delta = interpolate.interp1d(
-            [0.1, 0.25, 0.4], [k_ch_delta_min, k_ch_delta_avg, k_ch_delta_max]
-        )(chord_ratio)
+        k_cl_alpha = np.clip(float(airfoil_lift_coefficient / cl_alpha_th), 0.6, 1.0)
+
+        k_ch_delta = (
+            0.22461
+            + 0.78058 * k_cl_alpha
+            - 14.74883 * chord_ratio
+            + 50.39894 * chord_ratio * k_cl_alpha
+            - 57.80300 * chord_ratio * k_cl_alpha ** 2.0
+            + 23.72360 * chord_ratio * k_cl_alpha ** 3.0
+            - 24.57380 * chord_ratio ** 4.0
+            + 26.55090 * chord_ratio ** 3.0 * k_cl_alpha
+            - 10.07301 * chord_ratio ** 2.0 * k_cl_alpha ** 2.0
+            - 0.08509 * k_cl_alpha ** 4.0
+        )
 
         return k_ch_delta
 
@@ -1320,32 +1072,10 @@ class FigureDigitization(om.ExplicitComponent):
         :return ch_delta: theoretical hinge moment derivative due to control surface deflection.
         """
 
-        file = pth.join(resources.__path__[0], CH_DELTA_TH)
-        db = read_csv(file)
-
-        thickness_ratio_data = db["THICKNESS_RATIO"]
-        errors = np.isnan(thickness_ratio_data)
-        thickness_ratio_data = thickness_ratio_data[np.logical_not(errors)].tolist()
-        ch_delta_min_data = db["CH_DELTA_MIN"]
-        errors = np.isnan(ch_delta_min_data)
-        ch_delta_min_data = ch_delta_min_data[np.logical_not(errors)].tolist()
-        ch_delta_max_data = db["CH_DELTA_MAX"]
-        errors = np.isnan(ch_delta_max_data)
-        ch_delta_max_data = ch_delta_max_data[np.logical_not(errors)].tolist()
-
-        if float(thickness_ratio) != np.clip(
-            float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
-        ):
+        if float(thickness_ratio) != np.clip(float(thickness_ratio), 0.0, 0.15):
             _LOGGER.warning(
                 "Thickness ratio value outside of the range in Roskam's book, value clipped"
             )
-
-        ch_delta_min = interpolate.interp1d(thickness_ratio_data, ch_delta_min_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
-        )
-        ch_delta_max = interpolate.interp1d(thickness_ratio_data, ch_delta_max_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
-        )
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
@@ -1353,7 +1083,16 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        ch_delta_th = interpolate.interp1d([0.1, 0.4], [ch_delta_min, ch_delta_max])(chord_ratio)
+        thickness_ratio = np.clip(thickness_ratio, 0.0, 0.15)
+
+        ch_delta_th = (
+            -0.82987
+            - 0.46421 * chord_ratio
+            + 1.19892 * thickness_ratio
+            - 1.98707 * chord_ratio * thickness_ratio
+            + 4.58039 * thickness_ratio ** 2.0
+            - 7.18363 * chord_ratio * thickness_ratio ** 2.0
+        )
 
         return ch_delta_th
 
@@ -1368,25 +1107,26 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_fus: the empirical pitching moment factor.
         """
 
-        file = pth.join(resources.__path__[0], K_FUS)
-        db = read_csv(file)
-
-        x = db["X_0_25_RATIO"]
-        y = db["K_FUS"]
-        errors = np.logical_or(np.isnan(x), np.isnan(y))
-        x = x[np.logical_not(errors)].tolist()
-        y = y[np.logical_not(errors)].tolist()
-
         if float(root_quarter_chord_position_ratio) != np.clip(
-            float(root_quarter_chord_position_ratio), min(x), max(x)
+            float(root_quarter_chord_position_ratio), 0.092, 0.59
         ):
             _LOGGER.warning(
                 "Position of the root quarter-chord as percent of fuselage length is outside of "
                 "the range in Roskam's book, value clipped"
             )
 
-        k_fus = interpolate.interp1d(x, y)(
-            np.clip(float(root_quarter_chord_position_ratio), min(x), max(x))
+        root_quarter_chord_position_ratio = np.clip(
+            float(root_quarter_chord_position_ratio), 0.092, 0.59
+        )
+
+        k_fus = (
+            -5.175619 * root_quarter_chord_position_ratio ** 6.0
+            + 11.59254 * root_quarter_chord_position_ratio ** 5.0
+            - 10.45849 * root_quarter_chord_position_ratio ** 4.0
+            + 4.844842 * root_quarter_chord_position_ratio ** 3.0
+            - 1.209880 * root_quarter_chord_position_ratio ** 2.0
+            + 0.1711324 * root_quarter_chord_position_ratio
+            - 7.721572e-03
         )
 
         return k_fus
@@ -1521,50 +1261,51 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_fuselage: fuselage correction factor.
         """
 
-        file = pth.join(resources.__path__[0], K_FUSELAGE)
-        db = read_csv(file)
-
-        swept_aspect_ratio_data = db["AR_SWEPT"]
-        lf_to_b_data = db["LF_TO_B_RATIO"]
-        k_fuselage_data = db["K_FUSELAGE"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(swept_aspect_ratio_data),
-                np.isnan(lf_to_b_data),
-                np.isnan(k_fuselage_data),
-            )
-        )
-        swept_aspect_ratio_data = swept_aspect_ratio_data[np.logical_not(errors)].tolist()
-        lf_to_b_data = lf_to_b_data[np.logical_not(errors)].tolist()
-        k_fuselage_data = k_fuselage_data[np.logical_not(errors)].tolist()
-
-        if float(swept_aspect_ratio) != np.clip(
-            float(swept_aspect_ratio), min(swept_aspect_ratio_data), max(swept_aspect_ratio_data)
-        ):
+        if float(swept_aspect_ratio) != np.clip(float(swept_aspect_ratio), 4.0, 8.0):
             _LOGGER.warning(
                 "Swept aspect ratio is outside of the range in Roskam's book, value clipped"
             )
-        if float(lf_to_b_ratio) != np.clip(
-            float(lf_to_b_ratio), min(lf_to_b_data), max(lf_to_b_data)
-        ):
+
+        if float(lf_to_b_ratio) != np.clip(float(lf_to_b_ratio), 0.0, 1.6):
             _LOGGER.warning(
                 "Ratio between the distance from nose to root half chord and the wing span is "
                 "outside of the range in Roskam's book, value clipped"
             )
 
-        k_fuselage = interpolate.griddata(
-            (swept_aspect_ratio_data, lf_to_b_data),
-            k_fuselage_data,
-            np.array([swept_aspect_ratio, lf_to_b_ratio]).T,
-            method="linear",
+        swept_aspect_ratio = np.clip(swept_aspect_ratio, 4.0, 8.0)
+        lf_to_b_ratio = np.exp(np.clip(lf_to_b_ratio, 0.0, 1.6))
+        # lf_to_b_ratio is scaled just to ease the surrogate modeling process
+
+        k_fuselage = 10.0 ** (
+            30.30177
+            - 301.96004 * np.log10(swept_aspect_ratio) ** 4.0 * np.log10(lf_to_b_ratio) ** 2.0
+            + 58.15281 * np.log10(lf_to_b_ratio)
+            - 353.84075 * np.log10(swept_aspect_ratio) * np.log10(lf_to_b_ratio)
+            + 1043.60669 * np.log10(swept_aspect_ratio) ** 3.0 * np.log10(lf_to_b_ratio) ** 2.0
+            - 1329.51750 * np.log10(swept_aspect_ratio) ** 2.0 * np.log10(lf_to_b_ratio) ** 2.0
+            - 1013.34698 * np.log10(swept_aspect_ratio) ** 3.0 * np.log10(lf_to_b_ratio)
+            + 4.14333 * np.log10(lf_to_b_ratio) ** 6.0
+            + 48.93432 * np.log10(swept_aspect_ratio) ** 6.0
+            - 2.64603 * np.log10(swept_aspect_ratio) * np.log10(lf_to_b_ratio) ** 5.0
+            - 6.71611 * np.log10(lf_to_b_ratio) ** 5.0
+            + 78.89282 * np.log10(lf_to_b_ratio) ** 3.0
+            + 630.15406 * np.log10(swept_aspect_ratio) ** 2.0
+            - 316.17554 * np.log10(swept_aspect_ratio) ** 5.0
+            - 216.58234 * np.log10(swept_aspect_ratio)
+            - 140.70409 * np.log10(swept_aspect_ratio) ** 3.0 * np.log10(lf_to_b_ratio) ** 3.0
+            + 850.53251 * np.log10(swept_aspect_ratio) ** 2.0 * np.log10(lf_to_b_ratio)
+            - 143.22447 * np.log10(swept_aspect_ratio) ** 5.0 * np.log10(lf_to_b_ratio)
+            + 738.95626 * np.log10(swept_aspect_ratio) * np.log10(lf_to_b_ratio) ** 2.0
+            + 356.66910 * np.log10(swept_aspect_ratio) ** 2.0 * np.log10(lf_to_b_ratio) ** 3.0
+            - 949.14714 * np.log10(swept_aspect_ratio) ** 3.0
+            - 150.75002 * np.log10(lf_to_b_ratio) ** 2.0
+            - 297.78529 * np.log10(swept_aspect_ratio) * np.log10(lf_to_b_ratio) ** 3.0
+            + 601.45144 * np.log10(swept_aspect_ratio) ** 4.0 * np.log10(lf_to_b_ratio)
+            - 15.02028 * np.log10(lf_to_b_ratio) ** 4.0
+            - 32.43379 * np.log10(swept_aspect_ratio) ** 2.0 * np.log10(lf_to_b_ratio) ** 4.0
+            + 54.09680 * np.log10(swept_aspect_ratio) * np.log10(lf_to_b_ratio) ** 4.0
+            + 772.47283 * np.log10(swept_aspect_ratio) ** 4.0
         )
-        if np.isnan(k_fuselage):
-            k_fuselage = interpolate.griddata(
-                (swept_aspect_ratio_data, lf_to_b_data),
-                k_fuselage_data,
-                np.array([swept_aspect_ratio, lf_to_b_ratio]).T,
-                method="nearest",
-            )
 
         return float(k_fuselage)
 
@@ -1700,49 +1441,31 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_m_gamma: compressibility correction for the dihedral angle.
         """
 
-        file = pth.join(resources.__path__[0], K_M_GAMMA)
-        db = read_csv(file)
-
-        swept_aspect_ratio_data = db["AR_SWEPT"]
-        swept_mach_data = db["M_SWEPT"]
-        k_m_gamma_data = db["DIHEDRAL_COMPRESSIBILITY_CORRECTION"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(swept_aspect_ratio_data),
-                np.isnan(swept_mach_data),
-                np.isnan(k_m_gamma_data),
-            )
-        )
-        swept_aspect_ratio_data = swept_aspect_ratio_data[np.logical_not(errors)].tolist()
-        swept_mach_data = swept_mach_data[np.logical_not(errors)].tolist()
-        k_m_gamma_data = k_m_gamma_data[np.logical_not(errors)].tolist()
-
-        if float(swept_aspect_ratio) != np.clip(
-            float(swept_aspect_ratio), min(swept_aspect_ratio_data), max(swept_aspect_ratio_data)
-        ):
+        if float(swept_aspect_ratio) != np.clip(float(swept_aspect_ratio), 2.0, 10.0):
             _LOGGER.warning(
                 "Swept aspect ratio is outside of the range in Roskam's book, value clipped"
             )
-        if float(swept_mach) != np.clip(
-            float(swept_mach), min(swept_mach_data), max(swept_mach_data)
-        ):
+        if float(swept_mach) != np.clip(float(swept_mach), 0.0, 0.957):
             _LOGGER.warning(
                 "Swept mach number is outside of the range in Roskam's book, value clipped"
             )
 
-        k_m_gamma = interpolate.griddata(
-            (swept_aspect_ratio_data, swept_mach_data),
-            k_m_gamma_data,
-            np.array([swept_aspect_ratio, swept_mach]).T,
-            method="linear",
+        swept_aspect_ratio = np.clip(swept_aspect_ratio, 2.0, 10.0)
+        swept_mach = np.clip(swept_mach, 0.0, 0.957)
+
+        k_m_gamma = (
+            1.00011
+            + 0.45331 * swept_aspect_ratio * swept_mach ** 3.0
+            - 0.01004 * swept_mach ** 3.0
+            - 0.00030 * swept_aspect_ratio ** 3.0 * swept_mach ** 3.0
+            + 0.01663 * swept_aspect_ratio ** 2.0 * swept_mach ** 4.0
+            - 0.04659 * swept_aspect_ratio * swept_mach ** 2.0
+            - 0.00973 * swept_aspect_ratio ** 2.0 * swept_mach ** 3.0
+            - 0.03766 * swept_mach
+            + 0.00969 * swept_aspect_ratio * swept_mach
+            + 0.30939 * swept_aspect_ratio * swept_mach ** 5.0
+            - 0.68111 * swept_aspect_ratio * swept_mach ** 4.0
         )
-        if np.isnan(k_m_gamma):
-            k_m_gamma = interpolate.griddata(
-                (swept_aspect_ratio_data, swept_mach_data),
-                k_m_gamma_data,
-                np.array([swept_aspect_ratio, swept_mach]).T,
-                method="nearest",
-            )
 
         return float(k_m_gamma)
 
@@ -1758,46 +1481,45 @@ class FigureDigitization(om.ExplicitComponent):
         the computation of the rolling moment
         """
 
-        file = pth.join(resources.__path__[0], K_TWIST)
-        db = read_csv(file)
-
-        taper_ratio_data = db["TAPER_RATIO"]
-        aspect_ratio_data = db["ASPECT_RATIO"]
-        twist_correction = db["TWIST_CORRECTION"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(taper_ratio_data),
-                np.isnan(aspect_ratio_data),
-                np.isnan(twist_correction),
-            )
-        )
-        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
-        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
-        twist_correction = twist_correction[np.logical_not(errors)].tolist()
-
-        if float(taper_ratio) != np.clip(
-            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
-        ):
+        if float(taper_ratio) != np.clip(float(taper_ratio), 0.0, 0.6):
             _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
-        if float(aspect_ratio) != np.clip(
-            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
-        ):
+
+        if float(aspect_ratio) != np.clip(float(aspect_ratio), 3.0, 11.51):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
-        # Linear interpolation is preferred but we put the nearest one as protection
-        k_epsilon = interpolate.griddata(
-            (taper_ratio_data, aspect_ratio_data),
-            twist_correction,
-            np.array([taper_ratio, aspect_ratio]).T,
-            method="linear",
-        )
-        if np.isnan(k_epsilon):
-            k_epsilon = interpolate.griddata(
-                (taper_ratio_data, aspect_ratio_data),
-                twist_correction,
-                np.array([taper_ratio, aspect_ratio]).T,
-                method="nearest",
+        taper_ratio = np.exp(np.clip(taper_ratio, 0.0, 0.6))
+        aspect_ratio = np.clip(aspect_ratio, 3.0, 11.51) * 0.01 + 0.1
+        # aspect_ratio and taper_ratio are translated and scaled just to ease the surrogate modeling process
+
+        k_epsilon = (
+            -1.0
+            / 10.0 ** 3.0
+            * np.log(
+                10.0
+                ** (
+                    4414.31434
+                    - 4010.35916 * np.log10(aspect_ratio) ** 8.0
+                    - 27160.56784 * np.log10(taper_ratio)
+                    - 145795.79645 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 7.0
+                    - 807996.27290 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 6.0
+                    - 243317.77067 * np.log10(taper_ratio) * np.log10(aspect_ratio)
+                    + 38416.60761 * np.log10(aspect_ratio)
+                    + 141923.45735 * np.log10(aspect_ratio) ** 2.0
+                    + 0.82681 * np.log10(taper_ratio) ** 2.0
+                    + 2.32588 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 6.0
+                    + 1.61461 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 5.0
+                    + 287040.71354 * np.log10(aspect_ratio) ** 3.0
+                    + 339465.71034 * np.log10(aspect_ratio) ** 4.0
+                    - 932087.67523 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 2.0
+                    + 227920.16703 * np.log10(aspect_ratio) ** 5.0
+                    - 1915028.95980 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 5.0
+                    - 1979243.81244 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 3.0
+                    + 71584.19258 * np.log10(aspect_ratio) ** 6.0
+                    - 2516140.72497 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 4.0
+                    + 1.21555 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio)
+                )
             )
+        )
 
         return float(k_epsilon)
 
@@ -1885,46 +1607,37 @@ class FigureDigitization(om.ExplicitComponent):
         lifting surface.
         """
 
-        file = pth.join(resources.__path__[0], K_CDI_ROLL_DAMPING)
-        db = read_csv(file)
-
-        sweep_25_data = db["SWEEP_25"]
-        aspect_ratio_data = db["ASPECT_RATIO"]
-        cdi_roll_damping_data = db["CDI_ROLL_DAMPING_PARAMETER"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(sweep_25_data),
-                np.isnan(aspect_ratio_data),
-                np.isnan(cdi_roll_damping_data),
-            )
-        )
-        sweep_25_data = sweep_25_data[np.logical_not(errors)].tolist()
-        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
-        cdi_roll_damping_data = cdi_roll_damping_data[np.logical_not(errors)].tolist()
-
-        if float(sweep_25) != np.clip(float(sweep_25), min(sweep_25_data), max(sweep_25_data)):
+        if float(sweep_25) != np.clip(float(sweep_25), 0.0, 60.0):
             _LOGGER.warning(
                 "Sweep at 25% of the chord is outside of the range in Roskam's book, value clipped"
             )
-        if float(aspect_ratio) != np.clip(
-            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
-        ):
+        if float(aspect_ratio) != np.clip(float(aspect_ratio), 1.0, 10.0):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
-        # Linear interpolation is preferred but we put the nearest one as protection
-        k_cdi_roll_damping = interpolate.griddata(
-            (sweep_25_data, aspect_ratio_data),
-            cdi_roll_damping_data,
-            np.array([sweep_25, aspect_ratio]).T,
-            method="linear",
+        sweep_25 = np.clip(sweep_25, 0.0, 60.0) * 0.01
+        aspect_ratio = np.clip(aspect_ratio, 1.0, 10.0) * 0.1
+        # sweep25 and aspect ratio are scaled to ease the surrogate modeling process
+
+        k_cdi_roll_damping = (
+            -0.08737
+            - 3.18085 * sweep_25 ** 4.0
+            + 35.84855 * sweep_25 ** 4.0 * aspect_ratio
+            - 157.04948 * sweep_25 ** 4.0 * aspect_ratio ** 2.0
+            + 0.63981 * aspect_ratio
+            + 373.85899 * sweep_25 ** 4.0 * aspect_ratio ** 3.0
+            - 2.19618 * aspect_ratio ** 2.0
+            - 494.24239 * sweep_25 ** 4.0 * aspect_ratio ** 4.0
+            + 3.74221 * aspect_ratio ** 3.0
+            + 338.79305 * sweep_25 ** 4.0 * aspect_ratio ** 5.0
+            - 3.07844 * aspect_ratio ** 4.0
+            + 0.97357 * aspect_ratio ** 5.0
+            - 93.68557 * sweep_25 ** 4.0 * aspect_ratio ** 6.0
+            - 0.07282 * sweep_25
+            + 5.46093 * sweep_25 ** 9.0 * aspect_ratio
+            + 0.07748 * sweep_25 * aspect_ratio
+            - 2.71505 * sweep_25 ** 6.0
+            - 0.01909 * sweep_25 * aspect_ratio ** 2.0
         )
-        if np.isnan(k_cdi_roll_damping):
-            k_cdi_roll_damping = interpolate.griddata(
-                (sweep_25_data, aspect_ratio_data),
-                cdi_roll_damping_data,
-                np.array([sweep_25, aspect_ratio]).T,
-                method="nearest",
-            )
 
         return float(k_cdi_roll_damping)
 
@@ -2102,46 +1815,64 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_twist: contribution to the roll moment coefficient of the twist.
         """
 
-        file = pth.join(resources.__path__[0], CL_R_TWIST_EFFECT)
-        db = read_csv(file)
-
-        taper_ratio_data = db["TAPER_RATIO"]
-        aspect_ratio_data = db["ASPECT_RATIO"]
-        twist_effect_data = db["TWIST_EFFECT"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(taper_ratio_data),
-                np.isnan(aspect_ratio_data),
-                np.isnan(twist_effect_data),
-            )
-        )
-        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
-        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
-        twist_effect_data = twist_effect_data[np.logical_not(errors)].tolist()
-
-        if float(taper_ratio) != np.clip(
-            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
-        ):
+        if float(taper_ratio) != np.clip(float(taper_ratio), 0.0, 1.0):
             _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
-        if float(aspect_ratio) != np.clip(
-            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
-        ):
+
+        if float(aspect_ratio) != np.clip(float(aspect_ratio), 2.0, 10.0):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
-        # Linear interpolation is preferred but we put the nearest one as protection
-        k_twist = interpolate.griddata(
-            (taper_ratio_data, aspect_ratio_data),
-            twist_effect_data,
-            np.array([taper_ratio, aspect_ratio]).T,
-            method="linear",
-        )
-        if np.isnan(k_twist):
-            k_twist = interpolate.griddata(
-                (taper_ratio_data, aspect_ratio_data),
-                twist_effect_data,
-                np.array([taper_ratio, aspect_ratio]).T,
-                method="nearest",
+        taper_ratio = np.exp(np.clip(taper_ratio, 0.0, 1.0))
+        aspect_ratio = np.clip(aspect_ratio, 2.0, 10.0)
+        # taper_ratio is scaled just to ease the surrogate modeling process
+
+        k_twist = np.log(
+            10.0
+            ** (
+                -0.05691
+                + 0.75788 * np.log10(aspect_ratio)
+                + 2.29272 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 2.0
+                + 11.77360 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 2.0
+                - 111.82216 * np.log10(taper_ratio) ** 3.0 * np.log10(aspect_ratio) ** 2.0
+                - 6.68663 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 3.0
+                - 23.22959 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 4.0
+                + 0.00449 * np.log10(taper_ratio)
+                - 5.64798 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio)
+                - 3.75020 * np.log10(aspect_ratio) ** 2.0
+                - 14.53987 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 7.0
+                + 25.31895 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 6.0
+                + 6.07351 * np.log10(taper_ratio) ** 2.0 * np.log10(aspect_ratio) ** 5.0
+                + 96.06766 * np.log10(taper_ratio) ** 6.0 * np.log10(aspect_ratio) ** 3.0
+                - 0.27059 * np.log10(taper_ratio) * np.log10(aspect_ratio)
+                - 9.57656 * np.log10(aspect_ratio) ** 9.0
+                + 44.24848 * np.log10(aspect_ratio) ** 8.0
+                - 3.73715 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 6.0
+                - 35.73339 * np.log10(aspect_ratio) ** 5.0
+                - 45.72376 * np.log10(taper_ratio) ** 5.0 * np.log10(aspect_ratio) ** 3.0
+                + 50.82538 * np.log10(taper_ratio) ** 3.0 * np.log10(aspect_ratio) ** 6.0
+                + 213.22572 * np.log10(taper_ratio) ** 5.0
+                + 357.73718 * np.log10(taper_ratio) ** 4.0 * np.log10(aspect_ratio) ** 4.0
+                + 217.08369 * np.log10(taper_ratio) ** 4.0 * np.log10(aspect_ratio) ** 2.0
+                - 63.55425 * np.log10(taper_ratio) ** 4.0 * np.log10(aspect_ratio)
+                - 509.87340 * np.log10(taper_ratio) ** 6.0
+                - 87.09365 * np.log10(taper_ratio) ** 4.0 * np.log10(aspect_ratio) ** 5.0
+                + 1.07977 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 8.0
+                - 83.31625 * np.log10(aspect_ratio) ** 7.0
+                + 79.51372 * np.log10(aspect_ratio) ** 6.0
+                + 7.91769 * np.log10(aspect_ratio) ** 3.0
+                - 404.33108 * np.log10(taper_ratio) ** 4.0 * np.log10(aspect_ratio) ** 3.0
+                + 37.25993 * np.log10(taper_ratio) ** 3.0 * np.log10(aspect_ratio)
+                + 523.81998 * np.log10(taper_ratio) ** 7.0
+                - 55.92062 * np.log10(taper_ratio) ** 5.0 * np.log10(aspect_ratio) ** 4.0
+                + 32.37203 * np.log10(taper_ratio) ** 5.0 * np.log10(aspect_ratio) ** 2.0
+                - 263.48485 * np.log10(taper_ratio) ** 9.0
+                + 7.31962 * np.log10(taper_ratio) * np.log10(aspect_ratio) ** 4.0
+                - 37.83321 * np.log10(taper_ratio) ** 4.0
+                + 0.63774 * np.log10(taper_ratio) ** 2.0
+                - 55.92877 * np.log10(taper_ratio) ** 7.0 * np.log10(aspect_ratio) ** 2.0
+                - 113.89145 * np.log10(taper_ratio) ** 3.0 * np.log10(aspect_ratio) ** 5.0
+                + 136.44476 * np.log10(taper_ratio) ** 3.0 * np.log10(aspect_ratio) ** 3.0
             )
+        )
 
         return float(k_twist)
 
@@ -2222,46 +1953,42 @@ class FigureDigitization(om.ExplicitComponent):
         lifting surface.
         """
 
-        file = pth.join(resources.__path__[0], CN_P_TWIST)
-        db = read_csv(file)
-
-        taper_ratio_data = db["TAPER_RATIO"]
-        aspect_ratio_data = db["ASPECT_RATIO"]
-        twist_contribution = db["TWIST_CONTRIBUTION"]
-        errors = np.logical_or.reduce(
-            (
-                np.isnan(taper_ratio_data),
-                np.isnan(aspect_ratio_data),
-                np.isnan(twist_contribution),
-            )
-        )
-        taper_ratio_data = taper_ratio_data[np.logical_not(errors)].tolist()
-        aspect_ratio_data = aspect_ratio_data[np.logical_not(errors)].tolist()
-        twist_contribution = twist_contribution[np.logical_not(errors)].tolist()
-
-        if float(taper_ratio) != np.clip(
-            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
-        ):
+        if float(taper_ratio) != np.clip(float(taper_ratio), 0.0, 1.0):
             _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
-        if float(aspect_ratio) != np.clip(
-            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
-        ):
+        if float(aspect_ratio) != np.clip(float(aspect_ratio), 2.0, 12.0):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
-        # Linear interpolation is preferred but we put the nearest one as protection
-        cn_p_twist = interpolate.griddata(
-            (taper_ratio_data, aspect_ratio_data),
-            twist_contribution,
-            np.array([taper_ratio, aspect_ratio]).T,
-            method="linear",
+        taper_ratio = np.clip(taper_ratio, 0.0, 1.0)
+        aspect_ratio = np.clip(aspect_ratio, 2.0, 12.0) * 0.1
+        # aspect ratio is scaled by 0.01 to ease the surrogate modeling process
+
+        cn_p_twist = (
+            -0.000449
+            + 0.00255 * aspect_ratio
+            - 0.00584 * taper_ratio
+            - 0.00252 * aspect_ratio ** 2.0
+            - 0.00768 * taper_ratio ** 5.0 * aspect_ratio ** 3.0
+            + 0.01296 * taper_ratio ** 2.0
+            + 0.00148 * taper_ratio * aspect_ratio ** 4.0
+            + 0.03829 * taper_ratio ** 4.0 * aspect_ratio ** 3.0
+            + 0.01168 * taper_ratio * aspect_ratio
+            + 0.02099 * taper_ratio ** 3.0 * aspect_ratio
+            + 0.00150 * aspect_ratio ** 3.0
+            + 0.01936 * taper_ratio ** 6.0 * aspect_ratio ** 2.0
+            + 0.02307 * taper_ratio ** 2.0 * aspect_ratio ** 2.0
+            - 0.01259 * taper_ratio ** 3.0
+            - 0.03098 * taper_ratio ** 3.0 * aspect_ratio ** 3.0
+            - 0.03142 * taper_ratio ** 2.0 * aspect_ratio
+            - 0.00792 * taper_ratio * aspect_ratio ** 2.0
+            - 0.00029 * taper_ratio ** 8.0
+            - 0.00325 * taper_ratio ** 2.0 * aspect_ratio ** 4.0
+            + 0.01092 * taper_ratio ** 3.0 * aspect_ratio ** 4.0
+            + 0.00475 * taper_ratio ** 4.0
+            - 0.03463 * taper_ratio ** 5.0 * aspect_ratio ** 2.0
+            - 0.00085 * taper_ratio ** 7.0 * aspect_ratio
+            - 0.00024 * aspect_ratio ** 5.0
+            - 0.00891 * taper_ratio ** 4.0 * aspect_ratio ** 4.0
         )
-        if np.isnan(cn_p_twist):
-            cn_p_twist = interpolate.griddata(
-                (taper_ratio_data, aspect_ratio_data),
-                twist_contribution,
-                np.array([taper_ratio, aspect_ratio]).T,
-                method="nearest",
-            )
 
         return float(cn_p_twist)
 
@@ -2414,3 +2141,66 @@ class FigureDigitization(om.ExplicitComponent):
         )
 
         return output_y
+
+
+@functools.lru_cache(maxsize=128)
+def _k_p(taper_ratio, eta):
+    """
+    Model based on Roskam data to account for the partial span flaps factor on the pitch moment coefficient
+    (figure 8.105).
+
+    :param taper_ratio: lifting surface taper ratio.
+    :param eta: start or end of the control surface, in percent of the lifting surface span.
+    :return k_p: partial span factor.
+    """
+
+    k_p = (
+        0.00602
+        + 3.47583 * eta
+        - 0.11155 * taper_ratio
+        - 2.54352 * eta ** 2.0
+        + 0.09743 * taper_ratio ** 2.0
+        + 0.18193 * taper_ratio ** 2.0 * eta ** 6.0
+        + 1.36086 * taper_ratio ** 2.0 * eta
+        - 1.36165 * taper_ratio ** 2.0 * eta ** 2.0
+        + 0.30816 * eta ** 5.0
+        - 0.87442 * taper_ratio * eta ** 6.0
+        - 3.80301 * taper_ratio * eta
+        + 3.89409 * taper_ratio * eta ** 2.0
+        + 0.38675 * taper_ratio * eta ** 7.0
+    )
+
+    return k_p
+
+
+@functools.lru_cache(maxsize=128)
+def _k_b(taper_ratio, eta):
+    """
+    Model based on Roskam data to estimate the flap span factor Kb (figure 8.52).
+
+    :param eta: position along the wing span of the start or end of the flaps divided by span.
+    :param taper_ratio: taper ration of the surface.
+    :return: kb factor contribution to 3D lift.
+    """
+
+    k_b = (
+        10.0
+        ** (
+            0.00082
+            + 1.64509 * np.log10(eta)
+            + 3.09929 * np.log10(eta) ** 3.0
+            - 479.17688 * np.log10(eta) ** 8.0
+            - 2.72758 * np.log10(eta) ** 2.0
+            + 52.73155 * np.log10(taper_ratio) ** 4.0 * np.log10(eta)
+            - 269.97611 * np.log10(taper_ratio) ** 4.0 * np.log10(eta) ** 2.0
+            + 29.22030 * np.log10(taper_ratio) ** 8.0
+            - 9.19705 * np.log10(taper_ratio) ** 2.0 * np.log10(eta)
+            + 51.73734 * np.log10(taper_ratio) ** 2.0 * np.log10(eta) ** 2.0
+            - 68.23377 * np.log10(taper_ratio) ** 2.0 * np.log10(eta) ** 3.0
+            + 953.14945 * np.log10(taper_ratio) ** 4.0 * np.log10(eta) ** 4.0
+            - 0.00474 * np.log10(taper_ratio)
+        )
+        - 1.0
+    )
+
+    return k_b
