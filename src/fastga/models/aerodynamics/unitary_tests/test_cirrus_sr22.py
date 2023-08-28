@@ -598,25 +598,25 @@ def test_openvsp_comp_low_speed():
 
 def test_2d_hinge_moment():
     """Tests tail hinge-moments."""
-    hinge_moment_2d(XML_FILE, ch_alpha_2d=-0.3548, ch_delta_2d=-0.5755)
+    hinge_moment_2d(XML_FILE, ch_alpha_2d=-0.33848766, ch_delta_2d=-0.56969376)
 
 
 def test_3d_hinge_moment():
     """Tests tail hinge-moments."""
-    hinge_moment_3d(XML_FILE, ch_alpha=-0.2594, ch_delta=-0.6216)
+    hinge_moment_3d(XML_FILE, ch_alpha=-0.2594, ch_delta=-0.6221121)
 
 
 def test_all_hinge_moment():
     """Tests tail hinge-moments full computation."""
-    hinge_moments(XML_FILE, ch_alpha=-0.2594, ch_delta=-0.6216)
+    hinge_moments(XML_FILE, ch_alpha=-0.24741936, ch_delta=-0.61401314)
 
 
 def test_elevator():
     """Tests elevator contribution."""
     elevator(
         XML_FILE,
-        cl_delta_elev=0.4686,
-        cd_delta_elev=0.06226,
+        cl_delta_elev=0.47525855,
+        cd_delta_elev=0.06015227,
     )
 
 
@@ -624,18 +624,18 @@ def test_high_lift():
     """Tests high-lift contribution."""
     high_lift(
         XML_FILE,
-        delta_cl0_landing=0.6167,
-        delta_cl0_landing_2d=1.5094,
-        delta_clmax_landing=0.4194,
-        delta_cm_landing=-0.1729,
-        delta_cm_landing_2d=-0.2830,
+        delta_cl0_landing=0.59481377,
+        delta_cl0_landing_2d=1.5056748,
+        delta_clmax_landing=0.4208934,
+        delta_cm_landing=-0.1732496,
+        delta_cm_landing_2d=-0.28231403,
         delta_cd_landing=0.0136,
         delta_cd_landing_2d=0.0258,
-        delta_cl0_takeoff=0.2300,
-        delta_cl0_takeoff_2d=0.5631,
-        delta_clmax_takeoff=0.0858,
-        delta_cm_takeoff=-0.0645,
-        delta_cm_takeoff_2d=-0.1055,
+        delta_cl0_takeoff=0.22135387,
+        delta_cl0_takeoff_2d=0.5603215,
+        delta_clmax_takeoff=0.08524055,
+        delta_cm_takeoff=-0.06447307,
+        delta_cm_takeoff_2d=-0.10506028,
         delta_cd_takeoff=0.0011,
         delta_cd_takeoff_2d=0.0020,
     )
@@ -1052,7 +1052,7 @@ def test_cl_alpha_vt():
 
 def test_cy_delta_r():
     """Tests cy delta of the rudder."""
-    cy_delta_r(XML_FILE, cy_delta_r_=1.8858, cy_delta_r_cruise=1.9255)
+    cy_delta_r(XML_FILE, cy_delta_r_=1.98719386, cy_delta_r_cruise=2.02897756)
 
 
 def test_effective_efficiency():
@@ -1064,7 +1064,7 @@ def test_effective_efficiency():
 
 def test_cm_alpha_fus():
     """Tests cy delta of the rudder."""
-    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.2895)
+    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.29006939)
 
 
 @pytest.mark.skipif(
@@ -1230,7 +1230,7 @@ def test_cy_p_aircraft():
 def test_cl_beta_wing():
     """Test cl beta of the wing."""
     roll_moment_side_slip_wing(
-        XML_FILE, cl_beta_wing_low_speed_=-0.01422404, cl_beta_wing_cruise_=-0.01499659
+        XML_FILE, cl_beta_wing_low_speed_=-0.01450206, cl_beta_wing_cruise_=-0.01470902
     )
 
 
@@ -1251,7 +1251,7 @@ def test_cl_beta_vt():
 def test_cl_beta_aircraft():
     """Test cl beta of the vt."""
     roll_moment_side_slip_aircraft(
-        XML_FILE, cl_beta_low_speed_=-0.06343, cl_beta_cruise_=-0.0731659
+        XML_FILE, cl_beta_low_speed_=-0.06370895, cl_beta_cruise_=-0.07287832
     )
 
 
@@ -1296,7 +1296,7 @@ def test_cl_r_aircraft():
 
 def test_cl_delta_a_aircraft():
     """Test roll authority of the aileron."""
-    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.222, cl_delta_a_cruise_=0.2277)
+    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.2181797, cl_delta_a_cruise_=0.22365213)
 
 
 def test_cl_delta_r_aircraft():
