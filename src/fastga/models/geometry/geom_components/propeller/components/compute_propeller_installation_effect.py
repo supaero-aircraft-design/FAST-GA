@@ -94,7 +94,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
-            ] = -127.0 / (125.0 * disk_diameter ** 2.0 * np.pi)
+            ] = -1.016 / (disk_diameter ** 2.0 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
@@ -107,7 +107,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
-            ] = -127.0 / (125.0 * disk_diameter ** 2.0 * np.pi)
+            ] = -1.016 / (disk_diameter ** 2.0 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
@@ -122,7 +122,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
-            ] = -127.0 / (125.0 * disk_diameter ** 2.0 * np.pi)
+            ] = -1.016 / (disk_diameter ** 2.0 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
@@ -131,4 +131,6 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         partials[
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             "data:geometry:propeller:diameter",
-        ] = (254.0 * cowling_master_cross_section) / (125.0 * disk_diameter ** 3.0 * np.pi)
+        ] = (
+            2.032 * cowling_master_cross_section / (disk_diameter ** 3.0 * np.pi)
+        )
