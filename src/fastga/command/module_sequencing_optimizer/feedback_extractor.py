@@ -1,5 +1,12 @@
 def feedback_extractor(
-    model_data, score_criteria, WORK_FOLDER_PATH, orig_list_of_keys, CONFIGURATION_FILE=None, config_dictionary=None, problem = None, INFO=False
+    model_data,
+    score_criteria,
+    WORK_FOLDER_PATH,
+    orig_list_of_keys,
+    CONFIGURATION_FILE=None,
+    config_dictionary=None,
+    problem=None,
+    INFO=False,
 ):
 
     import time
@@ -90,22 +97,32 @@ def feedback_extractor(
                 }
         else:  # compute modules times for your particular machine, solver, etc.
             if CONFIGURATION_FILE is not None:
-                modules_times = time_modules(config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH)
+                modules_times = time_modules(
+                    config_dictionary, CONFIGURATION_FILE, WORK_FOLDER_PATH
+                )
             else:
-                modules_times = time_modules(problem = problem)
+                modules_times = time_modules(problem=problem)
 
         return modules_times
 
     def run_once(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            if not os.path.exists("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt"):
+            if not os.path.exists(
+                "src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt"
+            ):
                 result = func(*args, **kwargs)
-                with open("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt", "w") as f:
+                with open(
+                    "src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt",
+                    "w",
+                ) as f:
                     f.write(json.dumps(result))
                 return result
             else:
-                with open("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt", "r") as f:
+                with open(
+                    "src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt",
+                    "r",
+                ) as f:
                     result = json.load(f)
                 return result
 
@@ -147,7 +164,7 @@ def feedback_extractor(
         modules_times = total_time_of_modules(score_criteria, WORK_FOLDER_PATH)
 
         # find how many times they run
-        #print("FOR DEBUG: result list is ", result_list)
+        # print("FOR DEBUG: result list is ", result_list)
 
         modules_in_feedback = extract_module(result_list)
         keys_order = orig_list_of_keys
