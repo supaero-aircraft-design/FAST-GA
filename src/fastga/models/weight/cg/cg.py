@@ -43,6 +43,12 @@ class CG(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
+        self.add_subsystem(
+            "tank_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
+        )
+        self.add_subsystem(
+            "payload_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
+        )
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_cg",
@@ -50,12 +56,6 @@ class CG(om.Group):
                 SUBMODEL_AIRCRAFT_CG_EXTREME, options=propulsion_option
             ),
             promotes=["*"],
-        )
-        self.add_subsystem(
-            "payload_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_PAYLOAD_CG), promotes=["*"]
-        )
-        self.add_subsystem(
-            "tank_cg", oad.RegisterSubmodel.get_submodel(SUBMODEL_TANK_CG), promotes=["*"]
         )
 
         # Solvers setup

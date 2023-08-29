@@ -4,7 +4,7 @@ import re
 def Count_Under_XDSM_Diag(file_path):
 
     """
-    This counts the terms below the diagonal of a given aircraft sizing xsml.html file.
+    UNUSED: This counts the terms below the diagonal of a given aircraft sizing xsml.html file.
     The aim is to determine how slow the design loop will that be since it is almost proportional to the number of terms below the diagonal
     """
 

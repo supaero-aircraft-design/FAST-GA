@@ -35,14 +35,6 @@ class ComputeGlobalCG(Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
-        self.add_subsystem(
-            "cg_ratio_lc_flight",
-            oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_LOADCASE_FLIGHT_X, options=propulsion_option
-            ),
-            promotes=["*"],
-        )
         self.add_subsystem(
             "cg_ratio_aft",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_X_CG_RATIO),
@@ -51,6 +43,14 @@ class ComputeGlobalCG(Group):
         self.add_subsystem(
             "cg_ratio_lc_ground",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_LOADCASE_GROUND_X),
+            promotes=["*"],
+        )
+        propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
+        self.add_subsystem(
+            "cg_ratio_lc_flight",
+            oad.RegisterSubmodel.get_submodel(
+                SUBMODEL_LOADCASE_FLIGHT_X, options=propulsion_option
+            ),
             promotes=["*"],
         )
         self.add_subsystem("cg_ratio_extrema", ComputeMaxMinCGRatio(), promotes=["*"])

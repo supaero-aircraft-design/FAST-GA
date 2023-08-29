@@ -67,6 +67,7 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
         mlw = inputs["data:weight:aircraft:MLW"]
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
+
         outputs["wing_area"] = wing_area_approach
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
