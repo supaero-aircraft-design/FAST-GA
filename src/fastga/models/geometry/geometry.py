@@ -135,11 +135,6 @@ class GeometryFixedTailDistance(om.Group):
             ),
             promotes=["*"],
         )
-        self.add_subsystem(
-            "compute_propeller_geometry",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
-            promotes=["*"],
-        )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFD(), promotes=["*"])
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFD(), promotes=["*"])
         self.add_subsystem(
@@ -158,6 +153,11 @@ class GeometryFixedTailDistance(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "compute_propeller_geometry",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(

@@ -152,7 +152,6 @@ class ComputeCG(om.ExplicitComponent):
             self.add_input(mass_name, val=np.nan, units="kg")
 
         self.add_output("data:weight:aircraft_empty:mass", val=1116, units="kg")
-        # self.add_output("data:weight:aircraft_empty:CG:x", units="m")
         self.add_output("data:weight:aircraft_empty:CG:x", val=3.5, units="m")
 
         self.declare_partials("data:weight:aircraft_empty:mass", "*", method="fd")

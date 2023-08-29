@@ -147,9 +147,6 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:vertical_tail:MAC:length"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-        # print("\n\n FOR DEBUG GOOD: VTP AREA IS", outputs["data:aerodynamics:vertical_tail:MAC:low_speed:reynolds"])
-        # print("\n\n FOR DEBUG GOOD: HTP AREA IS", outputs["data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds"])
-
         outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 

@@ -124,11 +124,6 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
-        # print('\n\n FOR DEBUG MACH NUMBER IS: ', mach)
-        # print('\n\n FOR DEBUG REYNOLDS NUMBER IS: ', reynolds)
-
-        # Search if data already stored for this profile and mach with reynolds values bounding
-        # current value. If so, use linear interpolation with the nearest upper/lower reynolds
         no_file = True
         data_saved = None
         interpolated_result = None
@@ -173,22 +168,15 @@ class XfoilPolar(ExternalCodeComp):
                 [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
             )
             index_reynolds = index_mach[np.where(reynolds_vect == reynolds)[0]]
-            # print('\n\n  LEN(index_reynolds) IS ', len(index_reynolds))
 
             if len(index_reynolds) == 1:
-                # print('\n\n I AM CALCULATING INTERPOLATIONG RESULT BECAUSE LEN(RE)=1')
                 interpolated_result = data_reduced.loc[labels, index_reynolds]
             # Else search for lower/upper Reynolds
             else:
-                # print('\n\n I AM HERE BECAUSE reynolds is not in the reynolds_vec')
-                # print('\n\n FOR DEBUG REYNOLDS_VECT IS ', reynolds_vect)
                 lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
                 upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
 
-                # print('\n\n LOWER RE ', lower_reynolds)
-                # print('\n\n UPPER RE ', upper_reynolds)
                 if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                    # print('\n\n I AM CALCULATING INTERPOLATIONG RESULT BECAUSE LEN of lower and uper re is not 0')
                     index_lower_reynolds = index_mach[
                         np.where(reynolds_vect == max(lower_reynolds))[0]
                     ]

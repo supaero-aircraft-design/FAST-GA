@@ -106,6 +106,7 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
                 "Could not find a wing area that suits the requirement for fuel inside the wing, "
                 "setting the value to 0.0",
             )
+
         outputs["wing_area"] = wing_area_mission
 
 

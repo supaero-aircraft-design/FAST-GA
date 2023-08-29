@@ -525,7 +525,9 @@ CONFIGURATION_FILE = pth.join(WORK_FOLDER_PATH, "oad_process_test.yml")
 conf = FASTOADProblemConfigurator(
     CONFIGURATION_FILE
 )  # User: Change this line if you want to use a problem without a config file
-problem = conf.get_problem()  # User: Change this line if you want to use a problem without a config file
+problem = (
+    conf.get_problem()
+)  # User: Change this line if you want to use a problem without a config file
 
 
 # ---- 3. ---- Define Optimization level (always 1 for now), type of swapping algorithm for optimization and the score criteria of the potential solutions (see description below)

@@ -84,6 +84,7 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
             0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
         )
         wing_area_mission = (mfw_mission / m_vol_fuel) / (0.3 * ave_thickness)
+
         outputs["wing_area"] = wing_area_mission
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
