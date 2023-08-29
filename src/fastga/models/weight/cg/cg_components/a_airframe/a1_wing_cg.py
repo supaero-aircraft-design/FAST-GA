@@ -126,25 +126,23 @@ class ComputeWingCG(ExplicitComponent):
             else:
                 partials[
                     "data:weight:airframe:wing:CG:x", "data:geometry:wing:span"
-                ] = 0.2 * np.tan((np.pi * sweep_25) / 180.0) + (
-                    0.084 * (l2_wing - 1.0 * l4_wing)
-                ) / (
-                    y2_wing - 1.0 * y4_wing
+                ] = 0.2 * np.tan((np.pi * sweep_25) / 180.0) + (0.084 * (l2_wing - l4_wing)) / (
+                    y2_wing - y4_wing
                 )
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:root:y"] = (
-                    -(0.42 * (l2_wing - 1.0 * l4_wing)) / (y2_wing - 1.0 * y4_wing)
-                    - (0.42 * (0.2 * span - 1.0 * y2_wing) * (l2_wing - 1.0 * l4_wing))
-                    / (y2_wing - 1.0 * y4_wing) ** 2
+                    -(0.42 * (l2_wing - l4_wing)) / (y2_wing - y4_wing)
+                    - (0.42 * (0.2 * span - y2_wing) * (l2_wing - l4_wing))
+                    / (y2_wing - y4_wing) ** 2
                 )
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:tip:chord"] = -(
-                    0.42 * (0.2 * span - 1.0 * y2_wing)
-                ) / (y2_wing - 1.0 * y4_wing)
+                    0.42 * (0.2 * span - y2_wing)
+                ) / (y2_wing - y4_wing)
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:tip:y"] = (
-                    0.42 * (0.2 * span - 1.0 * y2_wing) * (l2_wing - 1.0 * l4_wing)
-                ) / (y2_wing - 1.0 * y4_wing) ** 2
+                    0.42 * (0.2 * span - y2_wing) * (l2_wing - l4_wing)
+                ) / (y2_wing - y4_wing) ** 2
                 partials[
                     "data:weight:airframe:wing:CG:x", "data:geometry:wing:root:virtual_chord"
-                ] = (0.42 * (0.2 * span - 1.0 * y2_wing)) / (y2_wing - 1.0 * y4_wing) + 0.42
+                ] = (0.42 * (0.2 * span - y2_wing)) / (y2_wing - y4_wing) + 0.42
 
             partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:sweep_25"] = (
                 y_cg * np.pi * (np.tan((np.pi * sweep_25) / 180.0) ** 2.0 + 1.0)
@@ -165,25 +163,23 @@ class ComputeWingCG(ExplicitComponent):
             else:
                 partials[
                     "data:weight:airframe:wing:CG:x", "data:geometry:wing:span"
-                ] = 0.175 * np.tan((np.pi * sweep_25) / 180.0) + (
-                    0.08925 * (l2_wing - 1.0 * l4_wing)
-                ) / (
-                    y2_wing - 1.0 * y4_wing
+                ] = 0.175 * np.tan((np.pi * sweep_25) / 180.0) + (0.08925 * (l2_wing - l4_wing)) / (
+                    y2_wing - y4_wing
                 )
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:root:y"] = (
-                    -(0.51 * (l2_wing - 1.0 * l4_wing)) / (y2_wing - 1.0 * y4_wing)
-                    - (0.51 * (0.175 * span - 1.0 * y2_wing) * (l2_wing - 1.0 * l4_wing))
-                    / (y2_wing - 1.0 * y4_wing) ** 2
+                    -(0.51 * (l2_wing - l4_wing)) / (y2_wing - y4_wing)
+                    - (0.51 * (0.175 * span - y2_wing) * (l2_wing - l4_wing))
+                    / (y2_wing - y4_wing) ** 2
                 )
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:tip:chord"] = -(
-                    0.51 * (0.175 * span - 1.0 * y2_wing)
-                ) / (y2_wing - 1.0 * y4_wing)
+                    0.51 * (0.175 * span - y2_wing)
+                ) / (y2_wing - y4_wing)
                 partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:tip:y"] = (
-                    0.51 * (0.175 * span - 1.0 * y2_wing) * (l2_wing - 1.0 * l4_wing)
-                ) / (y2_wing - 1.0 * y4_wing) ** 2
+                    0.51 * (0.175 * span - y2_wing) * (l2_wing - l4_wing)
+                ) / (y2_wing - y4_wing) ** 2
                 partials[
                     "data:weight:airframe:wing:CG:x", "data:geometry:wing:root:virtual_chord"
-                ] = (0.51 * (0.175 * span - 1.0 * y2_wing)) / (y2_wing - 1.0 * y4_wing) + 0.51
+                ] = (0.51 * (0.175 * span - y2_wing)) / (y2_wing - y4_wing) + 0.51
 
             partials["data:weight:airframe:wing:CG:x", "data:geometry:wing:sweep_25"] = (
                 y_cg * np.pi * (np.tan((np.pi * sweep_25) / 180.0) ** 2.0 + 1.0)
