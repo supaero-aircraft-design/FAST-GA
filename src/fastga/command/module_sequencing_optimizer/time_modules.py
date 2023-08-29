@@ -1,3 +1,17 @@
+import os.path as pth
+import os
+import openmdao.api as om
+from fastoad import api as api_cs25
+# from fastga.command import api as api_cs23
+import time
+import yaml
+import shutil
+import re
+import sys
+import contextlib
+import xml.etree.ElementTree as ET
+import copy
+
 def find_id_value(dictionary):
     if "id" in dictionary:
         return dictionary["id"]
@@ -9,28 +23,16 @@ def find_id_value(dictionary):
                     return id_value
     return None
 
-
 def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, WORK_FOLDER_PATH = None, problem = None):
 
-    import os.path as pth
-    import os
-    import openmdao.api as om
-    from fastoad import api as api_cs25
-    # from fastga.command import api as api_cs23
-    import time
-    import yaml
-    import shutil
-    import re
-    import sys
-    import contextlib
-    import xml.etree.ElementTree as ET
-    from tests.testing_utilities import get_indep_var_comp, list_inputs
+    from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
     NEW_SOURCE_FILE = pth.join("src/fastga/command/module_sequencing_optimizer/data/oad_process_outputs.xml")
-
+    # initialize empty dict for storing module times
+    
+    
     if ORIGINAL_CONFIGURATION_FILE is not None:
 
-        # initialize empty dict for storing module times
         module_times = dict.fromkeys(config_dictionary, 0)
         
 
@@ -42,14 +44,7 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
             if not pth.isdir(NEW_CONFIGURATION_FILE):
                 os.makedirs(NEW_CONFIGURATION_FILE)
             shutil.copy(ORIGINAL_CONFIGURATION_FILE, NEW_CONFIGURATION_FILE)
-            #FOLDER_WITH_CSVS_SRC = WORK_FOLDER_PATH + "/workdir"
-            #FOLDER_WITH_CSVS_TGT = NEW_CONFIGURATION_FILE + "/workdir"
-            #shutil.copytree(
-            #    FOLDER_WITH_CSVS_SRC, FOLDER_WITH_CSVS_TGT, dirs_exist_ok=True
-            #)  # copy needed csv files to new config file path
-            NEW_CONFIGURATION_FILE = pth.join(
-                NEW_CONFIGURATION_FILE, os.path.basename(ORIGINAL_CONFIGURATION_FILE)
-            )
+            NEW_CONFIGURATION_FILE = pth.join(NEW_CONFIGURATION_FILE, os.path.basename(ORIGINAL_CONFIGURATION_FILE))
             with open(NEW_CONFIGURATION_FILE, "r") as file:
                 data = yaml.safe_load(file)
                 # Deletes keys inside aircraft sizing except the solvers, if present and the module we want to time
@@ -98,46 +93,69 @@ def time_modules(config_dictionary = None, ORIGINAL_CONFIGURATION_FILE = None, W
             module_times[module] = sum(executions_time) / len(executions_time)
             print("\n       Average time of ", module, ": ", module_times[module], " seconds\n")
 
-            
 
         try:
             # remove all temporary config files created for unitary timing
             shutil.rmtree(pth.join(WORK_FOLDER_PATH, "config_opti_tmp"))
         except FileNotFoundError:
             pass
-    else: #if user selects option to run from openmdao problem and not config file
-        executions_time = []
 
-        problem_copy = om.Problem()
-        model = problem.model
+
+
+    ###################### WARNING, THIS IS INCOMPLETE AND DOES NOT WORK YET (TIMING OF INDIVIDUAL MODULES WHEN RUNNING FROM A PROBLEM INSTEAD OF A CONFIG FILE)
+
+    else: #if user selects option to run from openmdao problem and not config file
+        
+        model = copy.copy(problem.model)
+        
 
         modules_in_problem = list(model.aircraft_sizing._proc_info.keys())
+        module_times = dict.fromkeys(modules_in_problem, 0)
 
+            
 
         for module in modules_in_problem:
 
-
+            executions_time = []
             component_to_extract =  getattr(problem.model.aircraft_sizing, module)
-            #component_to_extract = globals()[component_to_extract]
 
-            list_of_variables = list_inputs(model)
-        
+
+            list_of_variables = list_inputs(component_to_extract)
+
+
 
             inputs = get_indep_var_comp(list_of_variables, "src/fastga/command/module_sequencing_optimizer/", "oad_process_outputs.xml")
 
-            problem_copy.model.add_subsystem("inputs", inputs, promotes = ["*"])
-            problem_copy.model.add_subsystem("component", component_to_extract, promotes=["*"])
+            #print(inputs["data:geometry:propulsion:nacelle:y"])
+            #print(inputs.get_val("data:geometry:propulsion:nacelle:y"))
+            #print(inputs.list_outputs())
+            """
+            #problem_copy.model.add_subsystem("ivc", inputs, promotes = ["*"])
+            #problem_copy.model.add_subsystem("component", component_to_extract, promotes=["*"])
+            #problem_copy.model.add_subsystem("fastoad_shaper", fastoad_shaper)
 
-            for _ in range(15):  # run them individually 15 times, to have a good average
+            try:
+                problem_copy.model.nonlinear_solver = nls
+            except:
+                pass
+            try:
+                problem_copy.model.linear_solver = ls
+            except:
+                pass
+
+
+
+            """
+            for i in range(15):  # run them individually 15 times, to have a good average
                 starting = time.time()
 
                 with contextlib.redirect_stdout(None):  # supresses outputs by terminal of each small case execution
-                    problem_copy.run_model
-                    #problem_copy.write_outputs
+                    problem_copy = run_system(component_to_extract, inputs) 
 
                 executions_time.append(time.time() - starting)
 
             module_times[module] = sum(executions_time) / len(executions_time)
+            print(module_times)      
 
 
     return module_times
