@@ -54,7 +54,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def delta_cd_plain_flap(chord_ratio, control_deflection) -> float:
         """
-        Surrogate model based on Roskam data to account for the profile drag increment due to the 
+        Surrogate model based on Roskam data to account for the profile drag increment due to the
         deployment of plain flap (figure 4.44).
 
         :param chord_ratio: control surface over lifting surface ratio.
@@ -172,7 +172,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def cl_delta_theory_plain_flap(thickness, chord_ratio):
         """
-        Surrogate model based on Roskam data to estimate the theoretical airfoil lift 
+        Surrogate model based on Roskam data to estimate the theoretical airfoil lift
         effectiveness of a plain flap (figure 8.14).
 
         :param thickness: the airfoil thickness.
@@ -222,7 +222,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_cl_delta_plain_flap(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Surrogate model based on Roskam data to estimate the correction factor to estimate 
+        Surrogate model based on Roskam data to estimate the correction factor to estimate
         difference from theoretical plain flap lift (figure 8.15).
 
         :param thickness_ratio: airfoil thickness ratio.
@@ -270,8 +270,8 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_prime_single_slotted(flap_angle, chord_ratio):
         """
-        Surrogate model based on Roskam data to estimate the lift effectiveness of a single slotted 
-        flap (figure 8.17), noted here k_prime to match the notation of the plain flap but is written 
+        Surrogate model based on Roskam data to estimate the lift effectiveness of a single slotted
+        flap (figure 8.17), noted here k_prime to match the notation of the plain flap but is written
         alpha_delta in the book.
 
         :param flap_angle: the control surface deflection angle angle (in °).
@@ -315,7 +315,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def base_max_lift_increment(thickness_ratio: float, flap_type: float) -> float:
         """
-        Surrogate model based on Roskam data to estimate base lift increment used in the computation 
+        Surrogate model based on Roskam data to estimate base lift increment used in the computation
         of flap delta_cl_max (figure 8.31).
 
         :param thickness_ratio: thickness ratio f the lifting surface, in %.
@@ -398,7 +398,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k1_max_lift(chord_ratio, flap_type) -> float:
         """
-        Surrogate model based on Roskam data to correct the base lift increment to account for 
+        Surrogate model based on Roskam data to correct the base lift increment to account for
         chord ratio difference wrt to the reference flap configuration (figure 8.32).
 
         :param chord_ratio: ration of the chord of the control surface over that of the whole
@@ -433,7 +433,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k2_max_lift(angle, flap_type) -> float:
         """
-        Surrogate model based on Roskam data to correct the base lift increment to account for 
+        Surrogate model based on Roskam data to correct the base lift increment to account for
         the control surface deflection angle difference wrt to the reference flap configuration
         (figure 8.33).
 
@@ -533,8 +533,8 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_b_flaps(eta_in: float, eta_out: float, taper_ratio: float) -> float:
         """
-        Surrogate model based on Roskam data to estimate the flap span factor Kb (figure 8.52) 
-        This factor accounts for a finite flap contribution to the 3D lift increase, 
+        Surrogate model based on Roskam data to estimate the flap span factor Kb (figure 8.52)
+        This factor accounts for a finite flap contribution to the 3D lift increase,
         depending on its position and size and the taper ratio of the wing.
 
         :param eta_in: position along the wing span of the start of the flaps divided by span.
@@ -577,8 +577,8 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def a_delta_airfoil(chord_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the two-dimensional flap effectiveness 
-        factor (figure 8.53a) This factor can be then used in the computation of the 3D flap 
+        Surrogate model based on Roskam data to estimate the two-dimensional flap effectiveness
+        factor (figure 8.53a) This factor can be then used in the computation of the 3D flap
         effectiveness factor which is often the coefficient of interest.
 
         :param chord_ratio: ration of the chord of the control surface over that of the whole
@@ -616,7 +616,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_a_delta(a_delta_airfoil, aspect_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the two dimensional to three dimensional 
+        Surrogate model based on Roskam data to estimate the two dimensional to three dimensional
         control surface lift effectiveness parameter (figure 8.53b).
 
         :param a_delta_airfoil: control surface two-dimensional flap effectiveness factor.
@@ -689,7 +689,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def x_cp_c_prime(flap_chord_ratio: float) -> float:
         """
-        Surrogate model based on Roskam data to estimate the location of the center of pressure 
+        Surrogate model based on Roskam data to estimate the location of the center of pressure
         due to Incremental Flap Load (figure 8.91).
 
         :param flap_chord_ratio: ratio of the control surface chord over the lifting surface chord.
@@ -709,7 +709,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_p_flaps(taper_ratio, eta_in, eta_out) -> float:
         """
-        Surrogate model based on Roskam data to account for the partial span flaps factor on 
+        Surrogate model based on Roskam data to account for the partial span flaps factor on
         the pitch moment coefficient (figure 8.105).
 
         :param taper_ratio: lifting surface taper ratio.
@@ -734,7 +734,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def pitch_to_reference_lift(thickness_ratio: float, chord_ratio: float) -> float:
         """
-        Surrogate model based on Roskam data to account for the ratio between the pitch moment 
+        Surrogate model based on Roskam data to account for the ratio between the pitch moment
         coefficient and the reference lift coefficient increment (figure 8.106).
 
         :param thickness_ratio: thickness to chord ratio of the lifting surface.
@@ -891,7 +891,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_vh(area_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the impact of relative area ratio on 
+        Surrogate model based on Roskam data to estimate the impact of relative area ratio on
         the effective aspect ratio (figure 10.16).
 
         :param area_ratio: ratio of the horizontal tail area over the vertical tail area.
@@ -919,7 +919,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_ch_alpha(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Surrogate model based on Roskam data to compute the correction factor to differentiate 
+        Surrogate model based on Roskam data to compute the correction factor to differentiate
         the 2D control surface hinge moment derivative due to AOA from the reference (figure 10.63).
 
         :param thickness_ratio: airfoil thickness ratio.
@@ -969,7 +969,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def ch_alpha_th(thickness_ratio, chord_ratio):
         """
-        Surrogate model based on Roskam data to compute the theoretical 2D control surface 
+        Surrogate model based on Roskam data to compute the theoretical 2D control surface
         hinge moment derivative due to AOA (figure 10.63).
 
         :param thickness_ratio: airfoil thickness ratio.
@@ -1010,8 +1010,8 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def k_ch_delta(thickness_ratio, airfoil_lift_coefficient, chord_ratio):
         """
-        Surrogate model based on Roskam data to compute the correction factor to differentiate 
-        the 2D control surface hinge moment derivative due to control surface deflection from 
+        Surrogate model based on Roskam data to compute the correction factor to differentiate
+        the 2D control surface hinge moment derivative due to control surface deflection from
         the reference (figure 10.69 a).
 
         :param thickness_ratio: airfoil thickness ratio.
@@ -1064,7 +1064,7 @@ class FigureDigitization(om.ExplicitComponent):
     @functools.lru_cache(maxsize=128)
     def ch_delta_th(thickness_ratio, chord_ratio):
         """
-        Surrogate model based on Roskam data to compute the theoretical 2D control surface hinge 
+        Surrogate model based on Roskam data to compute the theoretical 2D control surface hinge
         moment derivative due to control surface deflection (figure 10.69 b).
 
         :param thickness_ratio: airfoil thickness ratio.
@@ -1099,7 +1099,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def k_fus(root_quarter_chord_position_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the empirical pitching moment factor 
+        Surrogate model based on Roskam data to estimate the empirical pitching moment factor
         K_fus (figure 16.14).
 
         :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
@@ -1254,7 +1254,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_fuselage_correction(swept_aspect_ratio, lf_to_b_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the fuselage correction factor. 
+        Surrogate model based on Roskam data to estimate the fuselage correction factor.
         (figure 10.22)
 
         :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
@@ -1435,7 +1435,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_dihedral_compressibility_correction(swept_aspect_ratio, swept_mach) -> float:
         """
-        Surrogate model based on Roskam data to estimate the compressibility correction for 
+        Surrogate model based on Roskam data to estimate the compressibility correction for
         the dihedral angle. (figure 10.25)
 
         :param swept_aspect_ratio: the aspect ratio of the lifting surface divided by cos(sweep_50)
@@ -1474,7 +1474,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_beta_twist_correction(taper_ratio, aspect_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the correction due to the twist of 
+        Surrogate model based on Roskam data to estimate the correction due to the twist of
         the lifting surface. (figure 10.26)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1600,7 +1600,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_p_cdi_roll_damping(sweep_25, aspect_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the contribution to the roll moment damping 
+        Surrogate model based on Roskam data to estimate the contribution to the roll moment damping
         of the drag-due-to-lift (figure 10.36)
 
         :param sweep_25: the sweep angle at 25% of the chord of the lifting surface
@@ -1809,7 +1809,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cl_r_twist_effect(taper_ratio, aspect_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the contribution to the roll moment 
+        Surrogate model based on Roskam data to estimate the contribution to the roll moment
         coefficient of the twist. (figure 10.42)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -1946,7 +1946,7 @@ class FigureDigitization(om.ExplicitComponent):
     @staticmethod
     def cn_p_twist_contribution(taper_ratio, aspect_ratio) -> float:
         """
-        Surrogate model based on Roskam data to estimate the contribution to the yaw moment of 
+        Surrogate model based on Roskam data to estimate the contribution to the yaw moment of
         the twist of the lifting surface. (figure 10.37)
 
         :param taper_ratio: the taper ratio of the lifting surface
@@ -2148,7 +2148,7 @@ class FigureDigitization(om.ExplicitComponent):
 @functools.lru_cache(maxsize=128)
 def _k_p(taper_ratio, eta):
     """
-    Model based on Roskam data to account for the partial span flaps factor on the pitch 
+    Model based on Roskam data to account for the partial span flaps factor on the pitch
     moment coefficient (figure 8.105).
 
     :param taper_ratio: lifting surface taper ratio.
