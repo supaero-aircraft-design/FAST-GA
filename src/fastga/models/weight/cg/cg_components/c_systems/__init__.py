@@ -15,4 +15,4 @@ from .c1_electric_power_systems_cg import ComputeElectricPowerSystemCG
 from .c2_life_support_systems_cg import ComputeLifeSupportCG
 from .c3_navigation_systems_cg import ComputeNavigationSystemsCG
 from .c4_recording_systems_cg import ComputeRecordingSystemsCG
-from .c5_hydraulic_power_systems_cg import ComputeHydraulicPowerSystemCG
+from .c1_hydraulic_power_systems_cg import ComputeHydraulicPowerSystemCG
