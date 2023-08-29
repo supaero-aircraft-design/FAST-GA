@@ -12,6 +12,7 @@ def feedback_extractor(
     import functools
     import os
     import json
+    import copy
 
     # definition of the function to output an n2-ordered list of all the variables in the problem
     # The dictionary is actually an alternation of lists of dicts where each dict has the key 'children', which contains a list of dicts, and so on
@@ -98,13 +99,13 @@ def feedback_extractor(
     def run_once(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            if not os.path.exists("tmp_saved_single_module_timings.txt"):
+            if not os.path.exists("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt"):
                 result = func(*args, **kwargs)
-                with open("tmp_saved_single_module_timings.txt", "w") as f:
+                with open("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt", "w") as f:
                     f.write(json.dumps(result))
                 return result
             else:
-                with open("tmp_saved_single_module_timings.txt", "r") as f:
+                with open("src/fastga/command/module_sequencing_optimizer/data/tmp_saved_single_module_timings.txt", "r") as f:
                     result = json.load(f)
                 return result
 
@@ -146,6 +147,8 @@ def feedback_extractor(
         modules_times = total_time_of_modules(score_criteria, WORK_FOLDER_PATH)
 
         # find how many times they run
+        #print("FOR DEBUG: result list is ", result_list)
+
         modules_in_feedback = extract_module(result_list)
         keys_order = orig_list_of_keys
         # print("FOR DEBUG: keys order is ", keys_order)
