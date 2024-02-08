@@ -457,6 +457,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         output_file_list = [
             pth.join(target_directory, INPUT_WING_SCRIPT.replace(".vspscript", "_DegenGeom.csv"))
         ]
+
+        # This requires the installation of pyparsing and consequently adding it to the
+        # pyproject.toml, we may be able to do without it (TO-DO ?).
         parser = InputFileGenerator()
         with path(local_resources, INPUT_WING_SCRIPT) as input_template_path:
             parser.set_template_file(str(input_template_path))
