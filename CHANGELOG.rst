@@ -2,6 +2,11 @@
 Changelog
 =========
 
+Version 1.2.2
+==================
+
+- Update release process by @florentLutz
+
 Version 1.2.1
 ==================
 
