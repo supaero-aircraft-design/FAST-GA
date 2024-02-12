@@ -2,6 +2,13 @@
 Changelog
 =========
 
+Version 1.2.1
+==================
+
+- Now using Poetry 1.4.2 #205 by @florentLutz
+- Allowing new version of stdatm #206 by @florentLutz. It is not made use of just yet in this repo
+- Bug correction to allow compatibility with recent package update #211 by @florentLutz. Some features we used were not compatible with new package version so some slight changes were made.
+
 Version 1.2.0
 ==================
 
