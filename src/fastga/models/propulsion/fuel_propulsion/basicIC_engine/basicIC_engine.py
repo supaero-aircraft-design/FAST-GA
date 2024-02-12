@@ -106,7 +106,7 @@ class BasicICEngine(AbstractFuelPropulsion):
             self.map_file_path = pth.join(resources.__path__[0], "FourCylindersAtmospheric.csv")
         self.prop_layout = prop_layout
         self.max_power = max_power
-        self.cruise_altitude_propeller = cruise_altitude_propeller
+        self.cruise_altitude_propeller = np.array(cruise_altitude_propeller).item()
         self.fuel_type = fuel_type
         self.strokes_nb = strokes_nb
         self.idle_thrust_rate = 0.01
@@ -444,7 +444,7 @@ class BasicICEngine(AbstractFuelPropulsion):
             upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
-                altitude, [0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
+                altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
             )
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))

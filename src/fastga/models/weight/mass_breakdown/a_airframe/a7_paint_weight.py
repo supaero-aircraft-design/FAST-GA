@@ -25,7 +25,7 @@ oad.RegisterSubmodel.active_models[
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
-class ComputeNoPaintWeight(om.IndepVarComp):
+class ComputeNoPaintWeight(om.ExplicitComponent):
     """
     Paint weight estimation.
 
@@ -47,7 +47,7 @@ class ComputeNoPaintWeight(om.IndepVarComp):
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
-class ComputePaintWeight(om.IndepVarComp):
+class ComputePaintWeight(om.ExplicitComponent):
     """
     Paint weight estimation.
 
