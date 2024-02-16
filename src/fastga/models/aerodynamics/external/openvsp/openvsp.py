@@ -174,7 +174,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coeff_k_htp parameters.
         """
-        #initialize
+        # initialize
         results = [None] * 16
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
@@ -205,20 +205,22 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
-            
+
             wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing")
             # Compute complete aircraft @ 0°/X° angle of attack
-            
-            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt = "ac")
-            
-            _, htp_aoa, _ = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt = "ac")
+
+            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="ac")
+
+            _, htp_aoa, _ = self.compute_ac(
+                inputs, outputs, altitude, mach, aoa_angle, comp_opt="ac"
+            )
 
             # Compute isolated HTP @ 0°/X° angle of attack
-            
-            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt = "htp")
-            
+
+            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="htp")
+
             htp_aoa_isolated = self.compute_ac(
-                inputs, outputs, altitude, mach, aoa_angle, comp_opt = "htp"
+                inputs, outputs, altitude, mach, aoa_angle, comp_opt="htp"
             )
 
             # Post-process wing data ---------------------------------------------------------------
@@ -270,10 +272,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     y_vector_htp,
                     cl_vector_htp,
                     coeff_k_htp,
-                    s_ref_wing
+                    s_ref_wing,
                 ]
                 self.save_results(result_file_path, results)
-                
+
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
             # Read values from result file ---------------------------------------------------------
@@ -332,7 +334,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
         sweep_25_htp = inputs["data:geometry:horizontal_tail:sweep_25"]
         semi_span_htp = inputs["data:geometry:horizontal_tail:span"] / 2.0
-        span_htp = inputs["data:geometry:horizontal_tail:span"]/ 2.0  # full span? half span for htp?
+        span_htp = (
+            inputs["data:geometry:horizontal_tail:span"] / 2.0
+        )  # full span? half span for htp?
         root_chord_htp = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord_htp = inputs["data:geometry:horizontal_tail:tip:chord"]
         lp_htp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -650,7 +654,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 parser.mark_anchor("X_cg")
                 parser.transfer_var(float(fa_length), 0, 3)
                 reynolds = reynolds_wing
-            
+
             parser.mark_anchor("Mach")
             parser.transfer_var(float(mach), 0, 3)
             parser.mark_anchor("AOA")
@@ -765,7 +769,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "cm": cm_htp,
                 "coeff_e": htp_e,
             }
-            output_result=htp
+            output_result = htp
         elif comp_opt == "ac":
             # Open .lod file and extract data
             wing_y_vect = []
@@ -847,14 +851,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 "cdi": aircraft_cdi,
                 "coeff_e": aircraft_e,
             }
-            output_result=wing, htp, aircraft
-        
+            output_result = wing, htp, aircraft
+
         return output_result
 
     @staticmethod
     def search_results(result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
-        result_file_path = None 
+        result_file_path = None
         saved_area_ratio = 1.0
         if os.path.exists(result_folder_path):
             geometry_set_labels = [
@@ -1071,7 +1075,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp = float(htp_0["cl"])
         cl_aoa_htp = float(htp_aoa["cl"])
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2 #area ratio missing ?
+        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2  # area ratio missing ?
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
@@ -1113,9 +1117,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         # longer
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-            y_vector_wing = _add_zeros(y_vector_wing,additional_zeros)
-            cl_vector_wing = _add_zeros(cl_vector_wing,additional_zeros)
-            chord_vector_wing = _add_zeros(chord_vector_wing,additional_zeros)
+            y_vector_wing = _add_zeros(y_vector_wing, additional_zeros)
+            cl_vector_wing = _add_zeros(cl_vector_wing, additional_zeros)
+            chord_vector_wing = _add_zeros(chord_vector_wing, additional_zeros)
 
         return y_vector_wing, cl_vector_wing, chord_vector_wing
 
@@ -1137,8 +1141,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-            y_vector_htp = _add_zeros(y_vector_htp,additional_zeros)
-            cl_vector_htp = _add_zeros(cl_vector_htp,additional_zeros)
+            y_vector_htp = _add_zeros(y_vector_htp, additional_zeros)
+            cl_vector_htp = _add_zeros(cl_vector_htp, additional_zeros)
 
         return y_vector_htp, cl_vector_htp
 
@@ -1198,7 +1202,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             y_vector_htp,
             cl_vector_htp,
             coeff_k_htp,
-            s_ref_wing
+            s_ref_wing,
         )
 
 
@@ -1669,12 +1673,14 @@ def generate_wing_rotor_file(engine_count: int):
 
     return rotor_template_file_name
 
+
 @nb.njit
 def _add_zeros_nb(arr, zeros):
     arr = nb.typed.List(arr)
     zeros = nb.typed.List(zeros)
     arr.extend(zeros)
     return arr
+
 
 @nb.njit
 def _add_zeros(arr, zeros):

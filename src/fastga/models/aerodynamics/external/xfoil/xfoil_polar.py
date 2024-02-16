@@ -22,7 +22,7 @@ from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Tuple
-import numba 
+import numba
 import numpy as np
 import pandas as pd
 
@@ -140,7 +140,7 @@ class XfoilPolar(ExternalCodeComp):
         # Get inputs and initialise outputs
         mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
         reynolds = round(float(inputs["xfoil:reynolds"]))
-        
+
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
         no_file = True
@@ -237,7 +237,7 @@ class XfoilPolar(ExternalCodeComp):
                     )
 
         else:
-            # adjust the interpolated results size for outher model use
+            # adjust the interpolated results size for other model use
             (
                 alpha,
                 cl,
@@ -586,7 +586,7 @@ class XfoilPolar(ExternalCodeComp):
         reynolds_vect = np.array(
             [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
         )
-        
+
         index_reynolds = index_mach[np.where(reynolds_vect == reynolds)]
         if len(index_reynolds) == 1:
             interpolated_result = data_reduced.loc[labels, index_reynolds]
@@ -595,12 +595,8 @@ class XfoilPolar(ExternalCodeComp):
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-                index_lower_reynolds = index_mach[
-                    np.where(reynolds_vect == max(lower_reynolds))[0]
-                ]
-                index_upper_reynolds = index_mach[
-                    np.where(reynolds_vect == min(upper_reynolds))[0]
-                ]
+                index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
+                index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
                 lower_values = data_reduced.loc[labels, index_lower_reynolds]
                 upper_values = data_reduced.loc[labels, index_upper_reynolds]
                 # Initialise values with lower reynolds
@@ -621,27 +617,37 @@ class XfoilPolar(ExternalCodeComp):
                     .tolist()
                 )
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
-                interpolated_result.loc["alpha", index_lower_reynolds] = str(
-                    alpha_shared.tolist()
-                )
-                                
+                interpolated_result.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
+
                 labels.remove("alpha")
-                
+
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0]).astype(np.float64).ravel()
-                    upper_value = string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0]).astype(np.float64).ravel()
+                    lower_value = (
+                        string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
+                        .astype(np.float64)
+                        .ravel()
+                    )
+                    upper_value = (
+                        string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
+                        .astype(np.float64)
+                        .ravel()
+                    )
 
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
                     if np.size(lower_value) == len(alpha_lower):
                         lower_value = np.interp(
-                            alpha_shared, np.array(alpha_lower), lower_value,
+                            alpha_shared,
+                            np.array(alpha_lower),
+                            lower_value,
                         )
                         upper_value = np.interp(
-                            alpha_shared, np.array(alpha_upper), upper_value,
+                            alpha_shared,
+                            np.array(alpha_upper),
+                            upper_value,
                         )
-                        
+
                     value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
         return interpolated_result
@@ -668,7 +674,7 @@ class XfoilPolar(ExternalCodeComp):
             "resources",
             self.options["airfoil_file"].replace(".af", naming) + ".csv",
         )
-        
+
         return result_file
 
     def post_processing_fill_value(self, result_array_p, result_array_n):
@@ -865,13 +871,13 @@ class XfoilPolar(ExternalCodeComp):
             _array_: length-modified aerodynamic characteristic array
         """
         # Extract results
-        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].to_numpy()[0]).ravel()
-        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].to_numpy()[0]).ravel()
-        ALPHA = string_to_array(interpolated_result.loc["alpha", :].to_numpy()[0]).ravel()
-        CL = string_to_array(interpolated_result.loc["cl", :].to_numpy()[0]).ravel()
-        CD = string_to_array(interpolated_result.loc["cd", :].to_numpy()[0]).ravel()
-        CDP = string_to_array(interpolated_result.loc["cdp", :].to_numpy()[0]).ravel()
-        CM = string_to_array(interpolated_result.loc["cm", :].to_numpy()[0]).ravel()
+        cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].values[0])
+        cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].values[0])
+        ALPHA = string_to_array(interpolated_result.loc["alpha", :].values[0])
+        CL = string_to_array(interpolated_result.loc["cl", :].values[0])
+        CD = string_to_array(interpolated_result.loc["cd", :].values[0])
+        CDP = string_to_array(interpolated_result.loc["cdp", :].values[0])
+        CM = string_to_array(interpolated_result.loc["cm", :].values[0])
         cd_min_2d = np.min(CD)
         # Modify vector length if necessary
         if POLAR_POINT_COUNT < len(ALPHA):
@@ -936,13 +942,13 @@ class XfoilPolar(ExternalCodeComp):
             stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
             shutil.move(self.stderr, stderr_file_path)
 
+
 @numba.jit
 def string_to_array(arr):
-  return np.array(arr.strip('[]').split(','), dtype=np.float)
+    return np.array(arr.strip("[]").split(","), dtype=float)
 
 
 def add_zeros(arr):
     arr = np.asarray(arr)
     zeros = np.zeros(POLAR_POINT_COUNT - len(arr))
     return np.append(arr, zeros)
-  

@@ -26,11 +26,11 @@ XML_FILE = "partenavia_p68.xml"
 SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
 
 
-#@pytest.mark.skipif(
+# @pytest.mark.skipif(
 #    system() != "Windows" or SKIP_STEPS,
 #    reason="No XFOIL executable available: VLM basic function not computed with "
 #    "empty result folder (or skipped)",
-#)
+# )
 def test_openvsp_comp_low_speed():
     """Tests vlm components @ low speed."""
     y_vector_wing = np.array(

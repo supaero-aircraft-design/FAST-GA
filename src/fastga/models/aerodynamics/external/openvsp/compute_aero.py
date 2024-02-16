@@ -43,6 +43,7 @@ class ComputeAEROopenvsp(Group):
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+
     def setup(self):
         self.add_subsystem(
             "comp_unit_reynolds",
@@ -59,7 +60,7 @@ class ComputeAEROopenvsp(Group):
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
-                input_angle_of_attack = self.options["input_angle_of_attack"],
+                input_angle_of_attack=self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
@@ -71,7 +72,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
-        
+
     def setup(self):
         super().setup()
         if self.options["low_speed_aero"]:
@@ -168,7 +169,7 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-            s_ref_wing
+            s_ref_wing,
         ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, INPUT_AOA)
 
         if not self.options["low_speed_aero"] and self.options["compute_mach_interpolation"]:

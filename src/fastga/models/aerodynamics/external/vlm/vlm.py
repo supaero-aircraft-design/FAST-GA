@@ -58,7 +58,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-        
 
     def setup(self):
 
@@ -223,21 +222,21 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )
 
         # output initilaization
-        cl_0_wing=[]
-        cl_x_wing=[]
-        cl_alpha_wing=[]
-        cm_0_wing=[]
-        y_vector_wing=[]
-        cl_vector_wing=[]
-        chord_vector_wing=[]
-        coef_k_wing=[]
-        cl_0_htp=[]
-        cl_aoa_htp=[]
-        cl_alpha_htp=[]
-        cl_alpha_htp_isolated=[]
-        y_vector_htp=[]
-        cl_vector_htp=[]
-        coef_k_htp=[]
+        cl_0_wing = []
+        cl_x_wing = []
+        cl_alpha_wing = []
+        cm_0_wing = []
+        y_vector_wing = []
+        cl_vector_wing = []
+        chord_vector_wing = []
+        coef_k_wing = []
+        cl_0_htp = []
+        cl_aoa_htp = []
+        cl_alpha_htp = []
+        cl_alpha_htp_isolated = []
+        y_vector_htp = []
+        cl_vector_htp = []
+        coef_k_htp = []
         # Search if results already exist:
         result_folder_path = self.options["result_folder_path"]
         result_file_path = None
@@ -280,8 +279,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             # Compute isolated HTP @ 0°/X° angle of attack
             if comp_opt == "ac" or comp_opt == "htp":
                 htp_0_isolated = self.compute_htp(inputs, altitude, mach, 0.0, use_airfoil=True)
-                htp_aoa_isolated = self.compute_htp(inputs, altitude, mach, aoa_angle, use_airfoil=True)
-                
+                htp_aoa_isolated = self.compute_htp(
+                    inputs, altitude, mach, aoa_angle, use_airfoil=True
+                )
+
             # Post-process wing data ---------------------------------------------------------------
             if comp_opt == "ac" or comp_opt == "wing":
                 (
@@ -429,7 +430,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Generate geometries
-        self._run(inputs,run_opt="wing")
+        self._run(inputs, run_opt="wing")
 
         # Get inputs
         aspect_ratio = float(inputs["data:geometry:wing:aspect_ratio"])
@@ -467,7 +468,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alphaind = np.dot(aic_wake, gamma) / v_inf
         cdind_panel = c_p * alphaind
         cdi_wing = np.sum(cdind_panel * panelsurf) / panelsurf_sum
-        wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955  
+        wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955
         cmpanel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - meanchord / 4))
         cm_wing = np.sum(cmpanel * panelsurf) / panelsurf_sum
 
@@ -523,7 +524,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
 
         # Generate geometries
-        self._run(inputs,run_opt="htp")
+        self._run(inputs, run_opt="htp")
 
         # Get inputs
         aspect_ratio = float(inputs["data:geometry:horizontal_tail:aspect_ratio"])
@@ -548,7 +549,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # Calculate all the aerodynamic parameters
         panelsurf_sum = np.sum(panelsurf)
         aoa_angle = np.deg2rad(aoa_angle)
-        alpha = np.add(panelangle_vect, aoa_angle) 
+        alpha = np.add(panelangle_vect, aoa_angle)
         gamma = -np.dot(aic_inv, alpha) * v_inf
         c_p = -2 / v_inf * np.divide(gamma, panelchord)
         cl_htp = -np.sum(c_p * panelsurf) / panelsurf_sum
@@ -631,7 +632,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return wing, htp, aircraft
 
-    def _run(self, inputs,run_opt="wing"):
+    def _run(self, inputs, run_opt="wing"):
 
         wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
 
@@ -652,71 +653,71 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # Generate WING
         if run_opt == "wing":
             self.wing = {
-            "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
-            "y_panel": np.zeros(2 * self.n_y + 1),
-            "z": np.zeros(self.n_x + 1),
-            "x_le": np.zeros(2 * self.n_y + 1),
-            "chord": np.zeros(2 * self.n_y + 1),
-            "panel_span": np.zeros(2 * self.n_y),
-            "panel_chord": np.zeros(self.n_x * self.n_y),
-            "panel_surf": np.zeros(self.n_x * self.n_y),
-            "x_c": np.zeros(self.n_x * 2 * self.n_y),
-            "yc": np.zeros(self.n_x * 2 * self.n_y),
-            "x1": np.zeros(self.n_x * 2 * self.n_y),
-            "x2": np.zeros(self.n_x * 2 * self.n_y),
-            "y1": np.zeros(self.n_x * 2 * self.n_y),
-            "y2": np.zeros(self.n_x * 2 * self.n_y),
-            "panel_angle": np.zeros(self.n_x),
-            "panel_angle_vect": np.zeros(self.n_x * self.n_y),
-            "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
-            "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+                "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
+                "y_panel": np.zeros(2 * self.n_y + 1),
+                "z": np.zeros(self.n_x + 1),
+                "x_le": np.zeros(2 * self.n_y + 1),
+                "chord": np.zeros(2 * self.n_y + 1),
+                "panel_span": np.zeros(2 * self.n_y),
+                "panel_chord": np.zeros(self.n_x * self.n_y),
+                "panel_surf": np.zeros(self.n_x * self.n_y),
+                "x_c": np.zeros(self.n_x * 2 * self.n_y),
+                "yc": np.zeros(self.n_x * 2 * self.n_y),
+                "x1": np.zeros(self.n_x * 2 * self.n_y),
+                "x2": np.zeros(self.n_x * 2 * self.n_y),
+                "y1": np.zeros(self.n_x * 2 * self.n_y),
+                "y2": np.zeros(self.n_x * 2 * self.n_y),
+                "panel_angle": np.zeros(self.n_x),
+                "panel_angle_vect": np.zeros(self.n_x * self.n_y),
+                "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+                "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
             }
             self._generate_wing(inputs)
-        
+
         # Generate HTP
         if run_opt == "htp":
-        # Define elements
+            # Define elements
             self.htp = {
-            "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
-            "y_panel": np.zeros(2 * self.n_y + 1),
-            "z": np.zeros(self.n_x + 1),
-            "x_le": np.zeros(2 * self.n_y + 1),
-            "chord": np.zeros(2 * self.n_y + 1),
-            "panel_span": np.zeros(2 * self.n_y),
-            "panel_chord": np.zeros(self.n_x * self.n_y),
-            "panel_surf": np.zeros(self.n_x * self.n_y),
-            "x_c": np.zeros(self.n_x * 2 * self.n_y),
-            "yc": np.zeros(self.n_x * 2 * self.n_y),
-            "x1": np.zeros(self.n_x * 2 * self.n_y),
-            "x2": np.zeros(self.n_x * 2 * self.n_y),
-            "y1": np.zeros(self.n_x * 2 * self.n_y),
-            "y2": np.zeros(self.n_x * 2 * self.n_y),
-            "panel_angle": np.zeros(self.n_x),
-            "panel_angle_vect": np.zeros(self.n_x * self.n_y),
-            "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
-            "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
-        }
+                "x_panel": np.zeros((self.n_x + 1, 2 * self.n_y + 1)),
+                "y_panel": np.zeros(2 * self.n_y + 1),
+                "z": np.zeros(self.n_x + 1),
+                "x_le": np.zeros(2 * self.n_y + 1),
+                "chord": np.zeros(2 * self.n_y + 1),
+                "panel_span": np.zeros(2 * self.n_y),
+                "panel_chord": np.zeros(self.n_x * self.n_y),
+                "panel_surf": np.zeros(self.n_x * self.n_y),
+                "x_c": np.zeros(self.n_x * 2 * self.n_y),
+                "yc": np.zeros(self.n_x * 2 * self.n_y),
+                "x1": np.zeros(self.n_x * 2 * self.n_y),
+                "x2": np.zeros(self.n_x * 2 * self.n_y),
+                "y1": np.zeros(self.n_x * 2 * self.n_y),
+                "y2": np.zeros(self.n_x * 2 * self.n_y),
+                "panel_angle": np.zeros(self.n_x),
+                "panel_angle_vect": np.zeros(self.n_x * self.n_y),
+                "aic": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+                "aic_wake": np.zeros((self.n_x * self.n_y, self.n_x * self.n_y)),
+            }
             self._generate_htp(inputs)
 
     def _generate_wing(self, inputs):
         """Generates the coordinates for VLM calculations and aic matrix of the wing.
-             Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-                | \            and chords 1 and 2 representing a wing segment
-                |  \           that complies with the VLM theory, returns the
-                |   + Pf       points and panels of the mesh:
-          chord1|   |
-                |   |             - Points are given as a list of Np elements,
-                |   |chord2         being Np the number of points of the mesh.
-                +---+
-                |                 - Panels are given as a list of list of NP
-                x 				      elements, each element composed of 4 points,
-                                    where NP is the number of panels of the mesh.
-                x - chordwise
-                    direction    The corner points of each panel are arranged in a
-                y - spanwise     clockwise fashion following this order:
-                    direction
-            x_le array identifies the x-coordinate of Pi and Pf along the span-direction
-        
+           Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
+              | \            and chords 1 and 2 representing a wing segment
+              |  \           that complies with the VLM theory, returns the
+              |   + Pf       points and panels of the mesh:
+        chord1|   |
+              |   |             - Points are given as a list of Np elements,
+              |   |chord2         being Np the number of points of the mesh.
+              +---+
+              |                 - Panels are given as a list of list of NP
+              x 				      elements, each element composed of 4 points,
+                                  where NP is the number of panels of the mesh.
+              x - chordwise
+                  direction    The corner points of each panel are arranged in a
+              y - spanwise     clockwise fashion following this order:
+                  direction
+          x_le array identifies the x-coordinate of Pi and Pf along the span-direction
+
         """
         y2_wing = inputs["data:geometry:wing:root:y"]
         semi_span = inputs["data:geometry:wing:span"] / 2.0
@@ -781,24 +782,24 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def _generate_htp(self, inputs):
         """Generates the coordinates for VLM calculations and AIC matrix of the htp.
-             Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-                | \            and chords 1 and 2 representing a wing segment
-                |  \           that complies with the VLM theory, returns the
-                |   + Pf       points and panels of the mesh:
-          chord1|   |
-                |   |             - Points are given as a list of Np elements,
-                |   |chord2         being Np the number of points of the mesh.
-                +---+
-                |                 - Panels are given as a list of list of NP
-                x 				      elements, each element composed of 4 points,
-                                    where NP is the number of panels of the mesh.
-                x - chordwise
-                    direction    The corner points of each panel are arranged in a
-                y - spanwise     clockwise fashion following this order:
-                    direction
-            x_le array identifies the x-coordinate of Pi and Pf along the span-direction
+           Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
+              | \            and chords 1 and 2 representing a wing segment
+              |  \           that complies with the VLM theory, returns the
+              |   + Pf       points and panels of the mesh:
+        chord1|   |
+              |   |             - Points are given as a list of Np elements,
+              |   |chord2         being Np the number of points of the mesh.
+              +---+
+              |                 - Panels are given as a list of list of NP
+              x 				      elements, each element composed of 4 points,
+                                  where NP is the number of panels of the mesh.
+              x - chordwise
+                  direction    The corner points of each panel are arranged in a
+              y - spanwise     clockwise fashion following this order:
+                  direction
+          x_le array identifies the x-coordinate of Pi and Pf along the span-direction
 
-   
+
         """
         semi_span = inputs["data:geometry:horizontal_tail:span"] / 2.0
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
@@ -890,9 +891,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             n_y,
         )
 
-        
         aic, aic_wake = self.aic_computation(x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y)
-        
+
         # Save data
         dictionary["x_panel"] = x_panel
         dictionary["panel_span"] = panelspan
@@ -970,8 +970,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         z_panel = np.zeros(self.n_x + 1)
         z_panel_no_flaps = copy.deepcopy(self.wing["z"])
-        mask = x_panel[:,0] <= x_start
-        z_panel = z_panel_no_flaps - np.sin(deflection_angle) * (x_panel[:,0] - x_start)
+        mask = x_panel[:, 0] <= x_start
+        z_panel = z_panel_no_flaps - np.sin(deflection_angle) * (x_panel[:, 0] - x_start)
         z_panel[mask] = z_panel_no_flaps[mask]
 
         # At this point z_panel contains the z coordinate of the flapped part of the wing,
@@ -1185,13 +1185,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if mach <= 0.4:
             coef_e = wing_aoa["coef_e"]
         else:
-            coef_e = wing_aoa["coef_e"] * (
-                -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-            )  
+            coef_e = wing_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
         cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
         coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
         # Fuselage correction
-        k_fus = 1 - 2 * (width_max / span_wing) ** 2  
+        k_fus = 1 - 2 * (width_max / span_wing) ** 2
         coef_e = float(coef_e * k_fus)
         coef_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coef_e))
 
@@ -1245,9 +1243,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if mach <= 0.4:
             coef_e = htp_aoa["coef_e"]
         else:
-            coef_e = htp_aoa["coef_e"] * (
-                -0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1
-            )  
+            coef_e = htp_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
         cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
         coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
         y_vector_htp = htp_aoa["y_vector"]
@@ -1337,10 +1333,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-            y_vector_wing = _add_zeros(y_vector_wing,additional_zeros)
-            cl_vector_wing = _add_zeros(cl_vector_wing,additional_zeros)
-            chord_vector_wing = _add_zeros(chord_vector_wing,additional_zeros)
-            
+            y_vector_wing = _add_zeros(y_vector_wing, additional_zeros)
+            cl_vector_wing = _add_zeros(cl_vector_wing, additional_zeros)
+            chord_vector_wing = _add_zeros(chord_vector_wing, additional_zeros)
+
         return (y_vector_wing, cl_vector_wing, chord_vector_wing)
 
     def resize_htp_vector(self, y_vector_htp, cl_vector_htp):
@@ -1360,33 +1356,33 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-            y_vector_htp = _add_zeros(y_vector_htp,additional_zeros)
-            cl_vector_htp = _add_zeros(cl_vector_htp,additional_zeros)
+            y_vector_htp = _add_zeros(y_vector_htp, additional_zeros)
+            cl_vector_htp = _add_zeros(cl_vector_htp, additional_zeros)
         return (y_vector_htp, cl_vector_htp)
-    
+
     def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
         """
-        
+
                 ^
               y |                Points defining the panel
                 |                are named clockwise. A(x_1,y_1), B(x_2,y_2), P(x_c,y_c)
         P3--B---|-----P4         Reference:
         |   |   |     |          John J. Bertin, Russell M. Cummings - Aerodynamics for Engineers
         |   |   |     |          p.394-398
-        T1  |   +--P--T2---->       
+        T1  |   +--P--T2---->
         |   |         |     x
         |   |         |
         P2--A--------P1
-        
-        #The P point is the center point of all the panel, in AIC matrix construction. For each linear 
-         equations in the AIC linear system, each P point of each panel needs is oconsidered (double for loop).  
-        
-        coeff_9 =  
+
+        #The P point is the center point of all the panel, in AIC matrix construction. For each linear
+         equations in the AIC linear system, each P point of each panel needs is oconsidered (double for loop).
+
+        coeff_9 =
         (x_2 - x_1) * (x_c - x_1) + (y_2 - y_1) * (y_c - y_1)
-        -----------------------------------------------------  
+        -----------------------------------------------------
             sqrt[(x_c - x_1)** 2 + (y_c - y_1) ** 2]
 
-        - 
+        -
 
         (x_2 - x_1) * (x_c - x_2) + (y_2 - y_1) * (y_c - y_2)
         -----------------------------------------------------
@@ -1394,20 +1390,20 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
 
         coeff_10 =
-        {1 + (x_c - x_2) / sqrt[(x_c - x_2)** 2 + (y_c - y_2) ** 2]} 
+        {1 + (x_c - x_2) / sqrt[(x_c - x_2)** 2 + (y_c - y_2) ** 2]}
         ------------------------------------------------------------
                                 (y_c - y_2)
 
         -
 
         {1 + (x_c - x_1) / sqrt[(x_c - x_1)** 2 + (y_c - y_1) ** 2]}
-        ------------------------------------------------------------ 
+        ------------------------------------------------------------
                                 (y_2 - y_1)
-        
-        
+
+
         """
         midpoint = len(x_c) // 2
-        
+
         x_c = x_c[:midpoint]
         x_c = np.repeat(x_c[:, np.newaxis], midpoint, axis=1).ravel()
         y_c = y_c[:midpoint]
@@ -1428,9 +1424,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         x_2_l = np.tile(x_2_l, len(x_2_l))
         y_2_l = y_2[midpoint:]
         y_2_l = np.tile(y_2_l, len(y_2_l))
-        
-        
-        
+
         coeff_1_r = x_c - x_1_r
         coeff_2_r = y_c - y_1_r
         coeff_3_r = x_c - x_2_r
@@ -1460,24 +1454,24 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             1 + coeff_1_l / coeff_5_l
         ) / coeff_2_l
         aic_wake = coeff_10_r / (4 * np.pi) + coeff_10_l / (4 * np.pi)
-        aic = coeff_10_l / (4 * np.pi) + coeff_10_r / (4 * np.pi) 
-       
+        aic = coeff_10_l / (4 * np.pi) + coeff_10_r / (4 * np.pi)
+
         # Calculate cross products
         den_r = coeff_1_r * coeff_4_r - coeff_2_r * coeff_3_r
         den_l = coeff_1_l * coeff_4_l - coeff_2_l * coeff_3_l
 
         # Create masks
         mask_r = den_r != 0
-        mask_l = den_l != 0 
-        # Update aic 
+        mask_l = den_l != 0
+        # Update aic
         aic[mask_r] = aic[mask_r] + coeff_9_r[mask_r] / den_r[mask_r] / (4 * np.pi)
         aic[mask_l] = aic[mask_l] + coeff_9_l[mask_l] / den_l[mask_l] / (4 * np.pi)
         # reshape into 2D array for later matrix computation
-        aic = aic.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
-        aic_wake = aic_wake.reshape(int(n_x * n_y),int(n_x * n_y),order='C')
-                
+        aic = aic.reshape(int(n_x * n_y), int(n_x * n_y), order="C")
+        aic_wake = aic_wake.reshape(int(n_x * n_y), int(n_x * n_y), order="C")
+
         return aic, aic_wake
-    
+
     def panel_point_calculation(
         self,
         x_panel,
@@ -1502,9 +1496,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         for i in range(n_x + 1):
             x_panel[i, :] = x_le + chord * i / n_x
-        #x = np.arange(n_x+1)[:, None] / n_x
-        #x_panel = x_le[None, :] + x * chord[None, :]
-        
+        # x = np.arange(n_x+1)[:, None] / n_x
+        # x_panel = x_le[None, :] + x * chord[None, :]
+
         # Calculate panel span with symmetry
         panelspan = y_panel[1:] - y_panel[:-1]
         panelspan[n_y:] = panelspan[:n_y]
@@ -1561,14 +1555,32 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 )
             )
             y_2[n_x * n_y + i * n_y : n_x * n_y + (i + 1) * n_y] = np.concatenate(
-                (np.array([0.0]), y_panel[n_y + 1 : 2 * n_y],)
+                (
+                    np.array([0.0]),
+                    y_panel[n_y + 1 : 2 * n_y],
+                )
             )
         # Calculate remaining characteristic points (Left side)
         # point P for the left-half
         x_c[n_x * n_y :] = x_c[: n_x * n_y]
         y_c[n_x * n_y :] = -y_c[: n_x * n_y]
 
-        return (x_panel, y_panel, x_le, chord, panelchord,panelspan, panelsurf, x_1, y_1, x_2, y_2, x_c, y_c)
+        return (
+            x_panel,
+            y_panel,
+            x_le,
+            chord,
+            panelchord,
+            panelspan,
+            panelsurf,
+            x_1,
+            y_1,
+            x_2,
+            y_2,
+            x_c,
+            y_c,
+        )
+
 
 @nb.njit
 def _add_zeros_nb(arr, zeros):
@@ -1576,6 +1588,7 @@ def _add_zeros_nb(arr, zeros):
     zeros = nb.typed.List(zeros)
     arr.extend(zeros)
     return arr
+
 
 @nb.njit
 def _add_zeros(arr, zeros):
