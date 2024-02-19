@@ -101,11 +101,11 @@ from fastga.models.aerodynamics.components.vt import (
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
     ComputePropellerPerformance,
 )
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.load_factor import LoadFactor
@@ -833,13 +833,13 @@ def compute_aero(
     if use_openvsp:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROopenvsp(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        openvsp_comp = ComputeAEROopenvsp(
+        openvsp_comp = ComputeAeroOpenVSP(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -850,7 +850,7 @@ def compute_aero(
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        openvsp_comp = ComputeAEROopenvsp(
+        openvsp_comp = ComputeAeroOpenVSP(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -861,13 +861,13 @@ def compute_aero(
     else:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROvlm(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        vlm_comp = ComputeAEROvlm(
+        vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -878,7 +878,7 @@ def compute_aero(
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        vlm_comp = ComputeAEROvlm(
+        vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -920,13 +920,13 @@ def comp_aero_input_aoa(
     if use_openvsp:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROopenvsp(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        openvsp_comp = ComputeAEROopenvsp(
+        openvsp_comp = ComputeAeroOpenVSP(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -938,7 +938,7 @@ def comp_aero_input_aoa(
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        openvsp_comp = ComputeAEROopenvsp(
+        openvsp_comp = ComputeAeroOpenVSP(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -950,13 +950,13 @@ def comp_aero_input_aoa(
     else:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROvlm(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        vlm_comp = ComputeAEROvlm(
+        vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
@@ -968,7 +968,7 @@ def comp_aero_input_aoa(
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        vlm_comp = ComputeAEROvlm(
+        vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
             result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,

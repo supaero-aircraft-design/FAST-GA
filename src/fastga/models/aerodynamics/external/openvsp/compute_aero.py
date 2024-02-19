@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
-class ComputeAEROopenvsp(Group):
+class ComputeAeroOpenVSP(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
@@ -52,7 +52,7 @@ class ComputeAEROopenvsp(Group):
         )
         self.add_subsystem(
             "aero_openvsp",
-            _ComputeAEROopenvsp(
+            _ComputeAeroOpenVSP(
                 low_speed_aero=self.options["low_speed_aero"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 result_folder_path=self.options["result_folder_path"],
@@ -66,7 +66,7 @@ class ComputeAEROopenvsp(Group):
         )
 
 
-class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
+class _ComputeAeroOpenVSP(OPENVSPSimpleGeometry):
     def initialize(self):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -139,12 +139,13 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
         pass
 
     def compute(self, inputs, outputs):
-        INPUT_AOA = self.options["input_angle_of_attack"]
+
         _LOGGER.debug("Entering aerodynamic computation")
+        input_aoa = self.options["input_angle_of_attack"]
 
         # Check AOA input is float
-        if not isinstance(INPUT_AOA, float):
-            raise TypeError("INPUT_AOA should be a float!")
+        if not isinstance(input_aoa, float):
+            raise TypeError("Option input_angle_of_attack should be a float!")
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
@@ -170,11 +171,11 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             cl_vector_htp,
             coef_k_htp,
             s_ref_wing,
-        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, INPUT_AOA)
+        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, input_aoa)
 
         if not self.options["low_speed_aero"] and self.options["compute_mach_interpolation"]:
             mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                inputs, outputs, INPUT_AOA, altitude, mach
+                inputs, outputs, input_aoa, altitude, mach
             )
             outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_interp
             outputs[

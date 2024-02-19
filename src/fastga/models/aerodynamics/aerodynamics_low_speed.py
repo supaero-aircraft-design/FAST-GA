@@ -17,13 +17,13 @@ import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvspSubGroup,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
 from .constants import (
     SUBMODEL_CD0,
     SUBMODEL_AIRFOIL_LIFT_SLOPE,
@@ -40,6 +40,8 @@ from .constants import (
     SUBMODEL_CN_BETA,
 )
 
+DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
+
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)
 class AerodynamicsLowSpeed(om.Group):
@@ -55,26 +57,28 @@ class AerodynamicsLowSpeed(om.Group):
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     # noinspection PyTypeChecker
     def setup(self):
         if not self.options["use_openvsp"]:
             self.add_subsystem(
                 "aero_vlm",
-                ComputeAEROvlm(
+                ComputeAeroVLM(
                     low_speed_aero=True,
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
+                    input_angle_of_attack=self.options["input_angle_of_attack"],
                 ),
                 promotes=["*"],
             )
         else:
             self.add_subsystem(
                 "aero_openvsp",
-                ComputeAEROopenvsp(
+                ComputeAeroOpenVSP(
                     low_speed_aero=True,
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
@@ -82,6 +86,7 @@ class AerodynamicsLowSpeed(om.Group):
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
+                    input_angle_of_attack=self.options["input_angle_of_attack"],
                 ),
                 promotes=["*"],
             )
