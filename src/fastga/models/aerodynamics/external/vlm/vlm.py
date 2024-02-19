@@ -23,8 +23,6 @@ import numpy as np
 import openmdao.api as om
 import pandas as pd
 from stdatm import Atmosphere
-import numba as nb
-from numba import njit, prange
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
@@ -1333,11 +1331,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-            y_vector_wing = _add_zeros(y_vector_wing, additional_zeros)
-            cl_vector_wing = _add_zeros(cl_vector_wing, additional_zeros)
-            chord_vector_wing = _add_zeros(chord_vector_wing, additional_zeros)
+            y_vector_wing = y_vector_wing + additional_zeros
+            cl_vector_wing = cl_vector_wing + additional_zeros
+            chord_vector_wing = chord_vector_wing + additional_zeros
 
-        return (y_vector_wing, cl_vector_wing, chord_vector_wing)
+        return y_vector_wing, cl_vector_wing, chord_vector_wing
 
     def resize_htp_vector(self, y_vector_htp, cl_vector_htp):
         """_summary_
@@ -1356,9 +1354,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
         else:
             additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-            y_vector_htp = _add_zeros(y_vector_htp, additional_zeros)
-            cl_vector_htp = _add_zeros(cl_vector_htp, additional_zeros)
-        return (y_vector_htp, cl_vector_htp)
+            y_vector_htp = y_vector_htp + additional_zeros
+            cl_vector_htp = cl_vector_htp + additional_zeros
+
+        return y_vector_htp, cl_vector_htp
 
     def aic_computation(self, x_1, y_1, x_2, y_2, x_c, y_c, aic, aic_wake, n_x, n_y):
         """
@@ -1580,18 +1579,3 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             x_c,
             y_c,
         )
-
-
-@nb.njit
-def _add_zeros_nb(arr, zeros):
-    arr = nb.typed.List(arr)
-    zeros = nb.typed.List(zeros)
-    arr.extend(zeros)
-    return arr
-
-
-@nb.njit
-def _add_zeros(arr, zeros):
-    arr = np.asarray(arr)
-    zeros = np.asarray(zeros)
-    return _add_zeros_nb(arr, zeros)
