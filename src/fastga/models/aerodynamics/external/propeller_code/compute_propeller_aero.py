@@ -231,7 +231,11 @@ class _ComputePropellerPerformance(PropellerCoreModule):
 
         for v_inf in speed_interp:
             self.compute_extreme_pitch(inputs, v_inf)
-            theta_interp = np.linspace(self.theta_min, self.theta_max, 100)
+            # Compute performances for evenly space theta every degree
+            theta_interp = np.append(
+                np.arange(self.theta_min, self.theta_max, 1.0),
+                np.array([self.theta_max]),
+            )
             local_thrust_vect = []
             local_theta_vect = []
             local_eta_vect = []

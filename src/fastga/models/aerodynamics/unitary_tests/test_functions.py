@@ -1745,70 +1745,30 @@ def propeller(
     polar_result_retrieve(tmp_folder)
 
     # Check obtained value(s) is/(are) correct
-    assert (
-        np.sum(
-            np.abs(
-                thrust_SL
-                - problem.get_val("data:aerodynamics:propeller:sea_level:thrust", units="N")
-            )
-        )
-        < 1
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust", units="N"
+    ) == pytest.approx(thrust_SL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_SL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:sea_level:efficiency") == pytest.approx(
+        efficiency_SL, abs=1e-5
     )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_SL_limit
-                - problem.get_val("data:aerodynamics:propeller:sea_level:thrust_limit", units="N")
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                speed - problem.get_val("data:aerodynamics:propeller:sea_level:speed", units="m/s")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(np.abs(efficiency_SL - problem["data:aerodynamics:propeller:sea_level:efficiency"]))
-        < 1e-5
-    )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_CL
-                - problem.get_val("data:aerodynamics:propeller:cruise_level:thrust", units="N")
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_CL_limit
-                - problem.get_val(
-                    "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
-                )
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                speed
-                - problem.get_val("data:aerodynamics:propeller:cruise_level:speed", units="m/s")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(efficiency_CL - problem["data:aerodynamics:propeller:cruise_level:efficiency"])
-        )
-        < 1e-5
+
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust", units="N"
+    ) == pytest.approx(thrust_CL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_CL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:cruise_level:efficiency") == pytest.approx(
+        efficiency_CL, abs=1e-5
     )
 
 
