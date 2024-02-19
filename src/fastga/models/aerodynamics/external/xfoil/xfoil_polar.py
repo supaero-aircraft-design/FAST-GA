@@ -22,6 +22,7 @@ from importlib.resources import path
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import Tuple
+
 import numpy as np
 import pandas as pd
 
@@ -44,7 +45,6 @@ OPTION_ITER_LIMIT = "iter_limit"
 OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
 DEFAULT_2D_CL_MAX = 1.9
 DEFAULT_2D_CL_MIN = -1.7
-DEFAULT_2D_CD_MIN = 0
 ALPHA_STEP = 0.5
 
 _INPUT_FILE_NAME = "polar_session.txt"
@@ -63,8 +63,14 @@ _XFOIL_PATH_LIMIT = 64
 class XfoilPolar(ExternalCodeComp):
     """Runs a polar computation with XFOIL and returns the 2D max lift coefficient."""
 
-    _xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
-    """Column names in XFOIL polar result"""
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # Column names in XFOIL polar result
+        self._xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
+
+        # To avoid opening the csv every iteration
+        self._existing_data = None
 
     def initialize(self):
 
@@ -77,7 +83,7 @@ class XfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_ALPHA_END, default=90.0, types=float)
         self.options.declare(OPTION_ITER_LIMIT, default=100, types=int)
         self.options.declare(OPTION_COMP_NEG_AIR_SYM, default=False, types=bool)
-        self.options.declare("Invicid_calculation", default=False, types=bool)
+        self.options.declare("inviscid_calculation", default=False, types=bool)
         self.options.declare(
             "single_AoA",
             default=False,
@@ -92,13 +98,17 @@ class XfoilPolar(ExternalCodeComp):
         )
 
     def setup(self):
-        """_summary_
+        """
         Set up inputs and outputs required for this operation
         """
+
+        multiple_aoa = not self.options["single_AoA"]
+
         self.add_input("xfoil:mach", val=np.nan)
         self.add_input("xfoil:reynolds", val=np.nan)
-        multiple_AoA = not self.options["single_AoA"]
-        if multiple_AoA:
+
+        if multiple_aoa:
+
             self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
             self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
             self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
@@ -107,7 +117,9 @@ class XfoilPolar(ExternalCodeComp):
             self.add_output("xfoil:CL_max_2D")
             self.add_output("xfoil:CL_min_2D")
             self.add_output("xfoil:CD_min_2D")
+
         else:
+
             self.add_output("xfoil:alpha", units="deg")
             self.add_output("xfoil:CL")
             self.add_output("xfoil:CD")
@@ -122,22 +134,18 @@ class XfoilPolar(ExternalCodeComp):
 
     def compute(self, inputs, outputs):
         """
-        Function that computes airfoil in XFoil environment and returns the different
+        Function that computes airfoil aerodynamics with XFoil and returns the different 2D
         aerodynamic parameters.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
         @param outputs: outputs parameters defined within FAST-OAD-GA
-        @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
-        @param aoa_angle: air speed angle of attack (degree)
-
         """
 
         # Define timeout for the function
         self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
-        mach = round(float(inputs["xfoil:mach"]) * 1e4) / 1e4
+        mach = round(float(inputs["xfoil:mach"]), 4)
         reynolds = round(float(inputs["xfoil:reynolds"]))
 
         # Search if data already stored for this profile and mach with reynolds values bounding
@@ -145,15 +153,15 @@ class XfoilPolar(ExternalCodeComp):
         no_file = True
         data_saved = None
         interpolated_result = None
-        interpolated = False
-        # Modify file type respect to negaive AoA/ inviscod/single AoA options
+
+        # Modify file type respect to negative AoA/inviscid/single AoA options
         result_file = self._define_result_file_path()
-        multiple_AoA = not self.options["single_AoA"]
-        single_AoA = self.options["single_AoA"]
+        multiple_aoa = not self.options["single_AoA"]
+
         if pth.exists(result_file):
             no_file = False
             interpolated_result = self._interpolation_for_exist_data(result_file, mach, reynolds)
-        # reslut_array_p(+AoA), reslut_array_n(-AoA)
+
         if interpolated_result is None:
             (
                 result_array_p,
@@ -162,35 +170,23 @@ class XfoilPolar(ExternalCodeComp):
                 tmp_directory,
                 tmp_result_file_path,
             ) = self._run_xfoil(inputs, outputs, reynolds, mach)
-            if single_AoA:
-                (
-                    alpha,
-                    cl,
-                    cd,
-                    cdp,
-                    cm,
-                    cl_max_2d,
-                    cl_min_2d,
-                    cd_min_2d,
-                    error,
-                ) = self._xfoil_single_aoa_convergence_check(
-                    inputs, outputs, reynolds, mach, result_array_p, result_array_n
-                )
 
-            if multiple_AoA:
-                (
-                    alpha,
-                    cl,
-                    cd,
-                    cdp,
-                    cm,
-                    cl_max_2d,
-                    cl_min_2d,
-                    cd_min_2d,
-                    error,
-                ) = self.post_processing_fill_value(result_array_p, result_array_n)
+            (
+                alpha,
+                cl,
+                cd,
+                cdp,
+                cm,
+                cl_max_2d,
+                cl_min_2d,
+                cd_min_2d,
+                error,
+            ) = self._post_processing_fill_value(result_array_p, result_array_n)
+
+            if multiple_aoa:
+                # We chose not to save the results for now when there is a single AoA
                 # Fix output length if needed
-                alpha, cl, cd, cdp, cm = self._fix_mutiple_aoa_output_length(alpha, cl, cd, cdp, cm)
+                alpha, cl, cd, cdp, cm = self.fix_multiple_aoa_output_length(alpha, cl, cd, cdp, cm)
 
                 # Save results to defined path
                 if not error:
@@ -206,8 +202,8 @@ class XfoilPolar(ExternalCodeComp):
                         data.to_csv(result_file)
                     except:
                         warnings.warn(
-                            "Unable to save XFoil results to *.csv file: writing permission denied for "
-                            "%s folder!" % local_resources.__path__[0]
+                            "Unable to save XFoil results to *.csv file: writing permission denied "
+                            "for %s folder!" % local_resources.__path__[0]
                         )
 
             # Getting output files if needed
@@ -237,6 +233,7 @@ class XfoilPolar(ExternalCodeComp):
 
         else:
             # adjust the interpolated results size for other model use
+
             (
                 alpha,
                 cl,
@@ -248,9 +245,16 @@ class XfoilPolar(ExternalCodeComp):
                 cd_min_2d,
             ) = self._extract_fix_interpolated_result_length(interpolated_result)
 
-        outputs = self._define_outputs(
-            outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
-        )
+        # Defining outputs -------------------------------------------------------------------------
+        outputs["xfoil:alpha"] = alpha
+        outputs["xfoil:CL"] = cl
+        outputs["xfoil:CD"] = cd
+        outputs["xfoil:CDp"] = cdp
+        outputs["xfoil:CM"] = cm
+        if multiple_aoa:
+            outputs["xfoil:CL_max_2D"] = cl_max_2d
+            outputs["xfoil:CL_min_2D"] = cl_min_2d
+            outputs["xfoil:CD_min_2D"] = cd_min_2d
 
     def _write_script_file(
         self,
@@ -262,37 +266,39 @@ class XfoilPolar(ExternalCodeComp):
         alpha_end,
         step,
     ):
-        """_summary_
+        """
         Create command script to run XFoil for obtaining results
 
-        Args:
-            reynolds (_list_): Renold's number
-            mach (_list_): mach number
-            tmp_profile_file_path (_path_): temporary profile path
-            tmp_result_file_path (_path_): temporary result path
-            alpha_start (_float_): starting angle of attack in XFoil caculation
-            alpha_end (_float_): ending angle of attack in XFoil caculation
-            step (_float_): steps between each angle of attack in XFoil calculation
+        :param reynolds: Reynolds number
+        :param mach: Mach number
+        :param tmp_profile_file_path: temporary profile path
+        :param tmp_result_file_path: temporary result path
+        :param alpha_start: starting angle of attack in XFoil calculation
+        :param alpha_end: ending angle of attack in XFoil calculation
+        :param step: step between each angle of attack in XFoil calculation
         """
+
         parser = InputFileGenerator()
-        invicid = self.options["Invicid_calculation"]
-        viscid = not self.options["Invicid_calculation"]
-        single_AoA = self.options["single_AoA"]
+        inviscid = self.options["inviscid_calculation"]
+        single_aoa = self.options["single_AoA"]
+
         # Check the computation options and select different script templates
-        if invicid:
-            _INPUT_FILE_NAME = "polar_session_inv.txt"
-        elif viscid:
-            _INPUT_FILE_NAME = "polar_session.txt"
-        if single_AoA and invicid:
-            _INPUT_FILE_NAME = "polar_session_single_AoA_inv.txt"
-        elif single_AoA:
-            _INPUT_FILE_NAME = "polar_session_single_AoA.txt"
+        if not single_aoa:
+            if inviscid:
+                input_file_name = "polar_session_inv.txt"
+            else:
+                input_file_name = "polar_session.txt"
+        else:
+            if inviscid:
+                input_file_name = "polar_session_single_AoA_inv.txt"
+            else:
+                input_file_name = "polar_session_single_AoA.txt"
 
         # input command to run XFoil
-        with path(local_resources, _INPUT_FILE_NAME) as input_template_path:
+        with path(local_resources, input_file_name) as input_template_path:
             parser.set_template_file(str(input_template_path))
             parser.set_generated_file(self.stdin)
-            if viscid:
+            if not inviscid:
                 parser.mark_anchor("RE")
                 parser.transfer_var(float(reynolds), 1, 1)
             parser.mark_anchor("M")
@@ -300,7 +306,7 @@ class XfoilPolar(ExternalCodeComp):
             parser.mark_anchor("ITER")
             parser.transfer_var(self.options[OPTION_ITER_LIMIT], 1, 1)
 
-            if single_AoA:
+            if single_aoa:
                 parser.mark_anchor("ALFA")
                 parser.transfer_var(alpha_start, 1, 1)
             else:
@@ -316,14 +322,13 @@ class XfoilPolar(ExternalCodeComp):
             parser.transfer_var(tmp_result_file_path, 0, 1)
             parser.generate()
 
-    @staticmethod
-    def _read_polar(xfoil_result_file_path: str) -> np.ndarray:
+    def _read_polar(self, xfoil_result_file_path: str) -> np.ndarray:
         """
         :param xfoil_result_file_path:
         :return: numpy array with XFoil polar results
         """
         if os.path.isfile(xfoil_result_file_path):
-            dtypes = [(name, "f8") for name in XfoilPolar._xfoil_output_names]
+            dtypes = [(name, "f8") for name in self._xfoil_output_names]
             result_array = np.genfromtxt(xfoil_result_file_path, skip_header=12, dtype=dtypes)
             return result_array
 
@@ -395,7 +400,7 @@ class XfoilPolar(ExternalCodeComp):
 
     @staticmethod
     def _create_tmp_directory() -> TemporaryDirectory:
-        """_summary_
+        """
         Dev Note: XFOIL fails if length of provided file path exceeds 64 characters.
         Changing working directory to the tmp dir would allow to just provide file name,
         but it is not really safe (at least, it does mess with the coverage report).
@@ -428,21 +433,15 @@ class XfoilPolar(ExternalCodeComp):
         return tmp_directory
 
     def _run_xfoil(self, inputs, outputs, reynolds, mach):
-        """_summary_
-        Imoprt required list data and XFoil.exe to script and save
-        for exporting the results
-        Args:
-            inputs (_list_): input data list
-            outputs (_list_): ooutput data list
-            reynolds (_list_): reynold's number list
-            mach (_list_): mach number list
+        """
+        Run Xfoil to obtain the 2D aerodynamics of selected airfoil.
 
-        Raises:
-            TimeoutError: _description_
-            TimeoutError: _description_
+        :param inputs: inputs in the OpenMDAO format
+        :param outputs: outputs in the OpenMDAO format
+        :param reynolds: Reynolds number
+        :param mach: Mach number
 
-        Returns:
-            _list_: export data list for postprocessing
+        :return: list of results for post-processing
         """
 
         # Create result folder first (if it must fail, let it fail as soon as possible)
@@ -548,24 +547,25 @@ class XfoilPolar(ExternalCodeComp):
         )
 
     def _interpolation_for_exist_data(self, result_file, mach, reynolds):
-        """_summary_
-        First, check if the existed data list has the exact same reult.
-        Then, use existed Renolds number and mach number to find
-        corresponded existed results for interpolation.
-        With interpolation, the the result can be obtained.
-        Args:
-            result_file (_path_): result data path
-            mach (_list_): existed mach number list
-            reynolds (_list_): existed reynolds umber list
-
-        Returns:
-            _list_: interpolated result list
         """
+        If a result file exist, we then check if the proper Mach number exists. If it does we
+        check if a Reynolds number below and above it exist, in which case we interpolate between
+        the two.
+
+        :return interpolated_result: the interpolated results if they exists, None otherwise.
+        """
+
         interpolated_result = None
-        data_saved = pd.read_csv(result_file)
-        values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
-        labels = data_saved.to_numpy()[:, 0].tolist()
+
+        if self._existing_data is None:
+            self._existing_data = pd.read_csv(result_file)
+
+        # Pre-processing of the dataframe
+        values = self._existing_data.to_numpy()[:, 1 : len(self._existing_data.to_numpy()[0])]
+        labels = self._existing_data.to_numpy()[:, 0].tolist()
         data_saved = pd.DataFrame(values, index=labels)
+
+        # Look for existing mach or one close enough
         saved_mach_list = data_saved.loc["mach", :].to_numpy().astype(float)
         index_near_mach = np.where(abs(saved_mach_list - mach) < 0.03)[0]
         near_mach = []
@@ -581,39 +581,40 @@ class XfoilPolar(ExternalCodeComp):
             selected_mach_index = distance_to_mach.index(min(distance_to_mach))
             index_mach = np.where(saved_mach_list == near_mach[selected_mach_index])[0]
         data_reduced = data_saved.loc[labels, index_mach]
+
         # Search if this exact reynolds has been computed and save results
-        reynolds_vect = np.array(
-            [float(x) for x in list(data_reduced.loc["reynolds", :].to_numpy())]
-        )
+        reynolds_vect = data_reduced.loc["reynolds", :].to_numpy().astype(float)
 
         index_reynolds = index_mach[np.where(reynolds_vect == reynolds)]
         if len(index_reynolds) == 1:
             interpolated_result = data_reduced.loc[labels, index_reynolds]
+
         # Else search for lower/upper Reynolds
         else:
+
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
+
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
+
                 index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
                 index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
                 lower_values = data_reduced.loc[labels, index_lower_reynolds]
                 upper_values = data_reduced.loc[labels, index_upper_reynolds]
+
                 # Initialise values with lower reynolds
                 interpolated_result = lower_values
                 # Calculate reynolds ratio split for linear interpolation
                 x_ratio = (min(upper_reynolds) - reynolds) / (
                     min(upper_reynolds) - max(lower_reynolds)
                 )
+
                 # Search for common alpha range for linear interpolation
-                alpha_lower = (
+                alpha_lower = list(
                     string_to_array(lower_values.loc["alpha", index_lower_reynolds].to_numpy()[0])
-                    .ravel()
-                    .tolist()
                 )
-                alpha_upper = (
+                alpha_upper = list(
                     string_to_array(upper_values.loc["alpha", index_upper_reynolds].to_numpy()[0])
-                    .ravel()
-                    .tolist()
                 )
                 alpha_shared = np.array(list(set(alpha_upper).intersection(alpha_lower)))
                 interpolated_result.loc["alpha", index_lower_reynolds] = str(alpha_shared.tolist())
@@ -622,16 +623,12 @@ class XfoilPolar(ExternalCodeComp):
 
                 # Calculate average values (cd, cl...) with linear interpolation
                 for label in labels:
-                    lower_value = (
-                        string_to_array(lower_values.loc[label, index_lower_reynolds].to_numpy()[0])
-                        .astype(np.float64)
-                        .ravel()
-                    )
-                    upper_value = (
-                        string_to_array(upper_values.loc[label, index_upper_reynolds].to_numpy()[0])
-                        .astype(np.float64)
-                        .ravel()
-                    )
+                    lower_value = string_to_array(
+                        lower_values.loc[label, index_lower_reynolds].to_numpy()[0]
+                    ).astype(float)
+                    upper_value = string_to_array(
+                        upper_values.loc[label, index_upper_reynolds].to_numpy()[0]
+                    ).astype(float)
 
                     # If values relative to alpha vector, performs interpolation with shared
                     # vector
@@ -647,27 +644,39 @@ class XfoilPolar(ExternalCodeComp):
                             upper_value,
                         )
 
-                    value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
+                    value = list(lower_value * x_ratio + upper_value * (1 - x_ratio))
+
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
+
         return interpolated_result
 
     def _define_result_file_path(self):
-        """_summary_
-        rename the file for better underdtanding
-        of the computation options
-        Returns:
-            _path_: result data path
         """
-        negative_angle_badge = ""
-        single_aoa_badge = ""
-        invicid_badge = ""
+        Each computation option (airfoil name, max AOA, single AOA, ...) will lead to unique file
+        name for stored results. We can thus check if results already exists if the file name
+        already exists. This function generate file name corresponding to the computation options.
+
+        :return result_file: path to result file if it exists
+        """
+
+        # Generate tags for the different options
         if self.options[OPTION_COMP_NEG_AIR_SYM]:
-            negative_angle_badge = "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END]))) + "S"
+            negative_angle_tag = "_" + str(int(np.ceil(self.options[OPTION_ALPHA_END]))) + "S"
+        else:
+            negative_angle_tag = ""
+
         if self.options["single_AoA"]:
-            single_aoa_badge = "_S_AOA"
-        if self.options["Invicid_calculation"]:
-            invicid_badge = "_inv"
-        naming = negative_angle_badge + single_aoa_badge + invicid_badge
+            single_aoa_tag = "_1_AOA"
+        else:
+            single_aoa_tag = ""
+
+        if self.options["inviscid_calculation"]:
+            inviscid_tag = "_inv"
+        else:
+            inviscid_tag = ""
+
+        naming = negative_angle_tag + single_aoa_tag + inviscid_tag
+
         result_file = pth.join(
             pth.split(os.path.realpath(__file__))[0],
             "resources",
@@ -676,15 +685,15 @@ class XfoilPolar(ExternalCodeComp):
 
         return result_file
 
-    def post_processing_fill_value(self, result_array_p, result_array_n):
-        """_summary_
-        Filling value after XFoil calculation
-        Args:
-            result_array_p (_array_): results with positive angle of attacks
-            result_array_n (_array_): results with negative angle of attacks
+    def _post_processing_fill_value(self, result_array_p, result_array_n):
+        """
+        Prepare value for post-processing. If positive and negative angle were computed, concatenate
+        results. If only one AOA is required, max and min CL/CD will be empty.
 
-        Returns:
-            _list_: aerodynamic characteristics in different angle of attack
+        :param result_array_p: results with positive angle of attacks
+        :param result_array_n: results with negative angle of attacks
+
+        :return: aerodynamic characteristics of the airfoil
         """
         if self.options["single_AoA"]:
             alpha = result_array_p["alpha"].tolist()
@@ -696,6 +705,7 @@ class XfoilPolar(ExternalCodeComp):
             cl_min_2d = []
             cd_min_2d = []
             error = []
+
         elif self.options[OPTION_COMP_NEG_AIR_SYM]:
             cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
             # noinspection PyUnboundLocalVariable
@@ -716,6 +726,7 @@ class XfoilPolar(ExternalCodeComp):
             cm = result_array_n["CM"].tolist()
             cm.reverse()
             cm.extend(result_array_p["CM"].tolist())
+
         else:
             cl_max_2d, error = self._get_max_cl(result_array_p["alpha"], result_array_p["CL"])
             cl_min_2d, _ = self._get_min_cl(result_array_p["alpha"], result_array_p["CL"])
@@ -728,117 +739,25 @@ class XfoilPolar(ExternalCodeComp):
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, error
 
-    def _xfoil_single_aoa_convergence_check(
-        self, inputs, outputs, reynolds, mach, result_array_p, result_array_n
-    ):
-
-        try:
-            # Post-processing
-            (
-                alpha,
-                cl,
-                cd,
-                cdp,
-                cm,
-                cl_max_2d,
-                cl_min_2d,
-                cd_min_2d,
-                error,
-            ) = self.post_processing_fill_value(result_array_p, result_array_n)
-
-        except:
-            self.options[OPTION_ITER_LIMIT] = 10 * self.options[OPTION_ITER_LIMIT]
-
-            # Rerun XFoil
-            (
-                result_array_p,
-                result_array_n,
-                result_folder_path,
-                tmp_directory,
-                tmp_result_file_path,
-            ) = self._run_xfoil(inputs, outputs, reynolds, mach)
-
-            # Try post processing again
-            try:
-                (
-                    alpha,
-                    cl,
-                    cd,
-                    cdp,
-                    cm,
-                    cl_max_2d,
-                    cl_min_2d,
-                    cd_min_2d,
-                    error,
-                ) = self.post_processing_fill_value(result_array_p, result_array_n)
-            except:
-                # Custom error message
-                print("Error: Xfoil failed to converge, please increase the iteration limit")
-                raise
-        return (
-            alpha,
-            cl,
-            cd,
-            cdp,
-            cm,
-            cl_max_2d,
-            cl_min_2d,
-            cd_min_2d,
-            error,
-        )
-
-    def _define_outputs(
-        self, outputs, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, multiple_AoA
-    ):
-        """_summary_
-        assign output to outputs list
-        Args:
-            outputs (_list_): the output data list needs to be filled
-            alpha (_array_):length-adjusted angle of attack array
-            cl (_array_): length-adjusted lift coefficient array
-            cd (_array_): length-adjusted drag coefficient array
-            cdp (_array_): length-adjusted pressure drag coefficient array
-            cm (_array_): length-adjusted moment coefficient array
-            cl_max_2d (_float_): maximum lift coefficient
-            cl_min_2d (_float_): miniimum lift coefficient
-            cd_min_2d (_float_): miniimum drag coefficient
-            multiple_AoA (_boolean_): multiple angle of attack option
-
-        Returns:
-            _type_: _description_
+    @staticmethod
+    def fix_multiple_aoa_output_length(alpha, cl, cd, cdp, cm):
         """
-        outputs["xfoil:alpha"] = alpha
-        outputs["xfoil:CL"] = cl
-        outputs["xfoil:CD"] = cd
-        outputs["xfoil:CDp"] = cdp
-        outputs["xfoil:CM"] = cm
-        if multiple_AoA:
-            outputs["xfoil:CL_max_2D"] = cl_max_2d
-            outputs["xfoil:CL_min_2D"] = cl_min_2d
-            outputs["xfoil:CD_min_2D"] = cd_min_2d
+        Format the size of results that need to be passed as array to the size declared to
+        OpenMDAO if the original array is bigger we resize it, otherwise we complete with zeros.
+        Used when alpha, cl, cd, cdp and cm are arrays. If inside a dataframe use
+        _extract_fix_interpolated_result_length
 
-        return outputs
+        :param alpha: angle of attach array
+        :param cl: lift coefficient array
+        :param cd: drag coefficient array
+        :param cdp: pressure drag coefficient array
+        :param cm: moment coefficient array
 
-    def _fix_mutiple_aoa_output_length(self, alpha, cl, cd, cdp, cm):
-        """_summary_
-        Fix the length of all results respect to the length of array alpha
-        so that the results will have no error in fast-oad.
-        If the length of result arrays are longer, this function will interpolate
-        value for ALPHA. On the contrary, the extra zero elements is filled in
-        the results array.
-        Args:
-            alpha (_list_): angle of attach list
-            cl (_list_): lift coefficient list
-            cd (_list_): drag coefficient list
-            cdp (_list_): pressure drag coefficient list
-            cm (_list_): moment coefficient list
-
-        Returns:
-            _array_: length-modified aerodynamic characteristic array
+        :return: the input array with the proper size for OpenMDAO
         """
-        shorter = POLAR_POINT_COUNT < len(alpha)
-        # use inerpolation to fill missing values and add zero for values that are out of range
-        if shorter:
+
+        # use interpolation to fill missing values and add zero for values that are out of range
+        if POLAR_POINT_COUNT < len(alpha):
             alpha_interp = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
             cl = np.interp(alpha_interp, alpha, cl)
             cd = np.interp(alpha_interp, alpha, cd)
@@ -847,50 +766,50 @@ class XfoilPolar(ExternalCodeComp):
             alpha = alpha_interp
             warnings.warn("Defined polar point in fast aerodynamics\\constants.py exceeded!")
         else:
-            alpha = add_zeros(alpha)
-            cl = add_zeros(cl)
-            cd = add_zeros(cd)
-            cdp = add_zeros(cdp)
-            cm = add_zeros(cm)
+            filler = np.zeros(POLAR_POINT_COUNT - len(alpha))
+            alpha = np.append(alpha, filler)
+            cl = np.append(cl, filler)
+            cd = np.append(cd, filler)
+            cdp = np.append(cdp, filler)
+            cm = np.append(cm, filler)
 
         return alpha, cl, cd, cdp, cm
 
-    def _extract_fix_interpolated_result_length(self, interpolated_result):
-        """_summary_
-        Fix the length of all results respect to the length of array ALPHA
-        so that the results will have no error in fast-oad.
-        If the length of result arrays are longer, this function will interpolate
-        value for ALPHA. On the contrary, the extra zero elements is filled to make
-        the results array as long as ALPHA.
-
-        Args:
-            interpolated_result (_list_): result dataset with labels and values
-
-        Returns:
-            _array_: length-modified aerodynamic characteristic array
+    @staticmethod
+    def _extract_fix_interpolated_result_length(interpolated_result):
         """
+        Format the size of results that need to be passed as array to the size declared to
+        OpenMDAO if the original array is bigger we resize it, otherwise we complete with zeros.
+
+        :param interpolated_result: result dataset with labels and values
+
+        :return: length-modified aerodynamic characteristic array
+        """
+
         # Extract results
         cl_max_2d = string_to_array(interpolated_result.loc["cl_max_2d", :].values[0])
         cl_min_2d = string_to_array(interpolated_result.loc["cl_min_2d", :].values[0])
-        ALPHA = string_to_array(interpolated_result.loc["alpha", :].values[0])
-        CL = string_to_array(interpolated_result.loc["cl", :].values[0])
-        CD = string_to_array(interpolated_result.loc["cd", :].values[0])
-        CDP = string_to_array(interpolated_result.loc["cdp", :].values[0])
-        CM = string_to_array(interpolated_result.loc["cm", :].values[0])
-        cd_min_2d = np.min(CD)
+        alpha = string_to_array(interpolated_result.loc["alpha", :].values[0])
+        cl = string_to_array(interpolated_result.loc["cl", :].values[0])
+        cd = string_to_array(interpolated_result.loc["cd", :].values[0])
+        cdp = string_to_array(interpolated_result.loc["cdp", :].values[0])
+        cm = string_to_array(interpolated_result.loc["cm", :].values[0])
+        cd_min_2d = np.min(cd)
+
         # Modify vector length if necessary
-        if POLAR_POINT_COUNT < len(ALPHA):
-            alpha = np.linspace(ALPHA[0], ALPHA[-1], POLAR_POINT_COUNT)
-            cl = np.interp(alpha, ALPHA, CL)
-            cd = np.interp(alpha, ALPHA, CD)
-            cdp = np.interp(alpha, ALPHA, CDP)
-            cm = np.interp(alpha, ALPHA, CM)
+        if POLAR_POINT_COUNT < len(alpha):
+            alpha = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
+            cl = np.interp(alpha, alpha, cl)
+            cd = np.interp(alpha, alpha, cd)
+            cdp = np.interp(alpha, alpha, cdp)
+            cm = np.interp(alpha, alpha, cm)
         else:
-            alpha = add_zeros(ALPHA)
-            cl = add_zeros(CL)
-            cd = add_zeros(CD)
-            cdp = add_zeros(CDP)
-            cm = add_zeros(CM)
+            filler = np.zeros(POLAR_POINT_COUNT - len(alpha))
+            alpha = np.append(alpha, filler)
+            cl = np.append(cl, filler)
+            cd = np.append(cd, filler)
+            cdp = np.append(cdp, filler)
+            cm = np.append(cm, filler)
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
 
@@ -898,8 +817,9 @@ class XfoilPolar(ExternalCodeComp):
         self, alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d, mach, reynolds
     ):
         """
-        Five data labes and prepare list for later writing to the file
+        Five data labels and prepare list for later writing to the file
         """
+
         results = [
             np.array(mach),
             np.array(reynolds),
@@ -944,9 +864,3 @@ class XfoilPolar(ExternalCodeComp):
 
 def string_to_array(arr):
     return np.array(arr.strip("[]").split(","), dtype=float)
-
-
-def add_zeros(arr):
-    arr = np.asarray(arr)
-    zeros = np.zeros(POLAR_POINT_COUNT - len(arr))
-    return np.append(arr, zeros)

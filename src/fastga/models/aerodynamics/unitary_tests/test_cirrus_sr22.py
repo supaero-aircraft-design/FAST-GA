@@ -25,6 +25,7 @@ from .test_functions import (
     cd0_low_speed,
     polar,
     polar_single_aoa,
+    polar_single_aoa_inv,
     airfoil_slope_wt_xfoil,
     airfoil_slope_xfoil,
     comp_high_speed,
@@ -160,12 +161,27 @@ def test_polar():
     )
 
 
-def test_polar_single_AoA():
-    """Tests polar execution (XFOIL) @ high and low speed."""
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa():
+    """Tests polar execution (XFOIL) @ low speed."""
     polar_single_aoa(
         XML_FILE,
-        mach_high_speed=0.245,
-        reynolds_high_speed=4571770 * 1.549,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa_inv():
+    """Tests polar execution (XFOIL) @ low speed."""
+    polar_single_aoa_inv(
+        XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
     )

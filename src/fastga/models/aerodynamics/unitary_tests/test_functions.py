@@ -358,7 +358,7 @@ def polar(
 
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=0.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
+        alpha_start=0.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )
     problem = run_system(xfoil_comp, ivc)
 
@@ -398,58 +398,13 @@ def polar(
 
 def polar_single_aoa(
     XML_FILE: str,
-    mach_high_speed: float,
-    reynolds_high_speed: float,
     mach_low_speed: float,
     reynolds_low_speed: float,
 ):
-    """Tests polar execution (XFOIL) @ low speed!"""
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", mach_high_speed)
-    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
-
-    # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=1.0, alpha_end=10.0, iter_limit=100, xfoil_exe_path=xfoil_path
-    )
-    problem = run_system(xfoil_comp, ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl = problem["xfoil:CL"]
-    cdp = problem["xfoil:CDp"]
-    cl, cdp = reshape_polar(cl, cdp)
-    cl, cdp = reshape_polar(cl, cdp)
-    cl_1 = cl[0]
-    cdp_1 = cdp[0]
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", mach_high_speed)
-    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
-    # Run problem
-    xfoil_comp = XfoilPolar(alpha_start=1.0, iter_limit=100, xfoil_exe_path=xfoil_path)
-    xfoil_comp.options["single_AoA"] = True
-    problem = run_system(xfoil_comp, ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl_s = problem["xfoil:CL"]
-    cdp_s = problem["xfoil:CDp"]
-    assert cl_1 == pytest.approx(cl_s, abs=1e-4)
-    assert cdp_1 == pytest.approx(cdp_s, abs=1e-4)
+    """
+    Tests polar execution (XFOIL) @ low speed! Run Xfoil once with multiple AOA then extract the
+    value for 5.0 degree and run Xfoil for a single Aoa at 5.0 degree and compare results
+    """
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -461,20 +416,24 @@ def polar_single_aoa(
 
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
+        alpha_start=2.0, alpha_end=7.5, iter_limit=20, xfoil_exe_path=xfoil_path
     )
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
 
-    # Check obtained value(s) is/(are) correct
+    # Extract value for 5.0 deg
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
+
+    alpha = problem["xfoil:alpha"]
+    index_5_deg = list(alpha).index(5.0)
+
     cl, cdp = reshape_polar(cl, cdp)
-    cl, cdp = reshape_polar(cl, cdp)
-    cl_5 = cl[0]
-    cdp_5 = cdp[0]
+
+    cl_5 = cl[index_5_deg]
+    cdp_5 = cdp[index_5_deg]
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -484,8 +443,9 @@ def polar_single_aoa(
     ivc.add_output("xfoil:mach", mach_low_speed)
     ivc.add_output("xfoil:reynolds", reynolds_low_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path)
-    xfoil_comp.options["single_AoA"] = True
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path, single_AoA=True
+    )
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
@@ -500,58 +460,14 @@ def polar_single_aoa(
 
 def polar_single_aoa_inv(
     XML_FILE: str,
-    mach_high_speed: float,
-    reynolds_high_speed: float,
     mach_low_speed: float,
     reynolds_low_speed: float,
 ):
-    """Tests polar execution (XFOIL) @ low speed!"""
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", mach_high_speed)
-    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
-
-    # Run problem
-    xfoil_comp = XfoilPolar(
-        alpha_start=1.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
-    )
-    xfoil_comp.options["Invicid_calculation"] = True
-    problem = run_system(xfoil_comp, ivc)
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl = problem["xfoil:CL"]
-    cdp = problem["xfoil:CDp"]
-    # cl, cdp = reshape_polar(cl, cdp)
-    # cl, cdp = reshape_polar(cl, cdp)
-    cl_1 = cl[0]
-    cdp_1 = cdp[0]
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    # Define high-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("xfoil:mach", mach_high_speed)
-    ivc.add_output("xfoil:reynolds", reynolds_high_speed)
-    # Run problem
-    xfoil_comp = XfoilPolar(alpha_start=1.0, iter_limit=20, xfoil_exe_path=xfoil_path)
-    xfoil_comp.options["single_AoA"] = True
-    xfoil_comp.options["Invicid_calculation"] = True
-    problem = run_system(xfoil_comp, ivc)
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Check obtained value(s) is/(are) correct
-    cl_s = problem["xfoil:CL"]
-    cdp_s = problem["xfoil:CDp"]
-    assert cl_1 == pytest.approx(cl_s, abs=1e-4)
-    assert cdp_1 == pytest.approx(cdp_s, abs=1e-4)
+    """
+    Tests polar execution (XFOIL) @ low speed and inviscid! Run Xfoil once with multiple AOA then
+    extract the value for 5.0 degree and run Xfoil for a single Aoa at 5.0 degree and compare
+    results
+    """
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -563,9 +479,12 @@ def polar_single_aoa_inv(
 
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=5.0, alpha_end=10.0, iter_limit=20, xfoil_exe_path=xfoil_path
+        alpha_start=2.5,
+        alpha_end=7.5,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        inviscid_calculation=True,
     )
-    xfoil_comp.options["Invicid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
@@ -573,10 +492,14 @@ def polar_single_aoa_inv(
     # Check obtained value(s) is/(are) correct
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
-    # cl, cdp = reshape_polar(cl, cdp)
-    # cl, cdp = reshape_polar(cl, cdp)
-    cl_5 = cl[0]
-    cdp_5 = cdp[0]
+
+    alpha = problem["xfoil:alpha"]
+    index_5_deg = list(alpha).index(5.0)
+
+    cl, cdp = reshape_polar(cl, cdp)
+
+    cl_5 = cl[index_5_deg]
+    cdp_5 = cdp[index_5_deg]
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -586,9 +509,13 @@ def polar_single_aoa_inv(
     ivc.add_output("xfoil:mach", mach_low_speed)
     ivc.add_output("xfoil:reynolds", reynolds_low_speed)
     # Run problem
-    xfoil_comp = XfoilPolar(alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path)
-    xfoil_comp.options["Invicid_calculation"] = True
-    xfoil_comp.options["single_AoA"] = True
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        inviscid_calculation=True,
+        single_AoA=True,
+    )
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder

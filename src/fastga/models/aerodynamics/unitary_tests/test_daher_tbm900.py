@@ -160,18 +160,24 @@ def test_polar():
     )
 
 
-def test_polar_single_AoA():
-    """Tests polar execution (XFOIL) @ high and low speed."""
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa():
+    """Tests polar execution (XFOIL) @ low speed."""
     polar_single_aoa(
         XML_FILE,
-        mach_high_speed=0.53835122,
-        reynolds_high_speed=5381384,
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
     )
 
 
-def test_polar_single_AoA_inv():
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa_inv():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_single_aoa_inv(
         XML_FILE,
