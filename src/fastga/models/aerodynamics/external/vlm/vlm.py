@@ -997,7 +997,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if min(lift_coeff) <= objective <= max(lift_coeff):
             idx_max = int(float(np.where(lift_coeff == max(lift_coeff))[0]))
             return np.interp(objective, lift_coeff[0 : idx_max + 1], drag_coeff[0 : idx_max + 1])
-        elif objective < lift_coeff[0]:
+        if objective < lift_coeff[0]:
             cdp = drag_coeff[0] + (objective - lift_coeff[0]) * (drag_coeff[1] - drag_coeff[0]) / (
                 lift_coeff[1] - lift_coeff[0]
             )
@@ -1530,4 +1530,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
 
 def string_to_array(arr):
+    """
+    To properly saved the results inside the dataframe, arrays must be converted to string, this
+    function does the opposite
+    """
     return np.array(arr.strip("[]").split(","), dtype=float)

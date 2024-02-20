@@ -574,7 +574,7 @@ class XfoilPolar(ExternalCodeComp):
         distance_to_mach = []
         # Check if there is a velocity (Mach) value that is close to this one
         for index in index_near_mach:
-            if not (saved_mach_list[index] in near_mach):
+            if not saved_mach_list[index] in near_mach:
                 near_mach.append(saved_mach_list[index])
                 distance_to_mach.append(abs(saved_mach_list[index] - mach))
         if not near_mach:
@@ -865,4 +865,8 @@ class XfoilPolar(ExternalCodeComp):
 
 
 def string_to_array(arr):
+    """
+    To properly saved the results inside the dataframe, arrays must be converted to string, this
+    function does the opposite
+    """
     return np.array(arr.strip("[]").split(","), dtype=float)

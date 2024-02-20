@@ -720,7 +720,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             htp_cm_vect = []
             with open(output_file_list[0], "r") as lf:
                 data = lf.readlines()
-                for i in range(len(data)):
+                for i, _ in enumerate(data):
                     line = data[i].split()
                     line.append("**")
                     if line[0] == "1":
@@ -744,7 +744,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 data = lf.readlines()
                 htp_e = float(data[1].split()[10])
             # Delete temporary directory
-            if not (self.options["openvsp_exe_path"]):
+            if not self.options["openvsp_exe_path"]:
                 # noinspection PyUnboundLocalVariable
                 tmp_directory.cleanup()
             # Return values
@@ -1648,4 +1648,8 @@ def generate_wing_rotor_file(engine_count: int):
 
 
 def string_to_array(arr):
+    """
+    To properly saved the results inside the dataframe, arrays must be converted to string, this
+    function does the opposite
+    """
     return np.array(arr.strip("[]").split(","), dtype=float)
