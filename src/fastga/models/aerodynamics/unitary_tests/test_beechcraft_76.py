@@ -25,6 +25,7 @@ from .test_functions import (
     cd0_low_speed,
     polar,
     polar_single_aoa,
+    polar_interpolation,
     polar_single_aoa_inv,
     polar_ext_folder_inv,
     airfoil_slope_wt_xfoil,
@@ -173,6 +174,17 @@ def test_polar_single_aoa():
         XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or False,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_interpolation():
+    """Tests polar execution interpolation (XFOIL)."""
+    polar_interpolation(
+        mach=0.1179,
     )
 
 

@@ -69,9 +69,6 @@ class XfoilPolar(ExternalCodeComp):
         # Column names in XFOIL polar result
         self._xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
 
-        # To avoid opening the csv every iteration
-        self._existing_data = None
-
     def initialize(self):
 
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
@@ -160,7 +157,9 @@ class XfoilPolar(ExternalCodeComp):
 
         if pth.exists(result_file):
             no_file = False
-            interpolated_result = self._interpolation_for_exist_data(result_file, mach, reynolds)
+            interpolated_result, data_saved = self._interpolation_for_exist_data(
+                result_file, mach, reynolds
+            )
 
         if interpolated_result is None:
             (
@@ -546,23 +545,26 @@ class XfoilPolar(ExternalCodeComp):
             tmp_result_file_path,
         )
 
-    def _interpolation_for_exist_data(self, result_file, mach, reynolds):
+    @staticmethod
+    def _interpolation_for_exist_data(result_file, mach, reynolds):
         """
         If a result file exist, we then check if the proper Mach number exists. If it does we
         check if a Reynolds number below and above it exist, in which case we interpolate between
-        the two.
+        the two. Even if interpolated results can't be obtained (Reynold too low or too high),
+        if we enter this function, it means the corresponding airfoil exists ad the Xfoil run we
+        are about to do should be added to the existing results.
 
         :return interpolated_result: the interpolated results if they exists, None otherwise.
+        :return data_saved: existing results
         """
 
         interpolated_result = None
 
-        if self._existing_data is None:
-            self._existing_data = pd.read_csv(result_file)
+        data_saved = pd.read_csv(result_file)
 
         # Pre-processing of the dataframe
-        values = self._existing_data.to_numpy()[:, 1 : len(self._existing_data.to_numpy()[0])]
-        labels = self._existing_data.to_numpy()[:, 0].tolist()
+        values = data_saved.to_numpy()[:, 1 : len(data_saved.to_numpy()[0])]
+        labels = data_saved.to_numpy()[:, 0].tolist()
         data_saved = pd.DataFrame(values, index=labels)
 
         # Look for existing mach or one close enough
@@ -648,7 +650,7 @@ class XfoilPolar(ExternalCodeComp):
 
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
 
-        return interpolated_result
+        return interpolated_result, data_saved
 
     def _define_result_file_path(self):
         """

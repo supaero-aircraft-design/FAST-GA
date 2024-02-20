@@ -26,6 +26,8 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
+import openmdao.api as om
+
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
@@ -394,6 +396,54 @@ def polar(
     assert problem["xfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
+
+
+def polar_interpolation(mach: float):
+    """
+    Tests the interpolation mechanism from XfoilPolar. To do so we will run XfoilPolar twice and
+    then a third time a a Reynolds number in between, it should trigger the interpolation mechanism.
+    """
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 5e6)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=0.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    t1_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t1_end = time.time()
+    t1_duration = t1_end - t1_start
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 7e6)
+    t2_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t2_end = time.time()
+    t2_duration = t2_end - t2_start
+
+    # Run a third time between the two other Reynolds
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 6e6)
+
+    # Run problem
+    t3_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t3_end = time.time()
+    t3_duration = t3_end - t3_start
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    assert t3_duration < (t1_duration + t2_duration) / 2
 
 
 def polar_single_aoa(
