@@ -49,6 +49,13 @@ class ComputePropellerPerformance(om.Group):
             types=list,
         )
         self.options.declare("elements_number", default=20, types=int)
+        self.options.declare(
+            "pitch_step_size",
+            default=1.0,
+            types=float,
+            desc="Fineness between two blade pitch for the construction of the propeller efficiency"
+            "map, in deg",
+        )
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -80,6 +87,7 @@ class ComputePropellerPerformance(om.Group):
                 sections_profile_position_list=self.options["sections_profile_position_list"],
                 sections_profile_name_list=self.options["sections_profile_name_list"],
                 elements_number=self.options["elements_number"],
+                pitch_step_size=self.options["pitch_step_size"],
             ),
             promotes_inputs=["data:*"],
             promotes_outputs=["*"],
@@ -100,6 +108,18 @@ class ComputePropellerPerformance(om.Group):
 
 
 class _ComputePropellerPerformance(PropellerCoreModule):
+    def initialize(self):
+
+        super().initialize()
+
+        self.options.declare(
+            "pitch_step_size",
+            default=1.0,
+            types=float,
+            desc="Fineness between two blade pitch for the construction of the propeller efficiency"
+            "map, in deg",
+        )
+
     def setup(self):
 
         super().setup()
@@ -232,8 +252,9 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         for v_inf in speed_interp:
             self.compute_extreme_pitch(inputs, v_inf)
             # Compute performances for evenly space theta every degree
+            pitch_step_size = self.options["pitch_step_size"]
             theta_interp = np.append(
-                np.arange(self.theta_min, self.theta_max, 1.0),
+                np.arange(self.theta_min, self.theta_max, pitch_step_size),
                 np.array([self.theta_max]),
             )
             local_thrust_vect = []
