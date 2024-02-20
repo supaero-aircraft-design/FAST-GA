@@ -24,7 +24,7 @@ import fastoad.api as oad
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
-from .openvsp import OPENVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
+from .openvsp import OpenVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
 
@@ -124,7 +124,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
         )
 
 
-class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
+class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
     def initialize(self):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
@@ -234,7 +234,7 @@ class _ComputeSlipstreamOpenvsp(OPENVSPSimpleGeometryDP):
         wing_rotor = self.compute_wing_rotor(
             inputs, outputs, altitude, mach, alpha_max, inputs["thrust"], inputs["shaft_power"]
         )
-        wing = self.compute_ac(inputs, outputs, altitude, mach, alpha_max, comp_opt="wing")
+        wing = self.compute_aero(inputs, outputs, altitude, mach, alpha_max, comp_opt="wing")
 
         cl_vector_prop_on = wing_rotor["cl_vector"]
         y_vector_prop_on = wing_rotor["y_vector"]

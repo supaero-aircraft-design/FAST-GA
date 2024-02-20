@@ -16,6 +16,7 @@ import os
 import os.path as pth
 import warnings
 from importlib.resources import path
+
 import numpy as np
 import pandas as pd
 
@@ -45,7 +46,7 @@ VSPSCRIPT_EXE_NAME = "vspscript.exe"
 VSPAERO_EXE_NAME = "vspaero.exe"
 
 
-class OPENVSPSimpleGeometry(ExternalCodeComp):
+class OpenVSPSimpleGeometry(ExternalCodeComp):
     """Execution of OpenVSP for clean surfaces."""
 
     def __init__(self, **kwargs):
@@ -57,10 +58,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
-            "wing_airfoil_file",
-            default=DEFAULT_WING_AIRFOIL,
-            types=str,
-            allow_none=True,
+            "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare(
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
@@ -98,15 +96,11 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input(
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            val=np.nan,
-            units="m",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
         )
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
         self.add_input(
-            "data:geometry:horizontal_tail:MAC:at25percent:x:local",
-            val=np.nan,
-            units="m",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:local", val=np.nan, units="m"
         )
         self.add_input("data:geometry:horizontal_tail:z:from_wingMAC25", val=np.nan, units="m")
 
@@ -203,22 +197,24 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 result_file_path = self.save_geometry(result_folder_path, geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
-            wing_0 = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
+            wing_0 = self.compute_aero(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
+            wing_aoa = self.compute_aero(
+                inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"
+            )
 
-            wing_aoa = self.compute_ac(inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing")
             # Compute complete aircraft @ 0°/X° angle of attack
-
-            _, htp_0, _ = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="ac")
-
-            _, htp_aoa, _ = self.compute_ac(
+            _, htp_0, _ = self.compute_aero(inputs, outputs, altitude, mach, 0.0, comp_opt="ac")
+            _, htp_aoa, _ = self.compute_aero(
                 inputs, outputs, altitude, mach, aoa_angle, comp_opt="ac"
             )
 
+            # Small remark: we could used the full aircraft simulation to get the wing aerodynamic
+            # data because HTP should have a minor impact on the wing characteristics.
+            # Unfortunately, results are a bit different in value and format
+
             # Compute isolated HTP @ 0°/X° angle of attack
-
-            htp_0_isolated = self.compute_ac(inputs, outputs, altitude, mach, 0.0, comp_opt="htp")
-
-            htp_aoa_isolated = self.compute_ac(
+            htp_0_isolated = self.compute_aero(inputs, outputs, altitude, mach, 0.0, comp_opt="htp")
+            htp_aoa_isolated = self.compute_aero(
                 inputs, outputs, altitude, mach, aoa_angle, comp_opt="htp"
             )
 
@@ -249,9 +245,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
             # Resize vectors -----------------------------------------------------------------------
             vector_wing = [y_vector_wing, cl_vector_wing, chord_vector_wing]
-            y_vector_wing, cl_vector_wing, chord_vector_wing = self.resize_wing_vector(vector_wing)
+            y_vector_wing, cl_vector_wing, chord_vector_wing = self.resize_vector(vector_wing)
             vector_htp = [y_vector_htp, cl_vector_htp]
-            y_vector_htp, cl_vector_htp = self.resize_htp_vector(vector_htp)
+            y_vector_htp, cl_vector_htp = self.resize_vector(vector_htp)
 
             # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
@@ -282,18 +278,20 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             results = self.assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing)
         return results
 
-    def compute_ac(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
+    def compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
         """
-        Function that computes in OpenVSP environment the wing, horizontal stablizer(htp), and complete aircraft (considering wing and
-        horizontal tail plan) and returns the different aerodynamic parameters. The downwash is
-        done by OpenVSP considering far field.
+        Function that computes in OpenVSP environment the wing, horizontal stablizer(htp),
+        and complete aircraft (considering wing and horizontal tail plan) and returns the
+        different aerodynamic parameters. The downwash is done by OpenVSP considering far field.
 
-        @param inputs: inputs parameters defined within FAST-OAD-GA
-        @param outputs: outputs parameters defined within FAST-OAD-GA
-        @param altitude: altitude for aerodynamic calculation in meters
-        @param mach: air speed expressed in mach
-        @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: wing/htp and aircraft dictionaries including their respective aerodynamic
+        :param inputs: inputs parameters defined within FAST-OAD-GA
+        :param outputs: outputs parameters defined within FAST-OAD-GA
+        :param altitude: altitude for aerodynamic calculation in meters
+        :param mach: air speed expressed in mach
+        :param aoa_angle: air speed angle of attack with respect to aircraft
+        :param comp_opt: component to evaluate can be "wing", "htp" or "ac"
+
+        :return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
         output_result = {}
@@ -348,10 +346,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         reynolds_htp = v_inf * l0_htp / atm.kinematic_viscosity
 
         # A/C
-        span_htp_ac = (
-            inputs["data:geometry:horizontal_tail:span"] / 2.0
-        )  # full span? half span for htp?
         distance_htp = fa_length + lp_htp - 0.25 * l0_htp - x0_htp
+
         # STEP 2/XX - DEFINE WORK DIRECTORY, COPY RESOURCES AND CREATE COMMAND BATCH ###############
         ############################################################################################
 
@@ -362,7 +358,9 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         else:
             tmp_directory = _create_tmp_directory()
             target_directory = tmp_directory.name
-        # Define the list of necessary input files: geometry script and foil file for wing, HTP, and aircraft
+
+        # Define the list of necessary input files: geometry script and foil file for wing, HTP,
+        # and aircraft
         if comp_opt == "wing":
             input_file_list = [
                 pth.join(target_directory, INPUT_WING_SCRIPT),
@@ -373,12 +371,14 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 pth.join(target_directory, INPUT_HTP_SCRIPT),
                 pth.join(target_directory, self.options["htp_airfoil_file"]),
             ]
-        elif comp_opt == "ac":
+        else:
+            # When in doubt we compute everything
             input_file_list = [
                 pth.join(target_directory, INPUT_AIRCRAFT_SCRIPT),
                 pth.join(target_directory, self.options["wing_airfoil_file"]),
                 pth.join(target_directory, self.options["htp_airfoil_file"]),
             ]
+
         self.options["external_input_files"] = input_file_list
         # Define standard error file by default to avoid error code return
         self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
@@ -391,9 +391,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             elif comp_opt == "htp":
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
             elif comp_opt == "ac":
-                # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
-                # noinspection PyTypeChecker
                 copy_resource(airfoil_folder, self.options["htp_airfoil_file"], target_directory)
         else:
             if comp_opt == "wing":
@@ -409,18 +407,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                     target_directory,
                 )
             elif comp_opt == "ac":
-                # noinspection PyTypeChecker
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["wing_airfoil_file"],
                     target_directory,
                 )
-                # noinspection PyTypeChecker
                 copy_resource_from_path(
                     self.options["airfoil_folder_path"],
                     self.options["htp_airfoil_file"],
                     target_directory,
                 )
+
         # Create corresponding .bat files (one for each geometry configuration)
         self.options["command"] = [pth.join(target_directory, "vspscript.bat")]
         batch_file = open(self.options["command"][0], "w+")
@@ -440,7 +437,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 + pth.join(target_directory, INPUT_HTP_SCRIPT)
                 + " >nul 2>nul\n"
             )
-        elif comp_opt == "ac":
+        else:
+            # When in doubt we compute everything
             command = (
                 pth.join(target_directory, VSPSCRIPT_EXE_NAME)
                 + " -script "
@@ -527,7 +525,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 csv_name = output_file_list[0]
                 parser.transfer_var('"' + csv_name.replace("\\", "/") + '"', 0, 3)
                 parser.generate()
-        elif comp_opt == "ac":
+        else:
+            # When in doubt we compute everything
             output_file_list = [
                 pth.join(
                     target_directory,
@@ -623,17 +622,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             parser.set_generated_file(input_file_list[1])
             parser.reset_anchor()
 
-            if comp_opt == "wing":
-                parser.mark_anchor("Sref")
-                parser.transfer_var(float(s_ref_wing), 0, 3)
-                parser.mark_anchor("Cref")
-                parser.transfer_var(float(l0_wing), 0, 3)
-                parser.mark_anchor("Bref")
-                parser.transfer_var(float(span_wing), 0, 3)
-                parser.mark_anchor("X_cg")
-                parser.transfer_var(float(fa_length), 0, 3)
-                reynolds = reynolds_wing
-            elif comp_opt == "htp":
+            if comp_opt == "htp":
                 parser.mark_anchor("Sref")
                 parser.transfer_var(float(s_ref_htp), 0, 3)
                 parser.mark_anchor("Cref")
@@ -643,7 +632,8 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
                 parser.mark_anchor("X_cg")
                 parser.transfer_var(float(fa_length + lp_htp), 0, 3)
                 reynolds = reynolds_htp
-            elif comp_opt == "ac":
+            else:
+                # For wing and AC evaluation, same reference length and area
                 parser.mark_anchor("Sref")
                 parser.transfer_var(float(s_ref_wing), 0, 3)
                 parser.mark_anchor("Cref")
@@ -966,17 +956,17 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return pd.DataFrame(values, index=labels)
 
-    def define_geometry(self, inputs, mach):
-        """_summary_
+    @staticmethod
+    def define_geometry(inputs, mach):
+        """
+        Extract geometrical parameters
 
-        Args:
-            inputs (_list_): input data list
-            mach (_float_): air speed expressed in mach
+        :param inputs: inputs in the OpenMDAO format
+        :param mach: Mach number
 
-        Returns:
-            s_ref_wing (_float_): wing reference surface area
-            area_ratio (_float_): area ratio between wing and horizontal stabilizer
-            geometry_set (_array_): geometry dataset for openvsp calculation
+        :return s_ref_wing: wing reference surface area
+        :return area_ratio: rea ratio between wing and horizontal stabilizer
+        :return s_ref_wing: geometry dataset for openvsp calculation
         """
         s_ref_wing = float(inputs["data:geometry:wing:area"])
         s_ref_htp = float(inputs["data:geometry:horizontal_tail:area"])
@@ -1009,18 +999,20 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
 
         return s_ref_wing, area_ratio, geometry_set
 
-    def post_process_wing(self, inputs, wing_0, wing_aoa, s_ref_wing, aoa_angle):
-        """_summary_
-        Assign float arrray to variable for later length modification
-        Args:
-            inputs (_list_): _description_
-            wing_0 (_list_): wing aerodynamic parameters with zero angle of attack
-            wing_aoa (_list_): wing aerodynamic parameters with freestream angle of attack
-            s_ref_wing (_float_): wing reference surfance area
-            aoa_angle (_float_): freestream angle of attack
+    @staticmethod
+    def post_process_wing(inputs, wing_0, wing_aoa, s_ref_wing, aoa_angle):
+        """
+        Computes wing data not produced by OpenVSP based on available ones
 
-        Returns:
-            _list_: length-unmodified wing aerodynamic paramter arrays
+        :param inputs: inputs in the OpenMDAO format
+        :param wing_0: wing aerodynamic coefficient with 0 angle of attack
+        :param wing_aoa: wing aerodynamic coefficient with input angle of attack
+        :param s_ref_wing: wing reference surface area
+        :param aoa_angle: input angle of attack
+
+        :return: lift coefficient at 0 aoa, lift coefficient at input aoa, lift slope coefficient,
+        pitching moment coefficient, span vector, lift coefficient vector, chord vector,
+        lift induced drag coefficient
         """
         width_max = inputs["data:geometry:fuselage:maximum_width"]
         span_wing = inputs["data:geometry:wing:span"]
@@ -1049,25 +1041,21 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             coeff_k_wing,
         )
 
-    def post_process_htp(
-        self, htp_0, htp_aoa, htp_0_isolated, htp_aoa_isolated, aoa_angle, area_ratio
-    ):
-        """_summary_
-        Assign float arrray to variable for later length modification
-        Args:
-            htp_0 (_list_): horizontal satbilizer aerodynamic parameters with zero angle of attack
-                            with consider the the wing downwash
-            htp_aoa (_list_): horizontal satbilizer aerodynamic parameters with freestream
-                                angle of attack with consider the the wing downwash
-            htp_0_isolated (_list_): horizontal satbilizer aerodynamic parameters with zero angle of attack
-                                        without consider the the wing downwash
-            htp_aoa_isolated (_list_): horizontal satbilizer aerodynamic parameters with freestream
-                                angle of attack without consider the the wing downwash
-            aoa_angle (_float_): freestream angle of attack
-            area_ratio (_float_): area ratio between wing and horizontal stabilizer
+    @staticmethod
+    def post_process_htp(htp_0, htp_aoa, htp_0_isolated, htp_aoa_isolated, aoa_angle, area_ratio):
+        """
+        Computes htp data not produced by OpenVSP based on available ones
 
-        Returns:
-            _list_: length-unmodified horizontal stabilizer aerodynamic parameters
+        :param htp_0: htp aerodynamic coefficient with 0 angle of attack
+        :param htp_aoa: htp aerodynamic coefficient with input angle of attack
+        :param htp_0_isolated: isolated htp aerodynamic coefficient with 0 angle of attack
+        :param htp_aoa_isolated: isolated htp aerodynamic coefficient with input angle of attack
+        :param aoa_angle: input angle of attack
+        :param area_ratio: ratio between htp reference area and wing reference area
+
+        :return: htp lift coefficient at 0 aoa, htp lift coefficient at input aoa, htp lift slope
+        coefficient, isolated htp lift slope coefficient, span vector, lift coefficient vector,
+        lift induced drag coefficient
         """
 
         # Post-process HTP-aircraft data -------------------------------------------------------
@@ -1095,83 +1083,73 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
             coeff_k_htp,
         )
 
-    def resize_wing_vector(self, vector_wing):
-        """_summary_
-        To avoid error occur in other model, import length-unmodified wing aerodynamic
-        paramters for modification, so that the length of result list will be equal.
-        Args:
-            vector_wing (_list_): wing aerodynamic results
-
-        Returns:
-            _list_: length-modified results
+    @staticmethod
+    def resize_vector(vectors):
         """
-        [y_vector_wing, cl_vector_wing, chord_vector_wing] = vector_wing
+        Format the size of results that need to be passed as array to the size declared to
+        OpenMDAO if the original array is bigger we resize it, otherwise we complete with zeros.
+        First vector always has to be the y vector, any other vector can be a quantity expressed
+        as that vector.
+
+        :param vectors: a tuple with wing aerodynamic results
+
+        :return: length-modified aerodynamic results
+        """
+        y_vector = vectors[0]
+
+        resized_vectors = []
+
         # shorter
-        if SPAN_MESH_POINT < len(y_vector_wing):
-            y_interp = np.linspace(y_vector_wing[0], y_vector_wing[-1], SPAN_MESH_POINT)
-            cl_vector_wing = np.interp(y_interp, y_vector_wing, cl_vector_wing)
-            chord_vector_wing = np.interp(y_interp, y_vector_wing, chord_vector_wing)
-            y_vector_wing = y_interp
+        if SPAN_MESH_POINT < len(y_vector):
+
+            y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
+
+            resized_vectors.append(y_interp)
+
+            for vector in vectors[1:]:
+                resized_vector = np.interp(y_interp, y_vector, vector)
+                resized_vectors.append(resized_vector)
+
         # longer
         else:
-            additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_wing)))
-            y_vector_wing = y_vector_wing + additional_zeros
-            cl_vector_wing = cl_vector_wing + additional_zeros
-            chord_vector_wing = chord_vector_wing + additional_zeros
+            additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector)))
+            y_vector = y_vector + additional_zeros
 
-        return y_vector_wing, cl_vector_wing, chord_vector_wing
+            resized_vectors.append(y_vector)
 
-    def resize_htp_vector(self, vector_htp):
-        """_summary_
-        To avoid error occur in other model, import length-unmodified horizontal stabilizer
-        aerodynamic paramters for modification, so that the length of result list will be equal.
-        Args:
-            vector_htp (_list_): horizontal stabilizer aerodynamic results
+            for vector in vectors[1:]:
 
-        Returns:
-            _list_: length-modified results
+                resized_vector = vector + additional_zeros
+                resized_vectors.append(resized_vector)
+
+        return resized_vectors
+
+    @staticmethod
+    def assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing):
         """
-        [y_vector_htp, cl_vector_htp] = vector_htp
-        if SPAN_MESH_POINT < len(y_vector_htp):
-            y_interp = np.linspace(y_vector_htp[0], y_vector_htp[-1], SPAN_MESH_POINT)
-            cl_vector_htp = np.interp(y_interp, y_vector_htp, cl_vector_htp)
-            y_vector_htp = y_interp
-            warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
-        else:
-            additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(y_vector_htp)))
-            y_vector_htp = y_vector_htp + additional_zeros
-            cl_vector_htp = cl_vector_htp + additional_zeros
+        When results already exists, read and assign existing data and apply the new area ratio
 
-        return y_vector_htp, cl_vector_htp
+        :param data: existing results under the form of a dataframe
+        :param area_ratio: area ratio between the wing and the horizontal stabilizer
+        :param saved_area_ratio: area ratio between the wing and the horizontal stabilizer in
+        existing results
+        :param s_ref_wing: wing reference surface area
 
-    def assign_read_data(self, data, area_ratio, saved_area_ratio, s_ref_wing):
-        """_summary_
-        Since there are existed results, read and assign existed data with consider
-        new surface areas and area ratios.
-        Args:
-            data (_list_): existed data list
-            area_ratio (_float_): area ratio between the wing and the horizontal stabilizer
-            saved_area_ratio (_float_): existed area ratio of wing and horizontal stabilizer
-            s_ref_wing (_float_): wing reference surfance area
-
-        Returns:
-            _array_: aerodynamic characteristic parameters of eing and horizontal stabilizer
+        :return: aerodynamic characteristic parameters of wing and horizontal stabilizer
         """
         saved_area_wing = float(data.loc["saved_ref_area", 0])
         cl_0_wing = float(data.loc["cl_0_wing", 0])
         cl_x_wing = float(data.loc["cl_X_wing", 0])
         cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
         cm_0_wing = float(data.loc["cm_0_wing", 0])
-        y_vector_wing = np.array(
-            [float(i) for i in data.loc["y_vector_wing", 0][1:-2].split(",")]
-        ) * np.sqrt(s_ref_wing / saved_area_wing)
-        cl_vector_wing = np.array(
-            [float(i) for i in data.loc["cl_vector_wing", 0][1:-2].split(",")]
+        y_vector_wing = string_to_array(data.loc["y_vector_wing", 0][1:-2]) * np.sqrt(
+            s_ref_wing / saved_area_wing
         )
-        chord_vector_wing = np.array(
-            [float(i) for i in data.loc["chord_vector_wing", 0][1:-2].split(",")]
-        ) * np.sqrt(s_ref_wing / saved_area_wing)
+        cl_vector_wing = string_to_array(data.loc["cl_vector_wing", 0][1:-2])
+        chord_vector_wing = string_to_array(data.loc["chord_vector_wing", 0][1:-2]) * np.sqrt(
+            s_ref_wing / saved_area_wing
+        )
         coeff_k_wing = float(data.loc["coeff_k_wing", 0])
         cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
         cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
@@ -1179,10 +1157,10 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
             area_ratio / saved_area_ratio
         )
-        y_vector_htp = np.array([float(i) for i in data.loc["y_vector_htp", 0][1:-2].split(",")])
-        cl_vector_htp = np.array(
-            [float(i) for i in data.loc["cl_vector_htp", 0][1:-2].split(",")]
-        ) * (area_ratio / saved_area_ratio)
+        y_vector_htp = string_to_array(data.loc["y_vector_htp", 0][1:-2])
+        cl_vector_htp = string_to_array(data.loc["cl_vector_htp", 0][1:-2]) * (
+            area_ratio / saved_area_ratio
+        )
         coeff_k_htp = float(data.loc["coeff_k_htp", 0]) * (area_ratio / saved_area_ratio)
 
         return (
@@ -1205,7 +1183,7 @@ class OPENVSPSimpleGeometry(ExternalCodeComp):
         )
 
 
-class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
+class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
     """Execution of OpenVSP for surfaces with slipstream effects."""
 
     def __init__(self, **kwargs):
@@ -1268,7 +1246,6 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         twist = inputs["data:geometry:wing:twist"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         span_wing = inputs["data:geometry:wing:span"]
-        height_max = inputs["data:geometry:fuselage:maximum_height"]
         engine_rpm = inputs["data:propulsion:max_rpm"]
         propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
@@ -1301,12 +1278,10 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
         engine_rps = engine_rpm / 60.0
         # For now thrust is distributed equally on each engine
         thrust_coefficient = round(
-            float(thrust_one_prop / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)),
-            5,
+            float(thrust_one_prop / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)), 5
         )
         power_coefficient = round(
-            float(shaft_power_one_prop / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)),
-            5,
+            float(shaft_power_one_prop / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)), 5
         )
 
         prop_radius = round(propeller_diameter / 2.0, 3)
@@ -1427,8 +1402,7 @@ class OPENVSPSimpleGeometryDP(OPENVSPSimpleGeometry):
 
         output_file_list = [
             pth.join(
-                target_directory,
-                INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv"),
+                target_directory, INPUT_WING_ROTOR_SCRIPT.replace(".vspscript", "_DegenGeom.csv")
             )
         ]
         parser = InputFileGenerator()
@@ -1671,3 +1645,7 @@ def generate_wing_rotor_file(engine_count: int):
     file.close()
 
     return rotor_template_file_name
+
+
+def string_to_array(arr):
+    return np.array(arr.strip("[]").split(","), dtype=float)

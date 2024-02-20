@@ -181,8 +181,6 @@ def test_polar_single_aoa_inv():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_single_aoa_inv(
         XML_FILE,
-        mach_high_speed=0.53835122,
-        reynolds_high_speed=5381384,
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
     )
@@ -1175,7 +1173,7 @@ def test_high_speed_connection_openvsp():
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=True)
 
 
-# @pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
+@pytest.mark.skipif(SKIP_STEPS, reason="Skip test because already performed on Cirrus")
 def test_high_speed_connection_vlm():
     """Tests high speed components connection."""
     high_speed_connection(XML_FILE, ENGINE_WRAPPER, use_openvsp=False)

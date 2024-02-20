@@ -184,8 +184,6 @@ def test_polar_single_aoa_inv():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_single_aoa_inv(
         XML_FILE,
-        mach_high_speed=0.245,
-        reynolds_high_speed=4571770 * 1.549,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
     )
@@ -209,6 +207,10 @@ def test_polar_with_ext_folder():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available",
+)
 def test_polar_with_ext_folder_inv():
     """Tests polar execution (XFOIL) @ high and low speed."""
     polar_ext_folder_inv(
@@ -456,7 +458,7 @@ def test_openvsp_comp_high_speed_input_aoa():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+    system() != "Windows" or False, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_openvsp_comp_low_speed():
     """Tests openvsp components @ low speed."""

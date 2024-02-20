@@ -20,7 +20,7 @@ import logging
 import numpy as np
 from openmdao.core.group import Group
 
-from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
+from .openvsp import OpenVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
 
@@ -66,7 +66,7 @@ class ComputeAeroOpenVSP(Group):
         )
 
 
-class _ComputeAeroOpenVSP(OPENVSPSimpleGeometry):
+class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
     def initialize(self):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
