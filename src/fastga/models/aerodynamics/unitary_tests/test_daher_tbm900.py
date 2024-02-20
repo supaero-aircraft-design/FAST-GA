@@ -221,6 +221,10 @@ def test_airfoil_slope():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
 def test_airfoil_slope_wt_xfoil():
     """Tests polar reading @ low speed."""
     airfoil_slope_wt_xfoil(

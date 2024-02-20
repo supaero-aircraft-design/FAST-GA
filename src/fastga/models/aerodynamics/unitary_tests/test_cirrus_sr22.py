@@ -222,6 +222,10 @@ def test_airfoil_slope():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
 def test_airfoil_slope_wt_xfoil():
     """Tests polar reading @ low speed!"""
     airfoil_slope_wt_xfoil(
@@ -258,6 +262,11 @@ def test_vlm_comp_high_speed():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
 def test_vlm_comp_high_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
@@ -400,6 +409,11 @@ def test_vlm_comp_low_speed():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
 def test_vlm_comp_low_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
