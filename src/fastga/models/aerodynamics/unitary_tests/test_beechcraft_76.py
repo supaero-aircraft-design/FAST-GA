@@ -458,7 +458,7 @@ def test_openvsp_comp_high_speed_input_aoa():
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or False, reason="OPENVSP is windows dependent platform (or skipped)"
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_openvsp_comp_low_speed():
     """Tests openvsp components @ low speed."""
