@@ -31,6 +31,7 @@ from fastoad._utils.resource_management.copy import copy_resource
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
 
+from fastga.command.api import string_to_array
 from fastga.models.aerodynamics.external.xfoil import xfoil699
 from fastga.models.geometry.profiles.get_profile import get_profile
 from . import resources as local_resources
@@ -862,11 +863,3 @@ class XfoilPolar(ExternalCodeComp):
         if pth.exists(self.stderr):
             stderr_file_path = pth.join(result_folder_path, _STDERR_FILE_NAME)
             shutil.move(self.stderr, stderr_file_path)
-
-
-def string_to_array(arr):
-    """
-    To properly saved the results inside the dataframe, arrays must be converted to string, this
-    function does the opposite
-    """
-    return np.array(arr.strip("[]").split(","), dtype=float)

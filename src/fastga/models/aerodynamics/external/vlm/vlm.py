@@ -25,6 +25,7 @@ import pandas as pd
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
+from fastga.command.api import string_to_array
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
 DEFAULT_NX = 19
@@ -1527,11 +1528,3 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             x_c,
             y_c,
         )
-
-
-def string_to_array(arr):
-    """
-    To properly saved the results inside the dataframe, arrays must be converted to string, this
-    function does the opposite
-    """
-    return np.array(arr.strip("[]").split(","), dtype=float)

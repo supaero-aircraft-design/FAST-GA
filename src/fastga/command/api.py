@@ -806,3 +806,12 @@ def list_outputs(component: Union[om.ExplicitComponent, om.Group]) -> list:
     output_names = [var.name for var in variables if not var.is_input]
 
     return output_names
+
+
+def string_to_array(arr):
+    """
+    Convert a numpy array that was stored as a string back to a numpy array.
+
+    "[-20.0, -19.5, -19.0, ..., 19.0, 19.5, 20.0]" --> [-20.0, -19.5, -19.0, ..., 19.0, 19.5, 20.0]
+    """
+    return np.array(arr.strip("[]").split(","), dtype=float)

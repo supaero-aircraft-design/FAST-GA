@@ -28,7 +28,7 @@ from openmdao.utils.file_wrap import InputFileGenerator
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
-from fastga.command.api import _create_tmp_directory
+from fastga.command.api import _create_tmp_directory, string_to_array
 from fastga.utils.resource_management.copy import copy_resource_from_path
 from . import openvsp3201
 from . import resources as local_resources
@@ -1645,11 +1645,3 @@ def generate_wing_rotor_file(engine_count: int):
     file.close()
 
     return rotor_template_file_name
-
-
-def string_to_array(arr):
-    """
-    To properly saved the results inside the dataframe, arrays must be converted to string, this
-    function does the opposite
-    """
-    return np.array(arr.strip("[]").split(","), dtype=float)
