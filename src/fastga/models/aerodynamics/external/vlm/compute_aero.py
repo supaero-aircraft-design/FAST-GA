@@ -23,13 +23,12 @@ from openmdao.core.group import Group
 from .vlm import VLMSimpleGeometry
 from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
-DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
 class ComputeAeroVLM(Group):

@@ -16,6 +16,7 @@ SPAN_MESH_POINT = 50
 MACH_NB_PTS = 5
 ENGINE_COUNT = 10
 FIRST_INVALID_COEFF = 100.0
+DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
 SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"

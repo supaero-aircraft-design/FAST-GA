@@ -38,9 +38,8 @@ from .constants import (
     SUBMODEL_DOWNWASH,
     SUBMODEL_CY_BETA,
     SUBMODEL_CN_BETA,
+    DEFAULT_INPUT_AOA,
 )
-
-DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.lowspeed.legacy", domain=ModelDomain.AERODYNAMICS)

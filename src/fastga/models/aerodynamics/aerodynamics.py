@@ -21,7 +21,7 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 
-DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
+from .constants import DEFAULT_INPUT_AOA
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
