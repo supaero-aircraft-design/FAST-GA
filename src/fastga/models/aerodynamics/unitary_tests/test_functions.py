@@ -679,7 +679,7 @@ def polar_ext_folder_inv(
         airfoil_folder_path=tmp_folder.name,
         airfoil_file="sample_airfoil.af",
     )
-    xfoil_comp.options["Invicid_calculation"] = True
+    xfoil_comp.options["inviscid_calculation"] = True
     problem = run_system(xfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
@@ -709,7 +709,7 @@ def polar_ext_folder_inv(
         airfoil_folder_path=tmp_folder.name,
         airfoil_file="sample_airfoil.af",
     )
-    xfoil_comp.options["Invicid_calculation"] = True
+    xfoil_comp.options["inviscid_calculation"] = True
     xfoil_comp.options["single_AoA"] = True
     problem = run_system(xfoil_comp, ivc)
 

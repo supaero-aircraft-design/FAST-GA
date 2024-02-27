@@ -1025,9 +1025,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
         chord_vector_wing = wing_aoa["chord_vector"]
         k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
-        # Full aircraft correction: Wing lift is 105% of total lift, so: CDi = (CL*1.05)^2/(
-        # piAe) -> e' = e/1.05^2
-        coeff_e = float(wing_aoa["coeff_e"] * k_fus / 1.05 ** 2)
+        coeff_e = float(wing_aoa["coeff_e"] * k_fus)
         coeff_k_wing = float(1.0 / (np.pi * span_wing ** 2 / s_ref_wing * coeff_e))
 
         return (

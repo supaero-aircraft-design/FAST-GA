@@ -27,7 +27,7 @@ SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermed
 
 
 @pytest.mark.skipif(
-    system() != "Windows" or SKIP_STEPS,
+    system() != "Windows" or False,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
@@ -225,7 +225,7 @@ def test_openvsp_comp_low_speed():
         cl_ref_wing=0.82957738,
         cl_alpha_wing=4.44953801,
         cm0=-0.02545115,
-        coeff_k_wing=0.04827684,
+        coeff_k_wing=0.04378852,
         cl0_htp=-0.00732,
         cl_alpha_htp=0.50168185,
         cl_alpha_htp_isolated=0.79058386,
