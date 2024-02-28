@@ -20,16 +20,14 @@ import logging
 import numpy as np
 from openmdao.core.group import Group
 
-from .openvsp import OPENVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
+from .openvsp import OpenVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 
 _LOGGER = logging.getLogger(__name__)
 
-INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
-
-class ComputeAEROopenvsp(Group):
+class ComputeAeroOpenVSP(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
@@ -42,6 +40,7 @@ class ComputeAEROopenvsp(Group):
         self.options.declare(
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
         self.add_subsystem(
@@ -51,7 +50,7 @@ class ComputeAEROopenvsp(Group):
         )
         self.add_subsystem(
             "aero_openvsp",
-            _ComputeAEROopenvsp(
+            _ComputeAeroOpenVSP(
                 low_speed_aero=self.options["low_speed_aero"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 result_folder_path=self.options["result_folder_path"],
@@ -59,16 +58,18 @@ class ComputeAEROopenvsp(Group):
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
+                input_angle_of_attack=self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
 
 
-class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
+class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
     def initialize(self):
         super().initialize()
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
         super().setup()
@@ -138,10 +139,11 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
     def compute(self, inputs, outputs):
 
         _LOGGER.debug("Entering aerodynamic computation")
+        input_aoa = self.options["input_angle_of_attack"]
 
         # Check AOA input is float
-        if not isinstance(INPUT_AOA, float):
-            raise TypeError("INPUT_AOA should be a float!")
+        if not isinstance(input_aoa, float):
+            raise TypeError("Option input_angle_of_attack should be a float!")
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
@@ -166,11 +168,12 @@ class _ComputeAEROopenvsp(OPENVSPSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, INPUT_AOA)
+            _,
+        ) = self.compute_aero_coeff(inputs, outputs, altitude, mach, input_aoa)
 
         if not self.options["low_speed_aero"] and self.options["compute_mach_interpolation"]:
             mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                inputs, outputs, INPUT_AOA, altitude, mach
+                inputs, outputs, input_aoa, altitude, mach
             )
             outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_interp
             outputs[

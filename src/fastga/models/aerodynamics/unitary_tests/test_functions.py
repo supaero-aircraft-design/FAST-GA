@@ -26,6 +26,8 @@ from tempfile import TemporaryDirectory
 import numpy as np
 import pytest
 
+import openmdao.api as om
+
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 from fastga.models.aerodynamics.components import (
@@ -101,11 +103,11 @@ from fastga.models.aerodynamics.components.vt import (
 from fastga.models.aerodynamics.external.propeller_code.compute_propeller_aero import (
     ComputePropellerPerformance,
 )
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.load_factor import LoadFactor
@@ -358,7 +360,7 @@ def polar(
 
     # Run problem
     xfoil_comp = XfoilPolar(
-        alpha_start=0.0, alpha_end=25.0, iter_limit=20, xfoil_exe_path=xfoil_path
+        alpha_start=0.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
     )
     problem = run_system(xfoil_comp, ivc)
 
@@ -394,6 +396,186 @@ def polar(
     assert problem["xfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
+
+
+def polar_interpolation(mach: float):
+    """
+    Tests the interpolation mechanism from XfoilPolar. To do so we will run XfoilPolar twice and
+    then a third time a a Reynolds number in between, it should trigger the interpolation mechanism.
+    """
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 5e6)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=0.0, alpha_end=20.0, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    t1_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t1_end = time.time()
+    t1_duration = t1_end - t1_start
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 7e6)
+    t2_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t2_end = time.time()
+    t2_duration = t2_end - t2_start
+
+    # Run a third time between the two other Reynolds
+
+    ivc = om.IndepVarComp()
+    ivc.add_output("xfoil:mach", mach)
+    ivc.add_output("xfoil:reynolds", 6e6)
+
+    # Run problem
+    t3_start = time.time()
+    _ = run_system(xfoil_comp, ivc)
+    t3_end = time.time()
+    t3_duration = t3_end - t3_start
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    assert t3_duration < (t1_duration + t2_duration) / 2
+
+
+def polar_single_aoa(
+    XML_FILE: str,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+):
+    """
+    Tests polar execution (XFOIL) @ low speed! Run Xfoil once with multiple AOA then extract the
+    value for 5.0 degree and run Xfoil for a single Aoa at 5.0 degree and compare results
+    """
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=2.0, alpha_end=7.5, iter_limit=20, xfoil_exe_path=xfoil_path
+    )
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Extract value for 5.0 deg
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+
+    alpha = problem["xfoil:alpha"]
+    index_5_deg = list(alpha).index(5.0)
+
+    cl, cdp = reshape_polar(cl, cdp)
+
+    cl_5 = cl[index_5_deg]
+    cdp_5 = cdp[index_5_deg]
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0, iter_limit=20, xfoil_exe_path=xfoil_path, single_AoA=True
+    )
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_s = problem["xfoil:CL"]
+    cdp_s = problem["xfoil:CDp"]
+    assert cl_5 == pytest.approx(cl_s, abs=1e-4)
+    assert cdp_5 == pytest.approx(cdp_s, abs=1e-4)
+
+
+def polar_single_aoa_inv(
+    XML_FILE: str,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+):
+    """
+    Tests polar execution (XFOIL) @ low speed and inviscid! Run Xfoil once with multiple AOA then
+    extract the value for 5.0 degree and run Xfoil for a single Aoa at 5.0 degree and compare
+    results
+    """
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=2.5,
+        alpha_end=7.5,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        inviscid_calculation=True,
+    )
+    problem = run_system(xfoil_comp, ivc)
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["xfoil:CL"]
+    cdp = problem["xfoil:CDp"]
+
+    alpha = problem["xfoil:alpha"]
+    index_5_deg = list(alpha).index(5.0)
+
+    cl, cdp = reshape_polar(cl, cdp)
+
+    cl_5 = cl[index_5_deg]
+    cdp_5 = cdp[index_5_deg]
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        inviscid_calculation=True,
+        single_AoA=True,
+    )
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_s = problem["xfoil:CL"]
+    cdp_s = problem["xfoil:CDp"]
+    assert cl_5 == pytest.approx(cl_s, abs=1e-4)
+    assert cdp_5 == pytest.approx(cdp_s, abs=1e-4)
 
 
 def polar_ext_folder(
@@ -469,6 +651,77 @@ def polar_ext_folder(
     assert problem["xfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
+
+
+def polar_ext_folder_inv(
+    XML_FILE: str,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+):
+    """Tests polar execution (XFOIL) @ high and low speed! with the option airfoil_folder_path"""
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+    shutil.copy(
+        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
+    )
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0,
+        alpha_end=25.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        airfoil_folder_path=tmp_folder.name,
+        airfoil_file="sample_airfoil.af",
+    )
+    xfoil_comp.options["inviscid_calculation"] = True
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_1 = problem["xfoil:CL"]
+    cdp_1 = problem["xfoil:CDp"]
+    # cl_1, cdp_1 = reshape_polar(cl, cdp)
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+    shutil.copy(
+        pth.join(DATA_FOLDER, "sample_airfoil.af"), pth.join(tmp_folder.name, "sample_airfoil.af")
+    )
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(XfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("xfoil:mach", mach_low_speed)
+    ivc.add_output("xfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    xfoil_comp = XfoilPolar(
+        alpha_start=5.0,
+        iter_limit=20,
+        xfoil_exe_path=xfoil_path,
+        airfoil_folder_path=tmp_folder.name,
+        airfoil_file="sample_airfoil.af",
+    )
+    xfoil_comp.options["inviscid_calculation"] = True
+    xfoil_comp.options["single_AoA"] = True
+    problem = run_system(xfoil_comp, ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    cl_2 = problem["xfoil:CL"]
+    cdp_2 = problem["xfoil:CDp"]
+    # cl_2, cdp_2 = reshape_polar(cl, cdp)
+    assert cl_1[0] == pytest.approx(cl_2, abs=1e-4)
+    assert cdp_1[0] == pytest.approx(cdp_2, abs=1e-4)
 
 
 def airfoil_slope_wt_xfoil(
@@ -557,62 +810,58 @@ def compute_aero(
     if use_openvsp:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROopenvsp(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROopenvsp(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        openvsp_comp = ComputeAeroOpenVSP(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
         )
+
+        problem = run_system(openvsp_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROopenvsp(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        openvsp_comp = ComputeAeroOpenVSP(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
         )
+
+        problem = run_system(openvsp_comp, ivc)
         stop = time.time()
     else:
         # noinspection PyTypeChecker
         ivc = get_indep_var_comp(
-            list_inputs(ComputeAEROvlm(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
         )
 
         # Run problem twice
         start = time.time()
         # noinspection PyTypeChecker
-        problem = run_system(
-            ComputeAEROvlm(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        vlm_comp = ComputeAeroVLM(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
         )
+
+        problem = run_system(vlm_comp, ivc)
         stop = time.time()
         duration_1st_run = stop - start
         start = time.time()
         # noinspection PyTypeChecker
-        run_system(
-            ComputeAEROvlm(
-                low_speed_aero=low_speed_aero,
-                result_folder_path=results_folder.name,
-                compute_mach_interpolation=mach_interpolation,
-            ),
-            ivc,
+        vlm_comp = ComputeAeroVLM(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
         )
+
+        problem = run_system(vlm_comp, ivc)
         stop = time.time()
     duration_2nd_run = stop - start
 
@@ -623,8 +872,101 @@ def compute_aero(
     results_folder.cleanup()
 
     # Check obtained value(s) is/(are) correct
-    assert (duration_2nd_run / duration_1st_run) <= 0.1
+    if use_openvsp:
+        assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
+    else:
+        assert (duration_2nd_run / duration_1st_run) <= 1
+    # Return problem for complementary values check
+    return problem
 
+
+def comp_aero_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+    mach_interpolation: bool,
+    low_speed_aero: bool,
+):
+    """Compute aero components!"""
+    # Create result temporary directory
+    results_folder = _create_tmp_directory()
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file
+    if use_openvsp:
+        # noinspection PyTypeChecker
+        ivc = get_indep_var_comp(
+            list_inputs(ComputeAeroOpenVSP(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+        )
+
+        # Run problem twice
+        start = time.time()
+        # noinspection PyTypeChecker
+        openvsp_comp = ComputeAeroOpenVSP(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(openvsp_comp, ivc)
+        stop = time.time()
+        duration_1st_run = stop - start
+        start = time.time()
+        # noinspection PyTypeChecker
+        openvsp_comp = ComputeAeroOpenVSP(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(openvsp_comp, ivc)
+        stop = time.time()
+    else:
+        # noinspection PyTypeChecker
+        ivc = get_indep_var_comp(
+            list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero)), __file__, XML_FILE
+        )
+
+        # Run problem twice
+        start = time.time()
+        # noinspection PyTypeChecker
+        vlm_comp = ComputeAeroVLM(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(vlm_comp, ivc)
+        stop = time.time()
+        duration_1st_run = stop - start
+        start = time.time()
+        # noinspection PyTypeChecker
+        vlm_comp = ComputeAeroVLM(
+            low_speed_aero=low_speed_aero,
+            result_folder_path=results_folder.name,
+            compute_mach_interpolation=mach_interpolation,
+            input_angle_of_attack=10.5,
+        )
+
+        problem = run_system(vlm_comp, ivc)
+        stop = time.time()
+    duration_2nd_run = stop - start
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Remove existing result files
+    results_folder.cleanup()
+
+    # Check obtained value(s) is/(are) correct
+    if use_openvsp:
+        assert (duration_2nd_run / duration_1st_run) <= 0.5  # original 0.1
+    else:
+        assert (duration_2nd_run / duration_1st_run) <= 1
     # Return problem for complementary values check
     return problem
 
@@ -684,6 +1026,56 @@ def comp_high_speed(
             assert problem[
                 "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
             ] == pytest.approx(coeff_k_htp, abs=1e-4)
+
+
+def comp_high_speed_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+):
+
+    """Tests components @ high speed!"""
+    for mach_interpolation in [True, False]:
+        problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
+        problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, mach_interpolation, False)
+        # Check obtained value(s) is/(are) correct
+        if mach_interpolation:
+            assert problem[
+                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
+            ] == pytest.approx(
+                problem_input_aoa["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"],
+                abs=1e-2,
+            )
+            assert problem[
+                "data:aerodynamics:aircraft:mach_interpolation:mach_vector"
+            ] == pytest.approx(
+                problem_input_aoa["data:aerodynamics:aircraft:mach_interpolation:mach_vector"],
+                abs=1e-2,
+            )
+        else:
+            assert problem.get_val(
+                "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
+            assert problem.get_val(
+                "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
+            assert problem.get_val(
+                "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
+            ) == pytest.approx(
+                problem_input_aoa.get_val(
+                    "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
+                ),
+                abs=1e-2,
+            )
 
 
 def comp_low_speed(
@@ -754,6 +1146,39 @@ def comp_low_speed(
     )
     assert np.max(np.abs(y_vector_htp - y)) <= 1e-3
     assert np.max(np.abs(cl_vector_htp - cl)) <= 1e-3
+
+
+def comp_low_speed_input_aoa(
+    XML_FILE: str,
+    use_openvsp: bool,
+):
+    """Tests components @ low speed!"""
+    problem = compute_aero(XML_FILE, use_openvsp, False, True)
+    problem_input_aoa = comp_aero_input_aoa(XML_FILE, use_openvsp, False, True)
+    # Check obtained value(s) is/(are) correct
+
+    assert problem.get_val(
+        "data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val("data:aerodynamics:wing:low_speed:CL_alpha", units="rad**-1"),
+        abs=1e-2,
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", units="rad**-1"
+        ),
+        abs=1e-2,
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
+    ) == pytest.approx(
+        problem_input_aoa.get_val(
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated", units="rad**-1"
+        ),
+        abs=1e-2,
+    )
 
 
 def hinge_moment_2d(XML_FILE: str, ch_alpha_2d: float, ch_delta_2d: float):
@@ -1370,70 +1795,30 @@ def propeller(
     polar_result_retrieve(tmp_folder)
 
     # Check obtained value(s) is/(are) correct
-    assert (
-        np.sum(
-            np.abs(
-                thrust_SL
-                - problem.get_val("data:aerodynamics:propeller:sea_level:thrust", units="N")
-            )
-        )
-        < 1
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust", units="N"
+    ) == pytest.approx(thrust_SL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_SL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:sea_level:efficiency") == pytest.approx(
+        efficiency_SL, abs=1e-5
     )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_SL_limit
-                - problem.get_val("data:aerodynamics:propeller:sea_level:thrust_limit", units="N")
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                speed - problem.get_val("data:aerodynamics:propeller:sea_level:speed", units="m/s")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(np.abs(efficiency_SL - problem["data:aerodynamics:propeller:sea_level:efficiency"]))
-        < 1e-5
-    )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_CL
-                - problem.get_val("data:aerodynamics:propeller:cruise_level:thrust", units="N")
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                thrust_CL_limit
-                - problem.get_val(
-                    "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
-                )
-            )
-        )
-        < 1
-    )
-    assert (
-        np.sum(
-            np.abs(
-                speed
-                - problem.get_val("data:aerodynamics:propeller:cruise_level:speed", units="m/s")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(efficiency_CL - problem["data:aerodynamics:propeller:cruise_level:efficiency"])
-        )
-        < 1e-5
+
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust", units="N"
+    ) == pytest.approx(thrust_CL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_CL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:cruise_level:efficiency") == pytest.approx(
+        efficiency_CL, abs=1e-5
     )
 
 

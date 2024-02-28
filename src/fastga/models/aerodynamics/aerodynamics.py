@@ -21,6 +21,8 @@ from fastoad.module_management.constants import ModelDomain
 from fastga.models.aerodynamics.aerodynamics_high_speed import AerodynamicsHighSpeed
 from fastga.models.aerodynamics.aerodynamics_low_speed import AerodynamicsLowSpeed
 
+from .constants import DEFAULT_INPUT_AOA
+
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.legacy", domain=ModelDomain.AERODYNAMICS)
 class Aerodynamics(om.Group):
@@ -42,6 +44,7 @@ class Aerodynamics(om.Group):
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
         """Add the LowSpeed and HighSpeedAerodynamics subsystems."""
@@ -58,6 +61,7 @@ class Aerodynamics(om.Group):
                 wing_airfoil=self.options["wing_airfoil"],
                 htp_airfoil=self.options["htp_airfoil"],
                 vtp_airfoil=self.options["vtp_airfoil"],
+                input_angle_of_attack=self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
@@ -76,6 +80,7 @@ class Aerodynamics(om.Group):
                 wing_airfoil=self.options["wing_airfoil"],
                 htp_airfoil=self.options["htp_airfoil"],
                 vtp_airfoil=self.options["vtp_airfoil"],
+                input_angle_of_attack=self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
