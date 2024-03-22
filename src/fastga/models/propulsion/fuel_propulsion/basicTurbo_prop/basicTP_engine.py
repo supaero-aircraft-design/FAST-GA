@@ -260,10 +260,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # getter on the problems and on the turboprop geometry parameter that are required to
         # compute max thrust and fuel consumption (Areas, alpha ratios and OPR ratios).
 
-        # TODO: think about whether or not these problem should be class attributes instead of
-        #  instance attributes (so it is shared between all instance of that class). This ponders
-        #  the question of what will happen when you change, in an analysis or optimization, one
-        #  of the sizing values
         self._turboprop_sizing_problem = None
         self._turboprop_sizing_problem_setup = False
 
@@ -279,37 +275,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self._turboprop_fuel_problem = None
         self._turboprop_fuel_problem_setup = False
 
-        self._alfa = None
-        self._alfa_p = None
+        self._alpha = None
+        self._alpha_p = None
         self._a_41 = None
         self._a_45 = None
         self._a_8 = None
         self._opr_2_opr_1 = None
-
-        # Computation of the turboprop geometry based on the design point performance
-        (
-            alfa,
-            alfa_p,
-            a_41,
-            a_45,
-            a_8,
-            _,
-            _,
-            _,
-            _,
-            _,
-            opr_2_opr_1,
-        ) = self.turboprop_geometry_calculation()
-
-        # Storing the propeller geometry and constant parameter
-        self.alfa = alfa
-        self.alfa_p = alfa_p
-        self.a_41 = a_41
-        self.a_45 = a_45
-        self.a_8 = a_8
-        self.opr_2_opr_1_dp = (
-            opr_2_opr_1  # Compression ratio relationship between the second and first stages
-        )
 
         # Here some internal attributes are defined.
 
@@ -427,6 +398,131 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """OpenMDAO problem to compute the sizing point"""
 
         self._turboprop_sizing_problem = value
+
+    def _compute_geometry(self):
+        """
+        Runs the turboprop sizing problem and assigns the value for the geometric parameter
+        """
+
+        self.turboprop_sizing_problem.run_model()
+
+        self._alpha = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:design_point:alpha"
+        )[0]
+        self._alpha_p = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:design_point:alpha_p"
+        )[0]
+        self._a_41 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:41", units="m**2"
+        )[0]
+        self._a_45 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:45", units="m**2"
+        )[0]
+        self._a_8 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:8", units="m**2"
+        )[0]
+        self._opr_2_opr_1 = (
+            self.turboprop_sizing_problem.get_val("opr_2")[0]
+            / self.turboprop_sizing_problem.get_val("opr_1")[0]
+        )
+
+    @property
+    def alpha(self) -> float:
+        """
+        Return the temperature ratio between turbines at the design point, assumed to be
+        constant.
+        """
+
+        if not self._alpha:
+            self._compute_geometry()
+
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value: float):
+        """
+        Set the temperature ratio between turbines at the design point, assumed to be constant.
+        """
+
+        self._alpha = value
+
+    @property
+    def alpha_p(self) -> float:
+        """
+        Return the pressure ratio between turbines at the design point, assumed to be
+        constant.
+        """
+
+        if not self._alpha_p:
+            self._compute_geometry()
+
+        return self._alpha_p
+
+    @alpha_p.setter
+    def alpha_p(self, value: float):
+        """Set the pressure ratio between turbines at the design point, assumed to be constant."""
+
+        self._alpha_p = value
+
+    @property
+    def a_41(self) -> float:
+        """Return the combustion chamber cross-flow area."""
+
+        if not self._a_41:
+            self._compute_geometry()
+
+        return self._a_41
+
+    @a_41.setter
+    def a_41(self, value: float):
+        """Set the combustion chamber cross-flow area."""
+
+        self._a_41 = value
+
+    @property
+    def a_45(self) -> float:
+        """Return the turbine cross-flow area."""
+
+        if not self._a_45:
+            self._compute_geometry()
+
+        return self._a_45
+
+    @a_45.setter
+    def a_45(self, value: float):
+        """Set the turbine cross-flow area."""
+
+        self._a_45 = value
+
+    @property
+    def a_8(self) -> float:
+        """Return the exhaust cross-flow area."""
+
+        if not self._a_8:
+            self._compute_geometry()
+
+        return self._a_8
+
+    @a_8.setter
+    def a_8(self, value: float):
+        """Set the turbine cross-flow area."""
+
+        self._a_8 = value
+
+    @property
+    def opr_2_opr_1(self) -> float:
+        """Return the ratio between OPR 2 and OPR 1."""
+
+        if not self._opr_2_opr_1:
+            self._compute_geometry()
+
+        return self._opr_2_opr_1
+
+    @opr_2_opr_1.setter
+    def opr_2_opr_1(self, value: float):
+        """Set the ratio between OPR 2 and OPR 1."""
+
+        self._opr_2_opr_1 = value
 
     @staticmethod
     def air_coefficients_reader():
@@ -829,7 +925,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         t_41t = var_to_solve[2]
         air_mass_flow = var_to_solve[3]
         p_3t = var_to_solve[4]
-        t_45t = t_41t * self.alfa
+        t_45t = t_41t * self.alpha
 
         self.t_41t_int = t_41t
         self.m_int = air_mass_flow
@@ -883,7 +979,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
         # Pressure change through the compressors
         return_array[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
-        return_array[3] = 1.0 - self.opr_2_opr_1_dp / (opr_2 / opr_1)
+        return_array[3] = 1.0 - self.opr_2_opr_1 / (opr_2 / opr_1)
         # Temperature change through the compressor
         return_array[4] = (
             1.0
@@ -894,7 +990,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
                     + self.eta_axe
                     * (1 + f_fuel_ratio - g_r - icb)
                     / (1 - icb)
-                    * (cp_41 - cp_45 * self.alfa)
+                    * (cp_41 - cp_45 * self.alpha)
                     / cp_3
                     * t_41t
                     / t_2t
@@ -1010,7 +1106,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         f_fuel_ratio = self.f_fuel_ratio_int
         air_mass_flow = self.m_int
 
-        p_45t = p_41t * self.alfa_p
+        p_45t = p_41t * self.alpha_p
         icb = self.inter_compressor_bleed / air_mass_flow
 
         # Solving the exhaust equation

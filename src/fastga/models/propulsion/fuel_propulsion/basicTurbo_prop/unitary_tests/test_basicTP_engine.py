@@ -854,7 +854,6 @@ def test_compute_flight_points_tbm_700():
     )
 
     engine.compute_flight_points(flight_points)
-    print(flight_points.sfc * flight_points.thrust * 3600.0)
 
 
 def test_compute_flight_points():
@@ -1199,6 +1198,13 @@ def test_nested_problem_setup():
     assert engine._turboprop_sizing_problem is None
     assert not engine._turboprop_sizing_problem_setup
 
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
     # Nor after computing the weight, dimensions or cd0
 
     _ = engine.compute_weight()
@@ -1208,6 +1214,13 @@ def test_nested_problem_setup():
     # Sizing problem should not be loaded at object instantiation
     assert engine._turboprop_sizing_problem is None
     assert not engine._turboprop_sizing_problem_setup
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
 
     # Then, the first call should take quite a bit of time, while the second is instantaneous
     t1 = time.time()
@@ -1220,8 +1233,7 @@ def test_nested_problem_setup():
     assert t3 - t2 < t2 - t1
 
 
-def test_turboprop_sizing():
-
+def test_access_to_geometry_parameter():
     engine = BasicTPEngine(
         power_design=745.7,
         t_41t_design=1350,
@@ -1261,14 +1273,93 @@ def test_turboprop_sizing():
         pr_1_ratio_design=0.25,
     )  # load a 1000 kW turboprop gasoline engine
 
-    engine.turboprop_sizing_problem.run_model()
+    # Sizing problem should not be loaded at object instantiation
+    assert engine._turboprop_sizing_problem is None
+    assert not engine._turboprop_sizing_problem_setup
 
-    assert engine.turboprop_sizing_problem.get_val(
-        "data:propulsion:turboprop:section:41", units="m**2"
-    ) == pytest.approx(0.004571, rel=1e-2)
-    assert engine.turboprop_sizing_problem.get_val(
-        "data:propulsion:turboprop:section:45", units="m**2"
-    ) == pytest.approx(0.012201, rel=1e-2)
-    assert engine.turboprop_sizing_problem.get_val(
-        "data:propulsion:turboprop:section:8", units="m**2"
-    ) == pytest.approx(0.038730, rel=1e-2)
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    # But accessing alpha should load the sizing problem and run it. Additionally, accessing a
+    # geometric parameter should take some time the first time its done but accessing any other
+    # after that should be instantaneous
+    t1 = time.time()
+    assert engine.alpha == pytest.approx(0.798550, rel=1e-2)
+    t2 = time.time()
+
+    assert engine.alpha_p == pytest.approx(0.333594, rel=1e-2)
+    assert engine.a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine.a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine.a_8 == pytest.approx(0.038730, rel=1e-2)
+    assert engine.opr_2_opr_1 == pytest.approx(1.684210, rel=1e-2)
+    t3 = time.time()
+
+    assert t3 - t2 < t2 - t1
+
+    assert engine._turboprop_sizing_problem is not None
+    assert engine._turboprop_sizing_problem_setup
+
+
+def test_geometry_parameter_not_called_until_compute_flight_point():
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    flight_points = oad.FlightPoint(
+        mach=[0.2],
+        altitude=[0],
+        engine_setting=[EngineSetting.TAKEOFF],
+        thrust_rate=[1.0],
+    )
+
+    engine.compute_flight_points(flight_points)
+
+    assert engine._a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine._a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine._a_8 == pytest.approx(0.038730, rel=1e-2)
