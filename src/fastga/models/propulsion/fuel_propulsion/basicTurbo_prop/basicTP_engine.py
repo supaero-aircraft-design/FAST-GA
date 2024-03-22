@@ -38,6 +38,12 @@ from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
 
 from .turboprop_components.turboshaft_geometry_computation import DesignPointCalculation
+from .turboprop_components.turboshaft_off_design_max_power import (
+    TurboshaftMaxThrustPowerLimit,
+    TurboshaftMaxThrustOPRLimit,
+    TurboshaftMaxThrustITTLimit,
+    TurboshaftMaxThrustPropellerThrustLimit,
+)
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -272,6 +278,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self._turboprop_max_thrust_itt_limit_problem = None
         self._turboprop_max_thrust_itt_limit_problem_setup = False
 
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = None
+        self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = False
+
         self._turboprop_fuel_problem = None
         self._turboprop_fuel_problem_setup = False
 
@@ -398,6 +407,263 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """OpenMDAO problem to compute the sizing point"""
 
         self._turboprop_sizing_problem = value
+
+    def get_ivc_max_thrust_problem(self) -> om.IndepVarComp:
+        """
+        The 4 problems that compute the maximum will have all their inputs in common, so we
+        centralize the creation of the IndepVarComp that will supply them.
+        """
+
+        ivc = om.IndepVarComp()
+
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:altitude",
+            val=self.cruise_altitude_propeller,
+            units="m",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:speed", val=self.speed_SL, units="m/s"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:speed", val=self.speed_CL, units="m/s"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:thrust", val=self.thrust_SL, units="N"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:thrust", val=self.thrust_CL, units="N"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:thrust_limit",
+            val=self.thrust_limit_SL,
+            units="N",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:thrust_limit",
+            val=self.thrust_limit_CL,
+            units="N",
+        )
+        ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", val=self.efficiency_SL)
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:efficiency", val=self.efficiency_CL
+        )
+
+        ivc.add_output("eta_225", val=self.eta_225)
+        ivc.add_output("eta_253", val=self.eta_253)
+        ivc.add_output("eta_455", val=self.eta_455)
+        ivc.add_output("total_pressure_loss_02", val=self.pi_02)
+        ivc.add_output("pressure_loss_34", val=self.pi_cc)
+        ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
+
+        ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
+
+        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+        ivc.add_output("compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s")
+        # Some parameters were hard-coded in previous version of the code, we'll leave them
+        # like that for now
+        ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
+        ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
+        ivc.add_output("bleed_control", val=self.bleed_control)
+
+        ivc.add_output(
+            "settings:propulsion:turboprop:efficiency:high_pressure_axe",
+            val=self.eta_axe,
+        )
+        ivc.add_output(
+            "settings:propulsion:turboprop:efficiency:gearbox",
+            val=self.gearbox_efficiency,
+        )
+
+        ivc.add_output("data:propulsion:turboprop:section:41", val=self.a_41, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:section:45", val=self.a_45, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:section:8", val=self.a_8, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:design_point:alpha", val=self.alpha)
+        ivc.add_output("data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p)
+        ivc.add_output("data:propulsion:turboprop:design_point:opr_2_opr_1", val=self.opr_2_opr_1)
+
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+            val=self.effective_efficiency_ls,
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+            val=self.effective_efficiency_ls,
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+            val=self.effective_J,
+        )
+
+        ivc.add_output("itt_limit", val=self.itt_limit, units="degK")
+        ivc.add_output("shaft_power_limit", val=self.max_power_avail, units="kW")
+        ivc.add_output("opr_limit", val=self.opr_limit)
+
+        return ivc
+
+    @property
+    def turboprop_max_thrust_power_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the power is limiting"""
+
+        if not self._turboprop_max_thrust_power_limit_problem_setup:
+
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustPowerLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            max_iter = 100
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_power_limit_problem_setup = True
+            self._turboprop_max_thrust_power_limit_problem = prob
+
+        return self._turboprop_max_thrust_power_limit_problem
+
+    @turboprop_max_thrust_power_limit_problem.setter
+    def turboprop_max_thrust_power_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the power is limiting"""
+
+        self._turboprop_max_thrust_power_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_opr_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the opr is limiting"""
+
+        if not self._turboprop_max_thrust_opr_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustOPRLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            max_iter = 100
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_opr_limit_problem_setup = True
+            self._turboprop_max_thrust_opr_limit_problem = prob
+
+        return self._turboprop_max_thrust_opr_limit_problem
+
+    @turboprop_max_thrust_opr_limit_problem.setter
+    def turboprop_max_thrust_opr_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the opr is limiting"""
+
+        self._turboprop_max_thrust_opr_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_itt_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the ITT is limiting"""
+
+        if not self._turboprop_max_thrust_itt_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustITTLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            max_iter = 100
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_itt_limit_problem_setup = True
+            self._turboprop_max_thrust_itt_limit_problem = prob
+
+        return self._turboprop_max_thrust_itt_limit_problem
+
+    @turboprop_max_thrust_itt_limit_problem.setter
+    def turboprop_max_thrust_itt_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the itt is limiting"""
+
+        self._turboprop_max_thrust_itt_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_propeller_thrust_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the propeller thrust is limiting"""
+
+        if not self._turboprop_max_thrust_propeller_thrust_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustPropellerThrustLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            max_iter = 100
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = True
+            self._turboprop_max_thrust_propeller_thrust_limit_problem = prob
+
+        return self._turboprop_max_thrust_propeller_thrust_limit_problem
+
+    @turboprop_max_thrust_propeller_thrust_limit_problem.setter
+    def turboprop_max_thrust_propeller_thrust_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the itt is limiting"""
+
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = value
 
     def _compute_geometry(self):
         """

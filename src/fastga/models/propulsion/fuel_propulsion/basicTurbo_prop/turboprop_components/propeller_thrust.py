@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import interp2d
+from scipy.interpolate import interp2d, interp1d
 from stdatm import Atmosphere
 
 THRUST_PTS_NB = 30
@@ -184,3 +184,84 @@ class ShaftPowerRequired(om.ExplicitComponent):
 
         required_shaft_power = thrust_interp_sl * true_airspeed / efficiency_propeller
         outputs["required_shaft_power"] = required_shaft_power
+
+
+class PropellerMaxThrust(om.ExplicitComponent):
+    def initialize(self):
+
+        self.options.declare("number_of_points", types=int, default=250)
+
+    def setup(self):
+
+        n = self.options["number_of_points"]
+
+        self.add_input("altitude", units="m", shape=n, val=np.nan)
+        self.add_input("mach_0", val=np.nan, shape=n)
+        self.add_input("data:aerodynamics:propeller:cruise_level:altitude", np.nan, units="m")
+        self.add_input(
+            "data:aerodynamics:propeller:sea_level:speed",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:sea_level:thrust_limit",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="N",
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:cruise_level:speed",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="m/s",
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:cruise_level:thrust_limit",
+            np.full(SPEED_PTS_NB, np.nan),
+            units="N",
+        )
+        self.add_input(
+            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+            val=1.0,
+        )
+
+        self.add_output("propeller_max_thrust", units="N", shape=n, val=5000.0)
+
+        self.declare_partials(
+            of="propeller_max_thrust",
+            wrt=["altitude", "mach_0"],
+            method="fd",
+        )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+
+        atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
+        true_airspeed = inputs["mach_0"] * atm.speed_of_sound
+
+        thrust_limit_sl = inputs["data:aerodynamics:propeller:sea_level:thrust_limit"]
+        speed_sl = inputs["data:aerodynamics:propeller:sea_level:speed"]
+
+        thrust_limit_cl = inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"]
+        speed_cl = inputs["data:aerodynamics:propeller:cruise_level:speed"]
+
+        propeller_max_thrust_sl_func = interp1d(speed_sl, thrust_limit_sl, kind="cubic")
+        propeller_max_thrust_cl_func = interp1d(speed_cl, thrust_limit_cl, kind="cubic")
+
+        lower_bound_thrust_limit = propeller_max_thrust_sl_func(
+            true_airspeed
+            * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"]
+        )
+        upper_bound_thrust_limit = propeller_max_thrust_cl_func(
+            true_airspeed
+            * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"]
+        )
+
+        thrust_limit = (
+            lower_bound_thrust_limit
+            + (upper_bound_thrust_limit - lower_bound_thrust_limit)
+            * np.minimum(
+                inputs["altitude"],
+                inputs["data:aerodynamics:propeller:cruise_level:altitude"],
+            )
+            / inputs["data:aerodynamics:propeller:cruise_level:altitude"]
+        )
+
+        outputs["propeller_max_thrust"] = thrust_limit

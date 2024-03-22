@@ -11,8 +11,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
 
         n = self.options["number_of_points"]
 
-        self.add_input("combustion_efficiency", shape=1, val=0.95)
-        self.add_input("fuel_energy_content", shape=1, val=43.260e6, units="J/kg")
+        self.add_input("combustion_energy", shape=1, val=0.95 * 43.260e6, units="J/kg")
 
         self.add_input("fuel_mass_flow", units="kg/s", val=np.nan, shape=n)
         self.add_input("electric_power", units="W", shape=n, val=np.nan)
@@ -81,8 +80,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
         self.declare_partials(
             of="air_mass_flow",
             wrt=[
-                "combustion_efficiency",
-                "fuel_energy_content",
+                "combustion_energy",
                 "fuel_mass_flow",
                 "fuel_air_ratio",
                 "compressor_bleed_ratio",
@@ -144,8 +142,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
 
         r_g = 287.0  # Perfect gas constant
 
-        combustion_efficiency = inputs["combustion_efficiency"]
-        fuel_energy_content = inputs["fuel_energy_content"]
+        combustion_energy = inputs["combustion_energy"]
 
         fuel_mass_flow = inputs["fuel_mass_flow"]
         electric_power = inputs["electric_power"]
@@ -187,7 +184,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
             - cooling_bleed_ratio
             - compressor_bleed_ratio
         ) * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3) / (
-            fuel_mass_flow * combustion_efficiency * fuel_energy_content
+            fuel_mass_flow * combustion_energy
         )
 
         residuals["total_temperature_41"] = (
@@ -231,8 +228,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
 
         r_g = 287.0  # Perfect gas constant
 
-        combustion_efficiency = inputs["combustion_efficiency"]
-        fuel_energy_content = inputs["fuel_energy_content"]
+        combustion_energy = inputs["combustion_energy"]
 
         fuel_mass_flow = inputs["fuel_mass_flow"]
         electric_power = inputs["electric_power"]
@@ -270,7 +266,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
 
         # ------------------ Derivatives wrt air mass flow residuals ------------------ #
 
-        jacobian["air_mass_flow", "combustion_efficiency"] = (
+        jacobian["air_mass_flow", "combustion_energy"] = (
             air_mass_flow
             * (
                 1.0
@@ -280,7 +276,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency ** 2.0 * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy ** 2.0)
         )
         jacobian["air_mass_flow", "fuel_mass_flow"] = np.diag(
             air_mass_flow
@@ -292,40 +288,28 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow ** 2.0 * combustion_efficiency * fuel_energy_content)
-        )
-        jacobian["air_mass_flow", "fuel_energy_content"] = (
-            air_mass_flow
-            * (
-                1.0
-                + fuel_air_ratio
-                - pressurization_bleed_ratio
-                - cooling_bleed_ratio
-                - compressor_bleed_ratio
-            )
-            * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content ** 2.0)
+            / (fuel_mass_flow ** 2.0 * combustion_energy)
         )
 
         jacobian["air_mass_flow", "fuel_air_ratio"] = -np.diag(
             air_mass_flow
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "compressor_bleed_ratio"] = np.diag(
             air_mass_flow
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "cooling_bleed_ratio"] = np.diag(
             air_mass_flow
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "pressurization_bleed_ratio"] = np.diag(
             air_mass_flow
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
 
         jacobian["air_mass_flow", "total_temperature_3"] = np.diag(
@@ -338,7 +322,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * cp_3
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "cp_3"] = np.diag(
             air_mass_flow
@@ -350,7 +334,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * total_temperature_3
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
 
         jacobian["air_mass_flow", "total_temperature_4"] = -np.diag(
@@ -363,7 +347,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * cp_4
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "cp_4"] = -np.diag(
             air_mass_flow
@@ -375,7 +359,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * total_temperature_4
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
         jacobian["air_mass_flow", "air_mass_flow"] = -np.diag(
             (
@@ -386,7 +370,7 @@ class ThermodynamicEquilibrium(om.ImplicitComponent):
                 - compressor_bleed_ratio
             )
             * (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-            / (fuel_mass_flow * combustion_efficiency * fuel_energy_content)
+            / (fuel_mass_flow * combustion_energy)
         )
 
         # ------------------ Derivatives wrt total temperature 41 residuals ------------------ #
