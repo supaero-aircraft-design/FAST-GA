@@ -25,8 +25,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
 
         n = self.options["number_of_points"]
 
-        self.add_input("combustion_efficiency", shape=1, val=0.95)
-        self.add_input("fuel_energy_content", shape=1, val=43.260e6, units="J/kg")
+        self.add_input("combustion_energy", shape=1, val=0.95 * 43.260e6, units="J/kg")
 
         self.add_input("cp_2", shape=n, val=np.nan)
         self.add_input("cp_25", shape=n, val=np.nan)
@@ -126,8 +125,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         self.declare_partials(
             of="fuel_mass_flow",
             wrt=[
-                "combustion_efficiency",
-                "fuel_energy_content",
+                "combustion_energy",
                 "cp_3",
                 "cp_4",
                 "total_temperature_3",
@@ -260,8 +258,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         cooling_bleed_ratio = inputs["cooling_bleed_ratio"]
         pressurization_bleed_ratio = inputs["pressurization_bleed_ratio"]
 
-        combustion_efficiency = inputs["combustion_efficiency"]
-        fuel_energy_content = inputs["fuel_energy_content"]
+        combustion_energy = inputs["combustion_energy"]
 
         mechanical_efficiency = inputs["settings:propulsion:turboprop:efficiency:high_pressure_axe"]
         electric_power = inputs["electric_power"]
@@ -282,7 +279,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             - pressurization_bleed_ratio
             - cooling_bleed_ratio
             - compressor_bleed_ratio
-        ) / 1000.0 - combustion_efficiency * fuel_energy_content * fuel_air_ratio / 1000.0
+        ) / 1000.0 - combustion_energy * fuel_air_ratio / 1000.0
 
         residuals["total_temperature_4"] = total_temperature_41 - (
             total_temperature_4
@@ -368,8 +365,8 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         cooling_bleed_ratio = inputs["cooling_bleed_ratio"]
         pressurization_bleed_ratio = inputs["pressurization_bleed_ratio"]
 
-        combustion_efficiency = inputs["combustion_efficiency"]
-        fuel_energy_content = inputs["fuel_energy_content"]
+        combustion_energy = inputs["combustion_energy"]
+
         design_point_power = inputs["data:propulsion:turboprop:design_point:power"]
         eta_gearbox = inputs["settings:propulsion:turboprop:efficiency:gearbox"]
         exhaust_mach = inputs["settings:propulsion:turboprop:design_point:mach_exhaust"]
@@ -385,12 +382,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         total_pressure_5 = outputs["total_pressure_5"]
 
         # -----------------------------------------------------------------------------------------#
-        jacobian["fuel_mass_flow", "combustion_efficiency"] = (
-            -fuel_energy_content * fuel_air_ratio
-        ) / 1000.0
-        jacobian["fuel_mass_flow", "fuel_energy_content"] = (
-            -combustion_efficiency * fuel_air_ratio
-        ) / 1000.0
+        jacobian["fuel_mass_flow", "combustion_energy"] = -fuel_air_ratio / 1000.0
         jacobian["fuel_mass_flow", "cp_3"] = (
             -np.diag(
                 total_temperature_3
@@ -444,10 +436,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             / 1000.0
         )
         jacobian["fuel_mass_flow", "fuel_air_ratio"] = (
-            np.diag(
-                (cp_4 * total_temperature_4 - cp_3 * total_temperature_3)
-                - combustion_efficiency * fuel_energy_content
-            )
+            np.diag((cp_4 * total_temperature_4 - cp_3 * total_temperature_3) - combustion_energy)
             / 1000.0
         )
         jacobian["fuel_mass_flow", "compressor_bleed_ratio"] = (

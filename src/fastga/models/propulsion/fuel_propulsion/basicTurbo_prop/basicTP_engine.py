@@ -21,6 +21,8 @@ from scipy.optimize import fsolve
 from pandas import read_csv
 import numpy as np
 
+import openmdao.api as om
+
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
@@ -34,6 +36,8 @@ from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import 
 )
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
+
+from .turboprop_components.turboshaft_geometry_computation import DesignPointCalculation
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -180,6 +184,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.exhaust_mach_design = (
             exhaust_mach_design  # Mach of the exhaust gases in the design point
         )
+        self.pr_1_ratio_design = pr_1_ratio_design
         self.opr_1_design = (
             pr_1_ratio_design * np.array(opr_design).item()
         )  # Compression ratio of the first stage in the design
@@ -247,6 +252,40 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
+        # This new version of the turboprop model will use nested OpenMDAO problem to compute
+        # fuel consumption, max thrust and geometry, but because the setup might take some time,
+        # we won't do it automatically, only when needed i.e. when, at some point we need to call
+        # the max thrust function (the compute_flight_point method calls it). Also we will make
+        # it so that we only have to set it up once by introducing a setup checker and attribute
+        # getter on the problems and on the turboprop geometry parameter that are required to
+        # compute max thrust and fuel consumption (Areas, alpha ratios and OPR ratios).
+
+        # TODO: think about whether or not these problem should be class attributes instead of
+        #  instance attributes (so it is shared between all instance of that class). This ponders
+        #  the question of what will happen when you change, in an analysis or optimization, one
+        #  of the sizing values
+        self._turboprop_sizing_problem = None
+        self._turboprop_sizing_problem_setup = False
+
+        self._turboprop_max_thrust_power_limit_problem = None
+        self._turboprop_max_thrust_power_limit_problem_setup = False
+
+        self._turboprop_max_thrust_opr_limit_problem = None
+        self._turboprop_max_thrust_opr_limit_problem_setup = False
+
+        self._turboprop_max_thrust_itt_limit_problem = None
+        self._turboprop_max_thrust_itt_limit_problem_setup = False
+
+        self._turboprop_fuel_problem = None
+        self._turboprop_fuel_problem_setup = False
+
+        self._alfa = None
+        self._alfa_p = None
+        self._a_41 = None
+        self._a_45 = None
+        self._a_8 = None
+        self._opr_2_opr_1 = None
+
         # Computation of the turboprop geometry based on the design point performance
         (
             alfa,
@@ -254,11 +293,11 @@ class BasicTPEngine(AbstractFuelPropulsion):
             a_41,
             a_45,
             a_8,
-            eta_compress,
-            m_c,
-            t_4t,
             _,
-            t_45t,
+            _,
+            _,
+            _,
+            _,
             opr_2_opr_1,
         ) = self.turboprop_geometry_calculation()
 
@@ -268,10 +307,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.a_41 = a_41
         self.a_45 = a_45
         self.a_8 = a_8
-        self.eta_compress_design = eta_compress
-        self.m_c_dp = m_c
-        self.t_4t_dp = t_4t
-        self.t_45t_dp = t_45t
         self.opr_2_opr_1_dp = (
             opr_2_opr_1  # Compression ratio relationship between the second and first stages
         )
@@ -294,6 +329,104 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.opr_sol = 0.0
         self.power_sol = [0.0]
         self.thrust_sol = [0.0]
+
+    @property
+    def turboprop_sizing_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the sizing point"""
+
+        if not self._turboprop_sizing_problem_setup:
+
+            ivc = om.IndepVarComp()
+            ivc.add_output(
+                "compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s"
+            )
+            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+            # Some parameters were hard-coded in previous version of the code, we'll leave them
+            # like that for now
+            ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
+            ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
+            ivc.add_output("bleed_control", val=1.0)  # Hard-coded at 1.0
+
+            ivc.add_output("eta_225", val=self.eta_225)
+            ivc.add_output("eta_253", val=self.eta_253)
+            ivc.add_output("eta_445", val=self.eta_445)
+            ivc.add_output("eta_455", val=self.eta_455)
+            ivc.add_output("total_pressure_loss_02", val=self.pi_02)
+            ivc.add_output("pressure_loss_34", val=self.pi_cc)
+            ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
+
+            ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
+
+            ivc.add_output(
+                "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+                val=self.pr_1_ratio_design,
+            )
+            ivc.add_output(
+                "settings:propulsion:turboprop:efficiency:high_pressure_axe",
+                val=self.eta_axe,
+            )
+            ivc.add_output(
+                "settings:propulsion:turboprop:efficiency:gearbox",
+                val=self.gearbox_efficiency,
+            )
+            ivc.add_output(
+                "settings:propulsion:turboprop:design_point:mach_exhaust",
+                val=self.exhaust_mach_design,
+            )
+
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:altitude",
+                val=self.design_point_altitude,
+                units="m",
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:mach", val=self.design_point_mach
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:power",
+                val=self.design_point_power,
+                units="kW",
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:turbine_entry_temperature",
+                val=self.t_41t_d,
+                units="degK",
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:OPR",
+                val=self.opr_d,
+            )
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_sizing",
+                DesignPointCalculation(number_of_points=1),
+                promotes=["*"],
+            )
+
+            max_iter = 100
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_sizing_problem_setup = True
+
+            self._turboprop_sizing_problem = prob
+
+        return self._turboprop_sizing_problem
+
+    @turboprop_sizing_problem.setter
+    def turboprop_sizing_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the sizing point"""
+
+        self._turboprop_sizing_problem = value
 
     @staticmethod
     def air_coefficients_reader():
