@@ -924,6 +924,8 @@ def test_compute_flight_points():
     )
 
     engine.compute_flight_points(flight_points)
+    print(np.array(flight_points.thrust) / np.array(flight_points.thrust_rate))
+    print(np.array(thrusts + thrusts) / np.array(thrust_rates + thrust_rates))
     np.testing.assert_allclose(flight_points.sfc, expected_sfc + expected_sfc, rtol=1e-2)
 
 
@@ -1542,7 +1544,7 @@ def test_max_thrust_private_func():
     # longer that the second even if the point is different. The reason being, for the second
     # case, the problem is already warm started
     t1 = time.time()
-    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4.050775, rel=1e-2)
+    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4050.69, rel=1e-2)
     t2 = time.time()
 
     assert engine._turboprop_max_thrust_opr_limit_problem is None
@@ -1555,7 +1557,7 @@ def test_max_thrust_private_func():
     assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
 
     t3 = time.time()
-    assert engine._max_thrust(5000, 0.37073066) == pytest.approx(3.885731, rel=1e-2)
+    assert engine._max_thrust(5000, 0.37073066) == pytest.approx(3885.731, rel=1e-2)
     t4 = time.time()
 
     assert t2 - t1 > t4 - t3
@@ -1566,7 +1568,7 @@ def test_max_thrust_private_func():
     assert "alt5000m0.371" in engine._cache_max_thrust
 
     t5 = time.time()
-    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4.050775, rel=1e-2)
+    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4050.775, rel=1e-2)
     t6 = time.time()
 
     assert t4 - t3 > t6 - t5
@@ -1576,10 +1578,73 @@ def test_max_thrust_private_func():
 
     # Here, the opr is supposed to be the limit, meaning ITT and propeller thrust should not be
     # loaded
-    assert engine._max_thrust(30000.0, 0.50562001) == pytest.approx(2.793539, rel=1e-2)
+    assert engine._max_thrust(30000.0, 0.50562001) == pytest.approx(2793.539, rel=1e-2)
 
     assert engine._turboprop_max_thrust_itt_limit_problem is None
     assert not engine._turboprop_max_thrust_itt_limit_problem_setup
 
     assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
     assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+
+def test_fuel_problem_not_called_in_max_thrust():
+    """
+    Really just a test for the sake of a test, but it is to make sure that the problem that will
+    compute the fuel are not called when we just run the max thrust function.
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Check that the fuel consumption are not called at object instantiation
+
+    assert engine._turboprop_fuel_problem is None
+    assert not engine._turboprop_fuel_problem_setup
+
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup
+
+    # They should also not be needed to compute max_thrust
+    engine._max_thrust(30000.0, 0.50562001)
+
+    assert engine._turboprop_fuel_problem is None
+    assert not engine._turboprop_fuel_problem_setup
+
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup

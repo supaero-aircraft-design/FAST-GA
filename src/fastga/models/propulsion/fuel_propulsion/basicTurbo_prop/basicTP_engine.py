@@ -45,7 +45,7 @@ from .turboprop_components.turboshaft_off_design_max_power import (
     TurboshaftMaxThrustITTLimit,
     TurboshaftMaxThrustPropellerThrustLimit,
 )
-import time
+from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -67,6 +67,7 @@ NACELLE_LABELS = {
 }
 
 CACHE_MAX_SIZE = 128
+MAX_ITER_NO_LS_PROBLEM = 10
 
 
 class BasicTPEngine(AbstractFuelPropulsion):
@@ -288,6 +289,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self._turboprop_fuel_problem = None
         self._turboprop_fuel_problem_setup = False
 
+        self._turboprop_fuel_problem_ls = None
+        self._turboprop_fuel_problem_ls_setup = False
+
         self._alpha = None
         self._alpha_p = None
         self._a_41 = None
@@ -391,11 +395,9 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 promotes=["*"],
             )
 
-            max_iter = 100
-
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 5e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -522,15 +524,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 promotes=["*"],
             )
 
-            max_iter = 100
-
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
             prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 5e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -563,15 +563,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 promotes=["*"],
             )
 
-            max_iter = 100
-
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
             prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 5e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -604,15 +602,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 promotes=["*"],
             )
 
-            max_iter = 100
-
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
             prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 5e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -645,15 +641,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 promotes=["*"],
             )
 
-            max_iter = 100
-
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
             prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = max_iter
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 5e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -795,6 +789,91 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """Set the ratio between OPR 2 and OPR 1."""
 
         self._opr_2_opr_1 = value
+
+    @property
+    def turboprop_fuel_problem(self) -> om.Problem:
+        """
+        OpenMDAO problem to compute the fuel consumption without linesearch algorithm. Quicker but
+        can sometimes fail so it will be the favored problem to use when computing sfc.
+        """
+        if not self._turboprop_fuel_problem_setup:
+
+            # Contains everything that is need and a bit more, but I don't think this more is
+            # worth the new lines that would have been necessary to implement a new method
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_fuel",
+                Turboshaft(number_of_points=1),
+                promotes=["*"],
+            )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = MAX_ITER_NO_LS_PROBLEM
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 1e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_fuel_problem_setup = True
+            self._turboprop_fuel_problem = prob
+
+        return self._turboprop_fuel_problem
+
+    @turboprop_fuel_problem.setter
+    def turboprop_fuel_problem(self, value: om.Problem):
+        """
+        OpenMDAO problem to compute the fuel consumption without linesearch algorithm. Quicker but
+        can sometimes fail so it will be the favored problem to use when computing sfc.
+        """
+
+        self._turboprop_fuel_problem = value
+
+    @property
+    def turboprop_fuel_problem_ls(self) -> om.Problem:
+        """
+        OpenMDAO problem to compute the fuel consumption with linesearch algorithm. Longer but more
+        likely to converge
+        """
+        if not self._turboprop_fuel_problem_ls_setup:
+            # Contains everything that is need and a bit more, but I don't think this more is
+            # worth the new lines that would have been necessary to implement a new method
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_fuel",
+                Turboshaft(number_of_points=1),
+                promotes=["*"],
+            )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = MAX_ITER_NO_LS_PROBLEM
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 1e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_fuel_problem_ls_setup = True
+            self._turboprop_fuel_problem_ls = prob
+
+        return self._turboprop_fuel_problem_ls
+
+    @turboprop_fuel_problem_ls.setter
+    def turboprop_fuel_problem_ls(self, value: om.Problem):
+        """
+        OpenMDAO problem to compute the fuel consumption with linesearch algorithm. More likely to
+        converge
+        """
+
+        self._turboprop_fuel_problem_ls = value
 
     @staticmethod
     def air_coefficients_reader():
@@ -1963,7 +2042,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
             "opr_limit"
         ):
-            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="kN")
+            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="N")
             self._add_to_max_thrust_cache(cache_key, max_thrust[0])
             return max_thrust
 
@@ -1980,7 +2059,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             "total_temperature_45", units="degK"
         ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
 
-            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="kN")
+            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="N")
             self._add_to_max_thrust_cache(cache_key, max_thrust[0])
             return max_thrust
 
@@ -1997,7 +2076,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             "propeller_thrust", units="N"
         ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
 
-            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="kN")
+            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="N")
             self._add_to_max_thrust_cache(cache_key, max_thrust[0])
             return max_thrust
 
@@ -2010,7 +2089,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         prob_max_thrust_propeller_thrust_limit.run_model()
 
-        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="kN")
+        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="N")
         self._add_to_max_thrust_cache(cache_key, max_thrust[0])
         return max_thrust
 
@@ -2026,13 +2105,13 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
 
-        if np.size(altitude) == 1:  # Calculate for float
+        if isinstance(altitude, float):  # Calculate for float
             thrust_max_global = self._max_thrust(altitude, atmosphere.mach)
             if isinstance(thrust_max_global, float):
                 thrust_max_global = np.array([thrust_max_global])
 
         else:  # Calculate for array
-            thrust_max_global = np.zeros(np.size(altitude))
+            thrust_max_global = np.zeros_like(altitude)
             for idx in range(np.size(altitude)):
                 thrust_max_global[idx] = self._max_thrust(altitude[idx], atmosphere.mach[idx])
 
@@ -2111,7 +2190,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         fineness = self.nacelle.length / np.sqrt(
             4 * self.nacelle.height * self.nacelle.width / np.pi
         )
-        ff_nac = 1 + 0.35 / fineness  # Raymer (seen in Gudmunsson)
+        ff_nac = 1 + 0.35 / fineness  # Raymer (seen in Gudmundsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
