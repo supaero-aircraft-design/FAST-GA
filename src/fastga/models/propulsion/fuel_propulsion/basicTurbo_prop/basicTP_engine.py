@@ -15,6 +15,7 @@
 
 import os.path as pth
 import logging
+from collections import OrderedDict
 from typing import Union, Sequence, Tuple, Optional
 from scipy.interpolate import interp2d, interp1d
 from scipy.optimize import fsolve
@@ -44,6 +45,7 @@ from .turboprop_components.turboshaft_off_design_max_power import (
     TurboshaftMaxThrustITTLimit,
     TurboshaftMaxThrustPropellerThrustLimit,
 )
+import time
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -63,6 +65,8 @@ NACELLE_LABELS = {
     "height": dict(doc="Height in meters."),
     "width": dict(doc="Width in meters."),
 }
+
+CACHE_MAX_SIZE = 128
 
 
 class BasicTPEngine(AbstractFuelPropulsion):
@@ -290,6 +294,8 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self._a_45 = None
         self._a_8 = None
         self._opr_2_opr_1 = None
+
+        self._cache_max_thrust = OrderedDict()
 
         # Here some internal attributes are defined.
 
@@ -1914,6 +1920,100 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return sfc, power_shaft
 
+    def _add_to_max_thrust_cache(self, key: str, value: float):
+        """
+        Adds a new value to the cache but first check that the size has not been exceeded. If it
+        has, pop the first element that has been computed.
+
+        :param key: key to add to the cache
+        :param value: value to add to the cache
+        """
+
+        if len(self._cache_max_thrust) > CACHE_MAX_SIZE:
+            self._cache_max_thrust.popitem(last=False)
+
+        self._cache_max_thrust[key] = value
+
+    def _max_thrust(self, altitude: float, mach: float):
+        """
+        Computation of maximum thrust either due to propeller thrust limit or turboprop max
+        power. Assumes the limits are reached in this order: Power limit, OPR limit, ITT limit,
+        propeller thrust_limit.
+
+        :param altitude: altitude in ft
+        :param mach: Mach number
+        """
+
+        # Check if a result with approximately the same altitude and approximately the same mach
+        # exist in cached results. If it does, take existing results, otherwise compute and add
+        # to cache.
+        cache_key = "alt" + str(round(altitude)) + "m" + str(round(mach, 3))
+
+        if cache_key in self._cache_max_thrust:
+            return self._cache_max_thrust[cache_key]
+
+        prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
+
+        prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_power_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process.
+        if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
+            "opr_limit"
+        ):
+            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="kN")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
+
+        prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_opr_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_opr_limit.get_val(
+            "total_temperature_45", units="degK"
+        ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
+
+            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="kN")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
+
+        prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_itt_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_itt_limit.get_val(
+            "propeller_thrust", units="N"
+        ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
+
+            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="kN")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_propeller_thrust_limit = (
+            self.turboprop_max_thrust_propeller_thrust_limit_problem
+        )
+
+        prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_propeller_thrust_limit.run_model()
+
+        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="kN")
+        self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+        return max_thrust
+
     def max_thrust(
         self,
         atmosphere: Atmosphere,
@@ -1924,141 +2024,17 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :return: maximum thrust (in N)
         """
-
-        # Calculate maximum propeller thrust @ given altitude and speed
-        if isinstance(atmosphere.true_airspeed, float):
-            lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
-            upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
-        else:
-            lower_bound = np.interp(
-                list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL
-            )
-            upper_bound = np.interp(
-                list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL
-            )
         altitude = atmosphere.get_altitude(altitude_in_feet=False)
-        thrust_max_propeller = (
-            lower_bound
-            + (upper_bound - lower_bound)
-            * np.minimum(altitude, self.cruise_altitude_propeller)
-            / self.cruise_altitude_propeller
-        )
 
-        altitudes_to_evaluate = atmosphere.get_altitude(altitude_in_feet=False)
-        if np.size(altitudes_to_evaluate) == 1:
-            h_vol = altitudes_to_evaluate
-            mach_vol = atmosphere.mach
-            _, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                self.max_power_avail, h_vol, mach_vol
-            )
-            power_out_watts = power_out * 1000.0
-            max_power = power_out_watts
-            exhaust_thrust_at_max_power = thrust_exhaust
-        else:
-            max_power = np.zeros(len(altitudes_to_evaluate))
-            exhaust_thrust_at_max_power = np.zeros(len(altitudes_to_evaluate))
-            for idx, h_vol in enumerate(altitudes_to_evaluate):
-                mach_vol = atmosphere.mach[idx]
-                _, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                    self.max_power_avail, h_vol, mach_vol
-                )
-                power_out_watts = power_out * 1000.0
-                # max_power = power_out_watts
-                max_power[idx] = power_out_watts
-                exhaust_thrust_at_max_power[idx] = thrust_exhaust
-
-        # Max power --> Array containing the maximum available power at the given flight points
-        # thrust_max_propeller --> Array containing the maximum available thrust at the given
-        # flight points for the propeller
-
-        # Found thrust relative to turboprop maximum power @ given altitude and speed: calculates
-        # first thrust interpolation vector (between min and max of propeller table) and
-        # associated efficiency, then calculates power and found thrust (interpolation limits to
-        # max propeller thrust)
-        thrust_interp = np.linspace(
-            np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
-            thrust_max_propeller,
-            10,
-        ).transpose()
         if np.size(altitude) == 1:  # Calculate for float
-            thrust_max_global = 0.0
-            local_atmosphere = Atmosphere(
-                altitude * np.ones(np.size(thrust_interp)), altitude_in_feet=False
-            )
-            local_atmosphere.mach = atmosphere.mach * np.ones(np.size(thrust_interp))
-            propeller_efficiency = self.propeller_efficiency(thrust_interp[0], local_atmosphere)
-            mechanical_power = thrust_interp[0] * atmosphere.true_airspeed / propeller_efficiency
-            if np.min(mechanical_power) > max_power:
-                efficiency_relative_error = 1
-                propeller_efficiency = propeller_efficiency[0]
-                while efficiency_relative_error > 1e-2:
-                    thrust_max_global = max_power * propeller_efficiency / atmosphere.true_airspeed
-                    propeller_efficiency_new = self.propeller_efficiency(
-                        thrust_max_global, atmosphere
-                    )
-                    efficiency_relative_error = np.abs(
-                        (propeller_efficiency_new - propeller_efficiency)
-                        / efficiency_relative_error
-                    )
-                    propeller_efficiency = propeller_efficiency_new
-                thrust_max_global += exhaust_thrust_at_max_power
-            # TODO : is there a need to take into account the fact when the turboprop is
-            #  over-sized and the limiting  factor becomes the propeller ? Is it physically
-            #  relevant ? Here it looks like in any case, the  engine is always the  limiting
-            #  factor
-            else:
-                thrust_max_global = (
-                    np.interp(max_power, mechanical_power, thrust_interp[0])
-                    + exhaust_thrust_at_max_power
-                )
+            thrust_max_global = self._max_thrust(altitude, atmosphere.mach)
             if isinstance(thrust_max_global, float):
                 thrust_max_global = np.array([thrust_max_global])
+
         else:  # Calculate for array
             thrust_max_global = np.zeros(np.size(altitude))
             for idx in range(np.size(altitude)):
-                local_atmosphere = Atmosphere(
-                    altitude[idx] * np.ones(np.size(thrust_interp[idx])), altitude_in_feet=False
-                )
-                local_atmosphere.mach = atmosphere.mach[idx] * np.ones(np.size(thrust_interp[idx]))
-                propeller_efficiency = self.propeller_efficiency(
-                    thrust_interp[idx], local_atmosphere
-                )
-                mechanical_power = (
-                    thrust_interp[idx] * atmosphere.true_airspeed[idx] / propeller_efficiency
-                )
-                # mechanical power contain the shaft power required to obtain the thrust from
-                # thrust_interp, where thrust_interp[idx] is the thrust interpolation array
-                # corresponding to the flight conditions [idx] Mechanical power is already
-                # limited by the maximum thrust that the propeller can produce so we are sure
-                # that we will never go above our propeller's capacity
-
-                # If the limiting factor is the turboprop, thrust_max_global is computed based on
-                # max_power[idx]
-                if (
-                    np.min(mechanical_power) > max_power[idx]
-                ):  # take the lower bound efficiency for calculation
-                    efficiency_relative_error = 1
-                    local_atmosphere = Atmosphere(altitude[idx], altitude_in_feet=False)
-                    local_atmosphere.mach = atmosphere.mach[idx]
-                    propeller_efficiency = propeller_efficiency[0]
-                    while efficiency_relative_error > 1e-2:
-                        thrust_max_global[idx] = (
-                            max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
-                        )
-                        propeller_efficiency_new = self.propeller_efficiency(
-                            thrust_max_global[idx], local_atmosphere
-                        )
-                        efficiency_relative_error = np.abs(
-                            (propeller_efficiency_new - propeller_efficiency)
-                            / efficiency_relative_error
-                        )
-                        propeller_efficiency = propeller_efficiency_new
-                    thrust_max_global[idx] += exhaust_thrust_at_max_power[idx]
-                else:
-                    thrust_max_global[idx] = (
-                        np.interp(max_power[idx], mechanical_power, thrust_interp[idx])
-                        + exhaust_thrust_at_max_power[idx]
-                    )
+                thrust_max_global[idx] = self._max_thrust(altitude[idx], atmosphere.mach[idx])
 
         return thrust_max_global
 
