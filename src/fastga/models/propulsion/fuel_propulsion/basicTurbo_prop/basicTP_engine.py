@@ -495,7 +495,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
-            val=self.effective_efficiency_ls,
+            val=self.effective_efficiency_cruise,
         )
         ivc.add_output(
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
@@ -854,7 +854,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.options["iprint"] = 0
-            prob.model.nonlinear_solver.options["maxiter"] = MAX_ITER_NO_LS_PROBLEM
+            prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
             prob.model.nonlinear_solver.options["atol"] = 1e-5
             prob.model.linear_solver = om.DirectSolver()
@@ -1942,60 +1942,23 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :return: SFC (in kg/s/W) and power (in W)
         """
 
-        # Compute sfc
-        power_shaft = np.zeros(np.size(thrust))
-        # torque = np.zeros(np.size(thrust))
-        sfc = np.zeros(np.size(thrust))
-        if np.size(thrust) == 1:
-            thrust_propeller = thrust
-            while True:
-                power_shaft = (
-                    thrust_propeller
-                    * atmosphere.true_airspeed
-                    / self.propeller_efficiency(thrust_propeller, atmosphere)
-                )
-                h_vol_point = atmosphere.get_altitude(altitude_in_feet=False)
-                mach_vol_point = atmosphere.mach
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
+        mach = atmosphere.mach
 
-                power_in_kw = power_shaft / 1000.0
+        if isinstance(altitude, float):
+            fuel_consumed, power_shaft = self._fuel_consumed(altitude, mach, thrust)
+            sfc = np.array(fuel_consumed / power_shaft)
+            power_shaft = np.array(power_shaft)
 
-                fuel_point, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                    power_in_kw, h_vol_point, mach_vol_point
-                )
-                power_out_watts = power_out * 1000.0
-
-                sfc = fuel_point / power_out_watts
-                power_shaft = power_out_watts
-                if abs(thrust - thrust_propeller - thrust_exhaust) / thrust < 1e-3:
-                    break
-                else:
-                    thrust_propeller = thrust - thrust_exhaust
         else:
-            for idx in range(np.size(thrust)):
-                thrust_propeller = thrust[idx]
-                local_atmosphere = Atmosphere(
-                    atmosphere.get_altitude(altitude_in_feet=False)[idx], altitude_in_feet=False
+            sfc = np.zeros_like(altitude)
+            power_shaft = np.zeros_like(altitude)
+            for idx in range(np.size(altitude)):
+                fuel_consumed, power_shaft_loc = self._fuel_consumed(
+                    altitude[idx], mach[idx], thrust[idx]
                 )
-                local_atmosphere.mach = atmosphere.mach[idx]
-                while True:
-                    power_shaft[idx] = (
-                        thrust_propeller
-                        * local_atmosphere.true_airspeed
-                        / self.propeller_efficiency(thrust_propeller, local_atmosphere)
-                    )
-                    h_vol = local_atmosphere.get_altitude(altitude_in_feet=False)
-                    mach_vol = local_atmosphere.mach
-                    power_in_kw = power_shaft[idx] / 1000.0
-                    fuel, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                        power_in_kw, h_vol, mach_vol
-                    )
-                    power_out_watts = power_out * 1000.0
-                    sfc[idx] = fuel / power_out_watts
-                    power_shaft[idx] = power_out_watts
-                    if abs(thrust[idx] - thrust_propeller - thrust_exhaust) / thrust[idx] < 1e-3:
-                        break
-                    else:
-                        thrust_propeller = thrust[idx] - thrust_exhaust
+                sfc[idx] = fuel_consumed / power_shaft_loc
+                power_shaft[idx] = power_shaft_loc
 
         return sfc, power_shaft
 
@@ -2026,7 +1989,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # Check if a result with approximately the same altitude and approximately the same mach
         # exist in cached results. If it does, take existing results, otherwise compute and add
         # to cache.
-        cache_key = "alt" + str(round(altitude)) + "m" + str(round(mach, 3))
+        cache_key = "alt" + str(round(altitude)) + "ft" + str(round(mach, 3))
 
         if cache_key in self._cache_max_thrust:
             return self._cache_max_thrust[cache_key]
@@ -2103,7 +2066,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
         :return: maximum thrust (in N)
         """
-        altitude = atmosphere.get_altitude(altitude_in_feet=False)
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
 
         if isinstance(altitude, float):  # Calculate for float
             thrust_max_global = self._max_thrust(altitude, atmosphere.mach)
@@ -2116,6 +2079,51 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 thrust_max_global[idx] = self._max_thrust(altitude[idx], atmosphere.mach[idx])
 
         return thrust_max_global
+
+    def _fuel_consumed(
+        self, altitude: float, mach: float, thrust_required: float
+    ) -> Tuple[float, float]:
+        """
+        Computes the fuel consumed at the current flight point. Will first attempt to use the no
+        ls problem because it is quicker, if it doesn't converge, compute using the ls problem.
+        This function can't really be cached as it depends on the thrust which tends to never be
+        equal from one point to another unlike speed and altitude
+
+        :param altitude: altitude in ft
+        :param mach: Mach number
+        :param thrust_required: thrust required in N
+
+        :return fuel_consumed: fuel consumed in kg/s
+        :return shaft_power: shaft power in W
+        """
+
+        prob_fuel_consumed = self.turboprop_fuel_problem
+
+        prob_fuel_consumed.set_val("altitude", val=altitude, units="ft")
+        prob_fuel_consumed.set_val("mach_0", val=mach)
+        prob_fuel_consumed.set_val("required_thrust", val=thrust_required, units="N")
+
+        prob_fuel_consumed.run_model()
+
+        if prob_fuel_consumed.model.nonlinear_solver._iter_count < MAX_ITER_NO_LS_PROBLEM:
+            return (
+                prob_fuel_consumed.get_val("fuel_mass_flow", units="kg/s")[0],
+                prob_fuel_consumed.get_val("shaft_power", units="W")[0],
+            )
+
+        # From my tests it is rarely used but better safe than sorry
+        prob_fuel_consumed_ls = self.turboprop_fuel_problem_ls
+
+        prob_fuel_consumed_ls.set_val("altitude", val=altitude, units="ft")
+        prob_fuel_consumed_ls.set_val("mach_0", val=mach)
+        prob_fuel_consumed_ls.set_val("required_thrust", val=thrust_required, units="N")
+
+        prob_fuel_consumed_ls.run_model()
+
+        return (
+            prob_fuel_consumed_ls.get_val("fuel_mass_flow", units="kg/s")[0],
+            prob_fuel_consumed_ls.get_val("shaft_power", units="W")[0],
+        )
 
     def compute_weight(self) -> float:
         """
