@@ -25,7 +25,7 @@ import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
-from ..basicTP_engine import BasicTPEngine
+from ..basicTP_engine import BasicTPEngine, CACHE_MAX_SIZE
 
 INVALID_SFC = 0.0
 
@@ -1743,3 +1743,67 @@ def test_fuel_consumed_private_func():
     assert engine._fuel_consumed(10000, 0.396, 3724.108916)[0] * 3600.0 == pytest.approx(
         203.416703, rel=1e-2
     )
+
+
+def test_max_thrust_cache_saturation():
+    """
+    Check that the cache implemented for max thrust works as intended in that it never goes above
+    128 elements.
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    altitude = np.linspace(0.0, 10000.0, CACHE_MAX_SIZE)
+    mach = np.linspace(0.3, 0.4, CACHE_MAX_SIZE)
+    dummy_thrust = np.linspace(1000.0, 2000.0, CACHE_MAX_SIZE)
+
+    # Artificially fill the cache
+    for altitude_loc, mach_loc, dummy_thrust_loc in zip(altitude, mach, dummy_thrust):
+        key = "alt" + str(round(altitude_loc)) + "ft" + str(round(mach_loc, 3))
+        engine._cache_max_thrust[key] = dummy_thrust_loc
+
+    assert len(engine._cache_max_thrust) == CACHE_MAX_SIZE
+
+    # Now properly add one value and check that it has indeed not changed the size
+    engine._max_thrust(15000.0, 0.41)
+    assert len(engine._cache_max_thrust) == CACHE_MAX_SIZE
+    assert "alt0ft0.3" not in engine._cache_max_thrust.keys()
+    assert list(engine._cache_max_thrust.keys())[-2] == "alt10000ft0.4"
+    assert list(engine._cache_max_thrust.keys())[-1] == "alt15000ft0.41"

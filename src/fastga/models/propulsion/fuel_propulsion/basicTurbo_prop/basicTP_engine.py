@@ -1164,7 +1164,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         :param value: value to add to the cache
         """
 
-        if len(self._cache_max_thrust) > CACHE_MAX_SIZE:
+        if len(self._cache_max_thrust) >= CACHE_MAX_SIZE:
             self._cache_max_thrust.popitem(last=False)
 
         self._cache_max_thrust[key] = value
