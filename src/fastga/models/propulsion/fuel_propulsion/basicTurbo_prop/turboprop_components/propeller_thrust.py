@@ -157,19 +157,15 @@ class ShaftPowerRequired(om.ExplicitComponent):
         # The input effective advance ratio is included here and not in the computation of the
         # true airspeed since it should not be used as part of the shaft power computation but
         # only as a displacement in the efficiency map reading
-        lower_bound_efficiency = np.diag(
-            propeller_efficiency_interp_sl(
-                thrust_interp_sl,
-                true_airspeed
-                * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
-            )
+        lower_bound_efficiency = propeller_efficiency_interp_sl(
+            thrust_interp_sl,
+            true_airspeed
+            * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
         )
-        upper_bound_efficiency = np.diag(
-            propeller_efficiency_interp_cl(
-                thrust_interp_cl,
-                true_airspeed
-                * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
-            )
+        upper_bound_efficiency = propeller_efficiency_interp_cl(
+            thrust_interp_cl,
+            true_airspeed
+            * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
         )
 
         efficiency_propeller = (

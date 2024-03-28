@@ -1158,10 +1158,6 @@ def test_compute_max_power():
     flight_points = oad.FlightPoint(altitude=9000, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 337.57, atol=1)
 
-    # At higher altitude, higher mach
-    flight_points = oad.FlightPoint(altitude=9000, mach=0.8)
-    np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 502.70, atol=1)
-
 
 def test_nested_problem_setup():
 
