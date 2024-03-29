@@ -274,13 +274,18 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         engine = BasicTPEngine(**engine_params)
 
         cruise_altitude = inputs["data:aerodynamics:propeller:cruise_level:altitude"]
+        cruise_velocity = inputs["data:TLAR:v_cruise"]
+
+        atm_cruise = Atmosphere(cruise_altitude, altitude_in_feet=False)
+
+        cruise_mach = cruise_velocity / atm_cruise.speed_of_sound
 
         (
             mach_array_sl,
             thrust_preliminary_intersect_sl,
             sfc_general_sl,
             max_thrust_array_sl,
-        ) = self.construct_table(0.0, inputs, engine)
+        ) = self.construct_table(0.0, engine, cruise_mach)
 
         sfc_general_sl, thrust_preliminary_intersect_sl = format_table(
             sfc_general_sl, thrust_preliminary_intersect_sl
@@ -290,22 +295,6 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         outputs["data:propulsion:turboprop:sea_level:thrust"] = thrust_preliminary_intersect_sl
         outputs["data:propulsion:turboprop:sea_level:thrust_limit"] = max_thrust_array_sl
         outputs["data:propulsion:turboprop:sea_level:sfc"] = sfc_general_sl
-
-        (
-            mach_array_cl,
-            thrust_preliminary_intersect_cl,
-            sfc_general_cl,
-            max_thrust_array_cl,
-        ) = self.construct_table(cruise_altitude, inputs, engine)
-
-        sfc_general_cl, thrust_preliminary_intersect_cl = format_table(
-            sfc_general_cl, thrust_preliminary_intersect_cl
-        )
-
-        outputs["data:propulsion:turboprop:cruise_level:mach"] = mach_array_cl
-        outputs["data:propulsion:turboprop:cruise_level:thrust"] = thrust_preliminary_intersect_cl
-        outputs["data:propulsion:turboprop:cruise_level:thrust_limit"] = max_thrust_array_cl
-        outputs["data:propulsion:turboprop:cruise_level:sfc"] = sfc_general_cl
 
         if self.options["intermediate_altitude"] is None:
             intermediate_altitude = cruise_altitude / 2.0
@@ -317,7 +306,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             thrust_preliminary_intersect_il,
             sfc_general_il,
             max_thrust_array_il,
-        ) = self.construct_table(intermediate_altitude, inputs, engine)
+        ) = self.construct_table(intermediate_altitude[0], engine, cruise_mach)
 
         sfc_general_il, thrust_preliminary_intersect_il = format_table(
             sfc_general_il, thrust_preliminary_intersect_il
@@ -331,37 +320,51 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         outputs["data:propulsion:turboprop:intermediate_level:thrust_limit"] = max_thrust_array_il
         outputs["data:propulsion:turboprop:intermediate_level:sfc"] = sfc_general_il
 
+        (
+            mach_array_cl,
+            thrust_preliminary_intersect_cl,
+            sfc_general_cl,
+            max_thrust_array_cl,
+        ) = self.construct_table(cruise_altitude[0], engine, cruise_mach)
+
+        sfc_general_cl, thrust_preliminary_intersect_cl = format_table(
+            sfc_general_cl, thrust_preliminary_intersect_cl
+        )
+
+        outputs["data:propulsion:turboprop:cruise_level:mach"] = mach_array_cl
+        outputs["data:propulsion:turboprop:cruise_level:thrust"] = thrust_preliminary_intersect_cl
+        outputs["data:propulsion:turboprop:cruise_level:thrust_limit"] = max_thrust_array_cl
+        outputs["data:propulsion:turboprop:cruise_level:sfc"] = sfc_general_cl
+
         _LOGGER.debug("Finishing turboprop computation")
 
-    def construct_table(self, altitude, inputs, engine):
+    def construct_table(self, altitude, engine, cruise_mach):
         """Construct the sfc table for the given engine at the given altitude."""
+        engine.reset_problems()
+
         nb_of_mach = MACH_PTS_NB_TURBOPROP
         nb_of_thrust = self.options["number_of_thrust_subdivision"]
 
-        cruise_velocity = inputs["data:TLAR:v_cruise"]
-        cruise_altitude = inputs["data:aerodynamics:propeller:cruise_level:altitude"]
-
-        atm_cruise = Atmosphere(cruise_altitude, altitude_in_feet=False)
-
-        cruise_mach = cruise_velocity / atm_cruise.speed_of_sound
-
         # Since the cruise speed gives by construction the highest Mach number we know we will
-        # never cross it, hence the following bounds for the mach array
-        mach_array = np.linspace(1e-5, 1.3 * cruise_mach, nb_of_mach)
-        # print("\n", mach_array)
+        # never cross it, hence the following bounds for the mach array. The min speed will be
+        # set at 5.0 m/s at each altitude to prevent problem in the creation of the table. It
+        # also coincides with the minimum speed of the propeller
+        atm_local = Atmosphere(altitude=altitude, altitude_in_feet=False)
+        min_mach_local = 5.0 / atm_local.speed_of_sound
+
+        mach_array = np.linspace(min_mach_local, 1.3 * cruise_mach, nb_of_mach)
 
         # We then compute the maximum thrust for those mach they are gonna be used to define the
         # thrust for which we interpolate the fuel consumption
         max_thrust_list = []
 
+        atm = Atmosphere(altitude=altitude, altitude_in_feet=False)
         for mach in mach_array:
-            atm = Atmosphere(altitude=altitude, altitude_in_feet=False)
             atm.mach = mach
             max_thrust = engine.max_thrust(atm)
             max_thrust_list.append(float(max_thrust))
 
         max_thrust_array = np.array(max_thrust_list)
-        # print("\n", max_thrust_array)
 
         # thrust_preliminary_intersect will contain the thrust at which we will interpolate our
         # data. To minimize computation time we will try to build it at relevant point while
@@ -371,11 +374,9 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         # to ensure that this point will be kept in the first overlap
         thrust_preliminary_intersect = np.array([min(max_thrust_array) / (nb_of_thrust - 1e-5)])
 
-        for mach in np.flip(mach_array):
-            max_thrust_current_mach = max_thrust_array[np.where(mach_array == mach)[0][0]]
+        for mach, max_thrust_current_mach in zip(np.flip(mach_array), np.flip(max_thrust_array)):
             # The first element of the linspace
             first_thrust_array = max_thrust_current_mach / nb_of_thrust
-
             current_even_spacing = np.linspace(
                 first_thrust_array, max_thrust_current_mach, nb_of_thrust
             )
@@ -402,27 +403,24 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             atm = Atmosphere(altitude, altitude_in_feet=False)
             atm.mach = mach
             for thrust in thrust_preliminary_intersect:
-                thrust = np.array([thrust])
-                flight_points = oad.FlightPoint(
-                    mach=mach,
-                    altitude=altitude,
-                    engine_setting=EngineSetting.CRUISE,
-                    thrust_is_regulated=True,
-                    thrust_rate=0.0,
-                    thrust=thrust,
-                )
                 if thrust > max_thrust_array[np.where(mach_array == mach)[0][0]]:
                     sfc = INVALID_SFC
                 else:
+                    thrust = np.array([thrust])
+                    flight_points = oad.FlightPoint(
+                        mach=mach,
+                        altitude=altitude,
+                        engine_setting=EngineSetting.CRUISE,
+                        thrust_is_regulated=True,
+                        thrust_rate=0.0,
+                        thrust=thrust,
+                    )
                     engine.compute_flight_points(flight_points)
                     sfc = flight_points.sfc
                 sfc_general[
                     np.where(mach_array == mach)[0][0],
                     np.where(thrust_preliminary_intersect == float(thrust))[0][0],
                 ] = sfc
-
-        # sfc_general_before = np.copy(sfc_general)
-        # print("\n", sfc_general_before)
 
         valid_idx_previous_mach = np.array([])
         thrust_to_interpolate = np.zeros((1, 1))
@@ -452,16 +450,6 @@ class ComputeTurbopropMap(om.ExplicitComponent):
 
             valid_idx_previous_mach = valid_idx
 
-        # thrust_plot, mach_plot = np.meshgrid(thrust_preliminary_intersect, mach_array)
-        # fig3d = plt.figure()
-        # ax = Axes3D(fig3d)
-        # ax.scatter(thrust_plot, mach_plot, sfc_general, cmap="viridis",
-        #   linewidth=0.25, label="predicted behaviour")
-        # ax.scatter(thrust_plot, mach_plot, sfc_general_before, cmap="viridis",
-        #   linewidth=0.25, label="reference data")
-        # ax.legend()
-        # plt.show()
-
         return mach_array, thrust_preliminary_intersect, sfc_general, max_thrust_array
 
 
@@ -475,8 +463,5 @@ def format_table(sfc_table, thrust_table):
 
     formatted_sfc_table[:, 0:nb_of_thrust] = sfc_table
     formatted_thrust_table[0:nb_of_thrust] = thrust_table
-
-    # print("\n", formatted_sfc_table)
-    # print("\n", formatted_thrust_table)
 
     return formatted_sfc_table, formatted_thrust_table

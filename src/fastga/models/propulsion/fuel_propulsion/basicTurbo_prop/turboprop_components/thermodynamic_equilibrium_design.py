@@ -328,8 +328,6 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             * (1.0 + (gamma_5 - 1.0) / 2.0 * exhaust_mach ** 2) ** (gamma_5 / (gamma_5 - 1.0))
         )
 
-        # print(residuals._views_flat)
-
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
 
         n = self.options["number_of_points"]

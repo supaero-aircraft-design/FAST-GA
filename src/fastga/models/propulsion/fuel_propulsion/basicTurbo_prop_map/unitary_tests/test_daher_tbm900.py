@@ -16,14 +16,15 @@ Test module for basicTP_engine_constructor.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-import numpy as np
 
 from ..basicTP_engine_constructor import ComputeTurbopropMap
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from .data.dummy_maps import (
-    MACH_ARRAY,
+    MACH_ARRAY_SL,
+    MACH_ARRAY_IL,
+    MACH_ARRAY_CL,
     THRUST_ARRAY_CL,
     THRUST_ARRAY_IL,
     THRUST_ARRAY_SL,
@@ -40,7 +41,7 @@ SKIP_STEPS = True  # avoid some tests to accelerate validation process (turbopro
 
 
 @pytest.mark.skipif(
-    SKIP_STEPS,
+    False,
     reason="Skipping test because it is too long",
 )
 def test_table_construction():
@@ -53,7 +54,7 @@ def test_table_construction():
     problem = run_system(ComputeTurbopropMap(), ivc)
 
     assert problem.get_val("data:propulsion:turboprop:sea_level:mach") == pytest.approx(
-        MACH_ARRAY, abs=1e-4
+        MACH_ARRAY_SL, abs=1e-4
     )
     assert problem.get_val(
         "data:propulsion:turboprop:sea_level:thrust", units="N"
@@ -66,7 +67,7 @@ def test_table_construction():
     ) == pytest.approx(SFC_SL, abs=1e-2)
 
     assert problem.get_val("data:propulsion:turboprop:cruise_level:mach") == pytest.approx(
-        MACH_ARRAY, abs=1e-4
+        MACH_ARRAY_CL, abs=1e-4
     )
     assert problem.get_val(
         "data:propulsion:turboprop:cruise_level:thrust", units="N"
@@ -79,7 +80,7 @@ def test_table_construction():
     ) == pytest.approx(SFC_CL, abs=1e-2)
 
     assert problem.get_val("data:propulsion:turboprop:intermediate_level:mach") == pytest.approx(
-        MACH_ARRAY, abs=1e-4
+        MACH_ARRAY_IL, abs=1e-4
     )
     assert problem.get_val(
         "data:propulsion:turboprop:intermediate_level:thrust", units="N"

@@ -360,6 +360,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             )
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
             prob.model.nonlinear_solver.options["iprint"] = 0
             prob.model.nonlinear_solver.options["maxiter"] = 100
             prob.model.nonlinear_solver.options["rtol"] = 1e-5
@@ -490,7 +491,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
-            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
@@ -529,7 +530,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
-            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
@@ -568,7 +569,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
-            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
@@ -607,7 +608,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
             prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
             prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
-            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 3
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
             prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
             prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
             prob.model.nonlinear_solver.options["iprint"] = 0
@@ -838,6 +839,30 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """
 
         self._turboprop_fuel_problem_ls = value
+
+    def reset_problems(self):
+        """
+        Resets all the problem to force them to be recreated, except for the sizing problem which
+        should not be necessary to reset
+        """
+
+        self._turboprop_max_thrust_power_limit_problem = None
+        self._turboprop_max_thrust_power_limit_problem_setup = False
+
+        self._turboprop_max_thrust_opr_limit_problem = None
+        self._turboprop_max_thrust_opr_limit_problem_setup = False
+
+        self._turboprop_max_thrust_itt_limit_problem = None
+        self._turboprop_max_thrust_itt_limit_problem_setup = False
+
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = None
+        self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = False
+
+        self._turboprop_fuel_problem = None
+        self._turboprop_fuel_problem_setup = False
+
+        self._turboprop_fuel_problem_ls = None
+        self._turboprop_fuel_problem_ls_setup = False
 
     def compute_flight_points(self, flight_points: oad.FlightPoint):
         # pylint: disable=too-many-arguments

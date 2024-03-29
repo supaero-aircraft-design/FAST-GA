@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import interp2d, interp1d
+from scipy.interpolate import RectBivariateSpline, interp1d
 from stdatm import Atmosphere
 
 THRUST_PTS_NB = 30
@@ -36,6 +36,12 @@ class PropellerThrustRequired(om.ExplicitComponent):
 
 
 class ShaftPowerRequired(om.ExplicitComponent):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.sea_level_spline = None
+        self.cruise_level_spline = None
+
     def initialize(self):
 
         self.options.declare("number_of_points", types=int, default=250)
@@ -102,9 +108,13 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.add_output("required_shaft_power", units="W", shape=n, val=500e3)
 
         self.declare_partials(
-            of="required_shaft_power",
-            wrt=["altitude", "mach_0", "propeller_thrust"],
-            method="fd",
+            of="required_shaft_power", wrt="altitude", method="fd", step=1.0, form="central"
+        )
+        self.declare_partials(
+            of="required_shaft_power", wrt="mach_0", method="fd", step=1e-4, form="central"
+        )
+        self.declare_partials(
+            of="required_shaft_power", wrt="propeller_thrust", method="fd", step=1.0, form="central"
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -122,24 +132,24 @@ class ShaftPowerRequired(om.ExplicitComponent):
         speed_cl = inputs["data:aerodynamics:propeller:cruise_level:speed"]
         efficiency_cl = inputs["data:aerodynamics:propeller:cruise_level:efficiency"]
 
-        propeller_efficiency_interp_sl = interp2d(
-            thrust_sl,
-            speed_sl,
-            efficiency_sl
-            * inputs[
-                "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
-            ],  # Include the efficiency loss in here
-            kind="cubic",
-        )
-        propeller_efficiency_interp_cl = interp2d(
-            thrust_cl,
-            speed_cl,
-            efficiency_cl
-            * inputs[
-                "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
-            ],  # Include the efficiency loss in here
-            kind="cubic",
-        )
+        if not self.sea_level_spline:
+            self.sea_level_spline = RectBivariateSpline(
+                thrust_sl,
+                speed_sl,
+                efficiency_sl.T
+                * inputs[
+                    "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed"
+                ],
+            )
+        if not self.cruise_level_spline:
+            self.cruise_level_spline = RectBivariateSpline(
+                thrust_cl,
+                speed_cl,
+                efficiency_cl.T
+                * inputs[
+                    "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise"
+                ],
+            )
 
         input_thrust = inputs["propeller_thrust"]
 
@@ -157,24 +167,21 @@ class ShaftPowerRequired(om.ExplicitComponent):
         # The input effective advance ratio is included here and not in the computation of the
         # true airspeed since it should not be used as part of the shaft power computation but
         # only as a displacement in the efficiency map reading
-        lower_bound_efficiency = propeller_efficiency_interp_sl(
+        lower_bound_efficiency = self.sea_level_spline(
             thrust_interp_sl,
             true_airspeed
             * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
-        )
-        upper_bound_efficiency = propeller_efficiency_interp_cl(
+        )[0]
+        upper_bound_efficiency = self.cruise_level_spline(
             thrust_interp_cl,
             true_airspeed
             * inputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"],
-        )
+        )[0]
 
         efficiency_propeller = (
             lower_bound_efficiency
             + (upper_bound_efficiency - lower_bound_efficiency)
-            * np.minimum(
-                inputs["altitude"],
-                inputs["data:aerodynamics:propeller:cruise_level:altitude"],
-            )
+            * inputs["altitude"]
             / inputs["data:aerodynamics:propeller:cruise_level:altitude"]
         )
 
@@ -238,8 +245,12 @@ class PropellerMaxThrust(om.ExplicitComponent):
         thrust_limit_cl = inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"]
         speed_cl = inputs["data:aerodynamics:propeller:cruise_level:speed"]
 
-        propeller_max_thrust_sl_func = interp1d(speed_sl, thrust_limit_sl, kind="cubic")
-        propeller_max_thrust_cl_func = interp1d(speed_cl, thrust_limit_cl, kind="cubic")
+        propeller_max_thrust_sl_func = interp1d(
+            speed_sl, thrust_limit_sl, kind="cubic", bounds_error=False, fill_value="extrapolate"
+        )
+        propeller_max_thrust_cl_func = interp1d(
+            speed_cl, thrust_limit_cl, kind="cubic", bounds_error=False, fill_value="extrapolate"
+        )
 
         lower_bound_thrust_limit = propeller_max_thrust_sl_func(
             true_airspeed
