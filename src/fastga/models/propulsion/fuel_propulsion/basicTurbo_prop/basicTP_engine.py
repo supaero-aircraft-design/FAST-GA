@@ -1,7 +1,7 @@
 """Parametric turboprop engine."""
 # -*- coding: utf-8 -*-
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2024  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,27 +13,33 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os.path as pth
 import logging
+from collections import OrderedDict
 from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import interp2d, interp1d
-from scipy.optimize import fsolve
-from pandas import read_csv
+from scipy.interpolate import interp1d, RectBivariateSpline
 import numpy as np
+
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastoad.exceptions import FastUnknownEngineSettingError
 from stdatm import Atmosphere
 
-from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop import resources
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.exceptions import (
     FastBasicICEngineInconsistentInputParametersError,
-    FastBasicTPEngineImpossibleTurbopropGeometry,
-    FastBasicTPEngineUnknownLimit,
 )
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.dict import DynamicAttributeDict, AddKeyAttributes
+
+from .turboprop_components.turboshaft_geometry_computation import DesignPointCalculation
+from .turboprop_components.turboshaft_off_design_max_power import (
+    TurboshaftMaxThrustPowerLimit,
+    TurboshaftMaxThrustOPRLimit,
+    TurboshaftMaxThrustITTLimit,
+    TurboshaftMaxThrustPropellerThrustLimit,
+)
+from .turboprop_components.turboshaft_off_design_fuel import Turboshaft
 
 # Logger for this module
 _LOGGER = logging.getLogger(__name__)
@@ -53,6 +59,9 @@ NACELLE_LABELS = {
     "height": dict(doc="Height in meters."),
     "width": dict(doc="Width in meters."),
 }
+
+CACHE_MAX_SIZE = 128
+MAX_ITER_NO_LS_PROBLEM = 10
 
 
 class BasicTPEngine(AbstractFuelPropulsion):
@@ -147,15 +156,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         point.
         """
 
-        # Load the value of the air properties graph
-        cv_c, cp_c = self.air_coefficients_reader()
-
-        self.cv_c = cv_c
-        self.cp_c = cp_c
-
-        # Load the value of the cabin pressure
-        self.cabin_pressure = self.air_renewal_coefficients()
-
         # Definition of the Turboprop design parameters
         self.eta_225 = eta_225  # First compressor stage polytropic efficiency
         self.eta_253 = eta_253  # Second compressor stage polytropic efficiency
@@ -180,6 +180,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.exhaust_mach_design = (
             exhaust_mach_design  # Mach of the exhaust gases in the design point
         )
+        self.pr_1_ratio_design = pr_1_ratio_design
         self.opr_1_design = (
             pr_1_ratio_design * np.array(opr_design).item()
         )  # Compression ratio of the first stage in the design
@@ -232,8 +233,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         self.nacelle = Nacelle()
         self.nacelle.wet_area = None
 
-        self.propeller = None
-
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
         self.mixture_values = {
             EngineSetting.TAKEOFF: 1.15,
@@ -247,823 +246,623 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", unknown_keys)
 
-        # Computation of the turboprop geometry based on the design point performance
-        (
-            alfa,
-            alfa_p,
-            a_41,
-            a_45,
-            a_8,
-            eta_compress,
-            m_c,
-            t_4t,
-            _,
-            t_45t,
-            opr_2_opr_1,
-        ) = self.turboprop_geometry_calculation()
+        # This new version of the turboprop model will use nested OpenMDAO problem to compute
+        # fuel consumption, max thrust and geometry, but because the setup might take some time,
+        # we won't do it automatically, only when needed i.e. when, at some point we need to call
+        # the max thrust function (the compute_flight_point method calls it). Also we will make
+        # it so that we only have to set it up once by introducing a setup checker and attribute
+        # getter on the problems and on the turboprop geometry parameter that are required to
+        # compute max thrust and fuel consumption (Areas, alpha ratios and OPR ratios).
 
-        # Storing the propeller geometry and constant parameter
-        self.alfa = alfa
-        self.alfa_p = alfa_p
-        self.a_41 = a_41
-        self.a_45 = a_45
-        self.a_8 = a_8
-        self.eta_compress_design = eta_compress
-        self.m_c_dp = m_c
-        self.t_4t_dp = t_4t
-        self.t_45t_dp = t_45t
-        self.opr_2_opr_1_dp = (
-            opr_2_opr_1  # Compression ratio relationship between the second and first stages
-        )
+        self._turboprop_sizing_problem = None
+        self._turboprop_sizing_problem_setup = False
 
-        # Here some internal attributes are defined.
+        self._turboprop_max_thrust_power_limit_problem = None
+        self._turboprop_max_thrust_power_limit_problem_setup = False
 
-        self.t_4t_int = 0.0
-        self.t_41t_int = 0.0
-        self.t_45t_int = 0.0
-        self.p_41t_int = 0.0
-        self.opr_int = 0.0
-        self.mach_8_int = 0.0
-        self.g_int = 0.0
-        self.f_fuel_ratio_int = 0.0
-        self.m_int = 0.0
+        self._turboprop_max_thrust_opr_limit_problem = None
+        self._turboprop_max_thrust_opr_limit_problem_setup = False
 
-        # Here is where we we store the results of our computations, they are overwritten after
-        # each computation
-        self.t_45t_sol = 0.0
-        self.opr_sol = 0.0
-        self.power_sol = [0.0]
-        self.thrust_sol = [0.0]
+        self._turboprop_max_thrust_itt_limit_problem = None
+        self._turboprop_max_thrust_itt_limit_problem_setup = False
 
-    @staticmethod
-    def air_coefficients_reader():
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = None
+        self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = False
 
-        """
-        This function reads  table with a et of temperatures, Cv and Cp values. It creates two
-        polynomial interpolation functions, whose coefficients are returned [one for Cv = f(T)
-        and another for Cp = f(T)].
-        """
+        self._turboprop_fuel_problem = None
+        self._turboprop_fuel_problem_setup = False
 
-        file = pth.join(resources.__path__[0], "T_Cv_Cp.csv")
-        database = read_csv(file)
+        self._turboprop_fuel_problem_ls = None
+        self._turboprop_fuel_problem_ls_setup = False
 
-        temp = database["T"]
-        cv_n = database["CV"]
-        cp_n = database["CP"]
+        self._alpha = None
+        self._alpha_p = None
+        self._a_41 = None
+        self._a_45 = None
+        self._a_8 = None
+        self._opr_2_opr_1 = None
 
-        cv_t_coefficients = np.polyfit(temp, cv_n, 15)
-        cp_t_coefficients = np.polyfit(temp, cp_n, 15)
+        self._cache_max_thrust = OrderedDict()
 
-        return cv_t_coefficients, cp_t_coefficients
+    @property
+    def turboprop_sizing_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the sizing point"""
 
-    def compute_cp_cv_gamma(self, temperature):
-        """
-        Obtains the Cv and Cp values for a given Temperature
+        if not self._turboprop_sizing_problem_setup:
 
-        It evaluates the polynomial interpolation functions for Cp and Cv, shortening code:
-
-        :param temperature: the actual Temperature in Kelvin [K]
-
-        :return cp_out: The actual Cp value for the given Temperature
-        :return cv_out: The actual Cv value for the given Temperature
-        :return gamma: The actual gamma value for the given Temperature
-        """
-
-        cp_coefficient = self.cp_c
-        cv_coefficient = self.cv_c
-
-        cp_out = np.polyval(cp_coefficient, temperature)
-        cv_out = np.polyval(cv_coefficient, temperature)
-        gamma = cp_out / cv_out
-        return cp_out, cv_out, gamma
-
-    @staticmethod
-    def compute_gamma_functions(gamma):
-        """
-        Computes the three gamma functions for each gamma value
-
-        :param gamma: heat capacity ratio
-
-        :return f1: equal to gamma / (gamma - 1)
-        :return f2: equal to (gamma - 1) / gamma
-        :return f_gamma: equal to
-        np.sqrt(gamma) * (2 / (gamma + 1)) ** ((gamma + 1) / (2 * (gamma - 1)))
-        """
-        f_1 = gamma / (gamma - 1)
-        f_2 = 1 / f_1
-        f_gamma = np.sqrt(gamma) * (2 / (gamma + 1)) ** ((gamma + 1) / (2 * (gamma - 1)))
-
-        return f_1, f_2, f_gamma
-
-    @staticmethod
-    def air_renewal_coefficients():
-        """
-        This function reads table with a set of flight altitude and cabin altitude. It creates an
-        interpolation function.
-
-        :return cabin_pressure: interp1d function linking flight altitude to cabin altitude.
-        """
-
-        file = pth.join(resources.__path__[0], "cabin_pressurisation.csv")
-        database = read_csv(file)
-
-        h_flight = database["FLIGHT_ALTITUDE"]
-        h_cab = database["CABIN_ALTITUDE"]
-
-        cabin_pressure = interp1d(h_flight, h_cab)
-
-        return cabin_pressure
-
-    def air_renewal(self, altitude, bleed_control):
-        """
-        Computes the airflow used for cabin air renewal
-
-        :param altitude: The flight altitude in meters [m]
-        :param bleed_control: The air packs setting "high" or "low"
-
-        :return m_air: The cabin airflow in [kg/s]
-        """
-        cabin_volume = 5.0  # in m3
-
-        if bleed_control == "low":
-            control = 0.3
-        else:
-            control = 1.0
-
-        renovation_time = 2.0  # in minutes
-
-        h_cab = self.cabin_pressure(altitude)
-
-        t_cab = 20.0 + 273.0
-        atmosphere = Atmosphere(h_cab, altitude_in_feet=False)
-        p_cab = atmosphere.pressure
-
-        rho_cab = p_cab / 287.0 / t_cab
-        m_air = cabin_volume * rho_cab / (renovation_time * 60.0) * control
-        return m_air
-
-    def point_design_solver(
-        self,
-        var_to_solve,
-        t_41t,
-        p_0,
-        t_2t,
-        t_25t,
-        t_3t,
-        p_3t,
-        power,
-        exhaust_mach,
-        bleed_control,
-        h_0,
-    ):
-        """
-        Solver for the design point. Finds the engine properties for which the thermodynamic
-        equations leads to the design point target performances
-
-        :param var_to_solve: an array containing the values used to solve the system of
-        thermodynamic equation, contains :
-        m_c : the mass flow of fuel,
-        t_4t : the turbine entry temperature,
-        t_45t : the inter-turbine temperature,
-        p_45t : the inter-turbine pressure,
-        p_5t : the pressure after the turbines,
-        m0 : the airflow in the usual units.
-        :param t_41t: the temperature after the mixing with the cold air, in K
-        :param p_0: the atmospheric pressure, in Pa
-        :param t_2t: the total temperature before the compressors, in K
-        :param t_25t: the total temperature between the compressors, in K
-        :param t_3t: the total temperature after the compressors, in K
-        :param p_3t: the atmospheric pressure, in Pa
-        :param power: the thermodynamic power at the design point, in kW
-        :param exhaust_mach: mach number at the exhaust
-        :param bleed_control: setting of the bleed at the design point, either "high" or "low"
-        :param h_0: the design point altitude, in m
-
-        :return f: an array containing the application of the thermodynamic equation written as
-        differences to set to 0
-        """
-        m_c = var_to_solve[0]
-        t_4t = var_to_solve[1]
-        t_45t = var_to_solve[2]
-        t_5t = var_to_solve[3]
-        p_45t = var_to_solve[4]
-        p_5t = var_to_solve[5]
-        m_0 = var_to_solve[6]
-
-        g_r = self.air_renewal(h_0, bleed_control) / m_0
-
-        p4t = p_3t * self.pi_cc
-
-        cp_2, _, _ = self.compute_cp_cv_gamma(t_2t)
-        cp_25, _, _ = self.compute_cp_cv_gamma(t_25t)
-        cp_3, _, _ = self.compute_cp_cv_gamma(t_3t)
-        cp_4, _, _ = self.compute_cp_cv_gamma(t_4t)
-        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        f1_41, _, _ = self.compute_gamma_functions(gamma41)
-        cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        _, f2_45, _ = self.compute_gamma_functions(gamma45)
-        cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
-        f1_5, _, _ = self.compute_gamma_functions(gamma5)
-
-        fuel_air_ratio = m_c / m_0
-        icb = self.inter_compressor_bleed / m_0
-
-        return_array = np.zeros(7)
-        # Temperature change after through the combustion chamber
-        return_array[0] = (cp_4 * t_4t - cp_3 * t_3t) * (
-            1 + fuel_air_ratio - g_r - self.cooling_ratio - icb
-        ) - self.eta_q * fuel_air_ratio
-        # Mixing of hot air from the compressor with the hot gases from the combustion chamber
-        return_array[1] = t_41t - (
-            (
-                t_4t * (1 + fuel_air_ratio - g_r - self.cooling_ratio - icb)
-                + t_3t * self.cooling_ratio
+            ivc = om.IndepVarComp()
+            ivc.add_output(
+                "compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s"
             )
-            / (1 + fuel_air_ratio - g_r - icb)
-        )
-        # Mechanic equilibrium on the high pressure axis
-        return_array[2] = (
-            (1 + fuel_air_ratio - g_r - icb) * (cp_41 * t_41t - cp_45 * t_45t) * self.eta_axe
-            - self.hp_shaft_power_out / m_0
-            - (cp_3 * t_3t - cp_25 * t_25t) * (1 - icb)
-            - (cp_25 * t_25t - cp_2 * t_2t)
-        )
-        # Expansion in the high pressure turbine
-        return_array[3] = p_45t - (p4t * (t_45t / t_41t) ** (f1_41 / self.eta_445))
-        # Power given to the propeller
-        return_array[4] = (
-            m_0 * 1000.0
-            - (
-                ((power * 1000.0 / self.gearbox_efficiency) / (cp_45 * t_45t - cp_5 * t_5t))
-                / (1 - g_r + fuel_air_ratio - icb)
+            ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+            # Some parameters were hard-coded in previous version of the code, we'll leave them
+            # like that for now
+            ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
+            ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
+            ivc.add_output("bleed_control", val=1.0)  # Hard-coded at 1.0
+
+            ivc.add_output("eta_225", val=self.eta_225)
+            ivc.add_output("eta_253", val=self.eta_253)
+            ivc.add_output("eta_445", val=self.eta_445)
+            ivc.add_output("eta_455", val=self.eta_455)
+            ivc.add_output("total_pressure_loss_02", val=self.pi_02)
+            ivc.add_output("pressure_loss_34", val=self.pi_cc)
+            ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
+
+            ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
+
+            ivc.add_output(
+                "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio",
+                val=self.pr_1_ratio_design,
             )
-            * 1000.0
-        )
-        # Expansion in the power turbine
-        return_array[5] = t_5t - t_45t * ((p_5t / p_45t) ** (f2_45 * self.eta_455))
-        return_array[6] = p_5t - (p_0 * (1 + (gamma5 - 1) / 2 * exhaust_mach ** 2) ** f1_5)
-
-        return return_array
-
-    def turboprop_geometry_calculation(self):
-
-        """
-        This method is the core of the Turboprop Class constructor. It obtains the geometry of
-        the turboprop: the turbine and exhaust sections A41, A45 and A8 as well as the alfa
-        parameter. These values are returned to the constructor and stored as attributes as these
-        four values WILL BE CONSTANT FOR ALL THE TURBOPROP OPERATION REGIMES (for further info,
-        read the documentation of the turboprop model). Other, non-constant values,
-        such us temperatures or compression ratios are also obtained.
-        """
-        r_g = 287.0
-
-        design_point_mach = self.design_point_mach
-        h_0 = self.design_point_altitude
-        power = self.design_point_power
-        global_opr = self.opr_d
-        t_41t = self.t_41t_d
-        exhaust_mach = self.exhaust_mach_design
-        bleed_control = self.bleed_control_design
-        cab_bleed = self.air_renewal(h_0, bleed_control)
-        opr_1 = self.opr_1_design
-        opr_2 = global_opr / self.opr_1_design
-
-        # Computing air properties at the entry of the turboprop
-        atmosphere_0 = Atmosphere(h_0, altitude_in_feet=False)
-        p_0 = atmosphere_0.pressure
-        t_0 = atmosphere_0.temperature
-
-        p_0t = p_0 * (1 + (1.4 - 1) / 2 * design_point_mach ** 2) ** 3.5
-        t_0t = t_0 * (1 + (1.4 - 1) / 2 * design_point_mach ** 2)
-
-        # Entry of the compressor
-        p_2t = p_0t * self.pi_02
-        t_2t = t_0t
-
-        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        f1_2, f2_2, _ = self.compute_gamma_functions(gamma2)
-
-        # Inter compressor stage
-        t_25t = t_2t * opr_1 ** (f2_2 / self.eta_225)
-        p_25t = p_2t * opr_1
-        p_3t = p_25t * opr_2
-
-        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        _, f2_25, _ = self.compute_gamma_functions(gamma25)
-
-        # After the compressor
-        t_3t = t_25t * opr_2 ** (f2_25 / self.eta_253)
-        eta_compress = np.log(global_opr) / np.log(t_3t / t_2t) * f2_2
-
-        # Solving the gas generator equations
-        p4t = p_3t * self.pi_cc
-        p_41t = p4t
-
-        initial_values = np.array([0.06, 1350.0, 1000.0, 800.0, 400000.0, 110000.0, 3.5])
-        # z = np.zeros(len(X0))
-        [solution_vector, _, ier, _] = fsolve(
-            self.point_design_solver,
-            initial_values,
-            (
-                t_41t,
-                p_0,
-                t_2t,
-                t_25t,
-                t_3t,
-                p_3t,
-                power,
-                exhaust_mach,
-                bleed_control,
-                h_0,
-            ),
-            xtol=1e-4,
-            full_output=True,
-        )
-
-        if ier != 1:
-            raise FastBasicTPEngineImpossibleTurbopropGeometry(
-                "Solver returned wrong results while constructing the Turboprop geometry, "
-                "check the input parameters "
+            ivc.add_output(
+                "settings:propulsion:turboprop:efficiency:high_pressure_axe",
+                val=self.eta_axe,
+            )
+            ivc.add_output(
+                "settings:propulsion:turboprop:efficiency:gearbox",
+                val=self.gearbox_efficiency,
+            )
+            ivc.add_output(
+                "settings:propulsion:turboprop:design_point:mach_exhaust",
+                val=self.exhaust_mach_design,
             )
 
-        m_c = solution_vector[0]
-        t_4t = solution_vector[1]
-        t_45t = solution_vector[2]
-        t_5t = solution_vector[3]
-        p_45t = solution_vector[4]
-        p_5t = solution_vector[5]
-        airflow_design = solution_vector[6]
-
-        fuel_air_ratio = m_c / airflow_design
-        g_r = cab_bleed / airflow_design
-        icb = self.inter_compressor_bleed / airflow_design
-
-        cp_3, _, _ = self.compute_cp_cv_gamma(t_3t)
-        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        _, _, f_gamma_41 = self.compute_gamma_functions(gamma41)
-        cp_45, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        _, _, f_gamma_45 = self.compute_gamma_functions(gamma45)
-        cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
-
-        alfa = t_45t / t_41t
-        alfa_p = p_45t / p_41t
-
-        # Computing the turboprop sections
-        a_41 = (
-            airflow_design
-            * (1 + fuel_air_ratio - g_r - icb)
-            * np.sqrt(t_41t * r_g)
-            / p4t
-            / f_gamma_41
-        )
-        a_45 = (
-            airflow_design
-            * (1 + fuel_air_ratio - g_r - icb)
-            * np.sqrt(t_45t * r_g)
-            / p_45t
-            / f_gamma_45
-        )
-        a_8_1 = airflow_design * (1 + fuel_air_ratio - g_r - icb) * np.sqrt(t_5t * r_g) / p_5t
-        a_8_2 = (
-            np.sqrt(gamma5)
-            * exhaust_mach
-            * (1 + (gamma5 - 1) / 2 * exhaust_mach ** 2) ** ((gamma5 + 1) / (2 * (1 - gamma5)))
-        )
-        a_8 = a_8_1 / a_8_2
-
-        # Verification that the solution found by the solver give plausible results on the whole
-        # turboprop
-        opr_check = (
-            cp_2 / cp_3 / (1 - icb)
-            + self.eta_axe
-            * (1 + fuel_air_ratio - g_r - icb)
-            / (1 - icb)
-            * (cp_41 - cp_45 * alfa)
-            / cp_3
-            * t_41t
-            / t_2t
-            - self.hp_shaft_power_out / (cp_3 * airflow_design * (1 - icb) * t_2t)
-            - t_25t / t_2t * cp_25 / cp_3 * (1 / (1 - icb) - 1)
-        ) ** (f1_2 * eta_compress)
-
-        power_check = (
-            (cp_45 * t_45t - cp_5 * t_5t)
-            * airflow_design
-            / 1000.0
-            * (1 - g_r + fuel_air_ratio - icb)
-            * self.gearbox_efficiency
-        )
-
-        if abs(opr_check - global_opr) / global_opr > 1e-3:
-            raise FastBasicTPEngineImpossibleTurbopropGeometry(
-                "Overall Pressure Ratio check failed while constructing the Turboprop geometry, "
-                "check the input parameters "
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:altitude",
+                val=self.design_point_altitude,
+                units="m",
             )
-        if abs(power_check - power) / power > 1e-3:
-            raise FastBasicTPEngineImpossibleTurbopropGeometry(
-                "Power check failed while constructing the Turboprop geometry, check the input "
-                "parameters "
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:mach", val=self.design_point_mach
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:power",
+                val=self.design_point_power,
+                units="kW",
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:turbine_entry_temperature",
+                val=self.t_41t_d,
+                units="degK",
+            )
+            ivc.add_output(
+                "data:propulsion:turboprop:design_point:OPR",
+                val=self.opr_d,
             )
 
-        return alfa, alfa_p, a_41, a_45, a_8, eta_compress, m_c, t_4t, t_41t, t_45t, opr_2 / opr_1
-
-    def turboshaft_performance_solver_real_gas(self, var_to_solve, m_c, p_2t, t_2t, m_air):
-
-        """
-
-        Solver for an off-design point. Finds the engine properties for which the thermodynamic
-        equations leads to the required performances
-
-        :param var_to_solve: an array containing the values used to solve the system of
-        thermodynamic equation, contains:
-        t_25t : the temperature between the axial and radial compressor, in K,
-        t_3t : the temperature after the radial compressor, in K,
-        t_41t : the temperature after the mixing of cold air, in K,
-        m : the total airflow, in kg/s,
-        p_3t : the total pressure after the radial compressor in Pa
-        :param m_c: the fuel mass flow, in kg/s
-        :param p_2t: the total pressure before the compressor stage, in Pa
-        :param t_2t: the total temperature before the compressor stage, in K
-        :param m_air: the bleed air mass flow, in kg/s
-
-        :return f: an array containing the application of the thermodynamic equation written as
-        differences to set to 0
-
-        """
-
-        t_25t = var_to_solve[0]
-        t_3t = var_to_solve[1]
-        t_41t = var_to_solve[2]
-        air_mass_flow = var_to_solve[3]
-        p_3t = var_to_solve[4]
-        t_45t = t_41t * self.alfa
-
-        self.t_41t_int = t_41t
-        self.m_int = air_mass_flow
-        self.t_45t_int = t_45t
-
-        r_g = 287.0
-        g_r = m_air / air_mass_flow
-
-        self.g_int = g_r
-
-        f_fuel_ratio = m_c / air_mass_flow
-        icb = self.inter_compressor_bleed / air_mass_flow
-
-        self.f_fuel_ratio_int = f_fuel_ratio
-
-        cp_2, _, gamma2 = self.compute_cp_cv_gamma(t_2t)
-        f1_2, _, _ = self.compute_gamma_functions(gamma2)
-        cp_25, _, gamma25 = self.compute_cp_cv_gamma(t_25t)
-        f1_25, _, _ = self.compute_gamma_functions(gamma25)
-        cp_3, _, _ = self.compute_cp_cv_gamma(t_3t)
-        cp_41, _, gamma41 = self.compute_cp_cv_gamma(t_41t)
-        _, _, f_gamma_41 = self.compute_gamma_functions(gamma41)
-        cp_45, _, _ = self.compute_cp_cv_gamma(t_45t)
-
-        p_25t = p_2t * (t_25t / t_2t) ** (f1_2 * self.eta_225)
-        opr_2 = p_3t / p_25t
-        opr_1 = p_25t / p_2t
-        opr = opr_1 * opr_2
-
-        t_4t = (t_41t * (1 + f_fuel_ratio - g_r - icb) - t_3t * self.cooling_ratio) / (
-            1 + f_fuel_ratio - g_r - self.cooling_ratio - icb
-        )
-
-        cp_4, _, _ = self.compute_cp_cv_gamma(t_4t)
-
-        p_41t = p_3t * self.pi_cc
-
-        return_array = np.zeros(5)
-        # Temperature change through the combustion chamber
-        return_array[0] = 1.0 - air_mass_flow * (
-            1 + f_fuel_ratio - g_r - self.cooling_ratio - icb
-        ) * (cp_4 * t_4t - cp_3 * t_3t) / (m_c * self.eta_q)
-        return_array[1] = (
-            1.0
-            - air_mass_flow
-            * (1 + f_fuel_ratio - g_r - icb)
-            * np.sqrt(t_41t * r_g)
-            / p_41t
-            / f_gamma_41
-            / self.a_41
-        )
-        # Pressure change through the compressors
-        return_array[2] = 1.0 - p_25t / p_3t * (t_3t / t_25t) ** (f1_25 * self.eta_253)
-        return_array[3] = 1.0 - self.opr_2_opr_1_dp / (opr_2 / opr_1)
-        # Temperature change through the compressor
-        return_array[4] = (
-            1.0
-            - (
-                t_2t
-                * (
-                    cp_2 / cp_3 / (1 - icb)
-                    + self.eta_axe
-                    * (1 + f_fuel_ratio - g_r - icb)
-                    / (1 - icb)
-                    * (cp_41 - cp_45 * self.alfa)
-                    / cp_3
-                    * t_41t
-                    / t_2t
-                    - self.hp_shaft_power_out / (cp_3 * air_mass_flow * (1 - icb) * t_2t)
-                    - t_25t / t_2t * cp_25 / cp_3 * (1 / (1 - icb) - 1)
-                )
-            )
-            / t_3t
-        )
-
-        self.t_4t_int = t_4t
-        self.t_41t_int = t_41t
-        self.t_45t_int = t_45t
-        self.p_41t_int = p_41t
-        self.opr_int = opr
-
-        return return_array
-
-    def exhaust_mach_solver_real_gas(self, t_5t, t_45t, p_45t, p_0):
-
-        """
-
-        Solver for the off-design point exhaust thrust. Finds the total temperature after the
-        power turbine that gives an adapted nozzle
-
-        :param t_5t: the total temperature after the power turbine, in K
-        :param t_45t: the total temperature between the turbines, in K
-        :param p_45t: the total pressure between the turbines, in Pa
-        :param p_0: the atmospheric pressure, in Pa
-
-        :return function_minimize: the expansion equation of the power turbine written as a
-        difference to equate to 0
-
-        """
-
-        _, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
-        f1_5, _, f_gamma_5 = self.compute_gamma_functions(gamma5)
-        _, _, gamma45 = self.compute_cp_cv_gamma(t_45t)
-        _, f2_45, _ = self.compute_gamma_functions(gamma45)
-
-        mach_8 = (
-            f_gamma_5
-            * self.a_45
-            / np.sqrt(gamma5)
-            / self.a_8
-            * (p_45t / p_0) ** ((gamma5 + 1) / 2 / gamma5)
-        )
-
-        p_5t = p_0 * (1 + (gamma5 - 1) / 2 * mach_8 ** 2) ** f1_5
-
-        # Temperature change in the power turbine
-        function_minimize = 1.0 - t_45t / t_5t * (p_5t / p_45t) ** (f2_45 * self.eta_455)
-
-        self.mach_8_int = mach_8
-
-        return function_minimize
-
-    def turboshaft_performance_real_gas(self, altitude, flight_mach, m_c):
-
-        """
-        Computes the characteristics of the engine when a certain fuel flow is injected into the
-        turboprop in certain flight conditions.
-
-        :param altitude: the flight altitude, in m
-        :param flight_mach: the flight mach
-        :param m_c: the fuel flow injected in the turboprop, in kg/s
-
-        :return t_4t: the turbine entry temperature, in K
-        :return m: the air mass flow, in kg/s
-        :return power: the power output of the engine, in kW
-        :return f_fuel_ratio: the ratio between the fuel mass flow and the air mass flow
-        :return p_41t: the pressure after the mixing of cold air, in Pa
-        :return opr: the overall pressure ratio
-        :return t_41t: the temperature after the mixing of cold air, in K
-        :return t_45t: the temperature between the turbines, in K
-        :return m: the air flow, in m/s.
-        """
-
-        performance_atmosphere = Atmosphere(altitude, altitude_in_feet=False)
-
-        p_0 = performance_atmosphere.pressure
-        t_0 = performance_atmosphere.temperature
-        if self.bleed_control == 1.0:
-            bleed_control = "high"
-        else:
-            bleed_control = "low"
-        m_air = self.air_renewal(altitude, bleed_control)
-        r_g = 287.0
-
-        # Computing atmospheric conditions
-        p_0t = p_0 * (1 + (1.4 - 1) / 2 * flight_mach ** 2) ** 3.5
-        t_0t = t_0 * (1 + (1.4 - 1) / 2 * flight_mach ** 2)
-
-        # Entry of the compressor
-        p_2t = p_0t * self.pi_02
-        t_2t = t_0t
-
-        # Solving the gas generator equation
-        initial_values = np.array([300, 500, 1200, 3, 400000])
-        fsolve(
-            self.turboshaft_performance_solver_real_gas,
-            initial_values,
-            (m_c, p_2t, t_2t, m_air),
-            xtol=1e-8,
-        )
-
-        t_4t = self.t_4t_int
-        t_41t = self.t_41t_int
-        t_45t = self.t_45t_int
-        p_41t = self.p_41t_int
-        opr = self.opr_int
-        g_r = self.g_int
-        f_fuel_ratio = self.f_fuel_ratio_int
-        air_mass_flow = self.m_int
-
-        p_45t = p_41t * self.alfa_p
-        icb = self.inter_compressor_bleed / air_mass_flow
-
-        # Solving the exhaust equation
-        t_5t_0 = np.array([[900]])
-        z_minimize = np.array(
-            fsolve(self.exhaust_mach_solver_real_gas, t_5t_0, (t_45t, p_45t, p_0))
-        )
-        t_5t = z_minimize
-
-        mach_8 = self.mach_8_int
-
-        cp_45, _, _ = self.compute_cp_cv_gamma(t_45t)
-        cp_5, _, gamma5 = self.compute_cp_cv_gamma(t_5t)
-
-        # Computing the shaft power output
-        power = (
-            air_mass_flow
-            * (1 - g_r + f_fuel_ratio - icb)
-            * (cp_45 * t_45t - cp_5 * t_5t)
-            * self.gearbox_efficiency
-        )
-
-        t_8 = t_5t / (1 + (gamma5 - 1) / 2 * mach_8 ** 2)
-        v_8 = mach_8 * np.sqrt(gamma5 * r_g * t_8)
-
-        # Computing the exhaust thrust
-        thrust_exhaust = (
-            air_mass_flow
-            * (1 + f_fuel_ratio - icb - g_r)
-            * (v_8 - flight_mach * np.sqrt(t_0 * 287.0 * 1.4))
-        )
-
-        power_sol = power / 1000.0
-
-        self.t_45t_sol = t_45t
-        self.opr_sol = opr
-        self.power_sol = power_sol
-        self.thrust_sol = thrust_exhaust
-
-        return t_4t, air_mass_flow, power_sol, f_fuel_ratio, p_41t, opr, t_41t, t_45t
-
-    def turboshaft_performance_envelope_solver_real_gas(
-        self, fuel_flow, limit_name, limit_value, altitude, mach_vol
-    ):
-        """
-        Function that computes the turboprop performance when one of the engine limits is reached
-
-        :param fuel_flow: the fuel flow, in kg/s
-        :param limit_name: the name of the limit for which we want to find the performance,
-        can be "opr", "t_45t" or "power"
-        :param limit_value: the value of the limit, no unit for the opr, K for the t_45t and kW for
-        the power
-        :param altitude: the flight altitude, in m
-        :param mach_vol: the flight mach number
-
-        :return f_value: for the given fuel flow, the difference between the limit and the
-        computed value
-        """
-        m_c = fuel_flow[0]
-
-        if limit_name == "opr":
-            (
-                _,
-                _,
-                power,
-                _,
-                _,
-                opr,
-                _,
-                t_45t,
-            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
-            var_2_return = opr
-
-        elif limit_name == "t_45t":
-            (
-                _,
-                _,
-                power,
-                _,
-                _,
-                opr,
-                _,
-                t_45t,
-            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
-            var_2_return = t_45t
-
-        elif limit_name == "power":
-            (
-                _,
-                _,
-                power,
-                _,
-                _,
-                opr,
-                _,
-                t_45t,
-            ) = self.turboshaft_performance_real_gas(altitude, mach_vol, m_c)
-            var_2_return = power
-
-        else:
-            raise FastBasicTPEngineUnknownLimit(
-                "Unknown limit provided, should be opr, t_45t or power"
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_sizing",
+                DesignPointCalculation(number_of_points=1),
+                promotes=["*"],
             )
 
-        f_value = var_2_return - limit_value
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
 
-        return f_value
+            prob.setup()
 
-    def turboshaft_performance_envelope_limits_real_gas(
-        self, limit_name, limit_value, altitude, mach_vol
-    ):
+            self._turboprop_sizing_problem_setup = True
 
+            self._turboprop_sizing_problem = prob
+
+        return self._turboprop_sizing_problem
+
+    @turboprop_sizing_problem.setter
+    def turboprop_sizing_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the sizing point"""
+
+        self._turboprop_sizing_problem = value
+
+    def get_ivc_max_thrust_problem(self) -> om.IndepVarComp:
         """
-        Function that finds the fuel flow which leads to the desired engine limit
-
-        :param limit_name: the name of the limit for which we want to find the performance, can be
-         "opr", "t_45t" or "power"
-        :param limit_value: the value of the limit, no unit for the opr, K for the t_45t and kW for
-        the power
-        :param altitude: the flight altitude, in m
-        :param mach_vol: the flight mach number
-
-        :return fuel_flow: the fuel flow that constrains the engine to the desired limit
+        The 4 problems that compute the maximum will have all their inputs in common, so we
+        centralize the creation of the IndepVarComp that will supply them.
         """
 
-        fuel_flow_0 = np.array([0.046 * (1 - altitude / 29000)])
+        ivc = om.IndepVarComp()
 
-        fuel_flow = np.array(
-            fsolve(
-                self.turboshaft_performance_envelope_solver_real_gas,
-                fuel_flow_0,
-                (limit_name, limit_value, altitude, mach_vol),
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:altitude",
+            val=self.cruise_altitude_propeller,
+            units="m",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:speed", val=self.speed_SL, units="m/s"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:speed", val=self.speed_CL, units="m/s"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:thrust", val=self.thrust_SL, units="N"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:thrust", val=self.thrust_CL, units="N"
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:sea_level:thrust_limit",
+            val=self.thrust_limit_SL,
+            units="N",
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:thrust_limit",
+            val=self.thrust_limit_CL,
+            units="N",
+        )
+        ivc.add_output("data:aerodynamics:propeller:sea_level:efficiency", val=self.efficiency_SL)
+        ivc.add_output(
+            "data:aerodynamics:propeller:cruise_level:efficiency", val=self.efficiency_CL
+        )
+
+        ivc.add_output("eta_225", val=self.eta_225)
+        ivc.add_output("eta_253", val=self.eta_253)
+        ivc.add_output("eta_455", val=self.eta_455)
+        ivc.add_output("total_pressure_loss_02", val=self.pi_02)
+        ivc.add_output("pressure_loss_34", val=self.pi_cc)
+        ivc.add_output("combustion_energy", val=self.eta_q, units="J/kg")
+
+        ivc.add_output("electric_power", val=self.hp_shaft_power_out / 745.7, units="hp")
+
+        ivc.add_output("cooling_bleed_ratio", val=self.cooling_ratio)
+        ivc.add_output("compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s")
+        # Some parameters were hard-coded in previous version of the code, we'll leave them
+        # like that for now
+        ivc.add_output("cabin_air_renewal_time", val=2.0, units="min")
+        ivc.add_output("data:geometry:cabin:volume", val=5.0, units="m**3")
+        ivc.add_output("bleed_control", val=self.bleed_control)
+
+        ivc.add_output(
+            "settings:propulsion:turboprop:efficiency:high_pressure_axe",
+            val=self.eta_axe,
+        )
+        ivc.add_output(
+            "settings:propulsion:turboprop:efficiency:gearbox",
+            val=self.gearbox_efficiency,
+        )
+
+        ivc.add_output("data:propulsion:turboprop:section:41", val=self.a_41, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:section:45", val=self.a_45, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:section:8", val=self.a_8, units="m**2")
+        ivc.add_output("data:propulsion:turboprop:design_point:alpha", val=self.alpha)
+        ivc.add_output("data:propulsion:turboprop:design_point:alpha_p", val=self.alpha_p)
+        ivc.add_output("data:propulsion:turboprop:design_point:opr_2_opr_1", val=self.opr_2_opr_1)
+
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+            val=self.effective_efficiency_ls,
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+            val=self.effective_efficiency_cruise,
+        )
+        ivc.add_output(
+            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
+            val=self.effective_J,
+        )
+
+        ivc.add_output("itt_limit", val=self.itt_limit, units="degK")
+        ivc.add_output("shaft_power_limit", val=self.max_power_avail, units="kW")
+        ivc.add_output("opr_limit", val=self.opr_limit)
+
+        return ivc
+
+    @property
+    def turboprop_max_thrust_power_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the power is limiting"""
+
+        if not self._turboprop_max_thrust_power_limit_problem_setup:
+
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustPowerLimit(number_of_points=1),
+                promotes=["*"],
             )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_power_limit_problem_setup = True
+            self._turboprop_max_thrust_power_limit_problem = prob
+
+        return self._turboprop_max_thrust_power_limit_problem
+
+    @turboprop_max_thrust_power_limit_problem.setter
+    def turboprop_max_thrust_power_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the power is limiting"""
+
+        self._turboprop_max_thrust_power_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_opr_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the opr is limiting"""
+
+        if not self._turboprop_max_thrust_opr_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustOPRLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_opr_limit_problem_setup = True
+            self._turboprop_max_thrust_opr_limit_problem = prob
+
+        return self._turboprop_max_thrust_opr_limit_problem
+
+    @turboprop_max_thrust_opr_limit_problem.setter
+    def turboprop_max_thrust_opr_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the opr is limiting"""
+
+        self._turboprop_max_thrust_opr_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_itt_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the ITT is limiting"""
+
+        if not self._turboprop_max_thrust_itt_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustITTLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_itt_limit_problem_setup = True
+            self._turboprop_max_thrust_itt_limit_problem = prob
+
+        return self._turboprop_max_thrust_itt_limit_problem
+
+    @turboprop_max_thrust_itt_limit_problem.setter
+    def turboprop_max_thrust_itt_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the itt is limiting"""
+
+        self._turboprop_max_thrust_itt_limit_problem = value
+
+    @property
+    def turboprop_max_thrust_propeller_thrust_limit_problem(self) -> om.Problem:
+        """OpenMDAO problem to compute the max thrust if the propeller thrust is limiting"""
+
+        if not self._turboprop_max_thrust_propeller_thrust_limit_problem_setup:
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_max_power",
+                TurboshaftMaxThrustPropellerThrustLimit(number_of_points=1),
+                promotes=["*"],
+            )
+
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.linesearch = om.ArmijoGoldsteinLS()
+            prob.model.nonlinear_solver.linesearch.options["maxiter"] = 5
+            prob.model.nonlinear_solver.linesearch.options["alpha"] = 1.7
+            prob.model.nonlinear_solver.linesearch.options["c"] = 2e-1
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 5e-5
+            prob.model.linear_solver = om.DirectSolver()
+
+            prob.setup()
+
+            self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = True
+            self._turboprop_max_thrust_propeller_thrust_limit_problem = prob
+
+        return self._turboprop_max_thrust_propeller_thrust_limit_problem
+
+    @turboprop_max_thrust_propeller_thrust_limit_problem.setter
+    def turboprop_max_thrust_propeller_thrust_limit_problem(self, value: om.Problem):
+        """OpenMDAO problem to compute the max thrust if the itt is limiting"""
+
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = value
+
+    def _compute_geometry(self):
+        """
+        Runs the turboprop sizing problem and assigns the value for the geometric parameter
+        """
+
+        self.turboprop_sizing_problem.run_model()
+
+        self._alpha = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:design_point:alpha"
         )[0]
-
-        return fuel_flow
-
-    def turboshaft_compute_within_limits(self, target_power, altitude, mach_vol):
-
-        """
-        Computes the fuel flow necessary to achieve the target power and checks if it is within
-        the capability of the turboprop. If it leads to constraints greater than the one defined
-        in the XML, gives the fuel flow corresponding to the highest power achievable within the
-        limits.
-
-        :param target_power: required power, in kW.
-        :param altitude: the flight altitude, in m.
-        :param mach_vol: the flight mach number.
-
-        :return fuel: the fuel flow giving the required power or highest achievable power, in kg/s.
-        :return power_sol: the required power or highest achievable power, in kW.
-        :return thrust_sol: the exhaust thrust, in N.
-        """
-
-        # Check if we can get to the target power
-        fuel = self.turboshaft_performance_envelope_limits_real_gas(
-            "power", target_power, altitude, mach_vol
+        self._alpha_p = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:design_point:alpha_p"
+        )[0]
+        self._a_41 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:41", units="m**2"
+        )[0]
+        self._a_45 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:45", units="m**2"
+        )[0]
+        self._a_8 = self.turboprop_sizing_problem.get_val(
+            "data:propulsion:turboprop:section:8", units="m**2"
+        )[0]
+        self._opr_2_opr_1 = (
+            self.turboprop_sizing_problem.get_val("opr_2")[0]
+            / self.turboprop_sizing_problem.get_val("opr_1")[0]
         )
 
-        t_45t_sol = self.t_45t_sol
-        opr_sol = self.opr_sol
-        power_sol = self.power_sol
-        thrust_sol = self.thrust_sol
+    @property
+    def alpha(self) -> float:
+        """
+        Return the temperature ratio between turbines at the design point, assumed to be
+        constant.
+        """
 
-        # If target can't be reached we see which limit we have attained and get the performances
-        # corresponding to that limit
-        if t_45t_sol > self.itt_limit:
-            fuel = self.turboshaft_performance_envelope_limits_real_gas(
-                "t_45t", self.itt_limit, altitude, mach_vol
+        if not self._alpha:
+            self._compute_geometry()
+
+        return self._alpha
+
+    @alpha.setter
+    def alpha(self, value: float):
+        """
+        Set the temperature ratio between turbines at the design point, assumed to be constant.
+        """
+
+        self._alpha = value
+
+    @property
+    def alpha_p(self) -> float:
+        """
+        Return the pressure ratio between turbines at the design point, assumed to be
+        constant.
+        """
+
+        if not self._alpha_p:
+            self._compute_geometry()
+
+        return self._alpha_p
+
+    @alpha_p.setter
+    def alpha_p(self, value: float):
+        """Set the pressure ratio between turbines at the design point, assumed to be constant."""
+
+        self._alpha_p = value
+
+    @property
+    def a_41(self) -> float:
+        """Return the combustion chamber cross-flow area."""
+
+        if not self._a_41:
+            self._compute_geometry()
+
+        return self._a_41
+
+    @a_41.setter
+    def a_41(self, value: float):
+        """Set the combustion chamber cross-flow area."""
+
+        self._a_41 = value
+
+    @property
+    def a_45(self) -> float:
+        """Return the turbine cross-flow area."""
+
+        if not self._a_45:
+            self._compute_geometry()
+
+        return self._a_45
+
+    @a_45.setter
+    def a_45(self, value: float):
+        """Set the turbine cross-flow area."""
+
+        self._a_45 = value
+
+    @property
+    def a_8(self) -> float:
+        """Return the exhaust cross-flow area."""
+
+        if not self._a_8:
+            self._compute_geometry()
+
+        return self._a_8
+
+    @a_8.setter
+    def a_8(self, value: float):
+        """Set the turbine cross-flow area."""
+
+        self._a_8 = value
+
+    @property
+    def opr_2_opr_1(self) -> float:
+        """Return the ratio between OPR 2 and OPR 1."""
+
+        if not self._opr_2_opr_1:
+            self._compute_geometry()
+
+        return self._opr_2_opr_1
+
+    @opr_2_opr_1.setter
+    def opr_2_opr_1(self, value: float):
+        """Set the ratio between OPR 2 and OPR 1."""
+
+        self._opr_2_opr_1 = value
+
+    @property
+    def turboprop_fuel_problem(self) -> om.Problem:
+        """
+        OpenMDAO problem to compute the fuel consumption without linesearch algorithm. Quicker but
+        can sometimes fail so it will be the favored problem to use when computing sfc.
+        """
+        if not self._turboprop_fuel_problem_setup:
+
+            # Contains everything that is need and a bit more, but I don't think this more is
+            # worth the new lines that would have been necessary to implement a new method
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_fuel",
+                Turboshaft(number_of_points=1),
+                promotes=["*"],
             )
-            # print("t_45t limit processing", t_45t_sol)
 
-            opr_sol = self.opr_sol
-            power_sol = self.power_sol
-            thrust_sol = self.thrust_sol
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = MAX_ITER_NO_LS_PROBLEM
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 1e-5
+            prob.model.linear_solver = om.DirectSolver()
 
-        if opr_sol > self.opr_limit:
-            fuel = self.turboshaft_performance_envelope_limits_real_gas(
-                "opr", self.opr_limit, altitude, mach_vol
+            prob.setup()
+
+            self._turboprop_fuel_problem_setup = True
+            self._turboprop_fuel_problem = prob
+
+        return self._turboprop_fuel_problem
+
+    @turboprop_fuel_problem.setter
+    def turboprop_fuel_problem(self, value: om.Problem):
+        """
+        OpenMDAO problem to compute the fuel consumption without linesearch algorithm. Quicker but
+        can sometimes fail so it will be the favored problem to use when computing sfc.
+        """
+
+        self._turboprop_fuel_problem = value
+
+    @property
+    def turboprop_fuel_problem_ls(self) -> om.Problem:
+        """
+        OpenMDAO problem to compute the fuel consumption with linesearch algorithm. Longer but more
+        likely to converge
+        """
+        if not self._turboprop_fuel_problem_ls_setup:
+            # Contains everything that is need and a bit more, but I don't think this more is
+            # worth the new lines that would have been necessary to implement a new method
+            ivc = self.get_ivc_max_thrust_problem()
+
+            prob = om.Problem()
+            prob.model.add_subsystem("ivc", ivc, promotes=["*"])
+            prob.model.add_subsystem(
+                "turboshaft_off_design_fuel",
+                Turboshaft(number_of_points=1),
+                promotes=["*"],
             )
-            # print("opr limit processing", opr_sol)
 
-            power_sol = self.power_sol
-            thrust_sol = self.thrust_sol
+            prob.model.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+            prob.model.nonlinear_solver.options["iprint"] = 0
+            prob.model.nonlinear_solver.options["maxiter"] = 100
+            prob.model.nonlinear_solver.options["rtol"] = 1e-5
+            prob.model.nonlinear_solver.options["atol"] = 1e-5
+            prob.model.linear_solver = om.DirectSolver()
 
-        return fuel, power_sol[0], thrust_sol[0]
+            prob.setup()
+
+            self._turboprop_fuel_problem_ls_setup = True
+            self._turboprop_fuel_problem_ls = prob
+
+        return self._turboprop_fuel_problem_ls
+
+    @turboprop_fuel_problem_ls.setter
+    def turboprop_fuel_problem_ls(self, value: om.Problem):
+        """
+        OpenMDAO problem to compute the fuel consumption with linesearch algorithm. More likely to
+        converge
+        """
+
+        self._turboprop_fuel_problem_ls = value
+
+    def reset_problems(self):
+        """
+        Resets all the problem to force them to be recreated, except for the sizing problem which
+        should not be necessary to reset
+        """
+
+        self._turboprop_max_thrust_power_limit_problem = None
+        self._turboprop_max_thrust_power_limit_problem_setup = False
+
+        self._turboprop_max_thrust_opr_limit_problem = None
+        self._turboprop_max_thrust_opr_limit_problem_setup = False
+
+        self._turboprop_max_thrust_itt_limit_problem = None
+        self._turboprop_max_thrust_itt_limit_problem_setup = False
+
+        self._turboprop_max_thrust_propeller_thrust_limit_problem = None
+        self._turboprop_max_thrust_propeller_thrust_limit_problem_setup = False
+
+        self._turboprop_fuel_problem = None
+        self._turboprop_fuel_problem_setup = False
+
+        self._turboprop_fuel_problem_ls = None
+        self._turboprop_fuel_problem_ls_setup = False
 
     def compute_flight_points(self, flight_points: oad.FlightPoint):
         # pylint: disable=too-many-arguments
@@ -1261,6 +1060,289 @@ class BasicTPEngine(AbstractFuelPropulsion):
 
         return thrust_is_regulated, thrust_rate, thrust
 
+    def _max_power(self, altitude: float, mach: float):
+        """
+        Computation of maximum power either due to propeller thrust limit or turboprop max
+        power. Assumes the limits are reached in this order: Power limit, OPR limit, ITT limit,
+        propeller thrust_limit. No cache will be taken for that particular function as it won't be
+        used that often. May be changed later
+
+        :param altitude: altitude in ft
+        :param mach: Mach number
+
+        :return max_power: in kW
+        """
+
+        prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
+
+        prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_power_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process.
+        if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
+            "opr_limit"
+        ):
+            max_power = prob_max_thrust_power_limit.get_val("shaft_power", units="kW")
+            return max_power
+
+        prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
+
+        prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_opr_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_opr_limit.get_val(
+            "total_temperature_45", units="degK"
+        ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
+
+            max_power = prob_max_thrust_opr_limit.get_val("shaft_power", units="kW")
+            return max_power
+
+        prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
+
+        prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_itt_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_itt_limit.get_val(
+            "propeller_thrust", units="N"
+        ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
+
+            max_power = prob_max_thrust_itt_limit.get_val("shaft_power", units="kW")
+            return max_power
+
+        prob_max_thrust_propeller_thrust_limit = (
+            self.turboprop_max_thrust_propeller_thrust_limit_problem
+        )
+
+        prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_propeller_thrust_limit.run_model()
+
+        max_power = prob_max_thrust_propeller_thrust_limit.get_val("shaft_power", units="kW")
+        return max_power
+
+    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
+        """
+        Compute the turboprop maximum power @ given flight-point. We'll assume the max power
+        happens when the max_thrust does so we'll use the same OpenMDAO problem.
+
+        :param flight_points: current flight point, with altitude in meters as always !
+        :return: maximum power in kW
+        """
+
+        altitude_feet = flight_points.altitude / 0.3048
+        mach = flight_points.mach
+
+        power_out = self._max_power(altitude_feet, mach)
+
+        return power_out
+
+    def sfc(
+        self,
+        thrust: Union[float, Sequence[float]],
+        atmosphere: Atmosphere,
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Computation of the SFC.
+
+        :param thrust: Thrust (in N)
+        :param atmosphere: Atmosphere instance at intended altitude
+        :return: SFC (in kg/s/W) and power (in W)
+        """
+
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
+        mach = atmosphere.mach
+
+        if isinstance(altitude, float):
+            fuel_consumed, power_shaft = self._fuel_consumed(altitude, mach, thrust)
+            sfc = np.array(fuel_consumed / power_shaft)
+            power_shaft = np.array(power_shaft)
+
+        else:
+            sfc = np.zeros_like(altitude)
+            power_shaft = np.zeros_like(altitude)
+            for idx in range(np.size(altitude)):
+                fuel_consumed, power_shaft_loc = self._fuel_consumed(
+                    altitude[idx], mach[idx], thrust[idx]
+                )
+                sfc[idx] = fuel_consumed / power_shaft_loc
+                power_shaft[idx] = power_shaft_loc
+
+        return sfc, power_shaft
+
+    def _add_to_max_thrust_cache(self, key: str, value: float):
+        """
+        Adds a new value to the cache but first check that the size has not been exceeded. If it
+        has, pop the first element that has been computed.
+
+        :param key: key to add to the cache
+        :param value: value to add to the cache
+        """
+
+        if len(self._cache_max_thrust) >= CACHE_MAX_SIZE:
+            self._cache_max_thrust.popitem(last=False)
+
+        self._cache_max_thrust[key] = value
+
+    def _max_thrust(self, altitude: float, mach: float):
+        """
+        Computation of maximum thrust either due to propeller thrust limit or turboprop max
+        power. Assumes the limits are reached in this order: Power limit, OPR limit, ITT limit,
+        propeller thrust_limit.
+
+        :param altitude: altitude in ft
+        :param mach: Mach number
+        """
+
+        # Check if a result with approximately the same altitude and approximately the same mach
+        # exist in cached results. If it does, take existing results, otherwise compute and add
+        # to cache.
+        cache_key = "alt" + str(round(altitude)) + "ft" + str(round(mach, 3))
+
+        if cache_key in self._cache_max_thrust:
+            return self._cache_max_thrust[cache_key]
+
+        prob_max_thrust_power_limit = self.turboprop_max_thrust_power_limit_problem
+
+        prob_max_thrust_power_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_power_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_power_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process.
+        if prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
+            "opr_limit"
+        ):
+            max_thrust = prob_max_thrust_power_limit.get_val("required_thrust", units="N")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_opr_limit = self.turboprop_max_thrust_opr_limit_problem
+
+        prob_max_thrust_opr_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_opr_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_opr_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_opr_limit.get_val(
+            "total_temperature_45", units="degK"
+        ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
+
+            max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="N")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_itt_limit = self.turboprop_max_thrust_itt_limit_problem
+
+        prob_max_thrust_itt_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_itt_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_itt_limit.run_model()
+
+        # Check if a bound is violated, if not we simply end the process. Rather we will simply
+        # check that the expected bound is reached
+        if prob_max_thrust_itt_limit.get_val(
+            "propeller_thrust", units="N"
+        ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
+
+            max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="N")
+            self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+            return max_thrust
+
+        prob_max_thrust_propeller_thrust_limit = (
+            self.turboprop_max_thrust_propeller_thrust_limit_problem
+        )
+
+        prob_max_thrust_propeller_thrust_limit.set_val("altitude", val=altitude, units="ft")
+        prob_max_thrust_propeller_thrust_limit.set_val("mach_0", val=mach)
+
+        prob_max_thrust_propeller_thrust_limit.run_model()
+
+        max_thrust = prob_max_thrust_propeller_thrust_limit.get_val("required_thrust", units="N")
+        self._add_to_max_thrust_cache(cache_key, max_thrust[0])
+        return max_thrust
+
+    def max_thrust(
+        self,
+        atmosphere: Atmosphere,
+    ) -> np.ndarray:
+        """
+        Computation of maximum thrust either due to propeller thrust limit or turboprop max power.
+
+        :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
+        :return: maximum thrust (in N)
+        """
+        altitude = atmosphere.get_altitude(altitude_in_feet=True)
+
+        if isinstance(altitude, float):  # Calculate for float
+            thrust_max_global = self._max_thrust(altitude, atmosphere.mach)
+            if isinstance(thrust_max_global, float):
+                thrust_max_global = np.array([thrust_max_global])
+
+        else:  # Calculate for array
+            thrust_max_global = np.zeros_like(altitude)
+            for idx in range(np.size(altitude)):
+                thrust_max_global[idx] = self._max_thrust(altitude[idx], atmosphere.mach[idx])
+
+        return thrust_max_global
+
+    def _fuel_consumed(
+        self, altitude: float, mach: float, thrust_required: float
+    ) -> Tuple[float, float]:
+        """
+        Computes the fuel consumed at the current flight point. Will first attempt to use the no
+        ls problem because it is quicker, if it doesn't converge, compute using the ls problem.
+        This function can't really be cached as it depends on the thrust which tends to never be
+        equal from one point to another unlike speed and altitude
+
+        :param altitude: altitude in ft
+        :param mach: Mach number
+        :param thrust_required: thrust required in N
+
+        :return fuel_consumed: fuel consumed in kg/s
+        :return shaft_power: shaft power in W
+        """
+
+        prob_fuel_consumed = self.turboprop_fuel_problem
+
+        prob_fuel_consumed.set_val("altitude", val=altitude, units="ft")
+        prob_fuel_consumed.set_val("mach_0", val=mach)
+        prob_fuel_consumed.set_val("required_thrust", val=thrust_required, units="N")
+
+        prob_fuel_consumed.run_model()
+
+        if prob_fuel_consumed.model.nonlinear_solver._iter_count < MAX_ITER_NO_LS_PROBLEM:
+            return (
+                prob_fuel_consumed.get_val("fuel_mass_flow", units="kg/s")[0],
+                prob_fuel_consumed.get_val("shaft_power", units="W")[0],
+            )
+
+        # From my tests it is rarely used but better safe than sorry
+        prob_fuel_consumed_ls = self.turboprop_fuel_problem_ls
+
+        prob_fuel_consumed_ls.set_val("altitude", val=altitude, units="ft")
+        prob_fuel_consumed_ls.set_val("mach_0", val=mach)
+        prob_fuel_consumed_ls.set_val("required_thrust", val=thrust_required, units="N")
+
+        prob_fuel_consumed_ls.run_model()
+
+        return (
+            prob_fuel_consumed_ls.get_val("fuel_mass_flow", units="kg/s")[0],
+            prob_fuel_consumed_ls.get_val("shaft_power", units="W")[0],
+        )
+
     def propeller_efficiency(
         self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
     ) -> Union[float, Sequence]:
@@ -1275,19 +1357,17 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # the change in advance ration is equal to a change in velocity
         installed_airspeed = atmosphere.true_airspeed * self.effective_J
 
-        propeller_efficiency_SL = interp2d(
+        propeller_efficiency_SL = RectBivariateSpline(
             self.thrust_SL,
             self.speed_SL,
-            self.efficiency_SL * self.effective_efficiency_ls,  # Include the efficiency loss
+            self.efficiency_SL.T * self.effective_efficiency_ls,  # Include the efficiency loss
             # in here
-            kind="cubic",
         )
-        propeller_efficiency_CL = interp2d(
+        propeller_efficiency_CL = RectBivariateSpline(
             self.thrust_CL,
             self.speed_CL,
-            self.efficiency_CL * self.effective_efficiency_cruise,  # Include the efficiency loss
+            self.efficiency_CL.T * self.effective_efficiency_cruise,  # Include the efficiency loss
             # in here
-            kind="cubic",
         )
         if isinstance(atmosphere.true_airspeed, float):
             thrust_interp_SL = np.minimum(
@@ -1307,12 +1387,12 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 np.maximum(np.min(self.thrust_CL), thrust),
                 np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
             )
-        if isinstance(thrust, float):  # calculate for float
+        if np.size(thrust) == 1:  # calculate for float
             lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, installed_airspeed))
             upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
-                altitude, [0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
+                altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
             )
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))
@@ -1332,240 +1412,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 )
 
         return propeller_efficiency
-
-    def compute_max_power(self, flight_points: oad.FlightPoint) -> Union[float, Sequence]:
-        """
-        Compute the turboprop maximum power @ given flight-point.
-
-        :param flight_points: current flight point, with altitude in meters as always !
-        :return: maximum power in kW
-        """
-
-        h_vol = flight_points.altitude
-        mach_vol = flight_points.mach
-        _, power_out, _ = self.turboshaft_compute_within_limits(
-            self.max_power_avail, h_vol, mach_vol
-        )
-
-        return power_out
-
-    def sfc(
-        self,
-        thrust: Union[float, Sequence[float]],
-        atmosphere: Atmosphere,
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Computation of the SFC.
-
-        :param thrust: Thrust (in N)
-        :param atmosphere: Atmosphere instance at intended altitude
-        :return: SFC (in kg/s/W) and power (in W)
-        """
-
-        # Compute sfc
-        power_shaft = np.zeros(np.size(thrust))
-        # torque = np.zeros(np.size(thrust))
-        sfc = np.zeros(np.size(thrust))
-        if np.size(thrust) == 1:
-            thrust_propeller = thrust
-            while True:
-                power_shaft = (
-                    thrust_propeller
-                    * atmosphere.true_airspeed
-                    / self.propeller_efficiency(thrust_propeller, atmosphere)
-                )
-                h_vol_point = atmosphere.get_altitude(altitude_in_feet=False)
-                mach_vol_point = atmosphere.mach
-
-                power_in_kw = power_shaft / 1000.0
-
-                fuel_point, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                    power_in_kw, h_vol_point, mach_vol_point
-                )
-                power_out_watts = power_out * 1000.0
-
-                sfc = fuel_point / power_out_watts
-                power_shaft = power_out_watts
-                if abs(thrust - thrust_propeller - thrust_exhaust) / thrust < 1e-3:
-                    break
-                else:
-                    thrust_propeller = thrust - thrust_exhaust
-        else:
-            for idx in range(np.size(thrust)):
-                thrust_propeller = thrust[idx]
-                local_atmosphere = Atmosphere(
-                    atmosphere.get_altitude(altitude_in_feet=False)[idx], altitude_in_feet=False
-                )
-                local_atmosphere.mach = atmosphere.mach[idx]
-                while True:
-                    power_shaft[idx] = (
-                        thrust_propeller
-                        * local_atmosphere.true_airspeed
-                        / self.propeller_efficiency(thrust_propeller, local_atmosphere)
-                    )
-                    h_vol = local_atmosphere.get_altitude(altitude_in_feet=False)
-                    mach_vol = local_atmosphere.mach
-                    power_in_kw = power_shaft[idx] / 1000.0
-                    fuel, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                        power_in_kw, h_vol, mach_vol
-                    )
-                    power_out_watts = power_out * 1000.0
-                    sfc[idx] = fuel / power_out_watts
-                    power_shaft[idx] = power_out_watts
-                    if abs(thrust[idx] - thrust_propeller - thrust_exhaust) / thrust[idx] < 1e-3:
-                        break
-                    else:
-                        thrust_propeller = thrust[idx] - thrust_exhaust
-
-        return sfc, power_shaft
-
-    def max_thrust(
-        self,
-        atmosphere: Atmosphere,
-    ) -> np.ndarray:
-        """
-        Computation of maximum thrust either due to propeller thrust limit or turboprop max power.
-
-        :param atmosphere: Atmosphere instance at intended altitude (should be <=20km)
-        :return: maximum thrust (in N)
-        """
-
-        # Calculate maximum propeller thrust @ given altitude and speed
-        if isinstance(atmosphere.true_airspeed, float):
-            lower_bound = np.interp(atmosphere.true_airspeed, self.speed_SL, self.thrust_limit_SL)
-            upper_bound = np.interp(atmosphere.true_airspeed, self.speed_CL, self.thrust_limit_CL)
-        else:
-            lower_bound = np.interp(
-                list(atmosphere.true_airspeed), self.speed_SL, self.thrust_limit_SL
-            )
-            upper_bound = np.interp(
-                list(atmosphere.true_airspeed), self.speed_CL, self.thrust_limit_CL
-            )
-        altitude = atmosphere.get_altitude(altitude_in_feet=False)
-        thrust_max_propeller = (
-            lower_bound
-            + (upper_bound - lower_bound)
-            * np.minimum(altitude, self.cruise_altitude_propeller)
-            / self.cruise_altitude_propeller
-        )
-
-        altitudes_to_evaluate = atmosphere.get_altitude(altitude_in_feet=False)
-        if np.size(altitudes_to_evaluate) == 1:
-            h_vol = altitudes_to_evaluate
-            mach_vol = atmosphere.mach
-            _, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                self.max_power_avail, h_vol, mach_vol
-            )
-            power_out_watts = power_out * 1000.0
-            max_power = power_out_watts
-            exhaust_thrust_at_max_power = thrust_exhaust
-        else:
-            max_power = np.zeros(len(altitudes_to_evaluate))
-            exhaust_thrust_at_max_power = np.zeros(len(altitudes_to_evaluate))
-            for idx, h_vol in enumerate(altitudes_to_evaluate):
-                mach_vol = atmosphere.mach[idx]
-                _, power_out, thrust_exhaust = self.turboshaft_compute_within_limits(
-                    self.max_power_avail, h_vol, mach_vol
-                )
-                power_out_watts = power_out * 1000.0
-                # max_power = power_out_watts
-                max_power[idx] = power_out_watts
-                exhaust_thrust_at_max_power[idx] = thrust_exhaust
-
-        # Max power --> Array containing the maximum available power at the given flight points
-        # thrust_max_propeller --> Array containing the maximum available thrust at the given
-        # flight points for the propeller
-
-        # Found thrust relative to turboprop maximum power @ given altitude and speed: calculates
-        # first thrust interpolation vector (between min and max of propeller table) and
-        # associated efficiency, then calculates power and found thrust (interpolation limits to
-        # max propeller thrust)
-        thrust_interp = np.linspace(
-            np.min(self.thrust_SL) * np.ones(np.size(thrust_max_propeller)),
-            thrust_max_propeller,
-            10,
-        ).transpose()
-        if np.size(altitude) == 1:  # Calculate for float
-            thrust_max_global = 0.0
-            local_atmosphere = Atmosphere(
-                altitude * np.ones(np.size(thrust_interp)), altitude_in_feet=False
-            )
-            local_atmosphere.mach = atmosphere.mach * np.ones(np.size(thrust_interp))
-            propeller_efficiency = self.propeller_efficiency(thrust_interp[0], local_atmosphere)
-            mechanical_power = thrust_interp[0] * atmosphere.true_airspeed / propeller_efficiency
-            if np.min(mechanical_power) > max_power:
-                efficiency_relative_error = 1
-                propeller_efficiency = propeller_efficiency[0]
-                while efficiency_relative_error > 1e-2:
-                    thrust_max_global = max_power * propeller_efficiency / atmosphere.true_airspeed
-                    propeller_efficiency_new = self.propeller_efficiency(
-                        thrust_max_global, atmosphere
-                    )
-                    efficiency_relative_error = np.abs(
-                        (propeller_efficiency_new - propeller_efficiency)
-                        / efficiency_relative_error
-                    )
-                    propeller_efficiency = propeller_efficiency_new
-                thrust_max_global += exhaust_thrust_at_max_power
-            # TODO : is there a need to take into account the fact when the turboprop is
-            #  over-sized and the limiting  factor becomes the propeller ? Is it physically
-            #  relevant ? Here it looks like in any case, the  engine is always the  limiting
-            #  factor
-            else:
-                thrust_max_global = (
-                    np.interp(max_power, mechanical_power, thrust_interp[0])
-                    + exhaust_thrust_at_max_power
-                )
-            if isinstance(thrust_max_global, float):
-                thrust_max_global = np.array([thrust_max_global])
-        else:  # Calculate for array
-            thrust_max_global = np.zeros(np.size(altitude))
-            for idx in range(np.size(altitude)):
-                local_atmosphere = Atmosphere(
-                    altitude[idx] * np.ones(np.size(thrust_interp[idx])), altitude_in_feet=False
-                )
-                local_atmosphere.mach = atmosphere.mach[idx] * np.ones(np.size(thrust_interp[idx]))
-                propeller_efficiency = self.propeller_efficiency(
-                    thrust_interp[idx], local_atmosphere
-                )
-                mechanical_power = (
-                    thrust_interp[idx] * atmosphere.true_airspeed[idx] / propeller_efficiency
-                )
-                # mechanical power contain the shaft power required to obtain the thrust from
-                # thrust_interp, where thrust_interp[idx] is the thrust interpolation array
-                # corresponding to the flight conditions [idx] Mechanical power is already
-                # limited by the maximum thrust that the propeller can produce so we are sure
-                # that we will never go above our propeller's capacity
-
-                # If the limiting factor is the turboprop, thrust_max_global is computed based on
-                # max_power[idx]
-                if (
-                    np.min(mechanical_power) > max_power[idx]
-                ):  # take the lower bound efficiency for calculation
-                    efficiency_relative_error = 1
-                    local_atmosphere = Atmosphere(altitude[idx], altitude_in_feet=False)
-                    local_atmosphere.mach = atmosphere.mach[idx]
-                    propeller_efficiency = propeller_efficiency[0]
-                    while efficiency_relative_error > 1e-2:
-                        thrust_max_global[idx] = (
-                            max_power[idx] * propeller_efficiency / atmosphere.true_airspeed[idx]
-                        )
-                        propeller_efficiency_new = self.propeller_efficiency(
-                            thrust_max_global[idx], local_atmosphere
-                        )
-                        efficiency_relative_error = np.abs(
-                            (propeller_efficiency_new - propeller_efficiency)
-                            / efficiency_relative_error
-                        )
-                        propeller_efficiency = propeller_efficiency_new
-                    thrust_max_global[idx] += exhaust_thrust_at_max_power[idx]
-                else:
-                    thrust_max_global[idx] = (
-                        np.interp(max_power[idx], mechanical_power, thrust_interp[idx])
-                        + exhaust_thrust_at_max_power[idx]
-                    )
-
-        return thrust_max_global
 
     def compute_weight(self) -> float:
         """
@@ -1640,7 +1486,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         fineness = self.nacelle.length / np.sqrt(
             4 * self.nacelle.height * self.nacelle.width / np.pi
         )
-        ff_nac = 1 + 0.35 / fineness  # Raymer (seen in Gudmunsson)
+        ff_nac = 1.0 + 0.35 / fineness  # Raymer (seen in Gudmundsson)
         if_nac = 1.2  # Jenkinson (seen in Gudmundsson)
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 

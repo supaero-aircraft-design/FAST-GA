@@ -15,13 +15,17 @@ Test module for basicIC_engine.py
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import time
+
+import pytest
+
 import numpy as np
 
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
-from ..basicTP_engine import BasicTPEngine
+from ..basicTP_engine import BasicTPEngine, CACHE_MAX_SIZE
 
 INVALID_SFC = 0.0
 
@@ -850,7 +854,16 @@ def test_compute_flight_points_tbm_700():
     )
 
     engine.compute_flight_points(flight_points)
-    print(flight_points.sfc * flight_points.thrust * 3600.0)
+    np.testing.assert_allclose(
+        flight_points.thrust / flight_points.thrust_rate,
+        [4050.690258, 3885.650828, 3724.108916, 3554.889068, 3408.538184, 3250.217239, 2793.279837],
+        rtol=1e-2,
+    )
+    np.testing.assert_allclose(
+        flight_points.sfc * flight_points.thrust * 3600.0,
+        [233.831317, 217.645651, 203.416703, 190.898895, 179.773042, 170.306647, 144.282117],
+        rtol=1e-2,
+    )
 
 
 def test_compute_flight_points():
@@ -901,7 +914,7 @@ def test_compute_flight_points():
     machs = [0.3, 0.3, 0.3, 0.4, 0.4]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3552.993438, 2220.620899, 2220.620899, 1355.227044, 2436.320399]
+    thrusts = [3562.23389399, 2226.39618374, 2226.39618374, 1371.93021539, 2462.66657075]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -909,7 +922,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [1.471528e-05, 1.831423e-05, 1.831423e-05, 2.576356e-05, 1.766113e-05]
+    expected_sfc = [1.469635e-05, 1.828701e-05, 1.828701e-05, 2.614570e-05, 1.757415e-05]
 
     flight_points = oad.FlightPoint(
         mach=machs + machs,
@@ -1145,6 +1158,652 @@ def test_compute_max_power():
     flight_points = oad.FlightPoint(altitude=9000, mach=0.5)
     np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 337.57, atol=1)
 
-    # At higher altitude, higher mach
-    flight_points = oad.FlightPoint(altitude=9000, mach=0.8)
-    np.testing.assert_allclose(_745_kW_engine.compute_max_power(flight_points), 502.70, atol=1)
+
+def test_nested_problem_setup():
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9000.0,
+        design_altitude=0.0,
+        design_mach=0.5,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=0.95,  # Effective advance ratio factor
+        effective_efficiency_ls=0.97,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=0.98,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Sizing problem should not be loaded at object instantiation
+    assert engine._turboprop_sizing_problem is None
+    assert not engine._turboprop_sizing_problem_setup
+
+    assert engine._turboprop_max_thrust_power_limit_problem is None
+    assert not engine._turboprop_max_thrust_power_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_opr_limit_problem is None
+    assert not engine._turboprop_max_thrust_opr_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_itt_limit_problem is None
+    assert not engine._turboprop_max_thrust_itt_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
+    assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    # Nor after computing the weight, dimensions or cd0
+
+    _ = engine.compute_weight()
+    _, _, _, _ = engine.compute_dimensions()
+    _ = engine.compute_drag(mach=0.2, unit_reynolds=5e6, wing_mac=1.0)
+
+    # Sizing problem should not be loaded at object instantiation
+    assert engine._turboprop_sizing_problem is None
+    assert not engine._turboprop_sizing_problem_setup
+
+    assert engine._turboprop_max_thrust_power_limit_problem is None
+    assert not engine._turboprop_max_thrust_power_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_opr_limit_problem is None
+    assert not engine._turboprop_max_thrust_opr_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_itt_limit_problem is None
+    assert not engine._turboprop_max_thrust_itt_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
+    assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    # Then, the first call should take quite a bit of time, while the second is instantaneous
+    t1 = time.time()
+    _ = engine.turboprop_sizing_problem
+    t2 = time.time()
+
+    _ = engine.turboprop_sizing_problem
+    t3 = time.time()
+
+    assert t3 - t2 < t2 - t1
+
+
+def test_access_to_geometry_parameter():
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Sizing problem should not be loaded at object instantiation
+    assert engine._turboprop_sizing_problem is None
+    assert not engine._turboprop_sizing_problem_setup
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    # But accessing alpha should load the sizing problem and run it. Additionally, accessing a
+    # geometric parameter should take some time the first time its done but accessing any other
+    # after that should be instantaneous
+    t1 = time.time()
+    assert engine.alpha == pytest.approx(0.798550, rel=1e-2)
+    t2 = time.time()
+
+    assert engine.alpha_p == pytest.approx(0.333594, rel=1e-2)
+    assert engine.a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine.a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine.a_8 == pytest.approx(0.038730, rel=1e-2)
+    assert engine.opr_2_opr_1 == pytest.approx(1.684210, rel=1e-2)
+    t3 = time.time()
+
+    assert t3 - t2 < t2 - t1
+
+    assert engine._turboprop_sizing_problem is not None
+    assert engine._turboprop_sizing_problem_setup
+
+
+def test_geometry_parameter_not_called_until_compute_flight_point():
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    assert engine._alpha is None
+    assert engine._alpha_p is None
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+    assert engine._opr_2_opr_1 is None
+
+    flight_points = oad.FlightPoint(
+        mach=[0.2],
+        altitude=[0],
+        engine_setting=[EngineSetting.TAKEOFF],
+        thrust_rate=[1.0],
+    )
+
+    engine.compute_flight_points(flight_points)
+
+    assert engine._a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine._a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine._a_8 == pytest.approx(0.038730, rel=1e-2)
+
+
+def test_max_thrust_all_engine_limits():
+    """
+    For this engine the propeller thrust is never limiting so we can't craft a case where it
+    is. However we can check that it is always below the max value.
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Not loaded until we try to run the computation of max thrust
+    assert engine._a_41 is None
+    assert engine._a_45 is None
+    assert engine._a_8 is None
+
+    prob_max_thrust_power_limit = engine.turboprop_max_thrust_power_limit_problem
+
+    # Power should be the limit in this case
+    prob_max_thrust_power_limit.set_val("altitude", val=0, units="ft")
+    prob_max_thrust_power_limit.set_val("mach_0", val=0.34767454)
+
+    prob_max_thrust_power_limit.run_model()
+
+    assert prob_max_thrust_power_limit.get_val("required_thrust", units="kN") == pytest.approx(
+        4.050775, rel=1e-2
+    )
+    assert prob_max_thrust_power_limit.get_val("shaft_power", units="kW") == pytest.approx(
+        prob_max_thrust_power_limit.get_val("shaft_power_limit", units="kW"), rel=1e-2
+    )
+    assert prob_max_thrust_power_limit.get_val("opr") < prob_max_thrust_power_limit.get_val(
+        "opr_limit"
+    )
+    assert prob_max_thrust_power_limit.get_val(
+        "total_temperature_45", units="degK"
+    ) < prob_max_thrust_power_limit.get_val("itt_limit", units="degK")
+    assert prob_max_thrust_power_limit.get_val(
+        "propeller_thrust", units="N"
+    ) < prob_max_thrust_power_limit.get_val("propeller_max_thrust", units="N")
+
+    # Area should now be loaded
+    assert engine._a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine._a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine._a_8 == pytest.approx(0.038730, rel=1e-2)
+
+    prob_max_thrust_opr_limit = engine.turboprop_max_thrust_opr_limit_problem
+
+    # OPR should be the limit in this case
+    prob_max_thrust_opr_limit.set_val("altitude", val=30000.0, units="ft")
+    prob_max_thrust_opr_limit.set_val("mach_0", val=0.50562001)
+
+    prob_max_thrust_opr_limit.run_model()
+
+    assert prob_max_thrust_opr_limit.get_val("required_thrust", units="kN") == pytest.approx(
+        2.793539, rel=1e-2
+    )
+    assert prob_max_thrust_opr_limit.get_val("shaft_power", units="kW") < (
+        prob_max_thrust_opr_limit.get_val("shaft_power_limit", units="kW")
+    )
+    assert prob_max_thrust_opr_limit.get_val("opr") == pytest.approx(
+        prob_max_thrust_opr_limit.get_val("opr_limit"), rel=1e-2
+    )
+    assert prob_max_thrust_opr_limit.get_val(
+        "total_temperature_45", units="degK"
+    ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK")
+    assert prob_max_thrust_opr_limit.get_val(
+        "propeller_thrust", units="N"
+    ) < prob_max_thrust_opr_limit.get_val("propeller_max_thrust", units="N")
+
+
+def test_max_thrust_private_func():
+    """
+    Check that the private function indeed does what it is supposed to do
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Here, the power is supposed to be the limit, meaning we should have loaded any other
+    # problem. And the first execution for a point where the shaft power is the limit should take
+    # longer that the second even if the point is different. The reason being, for the second
+    # case, the problem is already warm started
+    t1 = time.time()
+    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4050.69, rel=1e-2)
+    t2 = time.time()
+
+    assert engine._turboprop_max_thrust_opr_limit_problem is None
+    assert not engine._turboprop_max_thrust_opr_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_itt_limit_problem is None
+    assert not engine._turboprop_max_thrust_itt_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
+    assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+    t3 = time.time()
+    assert engine._max_thrust(5000, 0.37073066) == pytest.approx(3885.731, rel=1e-2)
+    t4 = time.time()
+
+    assert t2 - t1 > t4 - t3
+
+    # Here, if we check the cache, there should be 2 items corresponding to the test previously ran
+    assert len(engine._cache_max_thrust) == 2
+    assert "alt0ft0.348" in engine._cache_max_thrust
+    assert "alt5000ft0.371" in engine._cache_max_thrust
+
+    t5 = time.time()
+    assert engine._max_thrust(0, 0.34767454) == pytest.approx(4050.775, rel=1e-2)
+    t6 = time.time()
+
+    assert t4 - t3 > t6 - t5
+
+    # Now, we will rerun the function for the first case, since it is cached, it should be even
+    # quicker than the second case
+
+    # Here, the opr is supposed to be the limit, meaning ITT and propeller thrust should not be
+    # loaded
+    assert engine._max_thrust(30000.0, 0.50562001) == pytest.approx(2793.539, rel=1e-2)
+
+    assert engine._turboprop_max_thrust_itt_limit_problem is None
+    assert not engine._turboprop_max_thrust_itt_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
+    assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+
+def test_fuel_problem_not_called_in_max_thrust():
+    """
+    Really just a test for the sake of a test, but it is to make sure that the problem that will
+    compute the fuel are not called when we just run the max thrust function.
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Check that the fuel consumption are not called at object instantiation
+
+    assert engine._turboprop_fuel_problem is None
+    assert not engine._turboprop_fuel_problem_setup
+
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup
+
+    # They should also not be needed to compute max_thrust
+    engine._max_thrust(30000.0, 0.50562001)
+
+    assert engine._turboprop_fuel_problem is None
+    assert not engine._turboprop_fuel_problem_setup
+
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup
+
+
+def test_fuel_consumed_private_func():
+    """
+    Check that the private function indeed does what it is supposed to do
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    # Here, the point should be solved without requiring the use of the linesearch problem,
+    # we check that and we also check that the geometry has been initialized properly. Since we
+    # don't require the max thrust for this function, the max_thrust problem should not have been
+    # instantiated. Also the first run should be longer than any subsequent run that don't require
+    # the linesearch problem because subsequent run will be "warm started"
+
+    t1 = time.time()
+    assert engine._fuel_consumed(0, 0.34767454, 4050.690258)[0] * 3600.0 == pytest.approx(
+        233.831317, rel=1e-2
+    )
+    t2 = time.time()
+
+    # Area should now be loaded
+    assert engine._a_41 == pytest.approx(0.004571, rel=1e-2)
+    assert engine._a_45 == pytest.approx(0.012201, rel=1e-2)
+    assert engine._a_8 == pytest.approx(0.038730, rel=1e-2)
+
+    # No need for linesearch problem
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup
+
+    assert engine._turboprop_max_thrust_opr_limit_problem is None
+    assert not engine._turboprop_max_thrust_opr_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_itt_limit_problem is None
+    assert not engine._turboprop_max_thrust_itt_limit_problem_setup
+
+    assert engine._turboprop_max_thrust_propeller_thrust_limit_problem is None
+    assert not engine._turboprop_max_thrust_propeller_thrust_limit_problem_setup
+
+    t3 = time.time()
+    assert engine._fuel_consumed(5000, 0.37073066, 3885.650828)[0] * 3600.0 == pytest.approx(
+        217.645651, rel=1e-2
+    )
+    t4 = time.time()
+
+    assert t4 - t3 < t2 - t1
+
+    # No need for linesearch problem
+    assert engine._turboprop_fuel_problem_ls is None
+    assert not engine._turboprop_fuel_problem_ls_setup
+
+    assert engine._fuel_consumed(10000, 0.396, 3724.108916)[0] * 3600.0 == pytest.approx(
+        203.416703, rel=1e-2
+    )
+
+
+def test_max_thrust_cache_saturation():
+    """
+    Check that the cache implemented for max thrust works as intended in that it never goes above
+    128 elements.
+    """
+
+    engine = BasicTPEngine(
+        power_design=745.7,
+        t_41t_design=1350,
+        opr_design=9.5,
+        cruise_altitude_propeller=9200.0,
+        design_altitude=0.0,
+        design_mach=0.0,
+        prop_layout=1.0,
+        bleed_control=1.0,
+        itt_limit=1100.0,
+        power_limit=521.99,
+        opr_limit=12.0,
+        speed_SL=SPEED,
+        thrust_SL=THRUST_SL,
+        thrust_limit_SL=THRUST_SL_LIMIT,
+        efficiency_SL=EFFICIENCY_SL,
+        speed_CL=SPEED,
+        thrust_CL=THRUST_CL,
+        thrust_limit_CL=THRUST_CL_LIMIT,
+        efficiency_CL=EFFICIENCY_CL,
+        effective_J=1.0,  # Effective advance ratio factor
+        effective_efficiency_ls=1.0,  # Effective efficiency in low speed conditions
+        effective_efficiency_cruise=1.0,  # Effective efficiency in cruise conditions
+        eta_225=0.85,
+        eta_253=0.86,
+        eta_445=0.86,
+        eta_455=0.86,
+        eta_q=43.260e6 * 0.95,
+        eta_axe=0.98,
+        pi_02=0.8,
+        pi_cc=0.95,
+        cooling_ratio=0.05,
+        hp_shaft_power_out=50 * 745.7,
+        gearbox_efficiency=0.98,
+        inter_compressor_bleed=0.04,
+        exhaust_mach_design=0.4,
+        pr_1_ratio_design=0.25,
+    )  # load a 1000 kW turboprop gasoline engine
+
+    altitude = np.linspace(0.0, 10000.0, CACHE_MAX_SIZE)
+    mach = np.linspace(0.3, 0.4, CACHE_MAX_SIZE)
+    dummy_thrust = np.linspace(1000.0, 2000.0, CACHE_MAX_SIZE)
+
+    # Artificially fill the cache
+    for altitude_loc, mach_loc, dummy_thrust_loc in zip(altitude, mach, dummy_thrust):
+        key = "alt" + str(round(altitude_loc)) + "ft" + str(round(mach_loc, 3))
+        engine._cache_max_thrust[key] = dummy_thrust_loc
+
+    assert len(engine._cache_max_thrust) == CACHE_MAX_SIZE
+
+    # Now properly add one value and check that it has indeed not changed the size
+    engine._max_thrust(15000.0, 0.41)
+    assert len(engine._cache_max_thrust) == CACHE_MAX_SIZE
+    assert "alt0ft0.3" not in engine._cache_max_thrust.keys()
+    assert list(engine._cache_max_thrust.keys())[-2] == "alt10000ft0.4"
+    assert list(engine._cache_max_thrust.keys())[-1] == "alt15000ft0.41"

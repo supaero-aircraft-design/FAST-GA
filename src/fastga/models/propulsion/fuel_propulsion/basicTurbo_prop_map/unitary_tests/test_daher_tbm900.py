@@ -16,14 +16,15 @@ Test module for basicTP_engine_constructor.py
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-import numpy as np
 
 from ..basicTP_engine_constructor import ComputeTurbopropMap
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 from .data.dummy_maps import (
-    MACH_ARRAY,
+    MACH_ARRAY_SL,
+    MACH_ARRAY_IL,
+    MACH_ARRAY_CL,
     THRUST_ARRAY_CL,
     THRUST_ARRAY_IL,
     THRUST_ARRAY_SL,
@@ -52,105 +53,41 @@ def test_table_construction():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeTurbopropMap(), ivc)
 
-    assert (
-        np.sum(np.abs(MACH_ARRAY - problem.get_val("data:propulsion:turboprop:sea_level:mach")))
-        < 1e-4
+    assert problem.get_val("data:propulsion:turboprop:sea_level:mach") == pytest.approx(
+        MACH_ARRAY_SL, abs=1e-4
     )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_ARRAY_SL
-                - problem.get_val("data:propulsion:turboprop:sea_level:thrust", units="N")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_MAX_ARRAY_SL
-                - problem.get_val("data:propulsion:turboprop:sea_level:thrust_limit", units="N")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                SFC_SL - problem.get_val("data:propulsion:turboprop:sea_level:sfc", units="kg/s/N")
-            )
-        )
-        < 1e-2
-    )
+    assert problem.get_val(
+        "data:propulsion:turboprop:sea_level:thrust", units="N"
+    ) == pytest.approx(THRUST_ARRAY_SL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:sea_level:thrust_limit", units="N"
+    ) == pytest.approx(THRUST_MAX_ARRAY_SL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:sea_level:sfc", units="kg/s/N"
+    ) == pytest.approx(SFC_SL, abs=1e-2)
 
-    assert (
-        np.sum(np.abs(MACH_ARRAY - problem.get_val("data:propulsion:turboprop:cruise_level:mach")))
-        < 1e-4
+    assert problem.get_val("data:propulsion:turboprop:cruise_level:mach") == pytest.approx(
+        MACH_ARRAY_CL, abs=1e-4
     )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_ARRAY_CL
-                - problem.get_val("data:propulsion:turboprop:cruise_level:thrust", units="N")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_MAX_ARRAY_CL
-                - problem.get_val("data:propulsion:turboprop:cruise_level:thrust_limit", units="N")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                SFC_CL
-                - problem.get_val("data:propulsion:turboprop:cruise_level:sfc", units="kg/s/N")
-            )
-        )
-        < 1e-2
-    )
+    assert problem.get_val(
+        "data:propulsion:turboprop:cruise_level:thrust", units="N"
+    ) == pytest.approx(THRUST_ARRAY_CL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:cruise_level:thrust_limit", units="N"
+    ) == pytest.approx(THRUST_MAX_ARRAY_CL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:cruise_level:sfc", units="kg/s/N"
+    ) == pytest.approx(SFC_CL, abs=1e-2)
 
-    assert (
-        np.sum(
-            np.abs(
-                MACH_ARRAY - problem.get_val("data:propulsion:turboprop:intermediate_level:mach")
-            )
-        )
-        < 1e-4
+    assert problem.get_val("data:propulsion:turboprop:intermediate_level:mach") == pytest.approx(
+        MACH_ARRAY_IL, abs=1e-4
     )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_ARRAY_IL
-                - problem.get_val("data:propulsion:turboprop:intermediate_level:thrust", units="N")
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                THRUST_MAX_ARRAY_IL
-                - problem.get_val(
-                    "data:propulsion:turboprop:intermediate_level:thrust_limit", units="N"
-                )
-            )
-        )
-        < 1e-2
-    )
-    assert (
-        np.sum(
-            np.abs(
-                SFC_IL
-                - problem.get_val(
-                    "data:propulsion:turboprop:intermediate_level:sfc", units="kg/s/N"
-                )
-            )
-        )
-        < 1e-2
-    )
+    assert problem.get_val(
+        "data:propulsion:turboprop:intermediate_level:thrust", units="N"
+    ) == pytest.approx(THRUST_ARRAY_IL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:intermediate_level:thrust_limit", units="N"
+    ) == pytest.approx(THRUST_MAX_ARRAY_IL, abs=1e-2)
+    assert problem.get_val(
+        "data:propulsion:turboprop:intermediate_level:sfc", units="kg/s/N"
+    ) == pytest.approx(SFC_IL, abs=1e-2)

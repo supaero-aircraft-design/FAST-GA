@@ -56,15 +56,15 @@ def test_compute_flight_points():
         effective_J=1.0,
         effective_efficiency_ls=1.0,
         effective_efficiency_cruise=1.0,
-        turbo_mach_SL=MACH_ARRAY,
+        turbo_mach_SL=MACH_ARRAY_SL,
         turbo_thrust_SL=THRUST_ARRAY_SL,
         turbo_thrust_max_SL=THRUST_MAX_ARRAY_SL,
         turbo_sfc_SL=SFC_SL,
-        turbo_mach_CL=MACH_ARRAY,
+        turbo_mach_CL=MACH_ARRAY_CL,
         turbo_thrust_CL=THRUST_ARRAY_CL,
         turbo_thrust_max_CL=THRUST_MAX_ARRAY_CL,
         turbo_sfc_CL=SFC_CL,
-        turbo_mach_IL=MACH_ARRAY,
+        turbo_mach_IL=MACH_ARRAY_IL,
         turbo_thrust_IL=THRUST_ARRAY_IL,
         turbo_thrust_max_IL=THRUST_MAX_ARRAY_IL,
         turbo_sfc_IL=SFC_IL,
@@ -79,7 +79,7 @@ def test_compute_flight_points():
     machs = [0.06, 0.12, 0.18, 0.22, 0.375]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [8723.73643444, 4352.43513423, 3670.56367899, 2378.52672608, 2754.44695866]
+    thrusts = [8277.397441, 4366.835558, 3675.328732, 2572.444506, 2984.803018]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -87,7 +87,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [7.11080994e-06, 1.14707988e-05, 1.40801854e-05, 1.75188296e-05, 1.82845376e-05]
+    expected_sfc = [7.987689e-06, 1.144436e-05, 1.406704e-05, 1.673512e-05, 1.767519e-05]
 
     flight_points = oad.FlightPoint(
         mach=machs + machs,
@@ -111,8 +111,8 @@ def test_compute_flight_points():
         thrust=0.0,
     )
     engine.compute_flight_points(solo_flight_point)
-    np.testing.assert_allclose(solo_flight_point.thrust, 2754.446958660104, rtol=1e-2)
-    np.testing.assert_allclose(solo_flight_point.sfc, 1.828453757365673e-05, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.thrust, 2984.803018, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.sfc, 1.767519e-05, rtol=1e-2)
 
 
 def test_engine_weight():
@@ -139,15 +139,15 @@ def test_engine_weight():
         effective_J=1.0,
         effective_efficiency_ls=1.0,
         effective_efficiency_cruise=1.0,
-        turbo_mach_SL=MACH_ARRAY,
+        turbo_mach_SL=MACH_ARRAY_SL,
         turbo_thrust_SL=THRUST_ARRAY_SL,
         turbo_thrust_max_SL=THRUST_MAX_ARRAY_SL,
         turbo_sfc_SL=SFC_SL,
-        turbo_mach_CL=MACH_ARRAY,
+        turbo_mach_CL=MACH_ARRAY_CL,
         turbo_thrust_CL=THRUST_ARRAY_CL,
         turbo_thrust_max_CL=THRUST_MAX_ARRAY_CL,
         turbo_sfc_CL=SFC_CL,
-        turbo_mach_IL=MACH_ARRAY,
+        turbo_mach_IL=MACH_ARRAY_IL,
         turbo_thrust_IL=THRUST_ARRAY_IL,
         turbo_thrust_max_IL=THRUST_MAX_ARRAY_IL,
         turbo_sfc_IL=SFC_IL,
@@ -180,15 +180,15 @@ def test_engine_dim():
         effective_J=1.0,
         effective_efficiency_ls=1.0,
         effective_efficiency_cruise=1.0,
-        turbo_mach_SL=MACH_ARRAY,
+        turbo_mach_SL=MACH_ARRAY_SL,
         turbo_thrust_SL=THRUST_ARRAY_SL,
         turbo_thrust_max_SL=THRUST_MAX_ARRAY_SL,
         turbo_sfc_SL=SFC_SL,
-        turbo_mach_CL=MACH_ARRAY,
+        turbo_mach_CL=MACH_ARRAY_CL,
         turbo_thrust_CL=THRUST_ARRAY_CL,
         turbo_thrust_max_CL=THRUST_MAX_ARRAY_CL,
         turbo_sfc_CL=SFC_CL,
-        turbo_mach_IL=MACH_ARRAY,
+        turbo_mach_IL=MACH_ARRAY_IL,
         turbo_thrust_IL=THRUST_ARRAY_IL,
         turbo_thrust_max_IL=THRUST_MAX_ARRAY_IL,
         turbo_sfc_IL=SFC_IL,
@@ -221,39 +221,39 @@ def test_compute_max_power():
         effective_J=1.0,
         effective_efficiency_ls=1.0,
         effective_efficiency_cruise=1.0,
-        turbo_mach_SL=MACH_ARRAY,
+        turbo_mach_SL=MACH_ARRAY_SL,
         turbo_thrust_SL=THRUST_ARRAY_SL,
         turbo_thrust_max_SL=THRUST_MAX_ARRAY_SL,
         turbo_sfc_SL=SFC_SL,
-        turbo_mach_CL=MACH_ARRAY,
+        turbo_mach_CL=MACH_ARRAY_CL,
         turbo_thrust_CL=THRUST_ARRAY_CL,
         turbo_thrust_max_CL=THRUST_MAX_ARRAY_CL,
         turbo_sfc_CL=SFC_CL,
-        turbo_mach_IL=MACH_ARRAY,
+        turbo_mach_IL=MACH_ARRAY_IL,
         turbo_thrust_IL=THRUST_ARRAY_IL,
         turbo_thrust_max_IL=THRUST_MAX_ARRAY_IL,
         turbo_sfc_IL=SFC_IL,
         level_IL=3048,
     )
     # At design point
-    flight_points = oad.FlightPoint(altitude=0, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=0, mach=0.2)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = oad.FlightPoint(altitude=3000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=3000, mach=0.4)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = oad.FlightPoint(altitude=6000, mach=0.5)
+    flight_points = oad.FlightPoint(altitude=6000, mach=0.4)
     np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
 
     # At higher altitude
-    flight_points = oad.FlightPoint(altitude=9000, mach=0.5)
-    np.testing.assert_allclose(engine.compute_max_power(flight_points), 356.46, atol=1)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.4)
+    np.testing.assert_allclose(engine.compute_max_power(flight_points), 321.80, atol=1)
 
     # At higher altitude, higher mach
-    flight_points = oad.FlightPoint(altitude=9000, mach=0.8)
-    np.testing.assert_allclose(engine.compute_max_power(flight_points), 404.52, atol=1)
+    flight_points = oad.FlightPoint(altitude=9000, mach=0.6)
+    np.testing.assert_allclose(engine.compute_max_power(flight_points), 400.52, atol=1)
 
 
 def test_compare_with_direct_computation():
@@ -284,15 +284,15 @@ def test_compare_with_direct_computation():
         effective_J=1.0,
         effective_efficiency_ls=1.0,
         effective_efficiency_cruise=1.0,
-        turbo_mach_SL=MACH_ARRAY,
+        turbo_mach_SL=MACH_ARRAY_SL,
         turbo_thrust_SL=THRUST_ARRAY_SL,
         turbo_thrust_max_SL=THRUST_MAX_ARRAY_SL,
         turbo_sfc_SL=SFC_SL,
-        turbo_mach_CL=MACH_ARRAY,
+        turbo_mach_CL=MACH_ARRAY_CL,
         turbo_thrust_CL=THRUST_ARRAY_CL,
         turbo_thrust_max_CL=THRUST_MAX_ARRAY_CL,
         turbo_sfc_CL=SFC_CL,
-        turbo_mach_IL=MACH_ARRAY,
+        turbo_mach_IL=MACH_ARRAY_IL,
         turbo_thrust_IL=THRUST_ARRAY_IL,
         turbo_thrust_max_IL=THRUST_MAX_ARRAY_IL,
         turbo_sfc_IL=SFC_IL,

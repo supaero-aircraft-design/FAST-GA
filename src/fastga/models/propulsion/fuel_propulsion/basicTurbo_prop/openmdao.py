@@ -150,7 +150,9 @@ class OMBasicTurbopropWrapper(oad.IOMPropulsionWrapper):
             "settings:propulsion:turboprop:electric_power_offtake", val=50 * 745.7, units="W"
         )
         component.add_input("settings:propulsion:turboprop:efficiency:gearbox", val=0.98)
-        component.add_input("settings:propulsion:turboprop:bleed:inter_compressor", val=0.04)
+        component.add_input(
+            "settings:propulsion:turboprop:bleed:inter_compressor", val=0.04, units="kg/s"
+        )
         component.add_input("settings:propulsion:turboprop:design_point:mach_exhaust", val=0.4)
         component.add_input(
             "settings:propulsion:turboprop:design_point:first_stage_pressure_ratio", val=0.25
