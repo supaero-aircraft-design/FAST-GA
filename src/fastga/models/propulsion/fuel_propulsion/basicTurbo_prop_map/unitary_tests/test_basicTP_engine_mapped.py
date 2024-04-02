@@ -79,7 +79,7 @@ def test_compute_flight_points():
     machs = [0.06, 0.12, 0.18, 0.22, 0.375]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [8277.397441, 4366.835558, 3675.328732, 2387.071544, 2761.070116]
+    thrusts = [8277.397441, 4366.835558, 3675.328732, 2572.444506, 2984.803018]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -87,13 +87,7 @@ def test_compute_flight_points():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [
-        7.990904e-06,
-        1.144771e-05,
-        1.406117e-05,
-        1.746789e-05,
-        1.826500e-05,
-    ]
+    expected_sfc = [7.987689e-06, 1.144436e-05, 1.406704e-05, 1.673512e-05, 1.767519e-05]
 
     flight_points = oad.FlightPoint(
         mach=machs + machs,
@@ -117,8 +111,8 @@ def test_compute_flight_points():
         thrust=0.0,
     )
     engine.compute_flight_points(solo_flight_point)
-    np.testing.assert_allclose(solo_flight_point.thrust, 2754.446958660104, rtol=1e-2)
-    np.testing.assert_allclose(solo_flight_point.sfc, 1.828453757365673e-05, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.thrust, 2984.803018, rtol=1e-2)
+    np.testing.assert_allclose(solo_flight_point.sfc, 1.767519e-05, rtol=1e-2)
 
 
 def test_engine_weight():

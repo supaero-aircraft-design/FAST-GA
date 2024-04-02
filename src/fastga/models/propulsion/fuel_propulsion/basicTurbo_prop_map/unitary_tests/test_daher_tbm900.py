@@ -41,7 +41,7 @@ SKIP_STEPS = True  # avoid some tests to accelerate validation process (turbopro
 
 
 @pytest.mark.skipif(
-    False,
+    SKIP_STEPS,
     reason="Skipping test because it is too long",
 )
 def test_table_construction():

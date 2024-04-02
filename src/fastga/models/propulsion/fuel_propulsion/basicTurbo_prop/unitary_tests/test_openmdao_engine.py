@@ -791,7 +791,7 @@ def test_OMBasicTPEngineComponent():
     machs = [0.3, 0.3, 0.3, 0.4, 0.4]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [3552.993438, 2220.620899, 2220.620899, 1355.227044, 2436.320399]
+    thrusts = [3562.234143, 2226.39634, 2226.39634, 1371.930366, 2462.666827]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -799,7 +799,7 @@ def test_OMBasicTPEngineComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [1.471528e-05, 1.831423e-05, 1.831423e-05, 2.576356e-05, 1.766113e-05]
+    expected_sfc = [1.469634e-05, 1.828701e-05, 1.828701e-05, 2.614569e-05, 1.757414e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:turboprop:design_point:power", 1000, units="hp")

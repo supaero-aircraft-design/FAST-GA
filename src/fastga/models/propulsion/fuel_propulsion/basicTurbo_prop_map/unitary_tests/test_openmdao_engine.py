@@ -32,7 +32,7 @@ def test_OMBasicTPEngineMappedComponent():
     machs = [0.06, 0.12, 0.18, 0.22, 0.375]
     altitudes = [0, 0, 0, 1000, 2400]
     thrust_rates = [0.8, 0.5, 0.5, 0.4, 0.7]
-    thrusts = [8723.73643444, 4352.43513423, 3670.56367899, 2378.52672608, 2754.44695866]
+    thrusts = [8277.397441, 4366.835558, 3675.328732, 2572.444506, 2984.803018]
     engine_settings = [
         EngineSetting.TAKEOFF,
         EngineSetting.TAKEOFF,
@@ -40,7 +40,7 @@ def test_OMBasicTPEngineMappedComponent():
         EngineSetting.IDLE,
         EngineSetting.CRUISE,
     ]  # mix EngineSetting with integers
-    expected_sfc = [7.11080994e-06, 1.14707988e-05, 1.40801854e-05, 1.75188296e-05, 1.82845376e-05]
+    expected_sfc = [7.987689e-06, 1.144436e-05, 1.406704e-05, 1.673512e-05, 1.767519e-05]
 
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:turboprop:design_point:power", 1342.285, units="kW")
@@ -70,7 +70,7 @@ def test_OMBasicTPEngineMappedComponent():
     ivc.add_output("data:aerodynamics:propeller:cruise_level:efficiency", EFFICIENCY_CL)
     ivc.add_output(
         "data:propulsion:turboprop:sea_level:mach",
-        val=MACH_ARRAY,
+        val=MACH_ARRAY_SL,
     )
     ivc.add_output("data:propulsion:turboprop:sea_level:thrust", units="N", val=THRUST_ARRAY_SL)
     ivc.add_output(
@@ -86,7 +86,7 @@ def test_OMBasicTPEngineMappedComponent():
 
     ivc.add_output(
         "data:propulsion:turboprop:cruise_level:mach",
-        val=MACH_ARRAY,
+        val=MACH_ARRAY_CL,
     )
     ivc.add_output(
         "data:propulsion:turboprop:cruise_level:thrust",
@@ -107,7 +107,7 @@ def test_OMBasicTPEngineMappedComponent():
     ivc.add_output("data:propulsion:turboprop:intermediate_level:altitude", val=3048, units="m")
     ivc.add_output(
         "data:propulsion:turboprop:intermediate_level:mach",
-        val=MACH_ARRAY,
+        val=MACH_ARRAY_IL,
     )
     ivc.add_output(
         "data:propulsion:turboprop:intermediate_level:thrust",

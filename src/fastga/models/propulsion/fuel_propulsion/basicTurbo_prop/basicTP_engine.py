@@ -16,7 +16,7 @@
 import logging
 from collections import OrderedDict
 from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, RectBivariateSpline
 import numpy as np
 
 import openmdao.api as om
@@ -1342,6 +1342,76 @@ class BasicTPEngine(AbstractFuelPropulsion):
             prob_fuel_consumed_ls.get_val("fuel_mass_flow", units="kg/s")[0],
             prob_fuel_consumed_ls.get_val("shaft_power", units="W")[0],
         )
+
+    def propeller_efficiency(
+        self, thrust: Union[float, Sequence[float]], atmosphere: Atmosphere
+    ) -> Union[float, Sequence]:
+        """
+        Compute the propeller efficiency.
+
+        :param thrust: Thrust (in N)
+        :param atmosphere: Atmosphere instance at intended altitude
+        :return: efficiency
+        """
+        # Include advance ratio loss in here, we will assume that since we work at constant RPM
+        # the change in advance ration is equal to a change in velocity
+        installed_airspeed = atmosphere.true_airspeed * self.effective_J
+
+        propeller_efficiency_SL = RectBivariateSpline(
+            self.thrust_SL,
+            self.speed_SL,
+            self.efficiency_SL.T * self.effective_efficiency_ls,  # Include the efficiency loss
+            # in here
+        )
+        propeller_efficiency_CL = RectBivariateSpline(
+            self.thrust_CL,
+            self.speed_CL,
+            self.efficiency_CL.T * self.effective_efficiency_cruise,  # Include the efficiency loss
+            # in here
+        )
+        if isinstance(atmosphere.true_airspeed, float):
+            thrust_interp_SL = np.minimum(
+                np.maximum(np.min(self.thrust_SL), thrust),
+                np.interp(installed_airspeed, self.speed_SL, self.thrust_limit_SL),
+            )
+            thrust_interp_CL = np.minimum(
+                np.maximum(np.min(self.thrust_CL), thrust),
+                np.interp(installed_airspeed, self.speed_CL, self.thrust_limit_CL),
+            )
+        else:
+            thrust_interp_SL = np.minimum(
+                np.maximum(np.min(self.thrust_SL), thrust),
+                np.interp(list(installed_airspeed), self.speed_SL, self.thrust_limit_SL),
+            )
+            thrust_interp_CL = np.minimum(
+                np.maximum(np.min(self.thrust_CL), thrust),
+                np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
+            )
+        if np.size(thrust) == 1:  # calculate for float
+            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, installed_airspeed))
+            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
+            altitude = atmosphere.get_altitude(altitude_in_feet=False)
+            propeller_efficiency = np.interp(
+                altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
+            )
+        else:  # calculate for array
+            propeller_efficiency = np.zeros(np.size(thrust))
+            for idx in range(np.size(thrust)):
+                lower_bound = propeller_efficiency_SL(
+                    thrust_interp_SL[idx], installed_airspeed[idx]
+                )
+                upper_bound = propeller_efficiency_CL(
+                    thrust_interp_CL[idx], installed_airspeed[idx]
+                )
+                altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
+                propeller_efficiency[idx] = (
+                    lower_bound
+                    + (upper_bound - lower_bound)
+                    * np.minimum(altitude, self.cruise_altitude_propeller)
+                    / self.cruise_altitude_propeller
+                )
+
+        return propeller_efficiency
 
     def compute_weight(self) -> float:
         """
