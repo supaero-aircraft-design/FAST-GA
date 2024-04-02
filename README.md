@@ -37,7 +37,7 @@ As these Binder-hosted notebooks are not setup to work in a Windows environment,
 Install
 -------
 
-**Prerequisite**:FAST-(OAD)-GA needs at least **Python 3.7.0**.
+**Prerequisite**:FAST-(OAD)-GA needs at least **Python 3.8.0**.
 
 It is recommended (but not required) to install FAST-(OAD)-GA in a virtual
 environment ([conda](https://docs.conda.io/en/latest/),
