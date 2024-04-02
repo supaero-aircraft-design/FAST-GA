@@ -23,16 +23,15 @@ from openmdao.core.group import Group
 from .vlm import VLMSimpleGeometry
 from ..xfoil.xfoil_polar import XfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
-INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
 
 
-class ComputeAEROvlm(Group):
+class ComputeAeroVLM(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
@@ -44,6 +43,7 @@ class ComputeAEROvlm(Group):
         self.options.declare(
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
         self.add_subsystem(
@@ -100,13 +100,14 @@ class ComputeAEROvlm(Group):
             )
         self.add_subsystem(
             "aero_vlm",
-            _ComputeAEROvlm(
+            _ComputeAeroVLM(
                 low_speed_aero=self.options["low_speed_aero"],
                 result_folder_path=self.options["result_folder_path"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
                 htp_airfoil_file=self.options["htp_airfoil_file"],
+                input_angle_of_attack=self.options["input_angle_of_attack"],
             ),
             promotes=["*"],
         )
@@ -182,11 +183,12 @@ class ComputeLocalReynolds(ExplicitComponent):
             )
 
 
-class _ComputeAEROvlm(VLMSimpleGeometry):
+class _ComputeAeroVLM(VLMSimpleGeometry):
     def initialize(self):
         super().initialize()
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
 
@@ -253,10 +255,11 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
         _LOGGER.debug("Entering aerodynamic computation")
+        input_aoa = self.options["input_angle_of_attack"]
 
         # Check AOA input is float
-        if not isinstance(INPUT_AOA, float):
-            raise TypeError("INPUT_AOA should be a float!")
+        if not isinstance(input_aoa, float):
+            raise TypeError("Option input_angle_of_attack should be a float!")
 
         if self.options["low_speed_aero"]:
             altitude = 0.0
@@ -281,14 +284,14 @@ class _ComputeAEROvlm(VLMSimpleGeometry):
             y_vector_htp,
             cl_vector_htp,
             coef_k_htp,
-        ) = self.compute_aero_coeff(inputs, altitude, mach, INPUT_AOA)
+        ) = self.compute_aero_coeff(inputs, altitude, mach, input_aoa)
 
         if self.options["low_speed_aero"]:
             pass
         else:
             if self.options["compute_mach_interpolation"]:
                 mach_interp, cl_alpha_interp = self.compute_cl_alpha_mach(
-                    inputs, INPUT_AOA, altitude, mach
+                    inputs, input_aoa, altitude, mach
                 )
 
         # Defining outputs

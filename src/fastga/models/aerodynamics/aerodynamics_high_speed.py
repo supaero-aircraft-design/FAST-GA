@@ -17,14 +17,14 @@ from openmdao.core.group import Group
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from fastga.models.aerodynamics.external.openvsp import ComputeAEROopenvsp
+from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.components import ComputeMachInterpolation
 
 # noinspection PyProtectedMember
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvspSubGroup,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAEROvlm
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
 from .constants import (
     SUBMODEL_CD0,
     SUBMODEL_CL_ALPHA_VT,
@@ -36,6 +36,7 @@ from .constants import (
     SUBMODEL_DOWNWASH,
     SUBMODEL_CY_BETA,
     SUBMODEL_CN_BETA,
+    DEFAULT_INPUT_AOA,
 )
 
 
@@ -54,6 +55,7 @@ class AerodynamicsHighSpeed(Group):
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -61,26 +63,28 @@ class AerodynamicsHighSpeed(Group):
             if self.options["compute_mach_interpolation"]:
                 self.add_subsystem(
                     "aero_vlm",
-                    ComputeAEROvlm(
+                    ComputeAeroVLM(
                         low_speed_aero=False,
                         result_folder_path=self.options["result_folder_path"],
                         compute_mach_interpolation=True,
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        input_angle_of_attack=self.options["input_angle_of_attack"],
                     ),
                     promotes=["*"],
                 )
             else:
                 self.add_subsystem(
                     "aero_vlm",
-                    ComputeAEROvlm(
+                    ComputeAeroVLM(
                         low_speed_aero=False,
                         result_folder_path=self.options["result_folder_path"],
                         compute_mach_interpolation=False,
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        input_angle_of_attack=self.options["input_angle_of_attack"],
                     ),
                     promotes=["*"],
                 )
@@ -97,7 +101,7 @@ class AerodynamicsHighSpeed(Group):
             if self.options["compute_mach_interpolation"]:
                 self.add_subsystem(
                     "aero_openvsp",
-                    ComputeAEROopenvsp(
+                    ComputeAeroOpenVSP(
                         low_speed_aero=False,
                         compute_mach_interpolation=True,
                         result_folder_path=self.options["result_folder_path"],
@@ -105,13 +109,14 @@ class AerodynamicsHighSpeed(Group):
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        input_angle_of_attack=self.options["input_angle_of_attack"],
                     ),
                     promotes=["*"],
                 )
             else:
                 self.add_subsystem(
                     "aero_openvsp",
-                    ComputeAEROopenvsp(
+                    ComputeAeroOpenVSP(
                         low_speed_aero=False,
                         compute_mach_interpolation=False,
                         result_folder_path=self.options["result_folder_path"],
@@ -119,6 +124,7 @@ class AerodynamicsHighSpeed(Group):
                         openvsp_exe_path=self.options["openvsp_exe_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        input_angle_of_attack=self.options["input_angle_of_attack"],
                     ),
                     promotes=["*"],
                 )

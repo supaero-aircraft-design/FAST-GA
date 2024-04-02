@@ -42,6 +42,10 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.theta_min = 0.0
         self.theta_max = 0.0
 
+        # Store values for induced velocities
+        self.vi_vect = None
+        self.vt_vect = None
+
     def initialize(self):
         self.options.declare("sections_profile_position_list", types=list)
         self.options.declare("sections_profile_name_list", types=list)
@@ -103,7 +107,16 @@ class PropellerCoreModule(om.ExplicitComponent):
         self.theta_max = phi_75 + 25.0
 
     def compute_pitch_performance(
-        self, inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
+        self,
+        inputs,
+        theta_75,
+        v_inf,
+        altitude,
+        omega,
+        radius,
+        alpha_list,
+        cl_list,
+        cd_list,
     ):
 
         """
@@ -142,8 +155,12 @@ class PropellerCoreModule(om.ExplicitComponent):
         theta_75_ref = np.interp(0.75, radius_ratio_vect, twist_vect)
 
         # Initialise vectors
-        vi_vect = np.zeros_like(radius)
-        vt_vect = np.zeros_like(radius)
+        if self.vi_vect is None:
+            self.vi_vect = np.zeros_like(radius)
+
+        if self.vt_vect is None:
+            self.vt_vect = np.zeros_like(radius)
+
         thrust_element_vector = np.zeros_like(radius)
         torque_element_vector = np.zeros_like(radius)
         alpha_vect = np.zeros_like(radius)
@@ -182,8 +199,8 @@ class PropellerCoreModule(om.ExplicitComponent):
                 method="hybr",
                 options={"xtol": 1e-3},
             ).x
-            vi_vect[idx] = speed_vect[0]
-            vt_vect[idx] = speed_vect[1]
+            self.vi_vect[idx] = speed_vect[0]
+            self.vt_vect[idx] = speed_vect[1]
             results = self.bem_theory(
                 speed_vect,
                 radius[idx],

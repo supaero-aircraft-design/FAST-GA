@@ -56,7 +56,7 @@ class InitializeGamma(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        cruise_altitude = np.array(inputs["data:mission:sizing:main_route:cruise:altitude"]).item()
         climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
         climb_rate_cl = float(
             inputs["data:mission:sizing:main_route:climb:climb_rate:cruise_level"]

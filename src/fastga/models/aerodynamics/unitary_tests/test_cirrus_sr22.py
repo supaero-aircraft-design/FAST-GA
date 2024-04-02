@@ -24,10 +24,14 @@ from .test_functions import (
     cd0_high_speed,
     cd0_low_speed,
     polar,
+    polar_single_aoa,
+    polar_single_aoa_inv,
     airfoil_slope_wt_xfoil,
     airfoil_slope_xfoil,
     comp_high_speed,
     comp_low_speed,
+    comp_high_speed_input_aoa,
+    comp_low_speed_input_aoa,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
@@ -159,6 +163,32 @@ def test_polar():
 
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa():
+    """Tests polar execution (XFOIL) @ low speed."""
+    polar_single_aoa(
+        XML_FILE,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
+def test_polar_single_aoa_inv():
+    """Tests polar execution (XFOIL) @ low speed."""
+    polar_single_aoa_inv(
+        XML_FILE,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available",
 )
 def test_polar_with_ext_folder():
@@ -192,6 +222,10 @@ def test_airfoil_slope():
     )
 
 
+@pytest.mark.skipif(
+    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+    reason="No XFOIL executable available (or skipped)",
+)
 def test_airfoil_slope_wt_xfoil():
     """Tests polar reading @ low speed!"""
     airfoil_slope_wt_xfoil(
@@ -225,6 +259,20 @@ def test_vlm_comp_high_speed():
             [5.69251579, 5.69251579, 5.7581548, 5.84566912, 5.9524415, 6.07945968]
         ),
         mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
+def test_vlm_comp_high_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_high_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=False,
     )
 
 
@@ -362,6 +410,20 @@ def test_vlm_comp_low_speed():
 
 
 @pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS,
+    reason="No XFOIL executable available: VLM basic function not computed with "
+    "empty result folder (or skipped)",
+)
+def test_vlm_comp_low_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_low_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=False,
+    )
+
+
+@pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_openvsp_comp_high_speed():
@@ -373,7 +435,7 @@ def test_openvsp_comp_high_speed():
         cl_ref_wing=1.01371823,
         cl_alpha_wing=5.08046827,
         cm0=-0.0271461,
-        coeff_k_wing=0.03820337,
+        coeff_k_wing=0.03465158,
         cl0_htp=-0.00758,
         cl_alpha_htp=0.50460393,
         cl_alpha_htp_isolated=0.939527,
@@ -382,6 +444,18 @@ def test_openvsp_comp_high_speed():
             [5.50001843, 5.50001843, 5.54969521, 5.61545285, 5.69522352, 5.78895035]
         ),
         mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_openvsp_comp_high_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_high_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=True,
     )
 
 
@@ -582,7 +656,7 @@ def test_openvsp_comp_low_speed():
         cl_ref_wing=0.99389998,
         cl_alpha_wing=4.98208104,
         cm0=-0.02652458,
-        coeff_k_wing=0.03816438,
+        coeff_k_wing=0.03461622,
         cl0_htp=-0.00734,
         cl_alpha_htp=0.50042134,
         cl_alpha_htp_isolated=0.92249372,
@@ -593,6 +667,18 @@ def test_openvsp_comp_low_speed():
         cl_ref_htp=0.08,
         y_vector_htp=y_vector_htp,
         cl_vector_htp=cl_vector_htp,
+    )
+
+
+@pytest.mark.skipif(
+    system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
+)
+def test_openvsp_comp_low_speed_input_aoa():
+    """Tests openvsp components @ low speed."""
+
+    comp_low_speed_input_aoa(
+        XML_FILE,
+        use_openvsp=True,
     )
 
 
