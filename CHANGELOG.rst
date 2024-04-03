@@ -2,6 +2,14 @@
 Changelog
 =========
 
+Version 1.3.0
+==================
+
+- Improvement of aerodynamic tools by @florentLutz and @johnathanasd
+- Complete polar database by @florentLutz
+- Optimization of turboprop model usage by @florentLutz
+- Compatibility with Python 3.10 by @florentLutz
+
 Version 1.2.2
 ==================
 
