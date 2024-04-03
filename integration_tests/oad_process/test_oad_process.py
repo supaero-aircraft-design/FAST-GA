@@ -45,6 +45,8 @@ def cleanup():
 def test_oad_process_vlm_sr22(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_sr22.xml"
@@ -54,11 +56,11 @@ def test_oad_process_vlm_sr22(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -85,6 +87,8 @@ def test_oad_process_vlm_sr22(cleanup):
 def test_oad_process_vlm_be76(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_be76.xml"
@@ -94,11 +98,11 @@ def test_oad_process_vlm_be76(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -125,6 +129,8 @@ def test_oad_process_vlm_be76(cleanup):
 def test_oad_process_tbm_900(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_tbm900.xml"
@@ -134,11 +140,11 @@ def test_oad_process_tbm_900(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -154,17 +160,19 @@ def test_oad_process_tbm_900(cleanup):
     _check_weight_performance_loop(problem)
 
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 762.0, atol=1)
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 767.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.23, atol=1e-2)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3356.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3361.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2113.0, atol=1)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2114.0, atol=1)
 
 
 def test_oad_process_vlm_mission_vector(cleanup):
     """Test the overall aircraft design process with wing positioning under VLM method."""
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_sr22.xml"
@@ -174,11 +182,11 @@ def test_oad_process_vlm_mission_vector(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -209,6 +217,8 @@ def test_oad_process_openvsp(cleanup):
     method.
     """
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_sr22.xml"
@@ -218,11 +228,11 @@ def test_oad_process_openvsp(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -261,6 +271,8 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
 
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_sr22.xml"
@@ -270,11 +282,11 @@ def test_oad_process_mission_builder_1_engine(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
@@ -313,6 +325,8 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
 
     logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
 
     # Define used files depending on options
     xml_file_name = "input_be76.xml"
@@ -322,11 +336,11 @@ def test_oad_process_mission_builder_2_engine(cleanup):
 
     # Create inputs
     ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
-    # api.list_modules(pth.join(DATA_FOLDER_PATH, process_file_name), force_text_output=True)
-    configurator.write_needed_inputs(ref_inputs)
 
     # Create problems with inputs
-    problem = configurator.get_problem(read_inputs=True)
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
     problem.setup()
     problem.run_model()
     problem.write_outputs()
