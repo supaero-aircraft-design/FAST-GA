@@ -16,7 +16,7 @@
 import logging
 import pandas as pd
 from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import interp2d
+from scipy.interpolate import RectBivariateSpline
 import os.path as pth
 import numpy as np
 
@@ -80,10 +80,25 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         :param max_power: maximum delivered mechanical power of engine (units=W)
         :param cruise_altitude_propeller: design altitude for cruise (units=m)
-        :param cruise_speed: design altitude for cruise (units=m/s)
         :param fuel_type: 1.0 for gasoline and 2.0 for diesel engine and 3.0 for Jet Fuel
         :param strokes_nb: can be either 2-strokes (=2.0) or 4-strokes (=4.0)
         :param prop_layout: propulsion position in nose (=3.0) or wing (=1.0)
+        :param speed_SL: array with the speed at which the sea level performance of the propeller
+        were computed
+        :param thrust_SL: array with the required thrust at which the sea level performance of the
+        propeller were
+        computed
+        :param thrust_limit_SL: array with the limit thrust available at the speed in speed_SL
+        :param efficiency_SL: array containing the sea level efficiency computed at speed_SL and
+        thrust_SL
+        :param speed_CL: array with the speed at which the cruise level performance of the propeller
+        were computed
+        :param thrust_CL: array with the required thrust at which the cruise level performance of
+        the propeller were
+        computed
+        :param thrust_limit_CL: array with the limit thrust available at the speed in speed_CL
+        :param efficiency_CL: array containing the cruise level efficiency computed at speed_CL and
+        thrust_CL
         """
         if fuel_type == 1.0:
             self.ref = {
@@ -147,6 +162,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
         self.propeller = None
 
+        self._propeller_efficiency_interpolator_sl = None
+        self._propeller_efficiency_interpolator_cl = None
+        self._sfc_interpolator = None
+
         # This dictionary is expected to have a Mixture coefficient for all EngineSetting values
         self.mixture_values = {
             EngineSetting.TAKEOFF: 1.15,
@@ -165,6 +184,61 @@ class BasicICEngine(AbstractFuelPropulsion):
         unknown_keys = [key for key in EngineSetting if key not in self.mixture_values.keys()]
         if unknown_keys:
             raise FastUnknownEngineSettingError("Unknown flight phases: %s", str(unknown_keys))
+
+    @property
+    def propeller_efficiency_interpolator_sl(self):
+
+        if self._propeller_efficiency_interpolator_sl is None:
+            self._propeller_efficiency_interpolator_sl = RectBivariateSpline(
+                self.thrust_SL, self.speed_SL, self.efficiency_SL.T * self.effective_efficiency_ls
+            )
+
+        return self._propeller_efficiency_interpolator_sl
+
+    @propeller_efficiency_interpolator_sl.setter
+    def propeller_efficiency_interpolator_sl(self, value: RectBivariateSpline):
+
+        self._propeller_efficiency_interpolator_sl = value
+
+    @property
+    def propeller_efficiency_interpolator_cl(self):
+
+        if self._propeller_efficiency_interpolator_cl is None:
+            self._propeller_efficiency_interpolator_cl = RectBivariateSpline(
+                self.thrust_CL,
+                self.speed_CL,
+                self.efficiency_CL.T * self.effective_efficiency_cruise,
+            )
+
+        return self._propeller_efficiency_interpolator_cl
+
+    @propeller_efficiency_interpolator_cl.setter
+    def propeller_efficiency_interpolator_cl(self, value: RectBivariateSpline):
+
+        self._propeller_efficiency_interpolator_cl = value
+
+    @property
+    def sfc_interpolator(self):
+
+        if self._sfc_interpolator is None:
+
+            rpm_vect = self.rpm_vect_ref
+            pme_vect = self.pme_vect_ref
+            sfc_matrix = self.sfc_matrix_ref
+            torque_vect = pme_vect * 1e5 * self.volume / (8.0 * np.pi)
+
+            self._sfc_interpolator = RectBivariateSpline(
+                torque_vect,
+                rpm_vect,
+                sfc_matrix.T,
+            )
+
+        return self._sfc_interpolator
+
+    @sfc_interpolator.setter
+    def sfc_interpolator(self, value: RectBivariateSpline):
+
+        self._sfc_interpolator = value
 
     @staticmethod
     def read_map(map_file_path):
@@ -407,20 +481,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         # the change in advance ration is equal to a change in velocity
         installed_airspeed = atmosphere.true_airspeed * self.effective_J
 
-        propeller_efficiency_SL = interp2d(
-            self.thrust_SL,
-            self.speed_SL,
-            self.efficiency_SL * self.effective_efficiency_ls,  # Include the efficiency loss
-            # in here
-            kind="cubic",
-        )
-        propeller_efficiency_CL = interp2d(
-            self.thrust_CL,
-            self.speed_CL,
-            self.efficiency_CL * self.effective_efficiency_cruise,  # Include the efficiency loss
-            # in here
-            kind="cubic",
-        )
         if isinstance(atmosphere.true_airspeed, float):
             thrust_interp_SL = np.minimum(
                 np.maximum(np.min(self.thrust_SL), thrust),
@@ -440,8 +500,12 @@ class BasicICEngine(AbstractFuelPropulsion):
                 np.interp(list(installed_airspeed), self.speed_CL, self.thrust_limit_CL),
             )
         if np.size(thrust) == 1:  # calculate for float
-            lower_bound = float(propeller_efficiency_SL(thrust_interp_SL, installed_airspeed))
-            upper_bound = float(propeller_efficiency_CL(thrust_interp_CL, installed_airspeed))
+            lower_bound = float(
+                self.propeller_efficiency_interpolator_sl(thrust_interp_SL, installed_airspeed)
+            )
+            upper_bound = float(
+                self.propeller_efficiency_interpolator_cl(thrust_interp_CL, installed_airspeed)
+            )
             altitude = atmosphere.get_altitude(altitude_in_feet=False)
             propeller_efficiency = np.interp(
                 altitude, [0.0, self.cruise_altitude_propeller], [lower_bound, upper_bound]
@@ -449,10 +513,10 @@ class BasicICEngine(AbstractFuelPropulsion):
         else:  # calculate for array
             propeller_efficiency = np.zeros(np.size(thrust))
             for idx in range(np.size(thrust)):
-                lower_bound = propeller_efficiency_SL(
+                lower_bound = self.propeller_efficiency_interpolator_sl(
                     thrust_interp_SL[idx], installed_airspeed[idx]
                 )
-                upper_bound = propeller_efficiency_CL(
+                upper_bound = self.propeller_efficiency_interpolator_cl(
                     thrust_interp_CL[idx], installed_airspeed[idx]
                 )
                 altitude = atmosphere.get_altitude(altitude_in_feet=False)[idx]
@@ -492,12 +556,6 @@ class BasicICEngine(AbstractFuelPropulsion):
         :param atmosphere: Atmosphere instance at intended altitude
         :return: SFC (in g/kw) and Power (in W)
         """
-        # Load engine map and save interpolation formula
-        rpm_vect = self.rpm_vect_ref
-        pme_vect = self.pme_vect_ref
-        sfc_matrix = self.sfc_matrix_ref
-        torque_vect = pme_vect * 1e5 * self.volume / (8.0 * np.pi)
-        ICE_sfc = interp2d(torque_vect, rpm_vect, sfc_matrix, kind="cubic")
 
         # Define RPM & mixture using engine settings
         if np.size(engine_setting) == 1:
@@ -520,7 +578,11 @@ class BasicICEngine(AbstractFuelPropulsion):
                 thrust * atmosphere.true_airspeed / self.propeller_efficiency(thrust, atmosphere)
             )
             torque = real_power / (rpm_values * np.pi / 30.0)
-            sfc = ICE_sfc(torque, rpm_values) * mixture_values * self.k_factor_sfc
+            sfc = (
+                float(self.sfc_interpolator(torque, rpm_values))
+                * mixture_values
+                * self.k_factor_sfc
+            )
         else:
             for idx in range(np.size(thrust)):
                 local_atmosphere = Atmosphere(
@@ -534,7 +596,9 @@ class BasicICEngine(AbstractFuelPropulsion):
                 )
                 torque[idx] = real_power[idx] / (rpm_values[idx] * np.pi / 30.0)
                 sfc[idx] = (
-                    ICE_sfc(torque[idx], rpm_values[idx]) * mixture_values[idx] * self.k_factor_sfc
+                    float(self.sfc_interpolator(torque[idx], rpm_values[idx]))
+                    * mixture_values[idx]
+                    * self.k_factor_sfc
                 )
         return sfc, real_power
 
