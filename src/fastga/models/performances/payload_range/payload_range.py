@@ -66,8 +66,8 @@ class ComputePayloadRange(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        payload_mission = inputs["data:weight:aircraft:payload"]
-        max_payload = inputs["data:weight:aircraft:max_payload"]
+        payload_mission = inputs["data:weight:aircraft:payload"][0]
+        max_payload = inputs["data:weight:aircraft:max_payload"][0]
         range_mission = inputs["data:TLAR:range"]
         fuel_mission = inputs["data:mission:sizing:fuel"]
         mfw = inputs["data:weight:aircraft:MFW"]
@@ -99,7 +99,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         payload_array.append(max_payload)
         range_array.append(range_b[0])
-        sr_array.append(range_b[0] / fuel_target_b)
+        sr_array.append(range_b[0] / fuel_target_b[0])
 
         fuel_target_c = fuel_mission
         range_c, _, ier, message = fsolve(
@@ -113,8 +113,8 @@ class ComputePayloadRange(om.ExplicitComponent):
             _LOGGER.warning("Computation of point C failed. Error message : %s", message)
 
         payload_array.append(payload_mission)
-        range_array.append(range_c)
-        sr_array.append(range_c / fuel_target_c)
+        range_array.append(range_c[0])
+        sr_array.append(range_c[0] / fuel_target_c[0])
 
         # Point D : max fuel (MFW), enough payload to have mass = MTOW
         fuel_target_d = mfw
@@ -135,9 +135,9 @@ class ComputePayloadRange(om.ExplicitComponent):
                 "Point D computed but the payload for this point is lower than minimal payload (2 "
                 "pilots) "
             )
-        payload_array.append(payload_d)
+        payload_array.append(payload_d[0])
         range_array.append(range_d[0])
-        sr_array.append(range_d[0] / fuel_target_d)
+        sr_array.append(range_d[0] / fuel_target_d[0])
 
         # Point E : max fuel (MFW), min payload and the aircraft resulting mass
         fuel_target_e = mfw
@@ -155,7 +155,7 @@ class ComputePayloadRange(om.ExplicitComponent):
 
         payload_array.append(payload_e)
         range_array.append(range_e[0])
-        sr_array.append(range_e[0] / fuel_target_e)
+        sr_array.append(range_e[0] / fuel_target_e[0])
 
         # Conversion in nautical miles
         range_array = [i / 1852 for i in range_array]

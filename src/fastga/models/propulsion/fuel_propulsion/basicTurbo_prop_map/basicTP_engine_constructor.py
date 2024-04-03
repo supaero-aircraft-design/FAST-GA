@@ -273,8 +273,8 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         }
         engine = BasicTPEngine(**engine_params)
 
-        cruise_altitude = inputs["data:aerodynamics:propeller:cruise_level:altitude"]
-        cruise_velocity = inputs["data:TLAR:v_cruise"]
+        cruise_altitude = inputs["data:aerodynamics:propeller:cruise_level:altitude"][0]
+        cruise_velocity = inputs["data:TLAR:v_cruise"][0]
 
         atm_cruise = Atmosphere(cruise_altitude, altitude_in_feet=False)
 
@@ -306,7 +306,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             thrust_preliminary_intersect_il,
             sfc_general_il,
             max_thrust_array_il,
-        ) = self.construct_table(intermediate_altitude[0], engine, cruise_mach)
+        ) = self.construct_table(intermediate_altitude, engine, cruise_mach)
 
         sfc_general_il, thrust_preliminary_intersect_il = format_table(
             sfc_general_il, thrust_preliminary_intersect_il
@@ -325,7 +325,7 @@ class ComputeTurbopropMap(om.ExplicitComponent):
             thrust_preliminary_intersect_cl,
             sfc_general_cl,
             max_thrust_array_cl,
-        ) = self.construct_table(cruise_altitude[0], engine, cruise_mach)
+        ) = self.construct_table(cruise_altitude, engine, cruise_mach)
 
         sfc_general_cl, thrust_preliminary_intersect_cl = format_table(
             sfc_general_cl, thrust_preliminary_intersect_cl
