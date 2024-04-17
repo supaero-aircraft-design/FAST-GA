@@ -42,78 +42,175 @@ from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CO
 _LOGGER = logging.getLogger(__name__)
 
 
+class UpdateMFW(om.Group):
+    def setup(self):
+
+        self.add_subsystem(
+            name="update_wing_y",
+            subsys=ComputeWingY(),
+            promotes_inputs=[
+                "data:geometry:wing:aspect_ratio",
+                "data:geometry:fuselage:maximum_width",
+                "data:geometry:wing:kink:span_ratio",
+                ("data:geometry:wing:area", "wing_area"),
+            ],
+            promotes_outputs=[],
+        )
+        self.add_subsystem(
+            name="update_wing_l2_l3",
+            subsys=ComputeWingL2AndL3(),
+            promotes_inputs=[
+                "data:geometry:wing:taper_ratio",
+                ("data:geometry:wing:area", "wing_area"),
+            ],
+            promotes_outputs=[],
+        )
+        self.add_subsystem(
+            name="update_wing_l1_l4",
+            subsys=ComputeWingL1AndL4(),
+            promotes_inputs=[
+                "data:geometry:wing:taper_ratio",
+                ("data:geometry:wing:area", "wing_area"),
+            ],
+            promotes_outputs=[],
+        )
+        self.add_subsystem(
+            name="update_wing_mfw",
+            subsys=ComputeMFWAdvanced(),
+            promotes_outputs=["*"],
+            promotes_inputs=[
+                "data:propulsion:fuel_type",
+                "data:geometry:wing:root:thickness_ratio",
+                "data:geometry:wing:tip:thickness_ratio",
+                "data:geometry:flap:chord_ratio",
+                "data:geometry:wing:aileron:chord_ratio",
+                "data:geometry:propulsion:tank:y_ratio_tank_beginning",
+                "data:geometry:propulsion:tank:y_ratio_tank_end",
+                "data:geometry:propulsion:engine:layout",
+                "data:geometry:propulsion:engine:y_ratio",
+                "data:geometry:propulsion:tank:LE_chord_percentage",
+                "data:geometry:propulsion:tank:TE_chord_percentage",
+                "data:geometry:propulsion:nacelle:width",
+                "data:geometry:landing_gear:type",
+                "data:geometry:landing_gear:y",
+                "settings:geometry:fuel_tanks:depth",
+            ],
+        )
+
+        self.connect(
+            "update_wing_y.data:geometry:wing:span", "update_wing_mfw.data:geometry:wing:span"
+        )
+        self.connect(
+            "update_wing_y.data:geometry:wing:root:y",
+            [
+                "update_wing_mfw.data:geometry:wing:root:y",
+                "update_wing_l2_l3.data:geometry:wing:root:y",
+                "update_wing_l1_l4.data:geometry:wing:root:y",
+            ],
+        )
+        self.connect(
+            "update_wing_y.data:geometry:wing:tip:y",
+            [
+                "update_wing_mfw.data:geometry:wing:tip:y",
+                "update_wing_l2_l3.data:geometry:wing:tip:y",
+                "update_wing_l1_l4.data:geometry:wing:tip:y",
+            ],
+        )
+
+        self.connect(
+            "update_wing_l2_l3.data:geometry:wing:root:chord",
+            "update_wing_mfw.data:geometry:wing:root:chord",
+        )
+
+        self.connect(
+            "update_wing_l1_l4.data:geometry:wing:tip:chord",
+            "update_wing_mfw.data:geometry:wing:tip:chord",
+        )
+
+
+class DistanceToMFWForUpdate(om.ImplicitComponent):
+    def setup(self):
+
+        self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
+        self.add_input("data:weight:aircraft:MFW", units="kg", val=np.nan)
+
+        self.add_output("wing_area", val=15.0, units="m**2")
+
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def apply_nonlinear(
+        self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
+    ):
+
+        # Wing area will likely be in tens of m2 while MFW will likely be in hundreds of
+        residuals["wing_area"] = (
+            inputs["data:weight:aircraft:MFW"] - inputs["data:mission:sizing:fuel"]
+        ) / 10.0
+
+    def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
+
+        jacobian["wing_area", "data:weight:aircraft:MFW"] = 0.1
+        jacobian["wing_area", "data:mission:sizing:fuel"] = -0.1
+
+
 @oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_LOOP, "fastga.submodel.loop.wing_area.update.geom.advanced"
 )
-class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
-    """
-    Computes needed wing area to be able to load enough fuel to achieve the sizing mission. For
-    the mission wing area the code uses the fsolve algorithm on a function that computes the wing
-    area following the same approach as in compute_mfw.
-    """
+class UpdateWingAreaGeomAdvanced(om.Group):
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+        # Solvers setup
+        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
+        self.nonlinear_solver.options["iprint"] = 0
+        self.nonlinear_solver.options["maxiter"] = 50
+        self.nonlinear_solver.options["rtol"] = 1e-5
+        self.nonlinear_solver.options["atol"] = 1e-2
+        self.nonlinear_solver.options["stall_limit"] = 5
+        self.nonlinear_solver.options["stall_tol"] = 1e-5
+        self.linear_solver = om.DirectSolver()
 
     def setup(self):
 
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
-        self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input(
-            "data:geometry:propulsion:engine:y_ratio",
-            shape_by_conn=True,
+        self.add_subsystem(
+            name="update_area",
+            subsys=DistanceToMFWForUpdate(),
+            promotes_inputs=["data:mission:sizing:fuel"],
+            promotes_outputs=["wing_area"],
         )
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
+        self.add_subsystem(name="update_mfw", subsys=UpdateMFW(), promotes_inputs=["*"])
 
-        self.add_output("wing_area", val=10.0, units="m**2")
+        self.connect("update_mfw.data:weight:aircraft:MFW", "update_area.data:weight:aircraft:MFW")
 
-        self.declare_partials(
-            "*",
-            "*",
-            method="fd",
-        )
+
+class DistanceToMFWForConstraint(om.ExplicitComponent):
+    def setup(self):
+
+        self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
+        self.add_input("MFW", units="kg", val=np.nan)
+
+        self.add_output("data:constraints:wing:additional_fuel_capacity", val=0.0, units="kg")
+
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
-        mfw_mission = inputs["data:mission:sizing:fuel"]
-
-        # TODO: Why is it hardcoded ?
-        wing_area_mission_initial = 16.8871
-
-        wing_area_mission, _, ier, _ = fsolve(
-            compute_wing_area_new,
-            np.array([wing_area_mission_initial]),
-            args=(inputs, mfw_mission),
-            xtol=0.01,
-            full_output=True,
+        outputs["data:constraints:wing:additional_fuel_capacity"] = (
+            inputs["MFW"] - inputs["data:mission:sizing:fuel"]
         )
 
-        if ier != 1:
-            _LOGGER.warning(
-                "Could not find a wing area that suits the requirement for fuel inside the wing, "
-                "setting the value to 0.0",
-            )
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
 
-        outputs["wing_area"] = wing_area_mission
+        partials["data:constraints:wing:additional_fuel_capacity", "MFW"] = 1.0
+        partials[
+            "data:constraints:wing:additional_fuel_capacity", "data:mission:sizing:fuel"
+        ] = -1.0
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_CONS, "fastga.submodel.loop.wing_area.constraint.geom.advanced"
 )
-class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
+class ConstraintWingAreaGeomAdvanced(om.Group):
     """
     Computes the difference between what the wing can store in terms of fuel and the fuel
     needed for the mission to check if the constraints is respected using an advanced geometric
@@ -121,221 +218,31 @@ class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:kink:span_ratio", val=np.nan)
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input("data:propulsion:fuel_type", val=np.nan)
-        self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
-        self.add_input("data:geometry:landing_gear:type", val=np.nan)
-        self.add_input("data:geometry:landing_gear:y", val=np.nan, units="m")
-        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-        self.add_input(
-            "data:geometry:propulsion:engine:y_ratio",
-            shape_by_conn=True,
-        )
-        self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
-        self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
-        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
-        self.add_output("data:constraints:wing:additional_fuel_capacity", units="kg")
-
-        self.declare_partials(
-            "*",
-            "*",
-            method="fd",
+        # To rename the wing area as it is used in the UpdateMFW() group
+        weight_sum = om.AddSubtractComp()
+        weight_sum.add_equation(
+            "wing_area",
+            [
+                "data:geometry:wing:area",
+                "data:geometry:wing:area",
+            ],
+            scaling_factors=[0.5, 0.5],
+            units="m**2",
         )
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        mfw_mission = inputs["data:mission:sizing:fuel"]
-        wing_area = inputs["data:geometry:wing:area"]
-
-        outputs["data:constraints:wing:additional_fuel_capacity"] = compute_wing_area_new(
-            wing_area, inputs, mfw_mission
+        self.add_subsystem("wing_area_rename", weight_sum, promotes=["data:*"])
+        self.add_subsystem(
+            name="update_mfw",
+            subsys=UpdateMFW(),
+            promotes_inputs=["data:*", "settings:*"],
+            promotes_outputs=[],
+        )
+        self.add_subsystem(
+            name="compute_constraints_area",
+            subsys=DistanceToMFWForConstraint(),
+            promotes=["data:*"],
         )
 
-
-def compute_wing_area_new(wing_area, inputs, fuel_mission):
-    """
-    Computes the difference between the mfw for a given wing area and the fuel that we need to
-    store inside the mission, when solved, there is just enough room inside the wing to hold the
-    fuel
-
-    :param wing_area: wing area, in m**2
-    :param inputs: inputs of the component
-    :param fuel_mission: fuel needed to achieve the mission, in kg
-    """
-    wing_ar = float(inputs["data:geometry:wing:aspect_ratio"])
-    wing_taper_ratio = float(inputs["data:geometry:wing:taper_ratio"])
-    fus_width = float(inputs["data:geometry:fuselage:maximum_width"])
-    kink_span_ratio = float(inputs["data:geometry:wing:kink:span_ratio"])
-
-    fuel_type = float(inputs["data:propulsion:fuel_type"])
-    root_tc = float(inputs["data:geometry:wing:root:thickness_ratio"])
-    tip_tc = float(inputs["data:geometry:wing:tip:thickness_ratio"])
-    flap_chord_ratio = float(inputs["data:geometry:flap:chord_ratio"])
-    aileron_chord_ratio = float(inputs["data:geometry:wing:aileron:chord_ratio"])
-    y_ratio_tank_beginning = float(inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"])
-    y_ratio_tank_end = float(inputs["data:geometry:propulsion:tank:y_ratio_tank_end"])
-    engine_config = float(inputs["data:geometry:propulsion:engine:layout"])
-    y_ratio_tank = inputs["data:geometry:propulsion:engine:y_ratio"]
-    le_chord_percentage = float(inputs["data:geometry:propulsion:tank:LE_chord_percentage"])
-    te_chord_percentage = float(inputs["data:geometry:propulsion:tank:TE_chord_percentage"])
-    nacelle_width = float(inputs["data:geometry:propulsion:nacelle:width"])
-    lg_type = float(inputs["data:geometry:landing_gear:type"])
-    y_lg = float(inputs["data:geometry:landing_gear:y"])
-    k = float(inputs["settings:geometry:fuel_tanks:depth"])
-
-    # We first have to recompute all the data needed for the tank capacity computation that
-    # depends on the wing area To ensure coherency with the method used, we will use the
-    # generate block analysis method on the component that compute said value and then use a
-    # block_analysis on the compute_mfw_advanced component.
-
-    # First we need to compute the y positions and the span
-
-    var_inputs_compute_y = [
-        "data:geometry:wing:aspect_ratio",
-        "data:geometry:fuselage:maximum_width",
-        "data:geometry:wing:area",
-        "data:geometry:wing:kink:span_ratio",
-    ]
-
-    compute_wing_y = generate_block_analysis(ComputeWingY(), var_inputs_compute_y, "", False)
-
-    var_dict_compute_y = {
-        "data:geometry:wing:aspect_ratio": (wing_ar, None),
-        "data:geometry:fuselage:maximum_width": (fus_width, "m"),
-        "data:geometry:wing:area": (wing_area, "m**2"),
-        "data:geometry:wing:kink:span_ratio": (kink_span_ratio, None),
-    }
-
-    var_outputs_compute_y = compute_wing_y(var_dict_compute_y)
-
-    # We ensure that the units are in the SI system using openmdao convert unit_function
-    wing_span_original_val = var_outputs_compute_y.get("data:geometry:wing:span")[0]
-    wing_span_original_unit = var_outputs_compute_y.get("data:geometry:wing:span")[1]
-    wing_span = convert_units(wing_span_original_val, wing_span_original_unit, "m")
-
-    root_y_original_val = var_outputs_compute_y.get("data:geometry:wing:root:y")[0]
-    root_y_original_unit = var_outputs_compute_y.get("data:geometry:wing:root:y")[1]
-    root_y = convert_units(root_y_original_val, root_y_original_unit, "m")
-
-    tip_y_original_val = var_outputs_compute_y.get("data:geometry:wing:tip:y")[0]
-    tip_y_original_unit = var_outputs_compute_y.get("data:geometry:wing:tip:y")[1]
-    tip_y = convert_units(tip_y_original_val, tip_y_original_unit, "m")
-
-    # We now compute the root chord
-
-    var_inputs_compute_root_chord = [
-        "data:geometry:wing:taper_ratio",
-        "data:geometry:wing:area",
-        "data:geometry:wing:root:y",
-        "data:geometry:wing:tip:y",
-    ]
-
-    compute_wing_root_chord = generate_block_analysis(
-        ComputeWingL2AndL3(), var_inputs_compute_root_chord, "", False
-    )
-
-    var_dict_compute_root_chord = {
-        "data:geometry:wing:taper_ratio": (wing_taper_ratio, None),
-        "data:geometry:wing:area": (wing_area, "m**2"),
-        "data:geometry:wing:root:y": (root_y, "m"),
-        "data:geometry:wing:tip:y": (tip_y, "m"),
-    }
-
-    var_outputs_compute_root_chord = compute_wing_root_chord(var_dict_compute_root_chord)
-
-    # We ensure that the units are in the SI system using openmdao convert unit_function
-    root_chord_original_value = var_outputs_compute_root_chord.get("data:geometry:wing:root:chord")[
-        0
-    ]
-    root_chord_original_unit = var_outputs_compute_root_chord.get("data:geometry:wing:root:chord")[
-        1
-    ]
-    root_chord = convert_units(root_chord_original_value, root_chord_original_unit, "m")
-
-    # We now compute the tip chord
-
-    var_inputs_compute_tip_chord = copy.copy(var_inputs_compute_root_chord)
-
-    compute_wing_tip_chord = generate_block_analysis(
-        ComputeWingL1AndL4(), var_inputs_compute_tip_chord, "", False
-    )
-
-    var_dict_compute_root_chord = copy.copy(var_dict_compute_root_chord)
-
-    var_outputs_compute_tip_chord = compute_wing_tip_chord(var_dict_compute_root_chord)
-
-    # We ensure that the units are in the SI system using openmdao convert unit_function
-    tip_chord_original_value = var_outputs_compute_tip_chord.get("data:geometry:wing:tip:chord")[0]
-    tip_chord_original_unit = var_outputs_compute_tip_chord.get("data:geometry:wing:tip:chord")[1]
-    tip_chord = convert_units(tip_chord_original_value, tip_chord_original_unit, "m")
-
-    # We can now move on to the computation of the mfw for that wing area and then return the
-    # difference to solve for the right wing_area
-
-    var_inputs_compute_mfw = [
-        "data:propulsion:fuel_type",
-        "data:geometry:wing:root:chord",
-        "data:geometry:wing:tip:chord",
-        "data:geometry:wing:root:y",
-        "data:geometry:wing:tip:y",
-        "data:geometry:wing:root:thickness_ratio",
-        "data:geometry:wing:tip:thickness_ratio",
-        "data:geometry:flap:chord_ratio",
-        "data:geometry:wing:aileron:chord_ratio",
-        "data:geometry:propulsion:tank:y_ratio_tank_beginning",
-        "data:geometry:propulsion:tank:y_ratio_tank_end",
-        "data:geometry:propulsion:engine:layout",
-        "data:geometry:propulsion:engine:y_ratio",
-        "data:geometry:propulsion:tank:LE_chord_percentage",
-        "data:geometry:propulsion:tank:TE_chord_percentage",
-        "data:geometry:propulsion:nacelle:width",
-        "data:geometry:wing:span",
-        "data:geometry:landing_gear:type",
-        "data:geometry:landing_gear:y",
-        "settings:geometry:fuel_tanks:depth",
-    ]
-
-    compute_mfw = generate_block_analysis(ComputeMFWAdvanced(), var_inputs_compute_mfw, "", False)
-
-    var_dict_compute_root_chord = {
-        "data:propulsion:fuel_type": (fuel_type, None),
-        "data:geometry:wing:root:chord": (root_chord, "m"),
-        "data:geometry:wing:tip:chord": (tip_chord, "m"),
-        "data:geometry:wing:root:y": (root_y, "m"),
-        "data:geometry:wing:tip:y": (tip_y, "m"),
-        "data:geometry:wing:root:thickness_ratio": (root_tc, None),
-        "data:geometry:wing:tip:thickness_ratio": (tip_tc, None),
-        "data:geometry:flap:chord_ratio": (flap_chord_ratio, None),
-        "data:geometry:wing:aileron:chord_ratio": (aileron_chord_ratio, None),
-        "data:geometry:propulsion:tank:y_ratio_tank_beginning": (y_ratio_tank_beginning, None),
-        "data:geometry:propulsion:tank:y_ratio_tank_end": (y_ratio_tank_end, None),
-        "data:geometry:propulsion:engine:layout": (engine_config, None),
-        "data:geometry:propulsion:engine:y_ratio": (y_ratio_tank, None),
-        "data:geometry:propulsion:tank:LE_chord_percentage": (le_chord_percentage, None),
-        "data:geometry:propulsion:tank:TE_chord_percentage": (te_chord_percentage, None),
-        "data:geometry:propulsion:nacelle:width": (nacelle_width, "m"),
-        "data:geometry:wing:span": (wing_span, "m"),
-        "data:geometry:landing_gear:type": (lg_type, None),
-        "data:geometry:landing_gear:y": (y_lg, "m"),
-        "settings:geometry:fuel_tanks:depth": (k, None),
-    }
-
-    var_outputs_compute_mfw = compute_mfw(var_dict_compute_root_chord)
-
-    mfw_original_val = var_outputs_compute_mfw.get("data:weight:aircraft:MFW")[0]
-    mfw_original_unit = var_outputs_compute_mfw.get("data:weight:aircraft:MFW")[1]
-    mfw = convert_units(mfw_original_val, mfw_original_unit, "kg")
-
-    return mfw - fuel_mission
+        self.connect("wing_area_rename.wing_area", "update_mfw.wing_area")
+        self.connect("update_mfw.data:weight:aircraft:MFW", "compute_constraints_area.MFW")
