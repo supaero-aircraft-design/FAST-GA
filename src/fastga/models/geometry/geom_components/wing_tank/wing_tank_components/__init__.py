@@ -15,3 +15,4 @@ from .compute_wing_tank_span import ComputeWingTankSpans
 from .compute_wing_tank_y_array import ComputeWingTankYArray
 from .compute_wing_tank_chord_array import ComputeWingTankChordArray
 from .compute_wing_tank_t_c_array import ComputeWingTankRelativeThicknessArray
+from .compute_wing_tank_thickness_array import ComputeWingTankThicknessArray
