@@ -76,6 +76,7 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankThicknessArray,
     ComputeWingTankWidthArray,
     ComputeWingTankReducedWidthArray,
+    ComputeWingTankCrossSectionArray,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -1101,6 +1102,84 @@ def test_wing_tank_reduced_width_array():
                 0.82887094,
                 0.82887094,
                 0.82887094,
+            ]
+        ),
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_cross_section_array():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:reduced_width_array",
+        "data:geometry:propulsion:tank:thickness_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankCrossSectionArray(), ivc)
+    wing_tank_cross_section_array = problem.get_val(
+        "data:geometry:propulsion:tank:cross_section_array", units="m**2"
+    )
+    assert wing_tank_cross_section_array == pytest.approx(
+        np.array(
+            [
+                0.04080251,
+                0.08127278,
+                0.08094055,
+                0.08060831,
+                0.08027608,
+                0.07994384,
+                0.07961161,
+                0.07927937,
+                0.07894714,
+                0.0786149,
+                0.07828267,
+                0.07795043,
+                0.0776182,
+                0.07728596,
+                0.07695373,
+                0.07662149,
+                0.07628926,
+                0.07595702,
+                0.07562479,
+                0.07529255,
+                0.07496032,
+                0.07462809,
+                0.07429585,
+                0.07396362,
+                0.07363138,
+                0.07329915,
+                0.07296691,
+                0.07263468,
+                0.07230244,
+                0.07197021,
+                0.07163797,
+                0.07130574,
+                0.0709735,
+                0.07064127,
+                0.07030903,
+                0.0699768,
+                0.06964456,
+                0.06931233,
+                0.06898009,
+                0.06864786,
+                0.06831562,
+                0.06798339,
+                0.06765115,
+                0.06731892,
+                0.06698668,
+                0.06665445,
+                0.06632221,
+                0.06598998,
+                0.06565775,
+                0.06532551,
             ]
         ),
         rel=1e-3,
