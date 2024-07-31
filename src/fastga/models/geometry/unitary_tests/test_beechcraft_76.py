@@ -75,6 +75,7 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankRelativeThicknessArray,
     ComputeWingTankThicknessArray,
     ComputeWingTankWidthArray,
+    ComputeWingTankReducedWidthArray,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -1019,7 +1020,89 @@ def test_wing_tank_width_array():
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankWidthArray(), ivc)
     wing_tank_width_array = problem.get_val("data:geometry:propulsion:tank:width_array", units="m")
-    assert wing_tank_width_array == pytest.approx(np.full(50, 0.82887094),
+    assert wing_tank_width_array == pytest.approx(np.full(50, 0.82887094), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_reduced_width_array():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:width_array",
+        "data:geometry:propulsion:tank:y_array",
+        "data:geometry:propulsion:nacelle:width",
+        "data:geometry:landing_gear:type",
+        "data:geometry:landing_gear:y",
+        "data:geometry:propulsion:engine:layout",
+        "data:geometry:propulsion:engine:y_ratio",
+        "data:geometry:wing:span",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankReducedWidthArray(), ivc)
+    wing_tank_width_array = problem.get_val(
+        "data:geometry:propulsion:tank:reduced_width_array", units="m"
+    )
+    assert wing_tank_width_array == pytest.approx(
+        np.array(
+            [
+                0.41443547,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+            ]
+        ),
         rel=1e-3,
     )
 

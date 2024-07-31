@@ -17,3 +17,4 @@ from .compute_wing_tank_chord_array import ComputeWingTankChordArray
 from .compute_wing_tank_t_c_array import ComputeWingTankRelativeThicknessArray
 from .compute_wing_tank_thickness_array import ComputeWingTankThicknessArray
 from .compute_wing_tank_width_array import ComputeWingTankWidthArray
+from .compute_wing_tank_reduced_width_array import ComputeWingTankReducedWidthArray
