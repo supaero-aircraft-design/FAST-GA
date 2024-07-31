@@ -444,8 +444,15 @@ def test_geometry_wing_toc():
 def test_geometry_wing_y():
     """Tests computation of the wing Ys"""
 
+    inputs_list = [
+        "data:geometry:wing:aspect_ratio",
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:wing:area",
+        "data:geometry:wing:kink:span_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingY()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingY(), ivc)
@@ -457,6 +464,8 @@ def test_geometry_wing_y():
     assert wing_y3 == pytest.approx(0.0, abs=1e-3)  # point 3 is virtual central point
     wing_y4 = problem.get_val("data:geometry:wing:tip:y", units="m")
     assert wing_y4 == pytest.approx(5.799, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_z():

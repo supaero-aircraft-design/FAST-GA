@@ -163,7 +163,7 @@ class UpdateWingAreaGeomAdvanced(om.Group):
         # Solvers setup
         self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
         self.nonlinear_solver.options["iprint"] = 0
-        self.nonlinear_solver.options["maxiter"] = 50
+        self.nonlinear_solver.options["maxiter"] = 15
         self.nonlinear_solver.options["rtol"] = 1e-5
         self.nonlinear_solver.options["atol"] = 1e-2
         self.nonlinear_solver.options["stall_limit"] = 5
