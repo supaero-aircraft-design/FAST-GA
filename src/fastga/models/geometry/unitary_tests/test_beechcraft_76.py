@@ -74,6 +74,7 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankChordArray,
     ComputeWingTankRelativeThicknessArray,
     ComputeWingTankThicknessArray,
+    ComputeWingTankWidthArray,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -842,8 +843,8 @@ def test_wing_tank_chord_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankChordArray(), ivc)
-    y_wing_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
-    assert y_wing_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
+    wing_tank_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
+    assert wing_tank_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
 
     problem.check_partials(compact_print=True)
 
@@ -865,8 +866,8 @@ def test_wing_tank_relative_thickness_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankRelativeThicknessArray(), ivc)
-    y_wing_t_c_array = problem.get_val("data:geometry:propulsion:tank:relative_thickness_array")
-    assert y_wing_t_c_array == pytest.approx(
+    wing_tank_t_c_array = problem.get_val("data:geometry:propulsion:tank:relative_thickness_array")
+    assert wing_tank_t_c_array == pytest.approx(
         [
             0.15930484,
             0.15865626,
@@ -940,8 +941,8 @@ def test_wing_tank_thickness_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankThicknessArray(), ivc)
-    y_wing_t_array = problem.get_val("data:geometry:propulsion:tank:thickness_array", units="m")
-    assert y_wing_t_array == pytest.approx(
+    wing_tank_t_array = problem.get_val("data:geometry:propulsion:tank:thickness_array", units="m")
+    assert wing_tank_t_array == pytest.approx(
         [
             0.11582732,
             0.11535576,
@@ -994,6 +995,31 @@ def test_wing_tank_thickness_array():
             0.09319232,
             0.09272076,
         ],
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_width_array():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:chord_array",
+        "data:geometry:propulsion:tank:LE_chord_percentage",
+        "data:geometry:propulsion:tank:TE_chord_percentage",
+        "data:geometry:flap:chord_ratio",
+        "data:geometry:wing:aileron:chord_ratio",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankWidthArray(), ivc)
+    wing_tank_width_array = problem.get_val("data:geometry:propulsion:tank:width_array", units="m")
+    assert wing_tank_width_array == pytest.approx(np.full(50, 0.82887094),
         rel=1e-3,
     )
 
