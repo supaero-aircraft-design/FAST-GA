@@ -77,6 +77,8 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankWidthArray,
     ComputeWingTankReducedWidthArray,
     ComputeWingTankCrossSectionArray,
+    ComputeWingTanksCapacity,
+    ComputeMFWFromWingTanksCapacity,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -1184,5 +1186,45 @@ def test_wing_tank_cross_section_array():
         ),
         rel=1e-3,
     )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tanks_capacity():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:cross_section_array",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTanksCapacity(), ivc)
+    wing_tanks_capacity = problem.get_val("data:geometry:propulsion:tank:capacity", units="m**3")
+    assert wing_tanks_capacity == pytest.approx(0.4238899477389617, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_mfw_from_wing_tanks_capacity():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:capacity",
+        "data:propulsion:fuel_type",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeMFWFromWingTanksCapacity(), ivc)
+    mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
+    assert mfw == pytest.approx(304.73, rel=1e-3)
 
     problem.check_partials(compact_print=True)
