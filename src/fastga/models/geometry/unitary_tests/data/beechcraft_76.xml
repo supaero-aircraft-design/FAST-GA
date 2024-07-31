@@ -217,6 +217,8 @@
           <TE_chord_percentage>0.12<!--distance between the trailing edge device and the start of the wing tank as a percentage of the wing chord--></TE_chord_percentage>
           <y_ratio_tank_beginning>0.42<!--ratio of the total span where the fuel tanks begin--></y_ratio_tank_beginning>
           <y_ratio_tank_end>0.92<!--ratio of the total span where the fuel tanks end--></y_ratio_tank_end>
+          <y_beginning units="m">2.437</y_beginning>
+          <y_end units="m">5.338</y_end>
         </tank>
       </propulsion>
     </geometry>

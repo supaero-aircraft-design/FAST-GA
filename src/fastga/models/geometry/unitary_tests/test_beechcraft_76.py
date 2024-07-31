@@ -14,6 +14,7 @@ Test module for geometry functions of the different components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import openmdao.api as om
 import pytest
 
@@ -66,6 +67,11 @@ from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
+
+from ..geom_components.wing_tank.wing_tank_components import (
+    ComputeWingTankSpans,
+    ComputeWingTankYArray,
+)
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
@@ -771,3 +777,46 @@ def test_complete_geometry_FL():
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(80.932, abs=1e-3)
+
+
+def test_wing_tank_spans():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:y_ratio_tank_beginning",
+        "data:geometry:propulsion:tank:y_ratio_tank_end",
+        "data:geometry:wing:span",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankSpans(), ivc)
+    y_end = problem.get_val("data:geometry:propulsion:tank:y_end", units="m")
+    assert y_end == pytest.approx(5.338, rel=1e-3)
+    y_start = problem.get_val("data:geometry:propulsion:tank:y_beginning", units="m")
+    assert y_start == pytest.approx(2.437, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_y_array():
+
+    inputs_list = [
+        "data:geometry:propulsion:tank:y_beginning",
+        "data:geometry:propulsion:tank:y_end",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankYArray(), ivc)
+    y_wing_tank_array = problem.get_val("data:geometry:propulsion:tank:y_array", units="m")
+    assert y_wing_tank_array == pytest.approx(np.linspace(2.437, 5.338, 50), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
