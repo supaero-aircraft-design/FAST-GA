@@ -86,6 +86,9 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
 
+        self.in_engine = np.full(POINTS_NB_WING, False)
+        self.in_landing_gear = np.full(POINTS_NB_WING, False)
+
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
 
