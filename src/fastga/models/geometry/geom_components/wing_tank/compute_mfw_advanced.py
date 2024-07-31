@@ -154,7 +154,6 @@ def tank_volume_distribution(inputs, y_array_orig):
     # Computation of the thickness ratio profile along the span, as tc = slope * y +
     # tc_fuselage_center.
     slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
-    # fuselage_center_virtual_tc = 0.5 * (root_tc + tip_tc - slope_tc * (root_y + tip_y))
     thickness_ratio_array = np.zeros_like(y_array)
     for y in y_in_tank_array:
         idx = np.where(y_array == y)[0]
@@ -162,7 +161,6 @@ def tank_volume_distribution(inputs, y_array_orig):
             thickness_ratio_array[idx] = root_tc
         else:
             thickness_ratio_array[idx] = slope_tc * y + root_tc
-    # thickness_ratio_array = slope_tc * y_array + fuselage_center_virtual_tc
 
     # The k factor stating the depth of the fuel tanks is included here.
     thickness_array = k * chord_array * thickness_ratio_array

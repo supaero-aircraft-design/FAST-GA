@@ -72,6 +72,7 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankSpans,
     ComputeWingTankYArray,
     ComputeWingTankChordArray,
+    ComputeWingTankRelativeThicknessArray,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -842,5 +843,82 @@ def test_wing_tank_chord_array():
     problem = run_system(ComputeWingTankChordArray(), ivc)
     y_wing_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
     assert y_wing_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_relative_thickness_array():
+
+    inputs_list = [
+        "data:geometry:wing:root:thickness_ratio",
+        "data:geometry:wing:tip:thickness_ratio",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankRelativeThicknessArray(), ivc)
+    y_wing_t_c_array = problem.get_val("data:geometry:propulsion:tank:relative_thickness_array")
+    assert y_wing_t_c_array == pytest.approx(
+        [
+            0.15930484,
+            0.15865626,
+            0.15800769,
+            0.15735912,
+            0.15671055,
+            0.15606198,
+            0.15541341,
+            0.15476484,
+            0.15411627,
+            0.1534677,
+            0.15281913,
+            0.15217056,
+            0.15152199,
+            0.15087342,
+            0.15022485,
+            0.14957628,
+            0.14892771,
+            0.14827914,
+            0.14763057,
+            0.14698199,
+            0.14633342,
+            0.14568485,
+            0.14503628,
+            0.14438771,
+            0.14373914,
+            0.14309057,
+            0.142442,
+            0.14179343,
+            0.14114486,
+            0.14049629,
+            0.13984772,
+            0.13919915,
+            0.13855058,
+            0.13790201,
+            0.13725344,
+            0.13660487,
+            0.13595629,
+            0.13530772,
+            0.13465915,
+            0.13401058,
+            0.13336201,
+            0.13271344,
+            0.13206487,
+            0.1314163,
+            0.13076773,
+            0.13011916,
+            0.12947059,
+            0.12882202,
+            0.12817345,
+            0.12752488,
+        ],
+        rel=1e-3,
+    )
 
     problem.check_partials(compact_print=True)
