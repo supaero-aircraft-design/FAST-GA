@@ -71,6 +71,7 @@ from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankSpans,
     ComputeWingTankYArray,
+    ComputeWingTankChordArray,
 )
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
@@ -818,5 +819,28 @@ def test_wing_tank_y_array():
     problem = run_system(ComputeWingTankYArray(), ivc)
     y_wing_tank_array = problem.get_val("data:geometry:propulsion:tank:y_array", units="m")
     assert y_wing_tank_array == pytest.approx(np.linspace(2.437, 5.338, 50), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_chord_array():
+
+    inputs_list = [
+        "data:geometry:wing:root:chord",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankChordArray(), ivc)
+    y_wing_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
+    assert y_wing_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
 
     problem.check_partials(compact_print=True)

@@ -13,3 +13,4 @@
 
 from .compute_wing_tank_span import ComputeWingTankSpans
 from .compute_wing_tank_y_array import ComputeWingTankYArray
+from .compute_wing_tank_chord_array import ComputeWingTankChordArray
