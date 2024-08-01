@@ -25,13 +25,11 @@ class InitializeAirspeedDerivatives(om.ExplicitComponent):
     """Computes the d_vx_dt at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input(
@@ -58,7 +56,6 @@ class InitializeAirspeedDerivatives(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         true_airspeed = inputs["true_airspeed"]
         equivalent_airspeed = inputs["equivalent_airspeed"]
         altitude = inputs["altitude"]

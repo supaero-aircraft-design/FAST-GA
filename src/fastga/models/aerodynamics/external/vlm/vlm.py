@@ -36,7 +36,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
-
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
     def __init__(self, **kwargs):
@@ -72,7 +71,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -244,7 +242,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # If no result saved for that geometry under this mach condition, computation is done
         if result_file_path is None:
-
             # Create result folder first (if it must fail, let it fail as soon as possible)
             if result_folder_path != "":
                 if not os.path.exists(result_folder_path):
@@ -471,7 +468,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha_ind = np.dot(aic_wake, gamma) / v_inf
         cd_ind_panel = c_p * alpha_ind
         cdi_wing = np.sum(cd_ind_panel * panel_surf) / panel_surf_sum
-        wing_e = cl_wing ** 2 / (np.pi * aspect_ratio * cdi_wing) * 0.955
+        wing_e = cl_wing**2 / (np.pi * aspect_ratio * cdi_wing) * 0.955
         cm_panel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - l0_wing / 4))
         cm_wing = np.sum(cm_panel * panel_surf) / panel_surf_sum
 
@@ -553,7 +550,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         alpha_ind = np.dot(aic_wake, gamma) / v_inf
         cd_ind_panel = c_p * alpha_ind
         cdi_htp = np.sum(cd_ind_panel * panel_surf) / panel_surf_sum
-        htp_e = cl_htp ** 2 / (np.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avoid 0.0 division
+        htp_e = cl_htp**2 / (np.pi * aspect_ratio * max(cdi_htp, 1e-12))  # avoid 0.0 division
         cm_panel = np.multiply(c_p, (x_c[: self.n_x * self.n_y] - l0_wing / 4))
         cm_htp = np.sum(cm_panel * panel_surf) / panel_surf_sum
 
@@ -619,8 +616,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # Calculate downwash angle based on Gudmundsson model (p.467)
         cl_wing = wing["cl"]
-        beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
-        downwash_angle = 2.0 * np.array(cl_wing) / beta * 180.0 / (aspect_ratio_wing * np.pi ** 2)
+        beta = np.sqrt(1 - mach**2)  # Prandtl-Glauert
+        downwash_angle = 2.0 * np.array(cl_wing) / beta * 180.0 / (aspect_ratio_wing * np.pi**2)
         aoa_angle_corrected = aoa_angle - downwash_angle
 
         # Compute htp
@@ -632,7 +629,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return wing, htp, aircraft
 
     def _run(self, inputs, run_opt="wing"):
-
         wing_break = float(inputs["data:geometry:wing:kink:span_ratio"])
 
         # Define mesh size
@@ -1113,7 +1109,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     @staticmethod
     def read_results(result_file_path):
-
         data = pd.read_csv(result_file_path)
         values = data.to_numpy()[:, 1].tolist()
         labels = data.to_numpy()[:, 0].tolist()
@@ -1149,7 +1144,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :return: post-processed data for other use
         """
         k_fus = 1 + 0.025 * width_max / span_wing - 0.025 * (width_max / span_wing) ** 2
-        beta = np.sqrt(1 - mach ** 2)  # Prandtl-Glauert
+        beta = np.sqrt(1 - mach**2)  # Prandtl-Glauert
         cl_0_wing = float((wing_0["cl"] * k_fus / beta) * np.cos(dihedral_angle) ** 2.0)
         cl_x_wing = float(wing_aoa["cl"] * k_fus / beta)
         cm_0_wing = float(wing_0["cm"] * k_fus / beta)
@@ -1171,7 +1166,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             coef_e = wing_aoa["coef_e"]
         else:
             coef_e = wing_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
-        cdi = cl_x_wing ** 2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
+        cdi = cl_x_wing**2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
         coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
         # Fuselage correction
         k_fus = 1 - 2 * (width_max / span_wing) ** 2
@@ -1227,7 +1222,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         else:
             coef_e = htp_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
         cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
-        coef_k_htp = float(cdi / cl_aoa_htp ** 2 * area_ratio)
+        coef_k_htp = float(cdi / cl_aoa_htp**2 * area_ratio)
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) / beta * area_ratio).tolist()
 
@@ -1311,7 +1306,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         # shorter
         if SPAN_MESH_POINT < len(y_vector):
-
             y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
 
@@ -1379,8 +1373,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         coeff_2_r = y_c - y_1_r
         coeff_3_r = x_c - x_2_r
         coeff_4_r = y_c - y_2_r
-        coeff_5_r = np.sqrt(coeff_1_r ** 2 + coeff_2_r ** 2)
-        coeff_6_r = np.sqrt(coeff_3_r ** 2 + coeff_4_r ** 2)
+        coeff_5_r = np.sqrt(coeff_1_r**2 + coeff_2_r**2)
+        coeff_6_r = np.sqrt(coeff_3_r**2 + coeff_4_r**2)
         coeff_7_r = x_2_r - x_1_r
         coeff_8_r = y_2_r - y_1_r
         coeff_9_r = (coeff_7_r * coeff_1_r + coeff_8_r * coeff_2_r) / coeff_5_r - (
@@ -1393,8 +1387,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         coeff_2_l = y_c - y_1_l
         coeff_3_l = x_c - x_2_l
         coeff_4_l = y_c - y_2_l
-        coeff_5_l = np.sqrt(coeff_1_l ** 2 + coeff_2_l ** 2)
-        coeff_6_l = np.sqrt(coeff_3_l ** 2 + coeff_4_l ** 2)
+        coeff_5_l = np.sqrt(coeff_1_l**2 + coeff_2_l**2)
+        coeff_6_l = np.sqrt(coeff_3_l**2 + coeff_4_l**2)
         coeff_7_l = x_2_l - x_1_l
         coeff_8_l = y_2_l - y_1_l
         coeff_9_l = (coeff_7_l * coeff_1_l + coeff_8_l * coeff_2_l) / coeff_5_l - (
@@ -1439,7 +1433,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         n_x,
         n_y,
     ):
-
         """
         Calculate the coordinate value of each geometry points in each panel.
         Store this value into position arrays for later AIC matrix computation.

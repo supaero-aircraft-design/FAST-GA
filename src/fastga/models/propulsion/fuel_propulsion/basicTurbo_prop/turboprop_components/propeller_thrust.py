@@ -9,11 +9,9 @@ SPEED_PTS_NB = 10
 
 class PropellerThrustRequired(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("required_thrust", units="N", shape=n, val=np.nan)
@@ -24,11 +22,9 @@ class PropellerThrustRequired(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["propeller_thrust"] = inputs["required_thrust"] - inputs["exhaust_thrust"]
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         n = self.options["number_of_points"]
 
         partials["propeller_thrust", "required_thrust"] = np.eye(n)
@@ -43,11 +39,9 @@ class ShaftPowerRequired(om.ExplicitComponent):
         self.cruise_level_spline = None
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
@@ -118,7 +112,6 @@ class ShaftPowerRequired(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         true_airspeed = inputs["mach_0"] * atm.speed_of_sound
 
@@ -191,11 +184,9 @@ class ShaftPowerRequired(om.ExplicitComponent):
 
 class PropellerMaxThrust(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("altitude", units="m", shape=n, val=np.nan)
@@ -235,7 +226,6 @@ class PropellerMaxThrust(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         atm = Atmosphere(inputs["altitude"], altitude_in_feet=False)
         true_airspeed = inputs["mach_0"] * atm.speed_of_sound
 

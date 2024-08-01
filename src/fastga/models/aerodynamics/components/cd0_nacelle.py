@@ -60,7 +60,6 @@ class Cd0Nacelle(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
         engine_number = inputs["data:geometry:propulsion:engine:count"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]

@@ -78,7 +78,6 @@ class _LoadFactorIdentification(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         safety_factor = inputs["data:mission:sizing:cs23:safety_factor"]
 
         load_factor_array_mtow = inputs["data:mission:sizing:cs23:flight_domain:mtow:load_factor"]
@@ -96,18 +95,18 @@ class _LoadFactorIdentification(ExplicitComponent):
             abs(ultimate_load_factor_mtow_neg),
             abs(ultimate_load_factor_mzfw_neg),
         )
-        outputs[
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"
-        ] = ultimate_load_factor_mtow_pos
-        outputs[
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"
-        ] = ultimate_load_factor_mtow_neg
-        outputs[
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"
-        ] = ultimate_load_factor_mzfw_pos
-        outputs[
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"
-        ] = ultimate_load_factor_mzfw_neg
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"] = (
+            ultimate_load_factor_mtow_pos
+        )
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"] = (
+            ultimate_load_factor_mtow_neg
+        )
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"] = (
+            ultimate_load_factor_mzfw_pos
+        )
+        outputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"] = (
+            ultimate_load_factor_mzfw_neg
+        )
 
         outputs["data:mission:sizing:cs23:characteristic_speed:va"] = max(
             velocity_array_mtow[2], velocity_array_mtow[4]

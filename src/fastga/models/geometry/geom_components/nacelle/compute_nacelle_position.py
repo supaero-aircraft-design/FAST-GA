@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 import warnings
 import openmdao.api as om
@@ -28,7 +27,6 @@ class ComputeNacellePosition(om.ExplicitComponent):
     """Nacelle and pylon geometry estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
@@ -63,7 +61,6 @@ class ComputeNacellePosition(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         nac_width = inputs["data:geometry:propulsion:nacelle:width"]
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]

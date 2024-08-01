@@ -24,7 +24,6 @@ class ComputeEngineCG(ExplicitComponent):
     """Engine(s) center of gravity estimation"""
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -61,7 +60,6 @@ class ComputeEngineCG(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         engine_count_pre_wing = inputs["data:geometry:propulsion:engine:count"] / 2.0
         y2_wing = inputs["data:geometry:wing:root:y"]
@@ -77,7 +75,6 @@ class ComputeEngineCG(ExplicitComponent):
         # From the beginning of the nacelle wrt to the nose, the CG is at x_cg_in_nacelle
 
         if prop_layout == 1.0:
-
             x_cg_b1 = 0
 
             for y_nacelle, x_nacelle in zip(y_nacelle_array, x_nacelle_array):

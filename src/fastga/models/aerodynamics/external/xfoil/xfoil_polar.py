@@ -71,7 +71,6 @@ class XfoilPolar(ExternalCodeComp):
         self._xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
 
     def initialize(self):
-
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
@@ -106,7 +105,6 @@ class XfoilPolar(ExternalCodeComp):
         self.add_input("xfoil:reynolds", val=np.nan)
 
         if multiple_aoa:
-
             self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
             self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
             self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
@@ -117,7 +115,6 @@ class XfoilPolar(ExternalCodeComp):
             self.add_output("xfoil:CD_min_2D")
 
         else:
-
             self.add_output("xfoil:alpha", units="deg")
             self.add_output("xfoil:CL")
             self.add_output("xfoil:CD")
@@ -594,12 +591,10 @@ class XfoilPolar(ExternalCodeComp):
 
         # Else search for lower/upper Reynolds
         else:
-
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
 
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-
                 index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
                 index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
                 lower_values = data_reduced.loc[labels, index_lower_reynolds]

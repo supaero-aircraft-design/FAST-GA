@@ -289,7 +289,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """OpenMDAO problem to compute the sizing point"""
 
         if not self._turboprop_sizing_problem_setup:
-
             ivc = om.IndepVarComp()
             ivc.add_output(
                 "compressor_bleed_mass_flow", val=self.inter_compressor_bleed, units="kg/s"
@@ -478,7 +477,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         """OpenMDAO problem to compute the max thrust if the power is limiting"""
 
         if not self._turboprop_max_thrust_power_limit_problem_setup:
-
             ivc = self.get_ivc_max_thrust_problem()
 
             prob = om.Problem()
@@ -762,7 +760,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         can sometimes fail so it will be the favored problem to use when computing sfc.
         """
         if not self._turboprop_fuel_problem_setup:
-
             # Contains everything that is need and a bit more, but I don't think this more is
             # worth the new lines that would have been necessary to implement a new method
             ivc = self.get_ivc_max_thrust_problem()
@@ -1099,7 +1096,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_opr_limit.get_val(
             "total_temperature_45", units="degK"
         ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
-
             max_power = prob_max_thrust_opr_limit.get_val("shaft_power", units="kW")
             return max_power
 
@@ -1115,7 +1111,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_itt_limit.get_val(
             "propeller_thrust", units="N"
         ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
-
             max_power = prob_max_thrust_itt_limit.get_val("shaft_power", units="kW")
             return max_power
 
@@ -1239,7 +1234,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_opr_limit.get_val(
             "total_temperature_45", units="degK"
         ) < prob_max_thrust_opr_limit.get_val("itt_limit", units="degK"):
-
             max_thrust = prob_max_thrust_opr_limit.get_val("required_thrust", units="N")
             self._add_to_max_thrust_cache(cache_key, max_thrust[0])
             return max_thrust
@@ -1256,7 +1250,6 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if prob_max_thrust_itt_limit.get_val(
             "propeller_thrust", units="N"
         ) < prob_max_thrust_itt_limit.get_val("propeller_max_thrust", units="N"):
-
             max_thrust = prob_max_thrust_itt_limit.get_val("required_thrust", units="N")
             self._add_to_max_thrust_cache(cache_key, max_thrust[0])
             return max_thrust
@@ -1481,7 +1474,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)
         cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds)) ** 2.58
+            (1 + 0.144 * mach**2) ** 0.65 * (np.log10(reynolds)) ** 2.58
         )  # 100% turbulent
         fineness = self.nacelle.length / np.sqrt(
             4 * self.nacelle.height * self.nacelle.width / np.pi

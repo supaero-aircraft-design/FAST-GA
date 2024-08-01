@@ -20,9 +20,9 @@ from stdatm import Atmosphere
 
 from .constants import SUBMODEL_FLIGHT_CONTROLS_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FLIGHT_CONTROLS_MASS
-] = "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FLIGHT_CONTROLS_MASS] = (
+    "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -52,7 +52,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
-        a4 = 0.053 * (fus_length ** 1.536 * span ** 0.371 * (n_ult * mtow * 1e-4) ** 0.80)
+        a4 = 0.053 * (fus_length**1.536 * span**0.371 * (n_ult * mtow * 1e-4) ** 0.80)
         # mass formula in lb
 
         outputs["data:weight:airframe:flight_controls:mass"] = a4
@@ -63,34 +63,29 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
-        partials[
-            "data:weight:airframe:flight_controls:mass", "data:geometry:fuselage:length"
-        ] = 0.053 * (1.536 * fus_length ** 0.536 * span ** 0.371 * (n_ult * mtow * 1e-4) ** 0.80)
-        partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:span"] = 0.053 * (
-            fus_length ** 1.536 * 0.371 * span ** -0.629 * (n_ult * mtow * 1e-4) ** 0.80
+        partials["data:weight:airframe:flight_controls:mass", "data:geometry:fuselage:length"] = (
+            0.053 * (1.536 * fus_length**0.536 * span**0.371 * (n_ult * mtow * 1e-4) ** 0.80)
         )
-        partials[
-            "data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"
-        ] = 0.053 * (
-            fus_length ** 1.536
-            * 0.371
-            * span ** -0.629
-            * n_ult ** 0.80
-            * 0.80
-            * mtow ** -0.2
-            * 1e-4 ** 0.80
+        partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:span"] = 0.053 * (
+            fus_length**1.536 * 0.371 * span**-0.629 * (n_ult * mtow * 1e-4) ** 0.80
+        )
+        partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
+            0.053
+            * (
+                fus_length**1.536
+                * 0.371
+                * span**-0.629
+                * n_ult**0.80
+                * 0.80
+                * mtow**-0.2
+                * 1e-4**0.80
+            )
         )
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = 0.053 * (
-            fus_length ** 1.536
-            * 0.371
-            * span ** -0.629
-            * n_ult ** -0.2
-            * 0.80
-            * mtow ** 0.80
-            * 1e-4 ** 0.80
+            fus_length**1.536 * 0.371 * span**-0.629 * n_ult**-0.2 * 0.80 * mtow**0.80 * 1e-4**0.80
         )
 
 
@@ -139,15 +134,15 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
 
         atm = Atmosphere(altitude=cruise_alt, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
-        dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed ** 2.0 * 0.0208854
+        dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed**2.0 * 0.0208854
         # In lb/ft2
 
         a4 = (
             0.404
-            * wing_area ** 0.317
+            * wing_area**0.317
             * (mtow / 1000.0) ** 0.602
-            * n_ult ** 0.525
-            * dynamic_pressure ** 0.345
+            * n_ult**0.525
+            * dynamic_pressure**0.345
         )
         # mass formula in lb
 
@@ -162,47 +157,45 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
 
         atm = Atmosphere(altitude=cruise_alt, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
-        dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed ** 2.0 * 0.0208854
+        dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed**2.0 * 0.0208854
 
         partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
             0.404
-            * wing_area ** 0.317
+            * wing_area**0.317
             * 602.0
             * (mtow / 1000.0) ** -0.398
-            * n_ult ** 0.525
-            * dynamic_pressure ** 0.345
+            * n_ult**0.525
+            * dynamic_pressure**0.345
         )
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = (
             0.404
-            * wing_area ** 0.317
+            * wing_area**0.317
             * (mtow / 1000.0) ** -0.602
             * 0.525
-            * n_ult ** -0.475
-            * dynamic_pressure ** 0.345
+            * n_ult**-0.475
+            * dynamic_pressure**0.345
         )
         partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
             0.404
             * 0.317
-            * wing_area ** -0.683
+            * wing_area**-0.683
             * (mtow / 1000.0) ** 0.602
-            * n_ult ** 0.525
-            * dynamic_pressure ** 0.345
+            * n_ult**0.525
+            * dynamic_pressure**0.345
         )
         d_a4_d_q = (
             0.404
             * 0.345
-            * wing_area ** 0.317
+            * wing_area**0.317
             * (mtow / 1000.0) ** 0.602
-            * n_ult ** 0.525
-            * dynamic_pressure ** -0.655
+            * n_ult**0.525
+            * dynamic_pressure**-0.655
         )
         d_q_d_vd = atm.density * atm.true_airspeed * 0.0208854
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
-        ] = (
-            d_a4_d_q * d_q_d_vd
-        )
+        ] = d_a4_d_q * d_q_d_vd

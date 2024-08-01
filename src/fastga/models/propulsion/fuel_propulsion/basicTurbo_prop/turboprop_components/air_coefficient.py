@@ -24,7 +24,6 @@ class AirCoefficientReader(om.ExplicitComponent):
         self.input_name = "total_temperature"
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
         self.options.declare(
             "temperature_list",
@@ -49,7 +48,6 @@ class AirCoefficientReader(om.ExplicitComponent):
         self.options.declare("design_point", types=bool, default=False)
 
     def setup(self):
-
         if self.options["design_point"]:
             self.input_name = "data:propulsion:turboprop:design_point:turbine_entry_temperature"
 
@@ -78,7 +76,6 @@ class AirCoefficientReader(om.ExplicitComponent):
         self.declare_partials(of="*", wrt=self.input_name, method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature = inputs[self.input_name]
 
         cv = np.polyval(self.cv_t_coefficients, total_temperature)
@@ -90,7 +87,6 @@ class AirCoefficientReader(om.ExplicitComponent):
         outputs["gamma"] = gamma
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         total_temperature = inputs[self.input_name]
 
         partials["cp", self.input_name] = np.diag(

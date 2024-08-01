@@ -1,5 +1,5 @@
 """
-    Estimation of fuselage center of gravity.
+Estimation of fuselage center of gravity.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -34,7 +34,6 @@ class ComputeFuselageCG(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
@@ -48,7 +47,6 @@ class ComputeFuselageCG(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -69,25 +67,21 @@ class ComputeFuselageCG(ExplicitComponent):
         outputs["data:weight:airframe:fuselage:CG:x"] = x_cg_a2
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
         # Fuselage gravity center
         if prop_layout == 1.0:  # Wing mounted
-
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.39
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
             ] = 0.0
         elif prop_layout == 2.0:  # Rear fuselage mounted
-
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.485
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"
             ] = 0.515
 
         elif prop_layout == 3.0:  # nose mount
-
             partials["data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:length"] = 0.35
             partials[
                 "data:weight:airframe:fuselage:CG:x", "data:geometry:fuselage:front_length"

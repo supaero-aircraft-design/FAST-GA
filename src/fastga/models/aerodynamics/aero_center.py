@@ -55,7 +55,6 @@ class ComputeAeroCenter(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
@@ -80,7 +79,7 @@ class ComputeAeroCenter(ExplicitComponent):
 
         sos = Atmosphere(alt_cruise).speed_of_sound
         mach = v_cruise / sos
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
         cl_delta_ht_cruise = cl_delta_ht / beta
 
         # The cl_alpha_ht in the formula for the free_elevator_factor is defined with respect to
@@ -94,9 +93,9 @@ class ComputeAeroCenter(ExplicitComponent):
             ch_alpha_3d / ch_delta_3d
         )
 
-        outputs[
-            "data:aerodynamics:cruise:neutral_point:free_elevator_factor"
-        ] = free_elevator_factor
+        outputs["data:aerodynamics:cruise:neutral_point:free_elevator_factor"] = (
+            free_elevator_factor
+        )
 
         x_ca_plane_free = (
             tail_efficiency * free_elevator_factor * cl_alpha_ht * lp_ht - cm_alpha_fus * l0_wing

@@ -30,7 +30,6 @@ class ComputeWingCG(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -47,7 +46,6 @@ class ComputeWingCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]

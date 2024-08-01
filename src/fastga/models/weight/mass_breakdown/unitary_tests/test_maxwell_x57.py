@@ -159,7 +159,6 @@ def test_compute_primary_mass():
 
 
 def test_compute_secondary_mass():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=130.802, units="kg")

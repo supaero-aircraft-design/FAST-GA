@@ -21,9 +21,9 @@ import fastoad.api as oad
 
 from .constants import SUBMODEL_LANDING_GEAR_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_LANDING_GEAR_MASS
-] = "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_LANDING_GEAR_MASS] = (
+    "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -38,7 +38,6 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="lb")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="inch")
@@ -51,7 +50,6 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mlw = inputs["data:weight:aircraft:MLW"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         lg_height = inputs["data:geometry:landing_gear:height"]
@@ -66,11 +64,11 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         if mlw < mtow / 2.0:
             mlw = mtow
 
-        mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw ** 0.95 * lg_height ** 0.43
+        mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw**0.95 * lg_height**0.43
         nlg_weight = (
             (0.048 - aircraft_type * 0.008)
-            * mlw ** 0.67
-            * lg_height ** 0.43
+            * mlw**0.67
+            * lg_height**0.43
             * (1.0 + 0.8 * carrier_based)
         )
 

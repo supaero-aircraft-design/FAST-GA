@@ -30,7 +30,6 @@ class ComputeWebMass(om.ExplicitComponent):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -250,7 +249,7 @@ class ComputeWebMass(om.ExplicitComponent):
 
         v_c_tas = atm.true_airspeed
 
-        dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas ** 2.0
+        dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas**2.0
 
         y_vector, weight_array_orig = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector_orig, wing_mass, fuel_mass

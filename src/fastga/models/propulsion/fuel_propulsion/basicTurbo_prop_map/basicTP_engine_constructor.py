@@ -215,7 +215,6 @@ class ComputeTurbopropMap(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         _LOGGER.debug("Entering turboprop computation")
         engine_params = {
             "power_design": inputs["data:propulsion:turboprop:design_point:power"],
@@ -314,9 +313,9 @@ class ComputeTurbopropMap(om.ExplicitComponent):
 
         outputs["data:propulsion:turboprop:intermediate_level:altitude"] = intermediate_altitude
         outputs["data:propulsion:turboprop:intermediate_level:mach"] = mach_array_il
-        outputs[
-            "data:propulsion:turboprop:intermediate_level:thrust"
-        ] = thrust_preliminary_intersect_il
+        outputs["data:propulsion:turboprop:intermediate_level:thrust"] = (
+            thrust_preliminary_intersect_il
+        )
         outputs["data:propulsion:turboprop:intermediate_level:thrust_limit"] = max_thrust_array_il
         outputs["data:propulsion:turboprop:intermediate_level:sfc"] = sfc_general_il
 

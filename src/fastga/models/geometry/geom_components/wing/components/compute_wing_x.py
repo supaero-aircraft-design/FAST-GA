@@ -27,7 +27,6 @@ class ComputeWingX(ExplicitComponent):
     """Wing Xs estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:kink:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")

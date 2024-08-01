@@ -364,7 +364,6 @@ def test_compute_fuselage_basic():
 
 
 def test_fuselage_wet_area():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageWetArea()),
         __file__,
@@ -379,7 +378,6 @@ def test_fuselage_wet_area():
 
 
 def test_fuselage_wet_area_flops():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageWetAreaFLOPS()),
         __file__,
@@ -394,7 +392,6 @@ def test_fuselage_wet_area_flops():
 
 
 def test_fuselage_depth():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageDepth()),
         __file__,
@@ -409,7 +406,6 @@ def test_fuselage_depth():
 
 
 def test_fuselage_volume():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageVolume()),
         __file__,
@@ -691,7 +687,6 @@ def test_installation_effect_propeller():
 
 
 def test_landing_gear_geometry():
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeLGGeometry()), __file__, XML_FILE)
 

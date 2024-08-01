@@ -186,7 +186,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         # If no result saved for that geometry under this mach condition, computation is done
         if result_file_path is None:
-
             # Create result folder first (if it must fail, let it fail as soon as possible)
             if result_folder_path != "":
                 if not os.path.exists(result_folder_path):
@@ -949,7 +948,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
     @staticmethod
     def read_results(result_file_path):
-
         data = pd.read_csv(result_file_path)
         values = data.to_numpy()[:, 1].tolist()
         labels = data.to_numpy()[:, 0].tolist()
@@ -1026,7 +1024,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         chord_vector_wing = wing_aoa["chord_vector"]
         k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
         coeff_e = float(wing_aoa["coeff_e"] * k_fus)
-        coeff_k_wing = float(1.0 / (np.pi * span_wing ** 2 / s_ref_wing * coeff_e))
+        coeff_k_wing = float(1.0 / (np.pi * span_wing**2 / s_ref_wing * coeff_e))
 
         return (
             cl_0_wing,
@@ -1060,7 +1058,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp = float(htp_0["cl"])
         cl_aoa_htp = float(htp_aoa["cl"])
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp ** 2  # area ratio missing ?
+        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp**2  # area ratio missing ?
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
@@ -1099,7 +1097,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         # shorter
         if SPAN_MESH_POINT < len(y_vector):
-
             y_interp = np.linspace(y_vector[0], y_vector[-1], SPAN_MESH_POINT)
             warnings.warn("Defined maximum span mesh in fast aerodynamics\\constants.py exceeded!")
 
@@ -1117,7 +1114,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             resized_vectors.append(y_vector)
 
             for vector in vectors[1:]:
-
                 resized_vector = vector + additional_zeros
                 resized_vectors.append(resized_vector)
 
@@ -1276,10 +1272,10 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         engine_rps = engine_rpm / 60.0
         # For now thrust is distributed equally on each engine
         thrust_coefficient = round(
-            float(thrust_one_prop / (rho * engine_rps ** 2.0 * propeller_diameter ** 4.0)), 5
+            float(thrust_one_prop / (rho * engine_rps**2.0 * propeller_diameter**4.0)), 5
         )
         power_coefficient = round(
-            float(shaft_power_one_prop / (rho * engine_rps ** 3.0 * propeller_diameter ** 5.0)), 5
+            float(shaft_power_one_prop / (rho * engine_rps**3.0 * propeller_diameter**5.0)), 5
         )
 
         prop_radius = round(propeller_diameter / 2.0, 3)
@@ -1316,7 +1312,6 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             # We put engine on the wings now, later, their position will be described by an array
             # in the xml
             for y_ratio in y_ratio_array:
-
                 y_engine = y_ratio * semi_span
 
                 if y_engine > y2_wing:  # engine in the tapered part of the wing
@@ -1588,7 +1583,6 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
 
 def generate_wing_rotor_file(engine_count: int):
-
     """
     Uses the base VSPAERO template file to generate a file with all the line required to launch
     OpenVSP with n rotors in the run

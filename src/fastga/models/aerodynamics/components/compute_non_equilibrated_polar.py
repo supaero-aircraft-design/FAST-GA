@@ -1,5 +1,5 @@
 """
-    Computation of the non-equilibrated aircraft polars
+Computation of the non-equilibrated aircraft polars
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -25,7 +25,6 @@ class ComputeNonEquilibratedPolar(ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
             self.add_input("data:aerodynamics:wing:low_speed:induced_drag_coefficient", val=np.nan)
@@ -53,7 +52,6 @@ class ComputeNonEquilibratedPolar(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["low_speed_aero"]:
             coeff_k = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
             cd0 = inputs["data:aerodynamics:aircraft:low_speed:CD0"]
@@ -68,7 +66,7 @@ class ComputeNonEquilibratedPolar(ExplicitComponent):
         alpha_array = np.linspace(0, 15, POLAR_POINT_COUNT) * np.pi / 180
         cl_array = cl0 + alpha_array * cl_alpha
 
-        cd_array = cd0 + coeff_k * cl_array ** 2
+        cd_array = cd0 + coeff_k * cl_array**2
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:CD"] = cd_array

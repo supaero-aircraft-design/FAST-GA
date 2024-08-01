@@ -45,7 +45,6 @@ class ComputeCmAlphaFuselage(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
@@ -59,6 +58,6 @@ class ComputeCmAlphaFuselage(FigureDigitization):
 
         k_fus = self.k_fus(ratio_x025)
 
-        cm_alpha_fus = -k_fus * width_max ** 2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
+        cm_alpha_fus = -k_fus * width_max**2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
 
         outputs["data:aerodynamics:fuselage:cm_alpha"] = cm_alpha_fus

@@ -34,9 +34,9 @@ DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
 
 _LOGGER = logging.getLogger(__name__)
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_VH
-] = "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_VH] = (
+    "fastga.submodel.aerodynamics.aircraft.max_level_speed.legacy"
+)
 
 
 class ComputeVNAndVH(om.Group):
@@ -122,9 +122,9 @@ class ComputeVh(om.ExplicitComponent):
 
         # TODO: Change to use the Equilibrium computation
         # Get the necessary thrust to overcome
-        c_l = (mass * g) / (0.5 * atm.density * wing_area * air_speed ** 2.0)
-        c_d = cd0 + coeff_k * c_l ** 2.0
-        drag = 0.5 * atm.density * wing_area * c_d * air_speed ** 2.0
+        c_l = (mass * g) / (0.5 * atm.density * wing_area * air_speed**2.0)
+        c_d = cd0 + coeff_k * c_l**2.0
+        drag = 0.5 * atm.density * wing_area * c_d * air_speed**2.0
 
         return thrust - drag
 
@@ -146,7 +146,6 @@ class ComputeVN(om.ExplicitComponent):
         self.lbf_to_N = lbf  # Converting from pound force to Newtons
 
     def setup(self):
-
         self.add_input("data:TLAR:category", val=3.0)
         self.add_input("data:TLAR:level", val=2.0)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -309,7 +308,7 @@ class ComputeVN(om.ExplicitComponent):
         # of the airplane to imperial units
         weight_lbf = (mass * g) / self.lbf_to_N
         mtow_lbf = (mtow * g) / self.lbf_to_N
-        wing_area_sft = wing_area / (self.ft_to_m ** 2.0)
+        wing_area_sft = wing_area / (self.ft_to_m**2.0)
         mtow_loading_psf = mtow_lbf / wing_area_sft  # [lbf/ft**2]
 
         # We can now start computing the values of the different air-speeds given in the regulation
@@ -405,7 +404,7 @@ class ComputeVN(om.ExplicitComponent):
                 * self.ft_to_m
                 * x
                 * cl_alpha_fct(x)
-                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2)
             )
 
         def load_factor_gust_n(u_de_v, x):
@@ -417,7 +416,7 @@ class ComputeVN(om.ExplicitComponent):
                 * self.ft_to_m
                 * x
                 * cl_alpha_fct(x)
-                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m ** 2)
+                / (2.0 * weight_lbf / wing_area_sft * self.lbf_to_N / self.ft_to_m**2)
             )
 
         def load_factor_stall_p(x):
@@ -646,7 +645,6 @@ class ComputeVN(om.ExplicitComponent):
         # 23.335 (a)
 
         if (level == 4.0) or (category == 4.0):
-
             # We first need to compute the intersection of the stall line with the gust line
             # given by the gust of maximum intensity. Similar calculation were already done in
             # case the maneuvering speed is dictated by the Vc gust line so the computation will

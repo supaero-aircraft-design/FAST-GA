@@ -21,7 +21,6 @@ from stdatm import Atmosphere
 
 class ComputeTailCone(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
@@ -43,7 +42,6 @@ class ComputeTailCone(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:cone:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         vtp_area = inputs["data:geometry:vertical_tail:area"]
         vtp_span = inputs["data:geometry:vertical_tail:span"]
         vtp_taper_ratio = inputs["data:geometry:vertical_tail:taper_ratio"]
@@ -68,7 +66,7 @@ class ComputeTailCone(om.ExplicitComponent):
 
         density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
         cl_v_max = cy_delta_r * delta_r_max
-        q_ne = 0.5 * density * vd ** 2
+        q_ne = 0.5 * density * vd**2
         max_lift_vtp = q_ne * cl_v_max * vtp_area
 
         torsion_moment_vtp = (

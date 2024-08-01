@@ -19,9 +19,9 @@ import fastoad.api as oad
 
 from .constants import SUBMODEL_PAINT_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_PAINT_MASS
-] = "fastga.submodel.weight.mass.airframe.paint.no_paint"
+oad.RegisterSubmodel.active_models[SUBMODEL_PAINT_MASS] = (
+    "fastga.submodel.weight.mass.airframe.paint.no_paint"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
@@ -42,7 +42,6 @@ class ComputeNoPaintWeight(om.ExplicitComponent):
         self.add_output("data:weight:airframe:paint:mass", units="lb")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
 
 
@@ -63,14 +62,12 @@ class ComputePaintWeight(om.ExplicitComponent):
         self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:weight:airframe:paint:mass"] = (
             inputs["data:geometry:aircraft:wet_area"]
             * inputs["settings:weight:airframe:paint:surface_density"]
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:weight:airframe:paint:mass", "data:geometry:aircraft:wet_area"] = inputs[
             "settings:weight:airframe:paint:surface_density"
         ]

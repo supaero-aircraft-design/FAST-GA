@@ -30,7 +30,6 @@ class ComputeRecordingSystemsCG(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
 
@@ -39,13 +38,11 @@ class ComputeRecordingSystemsCG(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lar = inputs["data:geometry:fuselage:rear_length"]
         aircraft_length = inputs["data:geometry:fuselage:length"]
 
         outputs["data:weight:systems:recording:CG:x"] = aircraft_length - lar / 2.0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:weight:systems:recording:CG:x", "data:geometry:fuselage:rear_length"] = -0.5
         partials["data:weight:systems:recording:CG:x", "data:geometry:fuselage:length"] = 1.0

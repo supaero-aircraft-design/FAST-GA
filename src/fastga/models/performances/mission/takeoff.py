@@ -42,7 +42,6 @@ class TakeOffPhase(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         self.add_subsystem(
             "compute_v2",
             _v2(propulsion_id=self.options["propulsion_id"]),
@@ -99,7 +98,6 @@ class TakeOffPhase(om.Group):
         excludes: Optional[Union[str, List[str]]] = None,
         iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
-
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
@@ -173,7 +171,7 @@ class _v2(om.ExplicitComponent):
         # engines operating
         # Define Cl considering 30% margin and estimate alpha
         while True:
-            cl = cl_max_takeoff / factor ** 2.0
+            cl = cl_max_takeoff / factor**2.0
             v2 = np.sqrt((2.0 * mtow * g) / (cl * atm.density * wing_area))
             mach = v2 / atm.speed_of_sound
 
@@ -186,7 +184,7 @@ class _v2(om.ExplicitComponent):
             propulsion_model.compute_flight_points(flight_point)
             thrust = float(flight_point.thrust)
 
-            cd = cd0 + delta_cd_takeoff + coeff_k * cl ** 2.0
+            cd = cd0 + delta_cd_takeoff + coeff_k * cl**2.0
 
             climb_gradient = thrust / (mtow * g) - cd / cl
             if climb_gradient > CLIMB_GRAD_AEO:
@@ -247,7 +245,6 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cl0 = (
             inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
@@ -285,7 +282,6 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         # from 0° to the angle of attack corresponding to the V2 computation from previously
 
         for i in range(len(alpha)):
-
             # Calculate lift coefficient
             cl = cl0 + cl_alpha * alpha[i]
             # Loop on estimated lift-off speed error induced by thrust estimation
@@ -334,9 +330,9 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 thrust = float(flight_point.thrust)
                 # Calculate lift and drag
                 cl = cl0 + cl_alpha * alpha_t
-                lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-                cd = cd0 + k_ground(altitude_t) * coeff_k * cl ** 2
-                drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
+                lift = 0.5 * atm.density * wing_area * cl * v_t**2
+                cd = cd0 + k_ground(altitude_t) * coeff_k * cl**2
+                drag = 0.5 * atm.density * wing_area * cd * v_t**2
                 # Calculate acceleration on x/z air axis
                 weight = mtow * g
                 acc_x = (thrust * np.cos(alpha_t) - weight * np.sin(gamma_t) - drag) / mtow
@@ -461,9 +457,9 @@ class _vr_from_v2(om.ExplicitComponent):
             thrust = float(flight_point.thrust)
             # Calculate lift and drag
             cl = cl0 + cl_alpha * alpha_t
-            lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-            cd = cd0 + k_ground * coeff_k * cl ** 2
-            drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
+            lift = 0.5 * atm.density * wing_area * cl * v_t**2
+            cd = cd0 + k_ground * coeff_k * cl**2
+            drag = 0.5 * atm.density * wing_area * cd * v_t**2
             # Calculate rolling resistance load
             friction = (mtow * g - lift - thrust * np.sin(alpha_t)) * friction_coeff
             # Calculate acceleration
@@ -522,7 +518,6 @@ class _simulate_takeoff(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0 = (
@@ -584,9 +579,9 @@ class _simulate_takeoff(om.ExplicitComponent):
             thrust = float(flight_point.thrust)
             # Calculate lift and drag
             cl = cl0 + cl_alpha * alpha_t
-            lift = 0.5 * atm.density * wing_area * cl * v_t ** 2
-            cd = cd0 + k_ground(altitude_t) * coeff_k * cl ** 2
-            drag = 0.5 * atm.density * wing_area * cd * v_t ** 2
+            lift = 0.5 * atm.density * wing_area * cl * v_t**2
+            cd = cd0 + k_ground(altitude_t) * coeff_k * cl**2
+            drag = 0.5 * atm.density * wing_area * cd * v_t**2
             # Check if lift-off condition reached
             if (
                 (lift + thrust * np.sin(alpha_t) - mtow * g * np.cos(gamma_t)) >= 0.0

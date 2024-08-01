@@ -38,11 +38,9 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
@@ -69,7 +67,6 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
@@ -91,7 +88,6 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
@@ -104,21 +100,15 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha",
-            ] = (
-                -2.0 * wing_area / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
-            )
+            ] = -2.0 * wing_area / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:aerodynamics:horizontal_tail:efficiency",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * volume_coeff_ht * lp_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * volume_coeff_ht * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * volume_coeff_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * volume_coeff_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:geometry:horizontal_tail:area",
@@ -126,7 +116,7 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
                 2.0
                 * cl_alpha_ht
                 * wing_area
-                / ht_area ** 2.0
+                / ht_area**2.0
                 * eta_h
                 * volume_coeff_ht
                 * lp_ht
@@ -134,13 +124,11 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
             )
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q", "data:geometry:wing:area"
-            ] = (-2.0 * cl_alpha_ht / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing)
+            ] = -2.0 * cl_alpha_ht / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:geometry:horizontal_tail:volume_coefficient",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * lp_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:Cm_q",
                 "data:geometry:wing:MAC:length",
@@ -152,28 +140,22 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
                 * eta_h
                 * volume_coeff_ht
                 * lp_ht
-                / l0_wing ** 2.0
+                / l0_wing**2.0
             )
         else:
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
-            ] = (
-                -2.0 * wing_area / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
-            )
+            ] = -2.0 * wing_area / ht_area * eta_h * volume_coeff_ht * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:aerodynamics:horizontal_tail:efficiency",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * volume_coeff_ht * lp_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * volume_coeff_ht * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * volume_coeff_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * volume_coeff_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:geometry:horizontal_tail:area",
@@ -181,7 +163,7 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
                 2.0
                 * cl_alpha_ht
                 * wing_area
-                / ht_area ** 2.0
+                / ht_area**2.0
                 * eta_h
                 * volume_coeff_ht
                 * lp_ht
@@ -193,9 +175,7 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:geometry:horizontal_tail:volume_coefficient",
-            ] = (
-                -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * lp_ht / l0_wing
-            )
+            ] = -2.0 * cl_alpha_ht * wing_area / ht_area * eta_h * lp_ht / l0_wing
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:Cm_q",
                 "data:geometry:wing:MAC:length",
@@ -207,5 +187,5 @@ class ComputeCMPitchVelocityHorizontalTail(om.ExplicitComponent):
                 * eta_h
                 * volume_coeff_ht
                 * lp_ht
-                / l0_wing ** 2.0
+                / l0_wing**2.0
             )

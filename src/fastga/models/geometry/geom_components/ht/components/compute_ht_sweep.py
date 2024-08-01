@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail sweeps and aspect ratio.
+Estimation of horizontal tail sweeps and aspect ratio.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -99,7 +99,6 @@ class ComputeHTSweep(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:sweep_100"] = sweep_100
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -113,41 +112,41 @@ class ComputeHTSweep(ExplicitComponent):
         d_tmp_0_d_half_span = (
             (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
             - half_span * np.tan(sweep_25)
-        ) / tmp_0 ** 2.0
-        d_tmp_0_d_rc = -(tmp_0 ** 2.0) / half_span * 0.25
-        d_tmp_0_d_tc = (tmp_0 ** 2.0) / half_span * 0.25
-        d_tmp_0_d_sweep = -(tmp_0 ** 2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
+        ) / tmp_0**2.0
+        d_tmp_0_d_rc = -(tmp_0**2.0) / half_span * 0.25
+        d_tmp_0_d_tc = (tmp_0**2.0) / half_span * 0.25
+        d_tmp_0_d_sweep = -(tmp_0**2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
 
         d_tmp_100_d_half_span = (
             (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
             - half_span * np.tan(sweep_25)
-        ) / tmp_100 ** 2.0
-        d_tmp_100_d_rc = (tmp_100 ** 2.0) / half_span * 0.75
-        d_tmp_100_d_tc = -(tmp_100 ** 2.0) / half_span * 0.75
-        d_tmp_100_d_sweep = -(tmp_100 ** 2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
+        ) / tmp_100**2.0
+        d_tmp_100_d_rc = (tmp_100**2.0) / half_span * 0.75
+        d_tmp_100_d_tc = -(tmp_100**2.0) / half_span * 0.75
+        d_tmp_100_d_sweep = -(tmp_100**2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
 
         partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
-            -1.0 / (1.0 + tmp_0 ** 2.0) * d_tmp_0_d_half_span / 2.0
+            -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_half_span / 2.0
         )
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:root:chord"
-        ] = (-1.0 / (1.0 + tmp_0 ** 2.0) * d_tmp_0_d_rc)
+        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_rc
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:tip:chord"
-        ] = (-1.0 / (1.0 + tmp_0 ** 2.0) * d_tmp_0_d_tc)
+        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_tc
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:sweep_25"
-        ] = (-1.0 / (1.0 + tmp_0 ** 2.0) * d_tmp_0_d_sweep)
+        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_sweep
 
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:span"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_half_span / 2.0)
+        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_half_span / 2.0
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:root:chord"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_rc)
+        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_rc
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:tip:chord"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_tc)
+        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_tc
         partials[
             "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:sweep_25"
-        ] = (-1.0 / (1.0 + tmp_100 ** 2.0) * d_tmp_100_d_sweep)
+        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_sweep

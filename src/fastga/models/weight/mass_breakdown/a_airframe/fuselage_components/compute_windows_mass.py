@@ -22,7 +22,6 @@ import numpy as np
 
 class ComputeWindows(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:windows:number", val=4.0)
         self.add_input("data:geometry:cabin:windows:height", val=0.5, units="m")
@@ -43,7 +42,6 @@ class ComputeWindows(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:windows:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fuselage_maximum_width = inputs["data:geometry:fuselage:maximum_width"]
         # Converting to kg/cm**2, can't be done by OpenMDAO
         delta_p_max = inputs["data:geometry:cabin:max_differential_pressure"] * 0.00102
@@ -63,7 +61,7 @@ class ComputeWindows(om.ExplicitComponent):
         if pressurized:
             # We ensure that the windows weight remains non-negative
             cabin_window_mass = max(
-                (23.9 * cabin_windows_width * cabin_windows_height * fuselage_maximum_width ** 0.5)
+                (23.9 * cabin_windows_width * cabin_windows_height * fuselage_maximum_width**0.5)
                 - cabin_window_removed_material,
                 0.0,
             )
@@ -81,13 +79,13 @@ class ComputeWindows(om.ExplicitComponent):
             cockpit_window_filling_mass = (
                 4.31
                 * cockpit_window_area
-                * delta_p_max ** 0.25
+                * delta_p_max**0.25
                 * (fuselage_maximum_width * vd) ** 0.5
             )
             cockpit_window_surround_mass = 0.0
         else:
             cockpit_window_filling_mass = (15.9 + 0.104 * vd) * cockpit_window_area
-            cockpit_window_surround_mass = 2.98 * cockpit_window_area ** 0.5
+            cockpit_window_surround_mass = 2.98 * cockpit_window_area**0.5
 
         cockpit_window_mass = max(cockpit_window_filling_mass + cockpit_window_surround_mass, 0.0)
 

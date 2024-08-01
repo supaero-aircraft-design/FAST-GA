@@ -28,7 +28,6 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:flaps:takeoff:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:flaps:landing:CL_max", val=np.nan)
@@ -59,7 +58,6 @@ class ComputeAircraftMaxCl(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl_max_takeoff = cl_max_clean + inputs["data:aerodynamics:flaps:takeoff:CL_max"]
         cl_max_landing = cl_max_clean + inputs["data:aerodynamics:flaps:landing:CL_max"]

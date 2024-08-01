@@ -48,7 +48,6 @@ class ComputePrimaryMass(om.ExplicitComponent):
         self.add_output("data:weight:airframe:wing:primary_structure:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         primary_mass = (
             max(
                 inputs["data:weight:airframe:wing:web:mass:max_fuel_in_wing"],

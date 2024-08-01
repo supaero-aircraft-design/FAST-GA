@@ -23,7 +23,6 @@ from ..constants import SUBMODEL_SEATS_CG
 
 @oad.RegisterSubmodel(SUBMODEL_SEATS_CG, "fastga.submodel.weight.cg.furniture.seats.legacy")
 class ComputePassengerSeatsCG(ExplicitComponent):
-
     # TODO: Document equations. Cite sources
     """Passenger seats center of gravity estimation"""
 
@@ -39,7 +38,6 @@ class ComputePassengerSeatsCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         lav = inputs["data:geometry:fuselage:front_length"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]

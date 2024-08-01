@@ -1,5 +1,5 @@
 """
-    Estimation of center of gravity ratio with aft.
+Estimation of center of gravity ratio with aft.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO

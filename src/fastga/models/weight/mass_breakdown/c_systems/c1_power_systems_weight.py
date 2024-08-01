@@ -33,7 +33,6 @@ class ComputePowerSystemsWeight(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:propulsion:fuel_lines:mass", val=np.nan, units="lb")
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
@@ -44,7 +43,6 @@ class ComputePowerSystemsWeight(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
         m_iae = inputs["data:weight:systems:avionics:mass"]

@@ -19,7 +19,6 @@ import numpy as np
 
 class ComputeWingFuselageConnection(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:mission:landing:cs23:sizing_factor:ultimate_aircraft", val=6.0)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
@@ -33,7 +32,6 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:wing_fuselage_connection:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         n_ult_flight = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult_landing = inputs["data:mission:landing:cs23:sizing_factor:ultimate_aircraft"]
         n_ult = max(n_ult_flight, n_ult_landing)
@@ -51,6 +49,6 @@ class ComputeWingFuselageConnection(om.ExplicitComponent):
         if wing_config == 3.0:
             mass_wing_fuselage_connection *= 1.66
 
-        outputs[
-            "data:weight:airframe:fuselage:wing_fuselage_connection:mass"
-        ] = mass_wing_fuselage_connection
+        outputs["data:weight:airframe:fuselage:wing_fuselage_connection:mass"] = (
+            mass_wing_fuselage_connection
+        )

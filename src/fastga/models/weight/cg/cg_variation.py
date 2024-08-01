@@ -1,4 +1,4 @@
-"""FAST - Copyright (c) 2016 ONERA ISAE. """
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -47,7 +47,6 @@ class InFlightCGVariation(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         npax = inputs["data:TLAR:NPAX_design"]
         count_by_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
         luggage_weight = inputs["data:TLAR:luggage_mass_design"]
@@ -76,7 +75,7 @@ class InFlightCGVariation(om.ExplicitComponent):
         equivalent_moment = m_empty * x_cg_plane_aft + payload * x_cg_payload
         mass = m_empty + payload
 
-        outputs[
-            "data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"
-        ] = equivalent_moment
+        outputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:equivalent_moment"] = (
+            equivalent_moment
+        )
         outputs["data:weight:aircraft:in_flight_variation:fixed_mass_comp:mass"] = mass

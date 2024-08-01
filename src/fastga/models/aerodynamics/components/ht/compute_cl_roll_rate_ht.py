@@ -36,11 +36,9 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
@@ -91,7 +89,6 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ht_ar = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         wing_span = inputs["data:geometry:wing:span"]
         ht_span = inputs["data:geometry:horizontal_tail:span"]
@@ -125,7 +122,7 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
             cd0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CD0"]
 
         k = cl_alpha_airfoil / (2.0 * np.pi)
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
 
         roll_damping_parameter = self.cl_p_roll_damping_parameter(
             ht_taper_ratio, ht_ar, mach, ht_sweep_25, k
@@ -142,7 +139,7 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
 
         roll_damping_due_to_induced_drag_parameter = self.cl_p_cdi_roll_damping(ht_sweep_25, ht_ar)
         roll_damping_due_to_induced_drag = (
-            roll_damping_due_to_induced_drag_parameter * cl_ht ** 2.0 - 0.125 * cd0_ht
+            roll_damping_due_to_induced_drag_parameter * cl_ht**2.0 - 0.125 * cd0_ht
         )
 
         # The assumption we make on the lift curve makes the second term equal to 1.0

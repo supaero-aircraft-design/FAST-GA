@@ -114,14 +114,14 @@ class VTPConstraints(om.ExplicitComponent):
 
         # Computing the different speeds, w = wind, f = runway, t = total
         v_w = v_f * np.tan(beta)
-        v_t = np.sqrt(v_f ** 2.0 + v_w ** 2.0)
+        v_t = np.sqrt(v_f**2.0 + v_w**2.0)
 
         # Side force derivative computation
         cy_delta_r = -eta_v * cy_delta_r_vtp * area_vtp / area_wing
 
         # Side drag computation
         side_surface = area_vtp + h_f * (lar / 2.0 + lcyl + lav / 2.0)
-        side_drag = 0.5 * atm.density * v_w ** 2.0 * side_surface * side_drag_coefficient
+        side_drag = 0.5 * atm.density * v_w**2.0 * side_surface * side_drag_coefficient
 
         # Yawing moment derivative
         distance_to_cg = wing_vtp_distance + 0.25 * l0_wing - cg_mac_position * l0_wing
@@ -143,7 +143,7 @@ class VTPConstraints(om.ExplicitComponent):
         dc = x_ac_b - cg_position
 
         # Computation of the delta
-        dynamic_pressure = 0.5 * atm.density * v_t ** 2.0
+        dynamic_pressure = 0.5 * atm.density * v_t**2.0
 
         delta_yaw = dynamic_pressure * area_wing * span_wing * (
             cn_beta * (beta - sigma) + cn_delta_r * rudder_angle
@@ -179,7 +179,7 @@ class VTPConstraints(om.ExplicitComponent):
         # TODO : 2 contributions are missing in the equations suggested by Raymer the main one being
         # TODO : the wing contribution, which would require dihedral angle, ...
         # TODO : page 649 of pdf of Raymer's book
-        cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach ** 2
+        cn_beta_goal = 0.0569 - 0.01694 * cruise_mach + 0.15904 * cruise_mach**2
 
         k_sigma = side_wash_effect(area_vtp, inputs)
 
@@ -193,7 +193,6 @@ class VTPConstraints(om.ExplicitComponent):
         return delta_cn_beta
 
     def target_stability_constraint(self, inputs):
-
         results = fsolve(self.lateral_stability, np.array(2.0), args=inputs, xtol=1e-4)
         area = results[0]
 
@@ -283,7 +282,7 @@ class VTPConstraints(om.ExplicitComponent):
         area = (y_nacelle * (thrust_cl + windmilling_prop_drag_cl)) / (
             0.7
             * pressure_cl
-            * mach_cl ** 2
+            * mach_cl**2
             * efficiency_vt
             * rudder_side_force_coefficient
             * distance_to_cg
@@ -358,7 +357,7 @@ class VTPConstraints(om.ExplicitComponent):
         ) / (
             0.7
             * pressure_to
-            * mc_mach_to ** 2
+            * mc_mach_to**2
             * efficiency_vt
             * rudder_side_force_coefficient
             * distance_to_cg
@@ -434,7 +433,7 @@ class VTPConstraints(om.ExplicitComponent):
         ) / (
             0.7
             * pressure_ldg
-            * mc_mach_ldg ** 2
+            * mc_mach_ldg**2
             * efficiency_vt
             * rudder_side_force_coefficient
             * distance_to_cg

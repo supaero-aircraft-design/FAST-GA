@@ -191,7 +191,8 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                 if vd_file_empty_description:
                     warnings.warn(
                         "file variable_descriptions.txt from %s subpackage contains empty"
-                        " descriptions! \n" % pth.split(root)[-1]
+                        " descriptions! \n"
+                        % pth.split(root)[-1]
                         + "\tFollowing variables have empty descriptions : "
                         + ", ".join(empty_description_variables),
                         category=VariableDescriptionWarning,
@@ -253,7 +254,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                         available_id_list[idx] = available_id_list[idx][0]
                                         if "PROPULSION" in available_id_list[idx]:
                                             idx_to_remove.extend(list(range(idx + 1)))
-                                        if not ("fastga" in available_id_list[idx]):
+                                        if "fastga" not in available_id_list[idx]:
                                             idx_to_remove.append(idx)
                                     idx_to_remove = list(dict.fromkeys(idx_to_remove))
                                     for idx in sorted(idx_to_remove, reverse=True):
@@ -344,7 +345,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                     "Failed to read %s.%s class parameters!", root_lib, class_name
                                 )
                     except:
-                        if not (tmp_folder is None):
+                        if tmp_folder is not None:
                             # noinspection PyUnboundLocalVariable
                             retrieve_original_file(tmp_folder, pth.join(root, name))
 
@@ -375,7 +376,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             added_key = False
             added_key_names = []
             for key in sorted_keys:
-                if not (key in saved_dict.keys()):
+                if key not in saved_dict.keys():
                     # noinspection PyUnboundLocalVariable
                     file.write(key + " || \n")
                     added_key = True
@@ -521,7 +522,6 @@ def generate_block_analysis(
     options: dict = None,
     overwrite: bool = False,
 ):
-
     """
     Generates a function based on set of models and a set of variables that we want this
     functions to take.
@@ -582,7 +582,6 @@ def generate_block_analysis(
         )
 
     else:
-
         if os.path.exists(xml_file_path):
             reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
                 ignore=(var_inputs + outputs_names + ivc_outputs_names)
@@ -785,7 +784,6 @@ def list_inputs_metadata(component: Union[om.ExplicitComponent, om.Group]) -> tu
     var_copy_shape = []
 
     for variable_name in variables:
-
         variable = variables[variable_name]
         var_prom_name = variable["prom_name"]
 

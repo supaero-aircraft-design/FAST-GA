@@ -34,7 +34,6 @@ class Cd0Total(ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input(
             "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
             val=1.25,
@@ -66,7 +65,6 @@ class Cd0Total(ExplicitComponent):
             self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["low_speed_aero"]:
             cd0_wing = inputs["data:aerodynamics:wing:low_speed:CD0"]
             cd0_fus = inputs["data:aerodynamics:fuselage:low_speed:CD0"]
@@ -95,7 +93,6 @@ class Cd0Total(ExplicitComponent):
             outputs["data:aerodynamics:aircraft:cruise:CD0"] = cd0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         crud_factor = inputs["settings:aerodynamics:aircraft:undesirable_drag:k_factor"]
 
         if self.options["low_speed_aero"]:
@@ -135,9 +132,7 @@ class Cd0Total(ExplicitComponent):
             partials[
                 "data:aerodynamics:aircraft:low_speed:CD0",
                 "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
-            ] = (
-                cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other
-            )
+            ] = cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other
         else:
             cd0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
             cd0_fus = inputs["data:aerodynamics:fuselage:cruise:CD0"]
@@ -172,6 +167,4 @@ class Cd0Total(ExplicitComponent):
             partials[
                 "data:aerodynamics:aircraft:cruise:CD0",
                 "settings:aerodynamics:aircraft:undesirable_drag:k_factor",
-            ] = (
-                cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other
-            )
+            ] = cd0_wing + cd0_fus + cd0_ht + cd0_vt + cd0_lg + cd0_nac + cd0_other

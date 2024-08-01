@@ -74,7 +74,6 @@ class UpdateMLWandMZFW(ExplicitComponent):
         outputs["data:weight:aircraft:MLW"] = mlw
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         owe = inputs["data:weight:aircraft:OWE"]
         max_pl = inputs["data:weight:aircraft:max_payload"]
         cruise_ktas = inputs["data:TLAR:v_cruise"]

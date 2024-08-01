@@ -45,7 +45,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.max_thrust = 5800.0 / 2.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
         )
@@ -113,7 +112,6 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.max_thrust = 5417.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
         )
@@ -181,7 +179,6 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.max_thrust = 30000.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         altitude = float(
             Atmosphere(np.array(flight_points.altitude)).get_altitude(altitude_in_feet=True)
         )

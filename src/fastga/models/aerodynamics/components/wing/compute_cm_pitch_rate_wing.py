@@ -35,11 +35,9 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
@@ -59,7 +57,6 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
         # The convention used for the computation of z2_wing was positive when cg is above the
@@ -78,22 +75,22 @@ class ComputeCMPitchVelocityWing(FigureDigitization):
             * cl_alpha_wing
             * np.cos(wing_sweep_25)
             * (
-                (wing_ar * (0.5 * h_ac_to_cg + 2.0 * h_ac_to_cg ** 2.0))
+                (wing_ar * (0.5 * h_ac_to_cg + 2.0 * h_ac_to_cg**2.0))
                 / (wing_ar + 2.0 * np.cos(wing_sweep_25))
                 + 1.0
                 / 24.0
-                * (wing_ar ** 3.0 * np.tan(wing_sweep_25) ** 2.0)
+                * (wing_ar**3.0 * np.tan(wing_sweep_25) ** 2.0)
                 / (wing_ar + 60 * np.cos(wing_sweep_25))
                 + 1.0 / 8.0
             )
         )
 
         if mach > 0.2:
-            a1_coeff = (wing_ar ** 3.0 * np.tan(wing_sweep_25) ** 2.0) / (
+            a1_coeff = (wing_ar**3.0 * np.tan(wing_sweep_25) ** 2.0) / (
                 wing_ar * np.sqrt(1.0 - (mach * np.cos(wing_sweep_25)) ** 2.0)
                 + 6.0 * np.cos(wing_sweep_25)
             ) + 3.0 / (np.sqrt(1.0 - (mach * np.cos(wing_sweep_25)) ** 2.0))
-            a2_coeff = (wing_ar ** 3.0 * np.tan(wing_sweep_25) ** 2.0) / (
+            a2_coeff = (wing_ar**3.0 * np.tan(wing_sweep_25) ** 2.0) / (
                 wing_ar + 6.0 * np.cos(wing_sweep_25)
             ) + 3
             cm_q_wing *= a1_coeff / a2_coeff

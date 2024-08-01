@@ -31,11 +31,9 @@ class ComputeCnDeltaAileron(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -70,7 +68,6 @@ class ComputeCnDeltaAileron(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]

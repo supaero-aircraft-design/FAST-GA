@@ -28,7 +28,6 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
     """Navigation systems center of gravity estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
@@ -36,7 +35,6 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
 
         # Instruments length

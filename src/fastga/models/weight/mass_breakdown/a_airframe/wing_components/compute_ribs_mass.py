@@ -21,7 +21,6 @@ import numpy as np
 
 class ComputeRibsMass(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -88,8 +87,8 @@ class ComputeRibsMass(om.ExplicitComponent):
             * (1.0 + np.tan(sweep_e) ** 2.0 - xe_root / root_chord * k * np.tan(sweep_e))
         )
         m_factor = (
-            (taper_ratio ** 2.0 + taper_ratio + 1.0) * n_ribs / 3.0
-            + (taper_ratio ** 2.0 - 1.0) / 2.0
+            (taper_ratio**2.0 + taper_ratio + 1.0) * n_ribs / 3.0
+            + (taper_ratio**2.0 - 1.0) / 2.0
             + (taper_ratio - 1.0) ** 2.0 / (6.0 * n_ribs)
         )  # integration constant
         ribs_mass = abs(
@@ -100,7 +99,7 @@ class ComputeRibsMass(om.ExplicitComponent):
             * np.cos(sweep_e)
             * f_phi_e
             * thickness_ratio
-            * root_chord ** 2.0
+            * root_chord**2.0
             * m_factor
         )
 

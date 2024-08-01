@@ -19,9 +19,9 @@ import fastoad.api as oad
 
 from .constants import SUBMODEL_RECORDING_SYSTEM_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_RECORDING_SYSTEM_MASS
-] = "fastga.submodel.weight.mass.system.recording_systems.minimum"
+oad.RegisterSubmodel.active_models[SUBMODEL_RECORDING_SYSTEM_MASS] = (
+    "fastga.submodel.weight.mass.system.recording_systems.minimum"
+)
 
 
 @oad.RegisterSubmodel(
@@ -36,7 +36,6 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
@@ -44,7 +43,6 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
 
         if mtow > 5600:

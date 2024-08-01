@@ -38,7 +38,6 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 def test_simple_working():
-
     complete_xml_file = pth.join(pth.dirname(__file__), "data/complete.xml")
     var_inputs = []
 
@@ -52,7 +51,6 @@ def test_simple_working():
 
 
 def test_id_working():
-
     complete_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
     var_inputs = ["data:geometry:variable_2"]
 
@@ -96,7 +94,6 @@ def test_id_working():
 
 
 def test_input_vars_working():
-
     missing_input_xml_file = pth.join(pth.dirname(__file__), "data/missing_one_input.xml")
     var_inputs = ["data:geometry:variable_1"]
 
@@ -132,7 +129,6 @@ def test_supernumerary_inputs():
 
     # noinspection PyBroadException
     try:
-
         test_generate_block_analysis = api.generate_block_analysis(
             Disc1(), var_inputs, xml_file, overwrite=False
         )
@@ -141,7 +137,6 @@ def test_supernumerary_inputs():
         right_error = False
 
     except BaseException as error:
-
         function_generated = False
 
         if error.args[0] == "The input list contains name(s) out of component/group input list!":
@@ -174,10 +169,10 @@ def test_empty_xml():
         print(error.args[0])
         function_generated = False
 
-        if error.args[
-            0
-        ] == "Input .xml file not found, a default file has been created with default NaN values, but no function is returned!\nConsider defining proper values before second execution!" or (
-            "File" in error.args[0] and " is unavailable for reading." in error.args[0]
+        if (
+            error.args[0]
+            == "Input .xml file not found, a default file has been created with default NaN values, but no function is returned!\nConsider defining proper values before second execution!"
+            or ("File" in error.args[0] and " is unavailable for reading." in error.args[0])
         ):
             right_error = True
         else:
@@ -214,7 +209,6 @@ def test_empty_xml():
         value = output_dict.get("data:geometry:variable_4")[0]
 
     except Exception as error:
-
         function_generated = False
         value = 0.0
 
@@ -226,7 +220,6 @@ def test_empty_xml():
 
 
 def test_missing_inputs_in_xml():
-
     missing_inputs_xml_file = pth.join(pth.dirname(__file__), "data/missing_two_input.xml")
     var_inputs = ["data:geometry:variable_2"]
 
@@ -240,7 +233,6 @@ def test_missing_inputs_in_xml():
         right_error = False
 
     except BaseException as error:
-
         function_generated = False
 
         if "The following inputs are missing in .xml file:" in error.args[0]:
@@ -253,7 +245,6 @@ def test_missing_inputs_in_xml():
 
 
 def test_variable_descriptions_auto_gen():
-
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
 

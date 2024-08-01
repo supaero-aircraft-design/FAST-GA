@@ -19,14 +19,12 @@ import numpy as np
 
 class ComputeInsulation(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="m**2")
         self.add_input("settings:materials:insulation:area_density", val=0.488243, units="kg/m**2")
 
         self.add_output("data:weight:airframe:fuselage:insulation:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Default value of insulation comes from https://www.fire.tc.faa.gov/pdf/insulate.pdf
 
         outputs["data:weight:airframe:fuselage:insulation:mass"] = (

@@ -34,11 +34,9 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_50", val=np.nan, units="rad")
@@ -92,7 +90,6 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]

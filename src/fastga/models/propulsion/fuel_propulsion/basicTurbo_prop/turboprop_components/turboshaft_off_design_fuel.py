@@ -52,11 +52,9 @@ class Turboshaft(om.Group):
         self.cabin_altitude = None
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         if self.temperature is None:
             self.temperature, self.cv, self.cp, self.gamma = read_air_coeff()
 

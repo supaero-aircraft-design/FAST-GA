@@ -18,11 +18,9 @@ import openmdao.api as om
 
 class A45(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
@@ -58,7 +56,6 @@ class A45(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="gamma_45", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         r_g = 287.0  # Perfect gas constant
 
         airflow_design = inputs["air_mass_flow"]
@@ -84,7 +81,6 @@ class A45(om.ExplicitComponent):
         outputs["data:propulsion:turboprop:section:45"] = a_45
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         r_g = 287.0  # Perfect gas constant
 
         airflow_design = inputs["air_mass_flow"]
@@ -109,11 +105,14 @@ class A45(om.ExplicitComponent):
             airflow_design
             * (1 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * np.sqrt(total_temperature_45 * r_g)
-            / total_pressure_45 ** 2.0
+            / total_pressure_45**2.0
             / np.sqrt(gamma_45)
             / (2 / (gamma_45 + 1)) ** ((gamma_45 + 1) / (2 * (gamma_45 - 1)))
         )
-        partials["data:propulsion:turboprop:section:45", "total_temperature_45",] = (
+        partials[
+            "data:propulsion:turboprop:section:45",
+            "total_temperature_45",
+        ] = (
             0.5
             * airflow_design
             * (1 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)

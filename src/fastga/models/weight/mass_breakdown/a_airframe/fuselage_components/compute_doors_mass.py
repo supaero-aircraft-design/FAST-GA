@@ -19,7 +19,6 @@ import numpy as np
 
 class ComputeDoors(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:cabin:doors:number", val=2.0)
         self.add_input("data:geometry:cabin:doors:height", val=1.0, units="m")
         self.add_input("data:geometry:cabin:doors:width", val=0.61, units="m")
@@ -36,7 +35,6 @@ class ComputeDoors(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:doors:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         doors_number = inputs["data:geometry:cabin:doors:number"]
         doors_height = inputs["data:geometry:cabin:doors:height"]
         doors_width = inputs["data:geometry:cabin:doors:width"]
@@ -48,13 +46,13 @@ class ComputeDoors(om.ExplicitComponent):
         door_area = doors_height * doors_width
 
         if pressurized:
-            door_filling_mass = 44.2 * delta_p_max ** 0.5 * door_area
-            door_surround_mass = 22.3 * door_area ** 0.5
+            door_filling_mass = 44.2 * delta_p_max**0.5 * door_area
+            door_surround_mass = 22.3 * door_area**0.5
             removed_mass = shell_area_density * door_area
             door_weight = max(door_surround_mass + door_filling_mass - removed_mass, 0.0)
         else:
             door_filling_mass = 9.765 * door_area
-            door_surround_mass = 14.9 * door_area ** 0.5
+            door_surround_mass = 14.9 * door_area**0.5
             removed_mass = shell_area_density * door_area
             door_weight = max(door_surround_mass + door_filling_mass - removed_mass, 0.0)
 

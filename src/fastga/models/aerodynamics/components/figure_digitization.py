@@ -1815,7 +1815,7 @@ class FigureDigitization(om.ExplicitComponent):
         :return k_roll_damping: the roll damping parameter
         """
 
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
 
         corrected_ar = aspect_ratio * beta / k
         corrected_sweep = np.arctan(np.tan(sweep_25) / beta)
@@ -2402,7 +2402,6 @@ class FigureDigitization(om.ExplicitComponent):
 
     @staticmethod
     def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
-
         database_x = database[tag_x]
         database_y = database[tag_y]
         errors = np.logical_or(np.isnan(database_x), np.isnan(database_x))

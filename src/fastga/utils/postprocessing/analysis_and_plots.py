@@ -190,13 +190,11 @@ def aircraft_geometry_plot(
 
     if plot_nacelle:
         if prop_layout == 1.0:
-
             random_generator = SystemRandom()
             trace_colour = COLS[random_generator.randrange(0, len(COLS))]
             show_legend = True
 
             for y_nacelle_local, x_nacelle_local in zip(pos_y_nacelle, pos_x_nacelle):
-
                 y_nacelle_left = y_nacelle_plot + y_nacelle_local
                 y_nacelle_right = -y_nacelle_plot - y_nacelle_local
                 x_nacelle = x_nacelle_local - x_nacelle_plot

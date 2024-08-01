@@ -24,9 +24,9 @@ from .constants import SUBMODEL_FUSELAGE_MASS
 
 _LOGGER = logging.getLogger(__name__)
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUSELAGE_MASS
-] = "fastga.submodel.weight.mass.airframe.fuselage.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_MASS] = (
+    "fastga.submodel.weight.mass.airframe.fuselage.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -65,7 +65,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         a2 = (
             200.0
             * (
-                (mtow * sizing_factor_ultimate / (10.0 ** 5.0)) ** 0.286
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
                 * 3.28084
@@ -95,7 +95,6 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="ft")
@@ -116,7 +115,6 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -135,7 +133,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         atm_sl = Atmosphere(0.0)
         pressure_sl = atm_sl.pressure
 
-        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise ** 2.0 * 0.020885434273039
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
         if cruise_alt > 10000.0:
             fus_dia = (maximum_height + maximum_width) / 2.0
@@ -146,11 +144,11 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             delta_p = 0.0
 
         a2 = 0.052 * (
-            wet_area_fus ** 1.086
+            wet_area_fus**1.086
             * (sizing_factor_ultimate * mtow) ** 0.177
             * lp_ht ** (-0.051)
             * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
-            * dynamic_pressure ** 0.241
+            * dynamic_pressure**0.241
             + 11.9 * (v_press * delta_p) ** 0.271
         )
 
@@ -172,7 +170,6 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
@@ -198,7 +195,6 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         maximum_width = inputs["data:geometry:fuselage:maximum_width"]
@@ -213,12 +209,11 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
         p_max = 2 * np.pi * (fus_dia / 2)  # maximum perimeter of the fuselage
 
         if wing_config == 1.0:
-
             # The formula found in Roskam originally contains a division by 100, but it leads to
             # results way too low. It will be omitted here. It does not seem to cause an issue
             # for the high wing configuration however, so we will simply issue a warning with a
             # recommendation to switch method for low wing aircraft
-            a2 = 0.04682 * (mtow ** 0.692 * npax_max ** 0.374 * (fus_length - lav) ** 0.590)
+            a2 = 0.04682 * (mtow**0.692 * npax_max**0.374 * (fus_length - lav) ** 0.590)
 
             _LOGGER.warning(
                 "This submodel is not trusted for the computation of the fuselage weight of low "
@@ -226,12 +221,11 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
             )
 
         elif wing_config == 3.0:
-
             a2 = 14.86 * (
-                mtow ** 0.144
+                mtow**0.144
                 * ((fus_length - lav) / p_max) ** 0.778
                 * (fus_length - lav) ** 0.383
-                * npax_max ** 0.455
+                * npax_max**0.455
             )
 
         else:
@@ -240,20 +234,18 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
                 "configuration, taking high wing instead"
             )
             a2 = 14.86 * (
-                mtow ** 0.144
+                mtow**0.144
                 * ((fus_length - lav) / p_max) ** 0.778
                 * (fus_length - lav) ** 0.383
-                * npax_max ** 0.455
+                * npax_max**0.455
             )
 
         outputs["data:weight:airframe:fuselage:mass"] = a2
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         wing_config = inputs["data:geometry:wing_configuration"]
 
         if wing_config == 1.0:
-
             fus_length = inputs["data:geometry:fuselage:length"]
             lav = inputs["data:geometry:fuselage:front_length"]
             mtow = inputs["data:weight:aircraft:MTOW"]
@@ -261,20 +253,18 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
                 inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
             )  # addition of 2 pilots
 
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"
-            ] = 0.04682 * (0.692 * mtow ** -0.308 * npax_max ** 0.374 * (fus_length - lav) ** 0.590)
+            partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = (
+                0.04682 * (0.692 * mtow**-0.308 * npax_max**0.374 * (fus_length - lav) ** 0.590)
+            )
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
-            ] = 0.04682 * (mtow ** 0.692 * 0.374 * npax_max ** -0.626 * (fus_length - lav) ** 0.590)
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"
-            ] = 0.04682 * (mtow ** 0.692 * npax_max ** 0.374 * 0.590 * (fus_length - lav) ** -0.41)
+            ] = 0.04682 * (mtow**0.692 * 0.374 * npax_max**-0.626 * (fus_length - lav) ** 0.590)
+            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
+                0.04682 * (mtow**0.692 * npax_max**0.374 * 0.590 * (fus_length - lav) ** -0.41)
+            )
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"
-            ] = -(
-                0.04682 * (mtow ** 0.692 * npax_max ** 0.374 * 0.590 * (fus_length - lav) ** -0.41)
-            )
+            ] = -(0.04682 * (mtow**0.692 * npax_max**0.374 * 0.590 * (fus_length - lav) ** -0.41))
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"
             ] = 0.0
@@ -283,7 +273,6 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
             ] = 0.0
 
         else:
-
             fus_length = inputs["data:geometry:fuselage:length"]
             lav = inputs["data:geometry:fuselage:front_length"]
             mtow = inputs["data:weight:aircraft:MTOW"]
@@ -300,48 +289,45 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
 
             partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = 14.86 * (
                 0.144
-                * mtow ** -0.856
+                * mtow**-0.856
                 * ((fus_length - lav) / p_max) ** 0.778
                 * (fus_length - lav) ** 0.383
-                * npax_max ** 0.455
+                * npax_max**0.455
             )
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
             ] = 14.86 * (
-                mtow ** 0.144
+                mtow**0.144
                 * ((fus_length - lav) / p_max) ** 0.778
                 * (fus_length - lav) ** 0.383
                 * 0.455
-                * npax_max ** -0.545
+                * npax_max**-0.545
             )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"
-            ] = 14.86 * (
-                mtow ** 0.144
-                * p_max ** -0.778
-                * 1.161
-                * (fus_length - lav) ** 0.161
-                * npax_max ** 0.455
+            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
+                14.86
+                * (
+                    mtow**0.144
+                    * p_max**-0.778
+                    * 1.161
+                    * (fus_length - lav) ** 0.161
+                    * npax_max**0.455
+                )
             )
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"
             ] = -14.86 * (
-                mtow ** 0.144
-                * p_max ** -0.778
-                * 1.161
-                * (fus_length - lav) ** 0.161
-                * npax_max ** 0.455
+                mtow**0.144 * p_max**-0.778 * 1.161 * (fus_length - lav) ** 0.161 * npax_max**0.455
             )
             partials[
                 "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"
             ] = (
                 14.86
                 * (
-                    mtow ** 0.144
+                    mtow**0.144
                     * -0.778
-                    * p_max ** -1.778
+                    * p_max**-1.778
                     * (fus_length - lav) ** 1.161
-                    * npax_max ** 0.455
+                    * npax_max**0.455
                 )
                 * np.pi
                 / 2.0
@@ -351,11 +337,11 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
             ] = (
                 14.86
                 * (
-                    mtow ** 0.144
+                    mtow**0.144
                     * -0.778
-                    * p_max ** -1.778
+                    * p_max**-1.778
                     * (fus_length - lav) ** 1.161
-                    * npax_max ** 0.455
+                    * npax_max**0.455
                 )
                 * np.pi
                 / 2.0

@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import openmdao.api as om
 
 import fastoad.api as oad
@@ -28,7 +27,6 @@ class ComputePropellerGeometry(om.Group):
     """Propeller position with respect to the leading edge estimation."""
 
     def setup(self):
-
         self.add_subsystem(
             "propeller_position",
             oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_POSITION),

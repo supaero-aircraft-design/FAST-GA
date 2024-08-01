@@ -38,12 +38,12 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_CLIMB
-] = "fastga.submodel.performances.mission.climb.legacy"
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_CLIMB_SPEED
-] = "fastga.submodel.performances.mission.climb_speed.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_CLIMB] = (
+    "fastga.submodel.performances.mission.climb.legacy"
+)
+oad.RegisterSubmodel.active_models[SUBMODEL_CLIMB_SPEED] = (
+    "fastga.submodel.performances.mission.climb_speed.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_CLIMB, "fastga.submodel.performances.mission.climb.legacy")
@@ -89,7 +89,6 @@ class ComputeClimb(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # Delete previous .csv results
         if self.options["out_file"] != "":
             # noinspection PyBroadException
@@ -130,7 +129,6 @@ class ComputeClimb(DynamicEquilibrium):
         time_step = ((cruise_altitude - SAFETY_HEIGHT) / climb_rate_sl) / float(POINTS_NB_CLIMB)
 
         while altitude_t < cruise_altitude:
-
             flight_point = oad.FlightPoint(
                 altitude=altitude_t,
                 time=time_t,
@@ -155,7 +153,7 @@ class ComputeClimb(DynamicEquilibrium):
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * np.sin(flight_point.gamma)
-            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas**2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(
@@ -216,7 +214,6 @@ class ComputeClimb(DynamicEquilibrium):
 )
 class ComputeClimbSpeed(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         self.add_input("data:aerodynamics:aircraft:cruise:CD0", val=np.nan)
@@ -232,7 +229,6 @@ class ComputeClimbSpeed(om.ExplicitComponent):
         self.add_output("data:mission:sizing:main_route:climb:v_cas", units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         altitude_t = SAFETY_HEIGHT  # conversion to m
 
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]

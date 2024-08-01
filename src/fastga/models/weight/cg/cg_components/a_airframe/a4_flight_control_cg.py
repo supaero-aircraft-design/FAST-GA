@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -47,7 +46,6 @@ class ComputeFlightControlCG(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -57,7 +55,6 @@ class ComputeFlightControlCG(ExplicitComponent):
         outputs["data:weight:airframe:flight_controls:CG:x"] = x_cg_a4
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
             "data:weight:airframe:flight_controls:CG:x", "data:geometry:wing:MAC:at25percent:x"
         ] = 1

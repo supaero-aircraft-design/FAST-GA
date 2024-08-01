@@ -31,9 +31,9 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CRUISE = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_CRUISE
-] = "fastga.submodel.performances.mission.cruise.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_CRUISE] = (
+    "fastga.submodel.performances.mission.cruise.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_CRUISE, "fastga.submodel.performances.mission.cruise.legacy")
@@ -77,7 +77,6 @@ class ComputeCruise(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["out_file"] != "":
             # noinspection PyBroadException
             flight_point_df = None
@@ -121,7 +120,6 @@ class ComputeCruise(DynamicEquilibrium):
         self.flight_points = []
 
         while distance_t < cruise_distance:
-
             flight_point = oad.FlightPoint(
                 altitude=cruise_altitude,
                 time=time_t,
@@ -134,7 +132,7 @@ class ComputeCruise(DynamicEquilibrium):
             self.complete_flight_point(flight_point, v_tas=v_tas)
 
             # Calculate dynamic pressure
-            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas**2
 
             # Find equilibrium
             previous_step = self.dynamic_equilibrium(

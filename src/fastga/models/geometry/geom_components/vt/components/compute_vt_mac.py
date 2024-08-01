@@ -1,5 +1,5 @@
 """
-    Estimation of vertical tail mean aerodynamic chords
+Estimation of vertical tail mean aerodynamic chords
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -62,7 +62,7 @@ class ComputeVTMacFD(ExplicitComponent):
         tmp = root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25
 
         mac_vt = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
             / (tip_chord + root_chord)
             * 2.0
             / 3.0
@@ -98,7 +98,7 @@ class ComputeVTMacFL(ExplicitComponent):
         b_v = inputs["data:geometry:vertical_tail:span"]
 
         mac_vt = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
             / (tip_chord + root_chord)
             * 2.0
             / 3.0

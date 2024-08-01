@@ -34,11 +34,9 @@ class ComputeClDeltaAileron(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
 
@@ -66,7 +64,6 @@ class ComputeClDeltaAileron(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_span = inputs["data:geometry:wing:span"]
         wing_area = inputs["data:geometry:wing:area"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
@@ -88,17 +85,17 @@ class ComputeClDeltaAileron(FigureDigitization):
         # Aileron are most mostly going to be used around delta_a = 0 degree, which is the reason
         # why the effectiveness is going to be computed around this deflection
         alpha_aileron = self.k_prime_single_slotted(0.0, float(aileron_chord_ratio))
-        lift_increase_aileron = 2 * np.pi / np.sqrt(1 - mach ** 2) * alpha_aileron
+        lift_increase_aileron = 2 * np.pi / np.sqrt(1 - mach**2) * alpha_aileron
 
         cl_delta_a = (
             lift_increase_aileron
             * l2_wing
             / (wing_area * wing_span)
             * (
-                (aileron_outer_span ** 2.0 - aileron_inner_span ** 2.0)
+                (aileron_outer_span**2.0 - aileron_inner_span**2.0)
                 + (4.0 * (wing_taper_ratio - 1.0))
                 / (3.0 * wing_span)
-                * (aileron_outer_span ** 3.0 - aileron_inner_span ** 3.0)
+                * (aileron_outer_span**3.0 - aileron_inner_span**3.0)
             )
         ) * tip_effect_factor
 

@@ -34,11 +34,9 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", units="m**2", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:area", units="m**2", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=np.nan)
@@ -82,7 +80,6 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
             )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         volume_coeff_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
 
@@ -106,7 +103,6 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         eta_h = inputs["data:aerodynamics:horizontal_tail:efficiency"]
         volume_coeff_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
 
@@ -119,63 +115,43 @@ class ComputeCLPitchVelocityHorizontalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q",
                 "data:aerodynamics:horizontal_tail:efficiency",
-            ] = (
-                2.0 * cl_alpha_ht * volume_coeff_ht * wing_area / ht_area
-            )
+            ] = 2.0 * cl_alpha_ht * volume_coeff_ht * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q",
                 "data:geometry:horizontal_tail:volume_coefficient",
-            ] = (
-                2.0 * cl_alpha_ht * eta_h * wing_area / ht_area
-            )
+            ] = 2.0 * cl_alpha_ht * eta_h * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q",
                 "data:aerodynamics:horizontal_tail:low_speed:CL_alpha",
-            ] = (
-                2.0 * volume_coeff_ht * eta_h * wing_area / ht_area
-            )
+            ] = 2.0 * volume_coeff_ht * eta_h * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q",
                 "data:geometry:wing:area",
-            ] = (
-                2.0 * volume_coeff_ht * eta_h * cl_alpha_ht / ht_area
-            )
+            ] = 2.0 * volume_coeff_ht * eta_h * cl_alpha_ht / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q",
                 "data:geometry:horizontal_tail:area",
-            ] = (
-                -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area ** 2.0
-            )
+            ] = -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area**2.0
         else:
             cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
 
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:CL_q",
                 "data:aerodynamics:horizontal_tail:efficiency",
-            ] = (
-                2.0 * cl_alpha_ht * volume_coeff_ht * wing_area / ht_area
-            )
+            ] = 2.0 * cl_alpha_ht * volume_coeff_ht * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:CL_q",
                 "data:geometry:horizontal_tail:volume_coefficient",
-            ] = (
-                2.0 * cl_alpha_ht * eta_h * wing_area / ht_area
-            )
+            ] = 2.0 * cl_alpha_ht * eta_h * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:CL_q",
                 "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
-            ] = (
-                2.0 * volume_coeff_ht * eta_h * wing_area / ht_area
-            )
+            ] = 2.0 * volume_coeff_ht * eta_h * wing_area / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:CL_q",
                 "data:geometry:wing:area",
-            ] = (
-                2.0 * volume_coeff_ht * eta_h * cl_alpha_ht / ht_area
-            )
+            ] = 2.0 * volume_coeff_ht * eta_h * cl_alpha_ht / ht_area
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:CL_q",
                 "data:geometry:horizontal_tail:area",
-            ] = (
-                -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area ** 2.0
-            )
+            ] = -2.0 * volume_coeff_ht * eta_h * cl_alpha_ht * wing_area / ht_area**2.0

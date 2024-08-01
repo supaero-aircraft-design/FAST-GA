@@ -1,5 +1,5 @@
 """
-    Estimation of maximum center of gravity ratio.
+Estimation of maximum center of gravity ratio.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -53,7 +53,6 @@ class ComputeMaxMinCGRatio(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ground_conditions_aft = inputs["data:weight:aircraft:CG:ground_condition:max:MAC_position"]
         ground_conditions_fwd = inputs["data:weight:aircraft:CG:ground_condition:min:MAC_position"]
 

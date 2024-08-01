@@ -21,9 +21,9 @@ from stdatm import Atmosphere
 
 from fastga.models.performances.mission_vector.constants import SUBMODEL_ENERGY_CONSUMPTION
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_ENERGY_CONSUMPTION
-] = "fastga.submodel.performances.energy_consumption.ICE"
+oad.RegisterSubmodel.active_models[SUBMODEL_ENERGY_CONSUMPTION] = (
+    "fastga.submodel.performances.energy_consumption.ICE"
+)
 
 
 @oad.RegisterSubmodel(
@@ -37,7 +37,6 @@ class FuelConsumed(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
@@ -96,7 +95,6 @@ class FuelConsumed(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         time_step = inputs["time_step_econ"]

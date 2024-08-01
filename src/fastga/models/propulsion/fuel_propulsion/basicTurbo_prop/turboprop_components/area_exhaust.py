@@ -17,11 +17,9 @@ import openmdao.api as om
 
 class A81(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
@@ -54,7 +52,6 @@ class A81(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         r_g = 287.0  # Perfect gas constant
 
         airflow_design = inputs["air_mass_flow"]
@@ -76,7 +73,6 @@ class A81(om.ExplicitComponent):
         outputs["data:propulsion:turboprop:section:81"] = a_81
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         r_g = 287.0  # Perfect gas constant
 
         airflow_design = inputs["air_mass_flow"]
@@ -97,7 +93,7 @@ class A81(om.ExplicitComponent):
             airflow_design
             * (1 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
             * np.sqrt(total_temperature_5 * r_g)
-            / total_pressure_5 ** 2.0
+            / total_pressure_5**2.0
         )
         partials["data:propulsion:turboprop:section:81", "total_temperature_5"] = (
             0.5
@@ -119,11 +115,9 @@ class A81(om.ExplicitComponent):
 
 class A82(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("gamma_5", shape=n, val=np.nan)
@@ -139,20 +133,18 @@ class A82(om.ExplicitComponent):
         self.declare_partials(of="data:propulsion:turboprop:section:82", wrt="gamma_5", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         gamma_5 = inputs["gamma_5"]
         exhaust_mach = inputs["settings:propulsion:turboprop:design_point:mach_exhaust"]
 
         a_82 = (
             np.sqrt(gamma_5)
             * exhaust_mach
-            * (1 + (gamma_5 - 1) / 2 * exhaust_mach ** 2) ** ((gamma_5 + 1) / (2 * (1 - gamma_5)))
+            * (1 + (gamma_5 - 1) / 2 * exhaust_mach**2) ** ((gamma_5 + 1) / (2 * (1 - gamma_5)))
         )
 
         outputs["data:propulsion:turboprop:section:82"] = a_82
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         gamma_5 = inputs["gamma_5"]
         exhaust_mach = inputs["settings:propulsion:turboprop:design_point:mach_exhaust"]
 
@@ -162,19 +154,16 @@ class A82(om.ExplicitComponent):
         ] = (
             -(2.0 ** (1.0 + (1.0 + gamma_5) / (2.0 * (-1.0 + gamma_5))))
             * np.sqrt(gamma_5)
-            * (-1.0 + exhaust_mach ** 2)
-            * (2.0 + (-1.0 + gamma_5) * exhaust_mach ** 2.0)
-            ** (-3.0 / 2.0 - 1.0 / (-1.0 + gamma_5))
+            * (-1.0 + exhaust_mach**2)
+            * (2.0 + (-1.0 + gamma_5) * exhaust_mach**2.0) ** (-3.0 / 2.0 - 1.0 / (-1.0 + gamma_5))
         )
 
 
 class A8(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         self.add_input("data:propulsion:turboprop:section:81", val=np.nan, units="m**2")
         self.add_input("data:propulsion:turboprop:section:82", val=np.nan, units="m**2")
 
@@ -183,14 +172,12 @@ class A8(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:propulsion:turboprop:section:8"] = (
             inputs["data:propulsion:turboprop:section:81"]
             / inputs["data:propulsion:turboprop:section:82"]
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:propulsion:turboprop:section:8", "data:propulsion:turboprop:section:81"] = (
             1.0 / inputs["data:propulsion:turboprop:section:82"]
         )

@@ -167,7 +167,6 @@ class ComputePayloadRange(om.ExplicitComponent):
 
     @staticmethod
     def fuel_function(range_parameter, fuel_target, mass, inputs, prop_id):
-
         mission_component = AutoUnitsDefaultGroup()
         mission_component.add_subsystem(
             "system",

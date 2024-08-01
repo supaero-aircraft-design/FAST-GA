@@ -28,13 +28,11 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:taxi_out:speed", np.nan, units="m/s")
@@ -74,7 +72,6 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         self.add_output("engine_setting_econ", shape=number_of_points + 2)
 
     def setup_partials(self):
-
         self.declare_partials(
             of="thrust_econ",
             wrt=[
@@ -154,7 +151,6 @@ class PrepareForEnergyConsumption(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         number_of_points = self.options["number_of_points"]
 
         d_thrust_econ_d_thrust = np.zeros((number_of_points + 2, number_of_points))

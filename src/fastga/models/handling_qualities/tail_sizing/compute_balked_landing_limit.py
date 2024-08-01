@@ -72,7 +72,6 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
 
     @staticmethod
     def found_cl_repartition(inputs, load_factor, mass, dynamic_pressure, x_cg):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -150,7 +149,6 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
 
     @staticmethod
     def _stall_angle_reduction(inputs, elevator_deflection):
-
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
         cl_alpha_isolated_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
         cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"]
@@ -210,7 +208,6 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         self.add_output("data:handling_qualities:balked_landing_limit:MAC_position", val=np.nan)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mlw = inputs["data:weight:aircraft:MLW"]
 
         cl_max_landing = inputs["data:aerodynamics:aircraft:landing:CL_max"]
@@ -245,7 +242,6 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         outputs["data:handling_qualities:balked_landing_limit:MAC_position"] = x_cg_ratio
 
     def delta_climb_rate(self, x_cg, v_ref, mass, propulsion_model, inputs):
-
         coeff_k_wing = inputs["data:aerodynamics:wing:low_speed:induced_drag_coefficient"]
         coeff_k_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"]
         cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
@@ -258,7 +254,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         rho = Atmosphere(0.0).density
         sos = Atmosphere(0.0).speed_of_sound
 
-        dynamic_pressure = 1.0 / 2.0 * rho * v_ref ** 2.0
+        dynamic_pressure = 1.0 / 2.0 * rho * v_ref**2.0
 
         alpha_ac, delta_e, equilibrium_found = self.found_cl_repartition(
             inputs, 1.0, mass, dynamic_pressure, x_cg

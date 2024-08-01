@@ -257,7 +257,6 @@ def test_compute_max_power():
 
 
 def test_compare_with_direct_computation():
-
     cruise_altitude_propeller = 6096.0
     cruise_speed = 125.524
 

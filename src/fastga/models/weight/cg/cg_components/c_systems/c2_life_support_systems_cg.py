@@ -28,7 +28,6 @@ class ComputeLifeSupportCG(ExplicitComponent):
     """Life support systems center of gravity estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:life_support:air_conditioning:CG:x", units="m")
@@ -36,7 +35,6 @@ class ComputeLifeSupportCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
 
         # Air conditioning system gravity center, this formula was chosen based on the fact that

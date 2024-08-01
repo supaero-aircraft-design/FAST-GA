@@ -4,11 +4,9 @@ import openmdao.api as om
 
 class Station225Pressure(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_2", units="K", shape=n, val=np.nan)
@@ -26,7 +24,6 @@ class Station225Pressure(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_2 = inputs["total_temperature_2"]
         total_temperature_25 = inputs["total_temperature_25"]
         total_pressure_2 = inputs["total_pressure_2"]
@@ -41,7 +38,6 @@ class Station225Pressure(om.ExplicitComponent):
         outputs["total_pressure_25"] = total_pressure_25
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         total_temperature_2 = inputs["total_temperature_2"]
         total_temperature_25 = inputs["total_temperature_25"]
         total_pressure_2 = inputs["total_pressure_2"]
@@ -65,7 +61,7 @@ class Station225Pressure(om.ExplicitComponent):
             * (total_temperature_25 / total_temperature_2)
             ** (gamma_2 * eta_225 / (gamma_2 - 1.0) - 1.0)
             * total_temperature_25
-            / total_temperature_2 ** 2.0
+            / total_temperature_2**2.0
         )
         partials["total_pressure_25", "eta_225"] = (
             total_pressure_2
@@ -85,11 +81,9 @@ class Station225Pressure(om.ExplicitComponent):
 
 class Station225DesignPoint(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_2", units="K", shape=n, val=np.nan)
@@ -108,7 +102,6 @@ class Station225DesignPoint(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_2 = inputs["total_temperature_2"]
         total_pressure_2 = inputs["total_pressure_2"]
         opr_1 = inputs["opr_1"]
@@ -121,7 +114,6 @@ class Station225DesignPoint(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         total_temperature_2 = inputs["total_temperature_2"]
         total_pressure_2 = inputs["total_pressure_2"]
         opr_1 = inputs["opr_1"]
@@ -145,7 +137,7 @@ class Station225DesignPoint(om.ExplicitComponent):
             total_temperature_2
             * opr_1 ** ((gamma_2 - 1) / gamma_2 / eta_225)
             * np.log(opr_1)
-            / gamma_2 ** 2.0
+            / gamma_2**2.0
             / eta_225
         )
         partials["total_temperature_25", "eta_225"] = (
@@ -154,5 +146,5 @@ class Station225DesignPoint(om.ExplicitComponent):
             * np.log(opr_1)
             * (gamma_2 - 1)
             / gamma_2
-            / eta_225 ** 2.0
+            / eta_225**2.0
         )

@@ -325,7 +325,6 @@ def test_loop_cruise_distance():
 
 
 def test_mission_vector():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(MissionVector(propulsion_id=ENGINE_WRAPPER)),

@@ -32,7 +32,6 @@ class UpdateWingArea(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("wing_area:geometric", val=np.nan, units="m**2")
         self.add_input("wing_area:aerodynamic", val=np.nan, units="m**2")
 
@@ -48,7 +47,6 @@ class UpdateWingArea(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area_mission = inputs["wing_area:geometric"]
         wing_area_approach = inputs["wing_area:aerodynamic"]
 
@@ -60,7 +58,6 @@ class UpdateWingArea(om.ExplicitComponent):
         outputs["data:geometry:wing:area"] = max(wing_area_mission, wing_area_approach)
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         wing_area_mission = inputs["wing_area:geometric"]
         wing_area_approach = inputs["wing_area:aerodynamic"]
 

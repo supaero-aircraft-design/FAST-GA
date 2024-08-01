@@ -1,4 +1,4 @@
-"""FAST - Copyright (c) 2016 ONERA ISAE. """
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -126,7 +126,6 @@ class GeometryFixedTailDistance(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle_dimension",

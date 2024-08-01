@@ -27,9 +27,9 @@ from ..constants import SUBMODEL_TAXI
 
 _LOGGER = logging.getLogger(__name__)
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_TAXI
-] = "fastga.submodel.performances.mission.taxi.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_TAXI] = (
+    "fastga.submodel.performances.mission.taxi.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_TAXI, "fastga.submodel.performances.mission.taxi.legacy")
@@ -62,7 +62,6 @@ class ComputeTaxi(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["taxi_out"]:
             _LOGGER.info("Entering mission computation")
 

@@ -88,7 +88,6 @@ XML_FILE = "beechcraft_76.xml"
 
 
 def test_compute_payload():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePayload()), __file__, XML_FILE)
 
@@ -807,7 +806,6 @@ def test_compute_primary_mass():
 
 
 def test_compute_secondary_mass():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=136.662, units="kg")

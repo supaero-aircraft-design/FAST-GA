@@ -1,5 +1,5 @@
 """
-    New estimation method of center of gravity for all load cases.
+New estimation method of center of gravity for all load cases.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -81,11 +81,8 @@ class ComputeGroundCGCase(ExplicitComponent):
         m_lug_array = np.array([0.0, luggage_mass_max])
 
         for m_lug in m_lug_array:
-
             for m_fuel in m_fuel_array:
-
                 for m_pilot in m_pilot_array:
-
                     for m_pax in m_pax_array:
                         mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
                         cg = (
@@ -180,13 +177,9 @@ class ComputeFlightCGCase(ExplicitComponent):
         cg_list = []
 
         for m_pilot in m_pilot_array:
-
             for m_fuel in m_fuel_array:
-
                 for m_lug in m_lug_array:
-
                     for n_pax in n_pax_array:
-
                         n_row = np.ceil(n_pax / count_by_row)
 
                         x_cg_pax_fwd = 0.0
@@ -209,11 +202,9 @@ class ComputeFlightCGCase(ExplicitComponent):
                         )
 
                         for cg_pax in cg_pax_array:
-
                             m_pax_array = np.array([n_pax * 80.0, n_pax * 90.0])
 
                             for m_pax in m_pax_array:
-
                                 mass = m_pax + m_pilot + m_fuel + m_lug + m_empty
                                 cg = (
                                     m_empty * x_cg_plane_aft
@@ -234,7 +225,6 @@ class ComputeFlightCGCase(ExplicitComponent):
         outputs["data:weight:aircraft:CG:flight_condition:min:MAC_position"] = cg_fwd_ratio_pl
 
     def min_in_flight_fuel(self, inputs):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         # noinspection PyTypeChecker
@@ -257,14 +247,12 @@ class ComputeFlightCGCase(ExplicitComponent):
         return m_fuel
 
     def max_speed(self, inputs, altitude, mass):
-
         # noinspection PyTypeChecker
         roots = optimize.fsolve(self.delta_axial_load, 300.0, args=(inputs, altitude, mass))[0]
 
         return np.max(roots[roots > 0.0])
 
     def delta_axial_load(self, air_speed, inputs, altitude, mass):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
         wing_area = inputs["data:geometry:wing:area"]
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]
@@ -282,8 +270,8 @@ class ComputeFlightCGCase(ExplicitComponent):
         thrust = float(flight_point.thrust)
 
         # Get the necessary thrust to overcome
-        cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed ** 2.0)
-        cd = cd0 + coef_k * cl ** 2.0
-        drag = 0.5 * atm.density * wing_area * cd * air_speed ** 2.0
+        cl = (mass * g) / (0.5 * atm.density * wing_area * air_speed**2.0)
+        cd = cd0 + coef_k * cl**2.0
+        drag = 0.5 * atm.density * wing_area * cd * air_speed**2.0
 
         return thrust - drag

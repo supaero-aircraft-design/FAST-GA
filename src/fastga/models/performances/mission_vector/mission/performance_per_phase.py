@@ -28,13 +28,11 @@ class PerformancePerPhase(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input(
@@ -86,7 +84,6 @@ class PerformancePerPhase(om.ExplicitComponent):
         self.add_output("thrust_rate_t", shape=number_of_points)
 
     def setup_partials(self):
-
         self.declare_partials(
             of="data:mission:sizing:main_route:climb:fuel",
             wrt="fuel_consumed_t_econ",
@@ -162,7 +159,6 @@ class PerformancePerPhase(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         time = inputs["time"]
         position = inputs["position"]
         # This one is two element longer than the other array since it includes the fuel consumed
@@ -216,71 +212,70 @@ class PerformancePerPhase(om.ExplicitComponent):
         outputs["thrust_rate_t"] = thrust_rate_t_econ[:-2]
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         number_of_points = self.options["number_of_points"]
 
-        partials[
-            "data:mission:sizing:main_route:climb:fuel", "fuel_consumed_t_econ"
-        ] = np.concatenate(
-            (np.full(POINTS_NB_CLIMB, 1), np.zeros(POINTS_NB_CRUISE + POINTS_NB_DESCENT + 2))
-        )
-        partials[
-            "data:mission:sizing:main_route:climb:energy", "non_consumable_energy_t_econ"
-        ] = np.concatenate(
-            (np.full(POINTS_NB_CLIMB, 1), np.zeros(POINTS_NB_CRUISE + POINTS_NB_DESCENT + 2))
-        )
-
-        partials[
-            "data:mission:sizing:main_route:cruise:fuel", "fuel_consumed_t_econ"
-        ] = np.concatenate(
-            (
-                np.zeros(POINTS_NB_CLIMB),
-                np.full(POINTS_NB_CRUISE, 1.0),
-                np.zeros(POINTS_NB_DESCENT + 2),
+        partials["data:mission:sizing:main_route:climb:fuel", "fuel_consumed_t_econ"] = (
+            np.concatenate(
+                (np.full(POINTS_NB_CLIMB, 1), np.zeros(POINTS_NB_CRUISE + POINTS_NB_DESCENT + 2))
             )
         )
-        partials[
-            "data:mission:sizing:main_route:cruise:energy", "non_consumable_energy_t_econ"
-        ] = np.concatenate(
-            (
-                np.zeros(POINTS_NB_CLIMB),
-                np.full(POINTS_NB_CRUISE, 1.0),
-                np.zeros(POINTS_NB_DESCENT + 2),
+        partials["data:mission:sizing:main_route:climb:energy", "non_consumable_energy_t_econ"] = (
+            np.concatenate(
+                (np.full(POINTS_NB_CLIMB, 1), np.zeros(POINTS_NB_CRUISE + POINTS_NB_DESCENT + 2))
             )
         )
 
-        partials[
-            "data:mission:sizing:main_route:cruise:fuel", "fuel_consumed_t_econ"
-        ] = np.concatenate(
-            (
-                np.zeros(POINTS_NB_CLIMB + POINTS_NB_CRUISE),
-                np.full(POINTS_NB_DESCENT, 1.0),
-                np.zeros(2),
+        partials["data:mission:sizing:main_route:cruise:fuel", "fuel_consumed_t_econ"] = (
+            np.concatenate(
+                (
+                    np.zeros(POINTS_NB_CLIMB),
+                    np.full(POINTS_NB_CRUISE, 1.0),
+                    np.zeros(POINTS_NB_DESCENT + 2),
+                )
             )
         )
-        partials[
-            "data:mission:sizing:main_route:cruise:energy", "non_consumable_energy_t_econ"
-        ] = np.concatenate(
-            (
-                np.zeros(POINTS_NB_CLIMB + POINTS_NB_CRUISE),
-                np.full(POINTS_NB_DESCENT, 1.0),
-                np.zeros(2),
+        partials["data:mission:sizing:main_route:cruise:energy", "non_consumable_energy_t_econ"] = (
+            np.concatenate(
+                (
+                    np.zeros(POINTS_NB_CLIMB),
+                    np.full(POINTS_NB_CRUISE, 1.0),
+                    np.zeros(POINTS_NB_DESCENT + 2),
+                )
+            )
+        )
+
+        partials["data:mission:sizing:main_route:cruise:fuel", "fuel_consumed_t_econ"] = (
+            np.concatenate(
+                (
+                    np.zeros(POINTS_NB_CLIMB + POINTS_NB_CRUISE),
+                    np.full(POINTS_NB_DESCENT, 1.0),
+                    np.zeros(2),
+                )
+            )
+        )
+        partials["data:mission:sizing:main_route:cruise:energy", "non_consumable_energy_t_econ"] = (
+            np.concatenate(
+                (
+                    np.zeros(POINTS_NB_CLIMB + POINTS_NB_CRUISE),
+                    np.full(POINTS_NB_DESCENT, 1.0),
+                    np.zeros(2),
+                )
             )
         )
 
         d_taxi_out_d_fuel = np.zeros(number_of_points + 2)
         d_taxi_out_d_fuel[-2] = 1
         partials["data:mission:sizing:taxi_out:fuel", "fuel_consumed_t_econ"] = d_taxi_out_d_fuel
-        partials[
-            "data:mission:sizing:taxi_out:energy", "non_consumable_energy_t_econ"
-        ] = d_taxi_out_d_fuel
+        partials["data:mission:sizing:taxi_out:energy", "non_consumable_energy_t_econ"] = (
+            d_taxi_out_d_fuel
+        )
 
         d_taxi_in_d_fuel = np.zeros(number_of_points + 2)
         d_taxi_in_d_fuel[-1] = 1
         partials["data:mission:sizing:taxi_in:fuel", "fuel_consumed_t_econ"] = d_taxi_in_d_fuel
-        partials[
-            "data:mission:sizing:taxi_in:energy", "non_consumable_energy_t_econ"
-        ] = d_taxi_in_d_fuel
+        partials["data:mission:sizing:taxi_in:energy", "non_consumable_energy_t_econ"] = (
+            d_taxi_in_d_fuel
+        )
 
         d_fc_d_fc_t = np.zeros((number_of_points, number_of_points + 2))
         d_fc_d_fc_t[:, :number_of_points] = np.eye(number_of_points)

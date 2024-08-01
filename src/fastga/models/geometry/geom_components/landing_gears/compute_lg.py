@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 import openmdao.api as om
 
@@ -32,7 +31,6 @@ class ComputeLGGeometry(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
@@ -45,7 +43,6 @@ class ComputeLGGeometry(om.ExplicitComponent):
         self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         prop_dia = inputs["data:geometry:propeller:diameter"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         lg_height = 0.41 * prop_dia
@@ -55,7 +52,6 @@ class ComputeLGGeometry(om.ExplicitComponent):
         outputs["data:geometry:landing_gear:y"] = y_lg
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
         partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2
         partials["data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width"] = 0.5

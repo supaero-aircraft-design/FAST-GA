@@ -53,7 +53,6 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
@@ -87,7 +86,6 @@ class UpdateWingAreaGeomAdvanced(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mfw_mission = inputs["data:mission:sizing:fuel"]
 
         # TODO: Why is it hardcoded ?
@@ -155,7 +153,6 @@ class ConstraintWingAreaGeomAdvanced(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mfw_mission = inputs["data:mission:sizing:fuel"]
         wing_area = inputs["data:geometry:wing:area"]
 

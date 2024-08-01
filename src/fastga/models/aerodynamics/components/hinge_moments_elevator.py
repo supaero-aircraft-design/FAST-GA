@@ -84,13 +84,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
             return (
                 tail_thickness_ratio
                 / 0.2
-                * (
-                    0.2969 * x ** 0.5
-                    - 0.126 * x
-                    - 0.3516 * x ** 2.0
-                    + 0.2843 * x ** 3.0
-                    - 0.105 * x ** 4.0
-                )
+                * (0.2969 * x**0.5 - 0.126 * x - 0.3516 * x**2.0 + 0.2843 * x**3.0 - 0.105 * x**4.0)
             )
 
         y_90 = y(0.90)
@@ -152,7 +146,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         sos_cruise = Atmosphere(cruise_alt, altitude_in_feet=False).speed_of_sound
         mach = v_cruise / sos_cruise
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
 
         ch_alpha_fin = ch_alpha_balance / beta
 
@@ -236,7 +230,6 @@ class Compute3DHingeMomentsTail(FigureDigitization):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"] * np.pi / 180.0

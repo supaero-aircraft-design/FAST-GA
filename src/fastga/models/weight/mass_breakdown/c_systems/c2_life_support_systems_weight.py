@@ -23,9 +23,9 @@ from stdatm import Atmosphere
 
 from .constants import SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
-] = "fastga.submodel.weight.mass.system.life_support_system.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS] = (
+    "fastga.submodel.weight.mass.system.life_support_system.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -48,7 +48,6 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
@@ -88,7 +87,6 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         m_iae = inputs["data:weight:systems:avionics:mass"]
@@ -104,14 +102,14 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         c21 = 0.0
 
         c22 = (
-            0.265 * mtow ** 0.52 * n_occ ** 0.68 * m_iae ** 0.17 * limit_mach ** 0.08
+            0.265 * mtow**0.52 * n_occ**0.68 * m_iae**0.17 * limit_mach**0.08
         )  # mass formula in lb
 
         c23 = 0.0
         c24 = 0.0
         c25 = 0.0
 
-        c26 = 7.0 * n_occ ** 0.702
+        c26 = 7.0 * n_occ**0.702
 
         c27 = 0.0
 
@@ -124,7 +122,6 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         outputs["data:weight:systems:life_support:security_kits:mass"] = c27
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         m_iae = inputs["data:weight:systems:avionics:mass"]
@@ -137,32 +134,26 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
 
         partials[
             "data:weight:systems:life_support:air_conditioning:mass", "data:weight:aircraft:MTOW"
-        ] = (0.52 * 0.265 * mtow ** -0.48 * n_occ ** 0.68 * m_iae ** 0.17 * limit_mach ** 0.08)
+        ] = 0.52 * 0.265 * mtow**-0.48 * n_occ**0.68 * m_iae**0.17 * limit_mach**0.08
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:geometry:cabin:seats:passenger:NPAX_max",
-        ] = (
-            0.68 * 0.265 * mtow ** 0.52 * n_occ ** -0.32 * m_iae ** 0.17 * limit_mach ** 0.08
-        )
+        ] = 0.68 * 0.265 * mtow**0.52 * n_occ**-0.32 * m_iae**0.17 * limit_mach**0.08
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:weight:systems:avionics:mass",
-        ] = (
-            0.17 * 0.265 * mtow ** 0.52 * n_occ ** 0.68 * m_iae ** -0.83 * limit_mach ** 0.08
-        )
+        ] = 0.17 * 0.265 * mtow**0.52 * n_occ**0.68 * m_iae**-0.83 * limit_mach**0.08
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
         ] = (
-            0.08 * 0.265 * mtow ** 0.52 * n_occ ** 0.68 * m_iae ** 0.17 * limit_mach ** -0.92
+            0.08 * 0.265 * mtow**0.52 * n_occ**0.68 * m_iae**0.17 * limit_mach**-0.92
         ) / speed_of_sound
 
         partials[
             "data:weight:systems:life_support:fixed_oxygen:mass",
             "data:geometry:cabin:seats:passenger:NPAX_max",
-        ] = (
-            7.0 * 0.702 * n_occ ** -0.298
-        )
+        ] = 7.0 * 0.702 * n_occ**-0.298
 
 
 @oad.RegisterSubmodel(
@@ -183,7 +174,6 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="m/s")
@@ -245,7 +235,6 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         m_iae = inputs["data:weight:systems:avionics:mass"]
         limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -270,13 +259,13 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         limit_mach = limit_speed / atm.speed_of_sound  # converted to mach
 
         c22 = (
-            3.2 * (fus_planform * fus_height) ** 0.6 + 9 * n_occ ** 0.83
+            3.2 * (fus_planform * fus_height) ** 0.6 + 9 * n_occ**0.83
         ) * limit_mach + 0.075 * m_iae
         # mass formula in lb
 
         c23 = span / np.cos(sweep_25) + 3.8 * nac_diameter * engine_number + 1.5 * fus_width
 
-        c26 = 7.0 * n_occ ** 0.702
+        c26 = 7.0 * n_occ**0.702
 
         outputs["data:weight:systems:life_support:insulation:mass"] = 0.0
         outputs["data:weight:systems:life_support:air_conditioning:mass"] = c22
@@ -287,7 +276,6 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         outputs["data:weight:systems:life_support:security_kits:mass"] = 0.0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         fus_width = inputs["data:geometry:fuselage:maximum_height"]
         fus_height = inputs["data:geometry:fuselage:maximum_width"]
         fus_length = inputs["data:geometry:fuselage:length"]
@@ -307,9 +295,7 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:geometry:cabin:seats:passenger:NPAX_max",
-        ] = (
-            limit_mach * 9 * 0.83 * n_occ ** -0.17
-        )
+        ] = limit_mach * 9 * 0.83 * n_occ**-0.17
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:weight:systems:avionics:mass",
@@ -317,25 +303,19 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
-        ] = (3.2 * (fus_planform * fus_height) ** 0.6 + 9 * n_occ ** 0.83) / speed_of_sound
+        ] = (3.2 * (fus_planform * fus_height) ** 0.6 + 9 * n_occ**0.83) / speed_of_sound
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:geometry:fuselage:maximum_height",
-        ] = (
-            3.2 * 0.6 * fus_planform ** 0.6 * fus_height ** -0.4 * limit_mach
-        )
+        ] = 3.2 * 0.6 * fus_planform**0.6 * fus_height**-0.4 * limit_mach
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:geometry:fuselage:maximum_width",
-        ] = (
-            3.2 * 0.6 * (fus_height * fus_length) ** 0.6 * fus_width ** -0.4 * limit_mach
-        )
+        ] = 3.2 * 0.6 * (fus_height * fus_length) ** 0.6 * fus_width**-0.4 * limit_mach
         partials[
             "data:weight:systems:life_support:air_conditioning:mass",
             "data:geometry:fuselage:length",
-        ] = (
-            3.2 * 0.6 * (fus_height * fus_width) ** 0.6 * fus_length ** -0.4 * limit_mach
-        )
+        ] = 3.2 * 0.6 * (fus_height * fus_width) ** 0.6 * fus_length**-0.4 * limit_mach
 
         span = inputs["data:geometry:wing:span"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -350,27 +330,19 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:wing:sweep_25",
-        ] = (
-            span * np.sin(sweep_25) / np.cos(sweep_25) ** 2.0
-        )
+        ] = span * np.sin(sweep_25) / np.cos(sweep_25) ** 2.0
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:propulsion:nacelle:height",
-        ] = (
-            3.8 * engine_number / 2.0
-        )
+        ] = 3.8 * engine_number / 2.0
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:propulsion:nacelle:width",
-        ] = (
-            3.8 * engine_number / 2.0
-        )
+        ] = 3.8 * engine_number / 2.0
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:propulsion:engine:count",
-        ] = (
-            3.8 * (nac_height + nac_width) / 2.0
-        )
+        ] = 3.8 * (nac_height + nac_width) / 2.0
         partials[
             "data:weight:systems:life_support:de_icing:mass",
             "data:geometry:fuselage:maximum_width",
@@ -379,6 +351,4 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         partials[
             "data:weight:systems:life_support:fixed_oxygen:mass",
             "data:geometry:cabin:seats:passenger:NPAX_max",
-        ] = (
-            7.0 * 0.702 * n_occ ** -0.298
-        )
+        ] = 7.0 * 0.702 * n_occ**-0.298

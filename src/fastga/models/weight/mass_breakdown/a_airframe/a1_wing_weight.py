@@ -18,9 +18,9 @@ import openmdao.api as om
 import fastoad.api as oad
 from .constants import SUBMODEL_WING_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_WING_MASS
-] = "fastga.submodel.weight.mass.airframe.wing.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_WING_MASS] = (
+    "fastga.submodel.weight.mass.airframe.wing.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.legacy")
@@ -33,7 +33,6 @@ class ComputeWingWeight(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
@@ -49,7 +48,6 @@ class ComputeWingWeight(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         wing_area = inputs["data:geometry:wing:area"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -62,7 +60,7 @@ class ComputeWingWeight(om.ExplicitComponent):
         a1 = (
             96.948
             * (
-                (mtow * sizing_factor_ultimate / 10.0 ** 5.0) ** 0.65
+                (mtow * sizing_factor_ultimate / 10.0**5.0) ** 0.65
                 * (aspect_ratio / (np.cos(sweep_25) ** 2.0)) ** 0.57
                 * (wing_area / 100.0) ** 0.61
                 * ((1.0 + taper_ratio) / (2.0 * thickness_ratio)) ** 0.36
