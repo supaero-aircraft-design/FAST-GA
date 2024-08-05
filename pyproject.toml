@@ -48,6 +48,7 @@ python = "^3.8, <3.12"
 fast-oad-core = "^1.7.3"
 stdatm = ">=0.2.0"
 pyparsing = "*"
+jupyterlab = "^3.3.0"
 
 [tool.poetry.extras]
 jupyterlab = ["jupyterlab"]
