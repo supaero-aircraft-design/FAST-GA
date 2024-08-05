@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .b1_2_oil_weight import ComputeOilWeight
 from .b1_engine_weight import ComputeEngineWeight, ComputeEngineWeightRaymer
 from .b2_fuel_lines_weight import ComputeFuelLinesWeight, ComputeFuelLinesWeightFLOPS

@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_cy_beta_fuselage import ComputeCyBetaFuselage
 from .compute_cn_beta_fuselage import ComputeCnBetaFuselage
 from .compute_cm_alpha_fus import ComputeCmAlphaFuselage
