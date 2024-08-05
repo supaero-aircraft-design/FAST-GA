@@ -208,7 +208,7 @@ def test_empty_xml():
         output_dict = test_generate_block_analysis(input_dict)
         value = output_dict.get("data:geometry:variable_4")[0]
 
-    except Exception as error:
+    except Exception:
         function_generated = False
         value = 0.0
 

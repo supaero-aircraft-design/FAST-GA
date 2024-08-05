@@ -750,8 +750,9 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
     for variable in variables.names():
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) == 4:
-            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
-                "aircraft" in name_split[2]
+            if (
+                name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
+                and "aircraft" not in name_split[2]
             ):
                 category_values.append(
                     convert_units(variables[variable].value[0], variables[variable].units, "kg")
