@@ -89,10 +89,6 @@ class ComputeDescent(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if self.options["out_file"] != "":
-            # noinspection PyBroadException
-            flight_point_df = None
-
         wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]

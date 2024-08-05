@@ -171,7 +171,9 @@ def test_empty_xml():
 
         if (
             error.args[0]
-            == "Input .xml file not found, a default file has been created with default NaN values, but no function is returned!\nConsider defining proper values before second execution!"
+            == "Input .xml file not found, a default file has been created with default NaN "
+            "values, but no function is returned!\nConsider defining proper values before "
+            "second execution!"
             or ("File" in error.args[0] and " is unavailable for reading." in error.args[0])
         ):
             right_error = True
@@ -226,9 +228,7 @@ def test_missing_inputs_in_xml():
     # noinspection PyBroadException
     try:
         # noinspection PyUnusedLocal
-        test_generate_block_analysis = api.generate_block_analysis(
-            Disc1(), var_inputs, missing_inputs_xml_file, overwrite=False
-        )
+        api.generate_block_analysis(Disc1(), var_inputs, missing_inputs_xml_file, overwrite=False)
         function_generated = True
         right_error = False
 

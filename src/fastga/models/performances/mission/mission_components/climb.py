@@ -92,7 +92,6 @@ class ComputeClimb(DynamicEquilibrium):
         # Delete previous .csv results
         if self.options["out_file"] != "":
             # noinspection PyBroadException
-            flight_point_df = None
             try:
                 os.remove(self.options["out_file"])
             except:

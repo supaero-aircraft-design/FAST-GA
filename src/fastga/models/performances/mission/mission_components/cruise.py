@@ -77,10 +77,6 @@ class ComputeCruise(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        if self.options["out_file"] != "":
-            # noinspection PyBroadException
-            flight_point_df = None
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
         v_tas = inputs["data:TLAR:v_cruise"]
         cruise_distance = max(
