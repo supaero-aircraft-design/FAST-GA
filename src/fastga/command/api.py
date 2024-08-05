@@ -215,7 +215,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         # noinspection PyBroadException
                         try:
                             spec.loader.exec_module(module)
-                        except:
+                        except:  # noqa: E722
                             _LOGGER.info(
                                 "Trying to load %s, but it is not a module!", pth.join(root, name)
                             )
@@ -340,11 +340,11 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                             ):
                                                 if key not in dict_to_be_saved.keys():
                                                     dict_to_be_saved[key] = ""
-                            except:
+                            except:  # noqa: E722
                                 _LOGGER.info(
                                     "Failed to read %s.%s class parameters!", root_lib, class_name
                                 )
-                    except:
+                    except:  # noqa: E722
                         if tmp_folder is not None:
                             # noinspection PyUnboundLocalVariable
                             retrieve_original_file(tmp_folder, pth.join(root, name))
@@ -677,7 +677,7 @@ def list_all_subsystem(model, model_address, dict_subsystems):
             dict_subsystems = list_all_subsystem(
                 getattr(model, subsystem), model_address + "." + subsystem, dict_subsystems
             )
-    except:
+    except AttributeError:
         dict_subsystems[model_address] = get_type(model)
 
     return dict_subsystems

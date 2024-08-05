@@ -168,7 +168,7 @@ def polar_result_transfer():
             # noinspection PyBroadException
             try:
                 os.remove(file)
-            except:
+            except OSError:
                 _LOGGER.info("Cannot remove %s file!" % file)
 
     return tmp_folder

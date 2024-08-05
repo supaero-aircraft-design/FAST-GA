@@ -197,7 +197,7 @@ class XfoilPolar(ExternalCodeComp):
                     # noinspection PyBroadException
                     try:
                         data.to_csv(result_file)
-                    except:
+                    except PermissionError:
                         warnings.warn(
                             "Unable to save XFoil results to *.csv file: writing permission denied "
                             "for %s folder!" % local_resources.__path__[0]
@@ -211,19 +211,19 @@ class XfoilPolar(ExternalCodeComp):
             # noinspection PyBroadException
             try:
                 tmp_directory.cleanup()
-            except:
+            except PermissionError:
                 for file_path in os.listdir(tmp_directory.name):
                     if os.path.isfile(file_path):
                         # noinspection PyBroadException
                         try:
                             file = os.open(file_path, os.O_WRONLY)
                             os.close(file)
-                        except:
+                        except:  # noqa: E722
                             _LOGGER.info("Error while trying to close %s file!", file_path)
                 # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
-                except:
+                except PermissionError:
                     _LOGGER.info(
                         "Error while trying to erase %s temporary directory!", tmp_directory.name
                     )
@@ -498,12 +498,12 @@ class XfoilPolar(ExternalCodeComp):
         try:
             super().compute(inputs, outputs)
             result_array_p = self._read_polar(tmp_result_file_path)
-        except:
+        except:  # noqa: E722
             # catch the error and try to read result file for non-convergence on higher angles
             error = sys.exc_info()[1]
             try:
                 result_array_p = self._read_polar(tmp_result_file_path)
-            except:
+            except:  # noqa: E722
                 raise TimeoutError("<p>Error: %s</p>" % error)
         result_array_n = np.array([])
 
@@ -526,13 +526,13 @@ class XfoilPolar(ExternalCodeComp):
             try:
                 super().compute(inputs, outputs)
                 result_array_n = self._read_polar(tmp_result_file_path)
-            except:
+            except:  # noqa: E722
                 # catch the error and try to read result file for non-convergence on higher
                 # angles
                 e = sys.exc_info()[1]
                 try:
                     result_array_n = self._read_polar(tmp_result_file_path)
-                except:
+                except:  # noqa: E722
                     raise TimeoutError("<p>Error: %s</p>" % e)
 
         return (

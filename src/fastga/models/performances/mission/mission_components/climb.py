@@ -94,7 +94,7 @@ class ComputeClimb(DynamicEquilibrium):
             # noinspection PyBroadException
             try:
                 os.remove(self.options["out_file"])
-            except:
+            except OSError:
                 _LOGGER.info("Failed to remove %s file!", self.options["out_file"])
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
