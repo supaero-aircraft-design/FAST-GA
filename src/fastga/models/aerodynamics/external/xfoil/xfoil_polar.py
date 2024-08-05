@@ -344,12 +344,12 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if np.abs(covered_range / alpha_range) >= 0.4:
-                lift_fct = (
-                    lambda x: (lift_coeff[1] - lift_coeff[0])
-                    / (alpha[1] - alpha[0])
-                    * (x - alpha[0])
-                    + lift_coeff[0]
-                )
+
+                def lift_fct(x):
+                    return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
+                        x - alpha[0]
+                    ) + lift_coeff[0]
+
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return max(lift_coeff[delta <= 0.3]), False
 
@@ -371,12 +371,12 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if covered_range / alpha_range >= 0.4:
-                lift_fct = (
-                    lambda x: (lift_coeff[1] - lift_coeff[0])
-                    / (alpha[1] - alpha[0])
-                    * (x - alpha[0])
-                    + lift_coeff[0]
-                )
+
+                def lift_fct(x):
+                    return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
+                        x - alpha[0]
+                    ) + lift_coeff[0]
+
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return min(lift_coeff[delta <= 0.3]), False
 
