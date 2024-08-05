@@ -17,14 +17,13 @@ Defines the analysis and plotting functions for postprocessing.
 from random import SystemRandom
 from typing import Dict
 
+import fastoad.api as oad
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
-import fastoad.api as oad
 from fastoad.io import VariableIO
 from openmdao.utils.units import convert_units
+from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
 

@@ -15,28 +15,24 @@ advanced computation of the maximum fuel weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 import copy
+import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 from openmdao.utils.units import convert_units
-
 from scipy.optimize import fsolve
 
-import fastoad.api as oad
-
 from fastga.command.api import generate_block_analysis
-
-from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
-from fastga.models.geometry.geom_components.wing.components.compute_wing_l2_l3 import (
-    ComputeWingL2AndL3,
-)
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l1_l4 import (
     ComputeWingL1AndL4,
 )
+from fastga.models.geometry.geom_components.wing.components.compute_wing_l2_l3 import (
+    ComputeWingL2AndL3,
+)
+from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
 from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import ComputeMFWAdvanced
-
 from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
 
 _LOGGER = logging.getLogger(__name__)

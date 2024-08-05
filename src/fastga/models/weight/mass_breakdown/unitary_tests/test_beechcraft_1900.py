@@ -16,6 +16,8 @@ Test module for mass breakdown functions.
 
 import pytest
 
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..a_airframe import ComputeWingMassAnalytical
 from ..a_airframe.wing_components import (
     ComputeWebMass,
     ComputeLowerFlange,
@@ -27,9 +29,6 @@ from ..a_airframe.wing_components import (
     ComputeSecondaryMass,
     UpdateWingMass,
 )
-from ..a_airframe import ComputeWingMassAnalytical
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 XML_FILE = "beechcraft_1900.xml"
 

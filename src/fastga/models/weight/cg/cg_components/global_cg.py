@@ -12,11 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
-
 import fastoad.api as oad
-
-from .max_cg_ratio import ComputeMaxMinCGRatio
+from openmdao.api import Group
 
 from .constants import (
     SUBMODEL_AIRCRAFT_X_CG_RATIO,
@@ -24,6 +21,7 @@ from .constants import (
     SUBMODEL_LOADCASE_FLIGHT_X,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
 )
+from .max_cg_ratio import ComputeMaxMinCGRatio
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")

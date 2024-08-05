@@ -16,12 +16,12 @@
 # pylint: disable=unused-import
 # flake8: noqa
 
-from .compute_web_mass import ComputeWebMass
 from .compute_lower_flange import ComputeLowerFlange
-from .compute_upper_flange import ComputeUpperFlange
-from .compute_skin_mass import ComputeSkinMass
 from .compute_misc_mass import ComputeMiscMass
-from .compute_ribs_mass import ComputeRibsMass
 from .compute_primary_mass import ComputePrimaryMass
+from .compute_ribs_mass import ComputeRibsMass
 from .compute_secondary_mass import ComputeSecondaryMass
+from .compute_skin_mass import ComputeSkinMass
+from .compute_upper_flange import ComputeUpperFlange
+from .compute_web_mass import ComputeWebMass
 from .update_wing_mass import UpdateWingMass

@@ -17,22 +17,18 @@ conditions with an equilibrium computation.
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
+from fastoad.constants import EngineSetting
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
-import fastoad.api as oad
-from fastoad.openmdao.problem import AutoUnitsDefaultGroup
-from fastoad.constants import EngineSetting
-
 from fastga.command.api import list_inputs_metadata
-
+from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
 )
-from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
-
 from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
 
 _LOGGER = logging.getLogger(__name__)

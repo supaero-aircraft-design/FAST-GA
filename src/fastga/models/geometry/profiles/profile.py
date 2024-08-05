@@ -13,12 +13,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import operator
-import numpy as np
-import pandas as pd
-
-from scipy.interpolate import interp1d
 from collections import namedtuple
 from typing import Sequence, Tuple
+
+import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
 
 Coordinates2D = namedtuple("Coordinates2D", ["x", "y"])
 

@@ -16,11 +16,9 @@ Estimation of fuel lines weight.
 
 import warnings
 
-import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 import fastoad.api as oad
+import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .constants import SUBMODEL_FUEL_SYSTEM_MASS
 

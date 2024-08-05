@@ -15,12 +15,10 @@ in her MAE research project report.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
-from stdatm import Atmosphere
-
+import openmdao.api as om
 from scipy.interpolate import interp1d
+from stdatm import Atmosphere
 
 
 class ComputeSkinMass(om.ExplicitComponent):

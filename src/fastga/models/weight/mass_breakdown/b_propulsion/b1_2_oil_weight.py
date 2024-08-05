@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from scipy.constants import lbf
-from openmdao.core.explicitcomponent import ExplicitComponent
+import fastoad.api as oad
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
+from openmdao.core.explicitcomponent import ExplicitComponent
+from scipy.constants import lbf
 
 
 class ComputeOilWeight(ExplicitComponent):

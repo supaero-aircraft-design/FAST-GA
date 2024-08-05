@@ -14,16 +14,16 @@ Test module for geometry functions of cg components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-from openmdao.core.component import Component
 from typing import Union
-import numpy as np
 
 import fastoad.api as oad
+import numpy as np
+import pandas as pd
+from openmdao.core.component import Component
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
-from fastga.models.propulsion.propulsion import IPropulsion
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.models.propulsion.propulsion import IPropulsion
 
 ENGINE_WRAPPER_BE76 = "test.wrapper.geometry.beechcraft.dummy_engine"
 ENGINE_WRAPPER_SR22 = "test.wrapper.geometry.cirrus.dummy_engine"

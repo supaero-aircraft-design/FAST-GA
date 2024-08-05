@@ -17,12 +17,15 @@ test module for wing area computation.
 import os.path as pth
 
 import openmdao.api as om
-
 from numpy.testing import assert_allclose
 
-from ..wing_area_component.wing_area_loop_geom_simple import (
-    UpdateWingAreaGeomSimple,
-    ConstraintWingAreaGeomSimple,
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+from ..update_wing_area_group import UpdateWingAreaGroup
+from ..update_wing_position import UpdateWingPosition
+from ..wing_area_component.update_wing_area import UpdateWingArea
+from ..wing_area_component.wing_area_cl_equilibrium import (
+    UpdateWingAreaLiftEquilibrium,
+    ConstraintWingAreaLiftEquilibrium,
 )
 from ..wing_area_component.wing_area_loop_cl_simple import (
     UpdateWingAreaLiftSimple,
@@ -32,15 +35,10 @@ from ..wing_area_component.wing_area_loop_geom_adv import (
     UpdateWingAreaGeomAdvanced,
     ConstraintWingAreaGeomAdvanced,
 )
-from ..wing_area_component.wing_area_cl_equilibrium import (
-    UpdateWingAreaLiftEquilibrium,
-    ConstraintWingAreaLiftEquilibrium,
+from ..wing_area_component.wing_area_loop_geom_simple import (
+    UpdateWingAreaGeomSimple,
+    ConstraintWingAreaGeomSimple,
 )
-from ..wing_area_component.update_wing_area import UpdateWingArea
-from ..update_wing_area_group import UpdateWingAreaGroup
-from ..update_wing_position import UpdateWingPosition
-
-from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 

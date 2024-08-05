@@ -16,9 +16,8 @@ Test module for geometry functions of the different components.
 
 import pytest
 
-from ..geom_components.wing.components import ComputeWingZ
-
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..geom_components.wing.components import ComputeWingZ
 
 XML_FILE = "partenavia_p68.xml"
 

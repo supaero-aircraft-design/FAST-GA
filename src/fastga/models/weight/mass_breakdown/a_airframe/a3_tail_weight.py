@@ -14,11 +14,10 @@ Estimation of tail weight.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
 from stdatm import Atmosphere
-import fastoad.api as oad
 
 from .constants import SUBMODEL_TAIL_MASS
 

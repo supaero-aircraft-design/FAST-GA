@@ -12,13 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
-
-from stdatm import Atmosphere
-
+import openmdao.api as om
 from scipy.constants import g
+from stdatm import Atmosphere
 
 FUSELAGE_MESH_POINT = 100
 
