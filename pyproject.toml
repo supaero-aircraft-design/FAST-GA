@@ -105,8 +105,8 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.coverage.run]
 branch = true
-source = ["fastoad"]
-omit = ["*/test/*", "*/tests/*"]
+source = ["fastga"]
+omit = ["*/test/*", "*/tests/*", "*/unitary_tests/*"]
 [tool.coverage.paths]
 source = ["src/"]
 [tool.coverage.report]
