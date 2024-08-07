@@ -18,13 +18,12 @@ coefficient of the aircraft.
 import logging
 import functools
 import os.path as pth
+from typing import List
 
 import numpy as np
 import openmdao.api as om
 import pandas as pd
 from scipy import interpolate
-
-from typing import List
 
 from . import resources
 
@@ -1869,6 +1868,9 @@ class FigureDigitization(om.ExplicitComponent):
 
 
 def interpolate_database(database, tag_x: str, tag_y: List[str], input_x: float):
+    """
+    Utility to interpolate the data csv.
+    """
     database_x, database_y = filter_nans(database, tag_x, tag_y)
 
     output_y = float(
@@ -1899,5 +1901,4 @@ def filter_nans(database: pd.DataFrame, tag_x: str, tag_y: List[str]):
     if len(database_y) == 1:
         return database_x, database_y[0]
 
-    else:
-        return database_x, database_y
+    return database_x, database_y
