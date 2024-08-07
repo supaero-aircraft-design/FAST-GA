@@ -56,35 +56,22 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
             "data:aerodynamics:horizontal_tail:airfoil:CL_alpha", val=np.nan, units="rad**-1"
         )
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
-            self.add_input(
-                "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
-            )
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CD0", val=np.nan)
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+        ref_aoa = 5.0 if self.options["low_speed_aero"] else 1.0
 
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:Cl_p", units="rad**-1")
+        self.add_input(
+            "settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA",
+            units="rad",
+            val=ref_aoa * np.pi / 180.0,
+        )
+        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha", val=np.nan, units="rad**-1"
+        )
+        self.add_input("data:aerodynamics:horizontal_tail:" + ls_tag + ":CD0", val=np.nan)
 
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
-            self.add_input(
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
-            )
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CD0", val=np.nan)
-
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:Cl_p", units="rad**-1")
+        self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_p", units="rad**-1")
 
         self.declare_partials(of="*", wrt="*", method="fd")
 
@@ -108,18 +95,13 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
 
         cl_alpha_airfoil = inputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"]
 
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            mach = inputs["data:aerodynamics:low_speed:mach"]
-            cl_0_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL0"]
-            cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
-            cd0_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CD0"]
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            mach = inputs["data:aerodynamics:cruise:mach"]
-            cl_0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL0"]
-            cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
-            cd0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CD0"]
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
+        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
+        cl_0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0"]
+        cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha"]
+        cd0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CD0"]
 
         k = cl_alpha_airfoil / (2.0 * np.pi)
         beta = np.sqrt(1.0 - mach**2.0)
@@ -152,7 +134,4 @@ class ComputeClRollRateHorizontalTail(FigureDigitization):
             * (ht_span / wing_span) ** 2.0
         )
 
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:horizontal_tail:low_speed:Cl_p"] = cl_p_h
-        else:
-            outputs["data:aerodynamics:horizontal_tail:cruise:Cl_p"] = cl_p_h
+        outputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_p"] = cl_p_h
