@@ -45,27 +45,19 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:MAC:z", units="m", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_height", units="m", val=np.nan)
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input(
-                "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
-            )
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+        ref_aoa = 5.0 if self.options["low_speed_aero"] else 1.0
 
-            self.add_output("data:aerodynamics:vertical_tail:low_speed:Cl_r", units="rad**-1")
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input(
-                "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
-            )
-            self.add_output("data:aerodynamics:vertical_tail:cruise:Cl_r", units="rad**-1")
+        self.add_input(
+            "settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA",
+            units="rad",
+            val=ref_aoa * np.pi / 180.0,
+        )
+        self.add_input(
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cy_beta", val=np.nan, units="rad**-1"
+        )
+
+        self.add_output("data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r", units="rad**-1")
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
@@ -78,26 +70,17 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         wing_span = inputs["data:geometry:wing:span"]
 
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
-            outputs["data:aerodynamics:vertical_tail:low_speed:Cl_r"] = (
-                -2.0
-                * cy_beta_vt
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**2.0
-            )
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
-            outputs["data:aerodynamics:vertical_tail:cruise:Cl_r"] = (
-                -2.0
-                * cy_beta_vt
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**2.0
-            )
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
+        cy_beta_vt = inputs["data:aerodynamics:vertical_tail:" + ls_tag + ":Cy_beta"]
+        outputs["data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r"] = (
+            -2.0
+            * cy_beta_vt
+            * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
+            * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
+            / wing_span**2.0
+        )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         z_v = (
@@ -108,177 +91,92 @@ class ComputeClYawRateVerticalTail(om.ExplicitComponent):
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         wing_span = inputs["data:geometry:wing:span"]
 
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:low_speed:Cy_beta"]
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
-            ] = (
-                -2.0
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**2.0
-            )
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:geometry:wing:root:z",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
-            )
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:geometry:fuselage:maximum_height",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
-            ) * 0.5
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
-            )
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    z_v * np.cos(aoa_ref) ** 2.0
-                    - 2 * lp_vt * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - z_v * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
-            )
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "data:geometry:wing:span",
-            ] = (
-                4.0
-                * cy_beta_vt
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**3.0
-            )
-            partials[
-                "data:aerodynamics:vertical_tail:low_speed:Cl_r",
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    -(lp_vt**2.0) * np.cos(2.0 * aoa_ref)
-                    + z_v**2.0 * np.cos(2.0 * aoa_ref)
-                    - 4.0 * lp_vt * z_v * np.sin(aoa_ref) * np.cos(aoa_ref)
-                )
-                / wing_span**2.0
-            )
+        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
+        cy_beta_vt = inputs["data:aerodynamics:vertical_tail:" + ls_tag + ":Cy_beta"]
 
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
-
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:aerodynamics:vertical_tail:cruise:Cy_beta",
-            ] = (
-                -2.0
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**2.0
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cy_beta",
+        ] = (
+            -2.0
+            * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
+            * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
+            / wing_span**2.0
+        )
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:geometry:wing:root:z",
+        ] = (
+            -2.0
+            * cy_beta_vt
+            * (
+                lp_vt * np.cos(aoa_ref) ** 2.0
+                + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
+                - lp_vt * np.sin(aoa_ref) ** 2.0
             )
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:geometry:wing:root:z",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
+            / wing_span**2.0
+        )
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:geometry:fuselage:maximum_height",
+        ] = (
+            -2.0
+            * cy_beta_vt
+            * (
+                lp_vt * np.cos(aoa_ref) ** 2.0
+                + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
+                - lp_vt * np.sin(aoa_ref) ** 2.0
             )
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:geometry:fuselage:maximum_height",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
-            ) * 0.5
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    lp_vt * np.cos(aoa_ref) ** 2.0
-                    + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - lp_vt * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
+            / wing_span**2.0
+        ) * 0.5
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:geometry:vertical_tail:MAC:z",
+        ] = (
+            -2.0
+            * cy_beta_vt
+            * (
+                lp_vt * np.cos(aoa_ref) ** 2.0
+                + 2.0 * z_v * np.cos(aoa_ref) * np.sin(aoa_ref)
+                - lp_vt * np.sin(aoa_ref) ** 2.0
             )
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    z_v * np.cos(aoa_ref) ** 2.0
-                    - 2 * lp_vt * np.cos(aoa_ref) * np.sin(aoa_ref)
-                    - z_v * np.sin(aoa_ref) ** 2.0
-                )
-                / wing_span**2.0
+            / wing_span**2.0
+        )
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = (
+            -2.0
+            * cy_beta_vt
+            * (
+                z_v * np.cos(aoa_ref) ** 2.0
+                - 2 * lp_vt * np.cos(aoa_ref) * np.sin(aoa_ref)
+                - z_v * np.sin(aoa_ref) ** 2.0
             )
-            partials["data:aerodynamics:vertical_tail:cruise:Cl_r", "data:geometry:wing:span"] = (
-                4.0
-                * cy_beta_vt
-                * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
-                * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span**3.0
+            / wing_span**2.0
+        )
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "data:geometry:wing:span",
+        ] = (
+            4.0
+            * cy_beta_vt
+            * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
+            * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
+            / wing_span**3.0
+        )
+        partials[
+            "data:aerodynamics:vertical_tail:" + ls_tag + ":Cl_r",
+            "settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA",
+        ] = (
+            -2.0
+            * cy_beta_vt
+            * (
+                -(lp_vt**2.0) * np.cos(2.0 * aoa_ref)
+                + z_v**2.0 * np.cos(2.0 * aoa_ref)
+                - 4.0 * lp_vt * z_v * np.sin(aoa_ref) * np.cos(aoa_ref)
             )
-            partials[
-                "data:aerodynamics:vertical_tail:cruise:Cl_r",
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-            ] = (
-                -2.0
-                * cy_beta_vt
-                * (
-                    -(lp_vt**2.0) * np.cos(2.0 * aoa_ref)
-                    + z_v**2.0 * np.cos(2.0 * aoa_ref)
-                    - 4.0 * lp_vt * z_v * np.sin(aoa_ref) * np.cos(aoa_ref)
-                )
-                / wing_span**2.0
-            )
+            / wing_span**2.0
+        )
