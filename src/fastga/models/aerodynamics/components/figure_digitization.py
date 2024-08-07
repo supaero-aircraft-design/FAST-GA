@@ -101,21 +101,20 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
 
         x_value_00 = 0.0
-        x_value_15 = interpolate.interp1d(x_15, y_15)(
-            np.clip(float(chord_ratio), min(x_15), max(x_15))
-        )
-        x_value_60 = interpolate.interp1d(x_60, y_60)(
-            np.clip(float(chord_ratio), min(x_60), max(x_60))
-        )
+        x_value_15 = np.interp(np.clip(float(chord_ratio), min(x_15), max(x_15)), x_15, y_15)
+        x_value_60 = np.interp(np.clip(float(chord_ratio), min(x_60), max(x_60)), x_60, y_60)
 
         if control_deflection != np.clip(control_deflection, 0.0, 60.0):
             _LOGGER.warning(
                 "Control surface deflection outside of the range in Roskam's book, value clipped"
             )
 
-        delta_cd_flap = interpolate.interp1d(
-            [0.0, 15.0, 60.0], [x_value_00, x_value_15, x_value_60], kind="quadratic"
-        )(np.clip(control_deflection, 0.0, 60.0))
+        delta_cd_flap = float(
+            np.polyval(
+                np.polyfit([0.0, 15.0, 60.0], [x_value_00, x_value_15, x_value_60], 2),
+                np.clip(control_deflection, 0.0, 60.0),
+            )
+        )
 
         return delta_cd_flap
 
@@ -141,13 +140,6 @@ class FigureDigitization(om.ExplicitComponent):
         x_40, y_40 = filter_nans(db, "X_40", ["Y_40"])
         x_50, y_50 = filter_nans(db, "X_50", ["Y_50"])
 
-        k_chord10 = interpolate.interp1d(x_10, y_10)
-        k_chord15 = interpolate.interp1d(x_15, y_15)
-        k_chord25 = interpolate.interp1d(x_25, y_25)
-        k_chord30 = interpolate.interp1d(x_30, y_30)
-        k_chord40 = interpolate.interp1d(x_40, y_40)
-        k_chord50 = interpolate.interp1d(x_50, y_50)
-
         if (
             (flap_angle != np.clip(flap_angle, min(x_10), max(x_10)))
             or (flap_angle != np.clip(flap_angle, min(x_15), max(x_15)))
@@ -159,12 +151,12 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
 
         k_chord = [
-            float(k_chord10(np.clip(flap_angle, min(x_10), max(x_10)))),
-            float(k_chord15(np.clip(flap_angle, min(x_15), max(x_15)))),
-            float(k_chord25(np.clip(flap_angle, min(x_25), max(x_25)))),
-            float(k_chord30(np.clip(flap_angle, min(x_30), max(x_30)))),
-            float(k_chord40(np.clip(flap_angle, min(x_40), max(x_40)))),
-            float(k_chord50(np.clip(flap_angle, min(x_50), max(x_50)))),
+            float(np.interp(np.clip(flap_angle, min(x_10), max(x_10)), x_10, y_10)),
+            float(np.interp(np.clip(flap_angle, min(x_15), max(x_15)), x_15, y_15)),
+            float(np.interp(np.clip(flap_angle, min(x_25), max(x_25)), x_25, y_25)),
+            float(np.interp(np.clip(flap_angle, min(x_30), max(x_30)), x_30, y_30)),
+            float(np.interp(np.clip(flap_angle, min(x_40), max(x_40)), x_40, y_40)),
+            float(np.interp(np.clip(flap_angle, min(x_50), max(x_50)), x_50, y_50)),
         ]
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.5):
@@ -173,9 +165,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_prime = float(
-            interpolate.interp1d([0.1, 0.15, 0.25, 0.3, 0.4, 0.5], k_chord)(
-                np.clip(chord_ratio, 0.1, 0.5)
-            )
+            np.interp(np.clip(chord_ratio, 0.1, 0.5), [0.1, 0.15, 0.25, 0.3, 0.4, 0.5], k_chord)
         )
 
         return k_prime
@@ -200,11 +190,6 @@ class FigureDigitization(om.ExplicitComponent):
         x_10, y_10 = filter_nans(db, "X_10", ["Y_10"])
         x_15, y_15 = filter_nans(db, "X_15", ["Y_15"])
 
-        cld_thk0 = interpolate.interp1d(x_0, y_0)
-        cld_thk04 = interpolate.interp1d(x_04, y_04)
-        cld_thk10 = interpolate.interp1d(x_10, y_10)
-        cld_thk15 = interpolate.interp1d(x_15, y_15)
-
         if (
             (chord_ratio != np.clip(chord_ratio, min(x_0), max(x_0)))
             or (chord_ratio != np.clip(chord_ratio, min(x_04), max(x_04)))
@@ -216,10 +201,10 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         cld_t = [
-            float(cld_thk0(np.clip(chord_ratio, min(x_0), max(x_0)))),
-            float(cld_thk04(np.clip(chord_ratio, min(x_04), max(x_04)))),
-            float(cld_thk10(np.clip(chord_ratio, min(x_10), max(x_10)))),
-            float(cld_thk15(np.clip(chord_ratio, min(x_15), max(x_15)))),
+            float(np.interp(np.clip(chord_ratio, min(x_0), max(x_0)), x_0, y_0)),
+            float(np.interp(np.clip(chord_ratio, min(x_04), max(x_04)), x_04, y_04)),
+            float(np.interp(np.clip(chord_ratio, min(x_10), max(x_10)), x_10, y_10)),
+            float(np.interp(np.clip(chord_ratio, min(x_15), max(x_15)), x_15, y_15)),
         ]
 
         if thickness != np.clip(thickness, 0.0, 0.15):
@@ -227,9 +212,7 @@ class FigureDigitization(om.ExplicitComponent):
                 "Thickness ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        cl_delta_th = interpolate.interp1d([0.0, 0.04, 0.1, 0.15], cld_t)(
-            np.clip(thickness, 0.0, 0.15)
-        )
+        cl_delta_th = np.interp(np.clip(thickness, 0.0, 0.15), [0.0, 0.04, 0.1, 0.15], cld_t)
 
         return cl_delta_th
 
@@ -273,8 +256,8 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         )
 
-        k_cl_delta_min = interpolate.interp1d(k_cl_alpha_data, k_cl_delta_min_data)(k_cl_alpha)
-        k_cl_delta_max = interpolate.interp1d(k_cl_alpha_data, k_cl_delta_max_data)(k_cl_alpha)
+        k_cl_delta_min = np.interp(k_cl_alpha, k_cl_alpha_data, k_cl_delta_min_data)
+        k_cl_delta_max = np.interp(k_cl_alpha, k_cl_alpha_data, k_cl_delta_max_data)
 
         if chord_ratio != np.clip(chord_ratio, 0.05, 0.5):
             _LOGGER.warning(
@@ -282,9 +265,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.05, 0.5)
-        k_cl_delta = interpolate.interp1d([0.05, 0.5], [k_cl_delta_min, k_cl_delta_max])(
-            chord_ratio
-        )
+        k_cl_delta = np.interp(chord_ratio, [0.05, 0.5], [k_cl_delta_min, k_cl_delta_max])
 
         return k_cl_delta
 
@@ -305,19 +286,10 @@ class FigureDigitization(om.ExplicitComponent):
         db = pd.read_csv(file)
 
         x_15, y_15 = filter_nans(db, "X_15", ["Y_15"])
-        k_chord_15 = interpolate.interp1d(x_15, y_15)
-
         x_20, y_20 = filter_nans(db, "X_20", ["Y_20"])
-        k_chord_20 = interpolate.interp1d(x_20, y_20)
-
         x_25, y_25 = filter_nans(db, "X_25", ["Y_25"])
-        k_chord_25 = interpolate.interp1d(x_25, y_25)
-
         x_30, y_30 = filter_nans(db, "X_30", ["Y_30"])
-        k_chord_30 = interpolate.interp1d(x_30, y_30)
-
         x_40, y_40 = filter_nans(db, "X_40", ["Y_40"])
-        k_chord_40 = interpolate.interp1d(x_40, y_40)
 
         if (
             (float(flap_angle) != np.clip(float(flap_angle), min(x_15), max(x_15)))
@@ -329,11 +301,11 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
 
         k_chord = [
-            k_chord_15(np.clip(float(flap_angle), min(x_15), max(x_15))),
-            k_chord_20(np.clip(float(flap_angle), min(x_20), max(x_20))),
-            k_chord_25(np.clip(float(flap_angle), min(x_25), max(x_25))),
-            k_chord_30(np.clip(float(flap_angle), min(x_30), max(x_30))),
-            k_chord_40(np.clip(float(flap_angle), min(x_40), max(x_40))),
+            np.interp(np.clip(float(flap_angle), min(x_15), max(x_15)), x_15, y_15),
+            np.interp(np.clip(float(flap_angle), min(x_20), max(x_15)), x_20, y_20),
+            np.interp(np.clip(float(flap_angle), min(x_25), max(x_25)), x_25, y_25),
+            np.interp(np.clip(float(flap_angle), min(x_30), max(x_30)), x_30, y_30),
+            np.interp(np.clip(float(flap_angle), min(x_40), max(x_40)), x_40, y_40),
         ]
 
         if float(chord_ratio) != np.clip(float(chord_ratio), 0.15, 0.4):
@@ -342,9 +314,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_prime = float(
-            interpolate.interp1d([0.15, 0.20, 0.25, 0.3, 0.4], k_chord)(
-                np.clip(float(chord_ratio), 0.15, 0.4)
-            )
+            np.interp(np.clip(float(chord_ratio), 0.15, 0.4), [0.15, 0.20, 0.25, 0.3, 0.4], k_chord)
         )
 
         return k_prime
@@ -369,29 +339,34 @@ class FigureDigitization(om.ExplicitComponent):
         x_single_slot, y_single_slot = filter_nans(db, "X_SINGLE_SLOT", ["Y_SINGLE_SLOT"])
 
         if flap_type == 0.0:
-            base_increment = interpolate.interp1d(x_plain, y_plain)
             if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
                     "Thickness ratio value outside of the range in Roskam's book, value clipped"
                 )
-            delta_cl_max_base = base_increment(np.clip(thickness_ratio, min(x_plain), max(x_plain)))
+            delta_cl_max_base = float(
+                np.interp(np.clip(thickness_ratio, min(x_plain), max(x_plain)), x_plain, y_plain)
+            )
         elif flap_type == 1.0:
-            base_increment = interpolate.interp1d(x_single_slot, y_single_slot)
             if thickness_ratio != np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot)):
                 _LOGGER.warning(
                     "Thickness ratio value outside of the range in Roskam's book, value clipped"
                 )
-            delta_cl_max_base = base_increment(
-                np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot))
+            delta_cl_max_base = float(
+                np.interp(
+                    np.clip(thickness_ratio, min(x_single_slot), max(x_single_slot)),
+                    x_single_slot,
+                    y_single_slot,
+                )
             )
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            base_increment = interpolate.interp1d(x_plain, y_plain)
             if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
                     "Thickness ratio value outside of the range in Roskam's book, value clipped"
                 )
-            delta_cl_max_base = base_increment(np.clip(thickness_ratio, min(x_plain), max(x_plain)))
+            delta_cl_max_base = float(
+                np.interp(np.clip(thickness_ratio, min(x_plain), max(x_plain)), x_plain, y_plain)
+            )
 
         return delta_cl_max_base
 
@@ -425,7 +400,7 @@ class FigureDigitization(om.ExplicitComponent):
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        k1 = interpolate.interp1d(x, y)(np.clip(float(chord_ratio), min(x), max(x)))
+        k1 = float(np.interp(np.clip(float(chord_ratio), min(x), max(x)), x, y))
 
         return k1
 
@@ -450,30 +425,33 @@ class FigureDigitization(om.ExplicitComponent):
         x_single_slot, y_single_slot = filter_nans(db, "X_SINGLE_SLOT", ["Y_SINGLE_SLOT"])
 
         if flap_type == 0.0:
-            k2_interp = interpolate.interp1d(x_plain, y_plain)
             if angle != np.clip(angle, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
+            k2 = float(np.interp(np.clip(angle, min(x_plain), max(x_plain)), x_plain, y_plain))
         elif flap_type == 1.0:
-            k2_interp = interpolate.interp1d(x_single_slot, y_single_slot)
             if angle != np.clip(angle, min(x_single_slot), max(x_single_slot)):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_single_slot), max(x_single_slot)))
+            k2 = float(
+                np.interp(
+                    np.clip(angle, min(x_single_slot), max(x_single_slot)),
+                    x_single_slot,
+                    y_single_slot,
+                )
+            )
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            k2_interp = interpolate.interp1d(x_plain, y_plain)
             if angle != np.clip(angle, min(x_plain), max(x_plain)):
                 _LOGGER.warning(
                     "Control surface deflection value outside of the range in Roskam's book, "
                     "value clipped"
                 )
-            k2 = k2_interp(np.clip(angle, min(x_plain), max(x_plain)))
+            k2 = float(np.interp(np.clip(angle, min(x_plain), max(x_plain)), x_plain, y_plain))
 
         return k2
 
@@ -505,7 +483,7 @@ class FigureDigitization(om.ExplicitComponent):
                     "value clipped, reference value is %f",
                     reference_angle,
                 )
-            k3 = interpolate.interp1d(x, y)(np.clip(float(angle / reference_angle), min(x), max(x)))
+            k3 = float(np.interp(np.clip(float(angle / reference_angle), min(x), max(x)), x, y))
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
             k3 = 1.0
@@ -541,10 +519,6 @@ class FigureDigitization(om.ExplicitComponent):
         x_05, y_05 = filter_nans(db, "X_0.5", ["Y_0.5"])
         x_1, y_1 = filter_nans(db, "X_1", ["Y_1"])
 
-        k_taper0 = interpolate.interp1d(x_0, y_0)
-        k_taper05 = interpolate.interp1d(x_05, y_05)
-        k_taper1 = interpolate.interp1d(x_1, y_1)
-
         if (
             (eta_in != np.clip(eta_in, min(x_0), max(x_0)))
             or (eta_in != np.clip(eta_in, min(x_05), max(x_05)))
@@ -556,11 +530,11 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_eta = [
-            float(k_taper0(np.clip(eta_in, min(x_0), max(x_0)))),
-            float(k_taper05(np.clip(eta_in, min(x_05), max(x_05)))),
-            float(k_taper1(np.clip(eta_in, min(x_1), max(x_1)))),
+            float(np.interp(np.clip(eta_in, min(x_0), max(x_0)), x_0, y_0)),
+            float(np.interp(np.clip(eta_in, min(x_05), max(x_05)), x_05, y_05)),
+            float(np.interp(np.clip(eta_in, min(x_1), max(x_1)), x_1, y_1)),
         ]
-        kb_in = interpolate.interp1d([0.0, 0.5, 1.0], k_eta)(taper_ratio)
+        kb_in = np.interp(taper_ratio, [0.0, 0.5, 1.0], k_eta)
 
         if (
             (eta_out != np.clip(eta_out, min(x_0), max(x_0)))
@@ -573,11 +547,11 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_eta = [
-            float(k_taper0(np.clip(eta_out, min(x_0), max(x_0)))),
-            float(k_taper05(np.clip(eta_out, min(x_05), max(x_05)))),
-            float(k_taper1(np.clip(eta_out, min(x_1), max(x_1)))),
+            float(np.interp(np.clip(eta_out, min(x_0), max(x_0)), x_0, y_0)),
+            float(np.interp(np.clip(eta_out, min(x_05), max(x_05)), x_05, y_05)),
+            float(np.interp(np.clip(eta_out, min(x_1), max(x_1)), x_1, y_1)),
         ]
-        kb_out = interpolate.interp1d([0.0, 0.5, 1.0], k_eta)(taper_ratio)
+        kb_out = np.interp(taper_ratio, [0.0, 0.5, 1.0], k_eta)
 
         return float(kb_out - kb_in)
 
@@ -647,7 +621,7 @@ class FigureDigitization(om.ExplicitComponent):
                 "Roskam's book, value clipped"
             )
 
-        k_a_delta = interpolate.interp1d(x, y)(np.clip(a_delta_airfoil, 0.1, 1.0))
+        k_a_delta = float(np.interp(np.clip(a_delta_airfoil, 0.1, 1.0), x, y))
 
         return k_a_delta
 
@@ -667,8 +641,8 @@ class FigureDigitization(om.ExplicitComponent):
         if flap_chord_ratio != np.clip(flap_chord_ratio, 0.0, 1.0):
             _LOGGER.warning("Chord ratio outside of the range in Roskam's book, value clipped")
 
-        x_cp_c_prime = interpolate.interp1d([0.0, 1.0], [0.5, 0.25])(
-            np.clip(flap_chord_ratio, 0.0, 1.0)
+        x_cp_c_prime = float(
+            np.interp(np.clip(flap_chord_ratio, 0.0, 1.0), [0.0, 1.0], [0.5, 0.25])
         )
 
         return x_cp_c_prime
@@ -708,9 +682,10 @@ class FigureDigitization(om.ExplicitComponent):
         if taper_ratio != np.clip(taper_ratio, 0.25, 1.0):
             _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
 
-        k_p = interpolate.interp1d(taper_array, eta_out_array)(
-            np.clip(taper_ratio, 0.25, 1.0)
-        ) - interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.25, 1.0))
+        k_p = float(
+            np.interp(np.clip(taper_ratio, 0.25, 1.0), taper_array, eta_out_array)
+            - np.interp(np.clip(taper_ratio, 0.25, 1.0), taper_array, eta_in_array)
+        )
 
         return k_p
 
@@ -749,7 +724,7 @@ class FigureDigitization(om.ExplicitComponent):
                 "Thickness to chord ratio outside of the range in Roskam's book, " "value clipped"
             )
 
-        k = interpolate.interp1d(toc_array, k_array)(np.clip(thickness_ratio, 0.03, 0.4))
+        k = float(np.interp(np.clip(thickness_ratio, 0.03, 0.4), toc_array, k_array))
 
         return k
 
@@ -786,12 +761,10 @@ class FigureDigitization(om.ExplicitComponent):
         if taper_ratio != np.clip(taper_ratio, 0.2, 1.0):
             _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
 
-        k_delta_in = interpolate.interp1d(taper_array, eta_in_array)(np.clip(taper_ratio, 0.2, 1.0))
-        k_delta_out = interpolate.interp1d(taper_array, eta_out_array)(
-            np.clip(taper_ratio, 0.2, 1.0)
-        )
+        k_delta_in = np.interp(np.clip(taper_ratio, 0.2, 1.0), taper_array, eta_in_array)
+        k_delta_out = np.interp(np.clip(taper_ratio, 0.2, 1.0), taper_array, eta_out_array)
 
-        k_delta = k_delta_out - k_delta_in
+        k_delta = float(k_delta_out - k_delta_in)
 
         return k_delta
 
@@ -823,14 +796,16 @@ class FigureDigitization(om.ExplicitComponent):
                 "value clipped"
             )
 
-        y_value_06 = interpolate.interp1d(x_06, y_06)(np.clip(x_value, min(x_06), max(x_06)))
-        y_value_10 = interpolate.interp1d(x_10, y_10)(np.clip(x_value, min(x_10), max(x_10)))
+        y_value_06 = np.interp(np.clip(x_value, min(x_06), max(x_06)), x_06, y_06)
+        y_value_10 = np.interp(np.clip(x_value, min(x_10), max(x_10)), x_10, y_10)
 
         if taper_ratio != np.clip(taper_ratio, 0.6, 1.0):
             _LOGGER.warning("Taper ratio outside of the range in Roskam's book, value clipped")
 
-        k_ar_fuselage = interpolate.interp1d([0.6, 1.0], [float(y_value_06), float(y_value_10)])(
-            np.clip(taper_ratio, 0.6, 1.0)
+        k_ar_fuselage = float(
+            np.interp(
+                np.clip(taper_ratio, 0.6, 1.0), [0.6, 1.0], [float(y_value_06), float(y_value_10)]
+            )
         )
 
         return k_ar_fuselage
@@ -853,7 +828,7 @@ class FigureDigitization(om.ExplicitComponent):
         if float(area_ratio) != np.clip(float(area_ratio), min(x), max(x)):
             _LOGGER.warning("Area ratio value outside of the range in Roskam's book, value clipped")
 
-        k_vh = interpolate.interp1d(x, y)(np.clip(float(area_ratio), min(x), max(x)))
+        k_vh = float(np.interp(np.clip(float(area_ratio), min(x), max(x)), x, y))
 
         return k_vh
 
@@ -902,11 +877,11 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         )
 
-        k_ch_alpha_min = interpolate.interp1d(k_cl_alpha_data, k_ch_alpha_min_data)(k_cl_alpha)
-        k_ch_alpha_max = interpolate.interp1d(k_cl_alpha_data, k_ch_alpha_max_data)(k_cl_alpha)
+        k_ch_alpha_min = np.interp(k_cl_alpha, k_cl_alpha_data, k_ch_alpha_min_data)
+        k_ch_alpha_max = np.interp(k_cl_alpha, k_cl_alpha_data, k_ch_alpha_max_data)
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        k_ch_alpha = interpolate.interp1d([0.1, 0.4], [k_ch_alpha_min, k_ch_alpha_max])(chord_ratio)
+        k_ch_alpha = float(np.interp(chord_ratio, [0.1, 0.4], [k_ch_alpha_min, k_ch_alpha_max]))
 
         return k_ch_alpha
 
@@ -936,20 +911,23 @@ class FigureDigitization(om.ExplicitComponent):
                 "Thickness ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        ch_alpha_min = interpolate.interp1d(thickness_ratio_data, ch_alpha_min_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
+        ch_alpha_min = np.interp(
+            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)),
+            thickness_ratio_data,
+            ch_alpha_min_data,
         )
-        ch_alpha_max = interpolate.interp1d(thickness_ratio_data, ch_alpha_max_data)(
-            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data))
+        ch_alpha_max = np.interp(
+            np.clip(float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)),
+            thickness_ratio_data,
+            ch_alpha_max_data,
         )
-
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        ch_alpha_th = interpolate.interp1d([0.1, 0.4], [ch_alpha_min, ch_alpha_max])(chord_ratio)
+        ch_alpha_th = float(np.interp(chord_ratio, [0.1, 0.4], [ch_alpha_min, ch_alpha_max]))
 
         return ch_alpha_th
 
@@ -1000,9 +978,9 @@ class FigureDigitization(om.ExplicitComponent):
             max(k_cl_alpha_data),
         )
 
-        k_ch_delta_min = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_min_data)(k_cl_alpha)
-        k_ch_delta_avg = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_avg_data)(k_cl_alpha)
-        k_ch_delta_max = interpolate.interp1d(k_cl_alpha_data, k_ch_delta_max_data)(k_cl_alpha)
+        k_ch_delta_min = float(np.interp(k_cl_alpha, k_cl_alpha_data, k_ch_delta_min_data))
+        k_ch_delta_avg = float(np.interp(k_cl_alpha, k_cl_alpha_data, k_ch_delta_avg_data))
+        k_ch_delta_max = float(np.interp(k_cl_alpha, k_cl_alpha_data, k_ch_delta_max_data))
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
@@ -1010,9 +988,11 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        k_ch_delta = interpolate.interp1d(
-            [0.1, 0.25, 0.4], [k_ch_delta_min, k_ch_delta_avg, k_ch_delta_max]
-        )(chord_ratio)
+        k_ch_delta = float(
+            np.interp(
+                chord_ratio, [0.1, 0.25, 0.4], [k_ch_delta_min, k_ch_delta_avg, k_ch_delta_max]
+            )
+        )
 
         return k_ch_delta
 
@@ -1053,7 +1033,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         chord_ratio = np.clip(chord_ratio, 0.1, 0.4)
-        ch_delta_th = interpolate.interp1d([0.1, 0.4], [ch_delta_min, ch_delta_max])(chord_ratio)
+        ch_delta_th = float(np.interp(chord_ratio, [0.1, 0.4], [ch_delta_min, ch_delta_max]))
 
         return ch_delta_th
 
@@ -1081,9 +1061,7 @@ class FigureDigitization(om.ExplicitComponent):
                 "the range in Roskam's book, value clipped"
             )
 
-        k_fus = interpolate.interp1d(x, y)(
-            np.clip(float(root_quarter_chord_position_ratio), min(x), max(x))
-        )
+        k_fus = float(np.interp(np.clip(root_quarter_chord_position_ratio, min(x), max(x)), x, y))
 
         return k_fus
 
@@ -1559,11 +1537,6 @@ class FigureDigitization(om.ExplicitComponent):
         x_1_0.sort()
         y_1_0.sort()
 
-        k_taper0 = interpolate.interp1d(x_0, y_0)
-        k_taper025 = interpolate.interp1d(x_0_25, y_0_25)
-        k_taper05 = interpolate.interp1d(x_0_5, y_0_5)
-        k_taper1 = interpolate.interp1d(x_1_0, y_1_0)
-
         if (
             (aspect_ratio != np.clip(aspect_ratio, min(x_1_0), max(x_1_0)))
             or (aspect_ratio != np.clip(aspect_ratio, min(x_0_5), max(x_0_5)))
@@ -1575,10 +1548,10 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_taper = [
-            float(k_taper0(np.clip(aspect_ratio, min(x_0), max(x_0)))),
-            float(k_taper025(np.clip(aspect_ratio, min(x_0_25), max(x_0_25)))),
-            float(k_taper05(np.clip(aspect_ratio, min(x_0_5), max(x_0_5)))),
-            float(k_taper1(np.clip(aspect_ratio, min(x_1_0), max(x_1_0)))),
+            float(np.interp(np.clip(aspect_ratio, min(x_0), max(x_0)), x_0, y_0)),
+            float(np.interp(np.clip(aspect_ratio, min(x_0_25), max(x_0_25)), x_0_25, y_0_25)),
+            float(np.interp(np.clip(aspect_ratio, min(x_0_5), max(x_0_5)), x_0_5, y_0_5)),
+            float(np.interp(np.clip(aspect_ratio, min(x_1_0), max(x_1_0)), x_1_0, y_1_0)),
         ]
 
         if taper_ratio != np.clip(taper_ratio, 0.0, 1.0):
@@ -1587,7 +1560,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_intermediate = float(
-            interpolate.interp1d([0.0, 0.25, 0.5, 1.0], k_taper)(np.clip(taper_ratio, 0.0, 1.0))
+            np.interp(np.clip(taper_ratio, 0.0, 1.0), [0.0, 0.25, 0.5, 1.0], k_taper)
         )
 
         # Reading the second part of the figure (b) relative to the different wing sweep angles.
@@ -1614,12 +1587,6 @@ class FigureDigitization(om.ExplicitComponent):
         x_sw_60.sort()
         y_sw_60.sort()
 
-        k_sweep0 = interpolate.interp1d(x_sw_0, y_sw_0)
-        k_sweep15 = interpolate.interp1d(x_sw_15, y_sw_15)
-        k_sweep30 = interpolate.interp1d(x_sw_30, y_sw_30)
-        k_sweep45 = interpolate.interp1d(x_sw_45, y_sw_45)
-        k_sweep60 = interpolate.interp1d(x_sw_60, y_sw_60)
-
         if (
             (k_intermediate != np.clip(k_intermediate, min(x_sw_45), max(x_sw_45)))
             or (k_intermediate != np.clip(k_intermediate, min(x_sw_30), max(x_sw_30)))
@@ -1632,11 +1599,11 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         k_sweep = [
-            float(k_sweep0(np.clip(k_intermediate, min(x_sw_0), max(x_sw_0)))),
-            float(k_sweep15(np.clip(k_intermediate, min(x_sw_15), max(x_sw_15)))),
-            float(k_sweep30(np.clip(k_intermediate, min(x_sw_30), max(x_sw_30)))),
-            float(k_sweep45(np.clip(k_intermediate, min(x_sw_45), max(x_sw_45)))),
-            float(k_sweep60(np.clip(k_intermediate, min(x_sw_60), max(x_sw_60)))),
+            float(np.interp(np.clip(k_intermediate, min(x_sw_0), max(x_sw_0)), x_sw_0, y_sw_0)),
+            float(np.interp(np.clip(k_intermediate, min(x_sw_15), max(x_sw_15)), x_sw_15, y_sw_15)),
+            float(np.interp(np.clip(k_intermediate, min(x_sw_30), max(x_sw_30)), x_sw_30, y_sw_30)),
+            float(np.interp(np.clip(k_intermediate, min(x_sw_45), max(x_sw_45)), x_sw_45, y_sw_45)),
+            float(np.interp(np.clip(k_intermediate, min(x_sw_60), max(x_sw_60)), x_sw_60, y_sw_60)),
         ]
 
         if sweep_25 != np.clip(sweep_25, 0.0, 60.0):
@@ -1645,9 +1612,7 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         cl_r_lift = float(
-            interpolate.interp1d([0.0, 15.0, 30.0, 45.0, 60.0], k_sweep)(
-                np.clip(sweep_25, 0.0, 60.0)
-            )
+            np.interp(np.clip(sweep_25, 0.0, 60.0), [0.0, 15.0, 30.0, 45.0, 60.0], k_sweep)
         )
 
         return cl_r_lift
@@ -1906,8 +1871,8 @@ class FigureDigitization(om.ExplicitComponent):
 def interpolate_database(database, tag_x: str, tag_y: List[str], input_x: float):
     database_x, database_y = filter_nans(database, tag_x, tag_y)
 
-    output_y = interpolate.interp1d(database_x, database_y)(
-        np.clip(input_x, min(database_x), max(database_x))
+    output_y = float(
+        np.interp(np.clip(input_x, min(database_x), max(database_x)), database_x, database_y)
     )
 
     return output_y
@@ -1924,11 +1889,11 @@ def filter_nans(database: pd.DataFrame, tag_x: str, tag_y: List[str]):
         database_y = database[tag]
         errors = np.logical_or(errors, np.isnan(database_y))
 
-    database_x = database[tag_x][np.logical_not(errors)].to_list()
+    database_x = database[tag_x][np.logical_not(errors)].to_numpy()
     database_y = []
 
     for tag in tag_y:
-        database_y.append(database[tag][np.logical_not(errors)].to_list())
+        database_y.append(database[tag][np.logical_not(errors)].to_numpy())
 
     # For simplicity, if there is only one tag_y we return the array directly
     if len(database_y) == 1:
