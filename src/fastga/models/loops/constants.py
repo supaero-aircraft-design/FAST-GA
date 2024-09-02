@@ -12,8 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-POINTS_NB_WING = 50
-
 SUBMODEL_WING_AREA_GEOM_LOOP = "submodel.loop.wing_area.update.geom"
 SUBMODEL_WING_AREA_GEOM_CONS = "submodel.loop.wing_area.constraint.geom"
 SUBMODEL_WING_AREA_AERO_LOOP = "submodel.loop.wing_area.update.aero"

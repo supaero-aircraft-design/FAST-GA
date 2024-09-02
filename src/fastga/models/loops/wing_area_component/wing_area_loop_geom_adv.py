@@ -16,26 +16,25 @@ advanced computation of the maximum fuel weight.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-import copy
 
 import numpy as np
 import openmdao.api as om
-from openmdao.utils.units import convert_units
-
-from scipy.optimize import fsolve
 
 import fastoad.api as oad
 
-from fastga.command.api import generate_block_analysis
 
-from fastga.models.geometry.geom_components.wing.components.compute_wing_y import ComputeWingY
+from fastga.models.geometry.geom_components.wing.components.compute_wing_y import (
+    ComputeWingY,
+)
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l2_l3 import (
     ComputeWingL2AndL3,
 )
 from fastga.models.geometry.geom_components.wing.components.compute_wing_l1_l4 import (
     ComputeWingL1AndL4,
 )
-from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import ComputeMFWAdvanced
+from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
+    ComputeMFWAdvanced,
+)
 
 from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
 
@@ -44,7 +43,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class UpdateMFW(om.Group):
     def setup(self):
-
         self.add_subsystem(
             name="update_wing_y",
             subsys=ComputeWingY(),
@@ -98,7 +96,8 @@ class UpdateMFW(om.Group):
         )
 
         self.connect(
-            "update_wing_y.data:geometry:wing:span", "update_wing_mfw.data:geometry:wing:span"
+            "update_wing_y.data:geometry:wing:span",
+            "update_wing_mfw.data:geometry:wing:span",
         )
         self.connect(
             "update_wing_y.data:geometry:wing:root:y",
@@ -130,7 +129,6 @@ class UpdateMFW(om.Group):
 
 class DistanceToMFWForUpdate(om.ImplicitComponent):
     def setup(self):
-
         self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", units="kg", val=np.nan)
 
@@ -141,14 +139,14 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         # Wing area will likely be in tens of m2 while MFW will likely be in hundreds of
         residuals["wing_area"] = (
             inputs["data:weight:aircraft:MFW"] - inputs["data:mission:sizing:fuel"]
         ) / 10.0
 
-    def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
+    def linearize(
+        self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None
+    ):
         jacobian["wing_area", "data:weight:aircraft:MFW"] = 0.1
         jacobian["wing_area", "data:mission:sizing:fuel"] = -0.1
 
@@ -158,7 +156,6 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
 )
 class UpdateWingAreaGeomAdvanced(om.Group):
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
         # Solvers setup
         self.nonlinear_solver = om.NewtonSolver(solve_subsystems=True)
@@ -171,7 +168,6 @@ class UpdateWingAreaGeomAdvanced(om.Group):
         self.linear_solver = om.DirectSolver()
 
     def setup(self):
-
         self.add_subsystem(
             name="update_area",
             subsys=DistanceToMFWForUpdate(),
@@ -180,27 +176,29 @@ class UpdateWingAreaGeomAdvanced(om.Group):
         )
         self.add_subsystem(name="update_mfw", subsys=UpdateMFW(), promotes_inputs=["*"])
 
-        self.connect("update_mfw.data:weight:aircraft:MFW", "update_area.data:weight:aircraft:MFW")
+        self.connect(
+            "update_mfw.data:weight:aircraft:MFW",
+            "update_area.data:weight:aircraft:MFW",
+        )
 
 
 class DistanceToMFWForConstraint(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
         self.add_input("MFW", units="kg", val=np.nan)
 
-        self.add_output("data:constraints:wing:additional_fuel_capacity", val=0.0, units="kg")
+        self.add_output(
+            "data:constraints:wing:additional_fuel_capacity", val=0.0, units="kg"
+        )
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:constraints:wing:additional_fuel_capacity"] = (
             inputs["MFW"] - inputs["data:mission:sizing:fuel"]
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:constraints:wing:additional_fuel_capacity", "MFW"] = 1.0
         partials[
             "data:constraints:wing:additional_fuel_capacity", "data:mission:sizing:fuel"
@@ -208,7 +206,8 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_WING_AREA_GEOM_CONS, "fastga.submodel.loop.wing_area.constraint.geom.advanced"
+    SUBMODEL_WING_AREA_GEOM_CONS,
+    "fastga.submodel.loop.wing_area.constraint.geom.advanced",
 )
 class ConstraintWingAreaGeomAdvanced(om.Group):
     """
@@ -218,7 +217,6 @@ class ConstraintWingAreaGeomAdvanced(om.Group):
     """
 
     def setup(self):
-
         # To rename the wing area as it is used in the UpdateMFW() group
         weight_sum = om.AddSubtractComp()
         weight_sum.add_equation(
@@ -245,4 +243,6 @@ class ConstraintWingAreaGeomAdvanced(om.Group):
         )
 
         self.connect("wing_area_rename.wing_area", "update_mfw.wing_area")
-        self.connect("update_mfw.data:weight:aircraft:MFW", "compute_constraints_area.MFW")
+        self.connect(
+            "update_mfw.data:weight:aircraft:MFW", "compute_constraints_area.MFW"
+        )

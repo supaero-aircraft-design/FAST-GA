@@ -19,8 +19,9 @@ POINTS_NB_WING = 50
 
 class ComputeWingTankYArray(om.ExplicitComponent):
     def setup(self):
-
-        self.add_input("data:geometry:propulsion:tank:y_beginning", units="m", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_beginning", units="m", val=np.nan
+        )
         self.add_input("data:geometry:propulsion:tank:y_end", units="m", val=np.nan)
 
         self.add_output(
@@ -42,7 +43,6 @@ class ComputeWingTankYArray(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # For reference, np.linspace(a, b, POINTS_NB) is equal to a + (b - a) *
         # np.arange(POINTS_NB) / (POINTS_NB - 1) which is more easily differentiable
         outputs["data:geometry:propulsion:tank:y_array"] = np.linspace(
@@ -52,10 +52,11 @@ class ComputeWingTankYArray(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
-            "data:geometry:propulsion:tank:y_array", "data:geometry:propulsion:tank:y_beginning"
+            "data:geometry:propulsion:tank:y_array",
+            "data:geometry:propulsion:tank:y_beginning",
         ] = 1.0 - np.arange(POINTS_NB_WING) / (POINTS_NB_WING - 1)
         partials[
-            "data:geometry:propulsion:tank:y_array", "data:geometry:propulsion:tank:y_end"
+            "data:geometry:propulsion:tank:y_array",
+            "data:geometry:propulsion:tank:y_end",
         ] = np.arange(POINTS_NB_WING) / (POINTS_NB_WING - 1)
