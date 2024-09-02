@@ -14,11 +14,20 @@
 import openmdao.api as om
 import numpy as np
 
-POINTS_NB_WING = 50
-
 
 class ComputeWingTankYArray(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
+
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         self.add_input(
             "data:geometry:propulsion:tank:y_beginning", units="m", val=np.nan
         )
@@ -27,8 +36,8 @@ class ComputeWingTankYArray(om.ExplicitComponent):
         self.add_output(
             "data:geometry:propulsion:tank:y_array",
             units="m",
-            shape=POINTS_NB_WING,
-            val=np.linspace(1.0, 6.0, POINTS_NB_WING),
+            shape=nb_point_wing,
+            val=np.linspace(1.0, 6.0, nb_point_wing),
         )
 
         self.declare_partials(
@@ -38,25 +47,29 @@ class ComputeWingTankYArray(om.ExplicitComponent):
                 "data:geometry:propulsion:tank:y_end",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.zeros(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.zeros(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         # For reference, np.linspace(a, b, POINTS_NB) is equal to a + (b - a) *
         # np.arange(POINTS_NB) / (POINTS_NB - 1) which is more easily differentiable
         outputs["data:geometry:propulsion:tank:y_array"] = np.linspace(
             inputs["data:geometry:propulsion:tank:y_beginning"][0],
             inputs["data:geometry:propulsion:tank:y_end"][0],
-            POINTS_NB_WING,
+            nb_point_wing,
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         partials[
             "data:geometry:propulsion:tank:y_array",
             "data:geometry:propulsion:tank:y_beginning",
-        ] = 1.0 - np.arange(POINTS_NB_WING) / (POINTS_NB_WING - 1)
+        ] = 1.0 - np.arange(nb_point_wing) / (nb_point_wing - 1)
         partials[
             "data:geometry:propulsion:tank:y_array",
             "data:geometry:propulsion:tank:y_end",
-        ] = np.arange(POINTS_NB_WING) / (POINTS_NB_WING - 1)
+        ] = np.arange(nb_point_wing) / (nb_point_wing - 1)

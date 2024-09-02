@@ -46,7 +46,6 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 def test_update_wing_area_group():
-
     # Driven by fuel
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:fuel_type", 1.0)
@@ -62,9 +61,13 @@ def test_update_wing_area_group():
 
     problem = run_system(UpdateWingAreaGroup(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 20.05, atol=1e-2)
-    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.61, atol=1e-2)
     assert_allclose(
-        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), -27, atol=1
+        problem["data:constraints:wing:additional_CL_capacity"], 0.61, atol=1e-2
+    )
+    assert_allclose(
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"),
+        -27,
+        atol=1,
     )
     # not 0.0 because MFW not updated
 
@@ -83,14 +86,17 @@ def test_update_wing_area_group():
 
     problem = run_system(UpdateWingAreaGroup(), ivc)
     assert_allclose(problem["data:geometry:wing:area"], 14.02, atol=1e-2)
-    assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.0, atol=1e-2)
     assert_allclose(
-        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 273, atol=1
+        problem["data:constraints:wing:additional_CL_capacity"], 0.0, atol=1e-2
+    )
+    assert_allclose(
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"),
+        273,
+        atol=1,
     )
 
 
 def test_simple_geom():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:chord", 1.549, units="m")
@@ -110,7 +116,9 @@ def test_simple_geom():
 
     problem_cons = run_system(ConstraintWingAreaGeomSimple(), ivc_cons)
     assert_allclose(
-        problem_cons.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"),
+        problem_cons.get_val(
+            "data:constraints:wing:additional_fuel_capacity", units="kg"
+        ),
         -27.0,
         atol=1,
     )
@@ -119,7 +127,6 @@ def test_simple_geom():
 
 
 def test_simple_cl():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_loop.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
@@ -147,7 +154,6 @@ def test_simple_cl():
 
 
 def test_advanced_geom():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
@@ -171,7 +177,9 @@ def test_advanced_geom():
     ivc_loop.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
     ivc_loop.add_output("data:geometry:landing_gear:type", val=1.0)
     ivc_loop.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
-    ivc_loop.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
+    ivc_loop.add_output(
+        "data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m"
+    )
     ivc_loop.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
 
     problem_loop = run_system(UpdateWingAreaGeomAdvanced(), ivc_loop)
@@ -201,22 +209,27 @@ def test_advanced_geom():
     ivc_cons.add_output("data:geometry:propulsion:tank:TE_chord_percentage", val=0.05)
     ivc_cons.add_output("data:geometry:landing_gear:type", val=1.0)
     ivc_cons.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
-    ivc_cons.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
+    ivc_cons.add_output(
+        "data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m"
+    )
     ivc_cons.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
     ivc_cons.add_output("data:geometry:wing:area", val=21.73, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaGeomAdvanced(), ivc_cons)
-    assert_allclose(problem_cons["data:constraints:wing:additional_fuel_capacity"], 0.0, atol=1)
+    assert_allclose(
+        problem_cons["data:constraints:wing:additional_fuel_capacity"], 0.0, atol=1
+    )
 
     problem_cons.check_partials(compact_print=True)
 
 
 def test_advanced_cl():
-
     xml_file = "beechcraft_76.xml"
 
     inputs_list = list_inputs(
-        UpdateWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine")
+        UpdateWingAreaLiftEquilibrium(
+            propulsion_id="fastga.wrapper.propulsion.basicIC_engine"
+        )
     )
     # Research independent input value in .xml file
     ivc_loop = get_indep_var_comp(
@@ -228,13 +241,17 @@ def test_advanced_cl():
     ivc_loop.add_output("data:mission:sizing:taxi_out:thrust", val=1500, units="N")
 
     problem_loop = run_system(
-        UpdateWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+        UpdateWingAreaLiftEquilibrium(
+            propulsion_id="fastga.wrapper.propulsion.basicIC_engine"
+        ),
         ivc_loop,
     )
     assert_allclose(problem_loop["wing_area"], 17.39, atol=1e-2)
 
     inputs_list = list_inputs(
-        ConstraintWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine")
+        ConstraintWingAreaLiftEquilibrium(
+            propulsion_id="fastga.wrapper.propulsion.basicIC_engine"
+        )
     )
 
     inputs_list.remove("data:geometry:wing:area")
@@ -248,7 +265,9 @@ def test_advanced_cl():
     ivc_cons.add_output("data:mission:sizing:taxi_out:thrust", val=1500, units="N")
     ivc_cons.add_output("data:geometry:wing:area", val=17.39, units="m**2")
     problem_cons = run_system(
-        ConstraintWingAreaLiftEquilibrium(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
+        ConstraintWingAreaLiftEquilibrium(
+            propulsion_id="fastga.wrapper.propulsion.basicIC_engine"
+        ),
         ivc_cons,
     )
     assert_allclose(
@@ -259,7 +278,6 @@ def test_advanced_cl():
 
 
 def test_update_wing_area():
-
     ivc_geom = om.IndepVarComp()
     ivc_geom.add_output("wing_area:geometric", val=20.0, units="m**2")
     ivc_geom.add_output("wing_area:aerodynamic", val=15.0, units="m**2")
@@ -280,12 +298,15 @@ def test_update_wing_area():
 
 
 def test_update_wing_position():
-
-    ivc = get_indep_var_comp(list_inputs(UpdateWingPosition()), __file__, "beechcraft_76.xml")
+    ivc = get_indep_var_comp(
+        list_inputs(UpdateWingPosition()), __file__, "beechcraft_76.xml"
+    )
 
     problem = run_system(UpdateWingPosition(), ivc)
     assert_allclose(
-        problem.get_val("data:geometry:wing:MAC:at25percent:x", units="m"), 3.4550, atol=1e-3
+        problem.get_val("data:geometry:wing:MAC:at25percent:x", units="m"),
+        3.4550,
+        atol=1e-3,
     )
 
     problem.check_partials(compact_print=True)

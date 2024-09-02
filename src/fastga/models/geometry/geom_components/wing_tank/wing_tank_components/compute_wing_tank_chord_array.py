@@ -14,11 +14,19 @@
 import openmdao.api as om
 import numpy as np
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTankChordArray(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
+
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
@@ -27,15 +35,15 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:tank:y_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
 
         self.add_output(
             "data:geometry:propulsion:tank:chord_array",
             units="m",
-            shape=POINTS_NB_WING,
-            val=np.linspace(1.4, 1.0, POINTS_NB_WING),
+            shape=nb_point_wing,
+            val=np.linspace(1.4, 1.0, nb_point_wing),
         )
 
         self.declare_partials(
@@ -47,19 +55,18 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
                 "data:geometry:wing:tip:y",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.zeros(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.zeros(nb_point_wing),
         )
         self.declare_partials(
             of="data:geometry:propulsion:tank:chord_array",
             wrt="data:geometry:propulsion:tank:y_array",
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
         root_y = inputs["data:geometry:wing:root:y"]
@@ -76,7 +83,6 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
         outputs["data:geometry:propulsion:tank:chord_array"] = chord_array
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
         root_y = inputs["data:geometry:wing:root:y"]
@@ -87,11 +93,15 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
         partials[
             "data:geometry:propulsion:tank:chord_array", "data:geometry:wing:root:chord"
         ] = np.where(
-            y_array < root_y, np.full_like(y_array, 1e-6), 1.0 - y_array / (tip_y - root_y)
+            y_array < root_y,
+            np.full_like(y_array, 1e-6),
+            1.0 - y_array / (tip_y - root_y),
         )
         partials[
             "data:geometry:propulsion:tank:chord_array", "data:geometry:wing:tip:chord"
-        ] = np.where(y_array < root_y, np.full_like(y_array, 1e-6), y_array / (tip_y - root_y))
+        ] = np.where(
+            y_array < root_y, np.full_like(y_array, 1e-6), y_array / (tip_y - root_y)
+        )
 
         partials[
             "data:geometry:propulsion:tank:chord_array", "data:geometry:wing:root:y"
@@ -109,7 +119,8 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
         )
 
         partials[
-            "data:geometry:propulsion:tank:chord_array", "data:geometry:propulsion:tank:y_array"
+            "data:geometry:propulsion:tank:chord_array",
+            "data:geometry:propulsion:tank:y_array",
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),

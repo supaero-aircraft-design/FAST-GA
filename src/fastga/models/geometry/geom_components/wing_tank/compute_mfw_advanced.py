@@ -46,33 +46,67 @@ class ComputeMFWAdvanced(om.Group):
     will have to be updated as well as it uses the same approach.
     """
 
-    def setup(self):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
 
-        self.add_subsystem(name="tank_span", subsys=ComputeWingTankSpans(), promotes=["*"])
-        self.add_subsystem(name="tank_y_array", subsys=ComputeWingTankYArray(), promotes=["*"])
+    def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
+
         self.add_subsystem(
-            name="tank_chord_array", subsys=ComputeWingTankChordArray(), promotes=["*"]
+            name="tank_span", subsys=ComputeWingTankSpans(), promotes=["*"]
         )
         self.add_subsystem(
-            name="tank_relative_thickness_array",
-            subsys=ComputeWingTankRelativeThicknessArray(),
+            name="tank_y_array",
+            subsys=ComputeWingTankYArray(number_points_wing_mfw=nb_point_wing),
             promotes=["*"],
         )
         self.add_subsystem(
-            name="tank_thickness_array", subsys=ComputeWingTankThicknessArray(), promotes=["*"]
+            name="tank_chord_array",
+            subsys=ComputeWingTankChordArray(number_points_wing_mfw=nb_point_wing),
+            promotes=["*"],
         )
         self.add_subsystem(
-            name="tank_width_array", subsys=ComputeWingTankWidthArray(), promotes=["*"]
+            name="tank_relative_thickness_array",
+            subsys=ComputeWingTankRelativeThicknessArray(
+                number_points_wing_mfw=nb_point_wing
+            ),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            name="tank_thickness_array",
+            subsys=ComputeWingTankThicknessArray(number_points_wing_mfw=nb_point_wing),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            name="tank_width_array",
+            subsys=ComputeWingTankWidthArray(number_points_wing_mfw=nb_point_wing),
+            promotes=["*"],
         )
         self.add_subsystem(
             name="tank_reduced_width_array",
-            subsys=ComputeWingTankReducedWidthArray(),
+            subsys=ComputeWingTankReducedWidthArray(
+                number_points_wing_mfw=nb_point_wing
+            ),
             promotes=["*"],
         )
         self.add_subsystem(
             name="tank_cross_section_array",
-            subsys=ComputeWingTankCrossSectionArray(),
+            subsys=ComputeWingTankCrossSectionArray(
+                number_points_wing_mfw=nb_point_wing
+            ),
             promotes=["*"],
         )
-        self.add_subsystem(name="tanks_capacity", subsys=ComputeWingTanksCapacity(), promotes=["*"])
-        self.add_subsystem(name="mfw", subsys=ComputeMFWFromWingTanksCapacity(), promotes=["*"])
+        self.add_subsystem(
+            name="tanks_capacity",
+            subsys=ComputeWingTanksCapacity(number_points_wing_mfw=nb_point_wing),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            name="mfw", subsys=ComputeMFWFromWingTanksCapacity(), promotes=["*"]
+        )

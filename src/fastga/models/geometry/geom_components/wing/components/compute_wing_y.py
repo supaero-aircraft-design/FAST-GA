@@ -26,7 +26,6 @@ class ComputeWingY(om.ExplicitComponent):
     """Wing Ys estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -67,7 +66,6 @@ class ComputeWingY(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_break = inputs["data:geometry:wing:kink:span_ratio"]
@@ -86,23 +84,22 @@ class ComputeWingY(om.ExplicitComponent):
         outputs["data:geometry:wing:tip:y"] = y4_wing
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_break = inputs["data:geometry:wing:kink:span_ratio"]
 
-        partials["data:geometry:wing:span", "data:geometry:wing:aspect_ratio"] = 0.5 * np.sqrt(
-            wing_area / lambda_wing
+        partials["data:geometry:wing:span", "data:geometry:wing:aspect_ratio"] = (
+            0.5 * np.sqrt(wing_area / lambda_wing)
         )
         partials["data:geometry:wing:span", "data:geometry:wing:area"] = 0.5 * np.sqrt(
             lambda_wing / wing_area
         )
 
-        partials["data:geometry:wing:tip:y", "data:geometry:wing:aspect_ratio"] = 0.25 * np.sqrt(
-            wing_area / lambda_wing
+        partials["data:geometry:wing:tip:y", "data:geometry:wing:aspect_ratio"] = (
+            0.25 * np.sqrt(wing_area / lambda_wing)
         )
-        partials["data:geometry:wing:tip:y", "data:geometry:wing:area"] = 0.25 * np.sqrt(
-            lambda_wing / wing_area
+        partials["data:geometry:wing:tip:y", "data:geometry:wing:area"] = (
+            0.25 * np.sqrt(lambda_wing / wing_area)
         )
 
         partials["data:geometry:wing:kink:y", "data:geometry:wing:aspect_ratio"] = (
@@ -111,6 +108,6 @@ class ComputeWingY(om.ExplicitComponent):
         partials["data:geometry:wing:kink:y", "data:geometry:wing:area"] = (
             0.5 * np.sqrt(lambda_wing / wing_area) * wing_break
         )
-        partials["data:geometry:wing:kink:y", "data:geometry:wing:kink:span_ratio"] = 0.5 * np.sqrt(
-            lambda_wing * wing_area
+        partials["data:geometry:wing:kink:y", "data:geometry:wing:kink:span_ratio"] = (
+            0.5 * np.sqrt(lambda_wing * wing_area)
         )

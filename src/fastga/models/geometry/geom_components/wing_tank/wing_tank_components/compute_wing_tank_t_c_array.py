@@ -14,11 +14,19 @@
 import openmdao.api as om
 import numpy as np
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
+
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input("data:geometry:wing:root:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
@@ -27,14 +35,14 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:tank:y_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
 
         self.add_output(
             "data:geometry:propulsion:tank:relative_thickness_array",
-            shape=POINTS_NB_WING,
-            val=np.full(POINTS_NB_WING, 0.15),
+            shape=nb_point_wing,
+            val=np.full(nb_point_wing, 0.15),
         )
 
         self.declare_partials(
@@ -46,19 +54,18 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
                 "data:geometry:wing:tip:y",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.zeros(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.zeros(nb_point_wing),
         )
         self.declare_partials(
             of="data:geometry:propulsion:tank:relative_thickness_array",
             wrt="data:geometry:propulsion:tank:y_array",
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
         root_y = inputs["data:geometry:wing:root:y"]
@@ -72,10 +79,11 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
             root_tc + y_array * (tip_tc - root_tc) / (tip_y - root_y),
         )
 
-        outputs["data:geometry:propulsion:tank:relative_thickness_array"] = relative_thickness_array
+        outputs["data:geometry:propulsion:tank:relative_thickness_array"] = (
+            relative_thickness_array
+        )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
         root_y = inputs["data:geometry:wing:root:y"]
@@ -87,22 +95,28 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
             "data:geometry:propulsion:tank:relative_thickness_array",
             "data:geometry:wing:root:thickness_ratio",
         ] = np.where(
-            y_array < root_y, np.full_like(y_array, 1e-6), 1.0 - y_array / (tip_y - root_y)
+            y_array < root_y,
+            np.full_like(y_array, 1e-6),
+            1.0 - y_array / (tip_y - root_y),
         )
         partials[
             "data:geometry:propulsion:tank:relative_thickness_array",
             "data:geometry:wing:tip:thickness_ratio",
-        ] = np.where(y_array < root_y, np.full_like(y_array, 1e-6), y_array / (tip_y - root_y))
+        ] = np.where(
+            y_array < root_y, np.full_like(y_array, 1e-6), y_array / (tip_y - root_y)
+        )
 
         partials[
-            "data:geometry:propulsion:tank:relative_thickness_array", "data:geometry:wing:root:y"
+            "data:geometry:propulsion:tank:relative_thickness_array",
+            "data:geometry:wing:root:y",
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),
             y_array * (tip_tc - root_tc) / (tip_y - root_y) ** 2.0,
         )
         partials[
-            "data:geometry:propulsion:tank:relative_thickness_array", "data:geometry:wing:tip:y"
+            "data:geometry:propulsion:tank:relative_thickness_array",
+            "data:geometry:wing:tip:y",
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),

@@ -16,23 +16,30 @@ import numpy as np
 
 from scipy.integrate import trapz
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTanksCapacity(om.ExplicitComponent):
     """Compute the capacity of the two wing tanks inside the aircraft wings."""
 
-    def setup(self):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
 
+    def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
         self.add_input(
             "data:geometry:propulsion:tank:cross_section_array",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             units="m**2",
             val=np.nan,
         )
         self.add_input(
             "data:geometry:propulsion:tank:y_array",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             units="m",
             val=np.nan,
         )
@@ -48,14 +55,15 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
             of="data:geometry:propulsion:tank:capacity",
             wrt="*",
             method="exact",
-            rows=np.zeros(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.zeros(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
-        cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
+        cross_section_array = inputs[
+            "data:geometry:propulsion:tank:cross_section_array"
+        ]
 
         # trapz should be equivalent to sum(
         #   (
@@ -69,9 +77,10 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
-        cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
+        cross_section_array = inputs[
+            "data:geometry:propulsion:tank:cross_section_array"
+        ]
 
         first_order_delta_y = y_array[1:] - y_array[:-1]
         second_order_delta_y = y_array[2:] - y_array[:-2]
@@ -95,7 +104,8 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
         )
 
         partials[
-            "data:geometry:propulsion:tank:capacity", "data:geometry:propulsion:tank:y_array"
+            "data:geometry:propulsion:tank:capacity",
+            "data:geometry:propulsion:tank:y_array",
         ] = partials_y
         partials[
             "data:geometry:propulsion:tank:capacity",

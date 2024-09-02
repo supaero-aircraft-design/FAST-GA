@@ -218,8 +218,8 @@ class ConstraintWingAreaGeomAdvanced(om.Group):
 
     def setup(self):
         # To rename the wing area as it is used in the UpdateMFW() group
-        weight_sum = om.AddSubtractComp()
-        weight_sum.add_equation(
+        area_rename = om.AddSubtractComp()
+        area_rename.add_equation(
             "wing_area",
             [
                 "data:geometry:wing:area",
@@ -229,7 +229,7 @@ class ConstraintWingAreaGeomAdvanced(om.Group):
             units="m**2",
         )
 
-        self.add_subsystem("wing_area_rename", weight_sum, promotes=["data:*"])
+        self.add_subsystem("wing_area_rename", area_rename, promotes=["data:*"])
         self.add_subsystem(
             name="update_mfw",
             subsys=UpdateMFW(),

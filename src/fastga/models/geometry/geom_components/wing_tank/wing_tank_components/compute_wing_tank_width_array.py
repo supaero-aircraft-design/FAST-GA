@@ -14,8 +14,6 @@
 import openmdao.api as om
 import numpy as np
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTankWidthArray(om.ExplicitComponent):
     """
@@ -23,7 +21,17 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
     Does not consider reduction due to engine and landing.
     """
 
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
+
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
@@ -32,15 +40,15 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
         self.add_input(
             "data:geometry:propulsion:tank:chord_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
 
         self.add_output(
             "data:geometry:propulsion:tank:width_array",
             units="m",
-            shape=POINTS_NB_WING,
-            val=np.full(POINTS_NB_WING, 0.2),
+            shape=nb_point_wing,
+            val=np.full(nb_point_wing, 0.2),
         )
 
         self.declare_partials(
@@ -49,8 +57,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
                 "data:geometry:propulsion:tank:chord_array",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
         self.declare_partials(
             of="data:geometry:propulsion:tank:width_array",
@@ -61,14 +69,17 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
                 "data:geometry:wing:aileron:chord_ratio",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.zeros(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.zeros(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
-        te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
+        le_chord_percentage = inputs[
+            "data:geometry:propulsion:tank:LE_chord_percentage"
+        ]
+        te_chord_percentage = inputs[
+            "data:geometry:propulsion:tank:TE_chord_percentage"
+        ]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
 
@@ -82,16 +93,20 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
-        te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
+        le_chord_percentage = inputs[
+            "data:geometry:propulsion:tank:LE_chord_percentage"
+        ]
+        te_chord_percentage = inputs[
+            "data:geometry:propulsion:tank:TE_chord_percentage"
+        ]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
 
         chord_array = inputs["data:geometry:propulsion:tank:chord_array"]
 
         partials[
-            "data:geometry:propulsion:tank:width_array", "data:geometry:propulsion:tank:chord_array"
+            "data:geometry:propulsion:tank:width_array",
+            "data:geometry:propulsion:tank:chord_array",
         ] = np.full_like(
             chord_array,
             1.0
@@ -110,7 +125,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
 
         if flap_chord_ratio > aileron_chord_ratio:
             partials[
-                "data:geometry:propulsion:tank:width_array", "data:geometry:flap:chord_ratio"
+                "data:geometry:propulsion:tank:width_array",
+                "data:geometry:flap:chord_ratio",
             ] = -chord_array
             partials[
                 "data:geometry:propulsion:tank:width_array",
@@ -118,7 +134,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             ] = -np.zeros_like(chord_array)
         else:
             partials[
-                "data:geometry:propulsion:tank:width_array", "data:geometry:flap:chord_ratio"
+                "data:geometry:propulsion:tank:width_array",
+                "data:geometry:flap:chord_ratio",
             ] = -np.zeros_like(chord_array)
             partials[
                 "data:geometry:propulsion:tank:width_array",

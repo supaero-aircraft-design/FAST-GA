@@ -14,8 +14,6 @@
 import openmdao.api as om
 import numpy as np
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
     """
@@ -25,21 +23,31 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.in_engine = np.full(POINTS_NB_WING, False)
-        self.in_landing_gear = np.full(POINTS_NB_WING, False)
+        self.in_engine = None
+        self.in_landing_gear = None
+
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
 
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input(
             "data:geometry:propulsion:tank:width_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
         self.add_input(
             "data:geometry:propulsion:tank:y_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
 
@@ -56,16 +64,16 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
         self.add_output(
             "data:geometry:propulsion:tank:reduced_width_array",
             units="m",
-            shape=POINTS_NB_WING,
-            val=np.full(POINTS_NB_WING, 0.2),
+            shape=nb_point_wing,
+            val=np.full(nb_point_wing, 0.2),
         )
 
         self.declare_partials(
             of="data:geometry:propulsion:tank:reduced_width_array",
             wrt="data:geometry:propulsion:tank:width_array",
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
         # It actually does depend on them as the formula says but for the sake of what we will do
         # it should not be necessary
@@ -85,9 +93,10 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.in_engine = np.full(POINTS_NB_WING, False)
-        self.in_landing_gear = np.full(POINTS_NB_WING, False)
+        self.in_engine = np.full(nb_point_wing, False)
+        self.in_landing_gear = np.full(nb_point_wing, False)
 
         lg_type = inputs["data:geometry:landing_gear:type"]
         y_lg = inputs["data:geometry:landing_gear:y"]
@@ -112,7 +121,9 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
 
         if lg_type == 1.0:
             self.in_landing_gear = np.where(
-                y_array < y_lg, np.full_like(self.in_landing_gear, True), self.in_landing_gear
+                y_array < y_lg,
+                np.full_like(self.in_landing_gear, True),
+                self.in_landing_gear,
             )
 
         # For now 50% size reduction in the fuel tank capacity due to the engine
@@ -123,13 +134,18 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             self.in_landing_gear, reduced_width_array * 0.2, reduced_width_array
         )
 
-        outputs["data:geometry:propulsion:tank:reduced_width_array"] = reduced_width_array
+        outputs["data:geometry:propulsion:tank:reduced_width_array"] = (
+            reduced_width_array
+        )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
-        partials_width = np.ones_like(inputs["data:geometry:propulsion:tank:width_array"])
+        partials_width = np.ones_like(
+            inputs["data:geometry:propulsion:tank:width_array"]
+        )
         partials_width = np.where(self.in_engine, partials_width * 0.5, partials_width)
-        partials_width = np.where(self.in_landing_gear, partials_width * 0.2, partials_width)
+        partials_width = np.where(
+            self.in_landing_gear, partials_width * 0.2, partials_width
+        )
 
         partials[
             "data:geometry:propulsion:tank:reduced_width_array",

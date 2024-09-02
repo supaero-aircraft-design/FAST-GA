@@ -27,21 +27,29 @@
 import openmdao.api as om
 import numpy as np
 
-from .compute_wing_tank_y_array import POINTS_NB_WING
-
 
 class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare(
+            "number_points_wing_mfw",
+            default=50,
+            types=int,
+            desc="Number of points to use in the computation of the maximum fuel weight using the "
+            "advanced model. Reducing that number can improve convergence.",
+        )
+
     def setup(self):
+        nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input(
             "data:geometry:propulsion:tank:reduced_width_array",
             units="m",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             val=np.nan,
         )
         self.add_input(
             "data:geometry:propulsion:tank:thickness_array",
-            shape=POINTS_NB_WING,
+            shape=nb_point_wing,
             units="m",
             val=np.nan,
         )
@@ -49,8 +57,8 @@ class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
         self.add_output(
             "data:geometry:propulsion:tank:cross_section_array",
             units="m**2",
-            shape=POINTS_NB_WING,
-            val=np.full(POINTS_NB_WING, 0.02),
+            shape=nb_point_wing,
+            val=np.full(nb_point_wing, 0.02),
         )
 
         self.declare_partials(
@@ -60,12 +68,11 @@ class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
                 "data:geometry:propulsion:tank:reduced_width_array",
             ],
             method="exact",
-            rows=np.arange(POINTS_NB_WING),
-            cols=np.arange(POINTS_NB_WING),
+            rows=np.arange(nb_point_wing),
+            cols=np.arange(nb_point_wing),
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:geometry:propulsion:tank:cross_section_array"] = (
             inputs["data:geometry:propulsion:tank:thickness_array"]
             * inputs["data:geometry:propulsion:tank:reduced_width_array"]
@@ -73,16 +80,11 @@ class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
             "data:geometry:propulsion:tank:cross_section_array",
             "data:geometry:propulsion:tank:thickness_array",
-        ] = (
-            inputs["data:geometry:propulsion:tank:reduced_width_array"] * 0.85
-        )
+        ] = inputs["data:geometry:propulsion:tank:reduced_width_array"] * 0.85
         partials[
             "data:geometry:propulsion:tank:cross_section_array",
             "data:geometry:propulsion:tank:reduced_width_array",
-        ] = (
-            inputs["data:geometry:propulsion:tank:thickness_array"] * 0.85
-        )
+        ] = inputs["data:geometry:propulsion:tank:thickness_array"] * 0.85
