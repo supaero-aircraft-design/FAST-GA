@@ -91,8 +91,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], DELTA_CD_PLAIN_FLAP)
         db = pd.read_csv(file)
 
-        x_15, y_15 = filter_nans(db, "DELTA_F_15_X", ["DELTA_F_15_Y"])
-        x_60, y_60 = filter_nans(db, "DELTA_F_60_X", ["DELTA_F_60_Y"])
+        x_15, y_15 = filter_nans(db, ["DELTA_F_15_X", "DELTA_F_15_Y"])
+        x_60, y_60 = filter_nans(db, ["DELTA_F_60_X", "DELTA_F_60_Y"])
 
         if chord_ratio != np.clip(
             chord_ratio, min(min(x_15), min(x_60)), max(max(x_15), max(x_60))
@@ -132,12 +132,12 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_PLAIN_FLAP)
         db = pd.read_csv(file)
 
-        x_10, y_10 = filter_nans(db, "X_10", ["Y_10"])
-        x_15, y_15 = filter_nans(db, "X_15", ["Y_15"])
-        x_25, y_25 = filter_nans(db, "X_25", ["Y_25"])
-        x_30, y_30 = filter_nans(db, "X_30", ["Y_30"])
-        x_40, y_40 = filter_nans(db, "X_40", ["Y_40"])
-        x_50, y_50 = filter_nans(db, "X_50", ["Y_50"])
+        x_10, y_10 = filter_nans(db, ["X_10", "Y_10"])
+        x_15, y_15 = filter_nans(db, ["X_15", "Y_15"])
+        x_25, y_25 = filter_nans(db, ["X_25", "Y_25"])
+        x_30, y_30 = filter_nans(db, ["X_30", "Y_30"])
+        x_40, y_40 = filter_nans(db, ["X_40", "Y_40"])
+        x_50, y_50 = filter_nans(db, ["X_50", "Y_50"])
 
         if (
             (flap_angle != np.clip(flap_angle, min(x_10), max(x_10)))
@@ -184,10 +184,10 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_DELTA_TH_PLAIN_FLAP)
         db = pd.read_csv(file)
 
-        x_0, y_0 = filter_nans(db, "X_0", ["Y_0"])
-        x_04, y_04 = filter_nans(db, "X_04", ["Y_04"])
-        x_10, y_10 = filter_nans(db, "X_10", ["Y_10"])
-        x_15, y_15 = filter_nans(db, "X_15", ["Y_15"])
+        x_0, y_0 = filter_nans(db, ["X_0", "Y_0"])
+        x_04, y_04 = filter_nans(db, ["X_04", "Y_04"])
+        x_10, y_10 = filter_nans(db, ["X_10", "Y_10"])
+        x_15, y_15 = filter_nans(db, ["X_15", "Y_15"])
 
         if (
             (chord_ratio != np.clip(chord_ratio, min(x_0), max(x_0)))
@@ -235,9 +235,9 @@ class FigureDigitization(om.ExplicitComponent):
         # Figure 10.64 b
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = filter_nans(db, "K_CL_ALPHA", [])[0]
-        k_cl_delta_min_data = filter_nans(db, "K_CL_DELTA_MIN", [])[0]
-        k_cl_delta_max_data = filter_nans(db, "K_CL_DELTA_MAX", [])[0]
+        k_cl_alpha_data = filter_nans(db, ["K_CL_ALPHA"])[0]
+        k_cl_delta_min_data = filter_nans(db, ["K_CL_DELTA_MIN"])[0]
+        k_cl_delta_max_data = filter_nans(db, ["K_CL_DELTA_MAX"])[0]
 
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -284,11 +284,11 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_SINGLE_SLOT)
         db = pd.read_csv(file)
 
-        x_15, y_15 = filter_nans(db, "X_15", ["Y_15"])
-        x_20, y_20 = filter_nans(db, "X_20", ["Y_20"])
-        x_25, y_25 = filter_nans(db, "X_25", ["Y_25"])
-        x_30, y_30 = filter_nans(db, "X_30", ["Y_30"])
-        x_40, y_40 = filter_nans(db, "X_40", ["Y_40"])
+        x_15, y_15 = filter_nans(db, ["X_15", "Y_15"])
+        x_20, y_20 = filter_nans(db, ["X_20", "Y_20"])
+        x_25, y_25 = filter_nans(db, ["X_25", "Y_25"])
+        x_30, y_30 = filter_nans(db, ["X_30", "Y_30"])
+        x_40, y_40 = filter_nans(db, ["X_40", "Y_40"])
 
         if (
             (float(flap_angle) != np.clip(float(flap_angle), min(x_15), max(x_15)))
@@ -334,8 +334,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], BASE_INCREMENT_CL_MAX)
         db = pd.read_csv(file)
 
-        x_plain, y_plain = filter_nans(db, "X_PLAIN_FLAP", ["Y_PLAIN_FLAP"])
-        x_single_slot, y_single_slot = filter_nans(db, "X_SINGLE_SLOT", ["Y_SINGLE_SLOT"])
+        x_plain, y_plain = filter_nans(db, ["X_PLAIN_FLAP", "Y_PLAIN_FLAP"])
+        x_single_slot, y_single_slot = filter_nans(db, ["X_SINGLE_SLOT", "Y_SINGLE_SLOT"])
 
         if flap_type == 0.0:
             if thickness_ratio != np.clip(thickness_ratio, min(x_plain), max(x_plain)):
@@ -389,10 +389,10 @@ class FigureDigitization(om.ExplicitComponent):
         db = pd.read_csv(file)
 
         if flap_type == 1.0 or flap_type == 0.0:
-            x, y = filter_nans(db, "X_PLAIN_SINGLE_SPLIT", ["Y_PLAIN_SINGLE_SPLIT"])
+            x, y = filter_nans(db, ["X_PLAIN_SINGLE_SPLIT", "Y_PLAIN_SINGLE_SPLIT"])
         else:
             _LOGGER.warning("Flap type not recognized, used plain flap instead")
-            x, y = filter_nans(db, "X_PLAIN_SINGLE_SPLIT", ["Y_PLAIN_SINGLE_SPLIT"])
+            x, y = filter_nans(db, ["X_PLAIN_SINGLE_SPLIT", "Y_PLAIN_SINGLE_SPLIT"])
 
         if float(chord_ratio) != np.clip(float(chord_ratio), min(x), max(x)):
             _LOGGER.warning(
@@ -420,8 +420,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K2)
         db = pd.read_csv(file)
 
-        x_plain, y_plain = filter_nans(db, "X_PLAIN_FLAP", ["Y_PLAIN_FLAP"])
-        x_single_slot, y_single_slot = filter_nans(db, "X_SINGLE_SLOT", ["Y_SINGLE_SLOT"])
+        x_plain, y_plain = filter_nans(db, ["X_PLAIN_FLAP", "Y_PLAIN_FLAP"])
+        x_single_slot, y_single_slot = filter_nans(db, ["X_SINGLE_SLOT", "Y_SINGLE_SLOT"])
 
         if flap_type == 0.0:
             if angle != np.clip(angle, min(x_plain), max(x_plain)):
@@ -472,7 +472,7 @@ class FigureDigitization(om.ExplicitComponent):
         if flap_type == 0.0:
             k3 = 1.0
         elif flap_type == 1.0:
-            x, y = filter_nans(db, "X_SINGLE_SLOT", ["Y_SINGLE_SLOT"])
+            x, y = filter_nans(db, ["X_SINGLE_SLOT", "Y_SINGLE_SLOT"])
             reference_angle = 45.0
             if float(angle / reference_angle) != np.clip(
                 float(angle / reference_angle), min(x), max(x)
@@ -514,9 +514,9 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], KB_FLAPS)
         db = pd.read_csv(file)
 
-        x_0, y_0 = filter_nans(db, "X_0", ["Y_0"])
-        x_05, y_05 = filter_nans(db, "X_0.5", ["Y_0.5"])
-        x_1, y_1 = filter_nans(db, "X_1", ["Y_1"])
+        x_0, y_0 = filter_nans(db, ["X_0", "Y_0"])
+        x_05, y_05 = filter_nans(db, ["X_0.5", "Y_0.5"])
+        x_1, y_1 = filter_nans(db, ["X_1", "Y_1"])
 
         if (
             (eta_in != np.clip(eta_in, min(x_0), max(x_0)))
@@ -570,7 +570,7 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], A_DELTA_AIRFOIL)
         db = pd.read_csv(file)
 
-        a_delta = interpolate_database(db, "X", ["Y"], chord_ratio)
+        a_delta = interpolate_database(db, "X", "Y", chord_ratio)
 
         if chord_ratio != np.clip(chord_ratio, 0.0, 1.0):
             _LOGGER.warning(
@@ -600,16 +600,16 @@ class FigureDigitization(om.ExplicitComponent):
                 "Aspect ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        y1 = interpolate_database(db, "X_01", ["Y_01"], aspect_ratio)
-        y2 = interpolate_database(db, "X_02", ["Y_02"], aspect_ratio)
-        y3 = interpolate_database(db, "X_03", ["Y_03"], aspect_ratio)
-        y4 = interpolate_database(db, "X_04", ["Y_04"], aspect_ratio)
-        y5 = interpolate_database(db, "X_05", ["Y_05"], aspect_ratio)
-        y6 = interpolate_database(db, "X_06", ["Y_06"], aspect_ratio)
-        y7 = interpolate_database(db, "X_07", ["Y_07"], aspect_ratio)
-        y8 = interpolate_database(db, "X_08", ["Y_08"], aspect_ratio)
-        y9 = interpolate_database(db, "X_09", ["Y_09"], aspect_ratio)
-        y10 = interpolate_database(db, "X_10", ["Y_10"], aspect_ratio)
+        y1 = interpolate_database(db, "X_01", "Y_01", aspect_ratio)
+        y2 = interpolate_database(db, "X_02", "Y_02", aspect_ratio)
+        y3 = interpolate_database(db, "X_03", "Y_03", aspect_ratio)
+        y4 = interpolate_database(db, "X_04", "Y_04", aspect_ratio)
+        y5 = interpolate_database(db, "X_05", "Y_05", aspect_ratio)
+        y6 = interpolate_database(db, "X_06", "Y_06", aspect_ratio)
+        y7 = interpolate_database(db, "X_07", "Y_07", aspect_ratio)
+        y8 = interpolate_database(db, "X_08", "Y_08", aspect_ratio)
+        y9 = interpolate_database(db, "X_09", "Y_09", aspect_ratio)
+        y10 = interpolate_database(db, "X_10", "Y_10", aspect_ratio)
 
         x = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         y = [y1, y2, y3, y4, y5, y6, y7, y8, y9, y10]
@@ -662,17 +662,17 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_P_FLAPS)
         db = pd.read_csv(file)
 
-        eta_in_1_0 = interpolate_database(db, "taper_1_0_X", ["taper_1_0_Y"], eta_in)
-        eta_out_1_0 = interpolate_database(db, "taper_1_0_X", ["taper_1_0_Y"], eta_out)
+        eta_in_1_0 = interpolate_database(db, "taper_1_0_X", "taper_1_0_Y", eta_in)
+        eta_out_1_0 = interpolate_database(db, "taper_1_0_X", "taper_1_0_Y", eta_out)
 
-        eta_in_0_5 = interpolate_database(db, "taper_0_5_X", ["taper_0_5_Y"], eta_in)
-        eta_out_0_5 = interpolate_database(db, "taper_0_5_X", ["taper_0_5_Y"], eta_out)
+        eta_in_0_5 = interpolate_database(db, "taper_0_5_X", "taper_0_5_Y", eta_in)
+        eta_out_0_5 = interpolate_database(db, "taper_0_5_X", "taper_0_5_Y", eta_out)
 
-        eta_in_0_333 = interpolate_database(db, "taper_0_333_X", ["taper_0_333_Y"], eta_in)
-        eta_out_0_333 = interpolate_database(db, "taper_0_333_X", ["taper_0_333_Y"], eta_out)
+        eta_in_0_333 = interpolate_database(db, "taper_0_333_X", "taper_0_333_Y", eta_in)
+        eta_out_0_333 = interpolate_database(db, "taper_0_333_X", "taper_0_333_Y", eta_out)
 
-        eta_in_0_25 = interpolate_database(db, "taper_0_25_X", ["taper_0_25_Y"], eta_in)
-        eta_out_0_25 = interpolate_database(db, "taper_0_25_X", ["taper_0_25_Y"], eta_out)
+        eta_in_0_25 = interpolate_database(db, "taper_0_25_X", "taper_0_25_Y", eta_in)
+        eta_out_0_25 = interpolate_database(db, "taper_0_25_X", "taper_0_25_Y", eta_out)
 
         taper_array = [0.25, 0.333, 0.5, 1.0]
         eta_in_array = [eta_in_0_25, eta_in_0_333, eta_in_0_5, eta_in_1_0]
@@ -707,13 +707,13 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], DELTA_CM_DELTA_CL_REF)
         db = pd.read_csv(file)
 
-        k_21 = interpolate_database(db, "TOC_21_X", ["TOC_21_Y"], chord_ratio)
-        k_18 = interpolate_database(db, "TOC_18_X", ["TOC_18_Y"], chord_ratio)
-        k_15 = interpolate_database(db, "TOC_15_X", ["TOC_15_Y"], chord_ratio)
-        k_12 = interpolate_database(db, "TOC_12_X", ["TOC_12_Y"], chord_ratio)
-        k_09 = interpolate_database(db, "TOC_09_X", ["TOC_09_Y"], chord_ratio)
-        k_06 = interpolate_database(db, "TOC_06_X", ["TOC_06_Y"], chord_ratio)
-        k_03 = interpolate_database(db, "TOC_03_X", ["TOC_03_Y"], chord_ratio)
+        k_21 = interpolate_database(db, "TOC_21_X", "TOC_21_Y", chord_ratio)
+        k_18 = interpolate_database(db, "TOC_18_X", "TOC_18_Y", chord_ratio)
+        k_15 = interpolate_database(db, "TOC_15_X", "TOC_15_Y", chord_ratio)
+        k_12 = interpolate_database(db, "TOC_12_X", "TOC_12_Y", chord_ratio)
+        k_09 = interpolate_database(db, "TOC_09_X", "TOC_09_Y", chord_ratio)
+        k_06 = interpolate_database(db, "TOC_06_X", "TOC_06_Y", chord_ratio)
+        k_03 = interpolate_database(db, "TOC_03_X", "TOC_03_Y", chord_ratio)
 
         toc_array = [0.03, 0.06, 0.09, 0.12, 0.15, 0.18, 0.21]
         k_array = [k_03, k_06, k_09, k_12, k_15, k_18, k_21]
@@ -743,15 +743,15 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_DELTA)
         db = pd.read_csv(file)
 
-        eta_in_1_0 = interpolate_database(db, "X_1_0", ["Y_1_0"], eta_in)
-        eta_in_0_5 = interpolate_database(db, "X_0_5", ["Y_0_5"], eta_in)
-        eta_in_0_333 = interpolate_database(db, "X_0_333", ["Y_0_333"], eta_in)
-        eta_in_0_2 = interpolate_database(db, "X_0_2", ["Y_0_2"], eta_in)
+        eta_in_1_0 = interpolate_database(db, "X_1_0", "Y_1_0", eta_in)
+        eta_in_0_5 = interpolate_database(db, "X_0_5", "Y_0_5", eta_in)
+        eta_in_0_333 = interpolate_database(db, "X_0_333", "Y_0_333", eta_in)
+        eta_in_0_2 = interpolate_database(db, "X_0_2", "Y_0_2", eta_in)
 
-        eta_out_1_0 = interpolate_database(db, "X_1_0", ["Y_1_0"], eta_out)
-        eta_out_0_5 = interpolate_database(db, "X_0_5", ["Y_0_5"], eta_out)
-        eta_out_0_333 = interpolate_database(db, "X_0_333", ["Y_0_333"], eta_out)
-        eta_out_0_2 = interpolate_database(db, "X_0_2", ["Y_0_2"], eta_out)
+        eta_out_1_0 = interpolate_database(db, "X_1_0", "Y_1_0", eta_out)
+        eta_out_0_5 = interpolate_database(db, "X_0_5", "Y_0_5", eta_out)
+        eta_out_0_333 = interpolate_database(db, "X_0_333", "Y_0_333", eta_out)
+        eta_out_0_2 = interpolate_database(db, "X_0_2", "Y_0_2", eta_out)
 
         taper_array = [0.2, 0.333, 0.5, 1.0]
         eta_in_array = [eta_in_0_2, eta_in_0_333, eta_in_0_5, eta_in_1_0]
@@ -784,8 +784,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_AR_FUSELAGE)
         db = pd.read_csv(file)
 
-        x_06, y_06 = filter_nans(db, "X_06", ["Y_06"])
-        x_10, y_10 = filter_nans(db, "X_10", ["Y_10"])
+        x_06, y_06 = filter_nans(db, ["X_06", "Y_06"])
+        x_10, y_10 = filter_nans(db, ["X_10", "Y_10"])
 
         x_value = span / avg_fuselage_depth
 
@@ -822,7 +822,7 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_VH)
         db = pd.read_csv(file)
 
-        x, y = filter_nans(db, "X", ["Y"])
+        x, y = filter_nans(db, ["X", "Y"])
 
         if float(area_ratio) != np.clip(float(area_ratio), min(x), max(x)):
             _LOGGER.warning("Area ratio value outside of the range in Roskam's book, value clipped")
@@ -856,9 +856,9 @@ class FigureDigitization(om.ExplicitComponent):
             )
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = filter_nans(db, "K_CL_ALPHA", [])[0]
-        k_ch_alpha_min_data = filter_nans(db, "K_CH_ALPHA_MIN", [])[0]
-        k_ch_alpha_max_data = filter_nans(db, "K_CH_ALPHA_MAX", [])[0]
+        k_cl_alpha_data = filter_nans(db, ["K_CL_ALPHA"])[0]
+        k_ch_alpha_min_data = filter_nans(db, ["K_CH_ALPHA_MIN"])[0]
+        k_ch_alpha_max_data = filter_nans(db, ["K_CH_ALPHA_MAX"])[0]
 
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -899,9 +899,9 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CH_ALPHA_TH)
         db = pd.read_csv(file)
 
-        thickness_ratio_data = filter_nans(db, "THICKNESS_RATIO", [])[0]
-        ch_alpha_min_data = filter_nans(db, "CH_ALPHA_MIN", [])[0]
-        ch_alpha_max_data = filter_nans(db, "CH_ALPHA_MAX", [])[0]
+        thickness_ratio_data = filter_nans(db, ["THICKNESS_RATIO"])[0]
+        ch_alpha_min_data = filter_nans(db, ["CH_ALPHA_MIN"])[0]
+        ch_alpha_max_data = filter_nans(db, ["CH_ALPHA_MAX"])[0]
 
         if float(thickness_ratio) != np.clip(
             float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
@@ -956,10 +956,10 @@ class FigureDigitization(om.ExplicitComponent):
 
         cl_alpha_th = 6.3 + np.clip(thickness_ratio, 0.0, 0.2) / 0.2 * (7.3 - 6.3)
 
-        k_cl_alpha_data = filter_nans(db, "K_CL_ALPHA", [])[0]
-        k_ch_delta_min_data = filter_nans(db, "K_CH_DELTA_MIN", [])[0]
-        k_ch_delta_avg_data = filter_nans(db, "K_CH_DELTA_AVG", [])[0]
-        k_ch_delta_max_data = filter_nans(db, "K_CH_DELTA_MAX", [])[0]
+        k_cl_alpha_data = filter_nans(db, ["K_CL_ALPHA"])[0]
+        k_ch_delta_min_data = filter_nans(db, ["K_CH_DELTA_MIN"])[0]
+        k_ch_delta_avg_data = filter_nans(db, ["K_CH_DELTA_AVG"])[0]
+        k_ch_delta_max_data = filter_nans(db, ["K_CH_DELTA_MAX"])[0]
 
         if float(airfoil_lift_coefficient / cl_alpha_th) != np.clip(
             float(airfoil_lift_coefficient / cl_alpha_th),
@@ -1010,7 +1010,7 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CH_DELTA_TH)
         db = pd.read_csv(file)
 
-        thickness_ratio_data = filter_nans(db, "THICKNESS_RATIO", [])[0]
+        thickness_ratio_data = filter_nans(db, ["THICKNESS_RATIO"])[0]
 
         if float(thickness_ratio) != np.clip(
             float(thickness_ratio), min(thickness_ratio_data), max(thickness_ratio_data)
@@ -1019,12 +1019,8 @@ class FigureDigitization(om.ExplicitComponent):
                 "Thickness ratio value outside of the range in Roskam's book, value clipped"
             )
 
-        ch_delta_min = interpolate_database(
-            db, "THICKNESS_RATIO", ["CH_DELTA_MIN"], thickness_ratio
-        )
-        ch_delta_max = interpolate_database(
-            db, "THICKNESS_RATIO", ["CH_DELTA_MAX"], thickness_ratio
-        )
+        ch_delta_min = interpolate_database(db, "THICKNESS_RATIO", "CH_DELTA_MIN", thickness_ratio)
+        ch_delta_max = interpolate_database(db, "THICKNESS_RATIO", "CH_DELTA_MAX", thickness_ratio)
 
         if chord_ratio != np.clip(chord_ratio, 0.1, 0.4):
             _LOGGER.warning(
@@ -1050,7 +1046,7 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_FUS)
         db = pd.read_csv(file)
 
-        x, y = filter_nans(db, "X_0_25_RATIO", ["K_FUS"])
+        x, y = filter_nans(db, ["X_0_25_RATIO", "K_FUS"])
 
         if float(root_quarter_chord_position_ratio) != np.clip(
             float(root_quarter_chord_position_ratio), min(x), max(x)
@@ -1080,8 +1076,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_BETA_SWEEP)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, sweep_50_data, sweep_contribution) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "SWEEP_50", "SWEEP_CONTRIBUTION"]
+        taper_ratio_data, aspect_ratio_data, sweep_50_data, sweep_contribution = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "SWEEP_50", "SWEEP_CONTRIBUTION"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1127,8 +1123,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_M_LAMBDA)
         db = pd.read_csv(file)
 
-        swept_aspect_ratio_data, (swept_mach_data, k_m_lambda_data) = filter_nans(
-            db, "AR_SWEPT", ["M_SWEPT", "SWEEP_COMPRESSIBILITY_CORRECTION"]
+        swept_aspect_ratio_data, swept_mach_data, k_m_lambda_data = filter_nans(
+            db, ["AR_SWEPT", "M_SWEPT", "SWEEP_COMPRESSIBILITY_CORRECTION"]
         )
 
         if float(swept_aspect_ratio) != np.clip(
@@ -1174,8 +1170,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_FUSELAGE)
         db = pd.read_csv(file)
 
-        swept_aspect_ratio_data, (lf_to_b_data, k_fuselage_data) = filter_nans(
-            db, "AR_SWEPT", ["LF_TO_B_RATIO", "K_FUSELAGE"]
+        swept_aspect_ratio_data, lf_to_b_data, k_fuselage_data = filter_nans(
+            db, ["AR_SWEPT", "LF_TO_B_RATIO", "K_FUSELAGE"]
         )
 
         if float(swept_aspect_ratio) != np.clip(
@@ -1223,8 +1219,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_BETA_AR)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, ar_contribution) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "ASPECT_RATIO_CONTRIBUTION"]
+        taper_ratio_data, aspect_ratio_data, ar_contribution = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "ASPECT_RATIO_CONTRIBUTION"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1272,8 +1268,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_BETA_GAMMA)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, sweep_50_data, dihedral_contribution) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "SWEEP_50", "DIHEDRAL_CONTRIBUTION"]
+        taper_ratio_data, aspect_ratio_data, sweep_50_data, dihedral_contribution = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "SWEEP_50", "DIHEDRAL_CONTRIBUTION"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1320,8 +1316,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_M_GAMMA)
         db = pd.read_csv(file)
 
-        swept_aspect_ratio_data, (swept_mach_data, k_m_gamma_data) = filter_nans(
-            db, "AR_SWEPT", ["M_SWEPT", "DIHEDRAL_COMPRESSIBILITY_CORRECTION"]
+        swept_aspect_ratio_data, swept_mach_data, k_m_gamma_data = filter_nans(
+            db, ["AR_SWEPT", "M_SWEPT", "DIHEDRAL_COMPRESSIBILITY_CORRECTION"]
         )
 
         if float(swept_aspect_ratio) != np.clip(
@@ -1368,8 +1364,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_TWIST)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, twist_correction) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "TWIST_CORRECTION"]
+        taper_ratio_data, aspect_ratio_data, twist_correction = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "TWIST_CORRECTION"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1419,8 +1415,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_ROLL_DAMPING)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (correct_ar_data, corrected_sweep_data, roll_damping_data) = filter_nans(
-            db, "TAPER_RATIO", ["CORRECTED_AR", "CORRECTED_SWEEP", "ROLL_DAMPING_PARAMETER"]
+        taper_ratio_data, correct_ar_data, corrected_sweep_data, roll_damping_data = filter_nans(
+            db, ["TAPER_RATIO", "CORRECTED_AR", "CORRECTED_SWEEP", "ROLL_DAMPING_PARAMETER"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1472,8 +1468,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], K_CDI_ROLL_DAMPING)
         db = pd.read_csv(file)
 
-        sweep_25_data, (aspect_ratio_data, cdi_roll_damping_data) = filter_nans(
-            db, "SWEEP_25", ["ASPECT_RATIO", "CDI_ROLL_DAMPING_PARAMETER"]
+        sweep_25_data, aspect_ratio_data, cdi_roll_damping_data = filter_nans(
+            db, ["SWEEP_25", "ASPECT_RATIO", "CDI_ROLL_DAMPING_PARAMETER"]
         )
 
         if float(sweep_25) != np.clip(float(sweep_25), min(sweep_25_data), max(sweep_25_data)):
@@ -1520,19 +1516,19 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_R_LIFT_PART_A)
         db = pd.read_csv(file)
 
-        x_0, y_0 = filter_nans(db, "TAPER_RATIO_0_X", ["TAPER_RATIO_0_Y"])
+        x_0, y_0 = filter_nans(db, ["TAPER_RATIO_0_X", "TAPER_RATIO_0_Y"])
         x_0.sort()
         y_0.sort()
 
-        x_0_25, y_0_25 = filter_nans(db, "TAPER_RATIO_025_X", ["TAPER_RATIO_025_Y"])
+        x_0_25, y_0_25 = filter_nans(db, ["TAPER_RATIO_025_X", "TAPER_RATIO_025_Y"])
         x_0_25.sort()
         y_0_25.sort()
 
-        x_0_5, y_0_5 = filter_nans(db, "TAPER_RATIO_05_X", ["TAPER_RATIO_05_Y"])
+        x_0_5, y_0_5 = filter_nans(db, ["TAPER_RATIO_05_X", "TAPER_RATIO_05_Y"])
         x_0_5.sort()
         y_0_5.sort()
 
-        x_1_0, y_1_0 = filter_nans(db, "TAPER_RATIO_1_X", ["TAPER_RATIO_1_Y"])
+        x_1_0, y_1_0 = filter_nans(db, ["TAPER_RATIO_1_X", "TAPER_RATIO_1_Y"])
         x_1_0.sort()
         y_1_0.sort()
 
@@ -1566,23 +1562,23 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_R_LIFT_PART_B)
         db = pd.read_csv(file)
 
-        x_sw_0, y_sw_0 = filter_nans(db, "SWEEP_25_0_X", ["SWEEP_25_0_Y"])
+        x_sw_0, y_sw_0 = filter_nans(db, ["SWEEP_25_0_X", "SWEEP_25_0_Y"])
         x_sw_0.sort()
         y_sw_0.sort()
 
-        x_sw_15, y_sw_15 = filter_nans(db, "SWEEP_25_15_X", ["SWEEP_25_15_Y"])
+        x_sw_15, y_sw_15 = filter_nans(db, ["SWEEP_25_15_X", "SWEEP_25_15_Y"])
         x_sw_15.sort()
         y_sw_15.sort()
 
-        x_sw_30, y_sw_30 = filter_nans(db, "SWEEP_25_30_X", ["SWEEP_25_30_Y"])
+        x_sw_30, y_sw_30 = filter_nans(db, ["SWEEP_25_30_X", "SWEEP_25_30_Y"])
         x_sw_30.sort()
         y_sw_30.sort()
 
-        x_sw_45, y_sw_45 = filter_nans(db, "SWEEP_25_45_X", ["SWEEP_25_45_Y"])
+        x_sw_45, y_sw_45 = filter_nans(db, ["SWEEP_25_45_X", "SWEEP_25_45_Y"])
         x_sw_45.sort()
         y_sw_45.sort()
 
-        x_sw_60, y_sw_60 = filter_nans(db, "SWEEP_25_60_X", ["SWEEP_25_60_Y"])
+        x_sw_60, y_sw_60 = filter_nans(db, ["SWEEP_25_60_X", "SWEEP_25_60_Y"])
         x_sw_60.sort()
         y_sw_60.sort()
 
@@ -1630,8 +1626,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CL_R_TWIST_EFFECT)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, twist_effect_data) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "TWIST_EFFECT"]
+        taper_ratio_data, aspect_ratio_data, twist_effect_data = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "TWIST_EFFECT"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1676,8 +1672,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CN_DELTA_A_K_A)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, eta_i_data, correlation_constant) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "SPAN_RATIO", "CORRELATION_CONSTANT"]
+        taper_ratio_data, aspect_ratio_data, eta_i_data, correlation_constant = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "SPAN_RATIO", "CORRELATION_CONSTANT"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1727,8 +1723,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CN_P_TWIST)
         db = pd.read_csv(file)
 
-        taper_ratio_data, (aspect_ratio_data, twist_contribution) = filter_nans(
-            db, "TAPER_RATIO", ["ASPECT_RATIO", "TWIST_CONTRIBUTION"]
+        taper_ratio_data, aspect_ratio_data, twist_contribution = filter_nans(
+            db, ["TAPER_RATIO", "ASPECT_RATIO", "TWIST_CONTRIBUTION"]
         )
 
         if float(taper_ratio) != np.clip(
@@ -1777,8 +1773,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CN_R_LIFT_EFFECT)
         db = pd.read_csv(file)
 
-        static_margin_data, (sweep_25_data, aspect_ratio_data, intermediate_coeff_data) = (
-            filter_nans(db, "STATIC_MARGIN", ["SWEEP_25", "ASPECT_RATIO", "INTERMEDIATE_COEFF"])
+        static_margin_data, sweep_25_data, aspect_ratio_data, intermediate_coeff_data = filter_nans(
+            db, ["STATIC_MARGIN", "SWEEP_25", "ASPECT_RATIO", "INTERMEDIATE_COEFF"]
         )
 
         if float(static_margin) != np.clip(
@@ -1832,8 +1828,8 @@ class FigureDigitization(om.ExplicitComponent):
         file = pth.join(resources.__path__[0], CN_R_DRAG_EFFECT)
         db = pd.read_csv(file)
 
-        static_margin_data, (sweep_25_data, aspect_ratio_data, drag_effect_data) = filter_nans(
-            db, "STATIC_MARGIN", ["SWEEP_25", "ASPECT_RATIO", "DRAG_EFFECT"]
+        static_margin_data, sweep_25_data, aspect_ratio_data, drag_effect_data = filter_nans(
+            db, ["STATIC_MARGIN", "SWEEP_25", "ASPECT_RATIO", "DRAG_EFFECT"]
         )
 
         if float(static_margin) != np.clip(
@@ -1867,11 +1863,11 @@ class FigureDigitization(om.ExplicitComponent):
         return float(drag_effect)
 
 
-def interpolate_database(database, tag_x: str, tag_y: List[str], input_x: float):
+def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
     """
     Utility to interpolate the data csv.
     """
-    database_x, database_y = filter_nans(database, tag_x, tag_y)
+    database_x, database_y = filter_nans(database, [tag_x, tag_y])
 
     output_y = float(
         np.interp(np.clip(input_x, min(database_x), max(database_x)), database_x, database_y)
@@ -1880,25 +1876,15 @@ def interpolate_database(database, tag_x: str, tag_y: List[str], input_x: float)
     return output_y
 
 
-def filter_nans(database: pd.DataFrame, tag_x: str, tag_y: List[str]):
+def filter_nans(database: pd.DataFrame, tags: List[str]) -> List[np.ndarray]:
     """
     Utility function to jointly filter out NaN in the database with the selected tags.
     """
 
-    errors = np.isnan(database[tag_x])
+    filtered_db = database[tags].dropna(axis=0, subset=tags)
 
-    for tag in tag_y:
-        database_y = database[tag]
-        errors = np.logical_or(errors, np.isnan(database_y))
+    database_columns = []
+    for tag in tags:
+        database_columns.append(filtered_db[tag].to_numpy())
 
-    database_x = database[tag_x][np.logical_not(errors)].to_numpy()
-    database_y = []
-
-    for tag in tag_y:
-        database_y.append(database[tag][np.logical_not(errors)].to_numpy())
-
-    # For simplicity, if there is only one tag_y we return the array directly
-    if len(database_y) == 1:
-        return database_x, database_y[0]
-
-    return database_x, database_y
+    return database_columns
