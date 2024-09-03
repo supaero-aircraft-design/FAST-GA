@@ -376,7 +376,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
             added_key = False
             added_key_names = []
             for key in sorted_keys:
-                if key not in saved_dict.keys():
+                if key not in saved_dict:
                     # noinspection PyUnboundLocalVariable
                     file.write(key + " || \n")
                     added_key = True
