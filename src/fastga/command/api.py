@@ -215,7 +215,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                         # noinspection PyBroadException
                         try:
                             spec.loader.exec_module(module)
-                        except:  # noqa: E722
+                        except Exception:  # noqa: E722
                             _LOGGER.info(
                                 "Trying to load %s, but it is not a module!", pth.join(root, name)
                             )
