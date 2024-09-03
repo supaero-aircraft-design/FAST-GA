@@ -340,7 +340,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                             ):
                                                 if key not in dict_to_be_saved.keys():
                                                     dict_to_be_saved[key] = ""
-                            except:  # noqa: E722
+                            except Exception:  # noqa: E722
                                 _LOGGER.info(
                                     "Failed to read %s.%s class parameters!", root_lib, class_name
                                 )
