@@ -344,7 +344,7 @@ def generate_variables_description(subpackage_path: str, overwrite: bool = False
                                 _LOGGER.info(
                                     "Failed to read %s.%s class parameters!", root_lib, class_name
                                 )
-                    except:  # noqa: E722
+                    except Exception:  # noqa: E722
                         if tmp_folder is not None:
                             # noinspection PyUnboundLocalVariable
                             retrieve_original_file(tmp_folder, pth.join(root, name))
