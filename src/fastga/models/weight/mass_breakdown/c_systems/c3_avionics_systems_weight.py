@@ -12,16 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
 import fastoad.api as oad
+import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .constants import SUBMODEL_AVIONICS_SYSTEM_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_AVIONICS_SYSTEM_MASS
-] = "fastga.submodel.weight.mass.system.avionics_systems.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_AVIONICS_SYSTEM_MASS] = (
+    "fastga.submodel.weight.mass.system.avionics_systems.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -40,7 +39,6 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lbm")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
@@ -50,7 +48,6 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_eng = inputs["data:geometry:propulsion:engine:count"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
@@ -82,7 +79,6 @@ class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input(
             "data:weight:systems:avionics:mass_uninstalled",
             val=45.0,
@@ -96,15 +92,13 @@ class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
-        outputs["data:weight:systems:avionics:mass"] = 2.11 * uninstalled_avionics ** 0.933
+        outputs["data:weight:systems:avionics:mass"] = 2.11 * uninstalled_avionics**0.933
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
         partials[
             "data:weight:systems:avionics:mass", "data:weight:systems:avionics:mass_uninstalled"
-        ] = (2.11 * 0.993 * uninstalled_avionics ** -0.067)
+        ] = 2.11 * 0.993 * uninstalled_avionics**-0.067

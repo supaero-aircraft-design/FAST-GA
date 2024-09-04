@@ -4,11 +4,9 @@ import openmdao.api as om
 
 class Station02(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_0", units="K", shape=n, val=np.nan)
@@ -26,7 +24,6 @@ class Station02(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_0 = inputs["total_temperature_0"]
         total_pressure_0 = inputs["total_pressure_0"]
 
@@ -36,7 +33,6 @@ class Station02(om.ExplicitComponent):
         outputs["total_pressure_2"] = total_pressure_0 * pi_02
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         n = self.options["number_of_points"]
 
         partials["total_temperature_2", "total_temperature_0"] = np.eye(n)

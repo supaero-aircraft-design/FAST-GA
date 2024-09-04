@@ -27,7 +27,6 @@ class ComputeWingWetArea(ExplicitComponent):
     """Wing wet area estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -38,7 +37,6 @@ class ComputeWingWetArea(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2

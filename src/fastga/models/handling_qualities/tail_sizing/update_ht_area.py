@@ -46,7 +46,6 @@ class UpdateHTArea(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         self.add_subsystem(
             "aero_coeff_landing",
             _ComputeAeroCoeff(landing=True),
@@ -101,7 +100,6 @@ class UpdateHTArea(om.Group):
         excludes: Optional[Union[str, List[str]]] = None,
         iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
-
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
@@ -126,7 +124,6 @@ class HTPConstraints(om.ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def takeoff_rotation(self, inputs):
-
         n_engines = inputs["data:geometry:propulsion:engine:count"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_mac = inputs["data:geometry:wing:MAC:length"]
@@ -210,7 +207,6 @@ class HTPConstraints(om.ExplicitComponent):
         return area
 
     def landing(self, inputs):
-
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
         wing_area = inputs["data:geometry:wing:area"]
@@ -443,7 +439,6 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.options.declare("landing", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
@@ -473,7 +468,6 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         mlw = inputs["data:weight:aircraft:MLW"]
@@ -507,7 +501,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
             v_r = vs0 * 1.3
             # Evaluate aircraft overall angle (aoa)
             cl0_landing = cl0_clean_wing + cl_flaps_landing
-            cl_landing = weight / (0.5 * rho * v_r ** 2 * wing_area)
+            cl_landing = weight / (0.5 * rho * v_r**2 * wing_area)
             alpha = (cl_landing - cl0_landing) / cl_alpha_wing * 180 / np.pi
         else:
             # Define aircraft overall angle (aoa)

@@ -21,7 +21,6 @@ from .propeller_thrust import PropellerMaxThrust
 
 class TurboshaftMaxThrustPowerLimit(Turboshaft):
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_subsystem(
@@ -41,11 +40,9 @@ class TurboshaftMaxThrustPowerLimit(Turboshaft):
 
 class DistanceToLimitPowerLimit(om.ImplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("shaft_power", units="kW", shape=n, val=np.nan)
@@ -58,7 +55,6 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         shaft_power = inputs["shaft_power"]
         shaft_power_limit = inputs["shaft_power_limit"]
 
@@ -66,13 +62,12 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
         # print("Constraints", total_temperature_45, opr, shaft_power)
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
         shaft_power = inputs["shaft_power"]
         shaft_power_limit = inputs["shaft_power_limit"]
 
         jacobian["required_thrust", "shaft_power"] = np.diag(1.0 / shaft_power_limit)
         jacobian["required_thrust", "shaft_power_limit"] = np.diag(
-            -shaft_power / shaft_power_limit ** 2.0
+            -shaft_power / shaft_power_limit**2.0
         )
 
         jacobian["required_thrust", "required_thrust"] = np.diag(np.zeros_like(shaft_power))
@@ -83,7 +78,6 @@ class DistanceToLimitPowerLimit(om.ImplicitComponent):
 
 class TurboshaftMaxThrustOPRLimit(Turboshaft):
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_subsystem(
@@ -103,11 +97,9 @@ class TurboshaftMaxThrustOPRLimit(Turboshaft):
 
 class DistanceToLimitOPRLimit(om.ImplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("opr", shape=n, val=np.nan)
@@ -120,19 +112,17 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         opr = inputs["opr"]
         opr_limit = inputs["opr_limit"]
 
         residuals["required_thrust"] = opr / opr_limit - 1.0
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
         opr = inputs["opr"]
         opr_limit = inputs["opr_limit"]
 
         jacobian["required_thrust", "opr"] = np.diag(1.0 / opr_limit)
-        jacobian["required_thrust", "opr_limit"] = np.diag(-opr / opr_limit ** 2.0)
+        jacobian["required_thrust", "opr_limit"] = np.diag(-opr / opr_limit**2.0)
 
         jacobian["required_thrust", "required_thrust"] = np.diag(np.zeros_like(opr))
 
@@ -142,7 +132,6 @@ class DistanceToLimitOPRLimit(om.ImplicitComponent):
 
 class TurboshaftMaxThrustITTLimit(Turboshaft):
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_subsystem(
@@ -162,11 +151,9 @@ class TurboshaftMaxThrustITTLimit(Turboshaft):
 
 class DistanceToLimitITTLimit(om.ImplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_45", units="degK", shape=n, val=np.nan)
@@ -179,19 +166,17 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         total_temperature_45 = inputs["total_temperature_45"]
         itt_limit = inputs["itt_limit"]
 
         residuals["required_thrust"] = total_temperature_45 / itt_limit - 1.0
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_45 = inputs["total_temperature_45"]
         itt_limit = inputs["itt_limit"]
 
         jacobian["required_thrust", "total_temperature_45"] = np.diag(1.0 / itt_limit)
-        jacobian["required_thrust", "itt_limit"] = np.diag(-total_temperature_45 / itt_limit ** 2.0)
+        jacobian["required_thrust", "itt_limit"] = np.diag(-total_temperature_45 / itt_limit**2.0)
 
         jacobian["required_thrust", "required_thrust"] = np.diag(
             np.zeros_like(total_temperature_45)
@@ -203,7 +188,6 @@ class DistanceToLimitITTLimit(om.ImplicitComponent):
 
 class TurboshaftMaxThrustPropellerThrustLimit(Turboshaft):
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_subsystem(
@@ -223,11 +207,9 @@ class TurboshaftMaxThrustPropellerThrustLimit(Turboshaft):
 
 class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("propeller_thrust", units="N", shape=n, val=np.nan)
@@ -242,18 +224,16 @@ class DistanceToLimitPropellerThrustLimit(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         propeller_thrust = inputs["propeller_thrust"]
         propeller_max_thrust = inputs["propeller_max_thrust"]
 
         residuals["required_thrust"] = propeller_thrust / propeller_max_thrust - 1.0
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
         propeller_thrust = inputs["propeller_thrust"]
         propeller_max_thrust = inputs["propeller_max_thrust"]
 
         jacobian["required_thrust", "propeller_thrust"] = np.diag(1.0 / propeller_max_thrust)
         jacobian["required_thrust", "propeller_max_thrust"] = np.diag(
-            -propeller_thrust / propeller_max_thrust ** 2.0
+            -propeller_thrust / propeller_max_thrust**2.0
         )

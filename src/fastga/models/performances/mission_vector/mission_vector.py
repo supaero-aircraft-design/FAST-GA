@@ -38,12 +38,10 @@ class MissionVector(om.Group):
         self.linear_solver = om.DirectSolver()
 
     def initialize(self):
-
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
         self.options.declare("out_file", default="", types=str)
 
     def setup(self):
-
         number_of_points = POINTS_NB_CLIMB + POINTS_NB_CRUISE + POINTS_NB_DESCENT
 
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])

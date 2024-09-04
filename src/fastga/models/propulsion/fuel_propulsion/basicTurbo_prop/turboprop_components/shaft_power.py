@@ -4,11 +4,9 @@ import openmdao.api as om
 
 class ShaftPower(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
@@ -35,7 +33,6 @@ class ShaftPower(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         air_mass_flow = inputs["air_mass_flow"]
         fuel_air_ratio = inputs["fuel_air_ratio"]
         compressor_bleed_ratio = inputs["compressor_bleed_ratio"]

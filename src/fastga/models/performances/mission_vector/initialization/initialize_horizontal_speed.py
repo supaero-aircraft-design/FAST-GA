@@ -19,13 +19,11 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
     """Initializes the horizontal airspeed at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input(
@@ -41,18 +39,15 @@ class InitializeHorizontalSpeed(om.ExplicitComponent):
         self.add_output("horizontal_speed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def setup_partials(self):
-
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         true_airspeed = inputs["true_airspeed"]
         gamma = inputs["gamma"] * np.pi / 180.0
 
         outputs["horizontal_speed"] = true_airspeed * np.cos(gamma)
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         true_airspeed = inputs["true_airspeed"]
         gamma = inputs["gamma"] * np.pi / 180.0
 

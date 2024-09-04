@@ -24,13 +24,11 @@ class InitializeGamma(om.ExplicitComponent):
     """Initializes the climb angle at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
@@ -55,7 +53,6 @@ class InitializeGamma(om.ExplicitComponent):
         self.add_output("gamma", val=np.full(number_of_points, 0.0), units="deg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cruise_altitude = np.array(inputs["data:mission:sizing:main_route:cruise:altitude"]).item()
         climb_rate_sl = float(inputs["data:mission:sizing:main_route:climb:climb_rate:sea_level"])
         climb_rate_cl = float(

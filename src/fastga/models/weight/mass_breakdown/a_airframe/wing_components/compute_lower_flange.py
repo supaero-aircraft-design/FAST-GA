@@ -15,15 +15,13 @@ in her MAE research project report.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
-
+import openmdao.api as om
 from scipy.integrate import trapz
 from scipy.interpolate import interp1d
+from stdatm import Atmosphere
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
-
-from stdatm import Atmosphere
 
 
 class ComputeLowerFlange(om.ExplicitComponent):
@@ -31,7 +29,6 @@ class ComputeLowerFlange(om.ExplicitComponent):
         self.options.declare("min_fuel_in_wing", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -269,7 +266,7 @@ class ComputeLowerFlange(om.ExplicitComponent):
 
         v_c_tas = atm.true_airspeed
 
-        dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas ** 2.0
+        dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas**2.0
 
         y_vector, weight_array_orig = AerostructuralLoad.compute_relief_force(
             inputs, y_vector_orig, chord_vector_orig, wing_mass, fuel_mass
@@ -286,7 +283,6 @@ class ComputeLowerFlange(om.ExplicitComponent):
         lower_flange_area_neg = np.zeros_like(y_vector)
 
         for load_factor in [load_factor_pos, load_factor_neg]:
-
             cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
             cl_s_actual = cl_s * cl_wing / cl_ref
             cl_s_slip_actual = safety_factor * cl_s_slip * (v_ref / v_c_tas) ** 2.0
@@ -317,10 +313,10 @@ class ComputeLowerFlange(om.ExplicitComponent):
             lower_flange_mass *= 1.1
 
         if not self.options["min_fuel_in_wing"]:
-            outputs[
-                "data:weight:airframe:wing:lower_flange:mass:max_fuel_in_wing"
-            ] = lower_flange_mass
+            outputs["data:weight:airframe:wing:lower_flange:mass:max_fuel_in_wing"] = (
+                lower_flange_mass
+            )
         else:
-            outputs[
-                "data:weight:airframe:wing:lower_flange:mass:min_fuel_in_wing"
-            ] = lower_flange_mass
+            outputs["data:weight:airframe:wing:lower_flange:mass:min_fuel_in_wing"] = (
+                lower_flange_mass
+            )

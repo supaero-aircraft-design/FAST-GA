@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail distance.
+Estimation of horizontal tail distance.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -31,7 +31,6 @@ class ComputeHTDistance(om.ExplicitComponent):
     """Horizontal tail distance estimation"""
 
     def setup(self):
-
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
 
@@ -50,13 +49,12 @@ class ComputeHTDistance(om.ExplicitComponent):
         outputs["data:geometry:horizontal_tail:z:from_wingMAC25"] = span * tail_type
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         tail_type = inputs["data:geometry:has_T_tail"]
         span = inputs["data:geometry:vertical_tail:span"]
 
-        partials[
-            "data:geometry:horizontal_tail:z:from_wingMAC25", "data:geometry:has_T_tail"
-        ] = span
+        partials["data:geometry:horizontal_tail:z:from_wingMAC25", "data:geometry:has_T_tail"] = (
+            span
+        )
         partials[
             "data:geometry:horizontal_tail:z:from_wingMAC25", "data:geometry:vertical_tail:span"
         ] = tail_type

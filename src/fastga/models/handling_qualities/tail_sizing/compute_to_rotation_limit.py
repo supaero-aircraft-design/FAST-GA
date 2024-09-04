@@ -65,7 +65,6 @@ class ComputeTORotationLimitGroup(om.Group):
         excludes: Optional[Union[str, List[str]]] = None,
         iotypes: Optional[Union[str, Tuple[str, str]]] = ("inputs", "outputs"),
     ) -> List[str]:
-
         list_names = []
         if isinstance(iotypes, tuple):
             list_names.extend(list_inputs(component))
@@ -131,7 +130,6 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cl_max_takeoff = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
         cl0_clean = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
         cl_flaps_takeoff = inputs["data:aerodynamics:flaps:takeoff:CL"]
@@ -222,7 +220,6 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.options.declare("landing", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
         self.add_input("data:aerodynamics:wing:low_speed:CM0_clean", val=np.nan)
@@ -243,7 +240,6 @@ class _ComputeAeroCoeffTO(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         cl0_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL0"]

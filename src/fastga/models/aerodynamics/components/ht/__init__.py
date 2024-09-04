@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .downwash_gradient import DownWashGradientComputation
 from .compute_cl_pitch_rate_ht import ComputeCLPitchVelocityHorizontalTail
 from .compute_cl_beta_ht import ComputeClBetaHorizontalTail

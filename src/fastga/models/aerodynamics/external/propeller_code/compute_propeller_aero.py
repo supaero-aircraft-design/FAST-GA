@@ -33,7 +33,6 @@ SPEED_PTS_NB = 10
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.propeller", domain=ModelDomain.AERODYNAMICS)
 class ComputePropellerPerformance(om.Group):
-
     """Computes propeller profiles aerodynamic coefficient and propeller behaviour."""
 
     def initialize(self):
@@ -109,7 +108,6 @@ class ComputePropellerPerformance(om.Group):
 
 class _ComputePropellerPerformance(PropellerCoreModule):
     def initialize(self):
-
         super().initialize()
 
         self.options.declare(
@@ -121,7 +119,6 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         )
 
     def setup(self):
-
         super().setup()
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
@@ -156,7 +153,6 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         _LOGGER.debug("Entering propeller computation")
 
         # Define init values
@@ -231,7 +227,6 @@ class _ComputePropellerPerformance(PropellerCoreModule):
         cd_list = np.zeros((len(radius), len(alpha_interp)))
 
         for idx, _ in enumerate(radius):
-
             index = np.where(sections_profile_position_list < (radius[idx] / radius_max))[0]
             if index is None:
                 profile_name = sections_profile_name_list[0]

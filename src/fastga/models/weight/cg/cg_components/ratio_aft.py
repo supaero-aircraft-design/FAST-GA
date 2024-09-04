@@ -1,5 +1,5 @@
 """
-    Estimation of center of gravity ratio with aft.
+Estimation of center of gravity ratio with aft.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -14,10 +14,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 
 from ..cg_components.constants import (
     SUBMODEL_WING_CG,

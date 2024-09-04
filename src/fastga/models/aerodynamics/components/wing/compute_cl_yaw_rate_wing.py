@@ -36,11 +36,9 @@ class ComputeClYawRateWing(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
@@ -79,7 +77,6 @@ class ComputeClYawRateWing(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
@@ -100,7 +97,7 @@ class ComputeClYawRateWing(FigureDigitization):
 
         # Fuselage contribution neglected
         cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
-        b_coeff = np.sqrt(1.0 - mach ** 2.0 * np.cos(wing_sweep_25) ** 2.0)
+        b_coeff = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
 
         lift_effect_mach_0 = self.cl_r_lifting_effect(wing_ar, wing_taper_ratio, wing_sweep_25)
         mach_correction = (

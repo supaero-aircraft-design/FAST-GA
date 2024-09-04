@@ -27,14 +27,12 @@ class MissionCore(om.Group):
     """Find the conditions necessary for the aircraft equilibrium."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_subsystem(

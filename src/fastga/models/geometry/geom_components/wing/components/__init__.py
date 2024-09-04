@@ -14,6 +14,9 @@ Estimation of wing geometry (components).
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_wing_b50 import ComputeWingB50
 from .compute_wing_l1_l4 import ComputeWingL1AndL4
 from .compute_wing_l2_l3 import ComputeWingL2AndL3

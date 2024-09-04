@@ -12,21 +12,18 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeEngineSupport(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
 
         self.add_output("data:weight:airframe:fuselage:engine_support:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
         engine_mass = inputs["data:weight:propulsion:engine:mass"]

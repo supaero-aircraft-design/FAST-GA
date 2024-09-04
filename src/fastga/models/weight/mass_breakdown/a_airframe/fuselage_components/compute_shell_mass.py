@@ -12,9 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeShell(om.ExplicitComponent):
@@ -50,7 +49,6 @@ class ComputeShell(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:shell:area_density", units="kg/m**2")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         fuselage_max_height = inputs["data:geometry:fuselage:maximum_height"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -84,7 +82,7 @@ class ComputeShell(om.ExplicitComponent):
         volume_nose_skin = (
             2
             * np.pi
-            * fuselage_radius ** 2
+            * fuselage_radius**2
             * (1.0 / 3.0 + 2.0 / 3.0 * (lav / fuselage_radius) ** (8 / 5)) ** (5 / 8)
             * fuselage_skin_thickness
         )
@@ -94,7 +92,7 @@ class ComputeShell(om.ExplicitComponent):
         # Taper parameter validated graphically and by computing the area function of TASOPT
         taper_cone = 0.2
         volume_cone_skin = (
-            np.pi * fuselage_radius * fuselage_skin_thickness * lar * (1 + taper_cone ** 2)
+            np.pi * fuselage_radius * fuselage_skin_thickness * lar * (1 + taper_cone**2)
         )
 
         # Mass of fuselage airframe skin
@@ -107,7 +105,7 @@ class ComputeShell(om.ExplicitComponent):
             k_lambda = 0.56 * (lp_ht / (fuselage_max_height + fuselage_max_width)) ** 0.75
         else:
             k_lambda = 1.15
-        mass_stringer = 0.0117 * k_lambda * fuselage_wet_area ** 1.45 * vd ** 0.39 * n_ult ** 0.316
+        mass_stringer = 0.0117 * k_lambda * fuselage_wet_area**1.45 * vd**0.39 * n_ult**0.316
 
         # Mass of frames (Torenbeek p459 formulas D-8 D-9)
         if mass_stringer + mass_skin > 286.0:
@@ -129,7 +127,7 @@ class ComputeShell(om.ExplicitComponent):
         sigma_mh = sigma_max_skin - ratio_e * delta_p_max * fuselage_radius / thick_shell / 2
 
         # Moment of inertia bending (about y and z axis)
-        i_shell = np.pi * fuselage_radius ** 3 * thick_shell
+        i_shell = np.pi * fuselage_radius**3 * thick_shell
 
         outputs["data:geometry:fuselage:skin_thickness"] = fuselage_skin_thickness
         outputs["data:loads:fuselage:sigmaMh"] = sigma_mh

@@ -14,6 +14,9 @@ Estimation of vertical tail geometry (components)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_vt_chords import ComputeVTChords
 from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
 from .compute_vt_distance import ComputeVTMacPositionFD, ComputeVTMacPositionFL

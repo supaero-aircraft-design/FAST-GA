@@ -54,7 +54,6 @@ class _PrepareMissionBuilder(om.ExplicitComponent):
         self.add_output("data:mission:sizing:holding:v_holding", units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         wing_area = inputs["data:geometry:wing:area"]
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]

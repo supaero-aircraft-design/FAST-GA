@@ -15,7 +15,6 @@ Computes Mach number and unitary Reynolds.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from stdatm import Atmosphere
@@ -30,7 +29,6 @@ class ComputeUnitReynolds(ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
             self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
             self.add_output("data:aerodynamics:low_speed:mach")
@@ -44,7 +42,6 @@ class ComputeUnitReynolds(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["low_speed_aero"]:
             altitude = 0.0
             mach = inputs["data:TLAR:v_approach"] / Atmosphere(altitude).speed_of_sound

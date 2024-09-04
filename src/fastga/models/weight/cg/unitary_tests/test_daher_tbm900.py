@@ -15,7 +15,7 @@
 import pytest
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
+from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 from ..cg import CG
 from ..cg_components.a_airframe import (
     ComputeWingCG,
@@ -37,12 +37,10 @@ from ..cg_components.c_systems import (
     ComputeRecordingSystemsCG,
 )
 from ..cg_components.d_furniture import ComputePassengerSeatsCG
-from ..cg_components.payload import ComputePayloadCG
 from ..cg_components.loadcase import ComputeGroundCGCase, ComputeFlightCGCase
-from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
 from ..cg_components.max_cg_ratio import ComputeMaxMinCGRatio
-
-from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
+from ..cg_components.payload import ComputePayloadCG
+from ..cg_components.ratio_aft import ComputeCGRatioAircraftEmpty
 
 XML_FILE = "daher_tbm900.xml"
 

@@ -21,7 +21,6 @@ class ComputeFuelLinesCG(ExplicitComponent):
     """Fuel lines center of gravity estimation"""
 
     def setup(self):
-
         self.add_input("data:weight:propulsion:engine:CG:x", val=np.nan, units="m")
         self.add_input("data:weight:propulsion:tank:CG:x", val=np.nan, units="m")
 
@@ -30,7 +29,6 @@ class ComputeFuelLinesCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cg_b1 = inputs["data:weight:propulsion:engine:CG:x"]
         cg_b3 = inputs["data:weight:propulsion:tank:CG:x"]
 

@@ -62,16 +62,13 @@ class FuelEngineSet(AbstractFuelPropulsion):
         flight_points.thrust = flight_points.thrust * self.engine_count
 
     def compute_max_power(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         return self.engine.compute_max_power(flight_points)
 
     def compute_weight(self):
         return self.engine.compute_weight() * self.engine_count
 
     def compute_dimensions(self):
-
         return self.engine.compute_dimensions()
 
     def compute_drag(self, mach, unit_reynolds, wing_mac):
-
         return self.engine.compute_drag(mach, unit_reynolds, wing_mac)

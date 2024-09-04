@@ -17,9 +17,8 @@ Defines the analysis and plotting functions for postprocessing of propeller perf
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
 from fastoad.io import VariableIO
+from plotly.subplots import make_subplots
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 

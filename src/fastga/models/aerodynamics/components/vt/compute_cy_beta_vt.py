@@ -33,7 +33,6 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
@@ -59,7 +58,6 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -98,7 +96,6 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             outputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"] = cy_beta_vt
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -122,7 +119,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         elif vt_span / avg_fus_depth < 3.5:
             k_v = 0.418 + 0.166 * vt_span / avg_fus_depth
             d_k_v_d_span = 0.166
-            d_k_v_d_hf = -0.166 * vt_span / avg_fus_depth ** 2.0
+            d_k_v_d_hf = -0.166 * vt_span / avg_fus_depth**2.0
         else:
             k_v = 1.0
             d_k_v_d_span = 0.0
@@ -136,7 +133,7 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
         )
 
         d_k_sigma_d_z_w = 0.4 / z_f
-        d_k_sigma_d_z_f = -0.4 * z_w / z_f ** 2.0
+        d_k_sigma_d_z_f = -0.4 * z_w / z_f**2.0
         d_k_sigma_d_wing_ar = 0.009
         d_k_sigma_d_sweep_25 = (
             3.06
@@ -145,16 +142,14 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             * vt_area
             / wing_area
         )
-        d_k_sigma_d_wing_area = -3.06 / (1.0 + np.cos(wing_sweep_25)) * vt_area / wing_area ** 2.0
+        d_k_sigma_d_wing_area = -3.06 / (1.0 + np.cos(wing_sweep_25)) * vt_area / wing_area**2.0
         d_k_sigma_d_vt_area = 3.06 / (1.0 + np.cos(wing_sweep_25)) / wing_area
 
         if self.options["low_speed_aero"]:
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:wing:aspect_ratio",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_wing_ar * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_wing_ar * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:wing:area",
@@ -162,38 +157,27 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
                 -k_v
                 * cl_alpha_vt
                 * eta_v
-                * (
-                    d_k_sigma_d_wing_area * vt_area / wing_area
-                    - k_sigma * vt_area / wing_area ** 2.0
-                )
+                * (d_k_sigma_d_wing_area * vt_area / wing_area - k_sigma * vt_area / wing_area**2.0)
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:wing:sweep_25",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_sweep_25 * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_sweep_25 * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta", "data:geometry:wing:root:z"
-            ] = (-k_v * cl_alpha_vt * d_k_sigma_d_z_w * eta_v * vt_area / wing_area)
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_z_w * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_z_f * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_z_f * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:aerodynamics:vertical_tail:efficiency",
-            ] = (
-                -k_v * cl_alpha_vt * k_sigma * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * k_sigma * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:aerodynamics:vertical_tail:low_speed:CL_alpha",
-            ] = (
-                -k_v * k_sigma * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * k_sigma * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:vertical_tail:area",
@@ -206,23 +190,17 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:vertical_tail:span",
-            ] = (
-                cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_span
-            )
+            ] = cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_span
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
                 "data:geometry:fuselage:average_depth",
-            ] = (
-                cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_hf
-            )
+            ] = cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_hf
 
         else:
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:wing:aspect_ratio",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_wing_ar * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_wing_ar * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:wing:area",
@@ -230,38 +208,27 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
                 -k_v
                 * cl_alpha_vt
                 * eta_v
-                * (
-                    d_k_sigma_d_wing_area * vt_area / wing_area
-                    - k_sigma * vt_area / wing_area ** 2.0
-                )
+                * (d_k_sigma_d_wing_area * vt_area / wing_area - k_sigma * vt_area / wing_area**2.0)
             )
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:wing:sweep_25",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_sweep_25 * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_sweep_25 * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta", "data:geometry:wing:root:z"
-            ] = (-k_v * cl_alpha_vt * d_k_sigma_d_z_w * eta_v * vt_area / wing_area)
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_z_w * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                -k_v * cl_alpha_vt * d_k_sigma_d_z_f * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * d_k_sigma_d_z_f * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:aerodynamics:vertical_tail:efficiency",
-            ] = (
-                -k_v * cl_alpha_vt * k_sigma * vt_area / wing_area
-            )
+            ] = -k_v * cl_alpha_vt * k_sigma * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:aerodynamics:vertical_tail:cruise:CL_alpha",
-            ] = (
-                -k_v * k_sigma * eta_v * vt_area / wing_area
-            )
+            ] = -k_v * k_sigma * eta_v * vt_area / wing_area
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:vertical_tail:area",
@@ -274,12 +241,8 @@ class ComputeCyBetaVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:vertical_tail:span",
-            ] = (
-                cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_span
-            )
+            ] = cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_span
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
                 "data:geometry:fuselage:average_depth",
-            ] = (
-                cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_hf
-            )
+            ] = cl_alpha_vt * eta_v * k_sigma * vt_area / wing_area * d_k_v_d_hf

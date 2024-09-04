@@ -16,6 +16,8 @@ Test module for mass breakdown functions.
 
 import pytest
 
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..a_airframe import ComputeWingMassAnalytical
 from ..a_airframe.wing_components import (
     ComputeWebMass,
     ComputeLowerFlange,
@@ -27,9 +29,6 @@ from ..a_airframe.wing_components import (
     ComputeSecondaryMass,
     UpdateWingMass,
 )
-from ..a_airframe import ComputeWingMassAnalytical
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 
 XML_FILE = "maxwell_x57.xml"
 
@@ -159,7 +158,6 @@ def test_compute_primary_mass():
 
 
 def test_compute_secondary_mass():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=130.802, units="kg")

@@ -37,7 +37,6 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         else:
@@ -62,14 +61,13 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
             self.add_output("data:aerodynamics:vertical_tail:cruise:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["low_speed_aero"]:
             mach = inputs["data:aerodynamics:low_speed:mach"]
-            beta = np.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach**2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (2.0 * np.pi)
         else:
             mach = inputs["data:aerodynamics:cruise:mach"]
-            beta = np.sqrt(1 - mach ** 2)
+            beta = np.sqrt(1 - mach**2)
             k = inputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] / (beta * 2.0 * np.pi)
 
         tail_type = np.round(inputs["data:geometry:has_T_tail"])
@@ -109,10 +107,10 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
                 2
                 + np.sqrt(
                     4
-                    + lambda_vt ** 2
-                    * beta ** 2
-                    / k ** 2
-                    * (1 + (np.tan(sweep_25_vt / 180.0 * np.pi)) ** 2 / beta ** 2)
+                    + lambda_vt**2
+                    * beta**2
+                    / k**2
+                    * (1 + (np.tan(sweep_25_vt / 180.0 * np.pi)) ** 2 / beta**2)
                 )
             )
         )

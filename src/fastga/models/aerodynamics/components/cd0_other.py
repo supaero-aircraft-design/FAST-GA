@@ -32,7 +32,6 @@ class Cd0Other(ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
@@ -59,7 +58,6 @@ class Cd0Other(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]
 
@@ -86,12 +84,11 @@ class Cd0Other(ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         wing_area = inputs["data:geometry:wing:area"]
 
         if prop_layout == 3.0:
-            d_cd0_cowl_d_wing_area = -0.0267 / wing_area ** 2.0
+            d_cd0_cowl_d_wing_area = -0.0267 / wing_area**2.0
         else:
             d_cd0_cowl_d_wing_area = 0.0
 
@@ -100,12 +97,12 @@ class Cd0Other(ExplicitComponent):
                 "data:aerodynamics:other:low_speed:CD0", "data:aerodynamics:cooling:low_speed:CD0"
             ] = 1.0
             partials["data:aerodynamics:other:low_speed:CD0", "data:geometry:wing:area"] = (
-                d_cd0_cowl_d_wing_area - 0.0253 / wing_area ** 2.0
+                d_cd0_cowl_d_wing_area - 0.0253 / wing_area**2.0
             )
         else:
             partials[
                 "data:aerodynamics:other:cruise:CD0", "data:aerodynamics:cooling:cruise:CD0"
             ] = 1.0
             partials["data:aerodynamics:other:cruise:CD0", "data:geometry:wing:area"] = (
-                d_cd0_cowl_d_wing_area - 0.0253 / wing_area ** 2.0
+                d_cd0_cowl_d_wing_area - 0.0253 / wing_area**2.0
             )

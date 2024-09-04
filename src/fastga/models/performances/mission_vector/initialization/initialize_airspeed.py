@@ -26,13 +26,11 @@ class InitializeAirspeed(om.ExplicitComponent):
     """Initializes the airspeeds at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
@@ -55,7 +53,6 @@ class InitializeAirspeed(om.ExplicitComponent):
         self.add_output("equivalent_airspeed", val=np.full(number_of_points, 50.0), units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         v_tas_cruise = inputs["data:TLAR:v_cruise"]
 
         cd0 = inputs["data:aerodynamics:aircraft:cruise:CD0"]

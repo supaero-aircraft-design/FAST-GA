@@ -20,21 +20,19 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_VOLUME
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUSELAGE_VOLUME
-] = "fastga.submodel.geometry.fuselage.volume.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_VOLUME] = (
+    "fastga.submodel.geometry.fuselage.volume.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_FUSELAGE_VOLUME, "fastga.submodel.geometry.fuselage.volume.legacy")
 class ComputeFuselageVolume(ExplicitComponent):
-
     """
     Fuselage volume computation. Based on geometric consideration assuming the fuselage is
     cylindrical at the center section and conical at the front and back.
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -50,7 +48,6 @@ class ComputeFuselageVolume(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]
@@ -60,12 +57,11 @@ class ComputeFuselageVolume(ExplicitComponent):
         l_f = np.sqrt(b_f * h_f)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = np.pi * l_f ** 2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = np.pi * l_f**2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
 
         outputs["data:geometry:fuselage:volume"] = volume_fus
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]

@@ -38,7 +38,7 @@ def test_aircraft_geometry_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(filename)
+    aircraft_geometry_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -48,7 +48,7 @@ def test_aircraft_geometry_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_geometry_plot(filename, name="Second plot", fig=fig)
+    aircraft_geometry_plot(filename, name="Second plot", fig=fig)
 
 
 def test_evolution_diagram_plot():
@@ -59,7 +59,7 @@ def test_evolution_diagram_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = evolution_diagram(filename)
+    evolution_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -69,7 +69,7 @@ def test_evolution_diagram_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = evolution_diagram(filename, name="Second plot", fig=fig)
+    evolution_diagram(filename, name="Second plot", fig=fig)
 
 
 def test_compressibility_effect_plot():
@@ -80,7 +80,7 @@ def test_compressibility_effect_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = compressibility_effects_diagram(filename)
+    compressibility_effects_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -90,7 +90,7 @@ def test_compressibility_effect_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = compressibility_effects_diagram(filename, name="Second plot", fig=fig)
+    compressibility_effects_diagram(filename, name="Second plot", fig=fig)
 
 
 def test_cl_wing_diagram_plot():
@@ -101,7 +101,7 @@ def test_cl_wing_diagram_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = cl_wing_diagram(filename)
+    cl_wing_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -116,7 +116,7 @@ def test_cl_wing_diagram_plot():
     # adding a new plot with prop on tag
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = cl_wing_diagram(filename, name="Third plot", fig=fig, prop_on=True)
+    cl_wing_diagram(filename, name="Third plot", fig=fig, prop_on=True)
 
 
 def test_cg_lateral_diagram_plot():
@@ -127,7 +127,7 @@ def test_cg_lateral_diagram_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = cg_lateral_diagram(filename)
+    cg_lateral_diagram(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -137,7 +137,7 @@ def test_cg_lateral_diagram_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = cg_lateral_diagram(filename, name="Second plot", fig=fig)
+    cg_lateral_diagram(filename, name="Second plot", fig=fig)
 
 
 def test_mass_breakdown_bar_plot():
@@ -148,7 +148,7 @@ def test_mass_breakdown_bar_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_bar_plot(filename)
+    mass_breakdown_bar_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -158,7 +158,7 @@ def test_mass_breakdown_bar_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_bar_plot(filename, name="Second plot", fig=fig)
+    mass_breakdown_bar_plot(filename, name="Second plot", fig=fig)
 
 
 def test_mass_breakdown_sun_plot():
@@ -169,7 +169,7 @@ def test_mass_breakdown_sun_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = mass_breakdown_sun_plot(filename)
+    mass_breakdown_sun_plot(filename)
 
 
 def test_drag_breakdown_diagram_plot():
@@ -180,7 +180,7 @@ def test_drag_breakdown_diagram_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = drag_breakdown_diagram(filename)
+    drag_breakdown_diagram(filename)
 
 
 def test_payload_range_plot():
@@ -191,7 +191,7 @@ def test_payload_range_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = payload_range(filename)
+    payload_range(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -201,7 +201,7 @@ def test_payload_range_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = payload_range(filename, name="Second plot", fig=fig)
+    payload_range(filename, name="Second plot", fig=fig)
 
 
 def test_aircraft_polar_plot():
@@ -212,7 +212,7 @@ def test_aircraft_polar_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = aircraft_polar(filename)
+    aircraft_polar(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -225,8 +225,8 @@ def test_aircraft_polar_plot():
     fig = aircraft_polar(filename, name="Second plot", fig=fig)
 
     # Same with equilibrated tag
-    fig_2 = aircraft_polar(filename, equilibrated=True)
+    aircraft_polar(filename, equilibrated=True)
 
-    fig_2 = aircraft_polar(filename, name="First plot", equilibrated=True)
+    aircraft_polar(filename, name="First plot", equilibrated=True)
 
-    fig_2 = aircraft_polar(filename, name="Second plot", fig=fig, equilibrated=True)
+    aircraft_polar(filename, name="Second plot", fig=fig, equilibrated=True)

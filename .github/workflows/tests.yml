@@ -20,17 +20,24 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.8", "3.9", "3.10" ]
-        os: [ windows-latest, ubuntu-20.04 ]
+        python-version: [ "3.8", "3.10", "3.11" ]
+        os: [ ubuntu-20.04, windows-latest, macos-latest ]
+        # Exceptions:
+        # - Python 3.8 and 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
+        #   https://github.com/actions/setup-python/issues/696#issuecomment-1637587760
+        exclude:
+          - { python-version: "3.8", os: "macos-latest" }
+        include:
+          - { python-version: "3.8", os: "macos-13" }
 
     steps:
       - uses: actions/checkout@v3
 
       - name: Install Poetry
-        run: pipx install poetry==1.4.2
+        run: pipx install poetry==1.8.3
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'poetry'
@@ -40,26 +47,32 @@ jobs:
           poetry env use ${{ matrix.python-version }}
           poetry install
 
-      - name: Check with Black
+      - name: Check with Ruff
         run: |
-          # Fails if Black format is not respected
-          poetry run black --check .
+          poetry run ruff check .           # Check coding rules
+          poetry run ruff format --check .  # Check format
         shell: bash
 
-      - name: Unit tests
+      - name: Unit tests without coverage
+        run: poetry run pytest src
+        shell: bash
+
+      - name: Unit tests with coverage
+        # Only for runner that will send coverage reports (see below)
+        if: ${{ (runner.os == 'Linux' ) && matrix.python-version == '3.10' }}
         run: |
-          poetry run pytest src
+          poetry run pytest src --cov
           poetry run coverage xml  # for sending coverage report
         shell: bash
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
-        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.8' }} # This action runs only on Linux
+        if: ${{ runner.os == 'Linux' && matrix.python-version == '3.10' }} # This step runs only on Linux
         with:
           project-token: ${{ secrets.codacy }}
           coverage-reports: coverage.xml
 
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v4
         if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
         with:
           #          flags: unittests  # optional

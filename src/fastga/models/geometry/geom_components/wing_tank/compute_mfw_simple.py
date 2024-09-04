@@ -30,7 +30,6 @@ class ComputeMFWSimple(ExplicitComponent):
     """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 
     def setup(self):
-
         self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
@@ -53,7 +52,6 @@ class ComputeMFWSimple(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fuel_type = inputs["data:propulsion:fuel_type"]
         wing_area = inputs["data:geometry:wing:area"]
         root_chord = inputs["data:geometry:wing:root:chord"]

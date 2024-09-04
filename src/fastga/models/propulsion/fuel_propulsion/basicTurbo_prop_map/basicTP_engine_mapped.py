@@ -52,7 +52,6 @@ NACELLE_LABELS = {
 
 
 class BasicTPEngineMapped(AbstractFuelPropulsion):
-
     """Mapped version of the turboprop, need the constructed table beforehand to work."""
 
     def __init__(
@@ -260,7 +259,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     @property
     def sfc_interpolator_sl(self):
-
         if self._sfc_interpolator_sl is None:
             thrust_sl_grid, mach_sl_grid = np.meshgrid(self.turbo_thrust_SL, self.turbo_mach_SL)
             self._sfc_interpolator_sl = LinearNDInterpolator(
@@ -271,12 +269,10 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     @sfc_interpolator_sl.setter
     def sfc_interpolator_sl(self, value: LinearNDInterpolator):
-
         self._sfc_interpolator_sl = value
 
     @property
     def sfc_interpolator_il(self):
-
         if self._sfc_interpolator_il is None:
             thrust_il_grid, mach_il_grid = np.meshgrid(self.turbo_thrust_IL, self.turbo_mach_IL)
             self._sfc_interpolator_il = LinearNDInterpolator(
@@ -287,12 +283,10 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     @sfc_interpolator_il.setter
     def sfc_interpolator_il(self, value: LinearNDInterpolator):
-
         self._sfc_interpolator_il = value
 
     @property
     def sfc_interpolator_cl(self):
-
         if self._sfc_interpolator_cl is None:
             thrust_cl_grid, mach_cl_grid = np.meshgrid(self.turbo_thrust_CL, self.turbo_mach_CL)
             self._sfc_interpolator_cl = LinearNDInterpolator(
@@ -303,7 +297,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     @sfc_interpolator_cl.setter
     def sfc_interpolator_cl(self, value: LinearNDInterpolator):
-
         self._sfc_interpolator_cl = value
 
     def compute_flight_points(self, flight_points: oad.FlightPoint):
@@ -609,7 +602,6 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         return max_thrust
 
     def _max_thrust(self, altitude: float, mach: float) -> float:
-
         if altitude > self.intermediate_altitude:
             max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             max_thrust_interp_CL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)

@@ -1,5 +1,5 @@
 """
-    Estimation of aero coefficients using OPENVSP.
+Estimation of aero coefficients using OPENVSP.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -13,7 +13,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 
 import logging
 
@@ -137,7 +136,6 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
         pass
 
     def compute(self, inputs, outputs):
-
         _LOGGER.debug("Entering aerodynamic computation")
         input_aoa = self.options["input_angle_of_attack"]
 
@@ -176,9 +174,9 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
                 inputs, outputs, input_aoa, altitude, mach
             )
             outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_interp
-            outputs[
-                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-            ] = cl_alpha_interp
+            outputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"] = (
+                cl_alpha_interp
+            )
 
         # Defining outputs
         if self.options["low_speed_aero"]:
@@ -193,14 +191,14 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL0"] = cl_0_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_ref"] = cl_X_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"] = cl_alpha_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"
-            ] = cl_alpha_htp_isolated
+            outputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"] = (
+                cl_alpha_htp_isolated
+            )
             outputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"] = y_vector_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_vector"] = cl_vector_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"
-            ] = coef_k_htp
+            outputs["data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"] = (
+                coef_k_htp
+            )
         else:
             outputs["data:aerodynamics:wing:cruise:CL0_clean"] = cl_0_wing
             outputs["data:aerodynamics:wing:cruise:CL_ref"] = cl_ref_wing
@@ -209,9 +207,9 @@ class _ComputeAeroOpenVSP(OpenVSPSimpleGeometry):
             outputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"] = coef_k_wing
             outputs["data:aerodynamics:horizontal_tail:cruise:CL0"] = cl_0_htp
             outputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"] = cl_alpha_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated"
-            ] = cl_alpha_htp_isolated
-            outputs[
-                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
-            ] = coef_k_htp
+            outputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated"] = (
+                cl_alpha_htp_isolated
+            )
+            outputs["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"] = (
+                coef_k_htp
+            )

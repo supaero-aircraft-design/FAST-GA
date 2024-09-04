@@ -17,22 +17,18 @@ conditions with an equilibrium computation.
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
+from fastoad.constants import EngineSetting
+from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
-import fastoad.api as oad
-from fastoad.openmdao.problem import AutoUnitsDefaultGroup
-from fastoad.constants import EngineSetting
-
 from fastga.command.api import list_inputs_metadata
-
+from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
 )
-from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
-
 from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +46,6 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
@@ -88,14 +83,13 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # First, compute a failsafe value, in case the computation crashes because of the wrong
         # initial guesses of the problem
         stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
 
-        wing_area_landing_init_guess = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
+        wing_area_landing_init_guess = 2 * mlw * g / (stall_speed**2) / (1.225 * max_cl)
 
         wing_area_approach = compute_wing_area(inputs, self.options["propulsion_id"])
 
@@ -124,7 +118,6 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
@@ -160,7 +153,6 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         wing_area_actual = inputs["data:geometry:wing:area"]
@@ -169,7 +161,7 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
 
         additional_cl = (
             (2.0 * mlw * g)
-            / (1.225 * v_stall ** 2.0)
+            / (1.225 * v_stall**2.0)
             * (1.0 / wing_area_constraint - 1.0 / wing_area_actual)
         )
 
@@ -186,7 +178,6 @@ class _IDThrustRate(om.ExplicitComponent):
 
 
 def compute_wing_area(inputs, propulsion_id):
-
     # First, setup an initial guess
     stall_speed = inputs["data:TLAR:v_approach"] / 1.3
     mlw = inputs["data:weight:aircraft:MLW"]
@@ -200,7 +191,7 @@ def compute_wing_area(inputs, propulsion_id):
         inputs["data:mission:sizing:landing:elevator_angle"],
         inputs["data:mission:sizing:takeoff:elevator_angle"],
     )
-    wing_area_landing_init_guess = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
+    wing_area_landing_init_guess = 2 * mlw * g / (stall_speed**2) / (1.225 * max_cl)
 
     alpha_max = (max_cl - delta_cl_flaps - cl_0_wing) / cl_alpha * 180.0 / np.pi
 

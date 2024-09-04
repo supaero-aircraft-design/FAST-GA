@@ -164,7 +164,6 @@ class DummyEngineWrapperSR22(oad.IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-
         return DummyEngineSR22()
 
 
@@ -222,5 +221,4 @@ class DummyEngineWrapperTBM900(oad.IOMPropulsionWrapper):
 
     @staticmethod
     def get_model(inputs) -> IPropulsion:
-
         return DummyEngineTBM900()

@@ -16,21 +16,19 @@ Based on the model presented by Raquel ALONSO in her MAE research project report
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import openmdao.api as om
 
-import fastoad.api as oad
-
-from .wing_components.compute_web_mass import ComputeWebMass
-from .wing_components.compute_upper_flange import ComputeUpperFlange
+from .constants import SUBMODEL_WING_MASS
 from .wing_components.compute_lower_flange import ComputeLowerFlange
-from .wing_components.compute_skin_mass import ComputeSkinMass
-from .wing_components.compute_ribs_mass import ComputeRibsMass
 from .wing_components.compute_misc_mass import ComputeMiscMass
 from .wing_components.compute_primary_mass import ComputePrimaryMass
+from .wing_components.compute_ribs_mass import ComputeRibsMass
 from .wing_components.compute_secondary_mass import ComputeSecondaryMass
+from .wing_components.compute_skin_mass import ComputeSkinMass
+from .wing_components.compute_upper_flange import ComputeUpperFlange
+from .wing_components.compute_web_mass import ComputeWebMass
 from .wing_components.update_wing_mass import UpdateWingMass
-
-from .constants import SUBMODEL_WING_MASS
 
 
 @oad.RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.analytical")

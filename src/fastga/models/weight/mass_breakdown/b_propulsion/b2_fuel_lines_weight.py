@@ -16,17 +16,15 @@ Estimation of fuel lines weight.
 
 import warnings
 
-import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 import fastoad.api as oad
+import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .constants import SUBMODEL_FUEL_SYSTEM_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUEL_SYSTEM_MASS
-] = "fastga.submodel.weight.mass.propulsion.fuel_system.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FUEL_SYSTEM_MASS] = (
+    "fastga.submodel.weight.mass.propulsion.fuel_system.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -41,7 +39,6 @@ class ComputeFuelLinesWeight(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
         self.add_input("data:propulsion:fuel_type", val=np.nan)
@@ -53,7 +50,6 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
@@ -77,11 +73,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         # In lbs/gal
 
         b2 = (
-            2.49
-            * (fuel_mass / k_fsp) ** 0.726
-            * 0.5 ** 0.363
-            * tank_nb ** 0.242
-            * engine_nb ** 0.157
+            2.49 * (fuel_mass / k_fsp) ** 0.726 * 0.5**0.363 * tank_nb**0.242 * engine_nb**0.157
         )  # mass formula in lb
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
@@ -98,7 +90,6 @@ class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
 
@@ -114,22 +105,20 @@ class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
 
-        b2 = 1.07 * fuel_mass ** 0.58 * engine_nb ** 0.43
+        b2 = 1.07 * fuel_mass**0.58 * engine_nb**0.43
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
 
         partials["data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW"] = (
-            1.07 * 0.58 * fuel_mass ** -0.42 * engine_nb ** 0.43
+            1.07 * 0.58 * fuel_mass**-0.42 * engine_nb**0.43
         )
         partials[
             "data:weight:propulsion:fuel_lines:mass", "data:geometry:propulsion:engine:count"
-        ] = (1.07 * 0.43 * fuel_mass ** 0.58 * engine_nb ** -0.57)
+        ] = 1.07 * 0.43 * fuel_mass**0.58 * engine_nb**-0.57

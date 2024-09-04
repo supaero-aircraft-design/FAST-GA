@@ -1,4 +1,4 @@
-"""FAST - Copyright (c) 2016 ONERA ISAE. """
+"""FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -12,9 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.geometry.geom_components import (
@@ -27,9 +26,7 @@ from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
     ComputeFuselageAlternate,
     ComputeFuselageLegacy,
 )
-
 from fastga.models.options import CABIN_SIZING_OPTION
-
 from .constants import (
     SUBMODEL_WING_GEOMETRY,
     SUBMODEL_NACELLE_DIMENSION,
@@ -126,7 +123,6 @@ class GeometryFixedTailDistance(om.Group):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle_dimension",

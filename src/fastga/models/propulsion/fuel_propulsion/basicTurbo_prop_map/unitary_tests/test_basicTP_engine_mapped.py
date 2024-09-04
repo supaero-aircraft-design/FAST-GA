@@ -17,6 +17,8 @@ Test module for basicIC_engine.py
 
 import copy
 
+import numpy as np
+
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
@@ -27,7 +29,34 @@ from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop_map.basicTP_engine
 )
 from fastga.models.propulsion.fuel_propulsion.basicTurbo_prop.basicTP_engine import BasicTPEngine
 
-from .data.dummy_maps import *
+from .data.dummy_maps import (
+    SPEED,
+    THRUST_SL,
+    THRUST_SL_LIMIT,
+    EFFICIENCY_SL,
+    THRUST_CL,
+    THRUST_CL_LIMIT,
+    EFFICIENCY_CL,
+    MACH_ARRAY_SL,
+    THRUST_ARRAY_SL,
+    THRUST_MAX_ARRAY_SL,
+    SFC_SL,
+    MACH_ARRAY_CL,
+    THRUST_ARRAY_CL,
+    THRUST_MAX_ARRAY_CL,
+    SFC_CL,
+    MACH_ARRAY_IL,
+    THRUST_ARRAY_IL,
+    THRUST_MAX_ARRAY_IL,
+    SFC_IL,
+    SPEED_KA,
+    THRUST_SL_KA,
+    THRUST_SL_LIMIT_KA,
+    EFFICIENCY_SL_KA,
+    THRUST_CL_KA,
+    THRUST_CL_LIMIT_KA,
+    EFFICIENCY_CL_KA,
+)
 
 INVALID_SFC = 0.0
 
@@ -257,7 +286,6 @@ def test_compute_max_power():
 
 
 def test_compare_with_direct_computation():
-
     cruise_altitude_propeller = 6096.0
     cruise_speed = 125.524
 

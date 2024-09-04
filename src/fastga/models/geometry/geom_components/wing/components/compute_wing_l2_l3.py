@@ -28,7 +28,6 @@ class ComputeWingL2AndL3(ExplicitComponent):
     """Wing chords (l2 and l3) estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
@@ -41,7 +40,6 @@ class ComputeWingL2AndL3(ExplicitComponent):
         self.declare_partials(of="data:geometry:wing:kink:chord", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]

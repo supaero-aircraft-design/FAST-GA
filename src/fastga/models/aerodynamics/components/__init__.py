@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlope
 from .compute_L_D_max import ComputeLDMax
 from .compute_cl_extreme import ComputeAircraftMaxCl

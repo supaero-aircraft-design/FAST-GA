@@ -157,7 +157,6 @@ class AddKeyAttributes:
             self.attribute_definition = {attr_name: None for attr_name in attribute_definition}
 
     def __call__(self, decorated_dict: type):
-
         for attr_name, definition in self.attribute_definition.items():
             if isinstance(definition, dict):
                 default_value = definition.get("default")

@@ -142,7 +142,6 @@ class AerodynamicLoads(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION
 
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
@@ -214,7 +213,7 @@ class AerodynamicLoads(om.ExplicitComponent):
             load_factor = load_factor_rbm
 
         atm = Atmosphere(cruise_alt)
-        dynamic_pressure = 1.0 / 2.0 * atm.density * cruise_v_tas ** 2.0
+        dynamic_pressure = 1.0 / 2.0 * atm.density * cruise_v_tas**2.0
 
         cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
         cl_s = AerostructuralLoad.compute_cl_s(

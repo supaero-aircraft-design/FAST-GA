@@ -33,7 +33,6 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
@@ -69,7 +68,6 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -98,7 +96,6 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -116,33 +113,23 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:aerodynamics:rudder:low_speed:Cy_delta_r",
-            ] = (
-                (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span * vt_area / wing_area
-            )
+            ] = (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:geometry:wing:root:z",
-            ] = (
-                cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                0.5 * cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = 0.5 * cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -cy_delta_r * np.sin(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = -cy_delta_r * np.sin(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
                 "data:geometry:vertical_tail:area",
@@ -158,7 +145,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             ] = (
                 -cy_delta_r
                 * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
-                / wing_span ** 2.0
+                / wing_span**2.0
                 * vt_area
                 / wing_area
             )
@@ -170,7 +157,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
                 * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
                 / wing_span
                 * vt_area
-                / wing_area ** 2.0
+                / wing_area**2.0
             )
             partials[
                 "data:aerodynamics:rudder:low_speed:Cl_delta_r",
@@ -190,30 +177,22 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
                 "data:aerodynamics:rudder:cruise:Cy_delta_r",
-            ] = (
-                (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span * vt_area / wing_area
-            )
+            ] = (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span * vt_area / wing_area
             partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:root:z"] = (
                 (cy_delta_r * np.cos(aoa_ref) / wing_span) * vt_area / wing_area
             )
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                0.5 * cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = 0.5 * cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
                 "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = cy_delta_r * np.cos(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
                 "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = (
-                -cy_delta_r * np.sin(aoa_ref) / wing_span * vt_area / wing_area
-            )
+            ] = -cy_delta_r * np.sin(aoa_ref) / wing_span * vt_area / wing_area
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",
                 "data:geometry:vertical_tail:area",
@@ -224,7 +203,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
                 / wing_area
             )
             partials["data:aerodynamics:rudder:cruise:Cl_delta_r", "data:geometry:wing:span"] = (
-                (-cy_delta_r * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span ** 2.0)
+                (-cy_delta_r * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref)) / wing_span**2.0)
                 * vt_area
                 / wing_area
             )
@@ -233,7 +212,7 @@ class ComputeClDeltaRudder(om.ExplicitComponent):
                 * (z_v * np.cos(aoa_ref) - lp_vt * np.sin(aoa_ref))
                 / wing_span
                 * vt_area
-                / wing_area ** 2.0
+                / wing_area**2.0
             )
             partials[
                 "data:aerodynamics:rudder:cruise:Cl_delta_r",

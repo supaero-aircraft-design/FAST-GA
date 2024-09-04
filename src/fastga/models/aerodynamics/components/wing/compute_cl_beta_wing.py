@@ -34,11 +34,9 @@ class ComputeClBetaWing(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_50", val=np.nan, units="rad")
@@ -84,7 +82,6 @@ class ComputeClBetaWing(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_sweep_50 = inputs["data:geometry:wing:sweep_50"]  # In rad !!!

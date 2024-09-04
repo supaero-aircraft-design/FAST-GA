@@ -12,6 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .taxi import ComputeTaxi
 from .climb import ComputeClimb, ComputeClimbSpeed, POINTS_NB_CLIMB
 from .cruise import ComputeCruise, POINTS_NB_CRUISE

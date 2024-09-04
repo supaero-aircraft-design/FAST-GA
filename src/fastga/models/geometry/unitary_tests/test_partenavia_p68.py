@@ -14,12 +14,10 @@ Test module for geometry functions of the different components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import pytest
 
-from ..geom_components.wing.components import ComputeWingZ
-
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from ..geom_components.wing.components import ComputeWingZ
 
 XML_FILE = "partenavia_p68.xml"
 

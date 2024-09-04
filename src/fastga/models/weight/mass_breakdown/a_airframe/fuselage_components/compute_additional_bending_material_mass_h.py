@@ -12,13 +12,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
-
-from stdatm import Atmosphere
-
+import openmdao.api as om
 from scipy.constants import g
+from stdatm import Atmosphere
 
 FUSELAGE_MESH_POINT = 100
 
@@ -144,7 +141,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
 
         density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
 
-        q_never_exceed = 0.5 * density * v_d ** 2
+        q_never_exceed = 0.5 * density * v_d**2
         lift_max_h = q_never_exceed * wing_area * cl_max_htp
         # Inertia relief factor, typical value according to TASOPT
         rmh = 0.4
@@ -239,7 +236,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                     a1_rear = (load_factor * tail_weight + rmh * lift_max_h) / (
                         fuselage_radius * sigma_mh
                     )
-                    a0_rear = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
+                    a0_rear = -bending_inertia / (fuselage_radius**2 * e_stringer / e_skin)
                     volume_rear = (
                         a2_rear
                         * (
@@ -264,7 +261,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                     a1_rear = (load_factor * tail_weight + rmh * lift_max_h) / (
                         fuselage_radius * sigma_mh
                     )
-                    a0_rear = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
+                    a0_rear = -bending_inertia / (fuselage_radius**2 * e_stringer / e_skin)
                     volume_rear_cabin = (
                         a2_rear * (lav + cabin_length - wing_centroid) ** 3 / 3.0
                         + a1_rear
@@ -333,7 +330,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                 # Integration of the bending area
                 if x_h_bend <= lav:
                     # Decomposition in two integrals : nose zone and cabin zone
-                    a0_front = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
+                    a0_front = -bending_inertia / (fuselage_radius**2 * e_stringer / e_skin)
                     a1_front_nose = moment_to_compensate_with_lift / (
                         wing_centroid * fuselage_radius * sigma_mh
                     )
@@ -359,7 +356,7 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
                     volume_front = volume_front_nose + volume_front_cabin
                 else:
                     # One integral only : from x_h_bend to wing centroid
-                    a0_front = -bending_inertia / (fuselage_radius ** 2 * e_stringer / e_skin)
+                    a0_front = -bending_inertia / (fuselage_radius**2 * e_stringer / e_skin)
                     a1_front_cabin = (moment_to_compensate_with_lift / wing_centroid) / (
                         fuselage_radius * sigma_mh
                     )
@@ -376,6 +373,6 @@ class ComputeAddBendingMassHorizontal(om.ExplicitComponent):
             additional_mass_load_case = volume_load_case * rho_skin
             additional_mass_horizontal = max(additional_mass_load_case, additional_mass_horizontal)
 
-        outputs[
-            "data:weight:airframe:fuselage:additional_mass:horizontal"
-        ] = additional_mass_horizontal
+        outputs["data:weight:airframe:fuselage:additional_mass:horizontal"] = (
+            additional_mass_horizontal
+        )

@@ -12,20 +12,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
-from scipy.constants import lbf
-from openmdao.core.explicitcomponent import ExplicitComponent
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
+from openmdao.core.explicitcomponent import ExplicitComponent
+from scipy.constants import lbf
 
 from .constants import SUBMODEL_UNUSABLE_FUEL_MASS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_UNUSABLE_FUEL_MASS
-] = "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_UNUSABLE_FUEL_MASS] = (
+    "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -55,7 +55,6 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
         self.add_output("data:weight:propulsion:unusable_fuel:mass", units="lb")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         n_eng = inputs["data:geometry:propulsion:engine:count"]
         wing_area = inputs["data:geometry:wing:area"]
         mfw = inputs["data:weight:aircraft:MFW"]
@@ -73,9 +72,9 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
         sl_thrust_lbs_per_engine = sl_thrust_lbs / n_eng
 
         b3 = (
-            11.5 * n_eng * sl_thrust_lbs_per_engine ** 0.2
+            11.5 * n_eng * sl_thrust_lbs_per_engine**0.2
             + 0.07 * wing_area
-            + 1.6 * n_tank * mfw ** 0.28
+            + 1.6 * n_tank * mfw**0.28
         )
 
         outputs["data:weight:propulsion:unusable_fuel:mass"] = b3

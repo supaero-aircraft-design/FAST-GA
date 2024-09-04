@@ -24,13 +24,11 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
     """Initializes time and ground distance at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         # Cannot use the vertical speed vector previously computed since it is gonna be
@@ -65,7 +63,6 @@ class InitializeTimeAndDistance(om.ExplicitComponent):
         self.add_output("position", val=np.linspace(0.0, 926000.0, number_of_points), units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         altitude = inputs["altitude"]
         horizontal_speed = inputs["horizontal_speed"]
 

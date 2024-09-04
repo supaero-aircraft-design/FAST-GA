@@ -168,7 +168,7 @@ def polar_result_transfer():
             # noinspection PyBroadException
             try:
                 os.remove(file)
-            except:
+            except OSError:
                 _LOGGER.info("Cannot remove %s file!" % file)
 
     return tmp_folder
@@ -1032,7 +1032,6 @@ def comp_high_speed_input_aoa(
     XML_FILE: str,
     use_openvsp: bool,
 ):
-
     """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
         problem = compute_aero(XML_FILE, use_openvsp, mach_interpolation, False)
@@ -1232,7 +1231,6 @@ def elevator(
     cl_delta_elev: float,
     cd_delta_elev: float,
 ):
-
     ivc = get_indep_var_comp(list_inputs(ComputeDeltaElevator()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -1606,24 +1604,18 @@ def effective_efficiency(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEffectiveEfficiencyPropeller(low_speed_aero=True), ivc)
-    assert (
-        problem.get_val(
-            "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
-        )
-        == pytest.approx(effective_efficiency_low_speed, abs=1e-4)
-    )
+    assert problem.get_val(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:low_speed",
+    ) == pytest.approx(effective_efficiency_low_speed, abs=1e-4)
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeEffectiveEfficiencyPropeller()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeEffectiveEfficiencyPropeller(), ivc)
-    assert (
-        problem.get_val(
-            "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
-        )
-        == pytest.approx(effective_efficiency_cruise, abs=1e-4)
-    )
+    assert problem.get_val(
+        "data:aerodynamics:propeller:installation_effect:effective_efficiency:cruise",
+    ) == pytest.approx(effective_efficiency_cruise, abs=1e-4)
 
 
 def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
@@ -1729,20 +1721,14 @@ def load_factor(
     assert problem.get_val(
         "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"
     ) == pytest.approx(load_factor_ultimate, abs=1e-1)
-    assert (
-        max(
-            problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"),
-            problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"),
-        )
-        == pytest.approx(load_factor_ultimate_mtow, abs=1e-1)
-    )
-    assert (
-        max(
-            problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"),
-            problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"),
-        )
-        == pytest.approx(load_factor_ultimate_mzfw, abs=1e-1)
-    )
+    assert max(
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"),
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"),
+    ) == pytest.approx(load_factor_ultimate_mtow, abs=1e-1)
+    assert max(
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"),
+        problem.get_val("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"),
+    ) == pytest.approx(load_factor_ultimate_mzfw, abs=1e-1)
     assert problem.get_val("data:TLAR:v_max_sl", units="m/s") == pytest.approx(vh, abs=1e-2)
     assert problem.get_val(
         "data:mission:sizing:cs23:characteristic_speed:va", units="m/s"
@@ -1900,7 +1886,6 @@ def cy_beta_fus(
     XML_FILE: str,
     cy_beta_fus_: float,
 ):
-
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyBetaFuselage()), __file__, XML_FILE)
@@ -1919,7 +1904,6 @@ def downwash_gradient(
     downwash_gradient_ls_: float,
     downwash_gradient_cruise_: float,
 ):
-
     """Tests cy beta of the fuselage"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -1954,7 +1938,6 @@ def lift_aoa_rate_derivative(
     cl_aoa_dot_low_speed_: float,
     cl_aoa_dot_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCLAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
@@ -1987,7 +1970,6 @@ def lift_pitch_velocity_derivative_ht(
     cl_q_ht_low_speed_: float,
     cl_q_ht_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCLPitchVelocityHorizontalTail(low_speed_aero=True)), __file__, XML_FILE
@@ -2020,7 +2002,6 @@ def lift_pitch_velocity_derivative_wing(
     cl_q_wing_low_speed_: float,
     cl_q_wing_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCLPitchVelocityWing(low_speed_aero=True)), __file__, XML_FILE
@@ -2053,7 +2034,6 @@ def lift_pitch_velocity_derivative_aircraft(
     cl_q_low_speed_: float,
     cl_q_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCLPitchVelocityAircraft(low_speed_aero=True)), __file__, XML_FILE
@@ -2085,7 +2065,6 @@ def side_force_sideslip_derivative_wing(
     XML_FILE: str,
     cy_beta_wing_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeCyBetaWing()), __file__, XML_FILE)
 
@@ -2103,7 +2082,6 @@ def side_force_sideslip_derivative_vt(
     cy_beta_vt_low_speed_: float,
     cy_beta_vt_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCyBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
@@ -2723,7 +2701,6 @@ def pitch_moment_aoa_rate_derivative(
     cm_aoa_dot_low_speed_: float,
     cm_aoa_dot_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCMAlphaDotAircraft(low_speed_aero=True)), __file__, XML_FILE
@@ -2756,7 +2733,6 @@ def yaw_moment_sideslip_derivative_vt(
     cn_beta_vt_low_speed_: float,
     cn_beta_vt_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnBetaVerticalTail(low_speed_aero=True)), __file__, XML_FILE
@@ -2837,7 +2813,6 @@ def yaw_moment_rudder(
     cn_delta_r_low_speed_: float,
     cn_delta_r_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnDeltaRudder(low_speed_aero=True)), __file__, XML_FILE
@@ -2898,7 +2873,6 @@ def yaw_moment_roll_rate_vt(
     cn_p_vt_low_speed_: float,
     cn_p_vt_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnRollRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
@@ -2931,7 +2905,6 @@ def yaw_moment_roll_rate_aircraft(
     cn_p_low_speed_: float,
     cn_p_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnRollRateAircraft(low_speed_aero=True)), __file__, XML_FILE
@@ -2994,7 +2967,6 @@ def yaw_moment_yaw_rate_vt(
     cn_r_vt_low_speed_: float,
     cn_r_vt_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnYawRateVerticalTail(low_speed_aero=True)), __file__, XML_FILE
@@ -3027,7 +2999,6 @@ def yaw_moment_yaw_rate_aircraft(
     cn_r_low_speed_: float,
     cn_r_cruise_: float,
 ):
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnYawRateAircraft(low_speed_aero=True)), __file__, XML_FILE

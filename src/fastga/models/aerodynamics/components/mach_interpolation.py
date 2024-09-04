@@ -1,6 +1,6 @@
 """
-    Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach
-    number.
+Estimation of the dependency of the aircraft lift slope coefficient as a function of Mach
+number.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -156,7 +156,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         mach_array = np.linspace(0.0, 1.55 * mach_cruise, MACH_NB_PTS + 1)
 
-        beta = np.sqrt(1.0 - mach_array ** 2.0)
+        beta = np.sqrt(1.0 - mach_array**2.0)
         k_wing = wing_airfoil_cl_alpha / beta / (2.0 * np.pi)
         tan_sweep_wing = np.tan(sweep_25_wing * np.pi / 180.0)
         cos_sweep_wing = np.cos(sweep_25_wing * np.pi / 180.0)
@@ -164,10 +164,10 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         wing_cl_alpha = (2.0 * np.pi * aspect_ratio_wing) / (
             2.0
             + np.sqrt(
-                aspect_ratio_wing ** 2.0
-                * beta ** 2.0
-                / k_wing ** 2.0
-                * (1.0 + tan_sweep_wing ** 2.0 / beta ** 2.0)
+                aspect_ratio_wing**2.0
+                * beta**2.0
+                / k_wing**2.0
+                * (1.0 + tan_sweep_wing**2.0 / beta**2.0)
                 + 4.0
             )
         )
@@ -185,15 +185,15 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         htp_cl_alpha = (2.0 * np.pi * aspect_ratio_htp) / (
             2.0
             + np.sqrt(
-                aspect_ratio_htp ** 2.0
-                * beta ** 2.0
-                / k_htp ** 2.0
-                * (1.0 + tan_sweep_htp ** 2.0 / beta ** 2.0)
+                aspect_ratio_htp**2.0
+                * beta**2.0
+                / k_htp**2.0
+                * (1.0 + tan_sweep_htp**2.0 / beta**2.0)
                 + 4.0
             )
         )
 
-        k_a = 1.0 / aspect_ratio_wing - 1.0 / (1.0 + aspect_ratio_wing ** 1.7)
+        k_a = 1.0 / aspect_ratio_wing - 1.0 / (1.0 + aspect_ratio_wing**1.7)
         k_lambda = (10.0 - 3.0 * taper_ratio_wing) / 7.0
         k_h = (1.0 - delta_z_htp / span_wing) / (2.0 * lp_ht / span_wing) ** (1.0 / 3.0)
 

@@ -19,7 +19,6 @@ class ReserveEnergy(om.ExplicitComponent):
     """Computes the fuel consumed during the reserve phase."""
 
     def setup(self):
-
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:energy", np.nan, units="W*h")
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
@@ -53,7 +52,6 @@ class ReserveEnergy(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         m_reserve = (
             inputs["data:mission:sizing:main_route:cruise:fuel"]
             * inputs["data:mission:sizing:main_route:reserve:duration"]
@@ -74,7 +72,6 @@ class ReserveEnergy(om.ExplicitComponent):
         outputs["data:mission:sizing:main_route:reserve:energy"] = energy_reserve
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         cruise_time = inputs["data:mission:sizing:main_route:cruise:duration"]
         rsv_time = inputs["data:mission:sizing:main_route:reserve:duration"]
         cruise_fuel = inputs["data:mission:sizing:main_route:cruise:fuel"]
@@ -84,36 +81,24 @@ class ReserveEnergy(om.ExplicitComponent):
         partials[
             "data:mission:sizing:main_route:reserve:fuel",
             "data:mission:sizing:main_route:cruise:fuel",
-        ] = (
-            rsv_time * k_factor / cruise_time
-        )
+        ] = rsv_time * k_factor / cruise_time
         partials[
             "data:mission:sizing:main_route:reserve:energy",
             "data:mission:sizing:main_route:cruise:energy",
-        ] = (
-            rsv_time * k_factor / cruise_time
-        )
+        ] = rsv_time * k_factor / cruise_time
         partials[
             "data:mission:sizing:main_route:reserve:fuel",
             "data:mission:sizing:main_route:reserve:duration",
-        ] = (
-            cruise_fuel * k_factor / cruise_time
-        )
+        ] = cruise_fuel * k_factor / cruise_time
         partials[
             "data:mission:sizing:main_route:reserve:energy",
             "data:mission:sizing:main_route:reserve:duration",
-        ] = (
-            cruise_energy * k_factor / cruise_time
-        )
+        ] = cruise_energy * k_factor / cruise_time
         partials[
             "data:mission:sizing:main_route:reserve:fuel",
             "data:mission:sizing:main_route:cruise:duration",
-        ] = (
-            rsv_time * cruise_fuel * k_factor / cruise_time ** 2
-        )
+        ] = rsv_time * cruise_fuel * k_factor / cruise_time**2
         partials[
             "data:mission:sizing:main_route:reserve:energy",
             "data:mission:sizing:main_route:cruise:duration",
-        ] = (
-            rsv_time * cruise_energy * k_factor / cruise_time ** 2
-        )
+        ] = rsv_time * cruise_energy * k_factor / cruise_time**2

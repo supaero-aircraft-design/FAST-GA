@@ -171,7 +171,6 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_cl_orig = inputs["xfoil:wing:CL"]
         wing_alpha_orig = inputs["xfoil:wing:alpha"]
         wing_alpha, wing_cl = self.delete_additional_zeros(

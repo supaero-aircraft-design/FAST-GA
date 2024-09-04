@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail mean aerodynamic chords.
+Estimation of horizontal tail mean aerodynamic chords.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -70,7 +70,7 @@ class ComputeHTMacFD(ExplicitComponent):
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
             / (tip_chord + root_chord)
             * 2
             / 3
@@ -83,7 +83,6 @@ class ComputeHTMacFD(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
@@ -91,10 +90,10 @@ class ComputeHTMacFD(ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
-        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        ] = 2.0 / 3.0 * (1.0 - tip_chord**2.0 / (root_chord + tip_chord) ** 2.0)
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
-        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        ] = 2.0 / 3.0 * (1.0 - root_chord**2.0 / (root_chord + tip_chord) ** 2.0)
 
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
@@ -109,37 +108,29 @@ class ComputeHTMacFD(ExplicitComponent):
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:root:chord",
-        ] = (
-            d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
-        )
+        ] = d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:tip:chord",
-        ] = (
-            d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
-        )
+        ] = d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:sweep_25",
-        ] = (
-            tmp_2 * d_tmp_d_sweep
-        )
+        ] = tmp_2 * d_tmp_d_sweep
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:span",
-        ] = (
-            tmp_2 * d_tmp_d_bh
-        )
+        ] = tmp_2 * d_tmp_d_bh
 
         partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
             0.5 * root_chord + tip_chord
         ) / (3 * (root_chord + tip_chord))
         partials[
             "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:root:chord"
-        ] = (-b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        ] = -b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0)
         partials[
             "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:tip:chord"
-        ] = (b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        ] = b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0)
 
 
 class ComputeHTMacFL(ExplicitComponent):
@@ -217,7 +208,7 @@ class ComputeHTMacFL(ExplicitComponent):
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
 
         mac_ht = (
-            (root_chord ** 2 + root_chord * tip_chord + tip_chord ** 2)
+            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
             / (tip_chord + root_chord)
             * 2
             / 3
@@ -236,7 +227,6 @@ class ComputeHTMacFL(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] = ht_lp
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
@@ -245,10 +235,10 @@ class ComputeHTMacFL(ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
-        ] = (2.0 / 3.0 * (1.0 - tip_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        ] = 2.0 / 3.0 * (1.0 - tip_chord**2.0 / (root_chord + tip_chord) ** 2.0)
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
-        ] = (2.0 / 3.0 * (1.0 - root_chord ** 2.0 / (root_chord + tip_chord) ** 2.0))
+        ] = 2.0 / 3.0 * (1.0 - root_chord**2.0 / (root_chord + tip_chord) ** 2.0)
 
         tmp = root_chord * 0.25 + b_h / 2 * np.tan(sweep_25_ht) - tip_chord * 0.25
         d_tmp_d_rc = 0.25
@@ -263,63 +253,47 @@ class ComputeHTMacFL(ExplicitComponent):
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:root:chord",
-        ] = (
-            d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
-        )
+        ] = d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:tip:chord",
-        ] = (
-            d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
-        )
+        ] = d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:sweep_25",
-        ] = (
-            tmp_2 * d_tmp_d_sweep
-        )
+        ] = tmp_2 * d_tmp_d_sweep
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",
             "data:geometry:horizontal_tail:span",
-        ] = (
-            tmp_2 * d_tmp_d_bh
-        )
+        ] = tmp_2 * d_tmp_d_bh
 
         partials["data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:span"] = (
             0.5 * root_chord + tip_chord
         ) / (3 * (root_chord + tip_chord))
         partials[
             "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:root:chord"
-        ] = (-b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        ] = -b_h * tip_chord / (6.0 * (root_chord + tip_chord) ** 2.0)
         partials[
             "data:geometry:horizontal_tail:MAC:y", "data:geometry:horizontal_tail:tip:chord"
-        ] = (b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0))
+        ] = b_h * root_chord / (6.0 * (root_chord + tip_chord) ** 2.0)
 
         if tail_type == 1.0:
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:root:chord",
-            ] = (
-                d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
-            )
+            ] = d_tmp_d_rc * tmp_2 + tmp * d_tmp_2_d_rc
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:tip:chord",
-            ] = (
-                d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
-            )
+            ] = d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:sweep_25",
-            ] = (
-                tmp_2 * d_tmp_d_sweep
-            )
+            ] = tmp_2 * d_tmp_d_sweep
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:span",
-            ] = (
-                tmp_2 * d_tmp_d_bh
-            )
+            ] = tmp_2 * d_tmp_d_bh
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",
@@ -340,21 +314,15 @@ class ComputeHTMacFL(ExplicitComponent):
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:tip:chord",
-            ] = (
-                d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
-            )
+            ] = d_tmp_d_tc * tmp_2 + tmp * d_tmp_2_d_tc
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:sweep_25",
-            ] = (
-                tmp_2 * d_tmp_d_sweep
-            )
+            ] = tmp_2 * d_tmp_d_sweep
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:span",
-            ] = (
-                tmp_2 * d_tmp_d_bh
-            )
+            ] = tmp_2 * d_tmp_d_bh
             partials[
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:absolute",

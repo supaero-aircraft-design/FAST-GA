@@ -4,11 +4,9 @@ import openmdao.api as om
 
 class MassFlow(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("air_mass_flow", units="kg/s", val=np.nan, shape=n)
@@ -35,7 +33,6 @@ class MassFlow(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["fuel_air_ratio"] = inputs["fuel_mass_flow"] / inputs["air_mass_flow"]
         outputs["compressor_bleed_ratio"] = (
             inputs["compressor_bleed_mass_flow"] / inputs["air_mass_flow"]
@@ -45,7 +42,6 @@ class MassFlow(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["fuel_air_ratio", "fuel_mass_flow"] = np.diag(1.0 / inputs["air_mass_flow"])
         partials["fuel_air_ratio", "air_mass_flow"] = -np.diag(
             inputs["fuel_mass_flow"] / inputs["air_mass_flow"] ** 2.0

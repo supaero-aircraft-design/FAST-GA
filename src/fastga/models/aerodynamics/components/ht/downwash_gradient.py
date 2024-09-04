@@ -28,7 +28,6 @@ class DownWashGradientComputation(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
 
         if self.options["low_speed_aero"]:
@@ -58,7 +57,6 @@ class DownWashGradientComputation(om.ExplicitComponent):
             )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
 
         if self.options["low_speed_aero"]:
@@ -69,16 +67,15 @@ class DownWashGradientComputation(om.ExplicitComponent):
         downwash_gradient = 2 * cl_alpha / (np.pi * wing_ar)
 
         if self.options["low_speed_aero"]:
-            outputs[
-                "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient"
-            ] = downwash_gradient
+            outputs["data:aerodynamics:horizontal_tail:low_speed:downwash_gradient"] = (
+                downwash_gradient
+            )
         else:
-            outputs[
-                "data:aerodynamics:horizontal_tail:cruise:downwash_gradient"
-            ] = downwash_gradient
+            outputs["data:aerodynamics:horizontal_tail:cruise:downwash_gradient"] = (
+                downwash_gradient
+            )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
 
         if self.options["low_speed_aero"]:
@@ -87,23 +84,18 @@ class DownWashGradientComputation(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
                 "data:geometry:wing:aspect_ratio",
-            ] = (
-                -2 * cl_alpha / (np.pi * wing_ar ** 2.0)
-            )
+            ] = -2 * cl_alpha / (np.pi * wing_ar**2.0)
             partials[
                 "data:aerodynamics:horizontal_tail:low_speed:downwash_gradient",
                 "data:aerodynamics:wing:low_speed:CL_alpha",
             ] = 2 / (np.pi * wing_ar)
         else:
-
             cl_alpha = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
 
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
                 "data:geometry:wing:aspect_ratio",
-            ] = (
-                -2 * cl_alpha / (np.pi * wing_ar ** 2.0)
-            )
+            ] = -2 * cl_alpha / (np.pi * wing_ar**2.0)
             partials[
                 "data:aerodynamics:horizontal_tail:cruise:downwash_gradient",
                 "data:aerodynamics:wing:cruise:CL_alpha",

@@ -30,12 +30,12 @@ def test_efficiency_map_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = propeller_efficiency_map_plot(filename)
+    propeller_efficiency_map_plot(filename)
 
     # Second plot with sea_level option
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = propeller_efficiency_map_plot(filename, sea_level=True)
+    propeller_efficiency_map_plot(filename, sea_level=True)
 
 
 def test_coefficient_map_plot():
@@ -46,7 +46,7 @@ def test_coefficient_map_plot():
     # First plot
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = propeller_coeff_map_plot(filename)
+    propeller_coeff_map_plot(filename)
 
     # First plot with name
     # This is a rudimentary test as plot are difficult to verify
@@ -56,4 +56,4 @@ def test_coefficient_map_plot():
     # Adding a plot to the previous fig
     # This is a rudimentary test as plot are difficult to verify
     # The test will fail if an error is raised by the following line
-    fig = propeller_coeff_map_plot(filename, name="Second plot", fig=fig)
+    propeller_coeff_map_plot(filename, name="Second plot", fig=fig)

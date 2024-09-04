@@ -13,16 +13,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-import fastoad.api as oad
-
 from ..constants import SUBMODEL_LANDING_GEAR_CG
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_LANDING_GEAR_CG
-] = "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_LANDING_GEAR_CG] = (
+    "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -36,7 +35,6 @@ class ComputeLandingGearCG(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
@@ -65,7 +63,6 @@ class ComputeLandingGearCG(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -85,7 +82,6 @@ class ComputeLandingGearCG(ExplicitComponent):
         outputs["data:weight:airframe:landing_gear:front:CG:x"] = x_cg_a52
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
@@ -105,7 +101,7 @@ class ComputeLandingGearCG(ExplicitComponent):
 
         partials[
             "data:weight:airframe:landing_gear:main:CG:x", "data:geometry:fuselage:front_length"
-        ] = (-front_lg_fuselage * front_lg_weight_ratio / (1.0 - front_lg_weight_ratio))
+        ] = -front_lg_fuselage * front_lg_weight_ratio / (1.0 - front_lg_weight_ratio)
         partials["data:weight:airframe:landing_gear:main:CG:x", "data:geometry:wing:MAC:length"] = (
             cg_ratio - 0.25
         ) / (1.0 - front_lg_weight_ratio)

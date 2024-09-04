@@ -20,23 +20,21 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_WET_AREA
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUSELAGE_WET_AREA
-] = "fastga.submodel.geometry.fuselage.wet_area.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_WET_AREA] = (
+    "fastga.submodel.geometry.fuselage.wet_area.legacy"
+)
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy"
 )
 class ComputeFuselageWetArea(ExplicitComponent):
-
     """
     Fuselage wet area estimation, based on a simple geometric description of the fuselage one
     cone at the front a cylinder in the middle and a cone at the back.
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -49,7 +47,6 @@ class ComputeFuselageWetArea(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]
@@ -74,7 +71,6 @@ class ComputeFuselageWetArea(ExplicitComponent):
     SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops"
 )
 class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
-
     """
     Fuselage wet area estimation, determined based on Wells, Douglas P., Bryce L. Horvath,
     and Linwood A. McCullers. "The Flight Optimization System Weights Estimation Method." (2017).
@@ -82,7 +78,6 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
@@ -93,14 +88,13 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
         # Using the formula from The Flight Optimization System Weights Estimation Method
         fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia ** 2.0
+        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia**2.0
 
         master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 

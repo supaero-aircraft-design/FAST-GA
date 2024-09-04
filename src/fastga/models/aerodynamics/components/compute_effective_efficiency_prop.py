@@ -37,7 +37,6 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -72,7 +71,6 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
             self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         propeller_diameter = inputs["data:geometry:propeller:diameter"]
         wing_area = inputs["data:geometry:wing:area"]
         engine_layout = inputs["data:geometry:propulsion:engine:layout"]
@@ -120,7 +118,7 @@ class ComputeEffectiveEfficiencyPropeller(om.ExplicitComponent):
         effective_efficiency_factor = (
             1.0
             - 1.558
-            / propeller_diameter ** 2.0
+            / propeller_diameter**2.0
             * density
             / density_sl
             * friction_drag_coeff

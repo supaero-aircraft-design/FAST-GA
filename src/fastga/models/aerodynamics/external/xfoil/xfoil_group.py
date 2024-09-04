@@ -25,7 +25,6 @@ from .xfoil_polar import _DEFAULT_AIRFOIL_FILE, XfoilPolar
 
 class XfoilGroup(Group):
     def initialize(self):
-
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
         self.options.declare("compute_negative_air_angle", default=False, types=bool)
@@ -55,7 +54,6 @@ class _XfoilGroupPrep(ExplicitComponent):
     """Compute the correct mach number for the Xfoil preprocessing"""
 
     def setup(self):
-
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:Xfoil_pre_processing:reynolds", val=np.nan)
 
@@ -63,7 +61,6 @@ class _XfoilGroupPrep(ExplicitComponent):
         self.add_output("xfoil_group:reynolds")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         sos = Atmosphere(0.0).speed_of_sound
         outputs["xfoil_group:mach"] = inputs["data:TLAR:v_approach"] / sos
         outputs["xfoil_group:reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]

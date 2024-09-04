@@ -12,13 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import logging
 
 import fastoad.api as oad
+import openmdao.api as om
 from fastoad.module_management.constants import ModelDomain
-
-from .wing_area_component.update_wing_area import UpdateWingArea
 
 from .constants import (
     SUBMODEL_WING_AREA_GEOM_CONS,
@@ -26,6 +24,7 @@ from .constants import (
     SUBMODEL_WING_AREA_AERO_CONS,
     SUBMODEL_WING_AREA_AERO_LOOP,
 )
+from .wing_area_component.update_wing_area import UpdateWingArea
 
 _LOGGER = logging.getLogger(__name__)
 

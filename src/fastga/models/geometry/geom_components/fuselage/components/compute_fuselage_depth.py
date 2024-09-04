@@ -20,14 +20,13 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_DEPTH
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_FUSELAGE_DEPTH
-] = "fastga.submodel.geometry.fuselage.depth.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_DEPTH] = (
+    "fastga.submodel.geometry.fuselage.depth.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_FUSELAGE_DEPTH, "fastga.submodel.geometry.fuselage.depth.legacy")
 class ComputeFuselageDepth(ExplicitComponent):
-
     """
     Fuselage average depth at the vertical tail location computation. Based on geometric
     consideration assuming the fuselage is cylindrical at the center section and the average
@@ -35,7 +34,6 @@ class ComputeFuselageDepth(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
@@ -50,7 +48,6 @@ class ComputeFuselageDepth(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -62,7 +59,6 @@ class ComputeFuselageDepth(ExplicitComponent):
         outputs["data:geometry:fuselage:average_depth"] = avg_fus_depth
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -73,10 +69,10 @@ class ComputeFuselageDepth(ExplicitComponent):
         )
         partials[
             "data:geometry:fuselage:average_depth", "data:geometry:fuselage:maximum_height"
-        ] = (np.sqrt(b_f / h_f) * root_chord_vt / (2.0 * lar) / 2.0)
+        ] = np.sqrt(b_f / h_f) * root_chord_vt / (2.0 * lar) / 2.0
         partials[
             "data:geometry:fuselage:average_depth", "data:geometry:vertical_tail:root:chord"
         ] = np.sqrt(b_f * h_f) / (2.0 * lar)
         partials["data:geometry:fuselage:average_depth", "data:geometry:fuselage:rear_length"] = (
-            -np.sqrt(b_f * h_f) * root_chord_vt / (2.0 * lar ** 2.0)
+            -np.sqrt(b_f * h_f) * root_chord_vt / (2.0 * lar**2.0)
         )

@@ -12,10 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
-
+import openmdao.api as om
 from stdatm import Atmosphere
 
 FUSELAGE_MESH_POINT = 100
@@ -55,7 +53,6 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:additional_mass:vertical", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         vtp_area = inputs["data:geometry:vertical_tail:area"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -90,7 +87,7 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
 
         density = Atmosphere(cruise_altitude, altitude_in_feet=False).density
 
-        q_never_exceed = 0.5 * density * vd ** 2
+        q_never_exceed = 0.5 * density * vd**2
         lift_max_v = q_never_exceed * vtp_area * cl_max_vtp
         # Inertia relief factor, typical value according to TASOPT
         rmv = 0.7
@@ -126,7 +123,7 @@ class ComputeAddBendingMassVertical(om.ExplicitComponent):
             x_v_bend = x_vector_rear[min(index)]
             # Integration of the bending area
             b1 = rmv * lift_max_v / (fuselage_radius * sigma_mh)
-            b0 = -bending_inertia / (e_stringer / e_skin * fuselage_radius ** 2)
+            b0 = -bending_inertia / (e_stringer / e_skin * fuselage_radius**2)
             volume = b1 * (
                 (tail_x_cg - wing_centroid) ** 2 - (tail_x_cg - x_v_bend) ** 2
             ) / 2 + b0 * (x_v_bend - wing_centroid)

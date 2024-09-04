@@ -12,6 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_additional_bending_material_mass_h import ComputeAddBendingMassHorizontal
 from .compute_additional_bending_material_mass_v import ComputeAddBendingMassVertical
 from .compute_bulkhead_mass import ComputeBulkhead

@@ -19,9 +19,9 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_VT_POSITION_FL, SUBMODEL_VT_POSITION_FD
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_VT_POSITION_FD
-] = "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_VT_POSITION_FD] = (
+    "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
+)
 
 
 @oad.RegisterSubmodel(
@@ -55,7 +55,6 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -66,7 +65,6 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
         has_t_tail = inputs["data:geometry:has_T_tail"]
@@ -78,26 +76,20 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:span",
-        ] = (
-            -0.6 * np.tan(sweep_25_vt) * has_t_tail
-        )
+        ] = -0.6 * np.tan(sweep_25_vt) * has_t_tail
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:sweep_25",
-        ] = (
-            -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2.0
-        )
+        ] = -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2.0
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:has_T_tail",
-        ] = (
-            -0.6 * np.tan(sweep_25_vt) * b_v
-        )
+        ] = -0.6 * np.tan(sweep_25_vt) * b_v
 
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_VT_POSITION_FL
-] = "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_VT_POSITION_FL] = (
+    "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
+)
 
 
 @oad.RegisterSubmodel(

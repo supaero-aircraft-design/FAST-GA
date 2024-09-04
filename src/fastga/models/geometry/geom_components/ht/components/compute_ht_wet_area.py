@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail wet area.
+Estimation of horizontal tail wet area.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -31,7 +31,6 @@ class ComputeHTWetArea(ExplicitComponent):
     """Horizontal tail wet area estimation"""
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
 
@@ -40,7 +39,6 @@ class ComputeHTWetArea(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         area = inputs["data:geometry:horizontal_tail:area"]
         tail_type = inputs["data:geometry:has_T_tail"]
 
@@ -49,7 +47,6 @@ class ComputeHTWetArea(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:wet_area"] = wet_area
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         area = inputs["data:geometry:horizontal_tail:area"]
         tail_type = inputs["data:geometry:has_T_tail"]
 

@@ -12,10 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
-
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_NAVIGATION_SYSTEMS_CG
 
@@ -28,7 +27,6 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
     """Navigation systems center of gravity estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
@@ -36,7 +34,6 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
 
         # Instruments length

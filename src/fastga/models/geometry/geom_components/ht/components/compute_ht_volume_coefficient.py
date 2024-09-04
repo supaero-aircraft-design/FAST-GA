@@ -30,7 +30,6 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
@@ -43,7 +42,6 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -54,7 +52,6 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -62,10 +59,10 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:volume_coefficient", "data:geometry:wing:MAC:length"
-        ] = -(ht_area * lp_ht) / (wing_area * l0_wing ** 2.0)
+        ] = -(ht_area * lp_ht) / (wing_area * l0_wing**2.0)
         partials["data:geometry:horizontal_tail:volume_coefficient", "data:geometry:wing:area"] = -(
             ht_area * lp_ht
-        ) / (wing_area ** 2.0 * l0_wing)
+        ) / (wing_area**2.0 * l0_wing)
         partials[
             "data:geometry:horizontal_tail:volume_coefficient",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",

@@ -13,10 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
-
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 
@@ -29,7 +28,6 @@ class ComputePowerSystemsCG(ExplicitComponent):
     """Power systems center(s) of gravity estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
@@ -40,7 +38,6 @@ class ComputePowerSystemsCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]

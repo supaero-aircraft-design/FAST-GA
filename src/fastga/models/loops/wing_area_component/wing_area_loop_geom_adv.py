@@ -17,6 +17,7 @@ advanced computation of the maximum fuel weight.
 
 import logging
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
@@ -180,7 +181,6 @@ class UpdateWingAreaGeomAdvanced(om.Group):
             "update_mfw.data:weight:aircraft:MFW",
             "update_area.data:weight:aircraft:MFW",
         )
-
 
 class DistanceToMFWForConstraint(om.ExplicitComponent):
     def setup(self):

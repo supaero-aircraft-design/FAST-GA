@@ -36,7 +36,6 @@ class ComputeClRollRateVerticalTail(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
         self.add_input("data:geometry:vertical_tail:MAC:z", units="m", val=np.nan)
@@ -57,7 +56,6 @@ class ComputeClRollRateVerticalTail(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -77,7 +75,6 @@ class ComputeClRollRateVerticalTail(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -95,33 +92,23 @@ class ComputeClRollRateVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_p",
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
-            ] = (
-                2.0 * (z_v / wing_span) ** 2.0
-            )
+            ] = 2.0 * (z_v / wing_span) ** 2.0
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_p",
                 "data:geometry:wing:root:z",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_w
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_w
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_p",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_h_f
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_h_f
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_p",
                 "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_mac
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_mac
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cl_p",
                 "data:geometry:wing:span",
-            ] = (
-                -4.0 * z_v ** 2.0 / wing_span ** 3.0 * cy_beta_vt
-            )
+            ] = -4.0 * z_v**2.0 / wing_span**3.0 * cy_beta_vt
 
         else:
             cy_beta_vt = inputs["data:aerodynamics:vertical_tail:cruise:Cy_beta"]
@@ -129,27 +116,20 @@ class ComputeClRollRateVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_p",
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
-            ] = (
-                2.0 * (z_v / wing_span) ** 2.0
-            )
+            ] = 2.0 * (z_v / wing_span) ** 2.0
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_p",
                 "data:geometry:wing:root:z",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_w
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_w
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_p",
                 "data:geometry:fuselage:maximum_height",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_h_f
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_h_f
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cl_p",
                 "data:geometry:vertical_tail:MAC:z",
-            ] = (
-                4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_mac
-            )
-            partials["data:aerodynamics:vertical_tail:cruise:Cl_p", "data:geometry:wing:span",] = (
-                -4.0 * z_v ** 2.0 / wing_span ** 3.0 * cy_beta_vt
-            )
+            ] = 4.0 * (1.0 / wing_span) ** 2.0 * cy_beta_vt * z_v * d_z_v_d_z_mac
+            partials[
+                "data:aerodynamics:vertical_tail:cruise:Cl_p",
+                "data:geometry:wing:span",
+            ] = -4.0 * z_v**2.0 / wing_span**3.0 * cy_beta_vt
