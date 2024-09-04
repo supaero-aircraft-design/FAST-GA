@@ -17,8 +17,9 @@ import numpy as np
 
 class ComputeWingTankSpans(om.ExplicitComponent):
     def setup(self):
-
-        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
+        self.add_input(
+            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan
+        )
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
 
@@ -27,17 +28,22 @@ class ComputeWingTankSpans(om.ExplicitComponent):
 
         self.declare_partials(
             of="data:geometry:propulsion:tank:y_beginning",
-            wrt=["data:geometry:propulsion:tank:y_ratio_tank_beginning", "data:geometry:wing:span"],
+            wrt=[
+                "data:geometry:propulsion:tank:y_ratio_tank_beginning",
+                "data:geometry:wing:span",
+            ],
             method="exact",
         )
         self.declare_partials(
             of="data:geometry:propulsion:tank:y_end",
-            wrt=["data:geometry:propulsion:tank:y_ratio_tank_end", "data:geometry:wing:span"],
+            wrt=[
+                "data:geometry:propulsion:tank:y_ratio_tank_end",
+                "data:geometry:wing:span",
+            ],
             method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:geometry:propulsion:tank:y_beginning"] = (
             inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
             * inputs["data:geometry:wing:span"]
@@ -50,20 +56,18 @@ class ComputeWingTankSpans(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
             "data:geometry:propulsion:tank:y_beginning",
             "data:geometry:propulsion:tank:y_ratio_tank_beginning",
-        ] = (
-            inputs["data:geometry:wing:span"] / 2.0
-        )
-        partials["data:geometry:propulsion:tank:y_beginning", "data:geometry:wing:span"] = (
-            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2.0
-        )
+        ] = inputs["data:geometry:wing:span"] / 2.0
+        partials[
+            "data:geometry:propulsion:tank:y_beginning", "data:geometry:wing:span"
+        ] = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2.0
 
         partials[
-            "data:geometry:propulsion:tank:y_end", "data:geometry:propulsion:tank:y_ratio_tank_end"
-        ] = (inputs["data:geometry:wing:span"] / 2.0)
+            "data:geometry:propulsion:tank:y_end",
+            "data:geometry:propulsion:tank:y_ratio_tank_end",
+        ] = inputs["data:geometry:wing:span"] / 2.0
         partials["data:geometry:propulsion:tank:y_end", "data:geometry:wing:span"] = (
             inputs["data:geometry:propulsion:tank:y_ratio_tank_end"] / 2.0
         )

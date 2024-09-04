@@ -11,22 +11,20 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-import numpy as np
-
 import warnings
+
+import numpy as np
+import openmdao.api as om
 
 
 class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
     """Compute the MFW from the capacity of the two wing tanks inside the aircraft wings."""
 
     def __init__(self, **kwargs):
-
         super().__init__(**kwargs)
         self.m_vol_fuel = None
 
     def setup(self):
-
         self.add_input(
             "data:geometry:propulsion:tank:capacity",
             units="m**3",
@@ -43,28 +41,33 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
             method="exact",
         )
         self.declare_partials(
-            of="data:weight:aircraft:MFW", wrt="data:propulsion:fuel_type", method="exact", val=0.0
+            of="data:weight:aircraft:MFW",
+            wrt="data:propulsion:fuel_type",
+            method="exact",
+            val=0.0,
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fuel_type = inputs["data:propulsion:fuel_type"]
         tank_capacity = inputs["data:geometry:propulsion:tank:capacity"]
 
         if fuel_type == 1.0:
-            self.m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
+            self.m_vol_fuel = (
+                718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
+            )
         elif fuel_type == 2.0:
             self.m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
         elif fuel_type == 3.0:
             self.m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             self.m_vol_fuel = 718.9
-            warnings.warn("Fuel type {} does not exist, replaced by type 1!".format(fuel_type))
+            warnings.warn(
+                "Fuel type %f does not exist, replaced by type 1!" % fuel_type
+            )
 
         outputs["data:weight:aircraft:MFW"] = tank_capacity * self.m_vol_fuel
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
             "data:weight:aircraft:MFW", "data:geometry:propulsion:tank:capacity"
         ] = self.m_vol_fuel
