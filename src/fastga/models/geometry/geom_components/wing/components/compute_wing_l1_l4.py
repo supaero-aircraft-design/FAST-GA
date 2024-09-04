@@ -52,7 +52,6 @@ class ComputeWingL1AndL4(ExplicitComponent):
         outputs["data:geometry:wing:tip:chord"] = l4_wing
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]

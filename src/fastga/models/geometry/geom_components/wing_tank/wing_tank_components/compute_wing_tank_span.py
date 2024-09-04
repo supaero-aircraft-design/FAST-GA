@@ -17,9 +17,7 @@ import numpy as np
 
 class ComputeWingTankSpans(om.ExplicitComponent):
     def setup(self):
-        self.add_input(
-            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan
-        )
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
 
@@ -60,9 +58,9 @@ class ComputeWingTankSpans(om.ExplicitComponent):
             "data:geometry:propulsion:tank:y_beginning",
             "data:geometry:propulsion:tank:y_ratio_tank_beginning",
         ] = inputs["data:geometry:wing:span"] / 2.0
-        partials[
-            "data:geometry:propulsion:tank:y_beginning", "data:geometry:wing:span"
-        ] = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2.0
+        partials["data:geometry:propulsion:tank:y_beginning", "data:geometry:wing:span"] = (
+            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2.0
+        )
 
         partials[
             "data:geometry:propulsion:tank:y_end",

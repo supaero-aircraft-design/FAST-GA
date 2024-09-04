@@ -58,9 +58,7 @@ class ComputeMFWAdvanced(om.Group):
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.add_subsystem(
-            name="tank_span", subsys=ComputeWingTankSpans(), promotes=["*"]
-        )
+        self.add_subsystem(name="tank_span", subsys=ComputeWingTankSpans(), promotes=["*"])
         self.add_subsystem(
             name="tank_y_array",
             subsys=ComputeWingTankYArray(number_points_wing_mfw=nb_point_wing),
@@ -73,9 +71,7 @@ class ComputeMFWAdvanced(om.Group):
         )
         self.add_subsystem(
             name="tank_relative_thickness_array",
-            subsys=ComputeWingTankRelativeThicknessArray(
-                number_points_wing_mfw=nb_point_wing
-            ),
+            subsys=ComputeWingTankRelativeThicknessArray(number_points_wing_mfw=nb_point_wing),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -90,16 +86,12 @@ class ComputeMFWAdvanced(om.Group):
         )
         self.add_subsystem(
             name="tank_reduced_width_array",
-            subsys=ComputeWingTankReducedWidthArray(
-                number_points_wing_mfw=nb_point_wing
-            ),
+            subsys=ComputeWingTankReducedWidthArray(number_points_wing_mfw=nb_point_wing),
             promotes=["*"],
         )
         self.add_subsystem(
             name="tank_cross_section_array",
-            subsys=ComputeWingTankCrossSectionArray(
-                number_points_wing_mfw=nb_point_wing
-            ),
+            subsys=ComputeWingTankCrossSectionArray(number_points_wing_mfw=nb_point_wing),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -107,6 +99,4 @@ class ComputeMFWAdvanced(om.Group):
             subsys=ComputeWingTanksCapacity(number_points_wing_mfw=nb_point_wing),
             promotes=["*"],
         )
-        self.add_subsystem(
-            name="mfw", subsys=ComputeMFWFromWingTanksCapacity(), promotes=["*"]
-        )
+        self.add_subsystem(name="mfw", subsys=ComputeMFWFromWingTanksCapacity(), promotes=["*"])

@@ -28,9 +28,7 @@ class ComputeWingTankYArray(om.ExplicitComponent):
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
-        self.add_input(
-            "data:geometry:propulsion:tank:y_beginning", units="m", val=np.nan
-        )
+        self.add_input("data:geometry:propulsion:tank:y_beginning", units="m", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_end", units="m", val=np.nan)
 
         self.add_output(

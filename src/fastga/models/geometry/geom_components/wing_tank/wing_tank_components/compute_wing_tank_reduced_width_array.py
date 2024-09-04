@@ -134,18 +134,12 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             self.in_landing_gear, reduced_width_array * 0.2, reduced_width_array
         )
 
-        outputs["data:geometry:propulsion:tank:reduced_width_array"] = (
-            reduced_width_array
-        )
+        outputs["data:geometry:propulsion:tank:reduced_width_array"] = reduced_width_array
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials_width = np.ones_like(
-            inputs["data:geometry:propulsion:tank:width_array"]
-        )
+        partials_width = np.ones_like(inputs["data:geometry:propulsion:tank:width_array"])
         partials_width = np.where(self.in_engine, partials_width * 0.5, partials_width)
-        partials_width = np.where(
-            self.in_landing_gear, partials_width * 0.2, partials_width
-        )
+        partials_width = np.where(self.in_landing_gear, partials_width * 0.2, partials_width)
 
         partials[
             "data:geometry:propulsion:tank:reduced_width_array",

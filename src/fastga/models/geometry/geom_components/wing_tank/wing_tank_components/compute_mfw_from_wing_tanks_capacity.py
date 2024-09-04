@@ -52,22 +52,18 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
         tank_capacity = inputs["data:geometry:propulsion:tank:capacity"]
 
         if fuel_type == 1.0:
-            self.m_vol_fuel = (
-                718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
-            )
+            self.m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
         elif fuel_type == 2.0:
             self.m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
         elif fuel_type == 3.0:
             self.m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
         else:
             self.m_vol_fuel = 718.9
-            warnings.warn(
-                "Fuel type %f does not exist, replaced by type 1!" % fuel_type
-            )
+            warnings.warn(f"Fuel type {fuel_type} does not exist, replaced by type 1!")
 
         outputs["data:weight:aircraft:MFW"] = tank_capacity * self.m_vol_fuel
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials[
-            "data:weight:aircraft:MFW", "data:geometry:propulsion:tank:capacity"
-        ] = self.m_vol_fuel
+        partials["data:weight:aircraft:MFW", "data:geometry:propulsion:tank:capacity"] = (
+            self.m_vol_fuel
+        )

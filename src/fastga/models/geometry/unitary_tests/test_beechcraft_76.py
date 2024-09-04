@@ -82,6 +82,7 @@ from ..geom_components.wing_tank.wing_tank_components import (
     ComputeWingTankCrossSectionArray,
     ComputeWingTanksCapacity,
     ComputeMFWFromWingTanksCapacity,
+)
 
 XML_FILE = "beechcraft_76.xml"
 
@@ -112,9 +113,7 @@ def test_compute_vt_mac():
     problem = run_system(ComputeVTMacFD(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
-    vt_x0 = problem.get_val(
-        "data:geometry:vertical_tail:MAC:at25percent:x:local", units="m"
-    )
+    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
     assert vt_x0 == pytest.approx(0.453, abs=1e-3)
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.672, abs=1e-3)
@@ -160,9 +159,7 @@ def test_compute_vt_mac_position_fl():
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_vt == pytest.approx(4.808, abs=1e-3)
-    vt_x0 = problem.get_val(
-        "data:geometry:vertical_tail:MAC:at25percent:x:local", units="m"
-    )
+    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
     assert vt_x0 == pytest.approx(0.453, abs=1e-3)
 
 
@@ -232,9 +229,7 @@ def test_compute_ht_mac():
     problem = run_system(ComputeHTMacFD(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
-    ht_x0 = problem.get_val(
-        "data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m"
-    )
+    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
     assert ht_x0 == pytest.approx(0.065, abs=1e-3)
     ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
     assert ht_y0 == pytest.approx(0.943, abs=1e-3)
@@ -250,9 +245,7 @@ def test_compute_ht_mac_fl():
     problem = run_system(ComputeHTMacFL(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
-    ht_x0 = problem.get_val(
-        "data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m"
-    )
+    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
     assert ht_x0 == pytest.approx(0.065, abs=1e-3)
     ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
     assert ht_y0 == pytest.approx(0.943, abs=1e-3)
@@ -294,9 +287,7 @@ def test_compute_ht_volume_coefficient():
     """Tests computation of the horizontal tail volume coefficient"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(
-        list_inputs(ComputeHTVolumeCoefficient()), __file__, XML_FILE
-    )
+    ivc = get_indep_var_comp(list_inputs(ComputeHTVolumeCoefficient()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeHTVolumeCoefficient(), ivc)
@@ -317,20 +308,14 @@ def test_compute_fuselage_cabin_sizing_fd():
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(
-        ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER), ivc
-    )
+    problem = run_system(ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(2.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
     assert fuselage_length == pytest.approx(8.992, abs=1e-3)
-    fuselage_width_max = problem.get_val(
-        "data:geometry:fuselage:maximum_width", units="m"
-    )
+    fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
     assert fuselage_width_max == pytest.approx(1.198, abs=1e-3)
-    fuselage_height_max = problem.get_val(
-        "data:geometry:fuselage:maximum_height", units="m"
-    )
+    fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
     assert fuselage_height_max == pytest.approx(1.338, abs=1e-3)
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(1.873, abs=1e-3)
@@ -355,20 +340,14 @@ def test_compute_fuselage_cabin_sizing_fl():
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(
-        ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER), ivc
-    )
+    problem = run_system(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(2.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
     assert fuselage_length == pytest.approx(9.396, abs=1e-3)
-    fuselage_width_max = problem.get_val(
-        "data:geometry:fuselage:maximum_width", units="m"
-    )
+    fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
     assert fuselage_width_max == pytest.approx(1.198, abs=1e-3)
-    fuselage_height_max = problem.get_val(
-        "data:geometry:fuselage:maximum_height", units="m"
-    )
+    fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
     assert fuselage_height_max == pytest.approx(1.338, abs=1e-3)
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
     assert fuselage_lav == pytest.approx(2.274, abs=1e-3)
@@ -407,9 +386,7 @@ def test_fuselage_wet_area():
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(29.630, abs=1e-3)
-    fuselage_master_cross_section = problem[
-        "data:geometry:fuselage:master_cross_section"
-    ]
+    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
 
@@ -423,9 +400,7 @@ def test_fuselage_wet_area_flops():
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(27.213, abs=1e-3)
-    fuselage_master_cross_section = problem[
-        "data:geometry:fuselage:master_cross_section"
-    ]
+    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
 
@@ -437,9 +412,7 @@ def test_fuselage_depth():
     )
 
     problem = run_system(ComputeFuselageDepth(), ivc)
-    avg_fuselage_depth = problem.get_val(
-        "data:geometry:fuselage:average_depth", units="m"
-    )
+    avg_fuselage_depth = problem.get_val("data:geometry:fuselage:average_depth", units="m")
     assert avg_fuselage_depth == pytest.approx(0.225, rel=1e-2)
 
     problem.check_partials(compact_print=True)
@@ -588,13 +561,9 @@ def test_geometry_wing_x_absolute():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingXAbsolute(), ivc)
-    wing_x0_abs = problem.get_val(
-        "data:geometry:wing:MAC:leading_edge:x:absolute", units="m"
-    )
+    wing_x0_abs = problem.get_val("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
     assert wing_x0_abs == pytest.approx(3.091, abs=1e-3)
-    wing_x4_abs = problem.get_val(
-        "data:geometry:wing:tip:leading_edge:x:absolute", units="m"
-    )
+    wing_x4_abs = problem.get_val("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
     assert wing_x4_abs == pytest.approx(3.091, abs=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -702,19 +671,13 @@ def test_geometry_nacelle():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeNacelleDimension(propulsion_id=ENGINE_WRAPPER), ivc)
-    nacelle_length = problem.get_val(
-        "data:geometry:propulsion:nacelle:length", units="m"
-    )
+    nacelle_length = problem.get_val("data:geometry:propulsion:nacelle:length", units="m")
     assert nacelle_length == pytest.approx(1.237, abs=1e-3)
-    nacelle_height = problem.get_val(
-        "data:geometry:propulsion:nacelle:height", units="m"
-    )
+    nacelle_height = problem.get_val("data:geometry:propulsion:nacelle:height", units="m")
     assert nacelle_height == pytest.approx(0.623, abs=1e-3)
     nacelle_width = problem.get_val("data:geometry:propulsion:nacelle:width", units="m")
     assert nacelle_width == pytest.approx(0.929, abs=1e-3)
-    nacelle_wet_area = problem.get_val(
-        "data:geometry:propulsion:nacelle:wet_area", units="m**2"
-    )
+    nacelle_wet_area = problem.get_val("data:geometry:propulsion:nacelle:wet_area", units="m**2")
     assert nacelle_wet_area == pytest.approx(3.841, abs=1e-3)
     nacelle_master_cross_section = problem.get_val(
         "data:geometry:propulsion:nacelle:master_cross_section", units="m**2"
@@ -742,15 +705,11 @@ def test_position_propeller():
     """Tests computation of the nacelle and pylons component"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(
-        list_inputs(ComputePropellerPosition()), __file__, XML_FILE
-    )
+    ivc = get_indep_var_comp(list_inputs(ComputePropellerPosition()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePropellerPosition(), ivc)
-    x_prop_from_le = problem.get_val(
-        "data:geometry:propulsion:nacelle:from_LE", units="m"
-    )
+    x_prop_from_le = problem.get_val("data:geometry:propulsion:nacelle:from_LE", units="m")
     x_prop_from_le_result = 0.1954
     assert abs(x_prop_from_le - x_prop_from_le_result) < 1e-3
 
@@ -759,9 +718,7 @@ def test_installation_effect_propeller():
     """Tests computation propeller effective advance ratio factor computation"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(
-        list_inputs(ComputePropellerInstallationEffect()), __file__, XML_FILE
-    )
+    ivc = get_indep_var_comp(list_inputs(ComputePropellerInstallationEffect()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePropellerInstallationEffect(), ivc)
@@ -865,9 +822,7 @@ def test_wing_tank_y_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankYArray(), ivc)
-    y_wing_tank_array = problem.get_val(
-        "data:geometry:propulsion:tank:y_array", units="m"
-    )
+    y_wing_tank_array = problem.get_val("data:geometry:propulsion:tank:y_array", units="m")
     assert y_wing_tank_array == pytest.approx(np.linspace(2.437, 5.338, 50), rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -889,9 +844,7 @@ def test_wing_tank_chord_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankChordArray(), ivc)
-    wing_tank_chord_array = problem.get_val(
-        "data:geometry:propulsion:tank:chord_array", units="m"
-    )
+    wing_tank_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
     assert wing_tank_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -913,9 +866,7 @@ def test_wing_tank_relative_thickness_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankRelativeThicknessArray(), ivc)
-    wing_tank_t_c_array = problem.get_val(
-        "data:geometry:propulsion:tank:relative_thickness_array"
-    )
+    wing_tank_t_c_array = problem.get_val("data:geometry:propulsion:tank:relative_thickness_array")
     assert wing_tank_t_c_array == pytest.approx(
         [
             0.15930484,
@@ -989,9 +940,7 @@ def test_wing_tank_thickness_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankThicknessArray(), ivc)
-    wing_tank_t_array = problem.get_val(
-        "data:geometry:propulsion:tank:thickness_array", units="m"
-    )
+    wing_tank_t_array = problem.get_val("data:geometry:propulsion:tank:thickness_array", units="m")
     assert wing_tank_t_array == pytest.approx(
         [
             0.11582732,
@@ -1067,9 +1016,7 @@ def test_wing_tank_width_array():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTankWidthArray(), ivc)
-    wing_tank_width_array = problem.get_val(
-        "data:geometry:propulsion:tank:width_array", units="m"
-    )
+    wing_tank_width_array = problem.get_val("data:geometry:propulsion:tank:width_array", units="m")
     assert wing_tank_width_array == pytest.approx(np.full(50, 0.82887094), rel=1e-3)
 
     problem.check_partials(compact_print=True)
@@ -1248,9 +1195,7 @@ def test_wing_tanks_capacity():
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
     problem = run_system(ComputeWingTanksCapacity(), ivc)
-    wing_tanks_capacity = problem.get_val(
-        "data:geometry:propulsion:tank:capacity", units="m**3"
-    )
+    wing_tanks_capacity = problem.get_val("data:geometry:propulsion:tank:capacity", units="m**3")
     assert wing_tanks_capacity == pytest.approx(0.4238899477389617, rel=1e-3)
 
     problem.check_partials(compact_print=True)

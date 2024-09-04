@@ -87,12 +87,8 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_max_clean", val=np.nan)
         self.add_input("data:aerodynamics:wing:low_speed:CL_min_clean", val=np.nan)
-        self.add_input(
-            "data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1"
-        )
-        self.add_input(
-            "data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1"
-        )
+        self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input(
             "data:aerodynamics:horizontal_tail:low_speed:CL_alpha",
             val=np.nan,
@@ -119,9 +115,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MZFW", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
         self.add_input("data:weight:propulsion:engine:mass", val=np.nan, units="kg")
-        self.add_input(
-            "data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg"
-        )
+        self.add_input("data:weight:airframe:landing_gear:main:mass", val=np.nan, units="kg")
         self.add_input("data:weight:airframe:wing:mass", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:CG:aft:x", val=np.nan, units="m")
         self.add_input("data:weight:aircraft:CG:fwd:x", val=np.nan, units="m")
@@ -135,9 +129,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:geometry:wing:tip:thickness_ratio", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input(
-            "data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m"
-        )
+        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -159,9 +151,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         )
         self.add_input("data:geometry:propulsion:nacelle:width", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
-        self.add_input(
-            "data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan
-        )
+        self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:LE_chord_percentage", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:TE_chord_percentage", val=np.nan)
 
@@ -179,46 +169,26 @@ class AerostructuralLoad(om.ExplicitComponent):
         )
 
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
-        self.add_input(
-            "data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft"
-        )
+        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
-        self.add_input(
-            "data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s"
-        )
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vc", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:safety_factor", val=np.nan)
-        self.add_input(
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", val=np.nan
-        )
-        self.add_input(
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", val=np.nan
-        )
-        self.add_input(
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", val=np.nan
-        )
-        self.add_input(
-            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", val=np.nan
-        )
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive", val=np.nan)
+        self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative", val=np.nan)
 
         self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
         self.add_output("data:loads:max_shear:mass", units="kg")
         self.add_output("data:loads:max_shear:load_factor")
-        self.add_output(
-            "data:loads:max_shear:lift_shear", units="N", shape=SPAN_MESH_POINT_LOADS
-        )
-        self.add_output(
-            "data:loads:max_shear:weight_shear", units="N", shape=SPAN_MESH_POINT_LOADS
-        )
+        self.add_output("data:loads:max_shear:lift_shear", units="N", shape=SPAN_MESH_POINT_LOADS)
+        self.add_output("data:loads:max_shear:weight_shear", units="N", shape=SPAN_MESH_POINT_LOADS)
 
         self.add_output("data:loads:max_rbm:mass", units="kg")
         self.add_output("data:loads:max_rbm:load_factor")
-        self.add_output(
-            "data:loads:max_rbm:lift_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS
-        )
-        self.add_output(
-            "data:loads:max_rbm:weight_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS
-        )
+        self.add_output("data:loads:max_rbm:lift_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS)
+        self.add_output("data:loads:max_rbm:weight_rbm", units="N*m", shape=SPAN_MESH_POINT_LOADS)
 
         self.add_output("data:loads:y_vector", units="m", shape=SPAN_MESH_POINT_LOADS)
 
@@ -227,13 +197,9 @@ class AerostructuralLoad(om.ExplicitComponent):
         ############################################################################################
 
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
-        y_vector_slip = inputs[
-            "data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"
-        ]
+        y_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"]
         cl_vector = inputs["data:aerodynamics:wing:low_speed:CL_vector"]
-        cl_vector_slip = inputs[
-            "data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"
-        ]
+        cl_vector_slip = inputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"]
         cl_ref = inputs["data:aerodynamics:wing:low_speed:CL_ref"]
         chord_vector = inputs["data:aerodynamics:wing:low_speed:chord_vector"]
         v_ref = inputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"]
@@ -270,9 +236,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         cl_vector_slip = AerostructuralLoad.delete_additional_zeros(
             cl_vector_slip, len(y_vector_slip)
         )
-        chord_vector = AerostructuralLoad.delete_additional_zeros(
-            chord_vector, len(y_vector)
-        )
+        chord_vector = AerostructuralLoad.delete_additional_zeros(chord_vector, len(y_vector))
 
         # We add the first point at the root
         y_vector, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, 0.0)
@@ -282,12 +246,8 @@ class AerostructuralLoad(om.ExplicitComponent):
         chord_vector = np.insert(chord_vector, 0, chord_vector[0])
 
         # And the last point at the tip
-        y_vector_orig, _ = AerostructuralLoad.insert_in_sorted_array(
-            y_vector, semi_span
-        )
-        y_vector_slip_orig, _ = AerostructuralLoad.insert_in_sorted_array(
-            y_vector_slip, semi_span
-        )
+        y_vector_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector, semi_span)
+        y_vector_slip_orig, _ = AerostructuralLoad.insert_in_sorted_array(y_vector_slip, semi_span)
         cl_vector = np.append(cl_vector, 0.0)
         cl_vector_slip = np.append(cl_vector_slip, 0.0)
         chord_vector = np.append(chord_vector, chord_vector[-1])
@@ -295,12 +255,8 @@ class AerostructuralLoad(om.ExplicitComponent):
         # STEP 3/XX - WE COMPUTE THE BASELINE LIFT THAT WE ASSUME WILL SCALE WITH THE LOAD
         # FACTOR, THAT IS WHY WE COMPUTE It OUT OF THE LOOPS
 
-        y_vector, _ = self.compute_relief_force(
-            inputs, y_vector_orig, chord_vector, wing_mass, 0.0
-        )
-        cl_s = self.compute_cl_s(
-            y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector
-        )
+        y_vector, _ = self.compute_relief_force(inputs, y_vector_orig, chord_vector, wing_mass, 0.0)
+        cl_s = self.compute_cl_s(y_vector_orig, y_vector_orig, y_vector, cl_vector, chord_vector)
         cl_s_slip = self.compute_cl_s(
             y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector
         )
@@ -319,33 +275,17 @@ class AerostructuralLoad(om.ExplicitComponent):
             if mass_tag == "mtow":
                 mass = mtow
                 load_factor_list = [
-                    float(
-                        inputs[
-                            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"
-                        ]
-                    )
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:positive"])
                     / factor_of_safety,
-                    float(
-                        inputs[
-                            "data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"
-                        ]
-                    )
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mtow:negative"])
                     / factor_of_safety,
                 ]
             else:
                 mass = min(mzfw, mtow)
                 load_factor_list = [
-                    float(
-                        inputs[
-                            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"
-                        ]
-                    )
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:positive"])
                     / factor_of_safety,
-                    float(
-                        inputs[
-                            "data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"
-                        ]
-                    )
+                    float(inputs["data:mission:sizing:cs23:sizing_factor:ultimate_mzfw:negative"])
                     / factor_of_safety,
                 ]
 
@@ -367,15 +307,11 @@ class AerostructuralLoad(om.ExplicitComponent):
                 # STEP 4.2/XX - WE COMPUTE THE REAL CONDITIONS EXPERIENCED IN TERMS OF LIFT AND
                 # WEIGHT AND SCALE THE INITIAL VECTOR ACCORDING TO LOAD FACTOR AND LIFT EQUILIBRIUM
 
-                cl_wing = (
-                    1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
-                )
+                cl_wing = 1.05 * (load_factor * mass * 9.81) / (dynamic_pressure * wing_area)
                 cl_s_actual = cl_s * cl_wing / cl_ref
                 cl_s_slip_actual = cl_s_slip * (v_ref / v_c_tas) ** 2.0
                 lift_section = (
-                    factor_of_safety
-                    * dynamic_pressure
-                    * (cl_s_actual + cl_s_slip_actual)
+                    factor_of_safety * dynamic_pressure * (cl_s_actual + cl_s_slip_actual)
                 )
                 weight_array = weight_array_orig * factor_of_safety * load_factor
 
@@ -386,10 +322,8 @@ class AerostructuralLoad(om.ExplicitComponent):
                 tot_shear_diagram = AerostructuralLoad.compute_shear_diagram(
                     y_vector, weight_array + lift_section
                 )
-                tot_bending_moment_diagram = (
-                    AerostructuralLoad.compute_bending_moment_diagram(
-                        y_vector, weight_array + lift_section
-                    )
+                tot_bending_moment_diagram = AerostructuralLoad.compute_bending_moment_diagram(
+                    y_vector, weight_array + lift_section
                 )
                 root_shear_force = tot_shear_diagram[0]
                 root_bending_moment = tot_bending_moment_diagram[0]
@@ -406,15 +340,11 @@ class AerostructuralLoad(om.ExplicitComponent):
 
                 if abs(root_bending_moment) > rbm_max:
                     rbm_max_conditions = [mass, load_factor]
-                    lift_bending_diagram = (
-                        AerostructuralLoad.compute_bending_moment_diagram(
-                            y_vector, lift_section
-                        )
+                    lift_bending_diagram = AerostructuralLoad.compute_bending_moment_diagram(
+                        y_vector, lift_section
                     )
-                    weight_bending_diagram = (
-                        AerostructuralLoad.compute_bending_moment_diagram(
-                            y_vector, weight_array
-                        )
+                    weight_bending_diagram = AerostructuralLoad.compute_bending_moment_diagram(
+                        y_vector, weight_array
                     )
                     rbm_max = abs(root_bending_moment)
 
@@ -426,9 +356,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         y_vector = np.concatenate([y_vector, additional_zeros])
 
         lift_bending_diagram = np.concatenate([lift_bending_diagram, additional_zeros])
-        weight_bending_diagram = np.concatenate(
-            [weight_bending_diagram, additional_zeros]
-        )
+        weight_bending_diagram = np.concatenate([weight_bending_diagram, additional_zeros])
 
         outputs["data:loads:max_shear:mass"] = shear_max_conditions[0]
         outputs["data:loads:max_shear:load_factor"] = shear_max_conditions[1]
@@ -484,16 +412,12 @@ class AerostructuralLoad(om.ExplicitComponent):
         # subsequent stations
         for i, _ in enumerate(y_vector):
             lever_arm = y_vector - y_vector[i]
-            bending_moment_diagram[i] = trapz(
-                force_array[i:] * lever_arm[i:], y_vector[i:]
-            )
+            bending_moment_diagram[i] = trapz(force_array[i:] * lever_arm[i:], y_vector[i:])
 
         return bending_moment_diagram
 
     @staticmethod
-    def compute_cl_s(
-        y_vector_cl_orig, y_vector_chord_orig, y_vector, cl_list, chord_list
-    ):
+    def compute_cl_s(y_vector_cl_orig, y_vector_chord_orig, y_vector, cl_list, chord_list):
         """
         Function that computes linear lift on all section of y_vector based on an original cl
         distribution
@@ -524,9 +448,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         return lift_chord
 
     @staticmethod
-    def compute_relief_force(
-        inputs, y_vector, chord_vector, wing_mass, fuel_mass, point_mass=True
-    ):
+    def compute_relief_force(inputs, y_vector, chord_vector, wing_mass, fuel_mass, point_mass=True):
         """
         Function that computes the baseline weight distribution and modify the y_vector to
         account for point masses. We chose to represent point masses as linear masses on finite
@@ -567,9 +489,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         else:
             y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
 
-        y_ratio_punctual_mass = inputs[
-            "data:weight:airframe:wing:punctual_mass:y_ratio"
-        ]
+        y_ratio_punctual_mass = inputs["data:weight:airframe:wing:punctual_mass:y_ratio"]
         punctual_mass_array = inputs["data:weight:airframe:wing:punctual_mass:mass"]
 
         g = 9.81
@@ -591,15 +511,13 @@ class AerostructuralLoad(om.ExplicitComponent):
         if engine_config == 1.0:
             for y_ratio_mot in y_ratio:
                 y_eng = y_ratio_mot * semi_span
-                y_vector, chord_vector, point_mass_array = (
-                    AerostructuralLoad.add_point_mass(
-                        y_vector,
-                        chord_vector,
-                        point_mass_array,
-                        y_eng,
-                        single_engine_mass,
-                        inputs,
-                    )
+                y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
+                    y_vector,
+                    chord_vector,
+                    point_mass_array,
+                    y_eng,
+                    single_engine_mass,
+                    inputs,
                 )
 
         if len(y_ratio_punctual_mass) > 1 or (
@@ -611,15 +529,13 @@ class AerostructuralLoad(om.ExplicitComponent):
                 punctual_mass = punctual_mass_array[
                     np.where(y_ratio_punctual_mass == y_ratio_punctual)[0]
                 ]
-                y_vector, chord_vector, point_mass_array = (
-                    AerostructuralLoad.add_point_mass(
-                        y_vector,
-                        chord_vector,
-                        point_mass_array,
-                        y_punctual_mass,
-                        punctual_mass,
-                        inputs,
-                    )
+                y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
+                    y_vector,
+                    chord_vector,
+                    point_mass_array,
+                    y_punctual_mass,
+                    punctual_mass,
+                    inputs,
                 )
 
         # Adding the LG weight
@@ -649,9 +565,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         # We readjust to make sure that the integration of the mass distribution gives the actual
         # mass
-        wing_mass_array = (
-            wing_mass * struct_weight_distribution / (2.0 * readjust_struct)
-        )
+        wing_mass_array = wing_mass * struct_weight_distribution / (2.0 * readjust_struct)
         fuel_mass_array = fuel_mass * fuel_weight_distribution / (2.0 * readjust_fuel)
 
         # STEP 4/XX - WE CAN NOW ADD ALL THE MASS TOGETHER AND RETURN ALL VALUES
@@ -700,9 +614,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         return final_array
 
     @staticmethod
-    def add_point_mass(
-        y_vector, chord_vector, point_mass_array, y_point_mass, point_mass, inputs
-    ):
+    def add_point_mass(y_vector, chord_vector, point_mass_array, y_point_mass, point_mass, inputs):
         """
         Function that add a point mass to an already created point_mass_array. Modify the y
         station sampling and chord sampling to account for the additional station added.
@@ -748,13 +660,9 @@ class AerostructuralLoad(om.ExplicitComponent):
             y_current = y_point_mass + (i - nb_point_side) * interval_len
             if (y_current >= 0.0) and (y_current <= semi_span):
                 y_added.append(y_current)
-                y_vector, idx = AerostructuralLoad.insert_in_sorted_array(
-                    y_vector, y_current
-                )
+                y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_current)
                 index = int(float(idx[0]))
-                chord_vector = np.insert(
-                    chord_vector, index, present_chord_interp(y_current)
-                )
+                chord_vector = np.insert(chord_vector, index, present_chord_interp(y_current))
                 point_mass_array = np.insert(
                     point_mass_array, index, present_mass_interp(y_current)
                 )
@@ -764,18 +672,14 @@ class AerostructuralLoad(om.ExplicitComponent):
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_min)
         index = int(float(idx[0]))
         chord_vector = np.insert(chord_vector, index, present_chord_interp(y_min))
-        point_mass_array = np.insert(
-            point_mass_array, index, present_mass_interp(y_min)
-        )
+        point_mass_array = np.insert(point_mass_array, index, present_mass_interp(y_min))
         fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
         y_max = max(y_added) + 1e-3
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_max)
         index = int(float(idx[0]))
         chord_vector = np.insert(chord_vector, index, present_chord_interp(y_max))
-        point_mass_array = np.insert(
-            point_mass_array, index, present_mass_interp(y_max)
-        )
+        point_mass_array = np.insert(point_mass_array, index, present_mass_interp(y_max))
         fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
         # STEP 5/XX - WE NOW HAVE THE RIGHT WE JUST NEED TO SCALE IT PROPERLY WHICH IS THE POINT
@@ -814,9 +718,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
     flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
     aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
-    y_ratio_tank_beginning = inputs[
-        "data:geometry:propulsion:tank:y_ratio_tank_beginning"
-    ]
+    y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
     y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
     engine_config = inputs["data:geometry:propulsion:engine:layout"]
     le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
@@ -835,9 +737,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     y_tank_beginning = semi_span * y_ratio_tank_beginning
     y_tank_end = semi_span * y_ratio_tank_end
 
-    y_in_tank_index = np.where((y_array >= y_tank_beginning) & (y_array <= y_tank_end))[
-        0
-    ]
+    y_in_tank_index = np.where((y_array >= y_tank_beginning) & (y_array <= y_tank_end))[0]
     y_in_tank_array = y_array[y_in_tank_index]
 
     slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
@@ -879,10 +779,7 @@ def tank_volume_distribution(inputs, y_array_orig):
     where_engine = np.where(in_eng_nacelle)
 
     width_array = (
-        1.0
-        - le_chord_percentage
-        - te_chord_percentage
-        - max(flap_chord_ratio, aileron_chord_ratio)
+        1.0 - le_chord_percentage - te_chord_percentage - max(flap_chord_ratio, aileron_chord_ratio)
     ) * chord_array
     if engine_config == 1.0:
         for i in where_engine:

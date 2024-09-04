@@ -74,12 +74,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        le_chord_percentage = inputs[
-            "data:geometry:propulsion:tank:LE_chord_percentage"
-        ]
-        te_chord_percentage = inputs[
-            "data:geometry:propulsion:tank:TE_chord_percentage"
-        ]
+        le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
+        te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
 
@@ -93,12 +89,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        le_chord_percentage = inputs[
-            "data:geometry:propulsion:tank:LE_chord_percentage"
-        ]
-        te_chord_percentage = inputs[
-            "data:geometry:propulsion:tank:TE_chord_percentage"
-        ]
+        le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
+        te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
         flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
         aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
 

@@ -61,9 +61,7 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
-        cross_section_array = inputs[
-            "data:geometry:propulsion:tank:cross_section_array"
-        ]
+        cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
 
         # trapz should be equivalent to sum(
         #   (
@@ -78,9 +76,7 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
-        cross_section_array = inputs[
-            "data:geometry:propulsion:tank:cross_section_array"
-        ]
+        cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
 
         first_order_delta_y = y_array[1:] - y_array[:-1]
         second_order_delta_y = y_array[2:] - y_array[:-2]
