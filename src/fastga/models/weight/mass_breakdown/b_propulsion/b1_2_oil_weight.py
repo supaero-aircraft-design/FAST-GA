@@ -12,13 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from scipy.constants import lbf
-from openmdao.core.explicitcomponent import ExplicitComponent
+import fastoad.api as oad
+from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-from fastoad.constants import EngineSetting
+from openmdao.core.explicitcomponent import ExplicitComponent
+from scipy.constants import lbf
 
 
 class ComputeOilWeight(ExplicitComponent):
@@ -42,7 +42,6 @@ class ComputeOilWeight(ExplicitComponent):
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         n_eng = inputs["data:geometry:propulsion:engine:count"]
 
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -56,6 +55,6 @@ class ComputeOilWeight(ExplicitComponent):
         sl_thrust_newton = float(flight_point.thrust)
         sl_thrust_lbs = sl_thrust_newton / lbf
 
-        b1_2 = 0.082 * n_eng * sl_thrust_lbs ** 0.65
+        b1_2 = 0.082 * n_eng * sl_thrust_lbs**0.65
 
         outputs["data:weight:propulsion:engine_oil:mass"] = b1_2

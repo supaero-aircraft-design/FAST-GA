@@ -36,12 +36,12 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_DESCENT = 50
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_DESCENT
-] = "fastga.submodel.performances.mission.descent.legacy"
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_DESCENT_SPEED
-] = "fastga.submodel.performances.mission.descent_speed.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_DESCENT] = (
+    "fastga.submodel.performances.mission.descent.legacy"
+)
+oad.RegisterSubmodel.active_models[SUBMODEL_DESCENT_SPEED] = (
+    "fastga.submodel.performances.mission.descent_speed.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_DESCENT, "fastga.submodel.performances.mission.descent.legacy")
@@ -89,11 +89,6 @@ class ComputeDescent(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
-        if self.options["out_file"] != "":
-            # noinspection PyBroadException
-            flight_point_df = None
-
         wing_area = inputs["data:geometry:wing:area"]
         propulsion_model = self._engine_wrapper.get_model(inputs)
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
@@ -127,7 +122,6 @@ class ComputeDescent(DynamicEquilibrium):
         time_step = abs((altitude_t / descent_rate)) / float(POINTS_NB_DESCENT)
 
         while altitude_t > 0.0:
-
             flight_point = oad.FlightPoint(
                 altitude=altitude_t,
                 time=time_t,
@@ -149,7 +143,7 @@ class ComputeDescent(DynamicEquilibrium):
             atm_1.calibrated_airspeed = v_cas
             dv_tas_dh = atm_1.true_airspeed - v_tas
             dvx_dt = dv_tas_dh * v_tas * np.sin(flight_point.gamma)
-            dynamic_pressure = 0.5 * atm.density * v_tas ** 2
+            dynamic_pressure = 0.5 * atm.density * v_tas**2
 
             # Find equilibrium, decrease gamma if obtained thrust is negative
             previous_step = self.dynamic_equilibrium(
@@ -221,7 +215,6 @@ class ComputeDescent(DynamicEquilibrium):
 )
 class ComputeDescentSpeed(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
 
         self.add_input("data:aerodynamics:aircraft:cruise:optimal_CL", np.nan)
@@ -241,7 +234,6 @@ class ComputeDescentSpeed(om.ExplicitComponent):
         self.add_output("data:mission:sizing:main_route:descent:v_cas", units="m/s")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         m_to = inputs["data:mission:sizing:taxi_out:fuel"]
         m_tk = inputs["data:mission:sizing:takeoff:fuel"]

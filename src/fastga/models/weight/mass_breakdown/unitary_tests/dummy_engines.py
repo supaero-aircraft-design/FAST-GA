@@ -12,12 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-from openmdao.core.component import Component
 from typing import Union
-import numpy as np
 
 import fastoad.api as oad
+import numpy as np
+import pandas as pd
+from openmdao.core.component import Component
 
 from fastga.models.propulsion.fuel_propulsion.base import AbstractFuelPropulsion
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet

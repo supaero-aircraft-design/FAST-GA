@@ -21,7 +21,6 @@ class Equilibrium(om.ImplicitComponent):
     """Find the conditions necessary for the aircraft equilibrium."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be " "treated"
         )
@@ -32,7 +31,6 @@ class Equilibrium(om.ImplicitComponent):
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input("d_vx_dt", val=np.full(number_of_points, 0.0), units="m/s**2")
@@ -183,7 +181,6 @@ class Equilibrium(om.ImplicitComponent):
             )
 
     def linearize(self, inputs, outputs, partials):
-
         number_of_points = self.options["number_of_points"]
 
         mass = inputs["mass"]
@@ -242,9 +239,9 @@ class Equilibrium(om.ImplicitComponent):
             cd0
             + delta_cd
             + delta_cd_flaps
-            + coeff_k_wing * cl_wing ** 2
-            + coeff_k_htp * cl_htp ** 2
-            + (cd_delta_m * delta_m ** 2.0)
+            + coeff_k_wing * cl_wing**2
+            + coeff_k_htp * cl_htp**2
+            + (cd_delta_m * delta_m**2.0)
         )
 
         d_q_d_airspeed = rho * true_airspeed
@@ -266,11 +263,11 @@ class Equilibrium(om.ImplicitComponent):
         d_alpha_d_gamma_vector = mass * g * np.sin(gamma) / (dynamic_pressure * wing_area)
         partials["alpha", "gamma"] = np.diag(d_alpha_d_gamma_vector)
         d_alpha_d_q_vector = -(thrust * np.sin(alpha) - mass * g * np.cos(gamma)) / (
-            wing_area * dynamic_pressure ** 2.0
+            wing_area * dynamic_pressure**2.0
         )
         partials["alpha", "true_airspeed"] = np.diag(d_alpha_d_q_vector * d_q_d_airspeed)
         d_alpha_d_s_vector = -(thrust * np.sin(alpha) - mass * g * np.cos(gamma)) / (
-            dynamic_pressure * wing_area ** 2.0
+            dynamic_pressure * wing_area**2.0
         )
         partials["alpha", "data:geometry:wing:area"] = d_alpha_d_s_vector
         d_alpha_d_alpha_vector = (
@@ -299,14 +296,14 @@ class Equilibrium(om.ImplicitComponent):
         partials["thrust", "data:geometry:wing:area"] = -dynamic_pressure * cd_tot
         partials["thrust", "data:aerodynamics:aircraft:cruise:CD0"] = -dynamic_pressure * wing_area
         partials["thrust", "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"] = (
-            -dynamic_pressure * wing_area * cl_htp ** 2.0
+            -dynamic_pressure * wing_area * cl_htp**2.0
         )
         partials["thrust", "data:aerodynamics:wing:cruise:induced_drag_coefficient"] = (
-            -dynamic_pressure * wing_area * cl_wing ** 2.0
+            -dynamic_pressure * wing_area * cl_wing**2.0
         )
         partials["thrust", "delta_Cd"] = -np.diag(dynamic_pressure * wing_area)
         partials["thrust", "data:aerodynamics:elevator:low_speed:CD_delta"] = (
-            -dynamic_pressure * wing_area * delta_m ** 2.0
+            -dynamic_pressure * wing_area * delta_m**2.0
         )
         partials["thrust", "data:aerodynamics:elevator:low_speed:CL_delta"] = (
             d_thrust_d_cl_h * d_cl_h_d_cl_delta
@@ -395,7 +392,6 @@ class Equilibrium(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         d_vx_dt = inputs["d_vx_dt"]
         mass = inputs["mass"]
         x_cg = inputs["x_cg"]
@@ -455,9 +451,9 @@ class Equilibrium(om.ImplicitComponent):
             cd0
             + delta_cd
             + delta_cd_flaps
-            + coeff_k_wing * cl_wing_flaps ** 2.0
-            + coeff_k_htp * cl_htp ** 2.0
-            + (cd_delta_m * delta_m ** 2.0)
+            + coeff_k_wing * cl_wing_flaps**2.0
+            + coeff_k_htp * cl_htp**2.0
+            + (cd_delta_m * delta_m**2.0)
         )
 
         residuals["alpha"] = (

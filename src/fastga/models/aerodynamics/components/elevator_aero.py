@@ -32,7 +32,6 @@ class ComputeDeltaElevator(FigureDigitization):
         self.phase = None
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
@@ -50,7 +49,6 @@ class ComputeDeltaElevator(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_area = inputs["data:geometry:wing:area"]
         htp_area = inputs["data:geometry:horizontal_tail:area"]
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]

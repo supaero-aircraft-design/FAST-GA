@@ -12,11 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 import fastoad.api as oad
+import numpy as np
+from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_WING_CG
 
@@ -30,7 +28,6 @@ class ComputeWingCG(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -47,7 +44,6 @@ class ComputeWingCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]

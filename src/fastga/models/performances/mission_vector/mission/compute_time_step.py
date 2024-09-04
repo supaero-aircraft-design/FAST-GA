@@ -19,13 +19,11 @@ class ComputeTimeStep(om.ExplicitComponent):
     """Computes the time step size for the energy consumption later."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input(
@@ -35,11 +33,9 @@ class ComputeTimeStep(om.ExplicitComponent):
         self.add_output("time_step", shape=number_of_points, units="s")
 
     def setup_partials(self):
-
         self.declare_partials(of="time_step", wrt="time", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         time = inputs["time"]
 
         time_step = time[1:] - time[:-1]
@@ -48,7 +44,6 @@ class ComputeTimeStep(om.ExplicitComponent):
         outputs["time_step"] = time_step
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         number_of_points = self.options["number_of_points"]
 
         middle_diagonal = -np.eye(number_of_points)

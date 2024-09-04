@@ -12,14 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeNLGHatch(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="m")
         self.add_input(
             "data:geometry:cabin:pressurized",
@@ -33,7 +31,6 @@ class ComputeNLGHatch(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:nlg_hatch:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lg_height = inputs["data:geometry:landing_gear:height"]
         pressurized = inputs["data:geometry:cabin:pressurized"]
         shell_mass_area_density = inputs["data:weight:airframe:fuselage:shell:area_density"]

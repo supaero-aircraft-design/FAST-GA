@@ -1,5 +1,5 @@
 """
-    Estimation of cl/cm/oswald aero coefficients using VLM.
+Estimation of cl/cm/oswald aero coefficients using VLM.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -191,7 +191,6 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 
     def setup(self):
-
         super().setup()
         if self.options["low_speed_aero"]:
             self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
@@ -253,7 +252,6 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         _LOGGER.debug("Entering aerodynamic computation")
         input_aoa = self.options["input_angle_of_attack"]
 
@@ -307,14 +305,14 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL0"] = cl_0_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_ref"] = cl_X_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"] = cl_alpha_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"
-            ] = cl_alpha_htp_isolated
+            outputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"] = (
+                cl_alpha_htp_isolated
+            )
             outputs["data:aerodynamics:horizontal_tail:low_speed:Y_vector"] = y_vector_htp
             outputs["data:aerodynamics:horizontal_tail:low_speed:CL_vector"] = cl_vector_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"
-            ] = coef_k_htp
+            outputs["data:aerodynamics:horizontal_tail:low_speed:induced_drag_coefficient"] = (
+                coef_k_htp
+            )
         else:
             outputs["data:aerodynamics:wing:cruise:CL0_clean"] = cl_0_wing
             outputs["data:aerodynamics:wing:cruise:CL_ref"] = cl_ref_wing
@@ -323,14 +321,14 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
             outputs["data:aerodynamics:wing:cruise:induced_drag_coefficient"] = coef_k_wing
             outputs["data:aerodynamics:horizontal_tail:cruise:CL0"] = cl_0_htp
             outputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"] = cl_alpha_htp
-            outputs[
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated"
-            ] = cl_alpha_htp_isolated
-            outputs[
-                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
-            ] = coef_k_htp
+            outputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated"] = (
+                cl_alpha_htp_isolated
+            )
+            outputs["data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"] = (
+                coef_k_htp
+            )
             if self.options["compute_mach_interpolation"]:
                 outputs["data:aerodynamics:aircraft:mach_interpolation:mach_vector"] = mach_interp
-                outputs[
-                    "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-                ] = cl_alpha_interp
+                outputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"] = (
+                    cl_alpha_interp
+                )

@@ -1,5 +1,5 @@
 """
-    Computation of the non-equilibrated aircraft polars
+Computation of the non-equilibrated aircraft polars
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -120,7 +120,6 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mtow = inputs["data:weight:aircraft:MTOW"]
         wing_area = inputs["data:geometry:wing:area"]
         cl_max_clean = inputs["data:aerodynamics:wing:low_speed:CL_max_clean"]
@@ -141,7 +140,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
 
         # Computation of the maximum aircraft mass that can be used before exceeding
         # the CL0 clean of the wing in found_cl_repartition
-        init_mass_guess = (0.5 * atm.density * v_tas ** 2 * wing_area * cl_max_clean) / 9.81
+        init_mass_guess = (0.5 * atm.density * v_tas**2 * wing_area * cl_max_clean) / 9.81
 
         cg_ratio = self.options["cg_ratio"]
         x_cg = x_cg_aft + cg_ratio * (x_cg_fwd - x_cg_aft)
@@ -152,7 +151,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
             previous_step = self.dynamic_equilibrium(
                 inputs,
                 0.0,
-                (0.5 * atm.density * v_tas ** 2),
+                (0.5 * atm.density * v_tas**2),
                 0.0,
                 0.0,
                 mass,
@@ -168,7 +167,7 @@ class ComputeEquilibratedPolar(DynamicEquilibrium):
                 cl_tail = float(previous_step[3])
                 thrust = float(previous_step[1])
                 cl_array = np.append(cl_array, cl_wing + cl_tail)
-                cd = thrust / (0.5 * atm.density * v_tas ** 2 * wing_area)
+                cd = thrust / (0.5 * atm.density * v_tas**2 * wing_area)
                 cd_array = np.append(cd_array, cd)
 
         additional_zeros = np.linspace(

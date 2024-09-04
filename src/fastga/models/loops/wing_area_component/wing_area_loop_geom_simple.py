@@ -17,19 +17,18 @@ simple computation.
 
 import warnings
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-import fastoad.api as oad
-
 from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CONS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_WING_AREA_GEOM_LOOP
-] = "fastga.submodel.loop.wing_area.update.geom.simple"
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_WING_AREA_GEOM_CONS
-] = "fastga.submodel.loop.wing_area.constraint.geom.simple"
+oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_GEOM_LOOP] = (
+    "fastga.submodel.loop.wing_area.update.geom.simple"
+)
+oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_GEOM_CONS] = (
+    "fastga.submodel.loop.wing_area.constraint.geom.simple"
+)
 
 
 @oad.RegisterSubmodel(
@@ -63,7 +62,6 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mfw_mission = inputs["data:mission:sizing:fuel"]
         fuel_type = inputs["data:propulsion:fuel_type"]
         root_chord = inputs["data:geometry:wing:root:chord"]
@@ -88,7 +86,6 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
         outputs["wing_area"] = wing_area_mission
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         mfw_mission = inputs["data:mission:sizing:fuel"]
         fuel_type = inputs["data:propulsion:fuel_type"]
         root_chord = inputs["data:geometry:wing:root:chord"]
@@ -114,7 +111,7 @@ class UpdateWingAreaGeomSimple(om.ExplicitComponent):
         d_avg_th_d_tip_c = 0.7 / 2.0 * tip_thickness_ratio
         d_avg_th_d_tip_tc = 0.7 / 2.0 * tip_chord
 
-        d_area_d_avg_th = -(mfw_mission / m_vol_fuel) / (0.3 * ave_thickness ** 2.0)
+        d_area_d_avg_th = -(mfw_mission / m_vol_fuel) / (0.3 * ave_thickness**2.0)
 
         partials["wing_area", "data:mission:sizing:fuel"] = (1.0 / m_vol_fuel) / (
             0.3 * ave_thickness
@@ -140,7 +137,6 @@ class ConstraintWingAreaGeomSimple(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:mission:sizing:fuel", val=np.nan, units="kg")
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="kg")
 
@@ -153,14 +149,12 @@ class ConstraintWingAreaGeomSimple(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mfw = inputs["data:weight:aircraft:MFW"]
         mission_fuel = inputs["data:mission:sizing:fuel"]
 
         outputs["data:constraints:wing:additional_fuel_capacity"] = mfw - mission_fuel
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:constraints:wing:additional_fuel_capacity", "data:weight:aircraft:MFW"] = 1.0
         partials[
             "data:constraints:wing:additional_fuel_capacity", "data:mission:sizing:fuel"

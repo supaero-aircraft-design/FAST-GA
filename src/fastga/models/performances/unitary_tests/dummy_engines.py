@@ -59,7 +59,6 @@ class DummyEngineBE76(AbstractFuelPropulsion):
         self.max_thrust = 3500.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -153,7 +152,6 @@ class DummyEngineSR22(AbstractFuelPropulsion):
         self.max_thrust = 5417.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density
@@ -230,7 +228,6 @@ class DummyEngineTBM900(AbstractFuelPropulsion):
         self.max_thrust = 30000.0
 
     def compute_flight_points(self, flight_points: Union[oad.FlightPoint, pd.DataFrame]):
-
         mach = np.array(flight_points.mach)
         thrust = np.array(flight_points.thrust)
         sigma = Atmosphere(flight_points.altitude).density / Atmosphere(0.0).density

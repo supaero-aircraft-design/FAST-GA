@@ -17,12 +17,10 @@ class Station0(om.ExplicitComponent):
         self.input_mach_name = "mach_0"
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
         self.options.declare("design_point", types=bool, default=False)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         if self.options["design_point"]:
@@ -47,7 +45,6 @@ class Station0(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         mach_0 = inputs[self.input_mach_name]
 
         static_temperature_0 = inputs["static_temperature_0"]
@@ -55,13 +52,12 @@ class Station0(om.ExplicitComponent):
 
         gamma = 1.4
 
-        total_factor = 1.0 + (gamma - 1.0) / 2.0 * mach_0 ** 2.0
+        total_factor = 1.0 + (gamma - 1.0) / 2.0 * mach_0**2.0
 
         outputs["total_temperature_0"] = static_temperature_0 * total_factor
         outputs["total_pressure_0"] = static_pressure_0 * total_factor ** (gamma / (gamma - 1.0))
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         mach_0 = inputs[self.input_mach_name]
 
         gamma = 1.4
@@ -69,7 +65,7 @@ class Station0(om.ExplicitComponent):
         static_temperature_0 = inputs["static_temperature_0"]
         static_pressure_0 = inputs["static_pressure_0"]
 
-        total_factor = 1.0 + (gamma - 1.0) / 2.0 * mach_0 ** 2.0
+        total_factor = 1.0 + (gamma - 1.0) / 2.0 * mach_0**2.0
 
         d_total_factor_d_mach_0 = (gamma - 1.0) * mach_0
 
@@ -98,12 +94,10 @@ class Station0Static(om.ExplicitComponent):
         self.input_alt_name = "altitude"
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
         self.options.declare("design_point", types=bool, default=False)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         if self.options["design_point"]:
@@ -117,7 +111,6 @@ class Station0Static(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # TODO: In later version of stdatm a class with analytic computation of partials exists.
         #  Increasing the minimum version to allow that would however require us to drop the
         #  support for Python 3.7 which is another task on its own.

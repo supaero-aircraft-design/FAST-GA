@@ -36,11 +36,9 @@ class ComputeClRollRateWing(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
@@ -79,7 +77,6 @@ class ComputeClRollRateWing(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_span = inputs["data:geometry:wing:span"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -103,7 +100,7 @@ class ComputeClRollRateWing(FigureDigitization):
             cd0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
 
         k = cl_alpha_airfoil / (2.0 * np.pi)
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
 
         roll_damping_parameter = self.cl_p_roll_damping_parameter(
             wing_taper_ratio, wing_ar, mach, wing_sweep_25, k
@@ -121,7 +118,7 @@ class ComputeClRollRateWing(FigureDigitization):
             wing_sweep_25, wing_ar
         )
         roll_damping_due_to_induced_drag = (
-            roll_damping_due_to_induced_drag_parameter * cl_wf ** 2.0 - 0.125 * cd0_wing
+            roll_damping_due_to_induced_drag_parameter * cl_wf**2.0 - 0.125 * cd0_wing
         )
 
         # The assumption we make on the lift curve makes the second term equal to 1.0

@@ -37,7 +37,6 @@ class Cd0Wing(ExplicitComponent):
         )
 
     def setup(self):
-
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -61,7 +60,6 @@ class Cd0Wing(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
         y1_wing = inputs["data:geometry:fuselage:maximum_width"] / 2.0
@@ -92,11 +90,11 @@ class Cd0Wing(ExplicitComponent):
         x_t_max = relative_thickness["x"][index]
         # Root: 45% NLF
         x_trans = 0.45
-        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l2_wing)) ** 0.375
+        x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * l2_wing)) ** 0.375
         cf_root = 0.074 / (unit_reynolds * l2_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
         # Tip: 55% NLF
         x_trans = 0.55
-        x0_turbulent = 36.9 * x_trans ** 0.625 * (1 / (unit_reynolds * l4_wing)) ** 0.375
+        x0_turbulent = 36.9 * x_trans**0.625 * (1 / (unit_reynolds * l4_wing)) ** 0.375
         cf_tip = 0.074 / (unit_reynolds * l4_wing) ** 0.2 * (1 - (x_trans - x0_turbulent)) ** 0.8
 
         if engine_layout == 1.0:
@@ -112,11 +110,9 @@ class Cd0Wing(ExplicitComponent):
                 cf_root * (y2_wing - y1_wing) + 0.5 * (span / 2.0 - y2_wing) * (cf_root + cf_tip)
             ) / (span / 2.0 - y1_wing)
 
-        form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness ** 4
+        form_factor = 1 + 0.6 / x_t_max * thickness + 100 * thickness**4
         if mach > 0.2:
-            form_factor = (
-                form_factor * 1.34 * mach ** 0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
-            )
+            form_factor = form_factor * 1.34 * mach**0.18 * (np.cos(sweep_25 * np.pi / 180)) ** 0.28
         cd0_wing = form_factor * cf_wing * wet_area_wing / wing_area
 
         if self.options["low_speed_aero"]:

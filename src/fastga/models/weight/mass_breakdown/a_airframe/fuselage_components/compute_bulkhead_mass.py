@@ -12,9 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeBulkhead(om.ExplicitComponent):
@@ -40,7 +39,7 @@ class ComputeBulkhead(om.ExplicitComponent):
         fuselage_radius = np.sqrt(fuselage_max_height * fuselage_max_width) / 2.0
 
         if pressurized:
-            mass_bulkhead = 9.1 + 12.48 * delta_p_max ** 0.8 * np.pi * fuselage_radius ** 2
+            mass_bulkhead = 9.1 + 12.48 * delta_p_max**0.8 * np.pi * fuselage_radius**2
         else:
             mass_bulkhead = 0
         mass_bulkheads = 2 * mass_bulkhead

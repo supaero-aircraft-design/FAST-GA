@@ -15,15 +15,14 @@ in her MAE research project report.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeMiscMass(om.ExplicitComponent):
     """Computes the misc mass based on the model developed in FLOPS."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
 
@@ -42,10 +41,10 @@ class ComputeMiscMass(om.ExplicitComponent):
         vector, according to the methodology developed by NASA's FLOPS.
         """
 
-        wing_area_sq_ft = inputs["data:geometry:wing:area"] * (3.28084 ** 2.0)
+        wing_area_sq_ft = inputs["data:geometry:wing:area"] * (3.28084**2.0)
         f_comp = inputs["settings:wing:structure:F_COMP"]
 
-        misc_mass = (0.16 * (1.0 - 0.3 * f_comp) * wing_area_sq_ft ** 1.2) * 0.453592
+        misc_mass = (0.16 * (1.0 - 0.3 * f_comp) * wing_area_sq_ft**1.2) * 0.453592
 
         if inputs["data:geometry:propulsion:engine:count"] > 4:
             misc_mass *= 1.1

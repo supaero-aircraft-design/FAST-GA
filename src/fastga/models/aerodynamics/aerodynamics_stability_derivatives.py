@@ -49,7 +49,6 @@ class AerodynamicsStabilityDerivatives(om.Group):
     """
 
     def initialize(self):
-
         self.options.declare(
             "run_low_speed_aero",
             default=True,
@@ -64,7 +63,6 @@ class AerodynamicsStabilityDerivatives(om.Group):
         )
 
     def setup(self):
-
         if self.options["run_low_speed_aero"]:
             self.add_subsystem(
                 "low_speed_derivatives",
@@ -87,11 +85,9 @@ class _AerodynamicsStabilityDerivatives(om.Group):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         option = {"low_speed_aero": self.options["low_speed_aero"]}
 
         self.add_subsystem(

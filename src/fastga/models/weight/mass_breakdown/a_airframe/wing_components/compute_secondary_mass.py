@@ -15,8 +15,8 @@ in her MAE research project report.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class ComputeSecondaryMass(om.ExplicitComponent):
@@ -33,7 +33,6 @@ class ComputeSecondaryMass(om.ExplicitComponent):
         self.add_output("data:weight:airframe:wing:secondary_structure:mass", units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         sec_mass_ratio = inputs["settings:wing:structure:secondary_mass_ratio"]
         primary_structure_mass = inputs["data:weight:airframe:wing:primary_structure:mass"]
 

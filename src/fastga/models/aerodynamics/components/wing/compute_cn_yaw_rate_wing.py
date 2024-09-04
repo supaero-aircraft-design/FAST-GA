@@ -36,11 +36,9 @@ class ComputeCnYawRateWing(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
@@ -73,7 +71,6 @@ class ComputeCnYawRateWing(FigureDigitization):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
@@ -96,7 +93,7 @@ class ComputeCnYawRateWing(FigureDigitization):
         lift_effect = self.cn_r_lift_effect(static_margin, wing_sweep_25, wing_ar, wing_taper_ratio)
         drag_effect = self.cn_r_drag_effect(static_margin, wing_sweep_25, wing_ar)
 
-        cn_r_w = lift_effect * cl_w ** 2.0 + drag_effect * cd_0_wing
+        cn_r_w = lift_effect * cl_w**2.0 + drag_effect * cd_0_wing
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:wing:low_speed:Cn_r"] = cn_r_w

@@ -147,7 +147,6 @@ class ToCSV(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         time = inputs["time"]
         altitude = inputs["altitude"]
         distance = inputs["position"]
@@ -181,9 +180,9 @@ class ToCSV(om.ExplicitComponent):
         cd_tot = (
             cd0
             + delta_cd
-            + coeff_k_wing * cl_wing ** 2.0
-            + coeff_k_htp * cl_htp ** 2.0
-            + (cd_delta_m * delta_m ** 2.0)
+            + coeff_k_wing * cl_wing**2.0
+            + coeff_k_htp * cl_htp**2.0
+            + (cd_delta_m * delta_m**2.0)
         )
 
         thrust = inputs["thrust"]
@@ -205,11 +204,9 @@ class ToCSV(om.ExplicitComponent):
         )
 
         if self.options["out_file"] == "":
-
             outputs["tsfc"] = tsfc
 
         else:
-
             if os.path.exists(self.options["out_file"]):
                 os.remove(self.options["out_file"])
 

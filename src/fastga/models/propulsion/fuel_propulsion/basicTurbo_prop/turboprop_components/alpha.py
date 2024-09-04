@@ -18,11 +18,9 @@ import openmdao.api as om
 
 class AlphaRatio(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_pressure_41", units="Pa", shape=n, val=np.nan)
@@ -61,7 +59,6 @@ class AlphaRatio(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_41 = inputs[
             "data:propulsion:turboprop:design_point:turbine_entry_temperature"
         ]
@@ -78,7 +75,6 @@ class AlphaRatio(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         total_temperature_41 = inputs[
             "data:propulsion:turboprop:design_point:turbine_entry_temperature"
         ]
@@ -93,13 +89,11 @@ class AlphaRatio(om.ExplicitComponent):
         partials[
             "data:propulsion:turboprop:design_point:alpha",
             "data:propulsion:turboprop:design_point:turbine_entry_temperature",
-        ] = (
-            -total_temperature_45 / total_temperature_41 ** 2.0
-        )
+        ] = -total_temperature_45 / total_temperature_41**2.0
 
         partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_45"] = np.diag(
             1.0 / total_pressure_41
         )
         partials["data:propulsion:turboprop:design_point:alpha_p", "total_pressure_41"] = -np.diag(
-            total_pressure_45 / total_pressure_41 ** 2.0
+            total_pressure_45 / total_pressure_41**2.0
         )

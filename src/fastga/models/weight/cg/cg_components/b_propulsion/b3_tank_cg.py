@@ -12,9 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_TANK_CG
 
@@ -25,7 +25,6 @@ class ComputeTankCG(ExplicitComponent):
     """Fuel tank center of gravity estimation"""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
 
@@ -41,7 +40,6 @@ class ComputeTankCG(ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
 
@@ -52,14 +50,13 @@ class ComputeTankCG(ExplicitComponent):
         outputs["data:weight:propulsion:tank:CG:x"] = cg_b3
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         distance_from_25_mac_ratio = inputs["settings:weight:propulsion:tank:CG:from_wingMAC25"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
 
         partials["data:weight:propulsion:tank:CG:x", "data:geometry:wing:MAC:at25percent:x"] = 1.0
-        partials[
-            "data:weight:propulsion:tank:CG:x", "data:geometry:wing:MAC:length"
-        ] = distance_from_25_mac_ratio
+        partials["data:weight:propulsion:tank:CG:x", "data:geometry:wing:MAC:length"] = (
+            distance_from_25_mac_ratio
+        )
         partials[
             "data:weight:propulsion:tank:CG:x", "settings:weight:propulsion:tank:CG:from_wingMAC25"
         ] = l0_wing

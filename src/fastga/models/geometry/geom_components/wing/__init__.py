@@ -1,6 +1,7 @@
 """
 Estimation of wing (global).
 """
+
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -13,4 +14,8 @@ Estimation of wing (global).
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_wing import ComputeWingGeometry

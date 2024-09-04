@@ -15,21 +15,19 @@ conditions with simple computation.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
 from scipy.constants import g
-
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_WING_AREA_AERO_LOOP, SUBMODEL_WING_AREA_AERO_CONS
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_WING_AREA_AERO_LOOP
-] = "fastga.submodel.loop.wing_area.update.aero.simple"
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_WING_AREA_AERO_CONS
-] = "fastga.submodel.loop.wing_area.constraint.aero.simple"
+oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_AERO_LOOP] = (
+    "fastga.submodel.loop.wing_area.update.aero.simple"
+)
+oad.RegisterSubmodel.active_models[SUBMODEL_WING_AREA_AERO_CONS] = (
+    "fastga.submodel.loop.wing_area.constraint.aero.simple"
+)
 
 
 @oad.RegisterSubmodel(
@@ -44,7 +42,6 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
@@ -62,28 +59,26 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
-        wing_area_approach = 2 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl)
+        wing_area_approach = 2 * mlw * g / (stall_speed**2) / (1.225 * max_cl)
 
         outputs["wing_area"] = wing_area_approach
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         stall_speed = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         max_cl = inputs["data:aerodynamics:aircraft:landing:CL_max"]
 
         constant = 2 * g / 1.225
 
-        d_wing_area_d_stall_speed = -4.0 * mlw * g / (stall_speed ** 3) / (1.225 * max_cl)
+        d_wing_area_d_stall_speed = -4.0 * mlw * g / (stall_speed**3) / (1.225 * max_cl)
 
-        partials["wing_area", "data:weight:aircraft:MLW"] = constant / (stall_speed ** 2 * max_cl)
+        partials["wing_area", "data:weight:aircraft:MLW"] = constant / (stall_speed**2 * max_cl)
         partials["wing_area", "data:TLAR:v_approach"] = d_wing_area_d_stall_speed / 1.3
         partials["wing_area", "data:aerodynamics:aircraft:landing:CL_max"] = (
-            -2.0 * mlw * g / (stall_speed ** 2) / (1.225 * max_cl ** 2.0)
+            -2.0 * mlw * g / (stall_speed**2) / (1.225 * max_cl**2.0)
         )
 
 
@@ -100,7 +95,6 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
-
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="kg")
         self.add_input("data:aerodynamics:aircraft:landing:CL_max", val=np.nan)
@@ -120,18 +114,16 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         cl_max = inputs["data:aerodynamics:aircraft:landing:CL_max"]
         mlw = inputs["data:weight:aircraft:MLW"]
         wing_area = inputs["data:geometry:wing:area"]
 
         outputs["data:constraints:wing:additional_CL_capacity"] = cl_max - mlw * g / (
-            0.5 * 1.225 * v_stall ** 2 * wing_area
+            0.5 * 1.225 * v_stall**2 * wing_area
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         v_stall = inputs["data:TLAR:v_approach"] / 1.3
         mlw = inputs["data:weight:aircraft:MLW"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -143,10 +135,10 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
         partials[
             "data:constraints:wing:additional_CL_capacity",
             "data:weight:aircraft:MLW",
-        ] = -g / (0.5 * 1.225 * v_stall ** 2 * wing_area)
+        ] = -g / (0.5 * 1.225 * v_stall**2 * wing_area)
         partials["data:constraints:wing:additional_CL_capacity", "wing_area"] = (
-            mlw * g / (0.5 * 1.225 * v_stall ** 2 * wing_area ** 2.0)
+            mlw * g / (0.5 * 1.225 * v_stall**2 * wing_area**2.0)
         )
         partials["data:constraints:wing:additional_CL_capacity", "data:TLAR:v_approach"] = (
-            2.0 * mlw * g / (0.5 * 1.225 * v_stall ** 3.0 * wing_area)
+            2.0 * mlw * g / (0.5 * 1.225 * v_stall**3.0 * wing_area)
         ) / 1.3

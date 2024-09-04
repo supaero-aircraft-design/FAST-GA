@@ -1,5 +1,5 @@
 """
-    Estimation of payload center(s) of gravity.
+Estimation of payload center(s) of gravity.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -15,10 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
-
-import fastoad.api as oad
 
 from .constants import SUBMODEL_PAYLOAD_CG
 
@@ -29,7 +28,6 @@ class ComputePayloadCG(ExplicitComponent):
     """Payload center(s) of gravity estimation"""
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:weight:furniture:passenger_seats:CG:x", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
@@ -42,7 +40,6 @@ class ComputePayloadCG(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lav = inputs["data:geometry:fuselage:front_length"]
         x_cg_d2 = inputs["data:weight:furniture:passenger_seats:CG:x"]
         lpax = inputs["data:geometry:fuselage:PAX_length"]

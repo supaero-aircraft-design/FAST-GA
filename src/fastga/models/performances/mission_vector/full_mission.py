@@ -25,12 +25,10 @@ class FullMission(om.Group):
     """Computes and potentially save mission and takeoff based on options."""
 
     def initialize(self):
-
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
         self.options.declare("out_file", default="", types=str)
 
     def setup(self):
-
         self.add_subsystem(
             "takeoff", TakeOffPhase(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
         )

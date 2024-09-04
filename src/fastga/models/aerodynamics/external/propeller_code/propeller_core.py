@@ -118,7 +118,6 @@ class PropellerCoreModule(om.ExplicitComponent):
         cl_list,
         cd_list,
     ):
-
         """
         This function calculates the thrust, efficiency and power at a given flight speed,
         altitude h and propeller angular speed.
@@ -175,7 +174,6 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Loop on element number to compute equations
         for idx, _ in enumerate(radius):
-
             # Solve BEM vs. disk theory system of equations
             speed_vect = root(
                 fun=self.delta,
@@ -277,7 +275,7 @@ class PropellerCoreModule(om.ExplicitComponent):
         # Calculate speed composition and relative air angle (in deg.)
         v_ax = v_inf + v_i
         v_t = (omega * radius - v_t) * np.cos(sweep * np.pi / 180.0)
-        rel_fluid_speed = np.sqrt(v_ax ** 2.0 + v_t ** 2.0)
+        rel_fluid_speed = np.sqrt(v_ax**2.0 + v_t**2.0)
         phi = np.arctan(v_ax / v_t)
         alpha = theta - phi * 180.0 / np.pi
 
@@ -292,11 +290,11 @@ class PropellerCoreModule(om.ExplicitComponent):
         c_d = np.interp(alpha, alpha_element, cd_element)
 
         if mach_local < 1:
-            beta = np.sqrt(1 - mach_local ** 2.0)
-            c_l = c_l / (beta + c_l * mach_local ** 2.0 / (2.0 + 2.0 * beta))
-            c_d = c_d / (beta + c_d * mach_local ** 2.0 / (2.0 + 2.0 * beta))
+            beta = np.sqrt(1 - mach_local**2.0)
+            c_l = c_l / (beta + c_l * mach_local**2.0 / (2.0 + 2.0 * beta))
+            c_d = c_d / (beta + c_d * mach_local**2.0 / (2.0 + 2.0 * beta))
         else:
-            beta = np.sqrt(mach_local ** 2.0 - 1)
+            beta = np.sqrt(mach_local**2.0 - 1)
             c_l = c_l / beta
             c_d = c_d / beta
 
@@ -310,14 +308,14 @@ class PropellerCoreModule(om.ExplicitComponent):
             0.5
             * blades_number
             * chord
-            * rel_fluid_speed ** 2.0
+            * rel_fluid_speed**2.0
             * (c_l * np.cos(phi) - c_d * np.sin(phi))
         )
         torque_element = (
             0.5
             * blades_number
             * chord
-            * rel_fluid_speed ** 2.0
+            * rel_fluid_speed**2.0
             * (c_l * np.sin(phi) + c_d * np.cos(phi))
             * radius
         )
@@ -404,7 +402,7 @@ class PropellerCoreModule(om.ExplicitComponent):
 
         # Calculate force and momentum
         thrust_element = 4.0 * np.pi * radius * (v_inf + v_i) * v_i * f_tip * f_hub
-        torque_element = 4.0 * np.pi * radius ** 2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
+        torque_element = 4.0 * np.pi * radius**2.0 * (v_inf + v_i) * v_t * f_tip * f_hub
 
         # Store results
         output = np.empty(2)

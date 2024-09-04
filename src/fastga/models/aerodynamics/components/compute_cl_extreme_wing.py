@@ -127,7 +127,6 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
     """Computes wing 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:aerodynamics:wing:low_speed:root:CL_max_2D", val=np.nan)
@@ -155,7 +154,6 @@ class ComputeWing3DExtremeCL(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         y_root = float(inputs["data:geometry:wing:root:y"])
         y_tip = float(inputs["data:geometry:wing:tip:y"])
         cl_max_2d_root = float(inputs["data:aerodynamics:wing:low_speed:root:CL_max_2D"])

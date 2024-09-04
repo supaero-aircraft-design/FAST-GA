@@ -43,7 +43,6 @@ class ComputeMFWAdvanced(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
@@ -73,7 +72,6 @@ class ComputeMFWAdvanced(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fuel_type = inputs["data:propulsion:fuel_type"]
         y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
         y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
@@ -110,7 +108,6 @@ class ComputeMFWAdvanced(ExplicitComponent):
 
 
 def tank_volume_distribution(inputs, y_array_orig):
-
     root_chord = inputs["data:geometry:wing:root:chord"]
     tip_chord = inputs["data:geometry:wing:tip:chord"]
     root_y = inputs["data:geometry:wing:root:y"]

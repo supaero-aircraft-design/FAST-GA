@@ -14,10 +14,11 @@ Main components for mass breakdown.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import openmdao.api as om
 
-import fastoad.api as oad
-
+from fastga.models.options import PAYLOAD_FROM_NPAX
+from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
 from .constants import (
     SUBMODEL_AIRFRAME_MASS,
     SUBMODEL_PROPULSION_MASS,
@@ -27,10 +28,6 @@ from .constants import (
     SUBMODEL_PAYLOAD_MASS,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN
-
-from fastga.models.weight.mass_breakdown.update_mlw_and_mzfw import UpdateMLWandMZFW
-
-from fastga.models.options import PAYLOAD_FROM_NPAX
 
 
 @oad.RegisterSubmodel(SUBMODEL_MASS_BREAKDOWN, "fastga.submodel.weight.mass_breakdown.legacy")

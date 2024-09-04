@@ -13,12 +13,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import operator
-import numpy as np
-import pandas as pd
-
-from scipy.interpolate import interp1d
 from collections import namedtuple
 from typing import Sequence, Tuple
+
+import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
 
 Coordinates2D = namedtuple("Coordinates2D", ["x", "y"])
 
@@ -34,7 +34,6 @@ class Profile:
     # X and Z are valid names in this context
 
     def __init__(self, chord_length: float = 0.0):
-
         self._rel_mean_line_and_thickness = pd.DataFrame(columns=[X, Z, THICKNESS])
         """
         Data of mean line and thickness, computed after inputs of :meth:`set_points`_.
@@ -56,7 +55,6 @@ class Profile:
 
     @thickness_ratio.setter
     def thickness_ratio(self, value: float):
-
         # mean line is modified accordingly
         if self._max_relative_thickness != 0.0:
             coeff = value / self._max_relative_thickness

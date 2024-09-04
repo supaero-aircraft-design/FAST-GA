@@ -62,7 +62,6 @@ class ComputeCyDeltaRudder(FigureDigitization):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         taper_ratio_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         aspect_ratio_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
         thickness_ratio_vt = inputs["data:geometry:vertical_tail:thickness_ratio"]

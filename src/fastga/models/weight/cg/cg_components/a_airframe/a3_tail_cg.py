@@ -1,5 +1,5 @@
 """
-    Estimation of tail center(s) of gravity.
+Estimation of tail center(s) of gravity.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -15,10 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-
-import fastoad.api as oad
 
 from ..constants import SUBMODEL_TAIL_CG
 
@@ -39,7 +38,6 @@ class ComputeHTcg(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input(
@@ -58,7 +56,6 @@ class ComputeHTcg(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         b_h = inputs["data:geometry:horizontal_tail:span"]

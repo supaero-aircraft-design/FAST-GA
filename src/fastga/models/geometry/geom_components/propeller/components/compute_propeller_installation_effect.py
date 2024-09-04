@@ -29,7 +29,6 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
     """Propeller effective advance ratio computation based on the blockage surface behind it."""
 
     def setup(self):
-
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:master_cross_section", val=np.nan, units="m**2")
@@ -48,7 +47,6 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         engine_layout = inputs["data:geometry:propulsion:engine:layout"]
 
         if engine_layout == 3.0:
@@ -71,6 +69,6 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
 
         effective_advance_ratio = 1.0 - 0.254 * cowling_master_cross_section / disk_surface
 
-        outputs[
-            "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
-        ] = effective_advance_ratio
+        outputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"] = (
+            effective_advance_ratio
+        )

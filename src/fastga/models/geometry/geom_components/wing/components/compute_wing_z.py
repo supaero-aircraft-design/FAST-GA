@@ -32,7 +32,6 @@ class ComputeWingZ(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="rad")
@@ -79,7 +78,6 @@ class ComputeWingZ(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
@@ -94,7 +92,6 @@ class ComputeWingZ(om.ExplicitComponent):
         # part VI page 384 in the graph description
 
         if wing_config == 1.0:
-
             z2_wing = 0.5 * fus_height - 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 0.5 * fus_height
@@ -104,7 +101,6 @@ class ComputeWingZ(om.ExplicitComponent):
             # Positive dihedral reduce distance between wing AC and fuselage centerline
 
         elif wing_config == 2.0:
-
             # For mid-wing configuration the root AC is at the same height as the fuselage
             # centerline
 
@@ -112,7 +108,6 @@ class ComputeWingZ(om.ExplicitComponent):
             z4_wing = -(y4_wing - y2_wing) * np.tan(dihedral_angle)
 
         elif wing_config == 3.0:
-
             z2_wing = -0.5 * fus_height + 0.5 * root_thickness_ratio * l2_wing
             z4_wing = (
                 -0.5 * fus_height
@@ -135,7 +130,6 @@ class ComputeWingZ(om.ExplicitComponent):
         outputs["data:geometry:wing:tip:z"] = z4_wing
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         l2_wing = inputs["data:geometry:wing:root:chord"]
@@ -147,7 +141,6 @@ class ComputeWingZ(om.ExplicitComponent):
         dihedral_angle = inputs["data:geometry:wing:dihedral"]
 
         if wing_config == 2.0:
-
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.0
@@ -166,7 +159,6 @@ class ComputeWingZ(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
         elif wing_config == 3.0:
-
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
                 0.5 * l2_wing
             )
@@ -193,7 +185,6 @@ class ComputeWingZ(om.ExplicitComponent):
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
         else:
-
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = (
                 -0.5 * l2_wing
             )

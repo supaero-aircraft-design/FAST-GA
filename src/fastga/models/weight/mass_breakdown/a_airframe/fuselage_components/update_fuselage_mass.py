@@ -14,8 +14,8 @@ Update the mass of the fuselage based on the computation of the sub-components
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
 class UpdateFuselageMass(om.ExplicitComponent):
@@ -42,7 +42,6 @@ class UpdateFuselageMass(om.ExplicitComponent):
         self.add_output("data:weight:airframe:fuselage:mass", val=100.0, units="kg")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         shell_mass = inputs["data:weight:airframe:fuselage:shell:mass"]
         cone_mass = inputs["data:weight:airframe:fuselage:cone:mass"]
         windows_mass = inputs["data:weight:airframe:fuselage:windows:mass"]

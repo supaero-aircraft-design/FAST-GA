@@ -1,7 +1,7 @@
 ![](FAST_OAD_logo.jpg) 
 
 ![Tests](https://github.com/supaero-aircraft-design/FAST-GA/workflows/Tests/badge.svg)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee153dd5e82d41e7b2f3a964ef5756f5)](https://www.codacy.com/gh/supaero-aircraft-design/FAST-GA/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=supaero-aircraft-design/FAST-GA&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ee153dd5e82d41e7b2f3a964ef5756f5)](https://app.codacy.com/gh/supaero-aircraft-design/FAST-GA/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![codecov](https://codecov.io/gh/supaero-aircraft-design/FAST-GA/branch/main/graph/badge.svg?token=VZEDUOFE8V)](https://codecov.io/gh/supaero-aircraft-design/FAST-GA)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)

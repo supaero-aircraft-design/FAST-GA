@@ -38,7 +38,6 @@ SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 )
 class AerostructuralLoad(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:TLAR:category", val=3.0)
         self.add_input("data:TLAR:level", val=2.0)
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
@@ -185,7 +184,6 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_output("data:loads:y_vector", units="m", shape=SPAN_MESH_POINT_LOADS)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION ##########################
         ############################################################################################
 
@@ -265,7 +263,6 @@ class AerostructuralLoad(om.ExplicitComponent):
         mass_tag_array = ["mtow", "mzfw"]
 
         for mass_tag in mass_tag_array:
-
             if mass_tag == "mtow":
                 mass = mtow
                 load_factor_list = [
@@ -295,10 +292,9 @@ class AerostructuralLoad(om.ExplicitComponent):
 
             atm.equivalent_airspeed = v_c
             v_c_tas = atm.true_airspeed
-            dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas ** 2.0
+            dynamic_pressure = 1.0 / 2.0 * atm.density * v_c_tas**2.0
 
             for load_factor in load_factor_list:
-
                 # STEP 4.2/XX - WE COMPUTE THE REAL CONDITIONS EXPERIENCED IN TERMS OF LIFT AND
                 # WEIGHT AND SCALE THE INITIAL VECTOR ACCORDING TO LOAD FACTOR AND LIFT EQUILIBRIUM
 
@@ -538,7 +534,7 @@ class AerostructuralLoad(om.ExplicitComponent):
 
         if distribution_type == 1.0:
             y_ratio = y_vector / semi_span
-            struct_weight_distribution = 4.0 / np.pi * np.sqrt(1.0 - y_ratio ** 2.0)
+            struct_weight_distribution = 4.0 / np.pi * np.sqrt(1.0 - y_ratio**2.0)
         else:
             struct_weight_distribution = chord_vector / max(chord_vector)
 

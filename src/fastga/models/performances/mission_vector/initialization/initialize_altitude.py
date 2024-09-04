@@ -25,13 +25,11 @@ class InitializeAltitude(om.ExplicitComponent):
     """Intializes the altitude at each time step."""
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
 
     def setup(self):
-
         number_of_points = self.options["number_of_points"]
 
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
@@ -39,7 +37,6 @@ class InitializeAltitude(om.ExplicitComponent):
         self.add_output("altitude", shape=number_of_points, units="m")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cruise_altitude = inputs["data:mission:sizing:main_route:cruise:altitude"]
 
         altitude_climb = np.linspace(0, cruise_altitude, POINTS_NB_CLIMB)[:, 0]

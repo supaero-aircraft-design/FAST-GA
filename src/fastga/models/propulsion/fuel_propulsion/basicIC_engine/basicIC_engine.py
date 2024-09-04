@@ -187,7 +187,6 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @property
     def propeller_efficiency_interpolator_sl(self):
-
         if self._propeller_efficiency_interpolator_sl is None:
             self._propeller_efficiency_interpolator_sl = RectBivariateSpline(
                 self.thrust_SL, self.speed_SL, self.efficiency_SL.T * self.effective_efficiency_ls
@@ -197,12 +196,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @propeller_efficiency_interpolator_sl.setter
     def propeller_efficiency_interpolator_sl(self, value: RectBivariateSpline):
-
         self._propeller_efficiency_interpolator_sl = value
 
     @property
     def propeller_efficiency_interpolator_cl(self):
-
         if self._propeller_efficiency_interpolator_cl is None:
             self._propeller_efficiency_interpolator_cl = RectBivariateSpline(
                 self.thrust_CL,
@@ -214,14 +211,11 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @propeller_efficiency_interpolator_cl.setter
     def propeller_efficiency_interpolator_cl(self, value: RectBivariateSpline):
-
         self._propeller_efficiency_interpolator_cl = value
 
     @property
     def sfc_interpolator(self):
-
         if self._sfc_interpolator is None:
-
             rpm_vect = self.rpm_vect_ref
             pme_vect = self.pme_vect_ref
             sfc_matrix = self.sfc_matrix_ref
@@ -237,12 +231,10 @@ class BasicICEngine(AbstractFuelPropulsion):
 
     @sfc_interpolator.setter
     def sfc_interpolator(self, value: RectBivariateSpline):
-
         self._sfc_interpolator = value
 
     @staticmethod
     def read_map(map_file_path):
-
         data = pd.read_csv(map_file_path)
         values = data.to_numpy()[:, 1:].tolist()
         labels = data.to_numpy()[:, 0].tolist()
@@ -782,7 +774,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         reynolds = unit_reynolds * self.nacelle.length
         # Roskam method for wing-nacelle interaction factor (vol 6 page 3.62)
         cf_nac = 0.455 / (
-            (1 + 0.144 * mach ** 2) ** 0.65 * (np.log10(reynolds)) ** 2.58
+            (1 + 0.144 * mach**2) ** 0.65 * (np.log10(reynolds)) ** 2.58
         )  # 100% turbulent
         fineness_ratio = self.nacelle.length / np.sqrt(
             4 * self.nacelle.height * self.nacelle.width / np.pi
@@ -792,7 +784,7 @@ class BasicICEngine(AbstractFuelPropulsion):
         drag_force = cf_nac * ff_nac * self.nacelle.wet_area * if_nac
 
         # Roskam part 6 chapter 4.5.2.1 with no incidence
-        interference_drag = 0.036 * wing_mac * self.nacelle.width * 0.2 ** 2.0
+        interference_drag = 0.036 * wing_mac * self.nacelle.width * 0.2**2.0
 
         # The interference drag is for the nacelle/wing interference, since for fuselage mounted
         # engine the nacelle drag is not taken into account we can do like so

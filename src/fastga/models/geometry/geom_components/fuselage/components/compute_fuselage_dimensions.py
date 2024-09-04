@@ -1,5 +1,5 @@
 """
-    Estimation of geometry of fuselage part A - Cabin (Commercial).
+Estimation of geometry of fuselage part A - Cabin (Commercial).
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -25,7 +25,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
@@ -35,7 +34,6 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
@@ -61,7 +59,6 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
@@ -103,7 +100,6 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         )  # FIXME: declare proper partials without int values
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
@@ -141,7 +137,7 @@ class ComputeFuselageGeometryCabinSizingFD(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2)
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i**2)
         # Cabin total length
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length
@@ -187,7 +183,6 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
@@ -214,7 +209,6 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         )  # FIXME: declare proper partials without int values
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
@@ -244,7 +238,7 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         h_f = b_f + 0.14
         # Luggage length (80% of internal radius section can be filled with luggage)
         luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i ** 2)
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i**2)
         # Cabin total length
         cabin_length = l_instr + l_pax + l_lug
         # Calculate nose length

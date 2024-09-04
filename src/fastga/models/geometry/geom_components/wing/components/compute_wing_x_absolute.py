@@ -29,7 +29,6 @@ class ComputeWingXAbsolute(ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", units="m", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", units="m", val=np.nan)
         self.add_input("data:geometry:wing:MAC:at25percent:x", units="m", val=np.nan)
@@ -53,7 +52,6 @@ class ComputeWingXAbsolute(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         x_local_mac = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
@@ -66,7 +64,6 @@ class ComputeWingXAbsolute(ExplicitComponent):
         outputs["data:geometry:wing:tip:leading_edge:x:absolute"] = x_abs_tip
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials[
             "data:geometry:wing:MAC:leading_edge:x:absolute", "data:geometry:wing:MAC:at25percent:x"
         ] = 1.0

@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail efficiency
+Estimation of horizontal tail efficiency
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -42,11 +42,9 @@ class ComputeHTEfficiency(ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:aerodynamics:horizontal_tail:efficiency"] = (
             0.9 + 0.1 * inputs["data:geometry:has_T_tail"]
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:aerodynamics:horizontal_tail:efficiency", "data:geometry:has_T_tail"] = 0.1

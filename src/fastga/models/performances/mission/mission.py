@@ -109,7 +109,6 @@ class Mission(om.Group):
 
 class UpdateFW(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:mission:sizing:taxi_out:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:takeoff:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:initial_climb:fuel", np.nan, units="kg")
@@ -124,7 +123,6 @@ class UpdateFW(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         m_taxi_out = inputs["data:mission:sizing:taxi_out:fuel"]
         m_takeoff = inputs["data:mission:sizing:takeoff:fuel"]
         m_initial_climb = inputs["data:mission:sizing:initial_climb:fuel"]

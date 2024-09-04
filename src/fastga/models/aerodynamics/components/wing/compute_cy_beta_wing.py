@@ -29,7 +29,6 @@ class ComputeCyBetaWing(om.ExplicitComponent):
     """
 
     def setup(self):
-
         self.add_input("data:geometry:wing:dihedral", val=np.nan, units="deg")
 
         self.add_output("data:aerodynamics:wing:Cy_beta", units="rad**-1")
@@ -37,9 +36,7 @@ class ComputeCyBetaWing(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:aerodynamics:wing:Cy_beta"] = -0.00573 * inputs["data:geometry:wing:dihedral"]
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:aerodynamics:wing:Cy_beta", "data:geometry:wing:dihedral"] = -0.00573

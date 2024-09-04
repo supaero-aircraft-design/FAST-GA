@@ -1160,7 +1160,6 @@ def test_compute_max_power():
 
 
 def test_nested_problem_setup():
-
     engine = BasicTPEngine(
         power_design=745.7,
         t_41t_design=1350,

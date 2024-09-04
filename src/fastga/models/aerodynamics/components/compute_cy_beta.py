@@ -36,11 +36,9 @@ class ComputeCYBetaAircraft(om.Group):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "wing_contribution",
@@ -74,16 +72,13 @@ class _SumCYBetaContributions(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:aerodynamics:fuselage:Cy_beta", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:Cy_beta", val=np.nan, units="rad**-1")
 
         if self.options["low_speed_aero"]:
-
             self.add_input(
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta", val=np.nan, units="rad**-1"
             )
@@ -91,7 +86,6 @@ class _SumCYBetaContributions(om.ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:low_speed:Cy_beta", units="rad**-1")
 
         else:
-
             self.add_input(
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta", val=np.nan, units="rad**-1"
             )
@@ -101,7 +95,6 @@ class _SumCYBetaContributions(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cy_beta_fus = inputs["data:aerodynamics:fuselage:Cy_beta"]
         cy_beta_wing = inputs["data:aerodynamics:wing:Cy_beta"]
 
@@ -119,7 +112,6 @@ class _SumCYBetaContributions(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         if self.options["low_speed_aero"]:
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cy_beta",

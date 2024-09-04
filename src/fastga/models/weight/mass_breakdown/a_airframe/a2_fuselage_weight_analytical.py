@@ -12,29 +12,27 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import fastoad.api as oad
 import openmdao.api as om
 
-import fastoad.api as oad
-
-from .fuselage_components.compute_shell_mass import ComputeShell
-from .fuselage_components.compute_cone_mass import ComputeTailCone
-from .fuselage_components.compute_windows_mass import ComputeWindows
-from .fuselage_components.compute_insulation_mass import ComputeInsulation
-from .fuselage_components.compute_floor_mass import ComputeFloor
-from .fuselage_components.compute_nlg_hatch_mass import ComputeNLGHatch
-from .fuselage_components.compute_doors_mass import ComputeDoors
-from .fuselage_components.compute_wing_fuselage_connection_mass import ComputeWingFuselageConnection
-from .fuselage_components.compute_engine_support_mass import ComputeEngineSupport
-from .fuselage_components.compute_bulkhead_mass import ComputeBulkhead
+from .constants import SUBMODEL_FUSELAGE_MASS
 from .fuselage_components.compute_additional_bending_material_mass_h import (
     ComputeAddBendingMassHorizontal,
 )
 from .fuselage_components.compute_additional_bending_material_mass_v import (
     ComputeAddBendingMassVertical,
 )
+from .fuselage_components.compute_bulkhead_mass import ComputeBulkhead
+from .fuselage_components.compute_cone_mass import ComputeTailCone
+from .fuselage_components.compute_doors_mass import ComputeDoors
+from .fuselage_components.compute_engine_support_mass import ComputeEngineSupport
+from .fuselage_components.compute_floor_mass import ComputeFloor
+from .fuselage_components.compute_insulation_mass import ComputeInsulation
+from .fuselage_components.compute_nlg_hatch_mass import ComputeNLGHatch
+from .fuselage_components.compute_shell_mass import ComputeShell
+from .fuselage_components.compute_windows_mass import ComputeWindows
+from .fuselage_components.compute_wing_fuselage_connection_mass import ComputeWingFuselageConnection
 from .fuselage_components.update_fuselage_mass import UpdateFuselageMass
-
-from .constants import SUBMODEL_FUSELAGE_MASS
 
 
 @oad.RegisterSubmodel(

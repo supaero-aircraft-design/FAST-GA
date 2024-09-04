@@ -11,6 +11,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_cl_pitch_rate_wing import ComputeCLPitchVelocityWing
 from .compute_cy_beta_wing import ComputeCyBetaWing
 from .compute_cl_beta_wing import ComputeClBetaWing

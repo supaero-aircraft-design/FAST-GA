@@ -37,7 +37,6 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:z", units="m", val=np.nan)
         self.add_input(
@@ -71,7 +70,6 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -87,7 +85,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 2.0
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
         else:
             aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
@@ -96,11 +94,10 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 2.0
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         z_v = (
             inputs["data:geometry:wing:root:z"]
             + 0.5 * inputs["data:geometry:fuselage:maximum_height"]
@@ -116,9 +113,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
                 "data:aerodynamics:vertical_tail:low_speed:Cy_beta",
-            ] = (
-                2.0 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0 / wing_span ** 2.0
-            )
+            ] = 2.0 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0 / wing_span**2.0
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
                 "data:geometry:wing:root:z",
@@ -127,7 +122,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
@@ -137,7 +132,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
@@ -147,7 +142,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
@@ -157,7 +152,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.cos(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
@@ -166,7 +161,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 -4.0
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0
-                / wing_span ** 3.0
+                / wing_span**3.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:low_speed:Cn_r",
@@ -176,7 +171,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref))
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
 
         else:
@@ -186,9 +181,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
                 "data:aerodynamics:vertical_tail:cruise:Cy_beta",
-            ] = (
-                2.0 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0 / wing_span ** 2.0
-            )
+            ] = 2.0 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0 / wing_span**2.0
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
                 "data:geometry:wing:root:z",
@@ -197,7 +190,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
@@ -207,7 +200,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
@@ -217,7 +210,7 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.sin(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
@@ -227,13 +220,13 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * np.cos(aoa_ref)
-                / wing_span ** 2.0
+                / wing_span**2.0
             )
             partials["data:aerodynamics:vertical_tail:cruise:Cn_r", "data:geometry:wing:span"] = (
                 -4.0
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref)) ** 2.0
-                / wing_span ** 3.0
+                / wing_span**3.0
             )
             partials[
                 "data:aerodynamics:vertical_tail:cruise:Cn_r",
@@ -243,5 +236,5 @@ class ComputeCnYawRateVerticalTail(om.ExplicitComponent):
                 * cy_beta_vt
                 * (lp_vt * np.cos(aoa_ref) + z_v * np.sin(aoa_ref))
                 * (-lp_vt * np.sin(aoa_ref) + z_v * np.cos(aoa_ref))
-                / wing_span ** 2.0
+                / wing_span**2.0
             )

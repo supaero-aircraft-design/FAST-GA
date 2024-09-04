@@ -4,11 +4,9 @@ import openmdao.api as om
 
 class Station441Temperature(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_temperature_41", units="K", shape=n, val=np.nan)
@@ -33,7 +31,6 @@ class Station441Temperature(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         total_temperature_3 = inputs["total_temperature_3"]
         total_temperature_41 = inputs["total_temperature_41"]
 
@@ -57,7 +54,6 @@ class Station441Temperature(om.ExplicitComponent):
         outputs["total_temperature_4"] = total_temperature_4
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         total_temperature_3 = inputs["total_temperature_3"]
         total_temperature_41 = inputs["total_temperature_41"]
 
@@ -138,11 +134,9 @@ class Station441Temperature(om.ExplicitComponent):
 
 class Station441PressureDesignPoint(om.ExplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("total_pressure_41", units="Pa", shape=n, val=np.nan)
@@ -156,5 +150,4 @@ class Station441PressureDesignPoint(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["total_pressure_4"] = inputs["total_pressure_41"]

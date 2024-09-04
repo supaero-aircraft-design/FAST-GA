@@ -34,11 +34,9 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_50", val=np.nan, units="rad")
@@ -61,38 +59,25 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
 
         self.add_input("data:geometry:fuselage:average_depth", val=np.nan, units="m")
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:low_speed:CL0", val=np.nan)
-            self.add_input(
-                "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
-            )
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+        ref_aoa = 5.0 if self.options["low_speed_aero"] else 1.0
 
-            self.add_output("data:aerodynamics:horizontal_tail:low_speed:Cl_beta", units="rad**-1")
+        self.add_input(
+            "settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA",
+            units="rad",
+            val=ref_aoa * np.pi / 180.0,
+        )
+        self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan)
+        self.add_input("data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0", val=np.nan)
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha", val=np.nan, units="rad**-1"
+        )
 
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
-            self.add_input("data:aerodynamics:horizontal_tail:cruise:CL0", val=np.nan)
-            self.add_input(
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
-            )
-
-            self.add_output("data:aerodynamics:horizontal_tail:cruise:Cl_beta", units="rad**-1")
+        self.add_output("data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_beta", units="rad**-1")
 
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ht_area = inputs["data:geometry:horizontal_tail:area"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_span = inputs["data:geometry:wing:span"]
@@ -121,16 +106,12 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
         # Represents the average depth at the VT location, used as an approximate
         avg_fus_depth = inputs["data:geometry:fuselage:average_depth"]
 
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            mach = inputs["data:aerodynamics:low_speed:mach"]
-            cl_0_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL0"]
-            cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            mach = inputs["data:aerodynamics:cruise:mach"]
-            cl_0_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL0"]
-            cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:cruise:CL_alpha"]
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
+        mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
+        cl_0_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL0"]
+        cl_alpha_ht = inputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":CL_alpha"]
 
         # Fuselage contribution neglected for now
         cl_hf = (cl_0_ht + cl_alpha_ht * aoa_ref) * wing_area / ht_area
@@ -168,7 +149,4 @@ class ComputeClBetaHorizontalTail(FigureDigitization):
             / (wing_area * wing_span)
         )
 
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:horizontal_tail:low_speed:Cl_beta"] = cl_beta_hf
-        else:
-            outputs["data:aerodynamics:horizontal_tail:cruise:Cl_beta"] = cl_beta_hf
+        outputs["data:aerodynamics:horizontal_tail:" + ls_tag + ":Cl_beta"] = cl_beta_hf

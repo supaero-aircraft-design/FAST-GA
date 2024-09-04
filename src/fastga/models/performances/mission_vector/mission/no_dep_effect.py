@@ -19,9 +19,9 @@ import fastoad.api as oad
 
 from ..constants import SUBMODEL_DEP_EFFECT
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_DEP_EFFECT
-] = "fastga.submodel.performances.dep_effect.none"
+oad.RegisterSubmodel.active_models[SUBMODEL_DEP_EFFECT] = (
+    "fastga.submodel.performances.dep_effect.none"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_DEP_EFFECT, "fastga.submodel.performances.dep_effect.none")
@@ -33,7 +33,6 @@ class NoDEPEffect(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
@@ -96,7 +95,6 @@ class NoDEPEffect(om.ExplicitComponent):
         self.add_output("delta_Cm", val=np.full(number_of_points, 0.0))
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["delta_Cl"] = 0.0
         outputs["delta_Cd"] = 0.0
         outputs["delta_Cm"] = 0.0

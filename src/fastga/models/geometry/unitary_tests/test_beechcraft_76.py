@@ -17,6 +17,9 @@ Test module for geometry functions of the different components.
 import openmdao.api as om
 import pytest
 
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
+from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
@@ -25,6 +28,30 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
+)
+from ..geom_components.ht.components import (
+    ComputeHTChord,
+    ComputeHTMacFD,
+    ComputeHTMacFL,
+    ComputeHTSweep,
+    ComputeHTWetArea,
+    ComputeHTDistance,
+    ComputeHTVolumeCoefficient,
+)
+from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
+from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
+from ..geom_components.propeller.components import (
+    ComputePropellerPosition,
+    ComputePropellerInstallationEffect,
+)
+from ..geom_components.vt.components import (
+    ComputeVTChords,
+    ComputeVTMacFD,
+    ComputeVTMacFL,
+    ComputeVTMacPositionFD,
+    ComputeVTMacPositionFL,
+    ComputeVTSweep,
+    ComputeVTWetArea,
 )
 from ..geom_components.wing.components import (
     ComputeWingB50,
@@ -39,37 +66,8 @@ from ..geom_components.wing.components import (
     ComputeWingZ,
     ComputeWingXAbsolute,
 )
-from ..geom_components.ht.components import (
-    ComputeHTChord,
-    ComputeHTMacFD,
-    ComputeHTMacFL,
-    ComputeHTSweep,
-    ComputeHTWetArea,
-    ComputeHTDistance,
-    ComputeHTVolumeCoefficient,
-)
-from ..geom_components.vt.components import (
-    ComputeVTChords,
-    ComputeVTMacFD,
-    ComputeVTMacFL,
-    ComputeVTMacPositionFD,
-    ComputeVTMacPositionFL,
-    ComputeVTSweep,
-    ComputeVTWetArea,
-)
-from ..geom_components.nacelle import ComputeNacellePosition, ComputeNacelleDimension
-from ..geom_components.propeller.components import (
-    ComputePropellerPosition,
-    ComputePropellerInstallationEffect,
-)
-from ..geom_components.landing_gears.compute_lg import ComputeLGGeometry
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
-from ..geom_components import ComputeTotalArea
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
-
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
-from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 
 XML_FILE = "beechcraft_76.xml"
 
@@ -364,7 +362,6 @@ def test_compute_fuselage_basic():
 
 
 def test_fuselage_wet_area():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageWetArea()),
         __file__,
@@ -379,7 +376,6 @@ def test_fuselage_wet_area():
 
 
 def test_fuselage_wet_area_flops():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageWetAreaFLOPS()),
         __file__,
@@ -394,7 +390,6 @@ def test_fuselage_wet_area_flops():
 
 
 def test_fuselage_depth():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageDepth()),
         __file__,
@@ -409,7 +404,6 @@ def test_fuselage_depth():
 
 
 def test_fuselage_volume():
-
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageVolume()),
         __file__,
@@ -691,7 +685,6 @@ def test_installation_effect_propeller():
 
 
 def test_landing_gear_geometry():
-
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeLGGeometry()), __file__, XML_FILE)
 

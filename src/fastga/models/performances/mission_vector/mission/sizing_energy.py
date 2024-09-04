@@ -19,7 +19,6 @@ class SizingEnergy(om.ExplicitComponent):
     """Computes the fuel consumed during the whole sizing mission."""
 
     def setup(self):
-
         self.add_input("data:mission:sizing:main_route:climb:fuel", val=np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:climb:energy", val=np.nan, units="W*h")
         self.add_input("data:mission:sizing:main_route:cruise:fuel", val=np.nan, units="kg")
@@ -41,12 +40,10 @@ class SizingEnergy(om.ExplicitComponent):
         self.add_output("data:mission:sizing:energy", val=200e3, units="W*h")
 
     def setup_partials(self):
-
         self.declare_partials(of="data:mission:sizing:fuel", wrt="*:fuel", method="exact")
         self.declare_partials(of="data:mission:sizing:energy", wrt="*:energy", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         outputs["data:mission:sizing:fuel"] = (
             inputs["data:mission:sizing:main_route:climb:fuel"]
             + inputs["data:mission:sizing:main_route:cruise:fuel"]
@@ -70,7 +67,6 @@ class SizingEnergy(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:climb:fuel"] = 1
         partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:cruise:fuel"] = 1
         partials["data:mission:sizing:fuel", "data:mission:sizing:main_route:descent:fuel"] = 1

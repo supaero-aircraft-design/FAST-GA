@@ -14,15 +14,15 @@ Airfoil reshape function.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import pandas as pd
-import numpy as np
-import warnings
 import logging
-
 import os.path as pth
-from .profile import Profile
+import warnings
+
+import numpy as np
+import pandas as pd
 
 from fastga.models.aerodynamics import airfoil_folder
+from .profile import Profile
 
 _LOGGER = logging.getLogger(__name__)
 

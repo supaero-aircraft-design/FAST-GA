@@ -134,7 +134,6 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
     """Computes HTP 3D min/max CL from 2D CL (XFOIL-computed) and lift repartition."""
 
     def setup(self):
-
         nans_array = np.full(SPAN_MESH_POINT, np.nan)
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
@@ -164,7 +163,6 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         y_root = 0.0
         y_tip = float(inputs["data:geometry:horizontal_tail:span"]) / 2.0
         wing_area = inputs["data:geometry:wing:area"]
@@ -216,12 +214,12 @@ class ComputeHtp3DExtremeCL(om.ExplicitComponent):
         clean_alpha_max_htp = cl_max_clean / cl_alpha_htp * 180.0 / np.pi
         clean_alpha_min_htp = cl_min_clean / cl_alpha_htp * 180.0 / np.pi
 
-        outputs[
-            "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"
-        ] = clean_alpha_max_htp
-        outputs[
-            "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"
-        ] = clean_alpha_min_htp
+        outputs["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max"] = (
+            clean_alpha_max_htp
+        )
+        outputs["data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min"] = (
+            clean_alpha_min_htp
+        )
 
     @staticmethod
     def _reshape_curve(y: np.ndarray, cl: np.ndarray):

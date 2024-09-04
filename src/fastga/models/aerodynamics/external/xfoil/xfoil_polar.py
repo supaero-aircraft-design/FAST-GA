@@ -71,7 +71,6 @@ class XfoilPolar(ExternalCodeComp):
         self._xfoil_output_names = ["alpha", "CL", "CD", "CDp", "CM", "Top_Xtr", "Bot_Xtr"]
 
     def initialize(self):
-
         self.options.declare(OPTION_XFOIL_EXE_PATH, default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
@@ -106,7 +105,6 @@ class XfoilPolar(ExternalCodeComp):
         self.add_input("xfoil:reynolds", val=np.nan)
 
         if multiple_aoa:
-
             self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
             self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
             self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
@@ -117,7 +115,6 @@ class XfoilPolar(ExternalCodeComp):
             self.add_output("xfoil:CD_min_2D")
 
         else:
-
             self.add_output("xfoil:alpha", units="deg")
             self.add_output("xfoil:CL")
             self.add_output("xfoil:CD")
@@ -200,7 +197,7 @@ class XfoilPolar(ExternalCodeComp):
                     # noinspection PyBroadException
                     try:
                         data.to_csv(result_file)
-                    except:
+                    except PermissionError:
                         warnings.warn(
                             "Unable to save XFoil results to *.csv file: writing permission denied "
                             "for %s folder!" % local_resources.__path__[0]
@@ -214,19 +211,19 @@ class XfoilPolar(ExternalCodeComp):
             # noinspection PyBroadException
             try:
                 tmp_directory.cleanup()
-            except:
+            except PermissionError:
                 for file_path in os.listdir(tmp_directory.name):
                     if os.path.isfile(file_path):
                         # noinspection PyBroadException
                         try:
                             file = os.open(file_path, os.O_WRONLY)
                             os.close(file)
-                        except:
+                        except:  # noqa: E722
                             _LOGGER.info("Error while trying to close %s file!", file_path)
                 # noinspection PyBroadException
                 try:
                     tmp_directory.cleanup()
-                except:
+                except PermissionError:
                     _LOGGER.info(
                         "Error while trying to erase %s temporary directory!", tmp_directory.name
                     )
@@ -347,12 +344,12 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if np.abs(covered_range / alpha_range) >= 0.4:
-                lift_fct = (
-                    lambda x: (lift_coeff[1] - lift_coeff[0])
-                    / (alpha[1] - alpha[0])
-                    * (x - alpha[0])
-                    + lift_coeff[0]
-                )
+
+                def lift_fct(x):
+                    return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
+                        x - alpha[0]
+                    ) + lift_coeff[0]
+
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return max(lift_coeff[delta <= 0.3]), False
 
@@ -374,12 +371,12 @@ class XfoilPolar(ExternalCodeComp):
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if covered_range / alpha_range >= 0.4:
-                lift_fct = (
-                    lambda x: (lift_coeff[1] - lift_coeff[0])
-                    / (alpha[1] - alpha[0])
-                    * (x - alpha[0])
-                    + lift_coeff[0]
-                )
+
+                def lift_fct(x):
+                    return (lift_coeff[1] - lift_coeff[0]) / (alpha[1] - alpha[0]) * (
+                        x - alpha[0]
+                    ) + lift_coeff[0]
+
                 delta = np.abs(lift_coeff - lift_fct(alpha))
                 return min(lift_coeff[delta <= 0.3]), False
 
@@ -501,12 +498,12 @@ class XfoilPolar(ExternalCodeComp):
         try:
             super().compute(inputs, outputs)
             result_array_p = self._read_polar(tmp_result_file_path)
-        except:
+        except:  # noqa: E722
             # catch the error and try to read result file for non-convergence on higher angles
             error = sys.exc_info()[1]
             try:
                 result_array_p = self._read_polar(tmp_result_file_path)
-            except:
+            except:  # noqa: E722
                 raise TimeoutError("<p>Error: %s</p>" % error)
         result_array_n = np.array([])
 
@@ -529,13 +526,13 @@ class XfoilPolar(ExternalCodeComp):
             try:
                 super().compute(inputs, outputs)
                 result_array_n = self._read_polar(tmp_result_file_path)
-            except:
+            except:  # noqa: E722
                 # catch the error and try to read result file for non-convergence on higher
                 # angles
                 e = sys.exc_info()[1]
                 try:
                     result_array_n = self._read_polar(tmp_result_file_path)
-                except:
+                except:  # noqa: E722
                     raise TimeoutError("<p>Error: %s</p>" % e)
 
         return (
@@ -575,7 +572,7 @@ class XfoilPolar(ExternalCodeComp):
         distance_to_mach = []
         # Check if there is a velocity (Mach) value that is close to this one
         for index in index_near_mach:
-            if not saved_mach_list[index] in near_mach:
+            if saved_mach_list[index] not in near_mach:
                 near_mach.append(saved_mach_list[index])
                 distance_to_mach.append(abs(saved_mach_list[index] - mach))
         if not near_mach:
@@ -594,12 +591,10 @@ class XfoilPolar(ExternalCodeComp):
 
         # Else search for lower/upper Reynolds
         else:
-
             lower_reynolds = reynolds_vect[np.where(reynolds_vect < reynolds)[0]]
             upper_reynolds = reynolds_vect[np.where(reynolds_vect > reynolds)[0]]
 
             if not (len(lower_reynolds) == 0 or len(upper_reynolds) == 0):
-
                 index_lower_reynolds = index_mach[np.where(reynolds_vect == max(lower_reynolds))[0]]
                 index_upper_reynolds = index_mach[np.where(reynolds_vect == min(upper_reynolds))[0]]
                 lower_values = data_reduced.loc[labels, index_lower_reynolds]

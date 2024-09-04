@@ -16,6 +16,8 @@ Test module for mass breakdown functions.
 
 import pytest
 
+from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
+from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
 from ..a_airframe import (
     ComputeTailWeight,
     ComputeTailWeightGD,
@@ -30,17 +32,6 @@ from ..a_airframe import (
     ComputeLandingGearWeight,
     ComputeWingMassAnalytical,
     ComputePaintWeight,
-)
-from ..a_airframe.wing_components import (
-    ComputeWebMass,
-    ComputeLowerFlange,
-    ComputeUpperFlange,
-    ComputeSkinMass,
-    ComputeMiscMass,
-    ComputeRibsMass,
-    ComputePrimaryMass,
-    ComputeSecondaryMass,
-    UpdateWingMass,
 )
 from ..a_airframe.fuselage_components import (
     ComputeWingFuselageConnection,
@@ -57,6 +48,17 @@ from ..a_airframe.fuselage_components import (
     ComputeAddBendingMassHorizontal,
 )
 from ..a_airframe.sum import AirframeWeight
+from ..a_airframe.wing_components import (
+    ComputeWebMass,
+    ComputeLowerFlange,
+    ComputeUpperFlange,
+    ComputeSkinMass,
+    ComputeMiscMass,
+    ComputeRibsMass,
+    ComputePrimaryMass,
+    ComputeSecondaryMass,
+    UpdateWingMass,
+)
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
@@ -80,15 +82,10 @@ from ..d_furniture.sum import FurnitureWeight
 from ..mass_breakdown import MassBreakdown, ComputeOperatingWeightEmpty
 from ..payload import ComputePayload
 
-from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
-
-from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
-
 XML_FILE = "daher_tbm900.xml"
 
 
 def test_compute_payload():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputePayload()), __file__, XML_FILE)
 
@@ -769,7 +766,6 @@ def test_compute_primary_mass():
 
 
 def test_compute_secondary_mass():
-
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
 

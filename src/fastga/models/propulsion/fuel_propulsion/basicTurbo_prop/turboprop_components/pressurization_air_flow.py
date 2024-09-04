@@ -17,7 +17,6 @@ class PressurizationAirFlow(om.ExplicitComponent):
         self.input_name = "altitude"
 
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
         self.options.declare(
             "altitude_list",
@@ -32,7 +31,6 @@ class PressurizationAirFlow(om.ExplicitComponent):
         self.options.declare("design_point", types=bool, default=False)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         if self.options["design_point"]:
@@ -53,7 +51,6 @@ class PressurizationAirFlow(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cabin_altitude = np.interp(
             inputs[self.input_name] * 3.28084,
             self.options["altitude_list"],
@@ -95,5 +92,5 @@ class PressurizationAirFlow(om.ExplicitComponent):
             cabin_volume * cabin_air_density / renewal_time * 0.7
         )
         partials["pressurization_mass_flow", "cabin_air_renewal_time"] = -(
-            cabin_volume * cabin_air_density / renewal_time ** 2.0 * (0.3 + 0.7 * bleed_control)
+            cabin_volume * cabin_air_density / renewal_time**2.0 * (0.3 + 0.7 * bleed_control)
         )

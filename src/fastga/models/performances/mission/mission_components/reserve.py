@@ -24,15 +24,14 @@ _LOGGER = logging.getLogger(__name__)
 POINTS_NB_CLIMB = 100
 MAX_CALCULATION_TIME = 15  # time in seconds
 
-oad.RegisterSubmodel.active_models[
-    SUBMODEL_RESERVES
-] = "fastga.submodel.performances.mission.reserves.legacy"
+oad.RegisterSubmodel.active_models[SUBMODEL_RESERVES] = (
+    "fastga.submodel.performances.mission.reserves.legacy"
+)
 
 
 @oad.RegisterSubmodel(SUBMODEL_RESERVES, "fastga.submodel.performances.mission.reserves.legacy")
 class ComputeReserve(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:mission:sizing:main_route:cruise:fuel", np.nan, units="kg")
         self.add_input("data:mission:sizing:main_route:cruise:duration", np.nan, units="s")
         self.add_input("data:mission:sizing:main_route:reserve:duration", np.nan, units="s")
@@ -44,7 +43,6 @@ class ComputeReserve(om.ExplicitComponent):
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         m_reserve = (
             inputs["data:mission:sizing:main_route:cruise:fuel"]
             * inputs["data:mission:sizing:main_route:reserve:duration"]

@@ -34,11 +34,9 @@ class ComputeCLPitchVelocityAircraft(om.Group):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         options = {
             "low_speed_aero": self.options["low_speed_aero"],
         }
@@ -66,13 +64,10 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
-
             self.add_input("data:aerodynamics:wing:low_speed:CL_q", val=np.nan, units="rad**-1")
             self.add_input(
                 "data:aerodynamics:horizontal_tail:low_speed:CL_q", val=np.nan, units="rad**-1"
@@ -81,7 +76,6 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:low_speed:CL_q", units="rad**-1")
 
         else:
-
             self.add_input("data:aerodynamics:wing:cruise:CL_q", val=np.nan, units="rad**-1")
             self.add_input(
                 "data:aerodynamics:horizontal_tail:cruise:CL_q", val=np.nan, units="rad**-1"
@@ -92,7 +86,6 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:aircraft:low_speed:CL_q"] = (
                 inputs["data:aerodynamics:wing:low_speed:CL_q"]
@@ -105,7 +98,6 @@ class _SumCLPitchVelocityContributions(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         if self.options["low_speed_aero"]:
             partials[
                 "data:aerodynamics:aircraft:low_speed:CL_q", "data:aerodynamics:wing:low_speed:CL_q"

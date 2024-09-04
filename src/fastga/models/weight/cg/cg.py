@@ -14,17 +14,15 @@ FAST - Copyright (c) 2016 ONERA ISAE.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-
 import fastoad.api as oad
-
-from ..constants import SUBMODEL_CENTER_OF_GRAVITY
+import openmdao.api as om
 
 from .cg_components.constants import (
     SUBMODEL_PAYLOAD_CG,
     SUBMODEL_AIRCRAFT_CG_EXTREME,
     SUBMODEL_TANK_CG,
 )
+from ..constants import SUBMODEL_CENTER_OF_GRAVITY
 
 
 @oad.RegisterSubmodel(SUBMODEL_CENTER_OF_GRAVITY, "fastga.submodel.weight.cg.legacy")

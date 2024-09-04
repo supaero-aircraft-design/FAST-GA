@@ -26,7 +26,6 @@ class ComputeWingY(om.ExplicitComponent):
     """Wing Ys estimation."""
 
     def setup(self):
-
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -64,7 +63,6 @@ class ComputeWingY(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
         wing_break = inputs["data:geometry:wing:kink:span_ratio"]

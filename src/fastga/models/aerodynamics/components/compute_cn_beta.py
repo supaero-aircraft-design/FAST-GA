@@ -37,11 +37,9 @@ class ComputeCnBetaAircraft(om.Group):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "fuselage_contribution",
@@ -70,15 +68,12 @@ class _SumCNBetaContributions(om.ExplicitComponent):
     """
 
     def initialize(self):
-
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-
         self.add_input("data:aerodynamics:fuselage:Cn_beta", val=np.nan, units="rad**-1")
 
         if self.options["low_speed_aero"]:
-
             self.add_input(
                 "data:aerodynamics:vertical_tail:low_speed:Cn_beta", val=np.nan, units="rad**-1"
             )
@@ -86,7 +81,6 @@ class _SumCNBetaContributions(om.ExplicitComponent):
             self.add_output("data:aerodynamics:aircraft:low_speed:Cn_beta", units="rad**-1")
 
         else:
-
             self.add_input(
                 "data:aerodynamics:vertical_tail:cruise:Cn_beta", val=np.nan, units="rad**-1"
             )
@@ -96,7 +90,6 @@ class _SumCNBetaContributions(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         cy_beta_fus = inputs["data:aerodynamics:fuselage:Cn_beta"]
 
         if self.options["low_speed_aero"]:
@@ -109,7 +102,6 @@ class _SumCNBetaContributions(om.ExplicitComponent):
             )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         if self.options["low_speed_aero"]:
             partials[
                 "data:aerodynamics:aircraft:low_speed:Cn_beta",

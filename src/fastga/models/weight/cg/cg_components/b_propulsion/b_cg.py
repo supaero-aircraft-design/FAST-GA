@@ -12,14 +12,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
-import numpy as np
-
 import fastoad.api as oad
+import numpy as np
+import openmdao.api as om
 
 from .b1_engine_cg import ComputeEngineCG
 from .b2_fuel_lines_cg import ComputeFuelLinesCG
-
 from ..constants import SUBMODEL_PROPULSION_CG
 
 

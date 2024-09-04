@@ -28,7 +28,6 @@ from .constants import SUBMODEL_STRUCTURAL_LOADS
 @oad.RegisterSubmodel(SUBMODEL_STRUCTURAL_LOADS, "fastga.submodel.loads.wings.structural.legacy")
 class StructuralLoads(om.ExplicitComponent):
     def setup(self):
-
         self.add_input("data:loads:max_shear:load_factor", val=np.nan)
         self.add_input("data:loads:max_rbm:load_factor", val=np.nan)
         self.add_input(
@@ -143,7 +142,6 @@ class StructuralLoads(om.ExplicitComponent):
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR LOAD COMPUTATION
 
         y_vector = inputs["data:aerodynamics:wing:low_speed:Y_vector"]
@@ -194,9 +192,9 @@ class StructuralLoads(om.ExplicitComponent):
 
         outputs["data:loads:structure:ultimate:force_distribution:wing"] = wing_mass_array_outputs
         outputs["data:loads:structure:ultimate:force_distribution:fuel"] = fuel_mass_array_outputs
-        outputs[
-            "data:loads:structure:ultimate:force_distribution:point_mass"
-        ] = point_mass_array_outputs
+        outputs["data:loads:structure:ultimate:force_distribution:point_mass"] = (
+            point_mass_array_outputs
+        )
 
         point_shear_array = AerostructuralLoad.compute_shear_diagram(
             y_vector, load_factor_shear * point_mass_array_orig

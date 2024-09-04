@@ -1,5 +1,5 @@
 """
-    Estimation of geometry of vertical tail
+Estimation of geometry of vertical tail
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
@@ -13,7 +13,6 @@
 #  GNU General Public License for more details.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 
 import openmdao.api as om
 
@@ -33,7 +32,6 @@ class ComputeVerticalTailGeometryFD(om.Group):
     """Vertical tail geometry estimation based on fixed HTP/VTP distance"""
 
     def setup(self):
-
         self.add_subsystem(
             "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
         )

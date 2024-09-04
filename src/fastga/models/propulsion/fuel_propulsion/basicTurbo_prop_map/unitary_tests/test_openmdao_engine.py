@@ -14,12 +14,34 @@ Test module for OpenMDAO versions of basicICEngine
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import openmdao.api as om
+
 from fastoad.constants import EngineSetting
 
 from ..openmdao import OMBasicTPEngineMappedComponent
 
-from .data.dummy_maps import *
+from .data.dummy_maps import (
+    SPEED,
+    THRUST_SL,
+    THRUST_SL_LIMIT,
+    EFFICIENCY_SL,
+    THRUST_CL,
+    THRUST_CL_LIMIT,
+    EFFICIENCY_CL,
+    MACH_ARRAY_SL,
+    THRUST_ARRAY_SL,
+    THRUST_MAX_ARRAY_SL,
+    SFC_SL,
+    MACH_ARRAY_CL,
+    THRUST_ARRAY_CL,
+    THRUST_MAX_ARRAY_CL,
+    SFC_CL,
+    MACH_ARRAY_IL,
+    THRUST_ARRAY_IL,
+    THRUST_MAX_ARRAY_IL,
+    SFC_IL,
+)
 
 from tests.testing_utilities import run_system
 

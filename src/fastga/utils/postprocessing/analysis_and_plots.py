@@ -17,14 +17,13 @@ Defines the analysis and plotting functions for postprocessing.
 from random import SystemRandom
 from typing import Dict
 
+import fastoad.api as oad
 import numpy as np
 import plotly
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-
-import fastoad.api as oad
 from fastoad.io import VariableIO
 from openmdao.utils.units import convert_units
+from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
 
@@ -190,13 +189,11 @@ def aircraft_geometry_plot(
 
     if plot_nacelle:
         if prop_layout == 1.0:
-
             random_generator = SystemRandom()
             trace_colour = COLS[random_generator.randrange(0, len(COLS))]
             show_legend = True
 
             for y_nacelle_local, x_nacelle_local in zip(pos_y_nacelle, pos_x_nacelle):
-
                 y_nacelle_left = y_nacelle_plot + y_nacelle_local
                 y_nacelle_right = -y_nacelle_plot - y_nacelle_local
                 x_nacelle = x_nacelle_local - x_nacelle_plot
@@ -752,8 +749,9 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
     for variable in variables.names():
         name_split = variable.split(":")
         if isinstance(name_split, list) and len(name_split) == 4:
-            if name_split[0] + name_split[1] + name_split[3] == "dataweightmass" and not (
-                "aircraft" in name_split[2]
+            if (
+                name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
+                and "aircraft" not in name_split[2]
             ):
                 category_values.append(
                     convert_units(variables[variable].value[0], variables[variable].units, "kg")

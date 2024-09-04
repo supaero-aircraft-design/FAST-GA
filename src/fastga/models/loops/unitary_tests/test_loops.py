@@ -17,12 +17,15 @@ test module for wing area computation.
 import os.path as pth
 
 import openmdao.api as om
-
 from numpy.testing import assert_allclose
 
-from ..wing_area_component.wing_area_loop_geom_simple import (
-    UpdateWingAreaGeomSimple,
-    ConstraintWingAreaGeomSimple,
+from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
+from ..update_wing_area_group import UpdateWingAreaGroup
+from ..update_wing_position import UpdateWingPosition
+from ..wing_area_component.update_wing_area import UpdateWingArea
+from ..wing_area_component.wing_area_cl_equilibrium import (
+    UpdateWingAreaLiftEquilibrium,
+    ConstraintWingAreaLiftEquilibrium,
 )
 from ..wing_area_component.wing_area_loop_cl_simple import (
     UpdateWingAreaLiftSimple,
@@ -32,21 +35,15 @@ from ..wing_area_component.wing_area_loop_geom_adv import (
     UpdateWingAreaGeomAdvanced,
     ConstraintWingAreaGeomAdvanced,
 )
-from ..wing_area_component.wing_area_cl_equilibrium import (
-    UpdateWingAreaLiftEquilibrium,
-    ConstraintWingAreaLiftEquilibrium,
+from ..wing_area_component.wing_area_loop_geom_simple import (
+    UpdateWingAreaGeomSimple,
+    ConstraintWingAreaGeomSimple,
 )
-from ..wing_area_component.update_wing_area import UpdateWingArea
-from ..update_wing_area_group import UpdateWingAreaGroup
-from ..update_wing_position import UpdateWingPosition
-
-from tests.testing_utilities import get_indep_var_comp, list_inputs, run_system
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 
 
 def test_update_wing_area_group():
-
     # Driven by fuel
     ivc = om.IndepVarComp()
     ivc.add_output("data:propulsion:fuel_type", 1.0)
@@ -90,7 +87,6 @@ def test_update_wing_area_group():
 
 
 def test_simple_geom():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:chord", 1.549, units="m")
@@ -119,7 +115,6 @@ def test_simple_geom():
 
 
 def test_simple_cl():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:TLAR:v_approach", val=78.0, units="kn")
     ivc_loop.add_output("data:weight:aircraft:MLW", val=1692.37, units="kg")
@@ -147,7 +142,6 @@ def test_simple_cl():
 
 
 def test_advanced_geom():
-
     ivc_loop = om.IndepVarComp()
     ivc_loop.add_output("data:propulsion:fuel_type", 1.0)
     ivc_loop.add_output("data:geometry:wing:root:thickness_ratio", 0.149)
@@ -208,7 +202,6 @@ def test_advanced_geom():
 
 
 def test_advanced_cl():
-
     xml_file = "beechcraft_76.xml"
 
     inputs_list = list_inputs(
@@ -255,7 +248,6 @@ def test_advanced_cl():
 
 
 def test_update_wing_area():
-
     ivc_geom = om.IndepVarComp()
     ivc_geom.add_output("wing_area:geometric", val=20.0, units="m**2")
     ivc_geom.add_output("wing_area:aerodynamic", val=15.0, units="m**2")
@@ -276,7 +268,6 @@ def test_update_wing_area():
 
 
 def test_update_wing_position():
-
     ivc = get_indep_var_comp(list_inputs(UpdateWingPosition()), __file__, "beechcraft_76.xml")
 
     problem = run_system(UpdateWingPosition(), ivc)

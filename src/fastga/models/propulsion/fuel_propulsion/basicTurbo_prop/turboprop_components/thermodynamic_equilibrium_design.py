@@ -18,11 +18,9 @@ import openmdao.api as om
 
 class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
     def initialize(self):
-
         self.options.declare("number_of_points", types=int, default=250)
 
     def setup(self):
-
         n = self.options["number_of_points"]
 
         self.add_input("combustion_energy", shape=1, val=0.95 * 43.260e6, units="J/kg")
@@ -226,7 +224,6 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
-
         cp_2 = inputs["cp_2"]
         cp_25 = inputs["cp_25"]
         cp_3 = inputs["cp_3"]
@@ -325,11 +322,10 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
 
         residuals["air_mass_flow"] = total_pressure_5 - (
             static_pressure
-            * (1.0 + (gamma_5 - 1.0) / 2.0 * exhaust_mach ** 2) ** (gamma_5 / (gamma_5 - 1.0))
+            * (1.0 + (gamma_5 - 1.0) / 2.0 * exhaust_mach**2) ** (gamma_5 / (gamma_5 - 1.0))
         )
 
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
-
         n = self.options["number_of_points"]
 
         cp_2 = inputs["cp_2"]
@@ -535,7 +531,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         jacobian["total_temperature_45", "pressurization_bleed_ratio"] = -np.diag(
             (cp_41 * total_temperature_41 - cp_45 * total_temperature_45) * mechanical_efficiency
         )
-        jacobian["total_temperature_45", "air_mass_flow"] = electric_power / air_mass_flow ** 2.0
+        jacobian["total_temperature_45", "air_mass_flow"] = electric_power / air_mass_flow**2.0
         jacobian["total_temperature_45", "electric_power"] = -1.0 / air_mass_flow
         jacobian[
             "total_temperature_45",
@@ -566,7 +562,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             * (total_temperature_45 / total_temperature_41)
             ** (gamma_41 / (gamma_41 - 1.0) / eta_445 - 1.0)
             * total_temperature_45
-            / total_temperature_41 ** 2.0
+            / total_temperature_41**2.0
         )
         jacobian["total_pressure_45", "gamma_41"] = np.diag(
             total_pressure_4
@@ -581,7 +577,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             * (total_temperature_45 / total_temperature_41) ** (gamma_41 / (gamma_41 - 1) / eta_445)
             * gamma_41
             / (gamma_41 - 1)
-            / eta_445 ** 2.0
+            / eta_445**2.0
         )
 
         # -----------------------------------------------------------------------------------------#
@@ -638,7 +634,7 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
         )
         jacobian["total_temperature_5", "settings:propulsion:turboprop:efficiency:gearbox"] = (
             (
-                (design_point_power * 1000.0 / eta_gearbox ** 2.0)
+                (design_point_power * 1000.0 / eta_gearbox**2.0)
                 / (cp_45 * total_temperature_45 - cp_5 * total_temperature_5)
             )
             / (1 + fuel_air_ratio - pressurization_bleed_ratio - compressor_bleed_ratio)
@@ -663,14 +659,14 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
             * (total_pressure_5 / total_pressure_45)
             ** ((gamma_45 - 1.0) / gamma_45 * eta_455 - 1.0)
             * total_pressure_5
-            / total_pressure_45 ** 2.0
+            / total_pressure_45**2.0
         )
         jacobian["total_pressure_5", "gamma_45"] = np.diag(
             -total_temperature_45
             * ((total_pressure_5 / total_pressure_45) ** ((gamma_45 - 1.0) / gamma_45 * eta_455))
             * np.log(total_pressure_5 / total_pressure_45)
             * eta_455
-            / gamma_45 ** 2.0
+            / gamma_45**2.0
         )
         jacobian["total_pressure_5", "eta_455"] = np.diag(
             -total_temperature_45
@@ -684,24 +680,24 @@ class ThermodynamicEquilibriumDesignPoint(om.ImplicitComponent):
 
         jacobian["air_mass_flow", "total_pressure_5"] = np.eye(n)
         jacobian["air_mass_flow", "static_pressure_0"] = -np.diag(
-            (1 + (gamma_5 - 1) / 2 * exhaust_mach ** 2) ** (gamma_5 / (gamma_5 - 1.0))
+            (1 + (gamma_5 - 1) / 2 * exhaust_mach**2) ** (gamma_5 / (gamma_5 - 1.0))
         )
         jacobian["air_mass_flow", "gamma_5"] = -np.diag(
             (
                 static_pressure
-                * (1.0 + 1.0 / 2.0 * exhaust_mach ** 2 * (gamma_5 - 1.0))
+                * (1.0 + 1.0 / 2.0 * exhaust_mach**2 * (gamma_5 - 1.0))
                 ** (gamma_5 / (gamma_5 - 1.0))
                 * (
-                    exhaust_mach ** 2 * (gamma_5 - 1.0) * gamma_5
-                    + (-2.0 - exhaust_mach ** 2.0 * (gamma_5 - 1.0))
-                    * np.log(1.0 + 1.0 / 2.0 * exhaust_mach ** 2.0 * (gamma_5 - 1))
+                    exhaust_mach**2 * (gamma_5 - 1.0) * gamma_5
+                    + (-2.0 - exhaust_mach**2.0 * (gamma_5 - 1.0))
+                    * np.log(1.0 + 1.0 / 2.0 * exhaust_mach**2.0 * (gamma_5 - 1))
                 )
             )
-            / ((2 + exhaust_mach ** 2.0 * (gamma_5 - 1.0)) * (gamma_5 - 1) ** 2.0)
+            / ((2 + exhaust_mach**2.0 * (gamma_5 - 1.0)) * (gamma_5 - 1) ** 2.0)
         )
         jacobian["air_mass_flow", "settings:propulsion:turboprop:design_point:mach_exhaust"] = (
             -static_pressure
             * gamma_5
             * exhaust_mach
-            * (1.0 + (gamma_5 - 1.0) / 2.0 * exhaust_mach ** 2) ** (1.0 / (gamma_5 - 1.0))
+            * (1.0 + (gamma_5 - 1.0) / 2.0 * exhaust_mach**2) ** (1.0 / (gamma_5 - 1.0))
         )

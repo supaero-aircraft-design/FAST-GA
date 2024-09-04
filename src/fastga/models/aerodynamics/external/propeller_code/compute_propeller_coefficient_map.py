@@ -34,7 +34,6 @@ J_POINTS_NUMBER = 30
     "fastga.aerodynamics.propeller.coeff_map", domain=ModelDomain.AERODYNAMICS
 )
 class ComputePropellerCoefficientMap(om.Group):
-
     """Computes propeller profiles aerodynamic coefficient and propeller coefficient map under
     the form Ct=f(J) and Cp=f(J) for various pitches."""
 
@@ -108,7 +107,6 @@ class ComputePropellerCoefficientMap(om.Group):
 
 class _ComputePropellerCoefficientMap(PropellerCoreModule):
     def setup(self):
-
         super().setup()
 
         self.add_input(
@@ -139,7 +137,6 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
         self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         _LOGGER.debug("Entering propeller computation")
 
         # Define init values
@@ -175,7 +172,6 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
         cd_list = np.zeros((len(radius), len(alpha_interp)))
 
         for idx, _ in enumerate(radius):
-
             index = np.where(sections_profile_position_list < (radius[idx] / radius_max))[0]
             if index is None:
                 profile_name = sections_profile_name_list[0]
@@ -194,14 +190,13 @@ class _ComputePropellerCoefficientMap(PropellerCoreModule):
             cd_list[idx, :] = np.interp(alpha_interp, alpha_element, cd_element)
 
         for idx, v_inf in enumerate(speed_interp):
-
             thrust, eta, _ = self.compute_pitch_performance(
                 inputs, theta_75, v_inf, altitude, omega, radius, alpha_list, cl_list, cd_list
             )
-            ct_local = thrust / (atm.density * (omega / 60.00) ** 2.0 * prop_diameter ** 4.0)
+            ct_local = thrust / (atm.density * (omega / 60.00) ** 2.0 * prop_diameter**4.0)
             ct_list[idx] = ct_local
             shaft_power = thrust * v_inf / eta
-            cp_local = shaft_power / (atm.density * (omega / 60.0) ** 3.0 * prop_diameter ** 5.0)
+            cp_local = shaft_power / (atm.density * (omega / 60.0) ** 3.0 * prop_diameter**5.0)
             cp_list[idx] = cp_local
             j_local = v_inf / (omega / 60.0 * prop_diameter)
             j_list[idx] = j_local
