@@ -14,7 +14,7 @@
 import openmdao.api as om
 import numpy as np
 
-from scipy.integrate import trapz
+from scipy.integrate import trapezoid
 
 
 class ComputeWingTanksCapacity(om.ExplicitComponent):
@@ -70,7 +70,7 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
         #       * (y_array[1:] - y_array[:-1])
         #   )
         #
-        outputs["data:geometry:propulsion:tank:capacity"] = 2.0 * trapz(
+        outputs["data:geometry:propulsion:tank:capacity"] = 2.0 * trapezoid(
             cross_section_array, y_array
         )
 
