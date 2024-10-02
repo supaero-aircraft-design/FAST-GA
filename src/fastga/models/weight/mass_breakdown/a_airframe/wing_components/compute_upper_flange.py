@@ -16,9 +16,8 @@ in her MAE research project report.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+from scipy.integrate import trapezoid
 import openmdao.api as om
-from scipy.integrate import trapz
-from scipy.interpolate import interp1d
 from stdatm import Atmosphere
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
@@ -276,8 +275,7 @@ class ComputeUpperFlange(om.ExplicitComponent):
         cl_s_slip = AerostructuralLoad.compute_cl_s(
             y_vector_slip_orig, y_vector_orig, y_vector, cl_vector_slip, chord_vector_orig
         )
-        chord_vector_inter = interp1d(y_vector_orig, chord_vector_orig)
-        chord_vector = chord_vector_inter(y_vector)
+        chord_vector = np.interp(y_vector, y_vector_orig, chord_vector_orig)
         upper_flange_area_pos = np.zeros_like(y_vector)
         upper_flange_area_neg = np.zeros_like(y_vector)
 
@@ -306,7 +304,9 @@ class ComputeUpperFlange(om.ExplicitComponent):
                 )
 
         upper_flange_area = np.fmax(upper_flange_area_pos, upper_flange_area_neg)
-        upper_flange_mass = abs(2.0 * rho_m / np.cos(sweep_e)) * trapz(upper_flange_area, y_vector)
+        upper_flange_mass = abs(2.0 * rho_m / np.cos(sweep_e)) * trapezoid(
+            upper_flange_area, y_vector
+        )
 
         if inputs["data:geometry:propulsion:engine:count"] > 4:
             upper_flange_mass *= 1.1
