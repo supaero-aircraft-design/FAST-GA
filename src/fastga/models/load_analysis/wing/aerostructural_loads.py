@@ -16,9 +16,8 @@ Computes the aerostructural loads on the wing of the aircraft.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+from scipy.integrate import trapezoid
 import openmdao.api as om
-from scipy.integrate import trapz
-from scipy.interpolate import interp1d
 
 from stdatm import Atmosphere
 import fastoad.api as oad
@@ -379,7 +378,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         # Each station of the shear diagram is equal to the integral of the forces on all
         # subsequent station
         for i, _ in enumerate(y_vector):
-            shear_force_diagram[i] = trapz(force_array[i:], y_vector[i:])
+            shear_force_diagram[i] = trapezoid(force_array[i:], y_vector[i:])
 
         return shear_force_diagram
 
@@ -403,7 +402,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         # subsequent stations
         for i, _ in enumerate(y_vector):
             lever_arm = y_vector - y_vector[i]
-            bending_moment_diagram[i] = trapz(force_array[i:] * lever_arm[i:], y_vector[i:])
+            bending_moment_diagram[i] = trapezoid(force_array[i:] * lever_arm[i:], y_vector[i:])
 
         return bending_moment_diagram
 
@@ -427,13 +426,9 @@ class AerostructuralLoad(om.ExplicitComponent):
         pressure will give you the actual lift distribution
         """
 
-        # We create the interpolation function
-        cl_inter = interp1d(y_vector_cl_orig, cl_list)
-        chord_inter = interp1d(y_vector_chord_orig, chord_list)
-
         # We compute the new lift coefficient and
-        cl_fin = cl_inter(y_vector)
-        chord_fin = chord_inter(y_vector)
+        cl_fin = np.interp(y_vector, y_vector_cl_orig, cl_list)
+        chord_fin = np.interp(y_vector, y_vector_chord_orig, chord_list)
         lift_chord = np.multiply(cl_fin, chord_fin)
 
         return lift_chord
@@ -538,11 +533,11 @@ class AerostructuralLoad(om.ExplicitComponent):
         else:
             struct_weight_distribution = chord_vector / max(chord_vector)
 
-        readjust_struct = trapz(struct_weight_distribution, y_vector)
+        readjust_struct = trapezoid(struct_weight_distribution, y_vector)
 
         fuel_weight_distribution = tank_volume_distribution(inputs, y_vector)
 
-        readjust_fuel = trapz(fuel_weight_distribution, y_vector)
+        readjust_fuel = trapezoid(fuel_weight_distribution, y_vector)
 
         # We readjust to make sure that the integration of the mass distribution gives the actual
         # mass
@@ -558,7 +553,7 @@ class AerostructuralLoad(om.ExplicitComponent):
     @staticmethod
     def insert_in_sorted_array(array, element):
         """
-        Function that insert an element in a sorted array so as to keep it sorted
+        Function that insert an element in a sorted array to keep it sorted
 
         @param array: a sorted array in which we want to insert an element
         @param element: the element we want to insert in the sorted array
@@ -623,8 +618,9 @@ class AerostructuralLoad(om.ExplicitComponent):
         # AMPLITUDE
 
         fake_point_mass_array = np.zeros(len(point_mass_array))
-        present_mass_interp = interp1d(y_vector, point_mass_array)
-        present_chord_interp = interp1d(y_vector, chord_vector)
+        y_vector_interp = y_vector * 1.0
+        chord_vector_interp = chord_vector * 1.0
+        point_mass_array_interp = point_mass_array * 1.0
 
         # STEP 3/XX - WE ALSO STOCK WHERE WE ADD THE Y STATION SINCE IT'LL BE LATER NECESSARY TO
         # READJUST THE AMPLITUDE
@@ -643,24 +639,36 @@ class AerostructuralLoad(om.ExplicitComponent):
                 y_added.append(y_current)
                 y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_current)
                 index = int(float(idx[0]))
-                chord_vector = np.insert(chord_vector, index, present_chord_interp(y_current))
+                chord_vector = np.insert(
+                    chord_vector, index, np.interp(y_current, y_vector_interp, chord_vector_interp)
+                )
                 point_mass_array = np.insert(
-                    point_mass_array, index, present_mass_interp(y_current)
+                    point_mass_array,
+                    index,
+                    np.interp(y_current, y_vector_interp, point_mass_array_interp),
                 )
                 fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
         y_min = min(y_added) - 1e-3
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_min)
         index = int(float(idx[0]))
-        chord_vector = np.insert(chord_vector, index, present_chord_interp(y_min))
-        point_mass_array = np.insert(point_mass_array, index, present_mass_interp(y_min))
+        chord_vector = np.insert(
+            chord_vector, index, np.interp(y_min, y_vector_interp, chord_vector_interp)
+        )
+        point_mass_array = np.insert(
+            point_mass_array, index, np.interp(y_min, y_vector_interp, point_mass_array_interp)
+        )
         fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
         y_max = max(y_added) + 1e-3
         y_vector, idx = AerostructuralLoad.insert_in_sorted_array(y_vector, y_max)
         index = int(float(idx[0]))
-        chord_vector = np.insert(chord_vector, index, present_chord_interp(y_max))
-        point_mass_array = np.insert(point_mass_array, index, present_mass_interp(y_max))
+        chord_vector = np.insert(
+            chord_vector, index, np.interp(y_max, y_vector_interp, chord_vector_interp)
+        )
+        point_mass_array = np.insert(
+            point_mass_array, index, np.interp(y_max, y_vector_interp, point_mass_array_interp)
+        )
         fake_point_mass_array = np.insert(fake_point_mass_array, index, 0.0)
 
         # STEP 5/XX - WE NOW HAVE THE RIGHT WE JUST NEED TO SCALE IT PROPERLY WHICH IS THE POINT
@@ -678,7 +686,7 @@ class AerostructuralLoad(om.ExplicitComponent):
         for idx in where_add_mass_index:
             fake_point_mass_array[idx] = 1.0
 
-        readjust = trapz(fake_point_mass_array, y_vector)
+        readjust = trapezoid(fake_point_mass_array, y_vector)
 
         for idx in where_add_mass_index:
             point_mass_array[idx] += point_mass / readjust

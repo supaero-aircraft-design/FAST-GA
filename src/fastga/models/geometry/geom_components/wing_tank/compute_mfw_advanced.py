@@ -16,7 +16,7 @@ import warnings
 
 import numpy as np
 
-from scipy.integrate import trapz
+from scipy.integrate import trapezoid
 
 from openmdao.core.explicitcomponent import ExplicitComponent
 
@@ -98,7 +98,7 @@ class ComputeMFWAdvanced(ExplicitComponent):
 
         area_array = tank_volume_distribution(inputs, y_array)
 
-        tank_volume_one_wing = trapz(area_array, y_array.flatten())
+        tank_volume_one_wing = trapezoid(area_array, y_array.flatten())
 
         tank_volume = tank_volume_one_wing * 2
 

@@ -16,8 +16,8 @@ in her MAE research project report.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+from scipy.integrate import trapezoid
 import openmdao.api as om
-from scipy.integrate import trapz
 from stdatm import Atmosphere
 
 from fastga.models.load_analysis.wing.aerostructural_loads import AerostructuralLoad
@@ -268,7 +268,7 @@ class ComputeWebMass(om.ExplicitComponent):
 
         shear_vector = AerostructuralLoad.compute_shear_diagram(y_vector, tot_force_array)
         web_surface = shear_vector / max_shear_stress
-        web_mass = abs(2.0 * rho_m / np.cos(sweep_e) * trapz(web_surface, y_vector))
+        web_mass = abs(2.0 * rho_m / np.cos(sweep_e) * trapezoid(web_surface, y_vector))
 
         if inputs["data:geometry:propulsion:engine:count"] > 4:
             web_mass *= 1.1
