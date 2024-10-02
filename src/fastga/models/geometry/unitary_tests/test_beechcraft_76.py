@@ -14,6 +14,7 @@ Test module for geometry functions of the different components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 import openmdao.api as om
 import pytest
 
@@ -68,6 +69,20 @@ from ..geom_components.wing.components import (
 )
 from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
+
+
+from ..geom_components.wing_tank.wing_tank_components import (
+    ComputeWingTankSpans,
+    ComputeWingTankYArray,
+    ComputeWingTankChordArray,
+    ComputeWingTankRelativeThicknessArray,
+    ComputeWingTankThicknessArray,
+    ComputeWingTankWidthArray,
+    ComputeWingTankReducedWidthArray,
+    ComputeWingTankCrossSectionArray,
+    ComputeWingTanksCapacity,
+    ComputeMFWFromWingTanksCapacity,
+)
 
 XML_FILE = "beechcraft_76.xml"
 
@@ -436,8 +451,15 @@ def test_geometry_wing_toc():
 def test_geometry_wing_y():
     """Tests computation of the wing Ys"""
 
+    inputs_list = [
+        "data:geometry:wing:aspect_ratio",
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:wing:area",
+        "data:geometry:wing:kink:span_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingY()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingY(), ivc)
@@ -449,6 +471,8 @@ def test_geometry_wing_y():
     assert wing_y3 == pytest.approx(0.0, abs=1e-3)  # point 3 is virtual central point
     wing_y4 = problem.get_val("data:geometry:wing:tip:y", units="m")
     assert wing_y4 == pytest.approx(5.804, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_z():
@@ -470,8 +494,15 @@ def test_geometry_wing_z():
 def test_geometry_wing_l1_l4():
     """Tests computation of the wing chords (l1 and l4)"""
 
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:taper_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL1AndL4()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingL1AndL4(), ivc)
@@ -480,12 +511,21 @@ def test_geometry_wing_l1_l4():
     wing_l4 = problem.get_val("data:geometry:wing:tip:chord", units="m")
     assert wing_l4 == pytest.approx(1.455, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_l2_l3():
     """Tests computation of the wing chords (l2 and l3)"""
 
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:taper_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL2AndL3()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingL2AndL3(), ivc)
@@ -495,6 +535,8 @@ def test_geometry_wing_l2_l3():
     assert wing_l3 == pytest.approx(
         1.455, abs=1e-2
     )  # point 3 and 2 equal (previous version ignored)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_x():
@@ -622,7 +664,9 @@ def test_geometry_nacelle():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeNacelleDimension(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(ComputeNacelleDimension(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -715,7 +759,9 @@ def test_complete_geometry_FD():
     # Research independent input value in .xml file and add values calculated from other modules
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(
-        list_inputs(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -729,7 +775,9 @@ def test_complete_geometry_FL():
     # Research independent input value in .xml file and add values calculated from other modules
     # noinspection PyTypeChecker
     ivc = get_indep_var_comp(
-        list_inputs(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
+        list_inputs(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -737,3 +785,436 @@ def test_complete_geometry_FL():
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(80.932, abs=1e-3)
+
+
+def test_wing_tank_spans():
+    inputs_list = [
+        "data:geometry:propulsion:tank:y_ratio_tank_beginning",
+        "data:geometry:propulsion:tank:y_ratio_tank_end",
+        "data:geometry:wing:span",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankSpans(), ivc)
+    y_end = problem.get_val("data:geometry:propulsion:tank:y_end", units="m")
+    assert y_end == pytest.approx(5.338, rel=1e-3)
+    y_start = problem.get_val("data:geometry:propulsion:tank:y_beginning", units="m")
+    assert y_start == pytest.approx(2.437, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_y_array():
+    inputs_list = [
+        "data:geometry:propulsion:tank:y_beginning",
+        "data:geometry:propulsion:tank:y_end",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankYArray(), ivc)
+    y_wing_tank_array = problem.get_val("data:geometry:propulsion:tank:y_array", units="m")
+    assert y_wing_tank_array == pytest.approx(np.linspace(2.437, 5.338, 50), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_chord_array():
+    inputs_list = [
+        "data:geometry:wing:root:chord",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankChordArray(), ivc)
+    wing_tank_chord_array = problem.get_val("data:geometry:propulsion:tank:chord_array", units="m")
+    assert wing_tank_chord_array == pytest.approx(np.full(50, 1.454), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_relative_thickness_array():
+    inputs_list = [
+        "data:geometry:wing:root:thickness_ratio",
+        "data:geometry:wing:tip:thickness_ratio",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankRelativeThicknessArray(), ivc)
+    wing_tank_t_c_array = problem.get_val("data:geometry:propulsion:tank:relative_thickness_array")
+    assert wing_tank_t_c_array == pytest.approx(
+        [
+            0.15930484,
+            0.15865626,
+            0.15800769,
+            0.15735912,
+            0.15671055,
+            0.15606198,
+            0.15541341,
+            0.15476484,
+            0.15411627,
+            0.1534677,
+            0.15281913,
+            0.15217056,
+            0.15152199,
+            0.15087342,
+            0.15022485,
+            0.14957628,
+            0.14892771,
+            0.14827914,
+            0.14763057,
+            0.14698199,
+            0.14633342,
+            0.14568485,
+            0.14503628,
+            0.14438771,
+            0.14373914,
+            0.14309057,
+            0.142442,
+            0.14179343,
+            0.14114486,
+            0.14049629,
+            0.13984772,
+            0.13919915,
+            0.13855058,
+            0.13790201,
+            0.13725344,
+            0.13660487,
+            0.13595629,
+            0.13530772,
+            0.13465915,
+            0.13401058,
+            0.13336201,
+            0.13271344,
+            0.13206487,
+            0.1314163,
+            0.13076773,
+            0.13011916,
+            0.12947059,
+            0.12882202,
+            0.12817345,
+            0.12752488,
+        ],
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_thickness_array():
+    inputs_list = [
+        "data:geometry:propulsion:tank:chord_array",
+        "data:geometry:propulsion:tank:relative_thickness_array",
+        "settings:geometry:fuel_tanks:depth",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankThicknessArray(), ivc)
+    wing_tank_t_array = problem.get_val("data:geometry:propulsion:tank:thickness_array", units="m")
+    assert wing_tank_t_array == pytest.approx(
+        [
+            0.11582732,
+            0.11535576,
+            0.1148842,
+            0.11441264,
+            0.11394107,
+            0.11346951,
+            0.11299795,
+            0.11252638,
+            0.11205482,
+            0.11158326,
+            0.1111117,
+            0.11064013,
+            0.11016857,
+            0.10969701,
+            0.10922545,
+            0.10875388,
+            0.10828232,
+            0.10781076,
+            0.1073392,
+            0.10686763,
+            0.10639607,
+            0.10592451,
+            0.10545295,
+            0.10498138,
+            0.10450982,
+            0.10403826,
+            0.1035667,
+            0.10309513,
+            0.10262357,
+            0.10215201,
+            0.10168045,
+            0.10120888,
+            0.10073732,
+            0.10026576,
+            0.0997942,
+            0.09932263,
+            0.09885107,
+            0.09837951,
+            0.09790795,
+            0.09743638,
+            0.09696482,
+            0.09649326,
+            0.0960217,
+            0.09555013,
+            0.09507857,
+            0.09460701,
+            0.09413545,
+            0.09366388,
+            0.09319232,
+            0.09272076,
+        ],
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_width_array():
+    inputs_list = [
+        "data:geometry:propulsion:tank:chord_array",
+        "data:geometry:propulsion:tank:LE_chord_percentage",
+        "data:geometry:propulsion:tank:TE_chord_percentage",
+        "data:geometry:flap:chord_ratio",
+        "data:geometry:wing:aileron:chord_ratio",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankWidthArray(), ivc)
+    wing_tank_width_array = problem.get_val("data:geometry:propulsion:tank:width_array", units="m")
+    assert wing_tank_width_array == pytest.approx(np.full(50, 0.82887094), rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_reduced_width_array():
+    inputs_list = [
+        "data:geometry:propulsion:tank:width_array",
+        "data:geometry:propulsion:tank:y_array",
+        "data:geometry:propulsion:nacelle:width",
+        "data:geometry:landing_gear:type",
+        "data:geometry:landing_gear:y",
+        "data:geometry:propulsion:engine:layout",
+        "data:geometry:propulsion:engine:y_ratio",
+        "data:geometry:wing:span",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankReducedWidthArray(), ivc)
+    wing_tank_width_array = problem.get_val(
+        "data:geometry:propulsion:tank:reduced_width_array", units="m"
+    )
+    assert wing_tank_width_array == pytest.approx(
+        np.array(
+            [
+                0.41443547,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+                0.82887094,
+            ]
+        ),
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tank_cross_section_array():
+    inputs_list = [
+        "data:geometry:propulsion:tank:reduced_width_array",
+        "data:geometry:propulsion:tank:thickness_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTankCrossSectionArray(), ivc)
+    wing_tank_cross_section_array = problem.get_val(
+        "data:geometry:propulsion:tank:cross_section_array", units="m**2"
+    )
+    assert wing_tank_cross_section_array == pytest.approx(
+        np.array(
+            [
+                0.04080251,
+                0.08127278,
+                0.08094055,
+                0.08060831,
+                0.08027608,
+                0.07994384,
+                0.07961161,
+                0.07927937,
+                0.07894714,
+                0.0786149,
+                0.07828267,
+                0.07795043,
+                0.0776182,
+                0.07728596,
+                0.07695373,
+                0.07662149,
+                0.07628926,
+                0.07595702,
+                0.07562479,
+                0.07529255,
+                0.07496032,
+                0.07462809,
+                0.07429585,
+                0.07396362,
+                0.07363138,
+                0.07329915,
+                0.07296691,
+                0.07263468,
+                0.07230244,
+                0.07197021,
+                0.07163797,
+                0.07130574,
+                0.0709735,
+                0.07064127,
+                0.07030903,
+                0.0699768,
+                0.06964456,
+                0.06931233,
+                0.06898009,
+                0.06864786,
+                0.06831562,
+                0.06798339,
+                0.06765115,
+                0.06731892,
+                0.06698668,
+                0.06665445,
+                0.06632221,
+                0.06598998,
+                0.06565775,
+                0.06532551,
+            ]
+        ),
+        rel=1e-3,
+    )
+
+    problem.check_partials(compact_print=True)
+
+
+def test_wing_tanks_capacity():
+    inputs_list = [
+        "data:geometry:propulsion:tank:cross_section_array",
+        "data:geometry:propulsion:tank:y_array",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeWingTanksCapacity(), ivc)
+    wing_tanks_capacity = problem.get_val("data:geometry:propulsion:tank:capacity", units="m**3")
+    assert wing_tanks_capacity == pytest.approx(0.4238899477389617, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_mfw_from_wing_tanks_capacity():
+    inputs_list = [
+        "data:geometry:propulsion:tank:capacity",
+        "data:propulsion:fuel_type",
+    ]
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(ComputeMFWFromWingTanksCapacity(), ivc)
+    mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
+    assert mfw == pytest.approx(304.73, rel=1e-3)
+
+    problem.check_partials(compact_print=True)

@@ -11,6 +11,10 @@ output_file: ../results/oad_process_outputs.xml
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
 driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
+model_options:
+    "*":
+        number_points_wing_mfw: 40
+
 model:
     propeller:
         id: fastga.aerodynamics.propeller

@@ -61,7 +61,9 @@ def test_update_wing_area_group():
     assert_allclose(problem["data:geometry:wing:area"], 20.05, atol=1e-2)
     assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.61, atol=1e-2)
     assert_allclose(
-        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), -27, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"),
+        -27,
+        atol=1,
     )
     # not 0.0 because MFW not updated
 
@@ -82,7 +84,9 @@ def test_update_wing_area_group():
     assert_allclose(problem["data:geometry:wing:area"], 14.02, atol=1e-2)
     assert_allclose(problem["data:constraints:wing:additional_CL_capacity"], 0.0, atol=1e-2)
     assert_allclose(
-        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"), 273, atol=1
+        problem.get_val("data:constraints:wing:additional_fuel_capacity", units="kg"),
+        273,
+        atol=1,
     )
 
 
@@ -169,7 +173,9 @@ def test_advanced_geom():
     ivc_loop.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
 
     problem_loop = run_system(UpdateWingAreaGeomAdvanced(), ivc_loop)
-    assert_allclose(problem_loop["wing_area"], 21.72, atol=1e-2)
+    assert_allclose(problem_loop["wing_area"], 21.73, atol=1e-2)
+
+    problem_loop.check_partials(compact_print=True)
 
     ivc_cons = om.IndepVarComp()
     ivc_cons.add_output("data:propulsion:fuel_type", 1.0)
@@ -195,10 +201,12 @@ def test_advanced_geom():
     ivc_cons.add_output("data:geometry:landing_gear:y", val=1.5, units="m")
     ivc_cons.add_output("data:geometry:propulsion:nacelle:width", val=0.9291288709126333, units="m")
     ivc_cons.add_output("settings:geometry:fuel_tanks:depth", val=0.6)
-    ivc_cons.add_output("data:geometry:wing:area", val=21.72, units="m**2")
+    ivc_cons.add_output("data:geometry:wing:area", val=21.73, units="m**2")
 
     problem_cons = run_system(ConstraintWingAreaGeomAdvanced(), ivc_cons)
     assert_allclose(problem_cons["data:constraints:wing:additional_fuel_capacity"], 0.0, atol=1)
+
+    problem_cons.check_partials(compact_print=True)
 
 
 def test_advanced_cl():
@@ -272,7 +280,9 @@ def test_update_wing_position():
 
     problem = run_system(UpdateWingPosition(), ivc)
     assert_allclose(
-        problem.get_val("data:geometry:wing:MAC:at25percent:x", units="m"), 3.4550, atol=1e-3
+        problem.get_val("data:geometry:wing:MAC:at25percent:x", units="m"),
+        3.4550,
+        atol=1e-3,
     )
 
     problem.check_partials(compact_print=True)
