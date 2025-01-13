@@ -105,11 +105,24 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
 
         nlg_const = (0.048 - aircraft_type * 0.008) * (1.0 + 0.8 * carrier_based)
         mlg_const = (0.0117 - aircraft_type * 0.0012)
+        wing_config_factor = 1.0
+        if wing_config == 3.0:
+            wing_config_factor = 1.08
 
         if mlw < mtow / 2.0:
            partials["data:weight:airframe:landing_gear:main:mass","data:weight:aircraft:MLW"] = 0.0
            partials["data:weight:airframe:landing_gear:front:mass","data:weight:aircraft:MLW"] = 0.0
            mlw = mtow
+           if not is_retractable:
+
+           else:
+
+        else:
+
+            if not is_retractable:
+
+            else:
+
 
 
 
