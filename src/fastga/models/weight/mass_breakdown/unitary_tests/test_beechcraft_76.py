@@ -87,7 +87,16 @@ XML_FILE = "beechcraft_76.xml"
 
 def test_compute_payload():
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputePayload()), __file__, XML_FILE)
+    inputs_list = [
+        "data:TLAR:NPAX_design",
+        "data:geometry:cabin:seats:passenger:NPAX_max",
+        "data:geometry:cabin:luggage:mass_max",
+        "data:TLAR:luggage_mass_design",
+        "settings:weight:aircraft:payload:design_mass_per_passenger",
+        "settings:weight:aircraft:payload:max_mass_per_passenger",
+    ]
+
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputePayload(), ivc)

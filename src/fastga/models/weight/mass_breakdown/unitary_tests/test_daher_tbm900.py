@@ -15,6 +15,7 @@ Test module for mass breakdown functions.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
+import openmdao.api as om
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from .dummy_engines import ENGINE_WRAPPER_TBM900 as ENGINE_WRAPPER
@@ -660,6 +661,9 @@ def test_loop_compute_owe():
         ivc,
         check=True,
     )
+
+    om.n2(mass_computation)
+
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1648, abs=1)
 

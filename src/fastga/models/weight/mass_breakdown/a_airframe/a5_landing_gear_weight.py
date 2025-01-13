@@ -40,13 +40,16 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="lb")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:landing_gear:height", val=np.nan, units="inch")
+
         self.add_input("data:geometry:landing_gear:type", val=np.nan)
         self.add_input("data:geometry:wing_configuration", val=np.nan)
 
         self.add_output("data:weight:airframe:landing_gear:main:mass", units="lb")
         self.add_output("data:weight:airframe:landing_gear:front:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", ["data:weight:aircraft:MLW",
+                "data:weight:aircraft:MTOW",
+                "data:geometry:landing_gear:height",], method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]
@@ -89,3 +92,27 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         outputs["data:weight:airframe:landing_gear:front:mass"] = (
             nlg_weight * weight_reduction_factor
         )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        mlw = inputs["data:weight:aircraft:MLW"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        lg_height = inputs["data:geometry:landing_gear:height"]
+        is_retractable = inputs["data:geometry:landing_gear:type"]
+        wing_config = inputs["data:geometry:wing_configuration"]
+
+        carrier_based = 0.0
+        aircraft_type = 0.0  # One for fighter/attack aircraft
+
+        nlg_const = (0.048 - aircraft_type * 0.008) * (1.0 + 0.8 * carrier_based)
+        mlg_const = (0.0117 - aircraft_type * 0.0012)
+
+        if mlw < mtow / 2.0:
+           partials["data:weight:airframe:landing_gear:main:mass","data:weight:aircraft:MLW"] = 0.0
+           partials["data:weight:airframe:landing_gear:front:mass","data:weight:aircraft:MLW"] = 0.0
+           mlw = mtow
+
+
+
+
+
+

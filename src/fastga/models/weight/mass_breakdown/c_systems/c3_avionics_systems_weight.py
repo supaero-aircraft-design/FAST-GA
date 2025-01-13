@@ -45,7 +45,11 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="data:weight:systems:avionics:mass",
+            wrt=["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -62,6 +66,20 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
             c3 = 40 + 0.008 * mtow  # mass formula in lb
 
         outputs["data:weight:systems:avionics:mass"] = c3
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
+
+        if n_eng == 1.0:
+            partials["data:weight:systems:avionics:mass", "data:weight:aircraft:MTOW"] = 0.0
+            partials[
+                "data:weight:systems:avionics:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
+            ] = 33.0
+        else:
+            partials["data:weight:systems:avionics:mass", "data:weight:aircraft:MTOW"] = 0.008
+            partials[
+                "data:weight:systems:avionics:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
+            ] = 0.0
 
 
 @oad.RegisterSubmodel(

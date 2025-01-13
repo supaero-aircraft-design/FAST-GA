@@ -46,7 +46,24 @@ class ComputePayload(om.ExplicitComponent):
         self.add_output("data:weight:aircraft:payload", units="kg")
         self.add_output("data:weight:aircraft:max_payload", units="kg")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:weight:aircraft:payload",
+            [
+                "data:TLAR:NPAX_design",
+                "settings:weight:aircraft:payload:design_mass_per_passenger",
+                "data:TLAR:luggage_mass_design",
+            ],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:weight:aircraft:max_payload",
+            [
+                "data:geometry:cabin:seats:passenger:NPAX_max",
+                "settings:weight:aircraft:payload:max_mass_per_passenger",
+                "data:geometry:cabin:luggage:mass_max",
+            ],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax_design = inputs["data:TLAR:NPAX_design"] + 2.0  # addition of 2 pilots
@@ -60,3 +77,21 @@ class ComputePayload(om.ExplicitComponent):
 
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
         outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        partials["data:weight:aircraft:payload", "data:TLAR:luggage_mass_design"] = 1.0
+        partials["data:weight:aircraft:max_payload", "data:geometry:cabin:luggage:mass_max"] = 1.0
+        partials[
+            "data:weight:aircraft:payload",
+            "settings:weight:aircraft:payload:design_mass_per_passenger",
+        ] = inputs["data:TLAR:NPAX_design"] + 2.0
+        partials["data:weight:aircraft:payload", "data:TLAR:NPAX_design"] = inputs[
+            "settings:weight:aircraft:payload:design_mass_per_passenger"
+        ]
+        partials[
+            "data:weight:aircraft:max_payload", "data:geometry:cabin:seats:passenger:NPAX_max"
+        ] = inputs["settings:weight:aircraft:payload:max_mass_per_passenger"]
+        partials[
+            "data:weight:aircraft:max_payload",
+            "settings:weight:aircraft:payload:max_mass_per_passenger",
+        ] = inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0

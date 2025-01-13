@@ -40,7 +40,16 @@ class ComputePowerSystemsWeight(ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:mass", units="lb")
         self.add_output("data:weight:systems:power:hydraulic_systems:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            "data:weight:systems:power:electric_systems:mass",
+            ["data:weight:propulsion:fuel_lines:mass", "data:weight:systems:avionics:mass"],
+            method="exact",
+        )
+        self.declare_partials(
+            "data:weight:systems:power:hydraulic_systems:mass",
+            "data:weight:aircraft:MTOW",
+            val=0.007,
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -52,3 +61,15 @@ class ComputePowerSystemsWeight(ExplicitComponent):
 
         outputs["data:weight:systems:power:electric_systems:mass"] = c12
         outputs["data:weight:systems:power:hydraulic_systems:mass"] = c13
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        m_fuel_lines = inputs["data:weight:propulsion:fuel_lines:mass"]
+        m_iae = inputs["data:weight:systems:avionics:mass"]
+
+        partials[
+            "data:weight:systems:power:electric_systems:mass",
+            "data:weight:propulsion:fuel_lines:mass",
+        ] = 217.26 / (1000 * ((m_fuel_lines + m_iae) / 1000) ** 0.49)
+        partials[
+            "data:weight:systems:power:electric_systems:mass", "data:weight:systems:avionics:mass"
+        ] = 217.26 / (1000 * ((m_fuel_lines + m_iae) / 1000) ** 0.49)
