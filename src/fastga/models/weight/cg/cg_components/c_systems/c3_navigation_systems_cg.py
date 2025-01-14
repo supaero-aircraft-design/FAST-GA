@@ -31,7 +31,7 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lav = inputs["data:geometry:fuselage:front_length"]
