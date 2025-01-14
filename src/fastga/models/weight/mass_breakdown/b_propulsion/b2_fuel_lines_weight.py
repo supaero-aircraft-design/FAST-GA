@@ -110,7 +110,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
             * 0.5**0.363
             * tank_nb**0.242
             * 0.157
-            * engine_nb**0.843
+            * engine_nb**-0.843
         )
 
 

@@ -70,3 +70,5 @@ def test_compute_fuselage_mass_analytical():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuselageMassAnalytical(), ivc)
     assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(240.12, abs=1e-2)
+
+    problem.check_partials(compact_print=True)

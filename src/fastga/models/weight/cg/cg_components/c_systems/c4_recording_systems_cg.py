@@ -42,4 +42,3 @@ class ComputeRecordingSystemsCG(ExplicitComponent):
         aircraft_length = inputs["data:geometry:fuselage:length"]
 
         outputs["data:weight:systems:recording:CG:x"] = aircraft_length - lar / 2.0
-

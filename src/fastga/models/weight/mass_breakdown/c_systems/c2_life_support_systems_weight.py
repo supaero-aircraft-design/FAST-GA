@@ -236,8 +236,9 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         m_iae = inputs["data:weight:systems:avionics:mass"]
         limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        fus_width = inputs["data:geometry:fuselage:maximum_height"]
-        fus_height = inputs["data:geometry:fuselage:maximum_width"]
+        #TODO: Should I change it back?
+        fus_height = inputs["data:geometry:fuselage:maximum_height"]
+        fus_width = inputs["data:geometry:fuselage:maximum_width"]
 
         span = inputs["data:geometry:wing:span"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -274,8 +275,8 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         outputs["data:weight:systems:life_support:security_kits:mass"] = 0.0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        fus_width = inputs["data:geometry:fuselage:maximum_height"]
-        fus_height = inputs["data:geometry:fuselage:maximum_width"]
+        fus_height = inputs["data:geometry:fuselage:maximum_height"]
+        fus_width = inputs["data:geometry:fuselage:maximum_width"]
         fus_length = inputs["data:geometry:fuselage:length"]
 
         fus_planform = fus_width * fus_length

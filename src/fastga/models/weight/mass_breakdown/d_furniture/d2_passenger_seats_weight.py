@@ -56,7 +56,7 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
 
         partials["data:weight:furniture:passenger_seats:mass", "data:weight:aircraft:MTOW"] = (
-            0.20147 * n_occ**1.145
+            0.412*0.489* n_occ**1.145
         ) / mtow**0.511
 
         partials[

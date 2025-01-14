@@ -1153,7 +1153,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         self.declare_partials(
             of="data:weight:airframe:horizontal_tail:mass",
             wrt=[
-                "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+                "data:geometry:horizontal_tail:area",
                 "data:weight:airframe:horizontal_tail:k_factor",
                 "data:mission:sizing:cs23:characteristic_speed:vd",
                 "data:geometry:horizontal_tail:sweep_25",
