@@ -94,6 +94,7 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
+
         mlw = inputs["data:weight:aircraft:MLW"]
         mtow = inputs["data:weight:aircraft:MTOW"]
         lg_height = inputs["data:geometry:landing_gear:height"]
@@ -103,25 +104,335 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         carrier_based = 0.0
         aircraft_type = 0.0  # One for fighter/attack aircraft
 
-        nlg_const = (0.048 - aircraft_type * 0.008) * (1.0 + 0.8 * carrier_based)
-        mlg_const = (0.0117 - aircraft_type * 0.0012)
-        wing_config_factor = 1.0
-        if wing_config == 3.0:
-            wing_config_factor = 1.08
-
         if mlw < mtow / 2.0:
-           partials["data:weight:airframe:landing_gear:main:mass","data:weight:aircraft:MLW"] = 0.0
-           partials["data:weight:airframe:landing_gear:front:mass","data:weight:aircraft:MLW"] = 0.0
-           mlw = mtow
-           if not is_retractable:
+            mlw = mtow
 
-           else:
+            mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw ** 0.95 * lg_height ** 0.43
+            nlg_weight = (
+                    (0.048 - aircraft_type * 0.008)
+                    * mlw ** 0.67
+                    * lg_height ** 0.43
+                    * (1.0 + 0.8 * carrier_based)
+            )
+            lg_weight = mlg_weight + nlg_weight
 
-        else:
+            d_nlg_weight_d_mtow = (
+                    -(
+                            0.67
+                            * lg_height ** 0.43
+                            * (0.008 * aircraft_type - 0.048)
+                            * (0.8 * carrier_based + 1.0)
+                    )
+                    / mtow ** 0.33
+            )
+            d_mlg_weight_d_mtow = (
+                    -(0.95 * lg_height ** 0.43 * (0.0012 * aircraft_type - 0.0117)) / mtow ** 0.05
+            )
+            d_lg_weight_d_mtow = d_nlg_weight_d_mtow + d_mlg_weight_d_mtow
+
+            d_nlg_height_d_lg_height = (
+                    -(
+                            0.43
+                            * mtow ** 0.67
+                            * (0.008 * aircraft_type - 0.048)
+                            * (0.8 * carrier_based + 1.0)
+                    )
+                    / lg_height ** 0.57
+            )
+            d_mlg_height_d_lg_height = (
+                    -(0.43 * mtow ** 0.95 * (0.0012 * aircraft_type - 0.0117)) / lg_height ** 0.57
+            )
 
             if not is_retractable:
+                weight_reduction = 1.4 * mtow / 100.0
+                weight_reduction_factor = (mlg_weight + nlg_weight - weight_reduction) / (
+                        mlg_weight + nlg_weight
+                )
 
+                d_weight_reduction_d_mtow = 1.4 / 100.0
+                d_weight_reduction_factor_d_mtow = (
+                        -(d_weight_reduction_d_mtow * lg_weight - weight_reduction * d_lg_weight_d_mtow)
+                        / lg_weight ** 2.0
+                )
+
+                d_weight_reduction_factor_d_lg_height = (
+                        weight_reduction
+                        * (d_nlg_height_d_lg_height + d_mlg_height_d_lg_height)
+                        / lg_weight ** 2.0
+                )
+
+                if wing_config == 3.0:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * d_nlg_weight_d_mtow) * weight_reduction_factor + (
+                            1.08 * nlg_weight
+                    ) * d_weight_reduction_factor_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (1.08 * d_nlg_height_d_lg_height) * weight_reduction_factor + (
+                            1.08 * nlg_weight
+                    ) * d_weight_reduction_factor_d_lg_height
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * d_mlg_weight_d_mtow) * weight_reduction_factor + (
+                            1.08 * mlg_weight
+                    ) * d_weight_reduction_factor_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (1.08 * d_mlg_height_d_lg_height) * weight_reduction_factor + (
+                            1.08 * mlg_weight
+                    ) * d_weight_reduction_factor_d_lg_height
+                else:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = (
+                            d_nlg_weight_d_mtow * weight_reduction_factor
+                            + nlg_weight * d_weight_reduction_factor_d_mtow
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            d_nlg_height_d_lg_height * weight_reduction_factor
+                            + nlg_weight * d_weight_reduction_factor_d_lg_height
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = (
+                            d_mlg_weight_d_mtow * weight_reduction_factor
+                            + mlg_weight * d_weight_reduction_factor_d_mtow
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            d_mlg_height_d_lg_height * weight_reduction_factor
+                            + mlg_weight * d_weight_reduction_factor_d_lg_height
+                    )
             else:
+                if wing_config == 3.0:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * d_nlg_weight_d_mtow)
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            1.08 * d_nlg_height_d_lg_height
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * d_mlg_weight_d_mtow)
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            1.08 * d_mlg_height_d_lg_height
+                    )
+                else:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = d_nlg_weight_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = d_nlg_height_d_lg_height
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = d_mlg_weight_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = d_mlg_height_d_lg_height
+        else:
+            mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw ** 0.95 * lg_height ** 0.43
+            nlg_weight = (
+                    (0.048 - aircraft_type * 0.008)
+                    * mlw ** 0.67
+                    * lg_height ** 0.43
+                    * (1.0 + 0.8 * carrier_based)
+            )
+            lg_weight = mlg_weight + nlg_weight
+
+            d_nlg_weight_d_mlw = (
+                    -(
+                            0.67
+                            * lg_height ** 0.43
+                            * (0.008 * aircraft_type - 0.048)
+                            * (0.8 * carrier_based + 1.0)
+                    )
+                    / mlw ** 0.33
+            )
+            d_mlg_weight_d_mlw = (
+                    -(0.95 * lg_height ** 0.43 * (0.0012 * aircraft_type - 0.0117)) / mlw ** 0.05
+            )
+
+            d_nlg_height_d_lg_height = (
+                    -(
+                            0.43
+                            * mlw ** 0.67
+                            * (0.008 * aircraft_type - 0.048)
+                            * (0.8 * carrier_based + 1.0)
+                    )
+                    / lg_height ** 0.57
+            )
+            d_mlg_height_d_lg_height = (
+                    -(0.43 * mlw ** 0.95 * (0.0012 * aircraft_type - 0.0117)) / lg_height ** 0.57
+            )
+
+            if not is_retractable:
+                weight_reduction = 1.4 * mtow / 100.0
+                weight_reduction_factor = (mlg_weight + nlg_weight - weight_reduction) / (
+                        mlg_weight + nlg_weight
+                )
+
+                d_weight_reduction_factor_d_mlw = (
+                        weight_reduction * (d_nlg_weight_d_mlw + d_mlg_weight_d_mlw) / lg_weight ** 2.0
+                )
+
+                d_weight_reduction_d_mtow = -1.4 / (100.0 * lg_weight)
+
+                d_weight_reduction_factor_d_lg_height = (
+                        weight_reduction
+                        * (d_nlg_height_d_lg_height + d_mlg_height_d_lg_height)
+                        / lg_weight ** 2.0
+                )
+
+                if wing_config == 3.0:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = (1.08 * d_nlg_weight_d_mlw) * weight_reduction_factor + (
+                            1.08 * nlg_weight
+                    ) * d_weight_reduction_factor_d_mlw
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * nlg_weight) * d_weight_reduction_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (1.08 * d_nlg_height_d_lg_height) * weight_reduction_factor + (
+                            1.08 * nlg_weight
+                    ) * d_weight_reduction_factor_d_lg_height
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = (1.08 * d_mlg_weight_d_mlw) * weight_reduction_factor + (
+                            1.08 * mlg_weight
+                    ) * d_weight_reduction_factor_d_mlw
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = (1.08 * mlg_weight) * d_weight_reduction_d_mtow
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (1.08 * d_mlg_height_d_lg_height) * weight_reduction_factor + (
+                            1.08 * mlg_weight
+                    ) * d_weight_reduction_factor_d_lg_height
+                else:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = (
+                            d_nlg_weight_d_mlw * weight_reduction_factor
+                            + nlg_weight * d_weight_reduction_factor_d_mlw
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = (nlg_weight * d_weight_reduction_d_mtow)
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            d_nlg_height_d_lg_height * weight_reduction_factor
+                            + nlg_weight * d_weight_reduction_factor_d_lg_height
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = (
+                            d_mlg_weight_d_mlw * weight_reduction_factor
+                            + mlg_weight * d_weight_reduction_factor_d_mlw
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = (mlg_weight * d_weight_reduction_d_mtow)
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            d_mlg_height_d_lg_height * weight_reduction_factor
+                            + mlg_weight * d_weight_reduction_factor_d_lg_height
+                    )
+            else:
+                if wing_config == 3.0:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = (1.08 * d_nlg_weight_d_mlw)
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            1.08 * d_nlg_height_d_lg_height
+                    )
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = (1.08 * d_mlg_weight_d_mlw)
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = (
+                            1.08 * d_mlg_height_d_lg_height
+                    )
+                else:
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MLW"
+                    ] = d_nlg_weight_d_mlw
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass", "data:weight:aircraft:MTOW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:front:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = d_nlg_height_d_lg_height
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MLW"
+                    ] = d_mlg_weight_d_mlw
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass", "data:weight:aircraft:MTOW"
+                    ] = 0.0
+                    partials[
+                        "data:weight:airframe:landing_gear:main:mass",
+                        "data:geometry:landing_gear:height",
+                    ] = d_mlg_height_d_lg_height
 
 
 
