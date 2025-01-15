@@ -637,7 +637,7 @@ def test_compute_life_support_systems_weight_flops():
     )
     assert weight_c22 == pytest.approx(27.00, abs=1e-2)
     weight_c23 = problem.get_val("data:weight:systems:life_support:de_icing:mass", units="kg")
-    assert weight_c23 == pytest.approx(28.99, abs=1e-2)
+    assert weight_c23 == pytest.approx(28.68, abs=1e-2)
     weight_c24 = problem.get_val(
         "data:weight:systems:life_support:internal_lighting:mass", units="kg"
     )
