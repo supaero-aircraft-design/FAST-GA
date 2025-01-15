@@ -301,7 +301,6 @@ def test_compute_fuselage_mass_analytical():
     assert problem["data:weight:airframe:fuselage:mass"] == pytest.approx(421.31, abs=1e-2)
 
 
-
 def test_compute_empennage_weight():
     """Tests empennage weight computation from sample XML data."""
     # Research independent input value in .xml file
@@ -468,7 +467,6 @@ def test_compute_fuel_lines_weight():
     assert weight_b2 == pytest.approx(63.03, abs=1e-2)
 
     problem.check_partials(compact_print=True)
-
 
 
 def test_compute_fuel_lines_weight_flops():
