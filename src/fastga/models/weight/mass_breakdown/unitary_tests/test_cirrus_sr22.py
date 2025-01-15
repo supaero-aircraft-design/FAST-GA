@@ -261,8 +261,11 @@ def test_compute_insulation_mass():
 def test_compute_floor_mass():
     """Tests fuselage floor weight computation from sample XML data."""
     # Research independent input value in .xml file
-    inputs_list = ["data:geometry:fuselage:maximum_width", "data:geometry:cabin:length",
-                   "settings:weight:airframe:fuselage:floor:area_density"]
+    inputs_list = [
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:cabin:length",
+        "settings:weight:airframe:fuselage:floor:area_density",
+    ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -273,8 +276,11 @@ def test_compute_floor_mass():
 def test_compute_nlg_hatch_mass():
     """Tests NLG hatch weight computation from sample XML data."""
     # Research independent input value in .xml file
-    inputs_list = ["data:geometry:landing_gear:height", "data:geometry:cabin:pressurized",
-                   "data:weight:airframe:fuselage:shell:area_density"]
+    inputs_list = [
+        "data:geometry:landing_gear:height",
+        "data:geometry:cabin:pressurized",
+        "data:weight:airframe:fuselage:shell:area_density",
+    ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11, units="kg/m**2")
 
@@ -292,7 +298,7 @@ def test_compute_doors_mass():
         "data:geometry:cabin:doors:width",
         "data:geometry:cabin:max_differential_pressure",
         "data:weight:airframe:fuselage:shell:area_density",
-        "data:geometry:cabin:pressurized"
+        "data:geometry:cabin:pressurized",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:fuselage:shell:area_density", val=2.11, units="kg/m**2")
@@ -310,7 +316,7 @@ def test_compute_wing_fuselage_connection_mass():
         "data:mission:landing:cs23:sizing_factor:ultimate_aircraft",
         "data:weight:aircraft:MTOW",
         "data:geometry:cabin:pressurized",
-        "data:geometry:wing_configuration"
+        "data:geometry:wing_configuration",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -341,7 +347,7 @@ def test_compute_bulkhead_mass():
         "data:geometry:fuselage:maximum_width",
         "data:geometry:fuselage:maximum_height",
         "data:geometry:cabin:max_differential_pressure",
-        "data:geometry:cabin:pressurized"
+        "data:geometry:cabin:pressurized",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -448,7 +454,7 @@ def test_compute_flight_controls_weight():
         "data:weight:aircraft:MTOW",
         "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         "data:geometry:wing:span",
-        "data:geometry:fuselage:length"
+        "data:geometry:fuselage:length",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -468,7 +474,7 @@ def test_compute_flight_controls_weight_flops():
         "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         "data:mission:sizing:cs23:characteristic_speed:vd",
         "data:mission:sizing:main_route:cruise:altitude",
-        "data:geometry:wing:area"
+        "data:geometry:wing:area",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -488,7 +494,7 @@ def test_compute_landing_gear_weight():
         "data:weight:aircraft:MTOW",
         "data:geometry:landing_gear:height",
         "data:geometry:landing_gear:type",
-        "data:geometry:wing_configuration"
+        "data:geometry:wing_configuration",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -505,7 +511,10 @@ def test_compute_landing_gear_weight():
 def test_compute_paint_weight():
     """Tests landing gear weight computation from sample XML data."""
     # Research independent input value in .xml file
-    inputs_list = ["data:geometry:aircraft:wet_area", "settings:weight:airframe:paint:surface_density"]
+    inputs_list = [
+        "data:geometry:aircraft:wet_area",
+        "settings:weight:airframe:paint:surface_density",
+    ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -574,7 +583,7 @@ def test_compute_fuel_lines_weight():
     inputs_list = [
         "data:geometry:propulsion:engine:count",
         "data:weight:aircraft:MFW",
-        "data:propulsion:fuel_type"
+        "data:propulsion:fuel_type",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -637,7 +646,7 @@ def test_compute_avionics_systems_weight():
     inputs_list = [
         "data:weight:aircraft:MTOW",
         "data:geometry:propulsion:engine:count",
-        "data:geometry:cabin:seats:passenger:NPAX_max"
+        "data:geometry:cabin:seats:passenger:NPAX_max",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -653,9 +662,7 @@ def test_compute_avionics_systems_weight_from_uninstalled():
     """Tests navigation systems weight computation from sample XML data"""
 
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(
-        ["data:weight:systems:avionics:mass_uninstalled"], __file__, XML_FILE
-    )
+    ivc = get_indep_var_comp(["data:weight:systems:avionics:mass_uninstalled"], __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeAvionicsSystemsWeightFromUninstalled(), ivc)
@@ -672,7 +679,7 @@ def test_compute_power_systems_weight():
     inputs_list = [
         "data:weight:aircraft:MTOW",
         "data:weight:propulsion:fuel_lines:mass",
-        "data:weight:systems:avionics:mass"
+        "data:weight:systems:avionics:mass",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -695,7 +702,7 @@ def test_compute_life_support_systems_weight():
         "data:geometry:cabin:seats:passenger:NPAX_max",
         "data:weight:systems:avionics:mass",
         "data:mission:sizing:cs23:characteristic_speed:vd",
-        "data:mission:sizing:main_route:cruise:altitude"
+        "data:mission:sizing:main_route:cruise:altitude",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -935,7 +942,7 @@ def test_compute_misc_mass():
     inputs_list = [
         "data:geometry:wing:area",
         "data:geometry:propulsion:engine:count",
-        "settings:wing:structure:F_COMP"
+        "settings:wing:structure:F_COMP",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -974,7 +981,10 @@ def test_compute_primary_mass():
 
 def test_compute_secondary_mass():
     # Research independent input value in .xml file
-    inputs_list = ["data:weight:airframe:wing:primary_structure:mass", "settings:wing:structure:secondary_mass_ratio"]
+    inputs_list = [
+        "data:weight:airframe:wing:primary_structure:mass",
+        "settings:wing:structure:secondary_mass_ratio",
+    ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=136.662, units="kg")
 
@@ -987,8 +997,10 @@ def test_compute_secondary_mass():
 
 def test_update_wing_mass():
     # Research independent input value in .xml file
-    inputs_list = ["data:weight:airframe:wing:primary_structure:mass",
-                   "data:weight:airframe:wing:secondary_structure:mass"]
+    inputs_list = [
+        "data:weight:airframe:wing:primary_structure:mass",
+        "data:weight:airframe:wing:secondary_structure:mass",
+    ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=136.662, units="kg")
     ivc.add_output("data:weight:airframe:wing:secondary_structure:mass", val=45.554, units="kg")
