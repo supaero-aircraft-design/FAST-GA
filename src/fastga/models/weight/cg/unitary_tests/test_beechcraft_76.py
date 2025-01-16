@@ -159,6 +159,8 @@ def test_compute_cg_power_systems():
     x_cg_c13 = problem.get_val("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
     assert x_cg_c13 == pytest.approx(3.32, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_cg_life_support_systems():
     """Tests computation of life support systems center of gravity."""
