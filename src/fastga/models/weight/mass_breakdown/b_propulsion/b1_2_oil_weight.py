@@ -41,7 +41,7 @@ class ComputeOilWeight(ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine_oil:mass", units="lb")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_eng = inputs["data:geometry:propulsion:engine:count"]
@@ -60,19 +60,3 @@ class ComputeOilWeight(ExplicitComponent):
         b1_2 = 0.082 * n_eng * sl_thrust_lbs**0.65
 
         outputs["data:weight:propulsion:engine_oil:mass"] = b1_2
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        propulsion_model = self._engine_wrapper.get_model(inputs)
-
-        flight_point = oad.FlightPoint(
-            mach=0.0, altitude=0.0, engine_setting=EngineSetting.TAKEOFF, thrust_rate=1.0
-        )  # with engine_setting as EngineSetting
-        propulsion_model.compute_flight_points(flight_point)
-
-        # This should give the UNINSTALLED weight
-        sl_thrust_newton = float(flight_point.thrust)
-        sl_thrust_lbs = sl_thrust_newton / lbf
-
-        partials[
-            "data:weight:propulsion:engine_oil:mass", "data:geometry:propulsion:engine:count"
-        ] = 0.082 * sl_thrust_lbs**0.65

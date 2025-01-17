@@ -50,7 +50,11 @@ class ComputeEngineWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="fd")
+        # Overwrites the derivatives because we know the exact value
+        self.declare_partials(
+            of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
@@ -102,7 +106,11 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
-        self.declare_partials("*", "*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="fd")
+        # Overwrites the derivatives because we know the exact value
+        self.declare_partials(
+            of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)

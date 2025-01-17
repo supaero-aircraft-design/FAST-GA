@@ -123,7 +123,8 @@ class ComputeWingWeight(om.ExplicitComponent):
                 * (1.0 + v_max_sl / 500.0) ** 0.5
             )
             ** 0.993
-            * (1.0 + taper_ratio) ** -0.64252 * (2.0 * thickness_ratio) ** -0.35748
+            * (1.0 + taper_ratio) ** -0.64252
+            * (2.0 * thickness_ratio) ** -0.35748
         ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:geometry:wing:thickness_ratio"] = (
             -96.948
@@ -187,7 +188,9 @@ class ComputeWingWeight(om.ExplicitComponent):
                 * ((1.0 + taper_ratio) / (2.0 * thickness_ratio)) ** 0.36
             )
             ** 0.993
-            * 0.4965 / 500.0 * (1.0 + v_max_sl / 500.0) ** -0.5035
+            * 0.4965
+            / 500.0
+            * (1.0 + v_max_sl / 500.0) ** -0.5035
         ) * k_factor
         partials["data:weight:airframe:wing:mass", "data:weight:airframe:wing:k_factor"] = (
             96.948

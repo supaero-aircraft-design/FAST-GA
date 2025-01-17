@@ -17,7 +17,7 @@ import logging
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
+from stdatm import Atmosphere, AtmosphereWithPartials
 
 from .constants import SUBMODEL_FUSELAGE_MASS
 
@@ -104,73 +104,63 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             "data:weight:airframe:fuselage:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = k_factor * (
-            (
-                2.0643e-4
-                * mtow
-                * (0.32808 * fus_length) ** 0.857
-                * (0.01 * v_max_sl) ** 0.338
+            200.0
+            * 0.3146
+            * (
+                (mtow / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * (
-                    0.32808
-                    * (0.32808 * fus_length) ** 0.857
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                )
-                ** 0.1
+                * 3.28084
+                / 10.0
+                * (v_max_sl / 100.0) ** 0.338
             )
-            / (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.714
+            ** 1.1
+            * sizing_factor_ultimate**-0.6854
         )
         partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = k_factor * (
-            (
-                2.0643e-4
-                * sizing_factor_ultimate
-                * (0.32808 * fus_length) ** 0.857
-                * (0.01 * v_max_sl) ** 0.338
+            200.0
+            * 0.3146
+            * (
+                (sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * (
-                    0.32808
-                    * (0.32808 * fus_length) ** 0.857
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                )
-                ** 0.1
+                * 3.28084
+                / 10.0
+                * (v_max_sl / 100.0) ** 0.338
             )
-            / (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.714
+            ** 1.1
+            * mtow**-0.6854
         )
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"] = (
             k_factor
             * (
-                72.17848
-                * (0.328084 * fus_length) ** 0.857
-                * (0.01 * v_max_sl) ** 0.338
-                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
+                200.0
+                * 1.1
                 * (
-                    0.328084
-                    * (0.328084 * fus_length) ** 0.857
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
+                    (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                    * (fus_length * 3.28084 / 10.0) ** 0.857
+                    * 3.28084
+                    / 10.0
+                    * (v_max_sl / 100.0) ** 0.338
                 )
-                ** 0.1
+                ** 1.1
+                * (maximum_width + maximum_height) ** 0.1
             )
         )
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"] = (
             k_factor
             * (
-                72.17848
-                * (0.328084 * fus_length) ** 0.857
-                * (0.01 * v_max_sl) ** 0.338
-                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
+                200.0
+                * 1.1
                 * (
-                    0.328084
-                    * (0.328084 * fus_length) ** 0.857
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
+                    (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                    * (fus_length * 3.28084 / 10.0) ** 0.857
+                    * 3.28084
+                    / 10.0
+                    * (v_max_sl / 100.0) ** 0.338
                 )
-                ** 0.1
+                ** 1.1
+                * (maximum_width + maximum_height) ** 0.1
             )
         )
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
@@ -194,24 +184,29 @@ class ComputeFuselageWeight(om.ExplicitComponent):
             )
         )
         partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_max_sl"] = k_factor * (
-            (
-                0.24396
-                * (0.32808 * fus_length) ** 0.857
+            200.0
+            * 0.3718
+            * (
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                * (
-                    0.32808
-                    * (0.32808 * fus_length) ** 0.857
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                )
-                ** 0.1
+                * 0.328084
+                * 100.0**-0.338
             )
-            / (0.01 * v_max_sl) ** 0.662
+            ** 1.1
+            * v_max_sl**-0.6282
         )
         partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
-            a2
+            200.0
+            * (
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 3.28084
+                / 10.0
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
         )
 
 
@@ -249,23 +244,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         self.declare_partials(
             of="*",
-            wrt=[
-                "data:geometry:fuselage:length",
-                "data:geometry:fuselage:front_length",
-                "data:geometry:fuselage:rear_length",
-                "data:geometry:fuselage:maximum_width",
-                "data:geometry:fuselage:maximum_height",
-                "data:geometry:fuselage:wet_area",
-                "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
-                "data:weight:aircraft:MTOW",
-                "data:weight:airframe:fuselage:k_factor",
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-                "data:TLAR:v_cruise",
-            ],
+            wrt="*",
             method="exact",
-        )
-        self.declare_partials(
-            of="*", wrt="data:mission:sizing:main_route:cruise:altitude", method="fd", step=1.0e2
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -289,13 +269,13 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
+        alt_const = 0.0
         if cruise_alt > 10000.0:
-            fus_dia = (maximum_height + maximum_width) / 2.0
-            v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
-            delta_p = (pressure_sl - pressure_cruise) * 0.000145038
-        else:
-            v_press = 0.0
-            delta_p = 0.0
+            alt_const = 1.0
+
+        fus_dia = (maximum_height + maximum_width) / 2.0
+        v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
+        delta_p = (pressure_sl - pressure_cruise) * 0.000145038
 
         a2 = 0.052 * (
             wet_area_fus**1.086
@@ -303,7 +283,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             * lp_ht ** (-0.051)
             * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
             * dynamic_pressure**0.241
-            + 11.9 * (v_press * delta_p) ** 0.271
+            + 11.9 * (v_press * delta_p) ** 0.271 * alt_const
         )
 
         outputs["data:weight:airframe:fuselage:mass"] = (
@@ -332,292 +312,213 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         pressure_sl = atm_sl.pressure
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
+        fus_dia = (maximum_height + maximum_width) / 2.0
+        v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
+        delta_p = (pressure_sl - pressure_cruise) * 0.000145038
+
+        alt_const = 0.0
 
         if cruise_alt > 10000.0:
-            fus_dia = (maximum_height + maximum_width) / 2.0
-            v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
-            delta_p = (pressure_sl - pressure_cruise) * 0.000145038
-        else:
-            v_press = 0.0
-            delta_p = 0.0
+            alt_const = 1.0
 
-        a2 = 0.052 * (
-            wet_area_fus**1.086
-            * (sizing_factor_ultimate * mtow) ** 0.177
-            * lp_ht ** (-0.051)
-            * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
-            * dynamic_pressure**0.241
-            + 11.9 * (v_press * delta_p) ** 0.271
+        partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+                + 11.9 * (v_press * delta_p) ** 0.271 * alt_const
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * -0.072
+                    * (fus_length - lar - lav) ** (-1.072)
+                    * maximum_height**0.072
+                    * dynamic_pressure**0.241
+                    + 11.9
+                    * alt_const
+                    * 0.271
+                    * (fus_length - lar - lav) ** -0.729
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
+                )
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * maximum_height**0.072
+                    * 0.072
+                    * (fus_length - lar - lav) ** -1.072
+                    * dynamic_pressure**0.241
+                    - 11.9
+                    * alt_const
+                    * 0.271
+                    * (fus_length - lar - lav) ** (-0.729)
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
+                )
+            )
         )
 
-        if cruise_alt > 10000.0:
-            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
-                k_factor
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:rear_length"] = (
+            k_factor
+            * (
+                0.052
                 * (
-                    (
-                        0.52683
-                        * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                        * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    )
-                    / (
-                        -3.1416
-                        * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                        * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                        * (lar - 1.0 * fus_length + lav)
-                    )
-                    ** 0.729
-                    - (
-                        0.003744
-                        * dynamic_pressure**0.241
-                        * wet_area_fus**1.086
-                        * (mtow * sizing_factor_ultimate) ** 0.177
-                    )
-                    / (
-                        lp_ht**0.051
-                        * maximum_height
-                        * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                    )
-                )
-            )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"
-            ] = k_factor * (
-                (
-                    0.003744
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * maximum_height**0.072
+                    * 0.072
+                    * (fus_length - lar - lav) ** -1.072
                     * dynamic_pressure**0.241
-                    * wet_area_fus**1.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                )
-                / (
-                    lp_ht**0.051
-                    * maximum_height
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                )
-                - (
-                    0.52683
-                    * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                )
-                / (
-                    -3.1416
-                    * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                ** 0.729
-            )
-            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:rear_length"] = (
-                k_factor
-                * (
-                    (
-                        0.003744
-                        * dynamic_pressure**0.241
-                        * wet_area_fus**1.086
-                        * (mtow * sizing_factor_ultimate) ** 0.177
-                    )
-                    / (
-                        lp_ht**0.051
-                        * maximum_height
-                        * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                    )
-                    - (
-                        0.52683
-                        * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                        * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    )
-                    / (
-                        -3.1416
-                        * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                        * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                        * (lar - 1.0 * fus_length + lav)
-                    )
-                    ** 0.729
+                    - 11.9
+                    * alt_const
+                    * 0.271
+                    * (fus_length - lar - lav) ** (-0.729)
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
                 )
             )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"
-            ] = k_factor * (
-                -(
-                    0.52683
-                    * (0.125 * maximum_width + 0.125 * maximum_height)
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                / (
-                    -3.1416
-                    * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                ** 0.729
-            )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"
-            ] = k_factor * (
-                -(
-                    0.52683
-                    * (0.125 * maximum_width + 0.125 * maximum_height)
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                / (
-                    -3.1416
-                    * (0.25 * maximum_width + 0.25 * maximum_height) ** 2
-                    * (0.00014504 * pressure_sl - 0.00014504 * pressure_cruise)
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                ** 0.729
-                - (
-                    0.003744
-                    * dynamic_pressure**0.241
-                    * wet_area_fus**1.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                / (
-                    lp_ht**0.051
-                    * maximum_height**2
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                )
-            )
+        )
 
-        else:
-            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
-                k_factor
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"] = (
+            k_factor
+            * 0.052
+            * alt_const
+            * 11.9
+            * 0.271
+            * (delta_p * np.pi * (fus_length - lar - lav)) ** 0.271
+            * (maximum_height + maximum_width) ** (-0.458)
+            * 2 ** (-0.084)
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"] = (
+            k_factor
+            * (
+                0.052
                 * (
-                    -(
-                        0.003744
-                        * dynamic_pressure**0.241
-                        * wet_area_fus**1.086
-                        * (mtow * sizing_factor_ultimate) ** 0.177
-                    )
-                    / (
-                        lp_ht**0.051
-                        * maximum_height
-                        * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                    )
-                )
-            )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"
-            ] = k_factor * (
-                (
-                    0.003744
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * (fus_length - lar - lav) ** (-0.072)
                     * dynamic_pressure**0.241
-                    * wet_area_fus**1.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                )
-                / (
-                    lp_ht**0.051
-                    * maximum_height
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                )
-            )
-            partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:rear_length"] = (
-                k_factor
-                * (
-                    (
-                        0.003744
-                        * dynamic_pressure**0.241
-                        * wet_area_fus**1.086
-                        * (mtow * sizing_factor_ultimate) ** 0.177
-                    )
-                    / (
-                        lp_ht**0.051
-                        * maximum_height
-                        * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                    )
+                    * 0.072
+                    * maximum_height**-0.928
+                    + alt_const
+                    * 11.9
+                    * 0.271
+                    * (delta_p * np.pi * (fus_length - lar - lav)) ** 0.271
+                    * (maximum_height + maximum_width) ** (-0.458)
+                    * 2 ** (-0.084)
                 )
             )
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"
-            ] = 0.0
-            partials[
-                "data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"
-            ] = k_factor * (
-                -(
-                    0.003744
-                    * dynamic_pressure**0.241
-                    * wet_area_fus**1.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                    * (lar - 1.0 * fus_length + lav)
-                )
-                / (
-                    lp_ht**0.051
-                    * maximum_height**2
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 1.072
-                )
-            )
+        )
 
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:wet_area"] = (
             k_factor
+            * 0.052
             * (
-                (
-                    0.056472
-                    * dynamic_pressure**0.241
-                    * wet_area_fus**0.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                )
-                / (
-                    lp_ht**0.051
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 0.072
-                )
+                1.086
+                * wet_area_fus**0.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
             )
         )
         partials[
             "data:weight:airframe:fuselage:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = k_factor * (
-            (0.009204 * dynamic_pressure**0.241 * mtow * wet_area_fus**1.086)
-            / (
-                lp_ht**0.051
-                * (mtow * sizing_factor_ultimate) ** 0.823
-                * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 0.072
+            0.052
+            * (
+                wet_area_fus**1.086
+                * 0.177
+                * (sizing_factor_ultimate * mtow) ** -0.823
+                * mtow
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
             )
         )
         partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = k_factor * (
-            (0.009204 * dynamic_pressure**0.241 * sizing_factor_ultimate * wet_area_fus**1.086)
-            / (
-                lp_ht**0.051
-                * (mtow * sizing_factor_ultimate) ** 0.823
-                * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 0.072
+            0.052
+            * (
+                wet_area_fus**1.086
+                * 0.177
+                * (sizing_factor_ultimate * mtow) ** -0.823
+                * sizing_factor_ultimate
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
             )
         )
         partials[
             "data:weight:airframe:fuselage:mass",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
         ] = k_factor * (
-            -(
-                0.002652
+            -0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * 0.051
+                * lp_ht ** (-1.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
                 * dynamic_pressure**0.241
-                * wet_area_fus**1.086
-                * (mtow * sizing_factor_ultimate) ** 0.177
-            )
-            / (
-                lp_ht**1.051
-                * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 0.072
             )
         )
+
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
         partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_cruise"] = (
             k_factor
-            * (
-                (
-                    0.00026174
-                    * rho_cruise
-                    * v_cruise
-                    * wet_area_fus**1.086
-                    * (mtow * sizing_factor_ultimate) ** 0.177
-                )
-                / (
-                    lp_ht**0.051
-                    * (-(1.0 * lar - 1.0 * fus_length + 1.0 * lav) / maximum_height) ** 0.072
-                    * (0.010443 * rho_cruise * v_cruise**2) ** 0.759
-                )
-            )
-            * 0.5144
+            * 0.052
+            * wet_area_fus**1.086
+            * (sizing_factor_ultimate * mtow) ** 0.177
+            * lp_ht ** (-0.051)
+            * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+            * 2
+            * 0.241
+            * (0.5 * rho_cruise * 0.020885434273039 * 0.5144**2) ** 0.241
+            * inputs["data:TLAR:v_cruise"] ** (-0.518)
         )
-        partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
-            a2
+
+        partials[
+            "data:weight:airframe:fuselage:mass", "data:mission:sizing:main_route:cruise:altitude"
+        ] = k_factor * (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * 0.241
+                * (0.5 * v_cruise**2.0 * 0.020885434273039) ** 0.241
+                * AtmosphereWithPartials(
+                    inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=True
+                ).partial_density_altitude
+                * rho_cruise ** (-0.759)
+                - 11.9
+                * alt_const
+                * 0.271
+                * (v_press * 0.000145038) ** 0.271
+                * AtmosphereWithPartials(
+                    inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=True
+                ).partial_pressure_altitude
+                * (pressure_sl - pressure_cruise) ** (-0.729)
+            )
         )
 
 

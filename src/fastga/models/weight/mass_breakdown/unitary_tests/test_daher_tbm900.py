@@ -128,6 +128,7 @@ def test_compute_wing_weight():
     assert weight_a1 == pytest.approx(
         277.95, abs=1e-2
     )  # difference because of integer conversion error
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_fuselage_weight():
@@ -839,9 +840,6 @@ def test_loop_compute_owe():
         ivc,
         check=True,
     )
-
-    # om.n2(mass_computation)
-
     oew = mass_computation.get_val("data:weight:aircraft:OWE", units="kg")
     assert oew == pytest.approx(1648, abs=1)
 

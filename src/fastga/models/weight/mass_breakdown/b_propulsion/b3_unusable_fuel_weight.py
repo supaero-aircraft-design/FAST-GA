@@ -54,7 +54,11 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
 
         self.add_output("data:weight:propulsion:unusable_fuel:mass", units="lb")
 
-        self.declare_partials(of="*", wrt="*", method="exact")
+        self.declare_partials(of="*", wrt="*", method="fd")
+        # Overwrites the derivatives because we know the exact value
+        self.declare_partials(
+            of="*", wrt=["data:geometry:wing:area", "data:weight:aircraft:MFW"], method="exact"
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_eng = inputs["data:geometry:propulsion:engine:count"]
