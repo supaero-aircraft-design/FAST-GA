@@ -506,16 +506,14 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
                 * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
                 * 0.241
                 * (0.5 * v_cruise**2.0 * 0.020885434273039) ** 0.241
-                * AtmosphereWithPartials(
-                    inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=True
-                ).partial_density_altitude
+                * AtmosphereWithPartials(cruise_alt, altitude_in_feet=True).partial_density_altitude
                 * rho_cruise ** (-0.759)
                 - 11.9
                 * alt_const
                 * 0.271
                 * (v_press * 0.000145038) ** 0.271
                 * AtmosphereWithPartials(
-                    inputs["data:mission:sizing:main_route:cruise:altitude"], altitude_in_feet=True
+                    cruise_alt, altitude_in_feet=True
                 ).partial_pressure_altitude
                 * (pressure_sl - pressure_cruise) ** (-0.729)
             )
