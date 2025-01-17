@@ -87,19 +87,6 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         v_max_sl = inputs["data:TLAR:v_max_sl"]
         k_factor = inputs["data:weight:airframe:fuselage:k_factor"]
 
-        a2 = (
-            200.0
-            * (
-                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
-                * (fus_length * 3.28084 / 10.0) ** 0.857
-                * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
-                * (v_max_sl / 100.0) ** 0.338
-            )
-            ** 1.1
-        )  # mass formula in lb
-
         partials[
             "data:weight:airframe:fuselage:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
