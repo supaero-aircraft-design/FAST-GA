@@ -46,6 +46,10 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         self.add_output("data:weight:propulsion:fuel_lines:mass", units="lb")
 
         self.declare_partials(
+            "data:weight:propulsion:fuel_lines:mass", "data:propulsion:fuel_type", method="fd"
+        )
+
+        self.declare_partials(
             "data:weight:propulsion:fuel_lines:mass",
             ["data:weight:aircraft:MFW", "data:geometry:propulsion:engine:count"],
             method="exact",
