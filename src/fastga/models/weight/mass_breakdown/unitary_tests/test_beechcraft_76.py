@@ -545,7 +545,6 @@ def test_compute_airframe_weight():
 def test_compute_oil_weight():
     """Tests engine weight computation from sample XML data."""
     # Research independent input value in .xml file
-    # TODO: check if it is result from discrete number of engine
     ivc = get_indep_var_comp(
         list_inputs(ComputeOilWeight(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
     )
