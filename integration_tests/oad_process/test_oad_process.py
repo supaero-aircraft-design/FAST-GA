@@ -28,6 +28,7 @@ from fastga.models.performances.mission import resources
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
 PATH = pth.dirname(__file__).split(os.path.sep)
 NOTEBOOKS_PATH = PATH[0] + os.path.sep
 for folder in PATH[1 : len(PATH) - 3]:
@@ -39,7 +40,7 @@ NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 def cleanup():
     """Empties results folder to avoid any conflicts."""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    rmtree("D:/tmp", ignore_errors=True)
+    rmtree(WORKDIR_FOLDER_PATH, ignore_errors=True)
 
 
 def test_oad_process_vlm_sr22(cleanup):

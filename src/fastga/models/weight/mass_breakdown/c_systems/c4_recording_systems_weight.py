@@ -39,10 +39,6 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
-        self.declare_partials(
-            "data:weight:systems:recording:mass", "data:weight:aircraft:MTOW", val=0.0
-        )
-
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
 

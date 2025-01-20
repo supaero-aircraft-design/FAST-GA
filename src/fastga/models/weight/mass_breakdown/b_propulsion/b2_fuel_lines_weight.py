@@ -104,8 +104,14 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         # In lbs/gal
 
         partials["data:weight:propulsion:fuel_lines:mass", "data:weight:aircraft:MFW"] = (
-            1.4056 * engine_nb**0.157 * tank_nb**0.242
-        ) / (k_fsp * (fuel_mass / k_fsp) ** 0.274)
+            2.49
+            * 0.726
+            * fuel_mass ** (-0.274)
+            * 0.5**0.363
+            * tank_nb**0.242
+            * engine_nb**0.157
+            * k_fsp ** (-0.726)
+        )
         partials[
             "data:weight:propulsion:fuel_lines:mass", "data:geometry:propulsion:engine:count"
         ] = (

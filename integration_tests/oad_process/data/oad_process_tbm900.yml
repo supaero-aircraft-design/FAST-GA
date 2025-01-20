@@ -28,14 +28,14 @@ model:
             id: fastga.aerodynamics.lowspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
             wing_airfoil: naca63_415.af
-            result_folder_path: D:/tmp
+            result_folder_path: ../workdir
             use_openvsp: true
             compute_slipstream: true
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
             wing_airfoil: naca63_415.af
-            result_folder_path: D:/tmp
+            result_folder_path: ../workdir
             compute_mach_interpolation: false
             use_openvsp: true
             compute_slipstream: true
@@ -45,7 +45,7 @@ model:
         performance:
             id: fastga.performances.mission
             propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
-            out_file: D:/tmp/tbm_900.csv
+            out_file: ../workdir/tbm_900.csv
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing

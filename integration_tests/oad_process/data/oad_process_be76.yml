@@ -23,13 +23,13 @@ model:
             id: fastga.aerodynamics.lowspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
             wing_airfoil : naca63_415.af
-            result_folder_path : D:/tmp
+            result_folder_path : ../workdir
             compute_slipstream : false
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
             wing_airfoil: naca63_415.af
-            result_folder_path: D:/tmp
+            result_folder_path: ../workdir
             compute_mach_interpolation: false
             compute_slipstream: false
         weight:

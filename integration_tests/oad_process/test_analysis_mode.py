@@ -29,6 +29,7 @@ import fastga.notebooks.tutorial.data as data
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
 PATH = pth.dirname(__file__).split(os.path.sep)
 NOTEBOOKS_PATH = PATH[0] + os.path.sep
 for folder in PATH[1 : len(PATH) - 3]:
@@ -42,7 +43,7 @@ MDA_WING_POSITION = False
 @pytest.fixture(scope="module")
 def cleanup():
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    rmtree("D:/tmp", ignore_errors=True)
+    rmtree(WORKDIR_FOLDER_PATH, ignore_errors=True)
 
 
 def test_analysis_mode():
