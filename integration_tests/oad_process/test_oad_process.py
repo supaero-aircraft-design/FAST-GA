@@ -265,11 +265,12 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     """
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    workdir_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
 
-    if not os.path.exists("D:/tmp"):
-        os.mkdir("D:/tmp")
+    if not os.path.exists(WORKDIR_FOLDER_PATH):
+        os.mkdir(WORKDIR_FOLDER_PATH)
 
-    shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
+    shutil.copy(mission_path, workdir_path)
 
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
@@ -319,11 +320,12 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     """
     # Copy the mission file in the path we indicated in the configuration file
     mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    workdir_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
 
-    if not os.path.exists("D:/tmp"):
-        os.mkdir("D:/tmp")
+    if not os.path.exists(WORKDIR_FOLDER_PATH):
+        os.mkdir(WORKDIR_FOLDER_PATH)
 
-    shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
+    shutil.copy(mission_path, workdir_path)
 
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
