@@ -16,6 +16,9 @@ import numpy as np
 
 
 class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -25,6 +28,8 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -65,6 +70,8 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
             cols=np.arange(nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
@@ -81,6 +88,8 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:tank:relative_thickness_array"] = relative_thickness_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
