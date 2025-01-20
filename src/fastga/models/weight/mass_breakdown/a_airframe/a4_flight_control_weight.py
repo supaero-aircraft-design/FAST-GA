@@ -96,22 +96,7 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:flight_controls:mass", units="lb")
 
-        self.declare_partials(
-            "data:weight:airframe:flight_controls:mass",
-            "data:mission:sizing:main_route:cruise:altitude",
-            method="fd",
-            step=1e2,
-        )
-        self.declare_partials(
-            "data:weight:airframe:flight_controls:mass",
-            [
-                "data:weight:aircraft:MTOW",
-                "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
-                "data:mission:sizing:cs23:characteristic_speed:vd",
-                "data:geometry:wing:area",
-            ],
-            method="exact",
-        )
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -142,14 +127,21 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
         v_d = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
         wing_area = inputs["data:geometry:wing:area"]
+        sea_level_density = 1.225
 
         atm = Atmosphere(altitude=cruise_alt, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
         dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed**2.0 * 0.0208854
 
         partials["data:weight:airframe:flight_controls:mass", "data:weight:aircraft:MTOW"] = (
-            2.4321e-4 * dynamic_pressure**0.345 * n_ult**0.525 * wing_area**0.317
-        ) / (0.001 * mtow) ** 0.398
+            0.404
+            * wing_area**0.317
+            * 0.001**0.602
+            * 0.602
+            * mtow ** (-0.398)
+            * n_ult**0.525
+            * dynamic_pressure**0.345
+        )
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
@@ -157,13 +149,28 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
             0.2121 * dynamic_pressure**0.345 * wing_area**0.317 * (0.001 * mtow) ** 0.602
         ) / n_ult**0.475
         partials["data:weight:airframe:flight_controls:mass", "data:geometry:wing:area"] = (
-            0.12807 * dynamic_pressure**0.345 * n_ult**0.525 * (0.001 * mtow) ** 0.602
-        ) / wing_area**0.683
-        d_a4_d_q = (
-            0.13938 * n_ult**0.525 * wing_area**0.317 * (0.001 * mtow) ** 0.602
-        ) / dynamic_pressure**0.655
-        d_q_d_vd = atm.density * atm.true_airspeed * 0.0208854 * np.sqrt(1.225 / atm.density)
+            0.404
+            * 0.317
+            * wing_area ** (-0.683)
+            * (mtow / 1000.0) ** 0.602
+            * n_ult**0.525
+            * dynamic_pressure**0.345
+        )
         partials[
             "data:weight:airframe:flight_controls:mass",
             "data:mission:sizing:cs23:characteristic_speed:vd",
-        ] = d_a4_d_q * d_q_d_vd
+        ] = (
+            0.13938
+            * n_ult**0.525
+            * wing_area**0.317
+            * (0.001 * mtow) ** 0.602
+            * dynamic_pressure ** (-0.655)
+            * sea_level_density
+            * v_d
+            * 0.0208854
+        )
+
+        partials[
+            "data:weight:airframe:flight_controls:mass",
+            "data:mission:sizing:main_route:cruise:altitude",
+        ] = 0.0
