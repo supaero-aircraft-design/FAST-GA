@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,6 +17,10 @@ import numpy as np
 
 
 class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
+    """
+    Computes the relative thickness for each section of the tank. Assumes a linear variation from
+    chord to tip.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
