@@ -124,7 +124,6 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         v_d = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         wing_area = inputs["data:geometry:wing:area"]
-        sea_level_density = Atmosphere(0).density
 
         atm = Atmosphere(altitude=0.0, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
@@ -162,7 +161,7 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
             * wing_area**0.317
             * (0.001 * mtow) ** 0.602
             * dynamic_pressure ** (-0.655)
-            * sea_level_density
+            * atm.density
             * v_d
             * 0.0208854
         )
