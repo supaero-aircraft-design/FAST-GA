@@ -265,7 +265,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         else:
             is_pressurized = 0.0
 
-        # is_pressurized describes whether the fuselage is pressurized or not depending on the cruise altitude.
+        # is_pressurized describes whether the fuselage is
+        # pressurized or not depending on the cruise altitude.
 
         fus_dia = (maximum_height + maximum_width) / 2.0
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
@@ -317,7 +318,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         else:
             is_pressurized = 0.0
 
-        # is_pressurized describes whether the fuselage is pressurized or not depending on the cruise altitude.
+        # is_pressurized describes whether the fuselage is
+        # pressurized or not depending on the cruise altitude.
 
         partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
             0.052

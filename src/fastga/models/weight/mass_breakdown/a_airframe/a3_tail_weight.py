@@ -1,6 +1,4 @@
-"""
-Estimation of tail weight.
-"""
+"""Estimation of tail weight."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
