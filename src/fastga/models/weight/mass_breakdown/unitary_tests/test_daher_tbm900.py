@@ -142,7 +142,6 @@ def test_compute_fuselage_weight():
         "data:geometry:fuselage:maximum_height",
         "data:geometry:fuselage:length",
         "data:TLAR:v_max_sl",
-        "data:mission:sizing:main_route:cruise:altitude",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 

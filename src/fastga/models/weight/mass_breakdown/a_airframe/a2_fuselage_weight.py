@@ -47,7 +47,6 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
@@ -152,23 +151,18 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         )
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
             k_factor
+            * 200.0
             * (
-                (
-                    20.294
-                    * (0.01 * v_max_sl) ** 0.338
-                    * (maximum_width + maximum_height)
-                    * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                    * (
-                        0.32808
-                        * (0.32808 * fus_length) ** 0.857
-                        * (0.01 * v_max_sl) ** 0.338
-                        * (maximum_width + maximum_height)
-                        * (1.0e-5 * mtow * sizing_factor_ultimate) ** 0.286
-                    )
-                    ** 0.1
-                )
-                / (0.32808 * fus_length) ** (143 / 1000)
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * 0.328084**0.857
+                * (maximum_width + maximum_height)
+                * 3.28084
+                / 10.0
+                * (v_max_sl / 100.0) ** 0.338
             )
+            ** 1.1
+            * 0.9427
+            * fus_length ** (-0.0573)
         )
         partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_max_sl"] = k_factor * (
             200.0
@@ -178,7 +172,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
                 * 0.328084
-                * 100.0**-0.338
+                * 0.01**0.338
             )
             ** 1.1
             * v_max_sl**-0.6282
@@ -225,7 +219,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
         )
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
-        self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
@@ -246,7 +240,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        v_cruise = inputs["data:TLAR:v_cruise"] * 0.5144
+        v_cruise = inputs["data:TLAR:v_cruise"]
 
         atm_cruise = Atmosphere(cruise_alt)
         rho_cruise = atm_cruise.density
@@ -256,9 +250,10 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
-        alt_const = 0.0
         if cruise_alt > 10000.0:
             alt_const = 1.0
+        else:
+            alt_const = 0.0
 
         fus_dia = (maximum_height + maximum_width) / 2.0
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
@@ -288,14 +283,14 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        v_cruise = inputs["data:TLAR:v_cruise"] * 0.5144
+        v_cruise = inputs["data:TLAR:v_cruise"]
 
         k_factor = inputs["data:weight:airframe:fuselage:k_factor"]
 
-        atm_cruise = Atmosphere(cruise_alt)
+        atm_cruise = AtmosphereWithPartials(cruise_alt)
         rho_cruise = atm_cruise.density
         pressure_cruise = atm_cruise.pressure
-        atm_sl = Atmosphere(0.0)
+        atm_sl = AtmosphereWithPartials(0.0)
         pressure_sl = atm_sl.pressure
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
@@ -303,10 +298,10 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
         delta_p = (pressure_sl - pressure_cruise) * 0.000145038
 
-        alt_const = 0.0
-
         if cruise_alt > 10000.0:
             alt_const = 1.0
+        else:
+            alt_const = 0.0
 
         partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
             0.052
@@ -468,7 +463,6 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             )
         )
 
-        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
         partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_cruise"] = (
             k_factor
             * 0.052
@@ -478,7 +472,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
             * 2
             * 0.241
-            * (0.5 * rho_cruise * 0.020885434273039 * 0.5144**2) ** 0.241
+            * (0.5 * rho_cruise * 0.020885434273039) ** 0.241
             * inputs["data:TLAR:v_cruise"] ** (-0.518)
         )
 
@@ -493,15 +487,13 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
                 * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
                 * 0.241
                 * (0.5 * v_cruise**2.0 * 0.020885434273039) ** 0.241
-                * AtmosphereWithPartials(cruise_alt, altitude_in_feet=True).partial_density_altitude
+                * atm_cruise.partial_density_altitude
                 * rho_cruise ** (-0.759)
                 - 11.9
                 * alt_const
                 * 0.271
                 * (v_press * 0.000145038) ** 0.271
-                * AtmosphereWithPartials(
-                    cruise_alt, altitude_in_feet=True
-                ).partial_pressure_altitude
+                * atm_cruise.partial_pressure_altitude
                 * (pressure_sl - pressure_cruise) ** (-0.729)
             )
         )

@@ -143,7 +143,6 @@ def test_compute_fuselage_weight():
         "data:geometry:fuselage:maximum_height",
         "data:geometry:fuselage:length",
         "data:TLAR:v_max_sl",
-        "data:mission:sizing:main_route:cruise:altitude",
     ]
     ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
@@ -177,7 +176,7 @@ def test_compute_fuselage_weight_raymer():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuselageWeightRaymer(), ivc)
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
-    assert weight_a2 == pytest.approx(161.15, abs=1e-2)
+    assert weight_a2 == pytest.approx(161.16, abs=1e-2)
 
     problem.check_partials(compact_print=True)
 

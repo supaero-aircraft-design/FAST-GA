@@ -52,7 +52,9 @@ def test_analysis_mode():
     """
 
     # Copy used file
-    os.mkdir(RESULTS_FOLDER_PATH)
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+
     shutil.copy(
         pth.join(data.__path__[0], "reference_aircraft.xml"),
         pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml"),
@@ -88,7 +90,7 @@ def test_analysis_mode():
             compute_mach_interpolation=False,
             compute_slipstream_low_speed=False,
             compute_slipstream_cruise=False,
-            result_folder_path="D:/tmp",
+            result_folder_path="../workdir",
         ),
         [],
         str(pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml")),
