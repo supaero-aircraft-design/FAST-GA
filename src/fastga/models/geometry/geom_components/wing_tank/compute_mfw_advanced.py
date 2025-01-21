@@ -45,6 +45,8 @@ class ComputeMFWAdvanced(om.Group):
     will have to be updated as well as it uses the same approach.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
