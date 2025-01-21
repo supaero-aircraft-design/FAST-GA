@@ -1,4 +1,4 @@
-""" Python module for tank relative thickness computation class(es). """
+"""Python module for tank relative thickness computation class(es)."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
