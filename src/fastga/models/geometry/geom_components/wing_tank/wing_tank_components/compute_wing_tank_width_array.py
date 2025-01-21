@@ -1,3 +1,7 @@
+"""
+Python module for tank width computation class(es), part of the advanced MFW computation
+method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,6 +25,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
     Does not consider reduction due to engine and landing.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -30,6 +36,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -73,6 +81,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             cols=np.zeros(nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
         te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
@@ -88,6 +98,8 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             - np.maximum(flap_chord_ratio, aileron_chord_ratio)
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
         te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]

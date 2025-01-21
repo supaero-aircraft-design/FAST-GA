@@ -1,4 +1,7 @@
-"""Python module for advanced MFW computation class(es)."""
+"""
+Python module for MFW from tank volume computation class(es), part of the advanced MFW computation
+method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -19,7 +22,7 @@ import openmdao.api as om
 
 
 class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
-    """Compute the MFW from the capacity of the two wing tanks inside the aircraft wings."""
+    """Computes the MFW from the capacity of the two wing tanks inside the aircraft wings."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -50,7 +53,7 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
             val=0.0,
         )
 
-    # pylint: disable=missing-function-docstring
+    # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_type = inputs["data:propulsion:fuel_type"]
@@ -68,7 +71,7 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
 
         outputs["data:weight:aircraft:MFW"] = tank_capacity * self.m_vol_fuel
 
-    # pylint: disable=missing-function-docstring
+    # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:weight:aircraft:MFW", "data:geometry:propulsion:tank:capacity"] = (

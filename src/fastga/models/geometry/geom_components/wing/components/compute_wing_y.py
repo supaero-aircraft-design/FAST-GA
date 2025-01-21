@@ -83,6 +83,8 @@ class ComputeWingY(om.ExplicitComponent):
         outputs["data:geometry:wing:kink:y"] = y3_wing
         outputs["data:geometry:wing:tip:y"] = y4_wing
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]

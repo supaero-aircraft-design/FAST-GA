@@ -1,3 +1,6 @@
+"""
+Python module for span discretization class(es), part of the advanced MFW computation method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,6 +19,13 @@ import numpy as np
 
 
 class ComputeWingTankYArray(om.ExplicitComponent):
+    """
+    Computes the span-wise location of the tank cross-section whose are will be computed. Assumes a
+    linear interpolation from start to end.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -25,6 +35,8 @@ class ComputeWingTankYArray(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -49,6 +61,8 @@ class ComputeWingTankYArray(om.ExplicitComponent):
             cols=np.zeros(nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -60,6 +74,8 @@ class ComputeWingTankYArray(om.ExplicitComponent):
             nb_point_wing,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         nb_point_wing = self.options["number_points_wing_mfw"]
 

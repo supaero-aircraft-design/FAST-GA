@@ -1,3 +1,6 @@
+"""
+Python package that contains the module for the computation of the MFW with the advanced method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

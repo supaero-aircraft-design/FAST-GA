@@ -38,7 +38,13 @@ from ..constants import SUBMODEL_WING_AREA_GEOM_LOOP, SUBMODEL_WING_AREA_GEOM_CO
 _LOGGER = logging.getLogger(__name__)
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 class UpdateMFW(om.Group):
+    """
+    Computes the MFW for a given value of the wing area by reusing only necessary components
+    """
+
     def setup(self):
         self.add_subsystem(
             name="update_wing_y",
@@ -125,6 +131,11 @@ class UpdateMFW(om.Group):
 
 
 class DistanceToMFWForUpdate(om.ImplicitComponent):
+    """
+    ImplicitComponent that readjust the value of the wing area depending on how far from the
+    target (fuel for sizing mission) the MFW is.
+    """
+
     def setup(self):
         self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", units="kg", val=np.nan)
@@ -133,6 +144,8 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-arguments, too-many-positional-arguments
+    # Overriding OpenMDAO apply_nonlinear, not all arguments are used
     def apply_nonlinear(
         self, inputs, outputs, residuals, discrete_inputs=None, discrete_outputs=None
     ):
@@ -141,15 +154,24 @@ class DistanceToMFWForUpdate(om.ImplicitComponent):
             inputs["data:weight:aircraft:MFW"] - inputs["data:mission:sizing:fuel"]
         ) / 10.0
 
+    # pylint: disable=missing-function-docstring, too-many-arguments, unused-argument, too-many-positional-arguments
+    # Overriding OpenMDAO linearize, not all arguments are used
     def linearize(self, inputs, outputs, jacobian, discrete_inputs=None, discrete_outputs=None):
         jacobian["wing_area", "data:weight:aircraft:MFW"] = 0.1
         jacobian["wing_area", "data:mission:sizing:fuel"] = -0.1
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_LOOP, "fastga.submodel.loop.wing_area.update.geom.advanced"
 )
 class UpdateWingAreaGeomAdvanced(om.Group):
+    """
+    Group that iterates on the wing area to find the value which equates the max fuel weight to the
+    fuel necessary for the mission.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # Solvers setup
@@ -178,6 +200,11 @@ class UpdateWingAreaGeomAdvanced(om.Group):
 
 
 class DistanceToMFWForConstraint(om.ExplicitComponent):
+    """
+    Computation of the distance to the geometric constraints which translates as additional fuel
+    capacity.
+    """
+
     def setup(self):
         self.add_input("data:mission:sizing:fuel", units="kg", val=np.nan)
         self.add_input("MFW", units="kg", val=np.nan)
@@ -191,6 +218,8 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
             inputs["MFW"] - inputs["data:mission:sizing:fuel"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:constraints:wing:additional_fuel_capacity", "MFW"] = 1.0
         partials[
@@ -198,6 +227,8 @@ class DistanceToMFWForConstraint(om.ExplicitComponent):
         ] = -1.0
 
 
+# pylint: disable=too-few-public-methods
+# Overriding only necessary OpenMDAO methods
 @oad.RegisterSubmodel(
     SUBMODEL_WING_AREA_GEOM_CONS,
     "fastga.submodel.loop.wing_area.constraint.geom.advanced",

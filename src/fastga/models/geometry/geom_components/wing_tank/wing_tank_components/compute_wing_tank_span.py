@@ -1,3 +1,7 @@
+"""
+Python module for tank span-wise position computation class(es), part of the advanced MFW
+computation method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,6 +20,12 @@ import numpy as np
 
 
 class ComputeWingTankSpans(om.ExplicitComponent):
+    """
+    Computes the span-wise position of the start and end of the tank based on geometrical ratio.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_beginning", val=np.nan)
         self.add_input("data:geometry:propulsion:tank:y_ratio_tank_end", val=np.nan)
@@ -41,6 +51,8 @@ class ComputeWingTankSpans(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:geometry:propulsion:tank:y_beginning"] = (
             inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
@@ -53,6 +65,8 @@ class ComputeWingTankSpans(om.ExplicitComponent):
             / 2.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials[
             "data:geometry:propulsion:tank:y_beginning",

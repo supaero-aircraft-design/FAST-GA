@@ -1,3 +1,7 @@
+"""
+Python module for tank capacity computation class(es), part of the advanced MFW computation
+method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -20,6 +24,8 @@ from scipy.integrate import trapezoid
 class ComputeWingTanksCapacity(om.ExplicitComponent):
     """Compute the capacity of the two wing tanks inside the aircraft wings."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -29,6 +35,8 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
         self.add_input(
@@ -59,6 +67,8 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
             cols=np.arange(nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
         cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]
@@ -74,6 +84,8 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
             cross_section_array, y_array
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         y_array = inputs["data:geometry:propulsion:tank:y_array"]
         cross_section_array = inputs["data:geometry:propulsion:tank:cross_section_array"]

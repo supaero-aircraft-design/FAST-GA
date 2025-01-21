@@ -1,3 +1,7 @@
+"""
+Python module for actual tank width computation class(es), part of the advanced MFW computation
+method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2024  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -17,7 +21,7 @@ import numpy as np
 
 class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
     """
-    Compute the wing tank width reduction due to engine nacelle and landing gear
+    Compute the wing tank width reduction due to engine nacelle and landing gear.
     """
 
     def __init__(self, **kwargs):
@@ -26,6 +30,8 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
         self.in_engine = None
         self.in_landing_gear = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -35,6 +41,8 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -92,6 +100,8 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             val=0.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -136,6 +146,8 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:tank:reduced_width_array"] = reduced_width_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials_width = np.ones_like(inputs["data:geometry:propulsion:tank:width_array"])
         partials_width = np.where(self.in_engine, partials_width * 0.5, partials_width)

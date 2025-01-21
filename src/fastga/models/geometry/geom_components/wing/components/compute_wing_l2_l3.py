@@ -52,6 +52,8 @@ class ComputeWingL2AndL3(ExplicitComponent):
         outputs["data:geometry:wing:root:chord"] = l2_wing
         outputs["data:geometry:wing:kink:chord"] = l3_wing
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         y2_wing = inputs["data:geometry:wing:root:y"]

@@ -718,6 +718,15 @@ class AerostructuralLoad(om.ExplicitComponent):
 
 
 def tank_volume_distribution(inputs, y_array_orig):
+    """
+    Computes the cross-section of the tank at each span-wise position given in inputs. Assumes a
+    linear variation of the wing chord and relative thickness. Includes a correction coefficient
+    for tank height and includes the effect of landing gear and engine nacelle as reduced capacity.
+    :param inputs: problem inputs vector
+    :param y_array_orig: span-wise location at which to compute the tank cross-section.
+
+    :return: tank cross-section at the input span-wise location.
+    """
     root_chord = inputs["data:geometry:wing:root:chord"]
     tip_chord = inputs["data:geometry:wing:tip:chord"]
     root_y = inputs["data:geometry:wing:root:y"]

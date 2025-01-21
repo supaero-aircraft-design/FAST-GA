@@ -1,3 +1,6 @@
+"""
+Python module for wing chord computation class(es), part of the advanced MFW computation method.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -16,6 +19,10 @@ import numpy as np
 
 
 class ComputeWingTankChordArray(om.ExplicitComponent):
+    """Computes the wing chord at the selected sections of the wing."""
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(
             "number_points_wing_mfw",
@@ -25,6 +32,8 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
@@ -66,6 +75,8 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             cols=np.arange(nb_point_wing),
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
@@ -82,6 +93,8 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:tank:chord_array"] = chord_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_chord = inputs["data:geometry:wing:root:chord"]
         tip_chord = inputs["data:geometry:wing:tip:chord"]
