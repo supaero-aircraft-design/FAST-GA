@@ -73,8 +73,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         carrier_based = 0.0
         aircraft_type = 0.0  # One for fighter/attack aircraft
 
-        # To prevent using obstruse data we put this failsafe here
-        # TODO : Find a better way to do this
+        # TODO : In the future the type of landing gear could be an option which would make the computation of that
+        #  partials way easier.
 
         mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw**0.95 * lg_height**0.43
         nlg_weight = (
