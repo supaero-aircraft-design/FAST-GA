@@ -172,6 +172,8 @@ def test_compute_cg_life_support_systems():
     x_cg_c22 = problem.get_val("data:weight:systems:life_support:air_conditioning:CG:x", units="m")
     assert x_cg_c22 == pytest.approx(1.87, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_cg_navigation_systems():
     """Tests computation of navigation systems center of gravity."""
@@ -183,6 +185,8 @@ def test_compute_cg_navigation_systems():
     x_cg_c3 = problem.get_val("data:weight:systems:avionics:CG:x", units="m")
     assert x_cg_c3 == pytest.approx(2.22, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_cg_recording_systems():
     """Tests computation of navigation systems center of gravity."""
@@ -193,6 +197,8 @@ def test_compute_cg_recording_systems():
     problem = run_system(ComputeRecordingSystemsCG(), ivc)
     x_cg_c3 = problem.get_val("data:weight:systems:recording:CG:x", units="m")
     assert x_cg_c3 == pytest.approx(6.88, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_cg_passenger_seats():
