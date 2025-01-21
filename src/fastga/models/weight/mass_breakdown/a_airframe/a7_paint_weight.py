@@ -32,6 +32,8 @@ class ComputeNoPaintWeight(om.ExplicitComponent):
     as default submodels so that it doesn't change previous computation.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         # In theory this component does not need an input as it will always return 0 but to
         # properly define the component we need to declare it even if it is not used. This
@@ -40,6 +42,8 @@ class ComputeNoPaintWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:airframe:paint:mass", units="lb")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
 
@@ -52,6 +56,8 @@ class ComputePaintWeight(om.ExplicitComponent):
     Component that returns the paint weight by using a value of surface density for the paint.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:aircraft:wet_area", val=np.nan, units="m**2")
         self.add_input("settings:weight:airframe:paint:surface_density", val=0.33, units="kg/m**2")
@@ -60,12 +66,16 @@ class ComputePaintWeight(om.ExplicitComponent):
 
         self.declare_partials(of="data:weight:airframe:paint:mass", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:weight:airframe:paint:mass"] = (
             inputs["data:geometry:aircraft:wet_area"]
             * inputs["settings:weight:airframe:paint:surface_density"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:weight:airframe:paint:mass", "data:geometry:aircraft:wet_area"] = inputs[
             "settings:weight:airframe:paint:surface_density"

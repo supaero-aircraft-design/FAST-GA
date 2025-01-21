@@ -45,6 +45,8 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     for the fixed oxygen weight
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
@@ -84,6 +86,8 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
@@ -119,6 +123,8 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
         outputs["data:weight:systems:life_support:fixed_oxygen:mass"] = c26
         outputs["data:weight:systems:life_support:security_kits:mass"] = c27
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_pax = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
@@ -171,6 +177,8 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
     :cite:`roskampart5:1985` for the fixed oxygen weight.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:weight:systems:avionics:mass", val=np.nan, units="lb")
@@ -232,6 +240,8 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         m_iae = inputs["data:weight:systems:avionics:mass"]
         limit_speed = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
@@ -274,6 +284,8 @@ class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
         outputs["data:weight:systems:life_support:fixed_oxygen:mass"] = c26
         outputs["data:weight:systems:life_support:security_kits:mass"] = 0.0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         fus_height = inputs["data:geometry:fuselage:maximum_height"]
         fus_width = inputs["data:geometry:fuselage:maximum_width"]

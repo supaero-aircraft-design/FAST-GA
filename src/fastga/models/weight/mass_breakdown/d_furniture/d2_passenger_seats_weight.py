@@ -31,6 +31,8 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
     Based on a statistical analysis. See :cite:`roskampart5:1985` Cessna method.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
@@ -39,6 +41,8 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_occ = (
             inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0
@@ -49,6 +53,8 @@ class ComputePassengerSeatsWeight(om.ExplicitComponent):
 
         outputs["data:weight:furniture:passenger_seats:mass"] = d2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n_occ = (
             inputs["data:geometry:cabin:seats:passenger:NPAX_max"] + 2.0

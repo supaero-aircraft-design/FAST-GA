@@ -36,12 +36,17 @@ class ComputeEngineWeight(om.ExplicitComponent):
     """
 
     def __init__(self, **kwargs):
+        """Inherit Engine related inputs from parent class(es)."""
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -56,6 +61,8 @@ class ComputeEngineWeight(om.ExplicitComponent):
             of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -67,6 +74,8 @@ class ComputeEngineWeight(om.ExplicitComponent):
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -92,12 +101,17 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
     """
 
     def __init__(self, **kwargs):
+        """Inherit Engine related inputs from parent class(es)."""
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -112,6 +126,8 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
             of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -124,6 +140,8 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 

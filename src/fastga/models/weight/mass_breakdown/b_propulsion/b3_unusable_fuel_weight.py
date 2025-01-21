@@ -39,12 +39,17 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
     """
 
     def __init__(self, **kwargs):
+        """Inherit Engine related inputs from parent class(es)."""
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -60,6 +65,8 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
             of="*", wrt=["data:geometry:wing:area", "data:weight:aircraft:MFW"], method="exact"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         n_eng = inputs["data:geometry:propulsion:engine:count"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -85,6 +92,8 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
 
         outputs["data:weight:propulsion:unusable_fuel:mass"] = b3
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         n_eng = inputs["data:geometry:propulsion:engine:count"]
         mfw = inputs["data:weight:aircraft:MFW"]

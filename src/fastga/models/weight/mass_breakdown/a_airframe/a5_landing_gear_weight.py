@@ -36,6 +36,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
     :cite:`raymer:2012` for the weight reduction factor for non retractable landing gears
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MLW", val=np.nan, units="lb")
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
@@ -63,6 +65,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -73,8 +77,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
         carrier_based = 0.0
         aircraft_type = 0.0  # One for fighter/attack aircraft
 
-        # TODO : In the future the type of landing gear could be an option which would make the computation of that
-        #  partials way easier.
+        # TODO : In the future updates the type of landing gear could be an option which would make
+        #  the computation of that partials way easier.
 
         mlg_weight = (0.0117 - aircraft_type * 0.0012) * mlw**0.95 * lg_height**0.43
         nlg_weight = (
@@ -104,6 +108,8 @@ class ComputeLandingGearWeight(om.ExplicitComponent):
             nlg_weight * weight_reduction_factor * wing_config_const
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mlw = inputs["data:weight:aircraft:MLW"]
         mtow = inputs["data:weight:aircraft:MTOW"]

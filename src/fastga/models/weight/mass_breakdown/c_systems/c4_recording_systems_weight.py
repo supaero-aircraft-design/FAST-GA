@@ -34,11 +34,15 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
     available on the market (https://skybrary.aero/sites/default/files/bookshelf/3679.pdf)
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="kg")
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
 

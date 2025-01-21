@@ -38,6 +38,8 @@ class ComputeFuelLinesWeight(ExplicitComponent):
     :cite:`gudmundsson:2013`
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
@@ -55,6 +57,8 @@ class ComputeFuelLinesWeight(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
@@ -84,6 +88,8 @@ class ComputeFuelLinesWeight(ExplicitComponent):
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         tank_nb = 2.0  # Number of fuel tanks is assumed to be two, 1 per semi-wing
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
@@ -134,6 +140,8 @@ class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
     Based on a statistical analysis. See :cite:`wells:2017`
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
         self.add_input("data:weight:aircraft:MFW", val=np.nan, units="lb")
@@ -149,6 +157,8 @@ class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]
@@ -157,6 +167,8 @@ class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
 
         outputs["data:weight:propulsion:fuel_lines:mass"] = b2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         engine_nb = inputs["data:geometry:propulsion:engine:count"]
         fuel_mass = inputs["data:weight:aircraft:MFW"]

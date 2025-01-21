@@ -32,6 +32,8 @@ class ComputeWingWeight(om.ExplicitComponent):
     :cite:`gudmundsson:2013`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="ft**2")
@@ -47,6 +49,8 @@ class ComputeWingWeight(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -73,6 +77,8 @@ class ComputeWingWeight(om.ExplicitComponent):
             a1 * inputs["data:weight:airframe:wing:k_factor"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         wing_area = inputs["data:geometry:wing:area"]

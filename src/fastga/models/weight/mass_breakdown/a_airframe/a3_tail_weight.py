@@ -35,6 +35,8 @@ class ComputeTailWeight(om.ExplicitComponent):
     :cite:`gudmundsson:2013`
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
@@ -94,6 +96,8 @@ class ComputeTailWeight(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -149,6 +153,8 @@ class ComputeTailWeight(om.ExplicitComponent):
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -516,6 +522,8 @@ class ComputeTailWeightGD(om.ExplicitComponent):
     commercial aircraft but found to work fairly well on high performance GA aircraft.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
@@ -579,6 +587,8 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -640,6 +650,8 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -1041,6 +1053,8 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
     only be used with aircraft having a diving speed above 250 KEAS.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
@@ -1095,6 +1109,8 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -1143,6 +1159,8 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]

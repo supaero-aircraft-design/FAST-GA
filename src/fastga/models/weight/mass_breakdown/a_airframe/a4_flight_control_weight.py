@@ -35,6 +35,8 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
     :cite:`gudmundsson:2013`
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
@@ -45,6 +47,8 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -56,6 +60,8 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
 
         outputs["data:weight:airframe:flight_controls:mass"] = a4
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -87,6 +93,8 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
     Based on a statistical analysis. See :cite:`wells:2017`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
@@ -97,6 +105,8 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -119,6 +129,8 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
 
         outputs["data:weight:airframe:flight_controls:mass"] = a4
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_ult = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]

@@ -25,6 +25,8 @@ from .constants import SUBMODEL_PAYLOAD_MASS
 class ComputePayload(om.ExplicitComponent):
     """Computes payload from NPAX."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:TLAR:NPAX_design", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
@@ -71,6 +73,8 @@ class ComputePayload(om.ExplicitComponent):
             "data:weight:aircraft:max_payload", "data:geometry:cabin:luggage:mass_max", val=1.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax_design = inputs["data:TLAR:NPAX_design"] + 2.0  # addition of 2 pilots
         npax_max = (
@@ -84,6 +88,8 @@ class ComputePayload(om.ExplicitComponent):
         outputs["data:weight:aircraft:payload"] = npax_design * mass_per_pax + luggage_mass_design
         outputs["data:weight:aircraft:max_payload"] = npax_max * max_mass_per_pax + luggage_mass_max
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials[
             "data:weight:aircraft:payload",
