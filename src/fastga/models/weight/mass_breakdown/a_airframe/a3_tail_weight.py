@@ -676,7 +676,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * 0.915
             * (area_ht**0.584 * (span_ht / root_thickness) ** 0.033 * (mac_ht / lp_ht) ** 0.28)
             ** 0.915
-            * (sizing_factor_ultimate * mtow) ** (-0.813 * 0.085)
+            * (sizing_factor_ultimate * mtow) ** (-0.069105)
             * 0.813
             * (sizing_factor_ultimate * mtow) ** (-0.187)
             * mtow
@@ -688,7 +688,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * 0.915
                 * (area_ht**0.584 * (span_ht / root_thickness) ** 0.033 * (mac_ht / lp_ht) ** 0.28)
                 ** 0.915
-                * (sizing_factor_ultimate * mtow) ** (-0.813 * 0.085)
+                * (sizing_factor_ultimate * mtow) ** (-0.069105)
                 * 0.813
                 * (sizing_factor_ultimate * mtow) ** (-0.187)
                 * sizing_factor_ultimate
@@ -705,7 +705,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * area_ht ** (-0.584 * 0.085)
+            * area_ht ** (-0.04964)
             * 0.584
             * area_ht ** (-0.416)
         )
@@ -721,7 +721,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * span_ht ** (-0.085 * 0.033)
+            * span_ht ** (-0.002805)
             * 0.033
             * span_ht ** (-0.967)
         )
@@ -738,8 +738,8 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * t_c_ht ** (0.085 * 0.033)
-            * (-0.033 * t_c_ht**-1.033)
+            * t_c_ht**0.002805
+            * (-0.033 * t_c_ht ** (-1.033))
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:root:chord"
@@ -753,7 +753,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * root_chord_ht ** (0.085 * 0.033)
+            * root_chord_ht**0.002805
             * (-0.033 * root_chord_ht**-1.033)
         )
         partials[
@@ -768,7 +768,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * lp_ht**-0.28
             )
             ** 0.915
-            * mac_ht ** (-0.28 * 0.085)
+            * mac_ht ** (-0.0238)
             * 0.28
             * mac_ht ** (-0.72)
         )
@@ -785,7 +785,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * mac_ht**0.28
             )
             ** 0.915
-            * lp_ht ** (0.28 * 0.085)
+            * lp_ht**0.0238
             * (-0.28 * lp_ht**-1.28)
         )
         partials[
@@ -819,7 +819,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (sizing_factor_ultimate * mtow) ** (0.363 * 0.014)
+            * (sizing_factor_ultimate * mtow) ** 0.005082
             * 0.363
             * (sizing_factor_ultimate * mtow) ** (-0.637)
             * mtow
@@ -840,7 +840,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * (sizing_factor_ultimate * mtow) ** (0.363 * 0.014)
+                * (sizing_factor_ultimate * mtow) ** 0.005082
                 * 0.363
                 * (sizing_factor_ultimate * mtow) ** (-0.637)
                 * sizing_factor_ultimate
@@ -863,7 +863,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 )
                 ** 1.014
             )
-            * (1 + has_t_tail) ** (0.5 * 0.014)
+            * (1 + has_t_tail) ** 0.007
             * 0.5
             * (1 + has_t_tail) ** -0.5
         )
@@ -883,7 +883,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * area_vt ** (1.089 * 0.014)
+                * area_vt**0.015246
                 * 1.089
                 * area_vt**0.089
             )
@@ -905,7 +905,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * lp_vt ** (-0.726 * 0.014)
+            * lp_vt ** (-0.010164)
             * (-0.726 * lp_vt**-1.726)
         )
         partials[
@@ -925,7 +925,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + rudder_chord_ratio) ** (0.217 * 0.014)
+            * (1 + rudder_chord_ratio) ** 0.003038
             * 0.217
             * (1 + rudder_chord_ratio) ** (-0.783)
         )
@@ -945,7 +945,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (1 + taper_vt) ** 0.363
             )
             ** 1.014
-            * np.cos(sweep_25_vt) ** (-0.484 * 0.014)
+            * np.cos(sweep_25_vt) ** (-0.006776)
             * 0.484
             * np.cos(sweep_25_vt) ** -1.484
             * np.sin(sweep_25_vt)
@@ -966,7 +966,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * ar_vt ** (0.337 * 0.014)
+            * ar_vt**0.004718
             * 0.337
             * ar_vt ** (-0.663)
         )
@@ -986,7 +986,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + taper_vt) ** (0.363 * 0.014)
+            * (1 + taper_vt) ** 0.005082
             * 0.363
             * (1 + taper_vt) ** (-0.637)
         )
@@ -1005,7 +1005,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * mach_h ** (0.601 * 0.014)
+            * mach_h**0.008414
             * 0.601
             * mach_h ** (-0.399)
             / atm0.speed_of_sound
@@ -1164,7 +1164,6 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         atm0 = AtmosphereWithPartials(0)
         mach_h = v_h / atm0.speed_of_sound
 
-
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
         ] = k_factor_ht * ((0.004572 * area_ht**0.2 * vd) / np.cos(sweep_25) - 0.287)
@@ -1199,7 +1198,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (sizing_factor_ultimate * mtow) ** (0.363 * 0.014)
+            * (sizing_factor_ultimate * mtow) ** 0.005082
             * 0.363
             * (sizing_factor_ultimate * mtow) ** (-0.637)
             * mtow
@@ -1220,7 +1219,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * (sizing_factor_ultimate * mtow) ** (0.363 * 0.014)
+                * (sizing_factor_ultimate * mtow) ** 0.005082
                 * 0.363
                 * (sizing_factor_ultimate * mtow) ** (-0.637)
                 * sizing_factor_ultimate
@@ -1243,7 +1242,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 )
                 ** 1.014
             )
-            * (1 + has_t_tail) ** (0.5 * 0.014)
+            * (1 + has_t_tail) ** 0.007
             * 0.5
             * (1 + has_t_tail) ** -0.5
         )
@@ -1263,7 +1262,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * area_vt ** (1.089 * 0.014)
+                * area_vt**0.015246
                 * 1.089
                 * area_vt**0.089
             )
@@ -1285,7 +1284,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * lp_vt ** (-0.726 * 0.014)
+            * lp_vt ** (-0.010164)
             * (-0.726 * lp_vt**-1.726)
         )
         partials[
@@ -1305,7 +1304,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + rudder_chord_ratio) ** (0.217 * 0.014)
+            * (1 + rudder_chord_ratio) ** 0.003038
             * 0.217
             * (1 + rudder_chord_ratio) ** (-0.783)
         )
@@ -1325,7 +1324,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * (1 + taper_vt) ** 0.363
             )
             ** 1.014
-            * np.cos(sweep_25_vt) ** (-0.484 * 0.014)
+            * np.cos(sweep_25_vt) ** (-0.006776)
             * 0.484
             * np.cos(sweep_25_vt) ** -1.484
             * np.sin(sweep_25_vt)
@@ -1366,7 +1365,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + taper_vt) ** (0.363 * 0.014)
+            * (1 + taper_vt) ** (0.005082)
             * 0.363
             * (1 + taper_vt) ** (-0.637)
         )
@@ -1385,7 +1384,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * mach_h ** (0.601 * 0.014)
+            * mach_h**0.008414
             * 0.601
             * mach_h ** (-0.399)
             / atm0.speed_of_sound
