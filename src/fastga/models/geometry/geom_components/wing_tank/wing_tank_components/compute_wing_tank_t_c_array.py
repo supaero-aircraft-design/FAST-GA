@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring
+""" Python module for tank relative thickness computation class(es). """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -94,7 +94,7 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
         outputs["data:geometry:propulsion:tank:relative_thickness_array"] = relative_thickness_array
 
     # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute, not all arguments are used
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
         tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
