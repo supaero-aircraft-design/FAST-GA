@@ -154,6 +154,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         v_cruise_ktas = inputs["data:TLAR:v_cruise"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        atm_cruise = AtmosphereWithPartials(cruise_alt)
 
         area_ht = inputs["data:geometry:horizontal_tail:area"]
         t_c_ht = inputs["data:geometry:horizontal_tail:thickness_ratio"]
@@ -171,7 +172,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
 
-        rho_cruise = Atmosphere(cruise_alt, altitude_in_feet=True).density
+        rho_cruise = atm_cruise.density
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise_ktas**2.0 * 0.0208854
 
         partials[
@@ -187,7 +188,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_ht**0.896
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
         partials["data:weight:airframe:horizontal_tail:mass", "data:weight:aircraft:MTOW"] = (
@@ -202,7 +203,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                     * area_ht**0.896
                     * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                     * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                    * taper_ht**-0.02
+                    * taper_ht ** -0.02
                 )
             )
         )
@@ -218,7 +219,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_ht**0.896
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
         partials[
@@ -232,7 +233,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_ht ** (-0.104)
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
         partials[
@@ -247,7 +248,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (100.0 / np.cos(sweep_25_ht)) ** -0.12
                 * (-0.12 * t_c_ht**-1.12)
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
         partials[
@@ -260,7 +261,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_ht**0.896
                 * (100.0 * t_c_ht) ** -0.12
                 * ar_ht**0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
                 * (
                     -0.12 * np.cos(sweep_25_ht) ** 0.034 * np.tan(sweep_25_ht)
                     + 0.086 * np.tan(sweep_25_ht) * np.cos(sweep_25_ht)
@@ -280,7 +281,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (1 / np.cos(sweep_25_ht) ** 2.0) ** 0.043
                 * 0.043
                 * ar_ht ** (-0.957)
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
         partials[
@@ -294,7 +295,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
                 * 0.02
-                * taper_ht**-1.02
+                * taper_ht ** -1.02
             )
         )
         partials[
@@ -306,7 +307,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             * area_ht**0.896
             * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
             * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-            * taper_ht**-0.02
+            * taper_ht ** -0.02
         )
 
         partials[
@@ -319,11 +320,11 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (0.5 * v_cruise_ktas**2.0 * 0.0208854) ** 0.168
                 * 0.168
                 * rho_cruise ** (-0.832)
-                * AtmosphereWithPartials(cruise_alt, altitude_in_feet=True).partial_density_altitude
+                * atm_cruise.partial_density_altitude
                 * area_ht**0.896
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * taper_ht**-0.02
+                * taper_ht ** -0.02
             )
         )
 
@@ -497,7 +498,7 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (0.5 * v_cruise_ktas**2.0 * 0.0208854) ** 0.122
                 * 0.122
                 * rho_cruise ** (-0.878)
-                * AtmosphereWithPartials(cruise_alt, altitude_in_feet=True).partial_density_altitude
+                * atm_cruise.partial_density_altitude
                 * area_vt**0.873
                 * (100.0 * t_c_vt / np.cos(sweep_25_vt)) ** -0.49
                 * (ar_vt / np.cos(sweep_25_vt) ** 2.0) ** 0.357
@@ -717,7 +718,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
-                * root_thickness**-0.033
+                * 1/root_thickness**0.033
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
@@ -1365,7 +1366,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + taper_vt) ** (0.005082)
+            * (1 + taper_vt) ** 0.005082
             * 0.363
             * (1 + taper_vt) ** (-0.637)
         )

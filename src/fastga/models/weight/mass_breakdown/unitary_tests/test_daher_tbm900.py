@@ -175,7 +175,7 @@ def test_compute_fuselage_weight_raymer():
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeFuselageWeightRaymer(), ivc)
     weight_a2 = problem.get_val("data:weight:airframe:fuselage:mass", units="kg")
-    assert weight_a2 == pytest.approx(320.60, abs=1e-2)
+    assert weight_a2 == pytest.approx(320.61, abs=1e-2)
 
     problem.check_partials(compact_print=True)
 

@@ -23,13 +23,12 @@ import pytest
 from numpy.testing import assert_allclose
 
 from fastga.command import api
-from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
 from fastga.models.aerodynamics.aerodynamics import Aerodynamics
 import fastga.notebooks.tutorial.data as data
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
-RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
+RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
 PATH = pth.dirname(__file__).split(os.path.sep)
 NOTEBOOKS_PATH = PATH[0] + os.path.sep
 for folder in PATH[1 : len(PATH) - 3]:
@@ -65,6 +64,9 @@ def test_analysis_mode():
         "data:geometry:wing:taper_ratio",
     ]
 
+    # Need to do these import locally to avoid circular imports
+    from fastga.models.geometry.geometry import GeometryFixedTailDistance as Geometry
+
     # Declare geometry function
     compute_geometry = api.generate_block_analysis(
         Geometry(propulsion_id="fastga.wrapper.propulsion.basicIC_engine"),
@@ -82,6 +84,46 @@ def test_analysis_mode():
     outputs_dict = compute_geometry(inputs_dict)
     assert_allclose(outputs_dict["data:geometry:wing:tip:y"][0], 7.108, atol=1e-3)
 
+    var_inputs = [
+        "data:geometry:wing:root:virtual_chord",
+        "data:geometry:landing_gear:height",
+        "data:geometry:wing:wet_area",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:vertical_tail:root:chord",
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:fuselage:volume",
+        "data:geometry:wing:MAC:leading_edge:x:local",
+        "data:geometry:vertical_tail:tip:chord",
+        "data:geometry:fuselage:average_depth",
+        "data:geometry:vertical_tail:MAC:length",
+        "data:geometry:wing:tip:chord",
+        "data:geometry:fuselage:length",
+        "data:geometry:vertical_tail:wet_area",
+        "data:geometry:fuselage:maximum_height",
+        "data:geometry:horizontal_tail:span",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:root:z",
+        "data:geometry:horizontal_tail:z:from_wingMAC25",
+        "data:geometry:horizontal_tail:root:chord",
+        "data:geometry:wing:root:y",
+        "data:aerodynamics:horizontal_tail:efficiency",
+        "data:geometry:fuselage:wet_area",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:local",
+        "data:geometry:wing:span",
+        "data:geometry:vertical_tail:MAC:z",
+        "data:geometry:horizontal_tail:tip:chord",
+        "data:geometry:wing:root:chord",
+        "data:geometry:horizontal_tail:wet_area",
+        "data:geometry:vertical_tail:span",
+        "data:geometry:horizontal_tail:MAC:length",
+        "data:geometry:wing:sweep_0",
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+    ]
+
+    inputs_dict = {}
+    for input_name in var_inputs:
+        inputs_dict[input_name] = outputs_dict[input_name]
+
     # Compute aerodynamics for both aircraft
     compute_aero = api.generate_block_analysis(
         Aerodynamics(
@@ -90,11 +132,11 @@ def test_analysis_mode():
             compute_mach_interpolation=False,
             compute_slipstream_low_speed=False,
             compute_slipstream_cruise=False,
-            result_folder_path="../workdir",
+            result_folder_path=WORKDIR_FOLDER_PATH,
         ),
-        [],
+        var_inputs,
         str(pth.join(RESULTS_FOLDER_PATH, "geometry_long_wing.xml")),
         True,
     )
 
-    compute_aero({})
+    compute_aero(inputs_dict)
