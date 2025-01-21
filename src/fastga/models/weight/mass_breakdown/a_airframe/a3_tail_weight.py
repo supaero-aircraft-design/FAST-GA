@@ -1163,8 +1163,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
 
         atm0 = AtmosphereWithPartials(0)
         mach_h = v_h / atm0.speed_of_sound
-        # d_mach_h_d_alt = -v_h / atm0.speed_of_sound ** 2.0 * atm0.partial_speed_of_sound_altitude
-        # d_mach_h_d_v_h = 1.0 / atm0.speed_of_sound
+
 
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
