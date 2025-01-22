@@ -70,8 +70,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
@@ -102,8 +101,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 (mtow / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
@@ -116,8 +114,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 (sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
@@ -131,8 +128,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 * (
                     (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                     * (fus_length * 3.28084 / 10.0) ** 0.857
-                    * 3.28084
-                    / 10.0
+                    * 0.328084
                     * (v_max_sl / 100.0) ** 0.338
                 )
                 ** 1.1
@@ -147,8 +143,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 * (
                     (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                     * (fus_length * 3.28084 / 10.0) ** 0.857
-                    * 3.28084
-                    / 10.0
+                    * 0.328084
                     * (v_max_sl / 100.0) ** 0.338
                 )
                 ** 1.1
@@ -158,16 +153,15 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
             k_factor
             * 200.0
+            * 0.9427
             * (
                 (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * 0.328084**0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
-            * 0.9427
             * fus_length ** (-0.0573)
         )
         partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_max_sl"] = k_factor * (
@@ -189,8 +183,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
@@ -265,8 +258,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         else:
             is_pressurized = 0.0
 
-        # is_pressurized describes whether the fuselage is
-        # pressurized or not depending on the cruise altitude.
+        # is_pressurized is an option that affects the fuselage sizing.
+        # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
 
         fus_dia = (maximum_height + maximum_width) / 2.0
         v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
@@ -318,8 +311,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         else:
             is_pressurized = 0.0
 
-        # is_pressurized describes whether the fuselage is
-        # pressurized or not depending on the cruise altitude.
+        # is_pressurized is an option that affects the fuselage sizing.
+        # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
 
         partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
             0.052
@@ -491,7 +484,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             * 2
             * 0.241
             * (0.5 * rho_cruise * 0.020885434273039) ** 0.241
-            * inputs["data:TLAR:v_cruise"] ** (-0.518)
+            * v_cruise ** (-0.518)
         )
 
         partials[
