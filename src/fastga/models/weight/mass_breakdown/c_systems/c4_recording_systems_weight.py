@@ -41,7 +41,9 @@ class ComputeRecordingSystemsWeight(ExplicitComponent):
 
         self.add_output("data:weight:systems:recording:mass", units="kg")
 
-        self.declare_partials("data:weight:systems:recording:mass","data:weight:aircraft:MTOW",method='fd')
+        self.declare_partials(
+            "data:weight:systems:recording:mass", "data:weight:aircraft:MTOW", method="fd"
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
