@@ -15,7 +15,7 @@
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
+from stdatm import AtmosphereWithPartials
 
 from .constants import SUBMODEL_FLIGHT_CONTROLS_MASS
 
@@ -113,7 +113,7 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
         v_d = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         wing_area = inputs["data:geometry:wing:area"]
 
-        atm = Atmosphere(altitude=0.0, altitude_in_feet=True)
+        atm = AtmosphereWithPartials(altitude=0.0, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
         dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed**2.0 * 0.0208854
         # In lb/ft2
@@ -137,7 +137,7 @@ class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
         v_d = inputs["data:mission:sizing:cs23:characteristic_speed:vd"]
         wing_area = inputs["data:geometry:wing:area"]
 
-        atm = Atmosphere(altitude=0.0, altitude_in_feet=True)
+        atm = AtmosphereWithPartials(altitude=0.0, altitude_in_feet=True)
         atm.equivalent_airspeed = v_d
         dynamic_pressure = 1.0 / 2.0 * atm.density * atm.true_airspeed**2.0 * 0.0208854
 

@@ -39,7 +39,6 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
     """
 
     def __init__(self, **kwargs):
-        """Inherit Engine related inputs from parent class(es)."""
         super().__init__(**kwargs)
         self._engine_wrapper = None
 

@@ -17,7 +17,7 @@ import logging
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere, AtmosphereWithPartials
+from stdatm import AtmosphereWithPartials
 
 from .constants import SUBMODEL_FUSELAGE_MASS
 
@@ -252,10 +252,10 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
         v_cruise = inputs["data:TLAR:v_cruise"]
 
-        atm_cruise = Atmosphere(cruise_alt)
+        atm_cruise = AtmosphereWithPartials(cruise_alt)
         rho_cruise = atm_cruise.density
         pressure_cruise = atm_cruise.pressure
-        atm_sl = Atmosphere(0.0)
+        atm_sl = AtmosphereWithPartials(0.0)
         pressure_sl = atm_sl.pressure
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039

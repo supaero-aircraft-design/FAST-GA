@@ -15,7 +15,7 @@
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere, AtmosphereWithPartials
+from stdatm import AtmosphereWithPartials
 
 from .constants import SUBMODEL_TAIL_MASS
 
@@ -108,7 +108,7 @@ class ComputeTailWeight(om.ExplicitComponent):
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
 
-        rho_cruise = Atmosphere(cruise_alt, altitude_in_feet=True).density
+        rho_cruise = AtmosphereWithPartials(cruise_alt, altitude_in_feet=True).density
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise_ktas**2.0 * 0.0208854
         # In lb/ft2
 
@@ -618,7 +618,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         has_t_tail = inputs["data:geometry:has_T_tail"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
         v_h = inputs["data:TLAR:v_max_sl"]
-        atm0 = Atmosphere(0)
+        atm0 = AtmosphereWithPartials(0)
         atm0.true_airspeed = v_h
         mach_h = atm0.mach
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -675,7 +675,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
 
         k_factor_vt = inputs["data:weight:airframe:vertical_tail:k_factor"]
 
-        atm0 = Atmosphere(0)
+        atm0 = AtmosphereWithPartials(0)
         atm0.true_airspeed = v_h
         mach_h = atm0.mach
 
@@ -1127,7 +1127,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         has_t_tail = inputs["data:geometry:has_T_tail"]
         area_vt = inputs["data:geometry:vertical_tail:area"]
         v_h = inputs["data:TLAR:v_max_sl"]
-        atm0 = Atmosphere(0)
+        atm0 = AtmosphereWithPartials(0)
         atm0.true_airspeed = v_h
         mach_h = atm0.mach
         lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
