@@ -214,10 +214,9 @@ class ComputeTailWeight(om.ExplicitComponent):
         partials["data:weight:airframe:horizontal_tail:mass", "data:TLAR:v_cruise"] = (
             k_factor_ht
             * 0.016
+            * 0.336
             * (
                 (sizing_factor_ultimate * mtow) ** 0.414
-                * 2
-                * 0.168
                 * (0.5 * rho_cruise * 0.0208854) ** 0.168
                 * v_cruise_ktas ** (-0.664)
                 * area_ht**0.896
@@ -230,10 +229,10 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:area"
         ] = k_factor_ht * (
             0.016
+            * 0.896
             * (
                 (sizing_factor_ultimate * mtow) ** 0.414
                 * dynamic_pressure**0.168
-                * 0.896
                 * area_ht ** (-0.104)
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
@@ -277,13 +276,13 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:geometry:horizontal_tail:aspect_ratio",
         ] = k_factor_ht * (
             0.016
+            * 0.043
             * (
                 (sizing_factor_ultimate * mtow) ** 0.414
                 * dynamic_pressure**0.168
                 * area_ht**0.896
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (1 / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * 0.043
                 * ar_ht ** (-0.957)
                 * taper_ht**-0.02
             )
@@ -292,13 +291,13 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:taper_ratio"
         ] = k_factor_ht * (
             -0.016
+            * 0.02
             * (
                 (sizing_factor_ultimate * mtow) ** 0.414
                 * dynamic_pressure**0.168
                 * area_ht**0.896
                 * (100.0 * t_c_ht / np.cos(sweep_25_ht)) ** -0.12
                 * (ar_ht / np.cos(sweep_25_ht) ** 2.0) ** 0.043
-                * 0.02
                 * taper_ht**-1.02
             )
         )
@@ -337,10 +336,10 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
         ] = k_factor_vt * (
             0.073
+            * 0.376
             * (1.0 + 0.2 * has_t_tail)
             * (
-                0.376
-                * (sizing_factor_ultimate * mtow) ** (-0.624)
+                (sizing_factor_ultimate * mtow) ** (-0.624)
                 * mtow
                 * dynamic_pressure**0.122
                 * area_vt**0.873
@@ -353,10 +352,10 @@ class ComputeTailWeight(om.ExplicitComponent):
             k_factor_vt
             * (
                 0.073
+                * 0.376
                 * (1.0 + 0.2 * has_t_tail)
                 * (
-                    0.376
-                    * (sizing_factor_ultimate * mtow) ** (-0.624)
+                    (sizing_factor_ultimate * mtow) ** (-0.624)
                     * sizing_factor_ultimate
                     * dynamic_pressure**0.122
                     * area_vt**0.873
@@ -368,11 +367,10 @@ class ComputeTailWeight(om.ExplicitComponent):
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:TLAR:v_cruise"] = k_factor_vt * (
             0.073
+            * 0.244
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
-                * 2
-                * 0.122
                 * (0.5 * rho_cruise * 0.0208854) ** 0.122
                 * v_cruise_ktas ** (-0.756)
                 * area_vt**0.873
@@ -400,11 +398,11 @@ class ComputeTailWeight(om.ExplicitComponent):
             k_factor_vt
             * (
                 0.073
+                * 0.873
                 * (1.0 + 0.2 * has_t_tail)
                 * (
                     (sizing_factor_ultimate * mtow) ** 0.376
                     * dynamic_pressure**0.122
-                    * 0.873
                     * area_vt ** (-0.127)
                     * (100.0 * t_c_vt / np.cos(sweep_25_vt)) ** -0.49
                     * (ar_vt / np.cos(sweep_25_vt) ** 2.0) ** 0.357
@@ -416,13 +414,13 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:thickness_ratio"
         ] = k_factor_vt * (
             -0.073
+            * 0.49
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
                 * dynamic_pressure**0.122
                 * area_vt**0.873
                 * (100.0 / np.cos(sweep_25_vt)) ** -0.49
-                * 0.49
                 * t_c_vt ** (-1.49)
                 * (ar_vt / np.cos(sweep_25_vt) ** 2.0) ** 0.357
                 * taper_vt**0.039
@@ -432,6 +430,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:sweep_25"
         ] = k_factor_vt * (
             0.073
+            * 0.224
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
@@ -439,7 +438,6 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_vt**0.873
                 * (100.0 * t_c_vt) ** -0.49
                 * ar_vt**0.357
-                * 0.224
                 * np.tan(sweep_25_vt)
                 * np.cos(sweep_25_vt) ** (-0.224)
                 * taper_vt**0.039
@@ -449,6 +447,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:aspect_ratio"
         ] = k_factor_vt * (
             0.073
+            * 0.357
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
@@ -456,7 +455,6 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_vt**0.873
                 * (100.0 * t_c_vt / np.cos(sweep_25_vt)) ** -0.49
                 * (1 / np.cos(sweep_25_vt) ** 2.0) ** 0.357
-                * 0.357
                 * ar_vt ** (-0.643)
                 * taper_vt**0.039
             )
@@ -465,6 +463,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:taper_ratio"
         ] = k_factor_vt * (
             0.073
+            * 0.039
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
@@ -472,7 +471,6 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * area_vt**0.873
                 * (100.0 * t_c_vt / np.cos(sweep_25_vt)) ** -0.49
                 * (ar_vt / np.cos(sweep_25_vt) ** 2.0) ** 0.357
-                * 0.039
                 * taper_vt ** (-0.961)
             )
         )
@@ -496,11 +494,11 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:mission:sizing:main_route:cruise:altitude",
         ] = k_factor_vt * (
             0.073
+            * 0.122
             * (1.0 + 0.2 * has_t_tail)
             * (
                 (sizing_factor_ultimate * mtow) ** 0.376
                 * (0.5 * v_cruise_ktas**2.0 * 0.0208854) ** 0.122
-                * 0.122
                 * rho_cruise ** (-0.878)
                 * atm_cruise.partial_density_altitude
                 * area_vt**0.873
@@ -685,11 +683,10 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         ] = k_factor_ht * (
             0.0034
             * 0.915
+            * 0.813
             * (area_ht**0.584 * (span_ht / root_thickness) ** 0.033 * (mac_ht / lp_ht) ** 0.28)
             ** 0.915
-            * (sizing_factor_ultimate * mtow) ** (-0.069105)
-            * 0.813
-            * (sizing_factor_ultimate * mtow) ** (-0.187)
+            * (sizing_factor_ultimate * mtow) ** (-0.256105)
             * mtow
         )
         partials["data:weight:airframe:horizontal_tail:mass", "data:weight:aircraft:MTOW"] = (
@@ -697,11 +694,10 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * (
                 0.0034
                 * 0.915
+                * 0.813
                 * (area_ht**0.584 * (span_ht / root_thickness) ** 0.033 * (mac_ht / lp_ht) ** 0.28)
                 ** 0.915
-                * (sizing_factor_ultimate * mtow) ** (-0.069105)
-                * 0.813
-                * (sizing_factor_ultimate * mtow) ** (-0.187)
+                * (sizing_factor_ultimate * mtow) ** (-0.256105)
                 * sizing_factor_ultimate
             )
         )
@@ -710,21 +706,21 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         ] = k_factor_ht * (
             0.0034
             * 0.915
+            * 0.584
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * (span_ht / root_thickness) ** 0.033
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * area_ht ** (-0.04964)
-            * 0.584
-            * area_ht ** (-0.416)
+            * area_ht ** (-0.46564)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:span"
         ] = k_factor_ht * (
             0.0034
             * 0.915
+            * 0.033
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
@@ -733,16 +729,15 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * span_ht ** (-0.002805)
-            * 0.033
-            * span_ht ** (-0.967)
+            * span_ht ** (-0.969805)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass",
             "data:geometry:horizontal_tail:thickness_ratio",
         ] = k_factor_ht * (
-            0.0034
+            -0.0034
             * 0.915
+            * 0.033
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
@@ -750,14 +745,14 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * t_c_ht**0.002805
-            * (-0.033 * t_c_ht ** (-1.033))
+            * t_c_ht ** (-1.030195)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:root:chord"
         ] = k_factor_ht * (
-            0.0034
+            -0.0034
             * 0.915
+            * 0.033
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
@@ -765,14 +760,14 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (mac_ht / lp_ht) ** 0.28
             )
             ** 0.915
-            * root_chord_ht**0.002805
-            * (-0.033 * root_chord_ht**-1.033)
+            * root_chord_ht ** (-1.030195)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:MAC:length"
         ] = k_factor_ht * (
             0.0034
             * 0.915
+            * 0.28
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
@@ -780,16 +775,15 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * lp_ht**-0.28
             )
             ** 0.915
-            * mac_ht ** (-0.0238)
-            * 0.28
-            * mac_ht ** (-0.72)
+            * mac_ht ** (-0.7438)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
         ] = k_factor_ht * (
-            0.0034
+            -0.0034
             * 0.915
+            * 0.28
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
@@ -797,8 +791,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * mac_ht**0.28
             )
             ** 0.915
-            * lp_ht**0.0238
-            * (-0.28 * lp_ht**-1.28)
+            * lp_ht ** (-1.2562)
         )
         partials[
             "data:weight:airframe:horizontal_tail:mass",
@@ -820,6 +813,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.363
             * (
                 (1 + has_t_tail) ** 0.5
                 * area_vt**1.089
@@ -831,9 +825,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (sizing_factor_ultimate * mtow) ** 0.005082
-            * 0.363
-            * (sizing_factor_ultimate * mtow) ** (-0.637)
+            * (sizing_factor_ultimate * mtow) ** (-0.631918)
             * mtow
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:weight:aircraft:MTOW"] = (
@@ -841,6 +833,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * (
                 0.19
                 * 1.014
+                * 0.363
                 * (
                     (1 + has_t_tail) ** 0.5
                     * area_vt**1.089
@@ -852,9 +845,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * (sizing_factor_ultimate * mtow) ** 0.005082
-                * 0.363
-                * (sizing_factor_ultimate * mtow) ** (-0.637)
+                * (sizing_factor_ultimate * mtow) ** (-0.631918)
                 * sizing_factor_ultimate
             )
         )
@@ -863,6 +854,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * (
                 0.19
                 * 1.014
+                * 0.5
                 * (
                     (sizing_factor_ultimate * mtow) ** 0.363
                     * area_vt**1.089
@@ -875,15 +867,14 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 )
                 ** 1.014
             )
-            * (1 + has_t_tail) ** 0.007
-            * 0.5
-            * (1 + has_t_tail) ** -0.5
+            * (1 + has_t_tail) ** -0.493
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:area"] = (
             k_factor_vt
             * (
                 0.19
                 * 1.014
+                * 1.089
                 * (
                     (1 + has_t_tail) ** 0.5
                     * (sizing_factor_ultimate * mtow) ** 0.363
@@ -895,17 +886,16 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * area_vt**0.015246
-                * 1.089
-                * area_vt**0.089
+                * area_vt**0.104246
             )
         )
         partials[
             "data:weight:airframe:vertical_tail:mass",
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
         ] = k_factor_vt * (
-            0.19
+            -0.19
             * 1.014
+            * 0.726
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -917,8 +907,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * lp_vt ** (-0.010164)
-            * (-0.726 * lp_vt**-1.726)
+            * lp_vt ** (-1.736164)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass",
@@ -926,6 +915,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.217
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -937,15 +927,14 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + rudder_chord_ratio) ** 0.003038
-            * 0.217
-            * (1 + rudder_chord_ratio) ** (-0.783)
+            * (1 + rudder_chord_ratio) ** (-0.779962)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:sweep_25"
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.484
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -957,9 +946,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * (1 + taper_vt) ** 0.363
             )
             ** 1.014
-            * np.cos(sweep_25_vt) ** (-0.006776)
-            * 0.484
-            * np.cos(sweep_25_vt) ** -1.484
+            * np.cos(sweep_25_vt) ** (-1.490776)
             * np.sin(sweep_25_vt)
         )
         partials[
@@ -967,6 +954,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.337
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -978,15 +966,14 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * ar_vt**0.004718
-            * 0.337
-            * ar_vt ** (-0.663)
+            * ar_vt ** (-0.658282)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:taper_ratio"
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.363
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -998,14 +985,13 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + taper_vt) ** 0.005082
-            * 0.363
-            * (1 + taper_vt) ** (-0.637)
+            * (1 + taper_vt) ** (-0.631918)
         )
 
         partials["data:weight:airframe:vertical_tail:mass", "data:TLAR:v_max_sl"] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.601
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1017,9 +1003,7 @@ class ComputeTailWeightGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * mach_h**0.008414
-            * 0.601
-            * mach_h ** (-0.399)
+            * mach_h ** (-0.390586)
             / atm0.speed_of_sound
         )
         partials[
@@ -1205,6 +1189,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.363
             * (
                 (1 + has_t_tail) ** 0.5
                 * area_vt**1.089
@@ -1216,9 +1201,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (sizing_factor_ultimate * mtow) ** 0.005082
-            * 0.363
-            * (sizing_factor_ultimate * mtow) ** (-0.637)
+            * (sizing_factor_ultimate * mtow) ** (-0.631918)
             * mtow
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:weight:aircraft:MTOW"] = (
@@ -1226,6 +1209,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
             * (
                 0.19
                 * 1.014
+                * 0.363
                 * (
                     (1 + has_t_tail) ** 0.5
                     * area_vt**1.089
@@ -1237,9 +1221,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * (sizing_factor_ultimate * mtow) ** 0.005082
-                * 0.363
-                * (sizing_factor_ultimate * mtow) ** (-0.637)
+                * (sizing_factor_ultimate * mtow) ** (-0.631918)
                 * sizing_factor_ultimate
             )
         )
@@ -1248,6 +1230,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
             * (
                 0.19
                 * 1.014
+                * 0.5
                 * (
                     (sizing_factor_ultimate * mtow) ** 0.363
                     * area_vt**1.089
@@ -1260,15 +1243,14 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 )
                 ** 1.014
             )
-            * (1 + has_t_tail) ** 0.007
-            * 0.5
-            * (1 + has_t_tail) ** -0.5
+            * (1 + has_t_tail) ** -0.493
         )
         partials["data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:area"] = (
             k_factor_vt
             * (
                 0.19
                 * 1.014
+                * 1.089
                 * (
                     (1 + has_t_tail) ** 0.5
                     * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1280,17 +1262,16 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                     * np.cos(sweep_25_vt) ** -0.484
                 )
                 ** 1.014
-                * area_vt**0.015246
-                * 1.089
-                * area_vt**0.089
+                * area_vt**0.104246
             )
         )
         partials[
             "data:weight:airframe:vertical_tail:mass",
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
         ] = k_factor_vt * (
-            0.19
+            -0.19
             * 1.014
+            * 0.726
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1302,8 +1283,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * lp_vt ** (-0.010164)
-            * (-0.726 * lp_vt**-1.726)
+            * lp_vt ** (-1.736164)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass",
@@ -1311,6 +1291,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.217
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1322,15 +1303,14 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + rudder_chord_ratio) ** 0.003038
-            * 0.217
-            * (1 + rudder_chord_ratio) ** (-0.783)
+            * (1 + rudder_chord_ratio) ** (-0.779962)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:sweep_25"
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.484
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1342,9 +1322,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * (1 + taper_vt) ** 0.363
             )
             ** 1.014
-            * np.cos(sweep_25_vt) ** (-0.006776)
-            * 0.484
-            * np.cos(sweep_25_vt) ** -1.484
+            * np.cos(sweep_25_vt) ** (-1.490776)
             * np.sin(sweep_25_vt)
         )
         partials[
@@ -1352,6 +1330,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.337
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1363,15 +1342,14 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * ar_vt ** (0.337 * 0.014)
-            * 0.337
-            * ar_vt ** (-0.663)
+            * ar_vt ** (-0.661338)
         )
         partials[
             "data:weight:airframe:vertical_tail:mass", "data:geometry:vertical_tail:taper_ratio"
         ] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.363
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1383,14 +1361,13 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * (1 + taper_vt) ** 0.005082
-            * 0.363
-            * (1 + taper_vt) ** (-0.637)
+            * (1 + taper_vt) ** (-0.631918)
         )
 
         partials["data:weight:airframe:vertical_tail:mass", "data:TLAR:v_max_sl"] = k_factor_vt * (
             0.19
             * 1.014
+            * 0.601
             * (
                 (1 + has_t_tail) ** 0.5
                 * (sizing_factor_ultimate * mtow) ** 0.363
@@ -1402,9 +1379,7 @@ class ComputeTailWeightTorenbeekGD(om.ExplicitComponent):
                 * np.cos(sweep_25_vt) ** -0.484
             )
             ** 1.014
-            * mach_h**0.008414
-            * 0.601
-            * mach_h ** (-0.399)
+            * mach_h ** (-0.390586)
             / atm0.speed_of_sound
         )
         partials[
