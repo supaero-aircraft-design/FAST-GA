@@ -23,11 +23,12 @@ from stdatm import Atmosphere
 import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT
-from fastga.models.geometry.geom_components.wing_tank.compute_mfw_advanced import (
-    tank_volume_distribution,
-)
 
-from .constants import SUBMODEL_AEROSTRUCTURAL_LOADS, NB_POINTS_POINT_MASS, POINT_MASS_SPAN_RATIO
+from .constants import (
+    SUBMODEL_AEROSTRUCTURAL_LOADS,
+    NB_POINTS_POINT_MASS,
+    POINT_MASS_SPAN_RATIO,
+)
 
 SPAN_MESH_POINT_LOADS = int(1.5 * SPAN_MESH_POINT)
 
@@ -75,7 +76,9 @@ class AerostructuralLoad(om.ExplicitComponent):
             units="m",
         )
         self.add_input(
-            "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity", val=np.nan, units="m/s"
+            "data:aerodynamics:slipstream:wing:cruise:prop_on:velocity",
+            val=np.nan,
+            units="m/s",
         )
         self.add_input("data:aerodynamics:wing:low_speed:CL_ref", val=np.nan)
         self.add_input("data:aerodynamics:wing:cruise:CM0_clean", val=np.nan)
@@ -86,10 +89,14 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
         self.add_input(
-            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha", val=np.nan, units="rad**-1"
+            "data:aerodynamics:horizontal_tail:low_speed:CL_alpha",
+            val=np.nan,
+            units="rad**-1",
         )
         self.add_input(
-            "data:aerodynamics:horizontal_tail:cruise:CL_alpha", val=np.nan, units="rad**-1"
+            "data:aerodynamics:horizontal_tail:cruise:CL_alpha",
+            val=np.nan,
+            units="rad**-1",
         )
         self.add_input(
             "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector",
@@ -125,7 +132,9 @@ class AerostructuralLoad(om.ExplicitComponent):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+            val=np.nan,
+            units="m",
         )
         self.add_input("data:geometry:flap:chord_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aileron:chord_ratio", val=np.nan)
@@ -498,7 +507,12 @@ class AerostructuralLoad(om.ExplicitComponent):
             for y_ratio_mot in y_ratio:
                 y_eng = y_ratio_mot * semi_span
                 y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
-                    y_vector, chord_vector, point_mass_array, y_eng, single_engine_mass, inputs
+                    y_vector,
+                    chord_vector,
+                    point_mass_array,
+                    y_eng,
+                    single_engine_mass,
+                    inputs,
                 )
 
         if len(y_ratio_punctual_mass) > 1 or (
@@ -511,7 +525,12 @@ class AerostructuralLoad(om.ExplicitComponent):
                     np.where(y_ratio_punctual_mass == y_ratio_punctual)[0]
                 ]
                 y_vector, chord_vector, point_mass_array = AerostructuralLoad.add_point_mass(
-                    y_vector, chord_vector, point_mass_array, y_punctual_mass, punctual_mass, inputs
+                    y_vector,
+                    chord_vector,
+                    point_mass_array,
+                    y_punctual_mass,
+                    punctual_mass,
+                    inputs,
                 )
 
         # Adding the LG weight
@@ -696,3 +715,98 @@ class AerostructuralLoad(om.ExplicitComponent):
         chord_vector_new = chord_vector
 
         return y_vector_new, chord_vector_new, point_mass_array_new
+
+
+def tank_volume_distribution(inputs, y_array_orig):
+    """
+    Computes the cross-section of the tank at each span-wise position given in inputs. Assumes a
+    linear variation of the wing chord and relative thickness. Includes a correction coefficient
+    for tank height and includes the effect of landing gear and engine nacelle as reduced capacity.
+    :param inputs: problem inputs vector
+    :param y_array_orig: span-wise location at which to compute the tank cross-section.
+
+    :return: tank cross-section at the input span-wise location.
+    """
+    root_chord = inputs["data:geometry:wing:root:chord"]
+    tip_chord = inputs["data:geometry:wing:tip:chord"]
+    root_y = inputs["data:geometry:wing:root:y"]
+    tip_y = inputs["data:geometry:wing:tip:y"]
+    root_tc = inputs["data:geometry:wing:root:thickness_ratio"]
+    tip_tc = inputs["data:geometry:wing:tip:thickness_ratio"]
+    flap_chord_ratio = inputs["data:geometry:flap:chord_ratio"]
+    aileron_chord_ratio = inputs["data:geometry:wing:aileron:chord_ratio"]
+    y_ratio_tank_beginning = inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
+    y_ratio_tank_end = inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
+    engine_config = inputs["data:geometry:propulsion:engine:layout"]
+    le_chord_percentage = inputs["data:geometry:propulsion:tank:LE_chord_percentage"]
+    te_chord_percentage = inputs["data:geometry:propulsion:tank:TE_chord_percentage"]
+    nacelle_width = inputs["data:geometry:propulsion:nacelle:width"]
+    span = inputs["data:geometry:wing:span"]
+    lg_type = inputs["data:geometry:landing_gear:type"]
+    y_lg = inputs["data:geometry:landing_gear:y"]
+    k = inputs["settings:geometry:fuel_tanks:depth"]
+
+    # Create the array which will contain the tank cross section area at each section
+
+    y_array = y_array_orig.flatten()
+
+    semi_span = span / 2
+    y_tank_beginning = semi_span * y_ratio_tank_beginning
+    y_tank_end = semi_span * y_ratio_tank_end
+
+    y_in_tank_index = np.where((y_array >= y_tank_beginning) & (y_array <= y_tank_end))[0]
+    y_in_tank_array = y_array[y_in_tank_index]
+
+    slope_chord = (tip_chord - root_chord) / (tip_y - root_y)
+
+    chord_array = np.zeros_like(y_array)
+    for y in y_in_tank_array:
+        idx = np.where(y_array == y)[0]
+        if y < root_y:
+            chord_array[idx] = root_chord
+        else:
+            chord_array[idx] = slope_chord * y + root_chord
+
+    # Computation of the thickness ratio profile along the span, as tc = slope * y +
+    # tc_fuselage_center.
+    slope_tc = (tip_tc - root_tc) / (tip_y - root_y)
+    thickness_ratio_array = np.zeros_like(y_array)
+    for y in y_in_tank_array:
+        idx = np.where(y_array == y)[0]
+        if y < root_y:
+            thickness_ratio_array[idx] = root_tc
+        else:
+            thickness_ratio_array[idx] = slope_tc * y + root_tc
+
+    # The k factor stating the depth of the fuel tanks is included here.
+    thickness_array = k * chord_array * thickness_ratio_array
+
+    # Distributed propulsion / single engine on the wing / nose or rear mounted engine
+    if engine_config != 1.0:
+        y_ratio = 0.0
+    else:
+        y_ratio = inputs["data:geometry:propulsion:engine:y_ratio"]
+
+    y_eng_array = semi_span * np.array(y_ratio)
+
+    in_eng_nacelle = np.full(len(y_in_tank_array), False)
+    for y_eng in y_eng_array:
+        for i in np.where(abs(y_in_tank_array - y_eng) <= nacelle_width / 2.0):
+            in_eng_nacelle[i] = True
+    where_engine = np.where(in_eng_nacelle)
+
+    width_array = (
+        1.0 - le_chord_percentage - te_chord_percentage - max(flap_chord_ratio, aileron_chord_ratio)
+    ) * chord_array
+    if engine_config == 1.0:
+        for i in where_engine:
+            # For now 50% size reduction in the fuel tank capacity due to the engine
+            width_array[i] *= 0.5
+    if lg_type == 1.0:
+        for i in np.where(y_array < y_lg):
+            # For now 80% size reduction in the fuel tank capacity due to the landing gear
+            width_array[i] *= 0.2
+
+    tank_cross_section = thickness_array * width_array * 0.85
+
+    return tank_cross_section

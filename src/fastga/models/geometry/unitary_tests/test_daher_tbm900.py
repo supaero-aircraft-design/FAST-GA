@@ -438,8 +438,15 @@ def test_geometry_wing_toc():
 def test_geometry_wing_y():
     """Tests computation of the wing Ys"""
 
+    inputs_list = [
+        "data:geometry:wing:aspect_ratio",
+        "data:geometry:fuselage:maximum_width",
+        "data:geometry:wing:area",
+        "data:geometry:wing:kink:span_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingY()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingY(), ivc)
@@ -452,12 +459,21 @@ def test_geometry_wing_y():
     wing_y4 = problem.get_val("data:geometry:wing:tip:y", units="m")
     assert wing_y4 == pytest.approx(6.095, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_l1_l4():
     """Tests computation of the wing chords (l1 and l4)"""
 
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:taper_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL1AndL4()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingL1AndL4(), ivc)
@@ -465,6 +481,8 @@ def test_geometry_wing_l1_l4():
     assert wing_l1 == pytest.approx(1.791, abs=1e-3)
     wing_l4 = problem.get_val("data:geometry:wing:tip:chord", units="m")
     assert wing_l4 == pytest.approx(1.092, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_z():
@@ -486,8 +504,15 @@ def test_geometry_wing_z():
 def test_geometry_wing_l2_l3():
     """Tests computation of the wing chords (l2 and l3)"""
 
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:root:y",
+        "data:geometry:wing:tip:y",
+        "data:geometry:wing:taper_ratio",
+    ]
+
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeWingL2AndL3()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingL2AndL3(), ivc)
@@ -497,6 +522,8 @@ def test_geometry_wing_l2_l3():
     assert wing_l3 == pytest.approx(
         1.791, abs=1e-2
     )  # point 3 and 2 equal (previous version ignored)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_x():

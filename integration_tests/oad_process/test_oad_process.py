@@ -68,7 +68,9 @@ def test_oad_process_vlm_sr22(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -110,7 +112,9 @@ def test_oad_process_vlm_be76(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -152,7 +156,9 @@ def test_oad_process_tbm_900(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -194,7 +200,9 @@ def test_oad_process_vlm_mission_vector(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -240,7 +248,9 @@ def test_oad_process_openvsp(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -294,7 +304,9 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 
@@ -348,7 +360,9 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     if not pth.exists(RESULTS_FOLDER_PATH):
         os.mkdir(RESULTS_FOLDER_PATH)
     om.view_connections(
-        problem, outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"), show_browser=False
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
     )
     om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
 

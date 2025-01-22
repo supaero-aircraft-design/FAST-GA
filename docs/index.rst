@@ -1,14 +1,15 @@
 ========================
-Welcome to FAST-(OAD)-GA
+Welcome to FAST-OAD_CS23
 ========================
 
+For a description of the features of the FAST-OAD framework, you may look at the `official documentation <https://fast-oad.readthedocs.io/en/stable/>`_
 
-For a description of models used in FAST-(OAD)-GA, you may see the
-:ref:`model documentations<fastga.models package>`.
+For a description of models used in FAST-OAD_CS23, you may see the
+:ref:`models-index`.
 
 .. note::
 
-    Models in FAST-(OAD)-GA are still a work in progress.
+    The documentation of FAST-OAD_CS23 is still a work in progress.
 
 
 
@@ -18,10 +19,11 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   License <license>
-   Authors <authors>
-   Changelog <changelog>
-   API Reference <api/modules>
+    License <license>
+    Authors <authors>
+    Changelog <changelog>
+    API Reference <api/modules>
+    Models <documentation/models/index>
 
 
 Indices and tables
