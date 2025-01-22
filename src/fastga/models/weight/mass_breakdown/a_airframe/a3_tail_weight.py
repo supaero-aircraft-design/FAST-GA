@@ -723,7 +723,6 @@ class ComputeTailWeightGD(om.ExplicitComponent):
             * (
                 (sizing_factor_ultimate * mtow) ** 0.813
                 * area_ht**0.584
-                * 1
                 / root_thickness**0.033
                 * (mac_ht / lp_ht) ** 0.28
             )
