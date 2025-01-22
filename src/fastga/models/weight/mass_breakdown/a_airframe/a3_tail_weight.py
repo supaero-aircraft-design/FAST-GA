@@ -258,6 +258,7 @@ class ComputeTailWeight(om.ExplicitComponent):
             "data:weight:airframe:horizontal_tail:mass", "data:geometry:horizontal_tail:sweep_25"
         ] = k_factor_ht * (
             0.016
+            * 0.034
             * (
                 (sizing_factor_ultimate * mtow) ** 0.414
                 * dynamic_pressure**0.168
@@ -265,10 +266,8 @@ class ComputeTailWeight(om.ExplicitComponent):
                 * (100.0 * t_c_ht) ** -0.12
                 * ar_ht**0.043
                 * taper_ht**-0.02
-                * (
-                    -0.12 * np.cos(sweep_25_ht) ** 0.034 * np.tan(sweep_25_ht)
-                    + 0.086 * np.tan(sweep_25_ht) * np.cos(sweep_25_ht)
-                )
+                * np.cos(sweep_25_ht) ** (-0.966)
+                * (-np.sin(sweep_25_ht))
             )
         )
         partials[
