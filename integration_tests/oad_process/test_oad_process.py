@@ -28,6 +28,7 @@ from fastga.models.performances.mission import resources
 
 DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 RESULTS_FOLDER_PATH = pth.join(pth.dirname(__file__), "results")
+WORKDIR_FOLDER_PATH = pth.join(pth.dirname(__file__), "workdir")
 PATH = pth.dirname(__file__).split(os.path.sep)
 NOTEBOOKS_PATH = PATH[0] + os.path.sep
 for folder in PATH[1 : len(PATH) - 3]:
@@ -39,7 +40,7 @@ NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
 def cleanup():
     """Empties results folder to avoid any conflicts."""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
-    rmtree("D:/tmp", ignore_errors=True)
+    rmtree(WORKDIR_FOLDER_PATH, ignore_errors=True)
 
 
 def test_oad_process_vlm_sr22(cleanup):
@@ -273,12 +274,13 @@ def test_oad_process_mission_builder_1_engine(cleanup):
     method with the mission builder from FAST OAD.
     """
     # Copy the mission file in the path we indicated in the configuration file
-    mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    source_mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    target_mission_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
 
-    if not os.path.exists("D:/tmp"):
-        os.mkdir("D:/tmp")
+    if not os.path.exists(WORKDIR_FOLDER_PATH):
+        os.mkdir(WORKDIR_FOLDER_PATH)
 
-    shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
+    shutil.copy(source_mission_path, target_mission_path)
 
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
@@ -329,12 +331,13 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     method with the mission builder from FAST OAD.
     """
     # Copy the mission file in the path we indicated in the configuration file
-    mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    source_mission_path = pth.join(pth.split(resources.__file__)[0], "sizing_mission_fastga.yml")
+    target_mission_path = pth.join(WORKDIR_FOLDER_PATH, "sizing_mission_fastga.yml")
 
-    if not os.path.exists("D:/tmp"):
-        os.mkdir("D:/tmp")
+    if not os.path.exists(WORKDIR_FOLDER_PATH):
+        os.mkdir(WORKDIR_FOLDER_PATH)
 
-    shutil.copy(mission_path, "D:/tmp/sizing_mission_fastga.yml")
+    shutil.copy(source_mission_path, target_mission_path)
 
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("fastoad.module_management._bundle_loader").disabled = True

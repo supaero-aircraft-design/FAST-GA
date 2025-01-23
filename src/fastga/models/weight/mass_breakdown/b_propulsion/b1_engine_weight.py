@@ -39,9 +39,13 @@ class ComputeEngineWeight(om.ExplicitComponent):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -50,8 +54,14 @@ class ComputeEngineWeight(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="fd")
+        # Overwrites the derivatives because we know the exact value
+        self.declare_partials(
+            of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -62,6 +72,20 @@ class ComputeEngineWeight(om.ExplicitComponent):
         b_1 = 1.4 * uninstalled_engine_weight
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        # This should give the UNINSTALLED weight
+        uninstalled_engine_weight = propulsion_model.compute_weight()
+
+        b_1 = 1.4 * uninstalled_engine_weight
+
+        partials[
+            "data:weight:propulsion:engine:mass", "settings:weight:propulsion:engine:k_factor"
+        ] = b_1
 
 
 @oad.RegisterSubmodel(
@@ -79,9 +103,13 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -90,8 +118,14 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
 
         self.add_output("data:weight:propulsion:engine:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", method="fd")
+        # Overwrites the derivatives because we know the exact value
+        self.declare_partials(
+            of="*", wrt="settings:weight:propulsion:engine:k_factor", method="exact"
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = self._engine_wrapper.get_model(inputs)
 
@@ -103,3 +137,17 @@ class ComputeEngineWeightRaymer(om.ExplicitComponent):
         b_1 = 2.575 * uninstalled_engine_weight**0.922
 
         outputs["data:weight:propulsion:engine:mass"] = b_1 * k_b1
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        propulsion_model = self._engine_wrapper.get_model(inputs)
+
+        # This should give the UNINSTALLED weight in lbs !
+        uninstalled_engine_weight = propulsion_model.compute_weight()
+
+        b_1 = 2.575 * uninstalled_engine_weight**0.922
+
+        partials[
+            "data:weight:propulsion:engine:mass", "settings:weight:propulsion:engine:k_factor"
+        ] = b_1

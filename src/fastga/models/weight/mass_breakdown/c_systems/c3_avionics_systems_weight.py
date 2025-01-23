@@ -38,6 +38,8 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
     might not be suited for modern aircraft with EFIS type cockpit installation according to Roskam.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lbm")
         self.add_input("data:geometry:propulsion:engine:count", val=np.nan)
@@ -45,8 +47,14 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
 
         self.add_output("data:weight:systems:avionics:mass", units="lbm")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="data:weight:systems:avionics:mass",
+            wrt=["data:weight:aircraft:MTOW", "data:geometry:cabin:seats:passenger:NPAX_max"],
+            method="exact",
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         mtow = inputs["data:weight:aircraft:MTOW"]
         n_eng = inputs["data:geometry:propulsion:engine:count"]
@@ -63,6 +71,22 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
 
         outputs["data:weight:systems:avionics:mass"] = c3
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        n_eng = inputs["data:geometry:propulsion:engine:count"]
+
+        if n_eng == 1.0:
+            partials["data:weight:systems:avionics:mass", "data:weight:aircraft:MTOW"] = 0.0
+            partials[
+                "data:weight:systems:avionics:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
+            ] = 33.0
+        else:
+            partials["data:weight:systems:avionics:mass", "data:weight:aircraft:MTOW"] = 0.008
+            partials[
+                "data:weight:systems:avionics:mass", "data:geometry:cabin:seats:passenger:NPAX_max"
+            ] = 0.0
+
 
 @oad.RegisterSubmodel(
     SUBMODEL_AVIONICS_SYSTEM_MASS,
@@ -78,6 +102,8 @@ class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
     Based on a statistical analysis. See :cite:`gudmundsson:2013`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input(
             "data:weight:systems:avionics:mass_uninstalled",
@@ -91,14 +117,18 @@ class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
         outputs["data:weight:systems:avionics:mass"] = 2.11 * uninstalled_avionics**0.933
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         uninstalled_avionics = inputs["data:weight:systems:avionics:mass_uninstalled"]
 
         partials[
             "data:weight:systems:avionics:mass", "data:weight:systems:avionics:mass_uninstalled"
-        ] = 2.11 * 0.993 * uninstalled_avionics**-0.067
+        ] = 2.11 * 0.933 * uninstalled_avionics**-0.067

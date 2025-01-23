@@ -26,13 +26,17 @@ class ComputeNavigationSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Navigation systems center of gravity estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
 
         self.add_output("data:weight:systems:avionics:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(of="*", wrt="*", val=1.0)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lav = inputs["data:geometry:fuselage:front_length"]
 

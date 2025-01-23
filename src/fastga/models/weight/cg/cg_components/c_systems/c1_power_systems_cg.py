@@ -27,6 +27,8 @@ class ComputePowerSystemsCG(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Power systems center(s) of gravity estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
@@ -35,8 +37,19 @@ class ComputePowerSystemsCG(ExplicitComponent):
         self.add_output("data:weight:systems:power:electric_systems:CG:x", units="m")
         self.add_output("data:weight:systems:power:hydraulic_systems:CG:x", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="*",
+            wrt=["data:geometry:fuselage:length", "data:geometry:fuselage:front_length"],
+            val=0.5,
+        )
+        self.declare_partials(
+            of="*",
+            wrt=["data:geometry:fuselage:rear_length"],
+            val=-0.5,
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]

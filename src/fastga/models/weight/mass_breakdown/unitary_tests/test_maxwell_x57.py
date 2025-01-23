@@ -122,7 +122,12 @@ def test_compute_ribs_mass():
 
 def test_compute_misc_mass():
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeMiscMass()), __file__, XML_FILE)
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:propulsion:engine:count",
+        "settings:wing:structure:F_COMP",
+    ]
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeMiscMass(), ivc)
@@ -159,7 +164,11 @@ def test_compute_primary_mass():
 
 def test_compute_secondary_mass():
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(ComputeSecondaryMass()), __file__, XML_FILE)
+    inputs_list = [
+        "data:weight:airframe:wing:primary_structure:mass",
+        "settings:wing:structure:secondary_mass_ratio",
+    ]
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=130.802, units="kg")
 
     # Run problem and check obtained value(s) is/(are) correct
@@ -171,7 +180,11 @@ def test_compute_secondary_mass():
 
 def test_update_wing_mass():
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(UpdateWingMass()), __file__, XML_FILE)
+    inputs_list = [
+        "data:weight:airframe:wing:primary_structure:mass",
+        "data:weight:airframe:wing:secondary_structure:mass",
+    ]
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
     ivc.add_output("data:weight:airframe:wing:primary_structure:mass", val=130.802, units="kg")
     ivc.add_output("data:weight:airframe:wing:secondary_structure:mass", val=43.600, units="kg")
 

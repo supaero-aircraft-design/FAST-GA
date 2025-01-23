@@ -17,7 +17,7 @@ import logging
 import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
-from stdatm import Atmosphere
+from stdatm import AtmosphereWithPartials
 
 from .constants import SUBMODEL_FUSELAGE_MASS
 
@@ -39,6 +39,8 @@ class ComputeFuselageWeight(om.ExplicitComponent):
     :cite:`gudmundsson:2013`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
@@ -47,12 +49,13 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:TLAR:v_max_sl", val=np.nan, units="kn")
-        self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
         mtow = inputs["data:weight:aircraft:MTOW"]
@@ -67,8 +70,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
                 (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
                 * (fus_length * 3.28084 / 10.0) ** 0.857
                 * (maximum_width + maximum_height)
-                * 3.28084
-                / 10.0
+                * 0.328084
                 * (v_max_sl / 100.0) ** 0.338
             )
             ** 1.1
@@ -76,6 +78,115 @@ class ComputeFuselageWeight(om.ExplicitComponent):
 
         outputs["data:weight:airframe:fuselage:mass"] = (
             a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        maximum_width = inputs["data:geometry:fuselage:maximum_width"]
+        maximum_height = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        v_max_sl = inputs["data:TLAR:v_max_sl"]
+        k_factor = inputs["data:weight:airframe:fuselage:k_factor"]
+
+        partials[
+            "data:weight:airframe:fuselage:mass",
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+        ] = k_factor * (
+            200.0
+            * 0.3146
+            * (
+                (mtow / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 0.328084
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
+            * sizing_factor_ultimate**-0.6854
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = k_factor * (
+            200.0
+            * 0.3146
+            * (
+                (sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 0.328084
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
+            * mtow**-0.6854
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"] = (
+            k_factor
+            * (
+                200.0
+                * 1.1
+                * (
+                    (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                    * (fus_length * 3.28084 / 10.0) ** 0.857
+                    * 0.328084
+                    * (v_max_sl / 100.0) ** 0.338
+                )
+                ** 1.1
+                * (maximum_width + maximum_height) ** 0.1
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"] = (
+            k_factor
+            * (
+                200.0
+                * 1.1
+                * (
+                    (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                    * (fus_length * 3.28084 / 10.0) ** 0.857
+                    * 0.328084
+                    * (v_max_sl / 100.0) ** 0.338
+                )
+                ** 1.1
+                * (maximum_width + maximum_height) ** 0.1
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
+            k_factor
+            * 200.0
+            * 0.9427
+            * (
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * 0.328084**0.857
+                * (maximum_width + maximum_height)
+                * 0.328084
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
+            * fus_length ** (-0.0573)
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_max_sl"] = k_factor * (
+            200.0
+            * 0.3718
+            * (
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 0.328084
+                * 0.01**0.338
+            )
+            ** 1.1
+            * v_max_sl**-0.6282
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
+            200.0
+            * (
+                (mtow * sizing_factor_ultimate / (10.0**5.0)) ** 0.286
+                * (fus_length * 3.28084 / 10.0) ** 0.857
+                * (maximum_width + maximum_height)
+                * 0.328084
+                * (v_max_sl / 100.0) ** 0.338
+            )
+            ** 1.1
         )
 
 
@@ -93,6 +204,8 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     and Procedures. Butterworth-Heinemann, 2013. Equation (6-25).
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
@@ -107,12 +220,18 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="ft"
         )
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="ft")
-        self.add_input("data:TLAR:v_cruise", val=np.nan, units="kn")
+        self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
 
         self.add_output("data:weight:airframe:fuselage:mass", units="lb")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials(
+            of="*",
+            wrt="*",
+            method="exact",
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -124,23 +243,27 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         mtow = inputs["data:weight:aircraft:MTOW"]
         lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
-        v_cruise = inputs["data:TLAR:v_cruise"] * 0.5144
+        v_cruise = inputs["data:TLAR:v_cruise"]
 
-        atm_cruise = Atmosphere(cruise_alt)
+        atm_cruise = AtmosphereWithPartials(cruise_alt)
         rho_cruise = atm_cruise.density
         pressure_cruise = atm_cruise.pressure
-        atm_sl = Atmosphere(0.0)
+        atm_sl = AtmosphereWithPartials(0.0)
         pressure_sl = atm_sl.pressure
 
         dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
 
         if cruise_alt > 10000.0:
-            fus_dia = (maximum_height + maximum_width) / 2.0
-            v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
-            delta_p = (pressure_sl - pressure_cruise) * 0.000145038
+            is_pressurized = 1.0
         else:
-            v_press = 0.0
-            delta_p = 0.0
+            is_pressurized = 0.0
+
+        # is_pressurized is an option that affects the fuselage sizing.
+        # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
+
+        fus_dia = (maximum_height + maximum_width) / 2.0
+        v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
+        delta_p = (pressure_sl - pressure_cruise) * 0.000145038
 
         a2 = 0.052 * (
             wet_area_fus**1.086
@@ -148,11 +271,242 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
             * lp_ht ** (-0.051)
             * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
             * dynamic_pressure**0.241
-            + 11.9 * (v_press * delta_p) ** 0.271
+            + 11.9 * (v_press * delta_p) ** 0.271 * is_pressurized
         )
 
         outputs["data:weight:airframe:fuselage:mass"] = (
             a2 * inputs["data:weight:airframe:fuselage:k_factor"]
+        )
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lar = inputs["data:geometry:fuselage:rear_length"]
+        maximum_width = inputs["data:geometry:fuselage:maximum_width"]
+        maximum_height = inputs["data:geometry:fuselage:maximum_height"]
+        wet_area_fus = inputs["data:geometry:fuselage:wet_area"]
+        sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
+        mtow = inputs["data:weight:aircraft:MTOW"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        cruise_alt = inputs["data:mission:sizing:main_route:cruise:altitude"]
+        v_cruise = inputs["data:TLAR:v_cruise"]
+
+        k_factor = inputs["data:weight:airframe:fuselage:k_factor"]
+
+        atm_cruise = AtmosphereWithPartials(cruise_alt)
+        rho_cruise = atm_cruise.density
+        pressure_cruise = atm_cruise.pressure
+        atm_sl = AtmosphereWithPartials(0.0)
+        pressure_sl = atm_sl.pressure
+
+        dynamic_pressure = 1.0 / 2.0 * rho_cruise * v_cruise**2.0 * 0.020885434273039
+        fus_dia = (maximum_height + maximum_width) / 2.0
+        v_press = (fus_length - lar - lav) * np.pi * (fus_dia / 2.0) ** 2.0
+        delta_p = (pressure_sl - pressure_cruise) * 0.000145038
+
+        if cruise_alt > 10000.0:
+            is_pressurized = 1.0
+        else:
+            is_pressurized = 0.0
+
+        # is_pressurized is an option that affects the fuselage sizing.
+        # It describes whether the fuselage is pressurized or not depending on the cruise altitude.
+
+        partials["data:weight:airframe:fuselage:mass", "data:weight:airframe:fuselage:k_factor"] = (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+                + 11.9 * (v_press * delta_p) ** 0.271 * is_pressurized
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:length"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * -0.072
+                    * (fus_length - lar - lav) ** (-1.072)
+                    * maximum_height**0.072
+                    * dynamic_pressure**0.241
+                    + 11.9
+                    * is_pressurized
+                    * 0.271
+                    * (fus_length - lar - lav) ** -0.729
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
+                )
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:front_length"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * maximum_height**0.072
+                    * 0.072
+                    * (fus_length - lar - lav) ** -1.072
+                    * dynamic_pressure**0.241
+                    - 11.9
+                    * is_pressurized
+                    * 0.271
+                    * (fus_length - lar - lav) ** (-0.729)
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
+                )
+            )
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:rear_length"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * maximum_height**0.072
+                    * 0.072
+                    * (fus_length - lar - lav) ** -1.072
+                    * dynamic_pressure**0.241
+                    - 11.9
+                    * is_pressurized
+                    * 0.271
+                    * (fus_length - lar - lav) ** (-0.729)
+                    * (delta_p * np.pi * (fus_dia / 2.0) ** 2.0) ** 0.271
+                )
+            )
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_width"] = (
+            k_factor
+            * 0.052
+            * is_pressurized
+            * 11.9
+            * 0.271
+            * (delta_p * np.pi * (fus_length - lar - lav)) ** 0.271
+            * (maximum_height + maximum_width) ** (-0.458)
+            * 2 ** (-0.084)
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:maximum_height"] = (
+            k_factor
+            * (
+                0.052
+                * (
+                    wet_area_fus**1.086
+                    * (sizing_factor_ultimate * mtow) ** 0.177
+                    * lp_ht ** (-0.051)
+                    * (fus_length - lar - lav) ** (-0.072)
+                    * dynamic_pressure**0.241
+                    * 0.072
+                    * maximum_height**-0.928
+                    + is_pressurized
+                    * 11.9
+                    * 0.271
+                    * (delta_p * np.pi * (fus_length - lar - lav)) ** 0.271
+                    * (maximum_height + maximum_width) ** (-0.458)
+                    * 2 ** (-0.084)
+                )
+            )
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:geometry:fuselage:wet_area"] = (
+            k_factor
+            * 0.052
+            * (
+                1.086
+                * wet_area_fus**0.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+            )
+        )
+        partials[
+            "data:weight:airframe:fuselage:mass",
+            "data:mission:sizing:cs23:sizing_factor:ultimate_aircraft",
+        ] = k_factor * (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * 0.177
+                * (sizing_factor_ultimate * mtow) ** -0.823
+                * mtow
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+            )
+        )
+        partials["data:weight:airframe:fuselage:mass", "data:weight:aircraft:MTOW"] = k_factor * (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * 0.177
+                * (sizing_factor_ultimate * mtow) ** -0.823
+                * sizing_factor_ultimate
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+            )
+        )
+        partials[
+            "data:weight:airframe:fuselage:mass",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = k_factor * (
+            -0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * 0.051
+                * lp_ht ** (-1.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * dynamic_pressure**0.241
+            )
+        )
+
+        partials["data:weight:airframe:fuselage:mass", "data:TLAR:v_cruise"] = (
+            k_factor
+            * 0.052
+            * wet_area_fus**1.086
+            * (sizing_factor_ultimate * mtow) ** 0.177
+            * lp_ht ** (-0.051)
+            * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+            * 2
+            * 0.241
+            * (0.5 * rho_cruise * 0.020885434273039) ** 0.241
+            * v_cruise ** (-0.518)
+        )
+
+        partials[
+            "data:weight:airframe:fuselage:mass", "data:mission:sizing:main_route:cruise:altitude"
+        ] = k_factor * (
+            0.052
+            * (
+                wet_area_fus**1.086
+                * (sizing_factor_ultimate * mtow) ** 0.177
+                * lp_ht ** (-0.051)
+                * ((fus_length - lar - lav) / maximum_height) ** (-0.072)
+                * 0.241
+                * (0.5 * v_cruise**2.0 * 0.020885434273039) ** 0.241
+                * atm_cruise.partial_density_altitude
+                * rho_cruise ** (-0.759)
+                - 11.9
+                * is_pressurized
+                * 0.271
+                * (v_press * 0.000145038) ** 0.271
+                * atm_cruise.partial_pressure_altitude
+                * (pressure_sl - pressure_cruise) ** (-0.729)
+            )
         )
 
 
@@ -168,6 +522,8 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
 
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="ft")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="ft")
@@ -193,6 +549,8 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -241,6 +599,8 @@ class ComputeFuselageWeightRoskam(om.ExplicitComponent):
 
         outputs["data:weight:airframe:fuselage:mass"] = a2
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_config = inputs["data:geometry:wing_configuration"]
 
