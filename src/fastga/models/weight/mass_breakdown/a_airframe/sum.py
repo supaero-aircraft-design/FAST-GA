@@ -37,13 +37,18 @@ class AirframeWeight(om.Group):
     """Computes mass of airframe."""
 
     def empennage_submodel_check(self):
-        if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
+        """Check on tail weight mass submodel definition."""
+        if oad.RegisterSubmodel.active_models.get(SUBMODEL_TAIL_MASS) is None:
+            pass
+
+        elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
             oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
                 "fastga.submodel.weight.mass.airframe.htp.legacy"
             )
             oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
                 "fastga.submodel.weight.mass.airframe.vtp.legacy"
             )
+
         elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_GD:
             oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
                 "fastga.submodel.weight.mass.airframe.htp.gd"
