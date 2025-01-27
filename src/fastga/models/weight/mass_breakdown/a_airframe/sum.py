@@ -103,6 +103,7 @@ def _empennage_submodel_check():
     set_vtp_submodel = oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS)
 
     if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
+        _LOGGER.warning("For future version update, this activation might be discarded !!")
         oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
             "fastga.submodel.weight.mass.airframe.htp.legacy"
         )
@@ -111,6 +112,7 @@ def _empennage_submodel_check():
         )
 
     elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_GD:
+        _LOGGER.warning("For future version update, this activation might be discarded !!")
         oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
             "fastga.submodel.weight.mass.airframe.htp.gd"
         )
@@ -119,6 +121,7 @@ def _empennage_submodel_check():
         )
 
     elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_TORENBEEK_GD:
+        _LOGGER.warning("For future version update, this activation might be discarded !!")
         oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
             "fastga.submodel.weight.mass.airframe.htp.torenbeek"
         )
