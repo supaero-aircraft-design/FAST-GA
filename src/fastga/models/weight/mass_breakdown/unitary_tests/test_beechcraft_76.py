@@ -15,7 +15,7 @@ Test module for mass breakdown functions.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import pytest
-
+import fastoad.api as oad
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 from ..a_airframe import (
@@ -560,6 +560,25 @@ def test_compute_airframe_weight():
     weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
     assert weight_a == pytest.approx(478.16, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
+
+def test_tail_weight_compatibility():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.tail"] = (
+        "fastga.submodel.weight.mass.airframe.tail.legacy"
+    )
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.htp"] == (
+        "fastga.submodel.weight.mass.airframe.htp.legacy"
+    )
+    assert oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.vtp"] == (
+        "fastga.submodel.weight.mass.airframe.vtp.legacy"
+    )
     problem.check_partials(compact_print=True)
 
 
