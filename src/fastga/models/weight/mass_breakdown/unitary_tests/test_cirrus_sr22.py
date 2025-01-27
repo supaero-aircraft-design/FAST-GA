@@ -68,6 +68,8 @@ from ..a_airframe.constants import (
     TAIL_WEIGHT_GD,
     HTP_WEIGHT_GD,
     VTP_WEIGHT_GD,
+    HTP_WEIGHT_LEGACY,
+    VTP_WEIGHT_LEGACY,
 )
 from ..b_propulsion import (
     ComputeOilWeight,
@@ -568,18 +570,69 @@ def test_compute_airframe_weight():
 
 
 def test_tail_weight_compatibility():
-    """Tests airframe weight computation from sample XML data."""
+    """Tests tail weight calculation submodel compatibility."""
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_GD
 
     ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(AirframeWeight(), ivc)
+    run_system(AirframeWeight(), ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_GD
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
-    problem.check_partials(compact_print=True)
+
+def test_tail_weight_compatibility_overwrite_htp():
+    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_GD
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
+
+
+def test_tail_weight_compatibility_overwrite_vtp():
+    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_GD
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_GD
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
+
+
+def test_tail_weight_compatibility_only_htp():
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_GD
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_GD
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
+
+
+def test_tail_weight_compatibility_only_vtp():
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
+
+
+def test_tail_weight_compatibility_both():
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_GD
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_GD
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
 
 def test_compute_oil_weight():

@@ -57,6 +57,8 @@ from ..a_airframe.constants import (
     TAIL_WEIGHT_TORENBEEK_GD,
     HTP_WEIGHT_TORENBEEK,
     VTP_WEIGHT_GD,
+    VTP_WEIGHT_LEGACY,
+    HTP_WEIGHT_LEGACY,
 )
 from ..a_airframe.wing_components import (
     ComputeWebMass,
@@ -557,10 +559,72 @@ def test_tail_weight_compatibility():
     ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(AirframeWeight(), ivc)
+    run_system(AirframeWeight(), ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
-    problem.check_partials(compact_print=True)
+
+
+def test_tail_weight_compatibility_overwrite_htp():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_TORENBEEK_GD
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
+
+
+def test_tail_weight_compatibility_overwrite_vtp():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_TORENBEEK_GD
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
+
+
+def test_tail_weight_compatibility_only_htp():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
+
+
+def test_tail_weight_compatibility_only_vtp():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
+
+
+def test_tail_weight_compatibility_both():
+    """Tests airframe weight computation from sample XML data."""
+    # Research independent input value in .xml file
+    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
+    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    run_system(AirframeWeight(), ivc)
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
 
 def test_compute_oil_weight():

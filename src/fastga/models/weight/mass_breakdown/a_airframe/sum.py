@@ -14,7 +14,7 @@
 
 import fastoad.api as oad
 import openmdao.api as om
-
+import logging
 from .constants import (
     SUBMODEL_WING_MASS,
     SUBMODEL_FUSELAGE_MASS,
@@ -29,6 +29,12 @@ from .constants import (
     TAIL_WEIGHT_TORENBEEK_GD,
 )
 from ..constants import SUBMODEL_AIRFRAME_MASS
+
+_LOGGER = logging.getLogger(__name__)
+
+# Set up as default calculation for both HTP and VTP
+oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_LEGACY
+
 
 @oad.RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
 class AirframeWeight(om.Group):
@@ -92,10 +98,11 @@ class AirframeWeight(om.Group):
 
 def _empennage_submodel_check():
     """Check on tail weight mass submodel definition."""
-    if oad.RegisterSubmodel.active_models.get(SUBMODEL_TAIL_MASS) is None:
-        pass
 
-    elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
+    set_htp_submodel = oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS)
+    set_vtp_submodel = oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS)
+
+    if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
         oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
             "fastga.submodel.weight.mass.airframe.htp.legacy"
         )
@@ -118,3 +125,9 @@ def _empennage_submodel_check():
         oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
             "fastga.submodel.weight.mass.airframe.vtp.gd"
         )
+
+    if set_htp_submodel:
+        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = set_htp_submodel
+
+    if set_vtp_submodel:
+        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = set_vtp_submodel

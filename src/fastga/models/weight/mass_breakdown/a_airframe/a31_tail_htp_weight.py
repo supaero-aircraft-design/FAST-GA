@@ -19,10 +19,6 @@ from stdatm import AtmosphereWithPartials
 
 from .constants import SUBMODEL_HTP_MASS
 
-oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-    "fastga.submodel.weight.mass.airframe.htp.legacy"
-)
-
 
 @oad.RegisterSubmodel(SUBMODEL_HTP_MASS, "fastga.submodel.weight.mass.airframe.htp.legacy")
 class ComputeHTPWeight(om.ExplicitComponent):
