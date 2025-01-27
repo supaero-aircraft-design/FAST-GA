@@ -19,18 +19,49 @@ from .constants import (
     SUBMODEL_WING_MASS,
     SUBMODEL_FUSELAGE_MASS,
     SUBMODEL_TAIL_MASS,
+    SUBMODEL_HTP_MASS,
+    SUBMODEL_VTP_MASS,
     SUBMODEL_FLIGHT_CONTROLS_MASS,
     SUBMODEL_LANDING_GEAR_MASS,
     SUBMODEL_PAINT_MASS,
 )
 from ..constants import SUBMODEL_AIRFRAME_MASS
 
+TAIL_WEIGHT_LEGACY = "fastga.submodel.weight.mass.airframe.tail.legacy"
+TAIL_WEIGHT_GD = "fastga.submodel.weight.mass.airframe.tail.gd"
+TAIL_WEIGHT_TORENBEEK_GD = "fastga.submodel.weight.mass.airframe.tail.torenbeek_gd"
+
 
 @oad.RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
 class AirframeWeight(om.Group):
     """Computes mass of airframe."""
 
+    def empennage_submodel_check(self):
+        if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.legacy"
+            )
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.legacy"
+            )
+        elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_GD:
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.gd"
+            )
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.gd"
+            )
+
+        elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_TORENBEEK_GD:
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.torenbeek"
+            )
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.gd"
+            )
+
     def setup(self):
+        self.empennage_submodel_check()
         self.add_subsystem(
             "wing_weight", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MASS), promotes=["*"]
         )
@@ -40,8 +71,13 @@ class AirframeWeight(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "empennage_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_MASS),
+            "empennage_htp_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_HTP_MASS),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "empennage_vtp_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_VTP_MASS),
             promotes=["*"],
         )
         self.add_subsystem(

@@ -19,9 +19,11 @@ import pytest
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
 from ..a_airframe import (
-    ComputeTailWeight,
-    ComputeTailWeightGD,
-    ComputeTailWeightTorenbeekGD,
+    ComputeHTPWeight,
+    ComputeVTPWeight,
+    ComputeHTPWeightGD,
+    ComputeVTPWeightGD,
+    ComputeHTPWeightTorenbeek,
     ComputeFlightControlsWeight,
     ComputeFlightControlsWeightFLOPS,
     ComputeFuselageWeight,
