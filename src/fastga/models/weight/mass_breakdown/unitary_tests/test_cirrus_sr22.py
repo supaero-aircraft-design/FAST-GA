@@ -61,6 +61,14 @@ from ..a_airframe.wing_components import (
     ComputeSecondaryMass,
     UpdateWingMass,
 )
+from ..a_airframe.constants import (
+    SUBMODEL_TAIL_MASS,
+    SUBMODEL_HTP_MASS,
+    SUBMODEL_VTP_MASS,
+    TAIL_WEIGHT_GD,
+    HTP_WEIGHT_GD,
+    VTP_WEIGHT_GD,
+)
 from ..b_propulsion import (
     ComputeOilWeight,
     ComputeFuelLinesWeight,
@@ -562,19 +570,14 @@ def test_compute_airframe_weight():
 def test_tail_weight_compatibility():
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
-    oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.tail"] = (
-        "fastga.submodel.weight.mass.airframe.tail.gd"
-    )
+    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_GD
+
     ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(AirframeWeight(), ivc)
-    assert oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.htp"] == (
-        "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    assert oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.vtp"] == (
-        "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_GD
+    assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
     problem.check_partials(compact_print=True)
 

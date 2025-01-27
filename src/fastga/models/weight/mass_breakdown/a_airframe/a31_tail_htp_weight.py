@@ -284,7 +284,6 @@ class ComputeHTPWeightGD(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:TLAR:v_max_sl", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:cs23:sizing_factor:ultimate_aircraft", val=np.nan)
         self.add_input("data:weight:aircraft:MTOW", val=np.nan, units="lb")
         self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
