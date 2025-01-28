@@ -27,6 +27,11 @@ from .constants import (
     TAIL_WEIGHT_LEGACY,
     TAIL_WEIGHT_GD,
     TAIL_WEIGHT_TORENBEEK_GD,
+    HTP_WEIGHT_LEGACY,
+    VTP_WEIGHT_LEGACY,
+    HTP_WEIGHT_GD,
+    VTP_WEIGHT_GD,
+    HTP_WEIGHT_TORENBEEK,
 )
 from ..constants import SUBMODEL_AIRFRAME_MASS
 
@@ -104,30 +109,18 @@ def _empennage_submodel_check():
 
     if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
         _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.htp.legacy"
-        )
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.vtp.legacy"
-        )
+        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
+        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
 
     elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_GD:
         _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.htp.gd"
-        )
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.vtp.gd"
-        )
+        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_GD
+        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
 
     elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_TORENBEEK_GD:
         _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.htp.torenbeek"
-        )
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-            "fastga.submodel.weight.mass.airframe.vtp.gd"
-        )
+        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
+        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
 
     if set_htp_submodel:
         oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = set_htp_submodel
