@@ -503,7 +503,7 @@ class ComputeHTPWeightTorenbeek(om.ExplicitComponent):
         self.add_input("data:weight:airframe:horizontal_tail:k_factor", val=1.0)
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="ft**2")
         self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", units="kn")
+        self.add_input("data:mission:sizing:cs23:characteristic_speed:vd", val=np.nan, units="kn")
 
         self.add_output("data:weight:airframe:horizontal_tail:mass", units="lb")
 

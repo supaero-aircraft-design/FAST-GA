@@ -14,31 +14,15 @@
 
 import fastoad.api as oad
 import openmdao.api as om
-import logging
 from .constants import (
     SUBMODEL_WING_MASS,
     SUBMODEL_FUSELAGE_MASS,
     SUBMODEL_TAIL_MASS,
-    SUBMODEL_HTP_MASS,
-    SUBMODEL_VTP_MASS,
     SUBMODEL_FLIGHT_CONTROLS_MASS,
     SUBMODEL_LANDING_GEAR_MASS,
     SUBMODEL_PAINT_MASS,
-    TAIL_WEIGHT_LEGACY,
-    TAIL_WEIGHT_GD,
-    TAIL_WEIGHT_TORENBEEK_GD,
-    HTP_WEIGHT_LEGACY,
-    VTP_WEIGHT_LEGACY,
-    HTP_WEIGHT_GD,
-    VTP_WEIGHT_GD,
-    HTP_WEIGHT_TORENBEEK,
 )
 from ..constants import SUBMODEL_AIRFRAME_MASS
-
-_LOGGER = logging.getLogger(__name__)
-
-# Set up as default calculation for both HTP and VTP
-oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_LEGACY
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRFRAME_MASS, "fastga.submodel.weight.mass.airframe.legacy")
@@ -46,7 +30,6 @@ class AirframeWeight(om.Group):
     """Computes mass of airframe."""
 
     def setup(self):
-        _empennage_submodel_check()
         self.add_subsystem(
             "wing_weight", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MASS), promotes=["*"]
         )
@@ -56,13 +39,8 @@ class AirframeWeight(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "empennage_htp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HTP_MASS),
-            promotes=["*"],
-        )
-        self.add_subsystem(
-            "empennage_vtp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VTP_MASS),
+            "empennage_weight",
+            oad.RegisterSubmodel.get_submodel(SUBMODEL_TAIL_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -99,31 +77,3 @@ class AirframeWeight(om.Group):
         )
 
         self.add_subsystem("airframe_weight_sum", weight_sum, promotes=["*"])
-
-
-def _empennage_submodel_check():
-    """Check on tail weight mass submodel definition."""
-
-    set_htp_submodel = oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS)
-    set_vtp_submodel = oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS)
-
-    if oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_LEGACY:
-        _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
-
-    elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_GD:
-        _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_GD
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
-
-    elif oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] == TAIL_WEIGHT_TORENBEEK_GD:
-        _LOGGER.warning("For future version update, this activation might be discarded !!")
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
-
-    if set_htp_submodel:
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = set_htp_submodel
-
-    if set_vtp_submodel:
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = set_vtp_submodel

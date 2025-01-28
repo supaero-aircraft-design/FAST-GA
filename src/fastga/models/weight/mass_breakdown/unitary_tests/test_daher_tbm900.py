@@ -545,10 +545,11 @@ def test_compute_paint_weight():
 def test_compute_airframe_weight(_reset_tail_submodel_registry):
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(AirframeWeight(), ivc)
+    problem = run_system(system, ivc)
     weight_a = problem.get_val("data:weight:airframe:mass", units="kg")
     assert weight_a == pytest.approx(870.06, abs=1e-2)
 
@@ -557,10 +558,11 @@ def test_tail_weight_compatibility(_reset_tail_submodel_registry):
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_TORENBEEK_GD
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
@@ -570,10 +572,11 @@ def test_tail_weight_compatibility_overwrite_htp(_reset_tail_submodel_registry):
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_TORENBEEK_GD
     oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
@@ -583,10 +586,11 @@ def test_tail_weight_compatibility_overwrite_vtp(_reset_tail_submodel_registry):
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_TORENBEEK_GD
     oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
 
@@ -595,10 +599,11 @@ def test_tail_weight_compatibility_only_htp(_reset_tail_submodel_registry):
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_LEGACY
 
@@ -607,10 +612,11 @@ def test_tail_weight_compatibility_only_vtp(_reset_tail_submodel_registry):
     """Tests airframe weight computation from sample XML data."""
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_LEGACY
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
@@ -620,10 +626,11 @@ def test_tail_weight_compatibility_both(_reset_tail_submodel_registry):
     # Research independent input value in .xml file
     oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
     oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
-    ivc = get_indep_var_comp(list_inputs(AirframeWeight()), __file__, XML_FILE)
+    system = AirframeWeight()
+    ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    run_system(AirframeWeight(), ivc)
+    run_system(system, ivc)
     assert oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] == HTP_WEIGHT_TORENBEEK
     assert oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] == VTP_WEIGHT_GD
 
