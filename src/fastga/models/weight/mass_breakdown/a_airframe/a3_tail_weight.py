@@ -28,6 +28,8 @@ from .constants import (
     TAIL_WEIGHT_TORENBEEK_GD,
 )
 
+oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_LEGACY
+
 
 @oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_LEGACY)
 class ComputeTailWeight(om.Group):
