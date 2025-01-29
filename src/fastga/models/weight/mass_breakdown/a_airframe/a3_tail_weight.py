@@ -1,4 +1,4 @@
-"""Estimation of htp weight."""
+"""Estimation of tail weight."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -34,13 +34,16 @@ oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_LEGACY
 @oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_LEGACY)
 class ComputeTailWeight(om.Group):
     """
-    Weight estimation for htp weight
+    Weight estimation for tail weight
 
     Based on a statistical analysis. See :cite:`raymer:2012` but can also be found in
     :cite:`gudmundsson:2013`
     """
 
     def __init__(self, **kwargs):
+        """
+        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        """
         super().__init__(**kwargs)
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
@@ -49,6 +52,8 @@ class ComputeTailWeight(om.Group):
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
             oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
@@ -65,13 +70,16 @@ class ComputeTailWeight(om.Group):
 @oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_GD)
 class ComputeTailWeightGD(om.Group):
     """
-    Weight estimation for htp weight
+    Weight estimation for tail weight
 
     Based on a statistical analysis. See :cite:`roskampart5:1985` traditionally used on
     commercial aircraft but found to work fairly well on high performance GA aircraft.
     """
 
     def __init__(self, **kwargs):
+        """
+        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        """
         super().__init__(**kwargs)
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
@@ -80,6 +88,8 @@ class ComputeTailWeightGD(om.Group):
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
             oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
@@ -96,7 +106,7 @@ class ComputeTailWeightGD(om.Group):
 @oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_TORENBEEK_GD)
 class ComputeTailWeightTorenbeekGD(om.Group):
     """
-    Weight estimation for htp weight
+    Weight estimation for tail weight
 
     Based on a statistical analysis. See :cite:`roskampart5:1985` traditionally used on
     commercial aircraft but found to work fairly well on high performance GA aircraft. Should
@@ -104,6 +114,9 @@ class ComputeTailWeightTorenbeekGD(om.Group):
     """
 
     def __init__(self, **kwargs):
+        """
+        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        """
         super().__init__(**kwargs)
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
             oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
@@ -111,6 +124,8 @@ class ComputeTailWeightTorenbeekGD(om.Group):
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
             oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
