@@ -215,8 +215,6 @@
           <wet_area units="m**2" is_input="False">4.3197777006580775<!--nacelle wet area--></wet_area>
           <width units="m" is_input="False">1.1253790627855103<!--width of the nacelle--></width>
           <y units="m" is_input="False">0.0<!--Y-position of nacelle center--></y>
-          # Added randomly for test
-          <x units="m" is_input="False">1.0<!--Y-position of nacelle center--></x>
         </nacelle>
         <propeller>
           <depth units="m" is_input="False">1.0</depth>

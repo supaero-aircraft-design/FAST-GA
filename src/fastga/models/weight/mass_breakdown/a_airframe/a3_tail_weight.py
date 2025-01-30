@@ -1,6 +1,9 @@
-"""Estimation of tail weight."""
+"""
+Python module for tail weight calculation consisted with the htp and vtp weight calculations,
+part of the airframe mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,20 +21,15 @@ from .constants import (
     SUBMODEL_HTP_MASS,
     SUBMODEL_TAIL_MASS,
     SUBMODEL_VTP_MASS,
-    HTP_WEIGHT_LEGACY,
-    VTP_WEIGHT_LEGACY,
-    HTP_WEIGHT_GD,
-    VTP_WEIGHT_GD,
-    HTP_WEIGHT_TORENBEEK,
-    TAIL_WEIGHT_LEGACY,
-    TAIL_WEIGHT_GD,
-    TAIL_WEIGHT_TORENBEEK_GD,
 )
 
-oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = TAIL_WEIGHT_LEGACY
+oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
+    "fastga.submodel.weight.mass.airframe.tail.legacy"
+)
 
 
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_LEGACY)
+# pylint: disable=too-few-public-methods
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
 class ComputeTailWeight(om.Group):
     """
     Weight estimation for tail weight
@@ -42,15 +40,19 @@ class ComputeTailWeight(om.Group):
 
     def __init__(self, **kwargs):
         """
-        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        Set up corresponded components if user didn't define specifically.
         """
         super().__init__(**kwargs)
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_LEGACY
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.legacy"
+            )
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_LEGACY
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.legacy"
+            )
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -67,7 +69,8 @@ class ComputeTailWeight(om.Group):
         )
 
 
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_GD)
+# pylint: disable=too-few-public-methods
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.gd")
 class ComputeTailWeightGD(om.Group):
     """
     Weight estimation for tail weight
@@ -78,15 +81,19 @@ class ComputeTailWeightGD(om.Group):
 
     def __init__(self, **kwargs):
         """
-        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        Set up corresponded components if user didn't define specifically.
         """
         super().__init__(**kwargs)
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_GD
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.gd"
+            )
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.gd"
+            )
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -103,7 +110,8 @@ class ComputeTailWeightGD(om.Group):
         )
 
 
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, TAIL_WEIGHT_TORENBEEK_GD)
+# pylint: disable=too-few-public-methods
+@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.torenbeek_gd")
 class ComputeTailWeightTorenbeekGD(om.Group):
     """
     Weight estimation for tail weight
@@ -115,14 +123,18 @@ class ComputeTailWeightTorenbeekGD(om.Group):
 
     def __init__(self, **kwargs):
         """
-        Set up corresponded components for computation if user didn't define specifically for htp or vtp.
+        Set up corresponded components if user didn't define specifically.
         """
         super().__init__(**kwargs)
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = HTP_WEIGHT_TORENBEEK
+            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.htp.torenbeek"
+            )
 
         if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = VTP_WEIGHT_GD
+            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
+                "fastga.submodel.weight.mass.airframe.vtp.gd"
+            )
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

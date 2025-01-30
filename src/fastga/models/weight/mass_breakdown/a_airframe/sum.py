@@ -29,6 +29,8 @@ from ..constants import SUBMODEL_AIRFRAME_MASS
 class AirframeWeight(om.Group):
     """Computes mass of airframe."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "wing_weight", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MASS), promotes=["*"]
