@@ -18,16 +18,16 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SUBMODEL_FUEL_SYSTEM_MASS
-
-oad.RegisterSubmodel.active_models[SUBMODEL_FUEL_SYSTEM_MASS] = (
-    "fastga.submodel.weight.mass.propulsion.fuel_system.legacy"
+from .constants import (
+    SERVICE_FUEL_SYSTEM_MASS,
+    SUBMODEL_FUEL_SYSTEM_MASS_LEGACY,
+    SUBMODEL_FUEL_SYSTEM_MASS_FLOPS,
 )
 
+oad.RegisterSubmodel.active_models[SERVICE_FUEL_SYSTEM_MASS] = SUBMODEL_FUEL_SYSTEM_MASS_LEGACY
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUEL_SYSTEM_MASS, "fastga.submodel.weight.mass.propulsion.fuel_system.legacy"
-)
+
+@oad.RegisterSubmodel(SERVICE_FUEL_SYSTEM_MASS, SUBMODEL_FUEL_SYSTEM_MASS_LEGACY)
 class ComputeFuelLinesWeight(ExplicitComponent):
     """
     Weight estimation for fuel lines
@@ -128,9 +128,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUEL_SYSTEM_MASS, "fastga.submodel.weight.mass.propulsion.fuel_system.flops"
-)
+@oad.RegisterSubmodel(SERVICE_FUEL_SYSTEM_MASS, SUBMODEL_FUEL_SYSTEM_MASS_FLOPS)
 class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
     """
     Weight estimation for fuel lines

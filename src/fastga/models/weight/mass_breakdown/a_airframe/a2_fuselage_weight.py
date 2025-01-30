@@ -19,18 +19,19 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
-from .constants import SUBMODEL_FUSELAGE_MASS
+from .constants import (
+    SERVICE_FUSELAGE_MASS,
+    SUBMODEL_FUSELAGE_MASS_LEGACY,
+    SUBMODEL_FUSELAGE_MASS_RAYMER,
+    SUBMODEL_FUSELAGE_MASS_ROSKAM,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_MASS] = (
-    "fastga.submodel.weight.mass.airframe.fuselage.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_MASS] = SUBMODEL_FUSELAGE_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_LEGACY)
 class ComputeFuselageWeight(om.ExplicitComponent):
     """
     Fuselage weight estimation
@@ -190,9 +191,7 @@ class ComputeFuselageWeight(om.ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.raymer"
-)
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_RAYMER)
 class ComputeFuselageWeightRaymer(om.ExplicitComponent):
     """
     Fuselage weight estimation
@@ -510,9 +509,7 @@ class ComputeFuselageWeightRaymer(om.ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.roskam"
-)
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_ROSKAM)
 class ComputeFuselageWeightRoskam(om.ExplicitComponent):
     """
     Fuselage weight estimation, includes the computation of the fuselage weight for a high wing

@@ -17,16 +17,18 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
-from .constants import SUBMODEL_FLIGHT_CONTROLS_MASS
+from .constants import (
+    SERVICE_FLIGHT_CONTROLS_MASS,
+    SUBMODEL_FLIGHT_CONTROLS_MASS_LEGACY,
+    SUBMODEL_FLIGHT_CONTROLS_MASS_FLOPS,
+)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_FLIGHT_CONTROLS_MASS] = (
-    "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
+oad.RegisterSubmodel.active_models[SERVICE_FLIGHT_CONTROLS_MASS] = (
+    SUBMODEL_FLIGHT_CONTROLS_MASS_LEGACY
 )
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FLIGHT_CONTROLS_MASS, "fastga.submodel.weight.mass.airframe.flight_controls.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_FLIGHT_CONTROLS_MASS, SUBMODEL_FLIGHT_CONTROLS_MASS_LEGACY)
 class ComputeFlightControlsWeight(om.ExplicitComponent):
     """
     Flight controls weight estimation
@@ -83,9 +85,7 @@ class ComputeFlightControlsWeight(om.ExplicitComponent):
         ] = (4.24e-6 * fus_length**1.536 * mtow * span**0.371) / (1.0e-4 * mtow * n_ult) ** 0.2
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FLIGHT_CONTROLS_MASS, "fastga.submodel.weight.mass.airframe.flight_controls.flops"
-)
+@oad.RegisterSubmodel(SERVICE_FLIGHT_CONTROLS_MASS, SUBMODEL_FLIGHT_CONTROLS_MASS_FLOPS)
 class ComputeFlightControlsWeightFLOPS(om.ExplicitComponent):
     """
     Flight controls weight estimation.

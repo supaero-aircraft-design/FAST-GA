@@ -15,11 +15,11 @@
 import fastoad.api as oad
 import openmdao.api as om
 
-from .constants import SUBMODEL_SEATS_MASS
-from ..constants import SUBMODEL_FURNITURE_MASS
+from .constants import SERVICE_SEATS_MASS
+from ..constants import SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_FURNITURE_MASS, "fastga.submodel.weight.mass.furniture.legacy")
+@oad.RegisterSubmodel(SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY)
 class FurnitureWeight(om.Group):
     """
     Computes mass of furniture.
@@ -28,7 +28,7 @@ class FurnitureWeight(om.Group):
     def setup(self):
         self.add_subsystem(
             "seats_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_SEATS_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_SEATS_MASS),
             promotes=["*"],
         )
 

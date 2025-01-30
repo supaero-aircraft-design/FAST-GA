@@ -18,18 +18,24 @@ part of the airframe mass computation.
 import fastoad.api as oad
 import openmdao.api as om
 from .constants import (
-    SUBMODEL_HTP_MASS,
-    SUBMODEL_TAIL_MASS,
-    SUBMODEL_VTP_MASS,
+    SERVICE_HTP_MASS,
+    SERVICE_TAIL_MASS,
+    SERVICE_VTP_MASS,
+    SUBMODEL_TAIL_MASS_LEGACY,
+    SUBMODEL_TAIL_MASS_GD,
+    SUBMODEL_TAIL_MASS_TORENBEEKGD,
+    SUBMODEL_HTP_MASS_LEGACY,
+    SUBMODEL_HTP_MASS_GD,
+    SUBMODEL_HTP_MASS_TORENBEEK,
+    SUBMODEL_VTP_MASS_LEGACY,
+    SUBMODEL_VTP_MASS_GD,
 )
 
-oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
-    "fastga.submodel.weight.mass.airframe.tail.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_TAIL_MASS] = SUBMODEL_TAIL_MASS_LEGACY
 
 
 # pylint: disable=too-few-public-methods
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.legacy")
+@oad.RegisterSubmodel(SERVICE_TAIL_MASS, SUBMODEL_TAIL_MASS_LEGACY)
 class ComputeTailWeight(om.Group):
     """
     Weight estimation for tail weight
@@ -44,33 +50,29 @@ class ComputeTailWeight(om.Group):
         """
         super().__init__(**kwargs)
 
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.htp.legacy"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_HTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_LEGACY
 
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.vtp.legacy"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_VTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_LEGACY
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HTP_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "empennage_vtp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_VTP_MASS),
             promotes=["*"],
         )
 
 
 # pylint: disable=too-few-public-methods
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.gd")
+@oad.RegisterSubmodel(SERVICE_TAIL_MASS, SUBMODEL_TAIL_MASS_GD)
 class ComputeTailWeightGD(om.Group):
     """
     Weight estimation for tail weight
@@ -85,33 +87,29 @@ class ComputeTailWeightGD(om.Group):
         """
         super().__init__(**kwargs)
 
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.htp.gd"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_HTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_GD
 
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.vtp.gd"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_VTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_GD
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HTP_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "empennage_vtp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_VTP_MASS),
             promotes=["*"],
         )
 
 
 # pylint: disable=too-few-public-methods
-@oad.RegisterSubmodel(SUBMODEL_TAIL_MASS, "fastga.submodel.weight.mass.airframe.tail.torenbeek_gd")
+@oad.RegisterSubmodel(SERVICE_TAIL_MASS, SUBMODEL_TAIL_MASS_TORENBEEKGD)
 class ComputeTailWeightTorenbeekGD(om.Group):
     """
     Weight estimation for tail weight
@@ -126,26 +124,22 @@ class ComputeTailWeightTorenbeekGD(om.Group):
         Set up corresponded components if user didn't define specifically.
         """
         super().__init__(**kwargs)
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_HTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.htp.torenbeek"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_HTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_TORENBEEK
 
-        if not oad.RegisterSubmodel.active_models.get(SUBMODEL_VTP_MASS):
-            oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-                "fastga.submodel.weight.mass.airframe.vtp.gd"
-            )
+        if not oad.RegisterSubmodel.active_models.get(SERVICE_VTP_MASS):
+            oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_GD
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "empennage_htp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HTP_MASS),
             promotes=["*"],
         )
         self.add_subsystem(
             "empennage_vtp_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VTP_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_VTP_MASS),
             promotes=["*"],
         )

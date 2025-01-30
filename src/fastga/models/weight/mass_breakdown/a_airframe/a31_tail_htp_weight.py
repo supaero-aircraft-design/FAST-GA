@@ -19,10 +19,15 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
-from .constants import SUBMODEL_HTP_MASS
+from .constants import (
+    SERVICE_HTP_MASS,
+    SUBMODEL_HTP_MASS_LEGACY,
+    SUBMODEL_HTP_MASS_GD,
+    SUBMODEL_HTP_MASS_TORENBEEK,
+)
 
 
-@oad.RegisterSubmodel(SUBMODEL_HTP_MASS, "fastga.submodel.weight.mass.airframe.htp.legacy")
+@oad.RegisterSubmodel(SERVICE_HTP_MASS, SUBMODEL_HTP_MASS_LEGACY)
 class ComputeHTPWeight(om.ExplicitComponent):
     """
     Weight estimation for htp weight
@@ -270,7 +275,7 @@ class ComputeHTPWeight(om.ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(SUBMODEL_HTP_MASS, "fastga.submodel.weight.mass.airframe.htp.gd")
+@oad.RegisterSubmodel(SERVICE_HTP_MASS, SUBMODEL_HTP_MASS_GD)
 class ComputeHTPWeightGD(om.ExplicitComponent):
     """
     Weight estimation for htp weight
@@ -489,7 +494,7 @@ class ComputeHTPWeightGD(om.ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(SUBMODEL_HTP_MASS, "fastga.submodel.weight.mass.airframe.htp.torenbeek")
+@oad.RegisterSubmodel(SERVICE_HTP_MASS, SUBMODEL_HTP_MASS_TORENBEEK)
 class ComputeHTPWeightTorenbeek(om.ExplicitComponent):
     """
     Weight estimation for htp weight

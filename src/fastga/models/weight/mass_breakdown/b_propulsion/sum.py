@@ -16,16 +16,14 @@ import fastoad.api as oad
 import openmdao.api as om
 
 from .constants import (
-    SUBMODEL_INSTALLED_ENGINE_MASS,
-    SUBMODEL_UNUSABLE_FUEL_MASS,
-    SUBMODEL_FUEL_SYSTEM_MASS,
+    SERVICE_INSTALLED_ENGINE_MASS,
+    SERVICE_UNUSABLE_FUEL_MASS,
+    SERVICE_FUEL_SYSTEM_MASS,
 )
-from ..constants import SUBMODEL_PROPULSION_MASS
+from ..constants import SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY_FUEL
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_PROPULSION_MASS, "fastga.submodel.weight.mass.propulsion.legacy.fuel"
-)
+@oad.RegisterSubmodel(SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY_FUEL)
 class PropulsionWeight(om.Group):
     """Computes mass of propulsion system."""
 
@@ -37,20 +35,20 @@ class PropulsionWeight(om.Group):
         self.add_subsystem(
             "engine_weight",
             oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_INSTALLED_ENGINE_MASS, options=propulsion_option
+                SERVICE_INSTALLED_ENGINE_MASS, options=propulsion_option
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "unusable_fuel",
             oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_UNUSABLE_FUEL_MASS, options=propulsion_option
+                SERVICE_UNUSABLE_FUEL_MASS, options=propulsion_option
             ),
             promotes=["*"],
         )
         self.add_subsystem(
             "fuel_lines_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUEL_SYSTEM_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUEL_SYSTEM_MASS),
             promotes=["*"],
         )
 

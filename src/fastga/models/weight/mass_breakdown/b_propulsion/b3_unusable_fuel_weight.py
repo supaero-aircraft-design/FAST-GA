@@ -21,16 +21,12 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import lbf
 
-from .constants import SUBMODEL_UNUSABLE_FUEL_MASS
+from .constants import SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_UNUSABLE_FUEL_MASS] = (
-    "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_UNUSABLE_FUEL_MASS] = SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_UNUSABLE_FUEL_MASS, "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY)
 class ComputeUnusableFuelWeight(ExplicitComponent):
     """
     Weight estimation for motor oil

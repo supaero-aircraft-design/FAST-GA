@@ -19,10 +19,10 @@ import numpy as np
 import openmdao.api as om
 from stdatm import AtmosphereWithPartials
 
-from .constants import SUBMODEL_VTP_MASS
+from .constants import SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_LEGACY, SUBMODEL_VTP_MASS_GD
 
 
-@oad.RegisterSubmodel(SUBMODEL_VTP_MASS, "fastga.submodel.weight.mass.airframe.vtp.legacy")
+@oad.RegisterSubmodel(SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_LEGACY)
 class ComputeVTPWeight(om.ExplicitComponent):
     """
     Weight estimation for vtp weight
@@ -301,7 +301,7 @@ class ComputeVTPWeight(om.ExplicitComponent):
         )
 
 
-@oad.RegisterSubmodel(SUBMODEL_VTP_MASS, "fastga.submodel.weight.mass.airframe.vtp.gd")
+@oad.RegisterSubmodel(SERVICE_VTP_MASS, SUBMODEL_VTP_MASS_GD)
 class ComputeVTPWeightGD(om.ExplicitComponent):
     """
     Weight estimation for vtp weight

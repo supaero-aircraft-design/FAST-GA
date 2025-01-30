@@ -16,14 +16,12 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_WING_MASS
+from .constants import SERVICE_WING_MASS, SUBMODEL_WING_MASS_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_WING_MASS] = (
-    "fastga.submodel.weight.mass.airframe.wing.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_WING_MASS] = SUBMODEL_WING_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_MASS, SUBMODEL_WING_MASS_LEGACY)
 class ComputeWingWeight(om.ExplicitComponent):
     """
     Wing weight estimation

@@ -18,11 +18,11 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_SEATS_MASS
+from .constants import SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_SEATS_MASS, "fastga.submodel.weight.mass.furniture.passenger_seats.legacy"
+    SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY
 )
 class ComputePassengerSeatsWeight(om.ExplicitComponent):
     """

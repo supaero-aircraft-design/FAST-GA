@@ -18,16 +18,12 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_LANDING_GEAR_MASS
+from .constants import SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_LANDING_GEAR_MASS] = (
-    "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_LANDING_GEAR_MASS] = SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_MASS, "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY)
 class ComputeLandingGearWeight(om.ExplicitComponent):
     """
     Weight estimation for landing gears

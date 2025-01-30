@@ -18,11 +18,11 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SUBMODEL_POWER_SYSTEM_MASS
+from .constants import SERVICE_POWER_SYSTEM_MASS, SUBMODEL_POWER_SYSTEM_MASS_LEGACY
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_POWER_SYSTEM_MASS, "fastga.submodel.weight.mass.system.power_system.legacy"
+    SERVICE_POWER_SYSTEM_MASS, SUBMODEL_POWER_SYSTEM_MASS_LEGACY
 )
 class ComputePowerSystemsWeight(ExplicitComponent):
     """

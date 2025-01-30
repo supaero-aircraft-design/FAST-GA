@@ -12,4 +12,5 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_SEATS_MASS = "submodel.weight.mass.furniture.seats"
+SERVICE_SEATS_MASS = "service.weight.mass.furniture.seats"
+SUBMODEL_SEATS_MASS_LEGACY = "fastga.submodel.weight.mass.furniture.passenger_seats.legacy"

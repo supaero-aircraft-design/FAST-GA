@@ -19,7 +19,7 @@ Based on the model presented by Raquel ALONSO in her MAE research project report
 import fastoad.api as oad
 import openmdao.api as om
 
-from .constants import SUBMODEL_WING_MASS
+from .constants import SERVICE_WING_MASS, SUBMODEL_WING_MASS_ANALYTICAL
 from .wing_components.compute_lower_flange import ComputeLowerFlange
 from .wing_components.compute_misc_mass import ComputeMiscMass
 from .wing_components.compute_primary_mass import ComputePrimaryMass
@@ -31,7 +31,7 @@ from .wing_components.compute_web_mass import ComputeWebMass
 from .wing_components.update_wing_mass import UpdateWingMass
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.analytical")
+@oad.RegisterSubmodel(SERVICE_WING_MASS, SUBMODEL_WING_MASS_ANALYTICAL)
 class ComputeWingMassAnalytical(om.Group):
     """
     Computes analytically the  mass of each component of the wing and add them to get total wing
