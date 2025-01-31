@@ -19,9 +19,15 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from stdatm import Atmosphere
 
-from .constants import SERVICE_LIFE_SUPPORT_SYSTEM_MASS, SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY, SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS
+from .constants import (
+    SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS,
+)
 
-oad.RegisterSubmodel.active_models[SERVICE_LIFE_SUPPORT_SYSTEM_MASS] = SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY
+oad.RegisterSubmodel.active_models[SERVICE_LIFE_SUPPORT_SYSTEM_MASS] = (
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY
+)
 
 
 @oad.RegisterSubmodel(

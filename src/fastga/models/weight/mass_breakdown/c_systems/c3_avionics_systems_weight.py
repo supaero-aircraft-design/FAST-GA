@@ -16,9 +16,15 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SERVICE_AVIONICS_SYSTEM_MASS, SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY, SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED
+from .constants import (
+    SERVICE_AVIONICS_SYSTEM_MASS,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED,
+)
 
-oad.RegisterSubmodel.active_models[SERVICE_AVIONICS_SYSTEM_MASS] = SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY
+oad.RegisterSubmodel.active_models[SERVICE_AVIONICS_SYSTEM_MASS] = (
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY
+)
 
 
 @oad.RegisterSubmodel(

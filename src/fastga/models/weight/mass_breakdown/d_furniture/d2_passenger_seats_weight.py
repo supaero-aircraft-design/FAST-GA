@@ -21,9 +21,7 @@ import openmdao.api as om
 from .constants import SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY
-)
+@oad.RegisterSubmodel(SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY)
 class ComputePassengerSeatsWeight(om.ExplicitComponent):
     """
     Weight estimation for passenger seats

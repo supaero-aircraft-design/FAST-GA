@@ -19,10 +19,18 @@ SERVICE_RECORDING_SYSTEM_MASS = "service.weight.mass.system.recording_system"
 
 SUBMODEL_POWER_SYSTEM_MASS_LEGACY = "fastga.submodel.weight.mass.system.power_system.legacy"
 
-SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY = "fastga.submodel.weight.mass.system.life_support_system.legacy"
-SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS = "fastga.submodel.weight.mass.system.life_support_system.flops"
+SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY = (
+    "fastga.submodel.weight.mass.system.life_support_system.legacy"
+)
+SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS = (
+    "fastga.submodel.weight.mass.system.life_support_system.flops"
+)
 
 SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY = "fastga.submodel.weight.mass.system.avionics_systems.legacy"
-SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED = "fastga.submodel.weight.mass.system.avionics_systems.from_uninstalled"
+SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED = (
+    "fastga.submodel.weight.mass.system.avionics_systems.from_uninstalled"
+)
 
-SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM = "fastga.submodel.weight.mass.system.recording_systems.minimum"
+SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM = (
+    "fastga.submodel.weight.mass.system.recording_systems.minimum"
+)

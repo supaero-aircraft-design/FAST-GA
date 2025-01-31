@@ -26,6 +26,7 @@ from .constants import (
     SERVICE_FURNITURE_MASS,
     SERVICE_OWE,
     SERVICE_PAYLOAD_MASS,
+    SUBMODEL_OWE_LEGACY,
 )
 from ..constants import SUBMODEL_MASS_BREAKDOWN
 
@@ -82,7 +83,7 @@ class MassBreakdown(om.Group):
         self.linear_solver.options["maxiter"] = 10
 
 
-@oad.RegisterSubmodel(SERVICE_OWE, "fastga.submodel.weight.mass.owe.legacy")
+@oad.RegisterSubmodel(SERVICE_OWE, SUBMODEL_OWE_LEGACY)
 class ComputeOperatingWeightEmpty(om.Group):
     """Operating Empty Weight (OEW) estimation
 

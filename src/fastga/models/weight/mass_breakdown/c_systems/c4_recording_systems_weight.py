@@ -18,7 +18,9 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 from .constants import SERVICE_RECORDING_SYSTEM_MASS, SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 
-oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
+oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = (
+    SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
+)
 
 
 @oad.RegisterSubmodel(
