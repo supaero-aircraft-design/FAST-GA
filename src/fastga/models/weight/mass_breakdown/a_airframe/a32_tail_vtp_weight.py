@@ -66,7 +66,7 @@ class ComputeVTPWeight(om.ExplicitComponent):
             method="exact",
         )
 
-    # pylint: disable=missing-function-docstring, unused-argument
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-local-variables
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -102,7 +102,7 @@ class ComputeVTPWeight(om.ExplicitComponent):
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
 
-    # pylint: disable=missing-function-docstring, unused-argument
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-local-variables
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -349,7 +349,7 @@ class ComputeVTPWeightGD(om.ExplicitComponent):
             method="exact",
         )
 
-    # pylint: disable=missing-function-docstring, unused-argument
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-local-variables
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
@@ -388,7 +388,7 @@ class ComputeVTPWeightGD(om.ExplicitComponent):
             a32 * inputs["data:weight:airframe:vertical_tail:k_factor"]
         )
 
-    # pylint: disable=missing-function-docstring, unused-argument
+    # pylint: disable=missing-function-docstring, unused-argument, too-many-local-variables
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         sizing_factor_ultimate = inputs["data:mission:sizing:cs23:sizing_factor:ultimate_aircraft"]
