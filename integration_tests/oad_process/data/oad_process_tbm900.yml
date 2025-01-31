@@ -64,17 +64,17 @@ model:
             id: fastga.loop.wing_area
 
 submodels:
-    submodel.weight.mass.payload: null
-    submodel.weight.mass.propulsion.installed_engine: fastga.submodel.weight.mass.propulsion.installed_engine.raymer
-    submodel.weight.mass.propulsion.fuel_system: fastga.submodel.weight.mass.propulsion.fuel_system.flops
-    submodel.weight.mass.airframe.paint: fastga.submodel.weight.mass.airframe.paint.by_wet_area
-#    submodel.weight.mass.airframe.tail: fastga.submodel.weight.mass.airframe.tail.torenbeek_gd
-    submodel.weight.mass.airframe.wing: fastga.submodel.weight.mass.airframe.wing.analytical
-    submodel.weight.mass.airframe.fuselage: fastga.submodel.weight.mass.airframe.fuselage.analytical
-    submodel.weight.mass.airframe.flight_controls: fastga.submodel.weight.mass.airframe.flight_controls.flops
-    submodel.weight.mass.furniture.seats: null
-    submodel.weight.mass.system.life_support_system: fastga.submodel.weight.mass.system.life_support_system.flops
-    submodel.weight.mass.system.recording_system: null
+    service.weight.mass.payload: null
+    service.weight.mass.propulsion.installed_engine: fastga.submodel.weight.mass.propulsion.installed_engine.raymer
+    service.weight.mass.propulsion.fuel_system: fastga.submodel.weight.mass.propulsion.fuel_system.flops
+    service.weight.mass.airframe.paint: fastga.submodel.weight.mass.airframe.paint.by_wet_area
+#    service.weight.mass.airframe.tail: fastga.submodel.weight.mass.airframe.tail.torenbeek_gd
+    service.weight.mass.airframe.wing: fastga.submodel.weight.mass.airframe.wing.analytical
+    service.weight.mass.airframe.fuselage: fastga.submodel.weight.mass.airframe.fuselage.analytical
+    service.weight.mass.airframe.flight_controls: fastga.submodel.weight.mass.airframe.flight_controls.flops
+    service.weight.mass.furniture.seats: null
+    service.weight.mass.system.life_support_system: fastga.submodel.weight.mass.system.life_support_system.flops
+    service.weight.mass.system.recording_system: null
     submodel.loop.wing_area.update.geom: fastga.submodel.loop.wing_area.update.geom.advanced
     submodel.loop.wing_area.constraint.geom: fastga.submodel.loop.wing_area.constraint.geom.advanced
     submodel.geometry.wing.thickness_ratio: null

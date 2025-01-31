@@ -18,9 +18,16 @@ import pytest
 import os.path as pth
 import fastoad.api as oad
 from ..a_airframe.constants import (
-    SUBMODEL_TAIL_MASS,
-    SUBMODEL_HTP_MASS,
-    SUBMODEL_VTP_MASS,
+    SERVICE_TAIL_MASS,
+    SERVICE_HTP_MASS,
+    SERVICE_VTP_MASS,
+    SUBMODEL_TAIL_MASS_LEGACY,
+    SUBMODEL_TAIL_MASS_GD,
+    SUBMODEL_HTP_MASS_LEGACY,
+    SUBMODEL_HTP_MASS_GD,
+    SUBMODEL_HTP_MASS_TORENBEEK,
+    SUBMODEL_VTP_MASS_LEGACY,
+    SUBMODEL_VTP_MASS_GD,
 )
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from ..a_airframe.sum import AirframeWeight
@@ -36,14 +43,8 @@ def test_tail_mass_registry():
     problem = configurator.get_problem()
     problem.setup()
 
-    assert (
-        oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.htp"]
-        == "fastga.submodel.weight.mass.airframe.htp.torenbeek"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models["submodel.weight.mass.airframe.vtp"]
-        == "fastga.submodel.weight.mass.airframe.vtp.legacy"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_TORENBEEK
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_LEGACY
 
 
 def test_tail_weight_compatibility(_reset_tail_submodel_registry):
@@ -52,132 +53,76 @@ def test_tail_weight_compatibility(_reset_tail_submodel_registry):
 
     system = AirframeWeight()
 
-    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
-        "fastga.submodel.weight.mass.airframe.tail.gd"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_TAIL_MASS] = SUBMODEL_TAIL_MASS_GD
 
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_GD
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_GD
 
 
 def test_tail_weight_compatibility_overwrite_htp(_reset_tail_submodel_registry):
-    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
-        "fastga.submodel.weight.mass.airframe.tail.gd"
-    )
-    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.htp.legacy"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_TAIL_MASS] = SUBMODEL_TAIL_MASS_GD
+    oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_LEGACY
     system = AirframeWeight()
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.legacy"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_LEGACY
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_GD
 
 
 def test_tail_weight_compatibility_overwrite_vtp(_reset_tail_submodel_registry):
-    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
-        "fastga.submodel.weight.mass.airframe.tail.gd"
-    )
-    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.vtp.legacy"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_TAIL_MASS] = SUBMODEL_TAIL_MASS_GD
+    oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_LEGACY
     system = AirframeWeight()
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.legacy"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_GD
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_LEGACY
 
 
 def test_tail_weight_compatibility_only_htp(_reset_tail_submodel_registry):
-    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_GD
     system = AirframeWeight()
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.legacy"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_GD
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_LEGACY
 
 
 def test_tail_weight_compatibility_only_vtp(_reset_tail_submodel_registry):
-    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_GD
     system = AirframeWeight()
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.legacy"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_LEGACY
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_GD
 
 
 def test_tail_weight_compatibility_both(_reset_tail_submodel_registry):
-    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = (
-        "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = SUBMODEL_HTP_MASS_TORENBEEK
+    oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = SUBMODEL_VTP_MASS_GD
     system = AirframeWeight()
     ivc = get_indep_var_comp(list_inputs(system), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     run_system(system, ivc)
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.htp.gd"
-    )
-    assert (
-        oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS]
-        == "fastga.submodel.weight.mass.airframe.vtp.gd"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] == SUBMODEL_HTP_MASS_TORENBEEK
+    assert oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] == SUBMODEL_VTP_MASS_GD
 
 
 @pytest.fixture
 def _reset_tail_submodel_registry():
-    oad.RegisterSubmodel.active_models[SUBMODEL_HTP_MASS] = None
-    oad.RegisterSubmodel.active_models[SUBMODEL_VTP_MASS] = None
-    oad.RegisterSubmodel.active_models[SUBMODEL_TAIL_MASS] = (
-        "fastga.submodel.weight.mass.airframe.tail.legacy"
-    )
+    oad.RegisterSubmodel.active_models[SERVICE_HTP_MASS] = None
+    oad.RegisterSubmodel.active_models[SERVICE_VTP_MASS] = None
+    oad.RegisterSubmodel.active_models[SERVICE_TAIL_MASS] = SUBMODEL_TAIL_MASS_LEGACY
