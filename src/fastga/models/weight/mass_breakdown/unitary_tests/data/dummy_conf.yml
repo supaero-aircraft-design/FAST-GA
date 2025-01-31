@@ -15,5 +15,5 @@ model:
 
 submodels:
     service.weight.mass.airframe.tail: fastga.submodel.weight.mass.airframe.tail.gd
-    service.weight.mass.airframe.htp: fastga.submodel.weight.mass.airframe.tail.htp.torenbeek
-    service.weight.mass.airframe.vtp: fastga.submodel.weight.mass.airframe.tail.vtp.legacy
+    service.weight.mass.airframe.tail.htp: fastga.submodel.weight.mass.airframe.tail.htp.torenbeek
+    service.weight.mass.airframe.tail.vtp: fastga.submodel.weight.mass.airframe.tail.vtp.legacy

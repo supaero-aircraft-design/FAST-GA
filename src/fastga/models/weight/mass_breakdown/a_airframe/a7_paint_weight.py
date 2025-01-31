@@ -1,4 +1,7 @@
-"""Estimation of paint weight."""
+"""
+Python module for paint weight calculation consists with two methods,
+part of the airframe mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

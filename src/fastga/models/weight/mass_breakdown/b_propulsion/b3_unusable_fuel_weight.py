@@ -1,4 +1,6 @@
-"""Estimation of unsuable fuel weight."""
+"""
+Python module for unsuable fuel weight calculation, part of the propulsion system mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

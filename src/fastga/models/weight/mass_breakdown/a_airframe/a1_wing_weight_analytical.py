@@ -1,7 +1,10 @@
 """
-Computes the mass of the wing
-
+Python module for wing weight calculation using the analytical breakdown.
 Based on the model presented by Raquel ALONSO in her MAE research project report.
+Reference:
+Alonso Castilla, Raquel, et al.
+"Wing structural model for overall aircraft design of distributed electric propulsion general aviation and regional aircraft."
+Aerospace 9.1 (2021): 5.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO

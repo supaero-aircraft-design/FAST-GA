@@ -36,7 +36,7 @@ DATA_FOLDER_PATH = pth.join(pth.dirname(__file__), "data")
 XML_FILE = "cirrus_sr22.xml"
 
 
-def test_tail_mass_registry():
+def test_tail_mass_registry(_reset_tail_submodel_registry):
     """Tests tail mass submodel registry with integration ."""
     process_file_name = "dummy_conf.yml"
     configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
