@@ -1,5 +1,5 @@
 """
-Python module for htp weight calculation, part of the tail mass computation.
+Python module for vtp weight calculation, part of the tail mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
