@@ -1,4 +1,7 @@
-"""Constants for systems mass submodels."""
+"""
+Python module for constants of submodels and services naming strings,
+applied in systems mass submodel calculations.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

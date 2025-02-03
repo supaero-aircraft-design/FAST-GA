@@ -1,4 +1,6 @@
-"""Computation of the airframe mass."""
+"""
+Python module for airframe mass calculation, part of the mass breakdown computation
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

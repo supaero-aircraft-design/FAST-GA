@@ -1,6 +1,5 @@
 """
-Python module for engine associated component weight calculation,
-part of the propulsion system mass computation.
+Python module for oil weight calculation, part of the propulsion system mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
