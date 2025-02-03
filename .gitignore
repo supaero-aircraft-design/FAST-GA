@@ -17,6 +17,7 @@ __pycache__/*
 .*.swp
 **/.ipynb_checkpoints/**
 tmp/
+workdir/
 
 # Error or check file
 *.out

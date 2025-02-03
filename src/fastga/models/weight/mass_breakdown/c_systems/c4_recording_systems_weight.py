@@ -1,6 +1,8 @@
-"""Estimation of recording systems weight."""
+"""
+Python module for recording systems weight calculation, part of the systems mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +18,16 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SUBMODEL_RECORDING_SYSTEM_MASS
+from .constants import SERVICE_RECORDING_SYSTEM_MASS, SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 
-oad.RegisterSubmodel.active_models[SUBMODEL_RECORDING_SYSTEM_MASS] = (
-    "fastga.submodel.weight.mass.system.recording_systems.minimum"
+oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = (
+    SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 )
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_RECORDING_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.recording_systems.minimum",
+    SERVICE_RECORDING_SYSTEM_MASS,
+    SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM,
 )
 class ComputeRecordingSystemsWeight(ExplicitComponent):
     """

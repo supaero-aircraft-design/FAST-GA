@@ -1,6 +1,8 @@
-"""Estimation of engine and associated component weight."""
+"""
+Python module for engine weight calculation, part of the propulsion system mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,16 +20,18 @@ import openmdao.api as om
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 
-from .constants import SUBMODEL_INSTALLED_ENGINE_MASS
+from .constants import (
+    SERVICE_INSTALLED_ENGINE_MASS,
+    SUBMODEL_INSTALLED_ENGINE_MASS_LEGACY,
+    SUBMODEL_INSTALLED_ENGINE_MASS_RAYMER,
+)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_INSTALLED_ENGINE_MASS] = (
-    "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
+oad.RegisterSubmodel.active_models[SERVICE_INSTALLED_ENGINE_MASS] = (
+    SUBMODEL_INSTALLED_ENGINE_MASS_LEGACY
 )
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_INSTALLED_ENGINE_MASS, SUBMODEL_INSTALLED_ENGINE_MASS_LEGACY)
 class ComputeEngineWeight(om.ExplicitComponent):
     """
     Engine weight estimation calling wrapper
@@ -88,9 +92,7 @@ class ComputeEngineWeight(om.ExplicitComponent):
         ] = b_1
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_INSTALLED_ENGINE_MASS, "fastga.submodel.weight.mass.propulsion.installed_engine.raymer"
-)
+@oad.RegisterSubmodel(SERVICE_INSTALLED_ENGINE_MASS, SUBMODEL_INSTALLED_ENGINE_MASS_RAYMER)
 class ComputeEngineWeightRaymer(om.ExplicitComponent):
     """
     Engine weight estimation calling wrapper

@@ -1,0 +1,19 @@
+title: Dummy conf file
+
+# List of folder paths where user added custom registered OpenMDAO components
+module_folders:
+
+# Input and output files
+input_file: ../results/oad_process_inputs.xml
+output_file: ../results/oad_process_outputs.xml
+
+
+model:
+    weight:
+        id: fastga.weight.legacy
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+
+submodels:
+    service.weight.mass.airframe.tail: fastga.submodel.weight.mass.airframe.tail.gd
+    service.weight.mass.airframe.tail.htp: fastga.submodel.weight.mass.airframe.tail.htp.torenbeek
+    service.weight.mass.airframe.tail.vtp: fastga.submodel.weight.mass.airframe.tail.vtp.legacy

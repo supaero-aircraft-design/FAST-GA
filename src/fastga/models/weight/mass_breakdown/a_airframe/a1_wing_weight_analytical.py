@@ -1,10 +1,10 @@
 """
-Computes the mass of the wing
-
+Python module for wing weight calculation using the analytical breakdown.
 Based on the model presented by Raquel ALONSO in her MAE research project report.
+:cite:`alonso2021wing`
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@ Based on the model presented by Raquel ALONSO in her MAE research project report
 import fastoad.api as oad
 import openmdao.api as om
 
-from .constants import SUBMODEL_WING_MASS
+from .constants import SERVICE_WING_MASS, SUBMODEL_WING_MASS_ANALYTICAL
 from .wing_components.compute_lower_flange import ComputeLowerFlange
 from .wing_components.compute_misc_mass import ComputeMiscMass
 from .wing_components.compute_primary_mass import ComputePrimaryMass
@@ -31,7 +31,7 @@ from .wing_components.compute_web_mass import ComputeWebMass
 from .wing_components.update_wing_mass import UpdateWingMass
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_MASS, "fastga.submodel.weight.mass.airframe.wing.analytical")
+@oad.RegisterSubmodel(SERVICE_WING_MASS, SUBMODEL_WING_MASS_ANALYTICAL)
 class ComputeWingMassAnalytical(om.Group):
     """
     Computes analytically the  mass of each component of the wing and add them to get total wing

@@ -1,6 +1,8 @@
-"""Estimation of navigation systems weight."""
+"""
+Python module for navigation systems weight calculation, part of the systems mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +18,20 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SUBMODEL_AVIONICS_SYSTEM_MASS
+from .constants import (
+    SERVICE_AVIONICS_SYSTEM_MASS,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED,
+)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_AVIONICS_SYSTEM_MASS] = (
-    "fastga.submodel.weight.mass.system.avionics_systems.legacy"
+oad.RegisterSubmodel.active_models[SERVICE_AVIONICS_SYSTEM_MASS] = (
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY
 )
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_AVIONICS_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.avionics_systems.legacy",
+    SERVICE_AVIONICS_SYSTEM_MASS,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
 )
 class ComputeAvionicsSystemsWeight(ExplicitComponent):
     """
@@ -89,8 +95,8 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_AVIONICS_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.avionics_systems.from_uninstalled",
+    SERVICE_AVIONICS_SYSTEM_MASS,
+    SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED,
 )
 class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
     """

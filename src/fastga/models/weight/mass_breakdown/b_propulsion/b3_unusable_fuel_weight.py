@@ -1,6 +1,8 @@
-"""Estimation of unsuable fuel weight."""
+"""
+Python module for unsuable fuel weight calculation, part of the propulsion system mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,16 +23,12 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import lbf
 
-from .constants import SUBMODEL_UNUSABLE_FUEL_MASS
+from .constants import SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_UNUSABLE_FUEL_MASS] = (
-    "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_UNUSABLE_FUEL_MASS] = SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_UNUSABLE_FUEL_MASS, "fastga.submodel.weight.mass.propulsion.unusable_fuel.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY)
 class ComputeUnusableFuelWeight(ExplicitComponent):
     """
     Weight estimation for motor oil

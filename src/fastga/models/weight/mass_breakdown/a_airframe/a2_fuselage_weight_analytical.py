@@ -1,6 +1,9 @@
-"""Computes the mass of the fuselage using a method adapted from TASOPT by Lucas REMOND."""
+"""
+Python module for fuselage weight calculation using the analytical breakdown.
+Computes the mass of the fuselage using a method adapted from TASOPT by Lucas REMOND.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,7 +18,7 @@
 import fastoad.api as oad
 import openmdao.api as om
 
-from .constants import SUBMODEL_FUSELAGE_MASS
+from .constants import SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_ANALYTICAL
 from .fuselage_components.compute_additional_bending_material_mass_h import (
     ComputeAddBendingMassHorizontal,
 )
@@ -35,9 +38,7 @@ from .fuselage_components.compute_wing_fuselage_connection_mass import ComputeWi
 from .fuselage_components.update_fuselage_mass import UpdateFuselageMass
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_MASS, "fastga.submodel.weight.mass.airframe.fuselage.analytical"
-)
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_MASS, SUBMODEL_FUSELAGE_MASS_ANALYTICAL)
 class ComputeFuselageMassAnalytical(om.Group):
     """Computes analytically the mass of each fuselage component and add them to get total mass."""
 

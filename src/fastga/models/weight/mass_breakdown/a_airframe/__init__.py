@@ -23,7 +23,8 @@ from .a2_fuselage_weight import (
     ComputeFuselageWeightRoskam,
 )
 from .a2_fuselage_weight_analytical import ComputeFuselageMassAnalytical
-from .a3_tail_weight import ComputeTailWeight, ComputeTailWeightGD, ComputeTailWeightTorenbeekGD
+from .a31_tail_htp_weight import ComputeHTPWeight, ComputeHTPWeightGD, ComputeHTPWeightTorenbeek
+from .a32_tail_vtp_weight import ComputeVTPWeight, ComputeVTPWeightGD
 from .a4_flight_control_weight import ComputeFlightControlsWeight, ComputeFlightControlsWeightFLOPS
 from .a5_landing_gear_weight import ComputeLandingGearWeight
 from .a7_paint_weight import ComputePaintWeight

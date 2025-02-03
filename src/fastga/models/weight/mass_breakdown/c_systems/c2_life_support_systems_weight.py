@@ -1,8 +1,8 @@
 """
-Estimation of life support systems weight.
+Python module for life support systems weight calculation, part of the systems mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -19,16 +19,20 @@ import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from stdatm import Atmosphere
 
-from .constants import SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS
+from .constants import (
+    SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS,
+)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS] = (
-    "fastga.submodel.weight.mass.system.life_support_system.legacy"
+oad.RegisterSubmodel.active_models[SERVICE_LIFE_SUPPORT_SYSTEM_MASS] = (
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY
 )
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.life_support_system.legacy",
+    SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY,
 )
 class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     """
@@ -161,8 +165,8 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS,
-    "fastga.submodel.weight.mass.system.life_support_system.flops",
+    SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
+    SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS,
 )
 class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
     """

@@ -1,6 +1,9 @@
-"""Computation of the furniture mass."""
+"""
+Python module for furniture mass calculation,
+part of the Operating Empty Weight (OEW) estimation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,11 +18,11 @@
 import fastoad.api as oad
 import openmdao.api as om
 
-from .constants import SUBMODEL_SEATS_MASS
-from ..constants import SUBMODEL_FURNITURE_MASS
+from .constants import SERVICE_SEATS_MASS
+from ..constants import SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_FURNITURE_MASS, "fastga.submodel.weight.mass.furniture.legacy")
+@oad.RegisterSubmodel(SERVICE_FURNITURE_MASS, SUBMODEL_FURNITURE_MASS_LEGACY)
 class FurnitureWeight(om.Group):
     """
     Computes mass of furniture.
@@ -28,7 +31,7 @@ class FurnitureWeight(om.Group):
     def setup(self):
         self.add_subsystem(
             "seats_weight",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_SEATS_MASS),
+            oad.RegisterSubmodel.get_submodel(SERVICE_SEATS_MASS),
             promotes=["*"],
         )
 

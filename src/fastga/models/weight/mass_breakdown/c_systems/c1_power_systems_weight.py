@@ -1,8 +1,8 @@
 """
-Estimation of power systems weight.
+Python module for power systems weight calculation, part of the systems mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +18,10 @@ import fastoad.api as oad
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-from .constants import SUBMODEL_POWER_SYSTEM_MASS
+from .constants import SERVICE_POWER_SYSTEM_MASS, SUBMODEL_POWER_SYSTEM_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_POWER_SYSTEM_MASS, "fastga.submodel.weight.mass.system.power_system.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_POWER_SYSTEM_MASS, SUBMODEL_POWER_SYSTEM_MASS_LEGACY)
 class ComputePowerSystemsWeight(ExplicitComponent):
     """
     Weight estimation for power systems (generation and distribution)

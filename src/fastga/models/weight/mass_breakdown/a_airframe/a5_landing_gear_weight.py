@@ -1,8 +1,8 @@
 """
-Estimation of landing gear weight.
+Python module for landing gear weight calculation, part of the airframe mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,16 +18,12 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_LANDING_GEAR_MASS
+from .constants import SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_LANDING_GEAR_MASS] = (
-    "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_LANDING_GEAR_MASS] = SUBMODEL_LANDING_GEAR_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_MASS, "fastga.submodel.weight.mass.airframe.landing_gear.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_LANDING_GEAR_MASS, SUBMODEL_LANDING_GEAR_MASS_LEGACY)
 class ComputeLandingGearWeight(om.ExplicitComponent):
     """
     Weight estimation for landing gears

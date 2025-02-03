@@ -1,8 +1,9 @@
 """
-Estimation of passenger seats weight.
+Python module for passenger seats weight calculation, part of the furniture mass computation.
 """
+
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +19,10 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_SEATS_MASS
+from .constants import SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_SEATS_MASS, "fastga.submodel.weight.mass.furniture.passenger_seats.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_SEATS_MASS, SUBMODEL_SEATS_MASS_LEGACY)
 class ComputePassengerSeatsWeight(om.ExplicitComponent):
     """
     Weight estimation for passenger seats

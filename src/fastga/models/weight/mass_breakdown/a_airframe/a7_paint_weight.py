@@ -1,6 +1,8 @@
-"""Estimation of paint weight."""
+"""
+Python module for paint weight calculation, part of the airframe mass computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +18,16 @@ import fastoad.api as oad
 import numpy as np
 import openmdao.api as om
 
-from .constants import SUBMODEL_PAINT_MASS
-
-oad.RegisterSubmodel.active_models[SUBMODEL_PAINT_MASS] = (
-    "fastga.submodel.weight.mass.airframe.paint.no_paint"
+from .constants import (
+    SERVICE_PAINT_MASS,
+    SUBMODEL_PAINT_MASS_NO_PAINT,
+    SUBMODEL_PAINT_MASS_BY_WET_AREA,
 )
 
+oad.RegisterSubmodel.active_models[SERVICE_PAINT_MASS] = SUBMODEL_PAINT_MASS_NO_PAINT
 
-@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.no_paint")
+
+@oad.RegisterSubmodel(SERVICE_PAINT_MASS, SUBMODEL_PAINT_MASS_NO_PAINT)
 class ComputeNoPaintWeight(om.ExplicitComponent):
     """
     Paint weight estimation.
@@ -48,7 +52,7 @@ class ComputeNoPaintWeight(om.ExplicitComponent):
         outputs["data:weight:airframe:paint:mass"] = 0.0 * inputs["data:geometry:aircraft:wet_area"]
 
 
-@oad.RegisterSubmodel(SUBMODEL_PAINT_MASS, "fastga.submodel.weight.mass.airframe.paint.by_wet_area")
+@oad.RegisterSubmodel(SERVICE_PAINT_MASS, SUBMODEL_PAINT_MASS_BY_WET_AREA)
 class ComputePaintWeight(om.ExplicitComponent):
     """
     Paint weight estimation.
