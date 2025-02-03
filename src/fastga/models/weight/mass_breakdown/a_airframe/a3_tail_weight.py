@@ -1,5 +1,5 @@
 """
-Python module for tail weight calculation consisted with the htp and vtp weight calculations,
+Python module for tail weight calculation consisting of  the htp and vtp weight calculations,
 part of the airframe mass computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
