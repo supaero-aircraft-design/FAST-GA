@@ -85,7 +85,9 @@ class MassBreakdown(om.Group):
 
 @oad.RegisterSubmodel(SERVICE_OWE, SUBMODEL_OWE_LEGACY)
 class ComputeOperatingWeightEmpty(om.Group):
-    """Operating Empty Weight (OEW) estimation
+    """
+    Python module for Operating Empty Weight (OEW) estimation,
+    part of the mass breakdown computation.
 
     This group aggregates weight from all components of the aircraft.
     """

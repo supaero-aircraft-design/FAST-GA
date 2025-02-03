@@ -1,5 +1,5 @@
 """
-Test module for mass breakdown functions with cirrus sr22.
+Test module for mass breakdown functions with Cirrus SR22.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
