@@ -23,10 +23,10 @@ from .constants import (
     SERVICE_FUEL_SYSTEM_MASS,
     SERVICE_UNUSABLE_FUEL_MASS,
 )
-from ..constants import SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY_FUEL
+from ..constants import SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY
 
 
-@oad.RegisterSubmodel(SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY_FUEL)
+@oad.RegisterSubmodel(SERVICE_PROPULSION_MASS, SUBMODEL_PROPULSION_MASS_LEGACY)
 class PropulsionWeight(om.Group):
     """Computes mass of propulsion system."""
 

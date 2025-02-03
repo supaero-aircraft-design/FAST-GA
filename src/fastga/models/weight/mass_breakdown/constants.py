@@ -24,7 +24,7 @@ SERVICE_OWE = "service.weight.mass.owe"
 
 
 SUBMODEL_AIRFRAME_MASS_LEGACY = "fastga.submodel.weight.mass.airframe.legacy"
-SUBMODEL_PROPULSION_MASS_LEGACY_FUEL = "fastga.submodel.weight.mass.propulsion.legacy.fuel"
+SUBMODEL_PROPULSION_MASS_LEGACY = "fastga.submodel.weight.mass.propulsion.legacy.fuel"
 SUBMODEL_SYSTEMS_MASS_LEGACY = "fastga.submodel.weight.mass.systems.legacy"
 SUBMODEL_FURNITURE_MASS_LEGACY = "fastga.submodel.weight.mass.furniture.legacy"
 SUBMODEL_PAYLOAD_MASS_LEGACY = "fastga.submodel.weight.mass.payload.legacy"
