@@ -41,8 +41,6 @@ def cleanup():
     """Empties results folder to avoid any conflicts."""
     rmtree(RESULTS_FOLDER_PATH, ignore_errors=True)
     rmtree(WORKDIR_FOLDER_PATH, ignore_errors=True)
-    yield
-    rmtree(WORKDIR_FOLDER_PATH, ignore_errors=True)
 
 
 def test_oad_process_vlm_sr22(cleanup):
