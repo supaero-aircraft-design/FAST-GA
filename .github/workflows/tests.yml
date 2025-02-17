@@ -16,7 +16,7 @@ on:
 
 jobs:
   tests:
-#    timeout-minutes: 60
+    timeout-minutes: 120  # On 17/04/2025: to avoid tests that take too long
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
