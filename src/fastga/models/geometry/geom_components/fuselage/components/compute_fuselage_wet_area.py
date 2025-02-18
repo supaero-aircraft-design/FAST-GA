@@ -1,6 +1,6 @@
 """Estimation of fuselage wet area."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 import fastoad.api as oad
 
+from openmdao.core.explicitcomponent import ExplicitComponent
 from ..constants import SUBMODEL_FUSELAGE_WET_AREA
 
 oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_WET_AREA] = (
@@ -66,6 +64,38 @@ class ComputeFuselageWetArea(ExplicitComponent):
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
 
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        b_f = inputs["data:geometry:fuselage:maximum_width"]
+        h_f = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        lav = inputs["data:geometry:fuselage:front_length"]
+        lar = inputs["data:geometry:fuselage:rear_length"]
+        fus_dia = np.sqrt(b_f * h_f)
+        cyl_length = fus_length - lav - lar
+
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
+            1.225 * h_f * lav + 0.5 * (h_f * np.pi * cyl_length) + 1.15 * h_f * lar
+        ) / fus_dia
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
+            1.225 * b_f * lav + 0.5 * (b_f * np.pi * cyl_length) + 1.15 * b_f * lar
+        ) / fus_dia
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
+            np.pi * fus_dia
+        )
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:front_length"] = (
+            2.45 - np.pi
+        ) * fus_dia
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:rear_length"] = (
+            2.3 - np.pi
+        ) * fus_dia
+
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
+        ] = (np.pi * h_f) / 4.0
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
+        ] = (np.pi * b_f) / 4.0
+
 
 @oad.RegisterSubmodel(
     SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops"
@@ -100,3 +130,28 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        b_f = inputs["data:geometry:fuselage:maximum_width"]
+        h_f = inputs["data:geometry:fuselage:maximum_height"]
+        fus_length = inputs["data:geometry:fuselage:length"]
+        fus_dia = np.sqrt(b_f * h_f)
+
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
+            h_f * np.pi * (fus_length / fus_dia - 1.7)
+            - (np.pi * b_f * fus_length * h_f**2.0) / (2.0 * fus_dia**3)
+        )
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
+            b_f * np.pi * (fus_length / fus_dia - 1.7)
+            - (np.pi * b_f**2.0 * fus_length * h_f) / (2.0 * fus_dia**3)
+        )
+        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
+            np.pi * b_f * h_f
+        ) / fus_dia
+
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
+        ] = (np.pi * h_f) / 4.0
+        partials[
+            "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
+        ] = (np.pi * b_f) / 4.0

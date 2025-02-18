@@ -389,6 +389,8 @@ def test_fuselage_wet_area():
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_fuselage_wet_area_flops():
     ivc = get_indep_var_comp(
@@ -402,6 +404,8 @@ def test_fuselage_wet_area_flops():
     assert fuselage_wet_area == pytest.approx(27.213, abs=1e-3)
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.258, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_fuselage_depth():

@@ -2,7 +2,7 @@
 Test module for geometry functions of cg components.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -376,6 +376,8 @@ def test_fuselage_wet_area():
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.730, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_fuselage_wet_area_flops():
     ivc = get_indep_var_comp(
@@ -389,6 +391,8 @@ def test_fuselage_wet_area_flops():
     assert fuselage_wet_area == pytest.approx(38.296, abs=1e-3)
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
     assert fuselage_master_cross_section == pytest.approx(1.730, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_fuselage_depth():

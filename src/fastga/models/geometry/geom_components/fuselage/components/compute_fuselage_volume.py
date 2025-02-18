@@ -1,6 +1,6 @@
 """Estimation of fuselage average depth around the vertical tail."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +13,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
 import fastoad.api as oad
 
+from openmdao.core.explicitcomponent import ExplicitComponent
 from ..constants import SUBMODEL_FUSELAGE_VOLUME
 
 oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_VOLUME] = (
