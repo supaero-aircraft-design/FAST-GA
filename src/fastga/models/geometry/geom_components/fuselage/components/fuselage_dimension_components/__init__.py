@@ -12,6 +12,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_fuselage_cabin_length import ComputeFuselageCabinLength
 from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
 from .compute_fuselage_max_height import ComputeFuselageMaxHeight

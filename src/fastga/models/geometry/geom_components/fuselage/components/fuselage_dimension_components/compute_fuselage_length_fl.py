@@ -18,6 +18,7 @@ Estimation of geometry of fuselage part A - Cabin (Commercial).
 import numpy as np
 import openmdao.api as om
 
+
 class ComputeFuselageLengthFL(om.ExplicitComponent):
     """
     Computes fuselage length.
