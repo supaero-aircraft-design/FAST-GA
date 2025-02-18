@@ -17,15 +17,7 @@ Estimation of geometry of fuselage part A - Cabin (Commercial).
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
-from ..constants import SUBMODEL_FUSELAGE_NOSE_LENGTH_FL
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_NOSE_LENGTH_FL,
-    "fastga.submodel.geometry.fuselage.dimensions.nose_length.fl.legacy",
-)
 class ComputeFuselageNoseLengthFL(om.ExplicitComponent):
     """
     Computes nose length.

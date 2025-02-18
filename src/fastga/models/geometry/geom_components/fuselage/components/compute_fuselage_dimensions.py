@@ -114,11 +114,24 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
             ComputeFuselageNoseLengthFD(),
             promotes=["*"],
         )
+        self.add_subsystem(
+            "fuselage_length",
+            ComputeFuselageLengthFD(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "aircraft_length",
+            ComputePlaneLength(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "fuselage_rear_length",
+            ComputeFuselageRearLength(),
+            promotes=["*"],
+        )
 
 
-
-
-class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
+class ComputeFuselageGeometryCabinSizingFL(om.Group):
     # TODO: Document equations. Cite sources
     """
     Geometry of fuselage - Cabin is sized based on layout (seats, aisle...) and additional rear
@@ -133,77 +146,43 @@ class ComputeFuselageGeometryCabinSizingFL(ExplicitComponent):
         self.options.declare("propulsion_id", default="", types=str)
 
     def setup(self):
-        self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
-        self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
-        self.add_input("data:geometry:cabin:aisle_width", val=np.nan, units="m")
-        self.add_input("data:geometry:cabin:luggage:mass_max", val=np.nan, units="kg")
-        self.add_input("data:geometry:fuselage:rear_length", units="m")
-        self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
-        self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
-
-        self.add_output("data:geometry:cabin:NPAX")
-        self.add_output("data:geometry:fuselage:length", val=10.0, units="m")
-        self.add_output("data:geometry:fuselage:maximum_width", units="m")
-        self.add_output("data:geometry:fuselage:maximum_height", units="m")
-        self.add_output("data:geometry:fuselage:front_length", units="m")
-        self.add_output("data:geometry:fuselage:PAX_length", units="m")
-        self.add_output("data:geometry:cabin:length", units="m")
-        self.add_output("data:geometry:fuselage:luggage_length", units="m")
-
-        self.declare_partials(
-            "*", "*", method="fd"
-        )  # FIXME: declare proper partials without int values
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
-        npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
-        l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
-        w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
-        l_pass_seats = inputs["data:geometry:cabin:seats:passenger:length"]
-        w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
-        seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
-        w_aisle = inputs["data:geometry:cabin:aisle_width"]
-        luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
-        prop_layout = inputs["data:geometry:propulsion:engine:layout"]
-        lar = inputs["data:geometry:fuselage:rear_length"]
-
-        # Length of instrument panel
-        l_instr = 0.7
-        # Length of pax cabin
-        # noinspection PyBroadException
-        npax = np.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
-        n_rows = npax / float(seats_p_row)
-        l_pax = l_pilot_seats + n_rows * l_pass_seats
-        # Cabin width considered is for side by side seats
-        w_cabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
-        r_i = w_cabin / 2
-        radius = 1.06 * r_i
-        # Cylindrical fuselage
-        b_f = 2 * radius
-        # 0.14m is the distance between both lobe centers of the fuselage
-        h_f = b_f + 0.14
-        # Luggage length (80% of internal radius section can be filled with luggage)
-        luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i**2)
-        # Cabin total length
-        cabin_length = l_instr + l_pax + l_lug
-        # Calculate nose length
-        if prop_layout == 3.0:  # engine located in nose
-            lav = nacelle_length
-        else:
-            lav = 1.7 * h_f
-            # Calculate fuselage length
-        fus_length = lav + cabin_length + lar
-
-        outputs["data:geometry:cabin:NPAX"] = npax
-        outputs["data:geometry:fuselage:length"] = fus_length
-        outputs["data:geometry:fuselage:maximum_width"] = b_f
-        outputs["data:geometry:fuselage:maximum_height"] = h_f
-        outputs["data:geometry:fuselage:front_length"] = lav
-        outputs["data:geometry:fuselage:PAX_length"] = l_pax
-        outputs["data:geometry:cabin:length"] = cabin_length
-        outputs["data:geometry:fuselage:luggage_length"] = l_lug
+        self.add_subsystem(
+            "number_of_passenger",
+            ComputeFuselageNPAX(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "passenger_area_length",
+            ComputeFuselagePAXLength(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "maximum_width",
+            ComputeFuselageMaxWidth(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "maximum_height",
+            ComputeFuselageMaxHeight(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "luggage_area_length",
+            ComputeFuselageLuggageLength(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "cabin_length",
+            ComputeFuselageCabinLength(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "nose_length",
+            ComputeFuselageNoseLengthFL(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            "fuselage_length",
+            ComputeFuselageLengthFL(),
+            promotes=["*"],
+        )

@@ -17,15 +17,7 @@ Estimation of geometry of fuselage part A - Cabin (Commercial).
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
-from ..constants import SUBMODEL_FUSELAGE_LENGTH_FL
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_LENGTH_FL,
-    "fastga.submodel.geometry.fuselage.dimensions.length.fl.legacy",
-)
 class ComputeFuselageLengthFL(om.ExplicitComponent):
     """
     Computes fuselage length.

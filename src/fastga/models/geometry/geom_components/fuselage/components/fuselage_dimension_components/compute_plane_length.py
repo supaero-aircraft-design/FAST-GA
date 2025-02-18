@@ -3,7 +3,7 @@ Estimation of geometry of fuselage part A - Cabin (Commercial).
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,15 +17,7 @@ Estimation of geometry of fuselage part A - Cabin (Commercial).
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
-from ..constants import SUBMODEL_PLANE_LENGTH
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_PLANE_LENGTH,
-    "fastga.submodel.geometry.fuselage.dimensions.plane_length.legacy",
-)
 class ComputePlaneLength(om.ExplicitComponent):
     """
     Computes plane length.
