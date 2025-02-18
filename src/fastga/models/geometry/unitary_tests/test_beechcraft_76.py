@@ -328,6 +328,8 @@ def test_compute_fuselage_cabin_sizing_fd():
     luggage_length = problem.get_val("data:geometry:fuselage:luggage_length", units="m")
     assert luggage_length == pytest.approx(0.696, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_fuselage_cabin_sizing_fl():
     """Tests computation of the fuselage with cabin sizing"""
@@ -358,6 +360,8 @@ def test_compute_fuselage_cabin_sizing_fl():
     luggage_length = problem.get_val("data:geometry:fuselage:luggage_length", units="m")
     assert luggage_length == pytest.approx(0.696, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_fuselage_basic():
     """Tests computation of the fuselage with no cabin sizing"""
@@ -374,6 +378,8 @@ def test_compute_fuselage_basic():
     problem = run_system(ComputeFuselageGeometryBasic(), ivc)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
     assert fuselage_lcabin == pytest.approx(3.762, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_fuselage_wet_area():
