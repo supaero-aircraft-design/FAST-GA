@@ -46,7 +46,7 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
         if 2.0 * w_pilot_seats != seats_p_row * w_pass_seats + w_aisle:
             w_cabin = max(2.0 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         else:
-            w_cabin = 0.5 * (2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle )
+            w_cabin = 0.5 * (2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle)
         r_i = w_cabin / 2
         radius = 1.06 * r_i
 

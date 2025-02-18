@@ -368,6 +368,7 @@ def test_compute_fuselage_cabin_sizing_fl():
 
     problem.check_partials(compact_print=True)
 
+
 def test_fuselage_wet_area():
     ivc = get_indep_var_comp(
         list_inputs(ComputeFuselageWetArea()),
