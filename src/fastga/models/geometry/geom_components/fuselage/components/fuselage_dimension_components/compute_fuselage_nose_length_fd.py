@@ -41,6 +41,11 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
             ],
             method="exact",
         )
+        self.declare_partials(
+            of="*",
+            wrt="data:geometry:propulsion:engine:layout",
+            method="fd",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
