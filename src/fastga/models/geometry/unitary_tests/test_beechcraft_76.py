@@ -254,6 +254,8 @@ def test_compute_ht_mac_fl():
     )
     assert lp_ht == pytest.approx(4.93, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_sweep():
     """Tests computation of the horizontal tail sweep"""

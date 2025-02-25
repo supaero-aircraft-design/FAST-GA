@@ -194,6 +194,7 @@ class ComputeHTMacFL(ExplicitComponent):
             ],
             method="exact",
         )
+        self.declare_partials(of="*", wrt="data:geometry:has_T_tail", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]

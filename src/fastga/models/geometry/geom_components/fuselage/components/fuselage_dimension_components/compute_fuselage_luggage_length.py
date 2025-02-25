@@ -93,7 +93,6 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
             )
 
         elif (2.0 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
-
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
             ] = 0.0
@@ -101,35 +100,35 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
             partials[
                 "data:geometry:fuselage:luggage_length",
                 "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = -volume_constant * w_pass_seats / r_i ** 3.0
+            ] = -volume_constant * w_pass_seats / r_i**3.0
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:passenger:width"
-            ] = -volume_constant * seats_p_row / r_i ** 3.0
+            ] = -volume_constant * seats_p_row / r_i**3.0
 
             partials["data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"] = (
-                    -volume_constant / r_i ** 3.0
+                -volume_constant / r_i**3.0
             )
 
         elif (2.0 * w_pilot_seats) == (seats_p_row * w_pass_seats + w_aisle):
-            r_i = 0.25*(2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle)
+            r_i = 0.25 * (2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle)
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:luggage:mass_max"
-            ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i ** 2.0))
+            ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i**2.0))
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
-            ] = -2*volume_constant / r_i**3.0
+            ] = -2 * volume_constant / r_i**3.0
 
             partials[
                 "data:geometry:fuselage:luggage_length",
                 "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = -volume_constant * w_pass_seats / r_i ** 3.0
+            ] = -volume_constant * w_pass_seats / r_i**3.0
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:passenger:width"
-            ] = -volume_constant * seats_p_row / r_i ** 3.0
+            ] = -volume_constant * seats_p_row / r_i**3.0
             partials["data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"] = (
-                    -volume_constant / r_i ** 3.0
+                -volume_constant / r_i**3.0
             )
