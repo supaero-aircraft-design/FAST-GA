@@ -93,14 +93,14 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
         elif (2.0 * w_pilot_seats) == (seats_p_row * w_pass_seats + w_aisle):
             partials[
                 "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:pilot:width"
-            ] = 1.06
+            ] = 2.12
             partials[
                 "data:geometry:fuselage:maximum_width", "data:geometry:cabin:seats:passenger:width"
-            ] = 0.53 * seats_p_row
+            ] = 1.06 * seats_p_row
             partials[
                 "data:geometry:fuselage:maximum_width",
                 "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = 0.53 * w_pass_seats
+            ] = 1.06 * w_pass_seats
             partials["data:geometry:fuselage:maximum_width", "data:geometry:cabin:aisle_width"] = (
-                0.53
+                1.06
             )
