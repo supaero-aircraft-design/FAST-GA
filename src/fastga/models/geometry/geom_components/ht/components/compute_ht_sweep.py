@@ -43,7 +43,7 @@ class ComputeHTSweep(om.Group):
 
         self.add_subsystem(
             "HT_sweep_100",
-            ComputeHTSweep50(),
+            ComputeHTSweep100(),
             promotes=["*"],
         )
 

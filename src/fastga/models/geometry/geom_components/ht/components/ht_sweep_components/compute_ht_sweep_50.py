@@ -38,7 +38,7 @@ class ComputeHTSweep50(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
-        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_ht * ((1.0 - taper_ht) / (1.0 + taper_ht)))
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_ht * (1.0 - taper_ht) / (1.0 + taper_ht))
 
         outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
 
@@ -48,26 +48,16 @@ class ComputeHTSweep50(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
+        length_constant = ((ar_ht * np.tan(sweep_0) - 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht))
+                           ** 2.0 + ar_ht
+                           ** 2.0)
+
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -(2.0 * (taper_ht - 1.0)) / (
-            ar_ht ** 2
-            * (
-                (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0
-                + 1.0
-            )
-            * (taper_ht + 1.0)
-        )
+        ] = 2.0*(1.0 - taper_ht) / (1.0 + taper_ht) / length_constant
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:taper_ratio"
-        ] = (
-            2.0 / (ar_ht * (taper_ht + 1.0))
-            - (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0) ** 2.0)
-        ) / (
-            (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0 + 1.0
-        )
+        ] = 4.0* ar_ht / length_constant / (taper_ht+1)**2
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
-        ] = (np.tan(sweep_0) ** 2.0 + 1.0) / (
-            (np.tan(sweep_0) + (2.0 * (taper_ht - 1.0)) / (ar_ht * (taper_ht + 1.0))) ** 2.0 + 1.0
-        )
+        ] = ar_ht**2.0 * np.cos(sweep_0)**-2.0 / length_constant

@@ -257,6 +257,8 @@ def test_compute_ht_sweep():
     sweep_100 = problem.get_val("data:geometry:horizontal_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(176.471, abs=1e-1)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_wet_area():
     """Tests computation of the horizontal tail wet area"""
