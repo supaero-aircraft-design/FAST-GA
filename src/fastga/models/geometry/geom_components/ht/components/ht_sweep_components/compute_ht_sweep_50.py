@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail sweep at l/c=50%.
+Estimation of horizontal tail sweep at l/c=50%.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -23,7 +23,6 @@ class ComputeHTSweep50(om.ExplicitComponent):
     """Estimation of horizontal tail sweep at l/c=50%"""
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:sweep_0", val=np.nan, units="rad")
@@ -33,7 +32,6 @@ class ComputeHTSweep50(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
@@ -43,21 +41,20 @@ class ComputeHTSweep50(om.ExplicitComponent):
         outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
-        length_constant = ((ar_ht * np.tan(sweep_0) - 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht))
-                           ** 2.0 + ar_ht
-                           ** 2.0)
+        length_constant = (
+            ar_ht * np.tan(sweep_0) - 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht)
+        ) ** 2.0 + ar_ht**2.0
 
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = 2.0*(1.0 - taper_ht) / (1.0 + taper_ht) / length_constant
+        ] = 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht) / length_constant
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:taper_ratio"
-        ] = 4.0* ar_ht / length_constant / (taper_ht+1)**2
+        ] = 4.0 * ar_ht / length_constant / (taper_ht + 1) ** 2
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
-        ] = ar_ht**2.0 * np.cos(sweep_0)**-2.0 / length_constant
+        ] = ar_ht**2.0 * np.cos(sweep_0) ** -2.0 / length_constant

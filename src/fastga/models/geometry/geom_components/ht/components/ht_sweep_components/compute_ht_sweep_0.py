@@ -1,5 +1,5 @@
 """
-    Estimation of horizontal tail sweep at l/c=0%.
+Estimation of horizontal tail sweep at l/c=0%.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -23,7 +23,6 @@ class ComputeHTSweep0(om.ExplicitComponent):
     """Estimation of horizontal tail sweep at l/c=0%"""
 
     def setup(self):
-
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
@@ -34,7 +33,6 @@ class ComputeHTSweep0(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -49,16 +47,15 @@ class ComputeHTSweep0(om.ExplicitComponent):
         outputs["data:geometry:horizontal_tail:sweep_0"] = sweep_0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
-        chord_diff = root_chord-tip_chord
-        length_constant = 4.0*b_h**2.0 + (chord_diff + 2.0*b_h* np.tan(sweep_25))**2
+        chord_diff = root_chord - tip_chord
+        length_constant = 4.0 * b_h**2.0 + (chord_diff + 2.0 * b_h * np.tan(sweep_25)) ** 2
 
         partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
-            - 2.0 * chord_diff / length_constant
+            -2.0 * chord_diff / length_constant
         )
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:root:chord"
@@ -68,4 +65,4 @@ class ComputeHTSweep0(om.ExplicitComponent):
         ] = -2.0 * b_h / length_constant
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:sweep_25"
-        ] = 4.0 * b_h**2 * np.cos(sweep_25)**-2.0 / length_constant
+        ] = 4.0 * b_h**2 * np.cos(sweep_25) ** -2.0 / length_constant

@@ -46,5 +46,3 @@ class ComputeHTSweep(om.Group):
             ComputeHTSweep100(),
             promotes=["*"],
         )
-
-
