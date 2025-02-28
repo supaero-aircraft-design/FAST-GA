@@ -103,7 +103,7 @@ class ComputeVTMacFL(ExplicitComponent):
             * 2.0
             / 3.0
         )
-        z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
+        z0_vt = (b_v * (root_chord + 2.0 * tip_chord)) / (3.0 * (root_chord + tip_chord))
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt

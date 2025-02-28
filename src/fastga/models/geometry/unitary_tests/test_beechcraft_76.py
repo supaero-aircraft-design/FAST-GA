@@ -102,6 +102,8 @@ def test_compute_vt_chords():
     tip_chord = problem.get_val("data:geometry:vertical_tail:tip:chord", units="m")
     assert tip_chord == pytest.approx(0.930, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_mac():
     """Tests computation of the vertical tail mac"""
@@ -162,6 +164,8 @@ def test_compute_vt_mac_position_fl():
     vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
     assert vt_x0 == pytest.approx(0.453, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_sweep():
     """Tests computation of the vertical tail sweep"""
@@ -217,6 +221,8 @@ def test_compute_ht_chord():
     assert root_chord == pytest.approx(0.983, abs=1e-3)
     tip_chord = problem.get_val("data:geometry:horizontal_tail:tip:chord", units="m")
     assert tip_chord == pytest.approx(0.983, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_ht_mac():
@@ -729,6 +735,8 @@ def test_position_propeller():
     x_prop_from_le_result = 0.1954
     assert abs(x_prop_from_le - x_prop_from_le_result) < 1e-3
 
+    problem.check_partials(compact_print=True)
+
 
 def test_installation_effect_propeller():
     """Tests computation propeller effective advance ratio factor computation"""
@@ -742,6 +750,8 @@ def test_installation_effect_propeller():
         "data:aerodynamics:propeller:installation_effect:effective_advance_ratio"
     )
     assert prop_installation_effect == pytest.approx(0.949, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_landing_gear_geometry():

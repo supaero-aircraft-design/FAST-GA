@@ -36,4 +36,3 @@ class ComputeNacellePosition(om.Group):
             ComputeNacelleYPosition(),
             promotes=["*"],
         )
-

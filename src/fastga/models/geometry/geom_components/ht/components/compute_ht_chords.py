@@ -60,9 +60,8 @@ class ComputeHTChord(ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        b_h = np.sqrt(
-            max(aspect_ratio * s_h, 0.1)
-        )  # !!!: to avoid 0 division if s_h initialised to 0
+        b_h = np.sqrt(max(aspect_ratio * s_h, 0.1))
+        # !!!: to avoid 0 division if s_h initialised to 0
         root_chord = s_h * 2 / (1 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
 
