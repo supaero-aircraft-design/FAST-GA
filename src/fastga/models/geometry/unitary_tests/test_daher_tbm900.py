@@ -257,6 +257,8 @@ def test_compute_ht_sweep():
     sweep_100 = problem.get_val("data:geometry:horizontal_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(173.967, abs=1e-1)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_wet_area():
     """Tests computation of the horizontal tail wet area"""
@@ -694,6 +696,8 @@ def test_position_nacelle():
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
     x_nacelle_result = 2.5649
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
+
+    problem.check_partials(compact_print=True)
 
 
 def test_position_propeller():

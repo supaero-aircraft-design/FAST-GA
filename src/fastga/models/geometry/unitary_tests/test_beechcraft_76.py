@@ -714,6 +714,8 @@ def test_position_nacelle():
     x_nacelle_result = 3.092
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
 
+    problem.check_partials(compact_print=True)
+
 
 def test_position_propeller():
     """Tests computation of the nacelle and pylons component"""
