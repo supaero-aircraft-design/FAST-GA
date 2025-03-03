@@ -637,6 +637,8 @@ def test_geometry_wing_sweep():
     sweep_100_outer = problem.get_val("data:geometry:wing:sweep_100_outer", units="deg")
     assert sweep_100_outer == pytest.approx(-5.53, abs=1e-1)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_wet_area():
     """Tests computation of the wing wet area"""
