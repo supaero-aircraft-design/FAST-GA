@@ -33,7 +33,7 @@ class ComputeVTWetArea(ExplicitComponent):
 
         self.add_output("data:geometry:vertical_tail:wet_area", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("*", "*", val=2.1)
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         area = inputs["data:geometry:vertical_tail:area"]

@@ -103,6 +103,8 @@ def test_compute_vt_mac():
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.874, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_mac_fl():
     """Tests computation of the horizontal tail mac"""
@@ -117,6 +119,8 @@ def test_compute_vt_mac_fl():
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.874, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_mac_position():
     """Tests computation of the vertical tail mac position"""
@@ -130,6 +134,8 @@ def test_compute_vt_mac_position():
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_vt == pytest.approx(5.54, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_vt_mac_position_fl():
@@ -177,6 +183,8 @@ def test_compute_vt_wet_area():
     wet_area = problem.get_val("data:geometry:vertical_tail:wet_area", units="m**2")
     assert wet_area == pytest.approx(6.00, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_distance():
     """Tests computation of the horizontal tail distance"""
@@ -223,6 +231,8 @@ def test_compute_ht_mac():
     ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
     assert ht_y0 == pytest.approx(1.178, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_mac_fl():
     """Tests computation of the horizontal tail mac"""
@@ -242,6 +252,8 @@ def test_compute_ht_mac_fl():
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_ht == pytest.approx(4.860, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_ht_sweep():

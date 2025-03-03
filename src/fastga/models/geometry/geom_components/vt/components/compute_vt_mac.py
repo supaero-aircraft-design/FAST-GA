@@ -38,10 +38,10 @@ class ComputeVTMacFD(ExplicitComponent):
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:length",
             ["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:tip:chord"],
-            method="fd",
+            method="exact",
         )
         self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:local", "*", method="fd"
+            "data:geometry:vertical_tail:MAC:at25percent:x:local", "*", method="exact"
         )
         self.declare_partials(
             "data:geometry:vertical_tail:MAC:z",
@@ -50,7 +50,7 @@ class ComputeVTMacFD(ExplicitComponent):
                 "data:geometry:vertical_tail:tip:chord",
                 "data:geometry:vertical_tail:span",
             ],
-            method="fd",
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
@@ -59,20 +59,63 @@ class ComputeVTMacFD(ExplicitComponent):
         sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        tmp = root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25
+        chord_sum = root_chord + tip_chord
 
-        mac_vt = (
-            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-            / (tip_chord + root_chord)
-            * 2.0
-            / 3.0
-        )
-        x0_vt = (tmp * (root_chord + 2 * tip_chord)) / (3 * (root_chord + tip_chord))
-        z0_vt = (2 * b_v * (0.5 * root_chord + tip_chord)) / (3 * (root_chord + tip_chord))
+        mac_vt = (chord_sum**2 - root_chord * tip_chord) / (1.5 * chord_sum)
+        x0_vt = (
+            (root_chord + 4 * b_v * np.tan(sweep_25_vt) - tip_chord) * (chord_sum + tip_chord)
+        ) / (12 * chord_sum)
+        z0_vt = b_v * (chord_sum + tip_chord) / (3 * chord_sum)
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        chord_sum = root_chord + tip_chord
+
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
+        ] = (1 - (tip_chord / chord_sum) ** 2) / 1.5
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
+        ] = (1 - (root_chord / chord_sum) ** 2) / 1.5
+
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
+            chord_sum + tip_chord
+        ) / (3 * chord_sum)
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
+            -b_v * tip_chord / (3 * chord_sum**2)
+        )
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
+            b_v * root_chord / (3 * chord_sum**2)
+        )
+
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:root:chord",
+        ] = (chord_sum**2 + 2 * tip_chord * (tip_chord - 2 * b_v * np.tan(sweep_25_vt))) / (
+            12 * chord_sum**2
+        )
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:tip:chord",
+        ] = -(chord_sum**2 - root_chord * (root_chord + 2 * b_v * np.tan(sweep_25_vt))) / (
+            6 * chord_sum**2
+        )
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:sweep_25",
+        ] = (b_v * (chord_sum + tip_chord)) / (3 * chord_sum * np.cos(sweep_25_vt) ** 2)
+        partials[
+            "data:geometry:vertical_tail:MAC:at25percent:x:local",
+            "data:geometry:vertical_tail:span",
+        ] = (chord_sum + tip_chord) * np.tan(sweep_25_vt) / (3 * chord_sum)
 
 
 class ComputeVTMacFL(ExplicitComponent):
@@ -90,20 +133,47 @@ class ComputeVTMacFL(ExplicitComponent):
         self.add_output("data:geometry:vertical_tail:MAC:length", units="m")
         self.add_output("data:geometry:vertical_tail:MAC:z", units="m")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:geometry:vertical_tail:MAC:z", "*", method="exact")
+        self.declare_partials(
+            "data:geometry:vertical_tail:MAC:length",
+            ["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:tip:chord"],
+            method="exact",
+        )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        mac_vt = (
-            (root_chord**2 + root_chord * tip_chord + tip_chord**2)
-            / (tip_chord + root_chord)
-            * 2.0
-            / 3.0
-        )
-        z0_vt = (b_v * (root_chord + 2.0 * tip_chord)) / (3.0 * (root_chord + tip_chord))
+        chord_sum = root_chord + tip_chord
+
+        mac_vt = (chord_sum**2 - root_chord * tip_chord) / (1.5 * chord_sum)
+
+        z0_vt = b_v * (chord_sum + tip_chord) / (3 * chord_sum)
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        root_chord = inputs["data:geometry:vertical_tail:root:chord"]
+        tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
+        b_v = inputs["data:geometry:vertical_tail:span"]
+
+        chord_sum = root_chord + tip_chord
+
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
+        ] = (1 - (tip_chord / chord_sum) ** 2) / 1.5
+        partials[
+            "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
+        ] = (1 - (root_chord / chord_sum) ** 2) / 1.5
+
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
+            chord_sum + tip_chord
+        ) / (3 * chord_sum)
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
+            -b_v * tip_chord / (3 * chord_sum**2)
+        )
+        partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
+            b_v * root_chord / (3 * chord_sum**2)
+        )

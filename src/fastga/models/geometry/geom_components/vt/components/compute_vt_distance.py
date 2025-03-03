@@ -166,7 +166,7 @@ class ComputeVTMacPositionFL(ExplicitComponent):
         )
 
         vt_lp = (x_vt + x0_vt) - x_wing25
-        x_tip = b_v * np.tan(sweep_25_vt) + x_wing25 + (vt_lp - x0_vt)
+        x_tip = b_v * np.tan(sweep_25_vt) + x_vt
 
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
         outputs["data:geometry:vertical_tail:tip:x"] = x_tip
