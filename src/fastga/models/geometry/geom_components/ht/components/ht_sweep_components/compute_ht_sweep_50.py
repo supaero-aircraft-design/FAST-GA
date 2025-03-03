@@ -57,4 +57,4 @@ class ComputeHTSweep50(om.ExplicitComponent):
         ] = 4.0 * ar_ht / common_denominator / (taper_ht + 1) ** 2
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
-        ] = ar_ht**2.0 * np.cos(sweep_0) ** -2.0 / common_denominator
+        ] = ar_ht**2.0 / np.cos(sweep_0) ** 2.0 / common_denominator

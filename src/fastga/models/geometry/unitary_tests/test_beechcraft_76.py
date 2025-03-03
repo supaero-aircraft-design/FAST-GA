@@ -186,6 +186,8 @@ def test_compute_vt_sweep():
     sweep_100 = problem.get_val("data:geometry:vertical_tail:sweep_100", units="deg")
     assert sweep_100 == pytest.approx(15.83, abs=1e-1)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_wet_area():
     """Tests computation of the vertical wet area"""

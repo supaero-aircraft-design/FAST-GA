@@ -24,7 +24,7 @@ class ComputeVTSweep50(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:sweep_0", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:sweep_0", val=np.nan, units="rad")
 
         self.add_output("data:geometry:vertical_tail:sweep_50", units="rad")
 
@@ -35,9 +35,7 @@ class ComputeVTSweep50(om.ExplicitComponent):
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:vertical_tail:sweep_0"]
 
-        sweep_50 = np.arctan(
-            np.tan(sweep_0 * np.pi / 180.0) - 2.0 / ar_vt * ((1.0 - taper_vt) / (1.0 + taper_vt))
-        )
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_vt * (1.0 - taper_vt) / (1.0 + taper_vt))
 
         outputs["data:geometry:vertical_tail:sweep_50"] = sweep_50
 
@@ -46,20 +44,16 @@ class ComputeVTSweep50(om.ExplicitComponent):
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:vertical_tail:sweep_0"]
 
-        tmp = (
-            np.tan((np.pi * sweep_0) / 180.0)
-            + (2.0 * (taper_vt - 1.0)) / (ar_vt * (taper_vt + 1.0))
-        ) ** 2.0 + 1.0
+        common_denominator = (
+            ar_vt * np.tan(sweep_0) - 2.0 * (1.0 - taper_vt) / (1.0 + taper_vt)
+        ) ** 2.0 + ar_vt**2.0
 
         partials[
             "data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:aspect_ratio"
-        ] = -(2.0 * (taper_vt - 1.0)) / (ar_vt**2.0 * (taper_vt + 1.0) * tmp)
+        ] = 2.0 * (1.0 - taper_vt) / (1.0 + taper_vt) / common_denominator
         partials[
             "data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:taper_ratio"
-        ] = (
-            2.0 / (ar_vt * (taper_vt + 1.0))
-            - (2.0 * (taper_vt - 1.0)) / (ar_vt * (taper_vt + 1.0) ** 2.0)
-        ) / tmp
+        ] = 4.0 * ar_vt / common_denominator / (taper_vt + 1) ** 2
         partials["data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:sweep_0"] = (
-            np.pi * (np.tan((np.pi * sweep_0) / 180.0) ** 2.0 + 1.0)
-        ) / (180.0 * tmp)
+            ar_vt**2.0 / np.cos(sweep_0) ** 2.0 / common_denominator
+        )

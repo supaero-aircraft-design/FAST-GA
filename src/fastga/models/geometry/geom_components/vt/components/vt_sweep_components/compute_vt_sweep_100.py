@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
 
 
@@ -25,9 +24,9 @@ class ComputeVTSweep100(om.ExplicitComponent):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("data:geometry:vertical_tail:sweep_100", units="deg")
+        self.add_output("data:geometry:vertical_tail:sweep_100", units="rad")
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
@@ -37,16 +36,8 @@ class ComputeVTSweep100(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        sweep_100 = (
-            (
-                np.pi / 2
-                - np.arctan2(
-                    b_v,
-                    (b_v * np.tan(sweep_25 / 180.0 * np.pi) - 0.75 * root_chord + 0.75 * tip_chord),
-                )
-            )
-            / np.pi
-            * 180.0
+        sweep_100 = np.pi / 2 - np.arctan2(
+            b_v, (b_v * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
         )
 
         outputs["data:geometry:vertical_tail:sweep_100"] = sweep_100
@@ -57,32 +48,19 @@ class ComputeVTSweep100(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        tmp = (
-            (3.0 * tip_chord) / 4.0
-            - (3.0 * root_chord) / 4.0
-            + b_v * np.tan((sweep_25 * np.pi) / 180.0)
+        common_denominator = (
+            b_v**2 + (b_v * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord) ** 2
         )
 
         partials[
             "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:root:chord"
-        ] = -(135.0 * b_v) / (np.pi * (b_v**2.0 / tmp**2.0 + 1.0) * tmp**2.0)
+        ] = -0.75 * b_v / common_denominator
         partials[
             "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:tip:chord"
-        ] = (135.0 * b_v) / (np.pi * (b_v**2.0 / tmp**2.0 + 1.0) * tmp**2.0)
+        ] = 0.75 * b_v / common_denominator
         partials[
             "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:sweep_25"
-        ] = (b_v**2.0 * (np.tan((np.pi * sweep_25) / 180.0) ** 2.0 + 1.0)) / (
-            (b_v**2.0 / tmp**2.0 + 1.0) * tmp**2.0
+        ] = b_v**2 / np.cos(sweep_25) ** 2 / common_denominator
+        partials["data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:span"] = (
+            0.75 * (root_chord - tip_chord) / common_denominator
         )
-        partials["data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:span"] = -(
-            180.0
-            * (
-                1
-                / (
-                    (3.0 * tip_chord) / 4
-                    - (3.0 * root_chord) / 4
-                    + b_v * np.tan((np.pi * sweep_25) / 180.0)
-                )
-                - (b_v * np.tan((np.pi * sweep_25) / 180.0)) / tmp**2.0
-            )
-        ) / (np.pi * (b_v**2.0 / tmp**2.0 + 1.0))

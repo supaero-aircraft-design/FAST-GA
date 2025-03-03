@@ -14,6 +14,9 @@ Estimation of vertical tail geometry (components)
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+# pylint: disable=unused-import
+# flake8: noqa
+
 from .compute_vt_sweep_0 import ComputeVTSweep0
 from .compute_vt_sweep_50 import ComputeVTSweep50
 from .compute_vt_sweep_100 import ComputeVTSweep100
