@@ -40,7 +40,7 @@ class ComputeMFWSimple(ExplicitComponent):
         self.add_output("data:weight:aircraft:MFW", units="kg")
 
         self.declare_partials(
-            "data:weight:aircraft:MFW",
+            "*",
             [
                 "data:geometry:wing:area",
                 "data:geometry:wing:root:chord",
@@ -48,8 +48,10 @@ class ComputeMFWSimple(ExplicitComponent):
                 "data:geometry:wing:root:thickness_ratio",
                 "data:geometry:wing:tip:thickness_ratio",
             ],
-            method="fd",
+            method="exact",
         )
+
+        self.declare_partials("*", "data:propulsion:fuel_type", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_type = inputs["data:propulsion:fuel_type"]
@@ -77,3 +79,39 @@ class ComputeMFWSimple(ExplicitComponent):
         mfw = mfv * m_vol_fuel
 
         outputs["data:weight:aircraft:MFW"] = mfw
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        fuel_type = inputs["data:propulsion:fuel_type"]
+        wing_area = inputs["data:geometry:wing:area"]
+        root_chord = inputs["data:geometry:wing:root:chord"]
+        tip_chord = inputs["data:geometry:wing:tip:chord"]
+        root_thickness_ratio = inputs["data:geometry:wing:root:thickness_ratio"]
+        tip_thickness_ratio = inputs["data:geometry:wing:tip:thickness_ratio"]
+
+        if fuel_type == 1.0:
+            m_vol_fuel = 718.9  # gasoline volume-mass [kg/m**3], cold worst case, Avgas
+        elif fuel_type == 2.0:
+            m_vol_fuel = 860.0  # Diesel volume-mass [kg/m**3], cold worst case
+        elif fuel_type == 3.0:
+            m_vol_fuel = 804.0  # Jet-A1 volume mass [kg/m**3], cold worst case
+        else:
+            m_vol_fuel = 718.9
+
+        ave_thickness = (
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
+        )
+        partials["data:weight:aircraft:MFW", "data:geometry:wing:area"] = (
+            0.3 * ave_thickness * m_vol_fuel
+        )
+        partials["data:weight:aircraft:MFW", "data:geometry:wing:root:chord"] = (
+            0.105 * m_vol_fuel * root_thickness_ratio * wing_area
+        )
+        partials["data:weight:aircraft:MFW", "data:geometry:wing:tip:chord"] = (
+            0.105 * m_vol_fuel * tip_thickness_ratio * wing_area
+        )
+        partials["data:weight:aircraft:MFW", "data:geometry:wing:root:thickness_ratio"] = (
+            0.105 * m_vol_fuel * root_chord * wing_area
+        )
+        partials["data:weight:aircraft:MFW", "data:geometry:wing:tip:thickness_ratio"] = (
+            0.105 * m_vol_fuel * tip_chord * wing_area
+        )

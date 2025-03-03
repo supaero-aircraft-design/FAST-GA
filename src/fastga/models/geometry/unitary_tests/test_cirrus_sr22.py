@@ -661,6 +661,8 @@ def test_geometry_wing_mfw_simple():
     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
     assert mfw == pytest.approx(296.517, abs=1e-2)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_mfw_advanced():
     """Tests computation of the wing max fuel weight"""
@@ -770,6 +772,8 @@ def test_geometry_total_area():
     problem = run_system(ComputeTotalArea(), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(59.300, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_complete_geometry_FD():
