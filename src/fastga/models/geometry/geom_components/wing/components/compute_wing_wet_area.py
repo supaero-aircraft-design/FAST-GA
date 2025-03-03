@@ -55,15 +55,14 @@ class ComputeWingWetArea(ExplicitComponent):
 
         partials["data:geometry:wing:outer_area", "data:geometry:wing:area"] = 1.0
         partials["data:geometry:wing:outer_area", "data:geometry:wing:root:virtual_chord"] = (
-                -2.0 * y1_wing
+            -2.0 * y1_wing
         )
         partials["data:geometry:wing:outer_area", "data:geometry:fuselage:maximum_width"] = -l1_wing
 
-
         partials["data:geometry:wing:wet_area", "data:geometry:wing:area"] = 2.14
         partials["data:geometry:wing:wet_area", "data:geometry:wing:root:virtual_chord"] = (
-                -2.14 * width_max
+            -2.14 * width_max
         )
         partials["data:geometry:wing:wet_area", "data:geometry:fuselage:maximum_width"] = (
-                -2.14 * l1_wing
+            -2.14 * l1_wing
         )
