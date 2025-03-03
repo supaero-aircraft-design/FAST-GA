@@ -582,6 +582,8 @@ def test_geometry_wing_x():
     wing_x4 = problem.get_val("data:geometry:wing:tip:leading_edge:x:local", units="m")
     assert wing_x4 == pytest.approx(0.0, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_x_absolute():
     """Tests computation of the wing absolute Xs"""
@@ -663,6 +665,8 @@ def test_geometry_wing_wet_area():
     assert area_pf == pytest.approx(15.145, abs=1e-1)
     wet_area = problem.get_val("data:geometry:wing:wet_area", units="m**2")
     assert wet_area == pytest.approx(32.411, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_mfw_simple():
