@@ -618,6 +618,8 @@ def test_geometry_wing_b50():
     wing_b_50 = problem.get_val("data:geometry:wing:b_50", units="m")
     assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_wing_mac():
     """Tests computation of the wing mean aerodynamic chord"""
@@ -633,6 +635,8 @@ def test_geometry_wing_mac():
     assert wing_x0 == pytest.approx(0.0, abs=1e-3)
     wing_y0 = problem.get_val("data:geometry:wing:MAC:y", units="m")
     assert wing_y0 == pytest.approx(2.899, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_sweep():

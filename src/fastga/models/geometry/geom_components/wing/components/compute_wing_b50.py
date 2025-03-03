@@ -36,7 +36,7 @@ class ComputeWingB50(ExplicitComponent):
 
         self.add_output("data:geometry:wing:b_50", units="m")
 
-        self.declare_partials("data:geometry:wing:b_50", "*", method="fd")
+        self.declare_partials("data:geometry:wing:b_50", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
@@ -50,3 +50,31 @@ class ComputeWingB50(ExplicitComponent):
         b_50 = span / np.cos(sweep_50)
 
         outputs["data:geometry:wing:b_50"] = b_50
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+        span = inputs["data:geometry:wing:span"]
+
+        sweep_50 = np.arctan2((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing), (y4_wing - y2_wing))
+        d_b50_d_span = 1 / np.cos(sweep_50)
+
+        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:leading_edge:x:local"] = (
+            span * (l4_wing - l1_wing + 2 * x4_wing)
+        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:root:y"] = -(
+            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
+        ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:y"] = (
+            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
+        ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:root:virtual_chord"] = -(
+            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
+        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:chord"] = (
+            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
+        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = d_b50_d_span
