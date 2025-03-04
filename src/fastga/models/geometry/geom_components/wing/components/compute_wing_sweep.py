@@ -29,6 +29,8 @@ class ComputeWingSweep(om.Group):
     # TODO: Document equations. Cite sources
     """Wing sweeps estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "wing_sweep_0",

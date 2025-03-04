@@ -28,6 +28,8 @@ class ComputeHTSweep(om.Group):
     # TODO: Document equations. Cite sources
     """Horizontal tail sweeps and aspect ratio estimation"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "HT_sweep_0",

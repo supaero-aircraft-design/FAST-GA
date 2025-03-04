@@ -20,6 +20,8 @@ import openmdao.api as om
 class ComputeVTSweep100(om.ExplicitComponent):
     """Estimation of vertical tail sweep at l/c=100%"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:root:chord", val=np.nan, units="m")
@@ -30,6 +32,8 @@ class ComputeVTSweep100(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]
@@ -42,6 +46,8 @@ class ComputeVTSweep100(om.ExplicitComponent):
 
         outputs["data:geometry:vertical_tail:sweep_100"] = sweep_100
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_chord = inputs["data:geometry:vertical_tail:root:chord"]
         tip_chord = inputs["data:geometry:vertical_tail:tip:chord"]

@@ -56,6 +56,8 @@ class ComputeMFWAdvanced(om.Group):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 

@@ -28,6 +28,8 @@ class ComputeVTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail wet area estimation"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:vertical_tail:area", val=np.nan, units="m**2")
 
@@ -35,6 +37,8 @@ class ComputeVTWetArea(ExplicitComponent):
 
         self.declare_partials("*", "*", val=2.1)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         area = inputs["data:geometry:vertical_tail:area"]
 

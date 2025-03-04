@@ -24,6 +24,8 @@ class ComputeFuselageCabinLength(om.ExplicitComponent):
     Computes cabin total length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:PAX_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:luggage_length", val=np.nan, units="m")
@@ -32,6 +34,8 @@ class ComputeFuselageCabinLength(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", val=1.0)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l_pax = inputs["data:geometry:fuselage:PAX_length"]
         l_lug = inputs["data:geometry:fuselage:luggage_length"]

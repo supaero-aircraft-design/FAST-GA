@@ -30,6 +30,8 @@ class ComputeHTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail wet area estimation"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
@@ -38,14 +40,18 @@ class ComputeHTWetArea(ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         area = inputs["data:geometry:horizontal_tail:area"]
         tail_type = inputs["data:geometry:has_T_tail"]
 
-        wet_area = (2.0 - 0.4 * tail_type) * 1.05 * area
+        wet_area = (2 - 0.4 * tail_type) * 1.05 * area
 
         outputs["data:geometry:horizontal_tail:wet_area"] = wet_area
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         area = inputs["data:geometry:horizontal_tail:area"]
         tail_type = inputs["data:geometry:has_T_tail"]
@@ -54,5 +60,5 @@ class ComputeHTWetArea(ExplicitComponent):
             -0.4 * 1.05 * area
         )
         partials["data:geometry:horizontal_tail:wet_area", "data:geometry:horizontal_tail:area"] = (
-            2.0 - 0.4 * tail_type
+            2 - 0.4 * tail_type
         ) * 1.05

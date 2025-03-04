@@ -19,6 +19,8 @@ import openmdao.api as om
 class ComputeWingSweep50(om.ExplicitComponent):
     """Estimation of wing sweep at l/c=50%"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
@@ -28,6 +30,8 @@ class ComputeWingSweep50(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
@@ -37,6 +41,8 @@ class ComputeWingSweep50(om.ExplicitComponent):
             np.tan(sweep_0) - 2 / wing_ar * (1 - taper_ratio_wing) / (1 + taper_ratio_wing)
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         taper_ratio_wing = inputs["data:geometry:wing:taper_ratio"]
@@ -53,5 +59,5 @@ class ComputeWingSweep50(om.ExplicitComponent):
             4 / wing_ar / (taper_ratio_wing + 1) ** 2 / common_denominator
         )
         partials["data:geometry:wing:sweep_50", "data:geometry:wing:sweep_0"] = (
-            np.cos(sweep_0) ** -2 / common_denominator
+            np.cos(sweep_0) ** (-2) / common_denominator
         )

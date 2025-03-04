@@ -26,6 +26,8 @@ class ComputeWingMAC(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing mean aerodynamic chord estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
@@ -47,7 +49,7 @@ class ComputeWingMAC(ExplicitComponent):
                 "data:geometry:wing:tip:chord",
                 "data:geometry:wing:area",
             ],
-            method="fd",
+            method="exact",
         )
         self.declare_partials(
             "data:geometry:wing:MAC:leading_edge:x:local",
@@ -59,7 +61,7 @@ class ComputeWingMAC(ExplicitComponent):
                 "data:geometry:wing:tip:chord",
                 "data:geometry:wing:area",
             ],
-            method="fd",
+            method="exact",
         )
         self.declare_partials(
             "data:geometry:wing:MAC:y",
@@ -70,9 +72,11 @@ class ComputeWingMAC(ExplicitComponent):
                 "data:geometry:wing:tip:chord",
                 "data:geometry:wing:area",
             ],
-            method="fd",
+            method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
@@ -98,6 +102,8 @@ class ComputeWingMAC(ExplicitComponent):
         outputs["data:geometry:wing:MAC:leading_edge:x:local"] = x0_wing
         outputs["data:geometry:wing:MAC:y"] = y0_wing
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]

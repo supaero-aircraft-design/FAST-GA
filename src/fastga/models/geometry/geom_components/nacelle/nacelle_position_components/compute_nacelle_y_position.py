@@ -23,6 +23,8 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
     Estimates x position of the nacelle.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input(
@@ -53,6 +55,8 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nac_width = inputs["data:geometry:propulsion:nacelle:width"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
@@ -77,6 +81,8 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
@@ -86,12 +92,10 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.0
-            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = (
-                y_ratio / 2.0
-            )
+            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = y_ratio / 2
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:y_ratio"
-            ] = span / 2.0
+            ] = span / 2
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
             ] = 0.0

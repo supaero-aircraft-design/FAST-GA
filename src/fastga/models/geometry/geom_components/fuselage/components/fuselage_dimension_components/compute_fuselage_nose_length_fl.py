@@ -24,6 +24,8 @@ class ComputeFuselageNoseLengthFL(om.ExplicitComponent):
     Computes nose length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
@@ -41,6 +43,8 @@ class ComputeFuselageNoseLengthFL(om.ExplicitComponent):
         )
         self.declare_partials(of="*", wrt="data:geometry:propulsion:engine:layout", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
@@ -53,6 +57,8 @@ class ComputeFuselageNoseLengthFL(om.ExplicitComponent):
 
         outputs["data:geometry:fuselage:front_length"] = lav
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 

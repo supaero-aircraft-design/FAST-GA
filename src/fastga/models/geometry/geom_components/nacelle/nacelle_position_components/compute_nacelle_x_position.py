@@ -23,6 +23,8 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
     Estimates x position of the nacelle.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
@@ -67,6 +69,8 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="data:geometry:propulsion:engine:layout", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nac_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
@@ -105,6 +109,8 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:nacelle:x"] = x_nacelle_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         y2_wing = float(inputs["data:geometry:wing:root:y"])
@@ -127,7 +133,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                     )
                     d_x_nacelle_d_x4_wing[idx] = (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                     d_x_nacelle_d_y4_wing[idx] = (
-                        -x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2.0
+                        -x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2
                     )
                     d_x_nacelle_d_y_nacelle[idx, idx] = x4_wing / (y4_wing - y2_wing)
                 else:  # Nacelle in the straight part of the wing

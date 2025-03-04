@@ -24,6 +24,8 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
     Computes fuselage length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -39,6 +41,8 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -53,6 +57,8 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
 
         outputs["data:geometry:fuselage:length"] = fus_length
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         vt_lp = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]

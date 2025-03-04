@@ -24,6 +24,8 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
     Computes Length of passenger area of the cabin.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:cabin:seats:pilot:length", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:length", val=np.nan, units="m")
@@ -34,6 +36,8 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l_pilot_seats = inputs["data:geometry:cabin:seats:pilot:length"]
         l_pass_seats = inputs["data:geometry:cabin:seats:passenger:length"]
@@ -45,6 +49,8 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
 
         outputs["data:geometry:fuselage:PAX_length"] = l_pax
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         l_pass_seats = inputs["data:geometry:cabin:seats:passenger:length"]
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
@@ -58,7 +64,7 @@ class ComputeFuselagePAXLength(om.ExplicitComponent):
         ] = npax / float(seats_p_row)
         partials[
             "data:geometry:fuselage:PAX_length", "data:geometry:cabin:seats:passenger:count_by_row"
-        ] = -npax / (float(seats_p_row)) ** 2.0 * l_pass_seats
+        ] = -npax / float(seats_p_row) ** 2 * l_pass_seats
         partials["data:geometry:fuselage:PAX_length", "data:geometry:cabin:NPAX"] = (
             l_pass_seats / float(seats_p_row)
         )

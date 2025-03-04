@@ -29,6 +29,8 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
     input of the sizing of the HTP.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -41,6 +43,8 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -51,6 +55,8 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
             wing_area * l0_wing
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         l0_wing = inputs["data:geometry:wing:MAC:length"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -59,10 +65,10 @@ class ComputeHTVolumeCoefficient(om.ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:volume_coefficient", "data:geometry:wing:MAC:length"
-        ] = -(ht_area * lp_ht) / (wing_area * l0_wing**2.0)
+        ] = -(ht_area * lp_ht) / (wing_area * l0_wing**2)
         partials["data:geometry:horizontal_tail:volume_coefficient", "data:geometry:wing:area"] = -(
             ht_area * lp_ht
-        ) / (wing_area**2.0 * l0_wing)
+        ) / (wing_area**2 * l0_wing)
         partials[
             "data:geometry:horizontal_tail:volume_coefficient",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",

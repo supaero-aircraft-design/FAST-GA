@@ -99,6 +99,11 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             method="exact",
             val=0.0,
         )
+        self.declare_partials(
+            "*",
+            ["data:geometry:landing_gear:type", "data:geometry:propulsion:engine:layout"],
+            method="fd",
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
@@ -122,9 +127,9 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
 
         if engine_config == 1.0:
-            for y_eng in y_ratio * span / 2.0:
+            for y_eng in y_ratio * span / 2:
                 self.in_engine = np.where(
-                    np.abs(y_array - y_eng) < nacelle_width / 2.0,
+                    np.abs(y_array - y_eng) < nacelle_width / 2,
                     np.full_like(self.in_engine, True),
                     self.in_engine,
                 )

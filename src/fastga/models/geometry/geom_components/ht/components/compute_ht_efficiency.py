@@ -30,6 +30,8 @@ class ComputeHTEfficiency(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail dynamic pressure reduction due to geometric positioning"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:has_T_tail", val=np.nan)
 
@@ -41,10 +43,14 @@ class ComputeHTEfficiency(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         outputs["data:aerodynamics:horizontal_tail:efficiency"] = (
             0.9 + 0.1 * inputs["data:geometry:has_T_tail"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:aerodynamics:horizontal_tail:efficiency", "data:geometry:has_T_tail"] = 0.1

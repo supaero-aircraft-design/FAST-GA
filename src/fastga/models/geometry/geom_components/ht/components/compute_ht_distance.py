@@ -30,6 +30,8 @@ class ComputeHTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail distance estimation"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
         self.add_input("data:geometry:has_T_tail", val=np.nan)
@@ -42,12 +44,16 @@ class ComputeHTDistance(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         tail_type = inputs["data:geometry:has_T_tail"]
         span = inputs["data:geometry:vertical_tail:span"]
 
         outputs["data:geometry:horizontal_tail:z:from_wingMAC25"] = span * tail_type
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         tail_type = inputs["data:geometry:has_T_tail"]
         span = inputs["data:geometry:vertical_tail:span"]

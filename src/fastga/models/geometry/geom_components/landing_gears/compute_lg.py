@@ -30,6 +30,8 @@ class ComputeLGGeometry(om.ExplicitComponent):
     analysis.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -42,6 +44,8 @@ class ComputeLGGeometry(om.ExplicitComponent):
         )
         self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_dia = inputs["data:geometry:propeller:diameter"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
@@ -51,6 +55,8 @@ class ComputeLGGeometry(om.ExplicitComponent):
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
         partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2

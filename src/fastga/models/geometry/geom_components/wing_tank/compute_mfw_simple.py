@@ -29,6 +29,8 @@ oad.RegisterSubmodel.active_models[SUBMODEL_MFW] = "fastga.submodel.geometry.mfw
 class ComputeMFWSimple(ExplicitComponent):
     """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:propulsion:fuel_type", val=np.nan)
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -53,6 +55,8 @@ class ComputeMFWSimple(ExplicitComponent):
 
         self.declare_partials("*", "data:propulsion:fuel_type", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fuel_type = inputs["data:propulsion:fuel_type"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -73,13 +77,15 @@ class ComputeMFWSimple(ExplicitComponent):
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
         ave_thickness = (
-            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2
         )
         mfv = 0.3 * wing_area * ave_thickness
         mfw = mfv * m_vol_fuel
 
         outputs["data:weight:aircraft:MFW"] = mfw
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         fuel_type = inputs["data:propulsion:fuel_type"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -98,7 +104,7 @@ class ComputeMFWSimple(ExplicitComponent):
             m_vol_fuel = 718.9
 
         ave_thickness = (
-            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2
         )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:area"] = (
             0.3 * ave_thickness * m_vol_fuel

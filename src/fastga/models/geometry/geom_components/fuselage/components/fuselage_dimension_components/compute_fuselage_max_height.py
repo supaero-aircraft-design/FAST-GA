@@ -24,6 +24,8 @@ class ComputeFuselageMaxHeight(om.ExplicitComponent):
     Computes maximum cabin height.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
 
@@ -31,6 +33,8 @@ class ComputeFuselageMaxHeight(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", val=1.0)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
 

@@ -28,6 +28,8 @@ from ..constants import SUBMODEL_PROPELLER_INSTALLATION
 class ComputePropellerInstallationEffect(om.ExplicitComponent):
     """Propeller effective advance ratio computation based on the blockage surface behind it."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
@@ -47,6 +49,8 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
         self.declare_partials("*", "data:geometry:propulsion:engine:layout", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         engine_layout = inputs["data:geometry:propulsion:engine:layout"]
 
@@ -66,14 +70,16 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
 
         disk_diameter = inputs["data:geometry:propeller:diameter"]
 
-        disk_surface = np.pi * (disk_diameter / 2.0) ** 2.0
+        disk_surface = np.pi * (disk_diameter / 2) ** 2
 
-        effective_advance_ratio = 1.0 - 0.254 * cowling_master_cross_section / disk_surface
+        effective_advance_ratio = 1 - 0.254 * cowling_master_cross_section / disk_surface
 
         outputs["data:aerodynamics:propeller:installation_effect:effective_advance_ratio"] = (
             effective_advance_ratio
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         engine_layout = inputs["data:geometry:propulsion:engine:layout"]
         disk_diameter = inputs["data:geometry:propeller:diameter"]
@@ -84,7 +90,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
-            ] = -1.016 / (disk_diameter**2.0 * np.pi)
+            ] = -1.016 / (disk_diameter**2 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
@@ -97,7 +103,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
-            ] = -1.016 / (disk_diameter**2.0 * np.pi)
+            ] = -1.016 / (disk_diameter**2 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
@@ -112,7 +118,7 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:fuselage:master_cross_section",
-            ] = -1.016 / (disk_diameter**2.0 * np.pi)
+            ] = -1.016 / (disk_diameter**2 * np.pi)
             partials[
                 "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
                 "data:geometry:propulsion:nacelle:master_cross_section",
@@ -121,4 +127,4 @@ class ComputePropellerInstallationEffect(om.ExplicitComponent):
         partials[
             "data:aerodynamics:propeller:installation_effect:effective_advance_ratio",
             "data:geometry:propeller:diameter",
-        ] = 2.032 * cowling_master_cross_section / (disk_diameter**3.0 * np.pi)
+        ] = 2.032 * cowling_master_cross_section / (disk_diameter**3 * np.pi)

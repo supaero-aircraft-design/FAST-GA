@@ -27,6 +27,8 @@ class ComputeHTChord(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail chords and span estimation"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
@@ -55,6 +57,8 @@ class ComputeHTChord(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         s_h = inputs["data:geometry:horizontal_tail:area"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
@@ -69,40 +73,44 @@ class ComputeHTChord(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:root:chord"] = root_chord
         outputs["data:geometry:horizontal_tail:tip:chord"] = tip_chord
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         s_h = inputs["data:geometry:horizontal_tail:area"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
         if aspect_ratio * s_h < 0.1:
-            partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = 0
-            partials[
-                "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
-            ] = 0
-        else:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
-                np.sqrt(aspect_ratio) / (2.0 * np.sqrt(s_h))
+                0.0
             )
             partials[
                 "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
-            ] = np.sqrt(s_h) / (2.0 * np.sqrt(aspect_ratio))
+            ] = 0.0
+        else:
+            partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
+                np.sqrt(aspect_ratio) / (2 * np.sqrt(s_h))
+            )
+            partials[
+                "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
+            ] = np.sqrt(s_h) / (2 * np.sqrt(aspect_ratio))
 
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:area"
-        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio)) * 2.0 / (1 + taper_ht)
+        ] = 1 / (2 * np.sqrt(s_h * aspect_ratio)) * 2 / (1 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3.0) * 2.0 / (1 + taper_ht)
+        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3) * 2 / (1 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:taper_ratio"
-        ] = -np.sqrt(s_h / aspect_ratio) * 2.0 / (1 + taper_ht) ** 2.0
+        ] = -np.sqrt(s_h / aspect_ratio) * 2 / (1 + taper_ht) ** 2
 
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:area"
-        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio)) * 2.0 * taper_ht / (1 + taper_ht)
+        ] = 1 / (2 * np.sqrt(s_h * aspect_ratio)) * 2 * taper_ht / (1 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3.0) * 2.0 * taper_ht / (1 + taper_ht)
+        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3) * 2 * taper_ht / (1 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:taper_ratio"
-        ] = np.sqrt(s_h / aspect_ratio) * 2.0 / (1 + taper_ht) ** 2.0
+        ] = np.sqrt(s_h / aspect_ratio) * 2 / (1 + taper_ht) ** 2

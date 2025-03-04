@@ -24,6 +24,8 @@ class ComputeFuselageNPAX(om.ExplicitComponent):
     Computes number of pax cabin.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:cabin:seats:passenger:NPAX_max", val=np.nan)
         self.add_input("data:geometry:cabin:seats:passenger:count_by_row", val=np.nan)
@@ -32,6 +34,8 @@ class ComputeFuselageNPAX(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         npax_max = inputs["data:geometry:cabin:seats:passenger:NPAX_max"]
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]

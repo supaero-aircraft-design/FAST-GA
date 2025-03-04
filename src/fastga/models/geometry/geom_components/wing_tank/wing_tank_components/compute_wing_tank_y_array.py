@@ -82,7 +82,7 @@ class ComputeWingTankYArray(om.ExplicitComponent):
         partials[
             "data:geometry:propulsion:tank:y_array",
             "data:geometry:propulsion:tank:y_beginning",
-        ] = 1.0 - np.arange(nb_point_wing) / (nb_point_wing - 1)
+        ] = 1 - np.arange(nb_point_wing) / (nb_point_wing - 1)
         partials[
             "data:geometry:propulsion:tank:y_array",
             "data:geometry:propulsion:tank:y_end",

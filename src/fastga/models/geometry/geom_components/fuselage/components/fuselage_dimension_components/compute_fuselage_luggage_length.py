@@ -26,6 +26,8 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
     80% of internal radius section can be filled with luggage.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:cabin:seats:pilot:width", val=np.nan, units="m")
         self.add_input("data:geometry:cabin:seats:passenger:width", val=np.nan, units="m")
@@ -37,6 +39,8 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
         w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
@@ -44,18 +48,20 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
-        if 2.0 * w_pilot_seats != seats_p_row * w_pass_seats + w_aisle:
-            w_cabin = max(2.0 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
+        if 2 * w_pilot_seats != seats_p_row * w_pass_seats + w_aisle:
+            w_cabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         else:
-            w_cabin = (2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle) / 2
+            w_cabin = (2 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle) / 2
 
         r_i = w_cabin / 2
 
-        luggage_density = 161.0  # In kg/m3
-        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i**2.0)
+        luggage_density = 161  # In kg/m3
+        l_lug = (luggage_mass_max / luggage_density) / (0.8 * np.pi * r_i**2)
 
         outputs["data:geometry:fuselage:luggage_length"] = l_lug
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         w_pilot_seats = inputs["data:geometry:cabin:seats:pilot:width"]
         w_pass_seats = inputs["data:geometry:cabin:seats:passenger:width"]
@@ -63,21 +69,21 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
         w_aisle = inputs["data:geometry:cabin:aisle_width"]
         luggage_mass_max = inputs["data:geometry:cabin:luggage:mass_max"]
 
-        w_cabin = max(2.0 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
+        w_cabin = max(2 * w_pilot_seats, seats_p_row * w_pass_seats + w_aisle)
         r_i = w_cabin / 2
 
-        luggage_density = 161.0  # In kg/m3
+        luggage_density = 161  # In kg/m3
 
         partials[
             "data:geometry:fuselage:luggage_length", "data:geometry:cabin:luggage:mass_max"
-        ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i**2.0))
+        ] = 1 / (luggage_density * (0.8 * np.pi * r_i**2))
 
         volume_constant = (luggage_mass_max / luggage_density) / (0.8 * np.pi)
 
-        if (2.0 * w_pilot_seats) > (seats_p_row * w_pass_seats + w_aisle):
+        if (2 * w_pilot_seats) > (seats_p_row * w_pass_seats + w_aisle):
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
-            ] = -2.0 * volume_constant / w_pilot_seats**3.0
+            ] = -2 * volume_constant / w_pilot_seats**3
 
             partials[
                 "data:geometry:fuselage:luggage_length",
@@ -92,7 +98,7 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
                 0.0
             )
 
-        elif (2.0 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
+        elif (2 * w_pilot_seats) < (seats_p_row * w_pass_seats + w_aisle):
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
             ] = 0.0
@@ -100,35 +106,35 @@ class ComputeFuselageLuggageLength(om.ExplicitComponent):
             partials[
                 "data:geometry:fuselage:luggage_length",
                 "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = -volume_constant * w_pass_seats / r_i**3.0
+            ] = -volume_constant * w_pass_seats / r_i**3
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:passenger:width"
-            ] = -volume_constant * seats_p_row / r_i**3.0
+            ] = -volume_constant * seats_p_row / r_i**3
 
             partials["data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"] = (
-                -volume_constant / r_i**3.0
+                -volume_constant / r_i**3
             )
 
-        elif (2.0 * w_pilot_seats) == (seats_p_row * w_pass_seats + w_aisle):
-            r_i = 0.25 * (2.0 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle)
+        elif (2 * w_pilot_seats) == (seats_p_row * w_pass_seats + w_aisle):
+            r_i = 0.25 * (2 * w_pilot_seats + seats_p_row * w_pass_seats + w_aisle)
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:luggage:mass_max"
-            ] = 1.0 / (luggage_density * (0.8 * np.pi * r_i**2.0))
+            ] = 1 / (luggage_density * (0.8 * np.pi * r_i**2))
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:pilot:width"
-            ] = -2 * volume_constant / r_i**3.0
+            ] = -2 * volume_constant / r_i**3
 
             partials[
                 "data:geometry:fuselage:luggage_length",
                 "data:geometry:cabin:seats:passenger:count_by_row",
-            ] = -volume_constant * w_pass_seats / r_i**3.0
+            ] = -volume_constant * w_pass_seats / r_i**3
 
             partials[
                 "data:geometry:fuselage:luggage_length", "data:geometry:cabin:seats:passenger:width"
-            ] = -volume_constant * seats_p_row / r_i**3.0
+            ] = -volume_constant * seats_p_row / r_i**3
             partials["data:geometry:fuselage:luggage_length", "data:geometry:cabin:aisle_width"] = (
-                -volume_constant / r_i**3.0
+                -volume_constant / r_i**3
             )

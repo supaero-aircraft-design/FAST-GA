@@ -24,6 +24,8 @@ class ComputePlaneLength(om.ExplicitComponent):
     Computes plane length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
         self.add_input(
@@ -43,6 +45,8 @@ class ComputePlaneLength(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -55,12 +59,14 @@ class ComputePlaneLength(om.ExplicitComponent):
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
         plane_length = fa_length + max(
-            ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht),
+            ht_lp + 0.75 * ht_length + b_h / 2 * np.tan(sweep_25_ht),
             vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt),
         )
 
         outputs["data:geometry:aircraft:length"] = plane_length
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ht_lp = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         vt_lp = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
@@ -71,7 +77,7 @@ class ComputePlaneLength(om.ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        if (ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht)) > (
+        if (ht_lp + 0.75 * ht_length + b_h / 2 * np.tan(sweep_25_ht)) > (
             vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt)
         ):
             partials[
@@ -91,7 +97,7 @@ class ComputePlaneLength(om.ExplicitComponent):
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:sweep_25"] = (
-                b_h * (np.tan(sweep_25_ht) ** 2.0 + 1.0) / 2
+                b_h * (np.tan(sweep_25_ht) ** 2 + 1) / 2
             )
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:span"] = (
                 np.tan(sweep_25_ht) / 2
@@ -112,7 +118,7 @@ class ComputePlaneLength(om.ExplicitComponent):
                 0.75
             )
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = (
-                b_v * (np.tan(sweep_25_vt) ** 2.0 + 1.0)
+                b_v * (np.tan(sweep_25_vt) ** 2 + 1)
             )
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = np.tan(
                 sweep_25_vt

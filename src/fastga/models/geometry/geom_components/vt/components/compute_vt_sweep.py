@@ -25,6 +25,8 @@ class ComputeVTSweep(om.Group):
     # TODO: Document equations. Cite sources
     """Vertical tail sweeps estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "VT_sweep_0",

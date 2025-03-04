@@ -32,6 +32,8 @@ from .constants import (
 class ComputeHorizontalTailGeometryFD(om.Group):
     """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
@@ -61,6 +63,8 @@ class ComputeHorizontalTailGeometryFD(om.Group):
 class ComputeHorizontalTailGeometryFL(om.Group):
     """Horizontal tail geometry estimation based on fixed fuselage length"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]

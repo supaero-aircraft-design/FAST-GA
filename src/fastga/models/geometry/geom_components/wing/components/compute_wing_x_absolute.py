@@ -28,6 +28,8 @@ class ComputeWingXAbsolute(ExplicitComponent):
     section.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", units="m", val=np.nan)
         self.add_input("data:geometry:wing:MAC:length", units="m", val=np.nan)
@@ -37,20 +39,21 @@ class ComputeWingXAbsolute(ExplicitComponent):
         self.add_output("data:geometry:wing:tip:leading_edge:x:absolute", units="m")
         self.add_output("data:geometry:wing:MAC:leading_edge:x:absolute", units="m")
 
+        self.declare_partials("*", "data:geometry:wing:MAC:at25percent:x", val=1.0)
+        self.declare_partials("*", "data:geometry:wing:MAC:length", val=-0.25)
         self.declare_partials(
-            of="data:geometry:wing:MAC:leading_edge:x:absolute",
-            wrt=[
-                "data:geometry:wing:MAC:at25percent:x",
-                "data:geometry:wing:MAC:length",
-            ],
-            method="exact",
+            of="data:geometry:wing:tip:leading_edge:x:absolute",
+            wrt="data:geometry:wing:MAC:leading_edge:x:local",
+            val=-1.0,
         )
         self.declare_partials(
             of="data:geometry:wing:tip:leading_edge:x:absolute",
-            wrt="*",
-            method="exact",
+            wrt="data:geometry:wing:tip:leading_edge:x:local",
+            val=1.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -62,26 +65,3 @@ class ComputeWingXAbsolute(ExplicitComponent):
 
         outputs["data:geometry:wing:MAC:leading_edge:x:absolute"] = x_abs_mac
         outputs["data:geometry:wing:tip:leading_edge:x:absolute"] = x_abs_tip
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials[
-            "data:geometry:wing:MAC:leading_edge:x:absolute", "data:geometry:wing:MAC:at25percent:x"
-        ] = 1.0
-        partials[
-            "data:geometry:wing:MAC:leading_edge:x:absolute", "data:geometry:wing:MAC:length"
-        ] = -0.25
-
-        partials[
-            "data:geometry:wing:tip:leading_edge:x:absolute", "data:geometry:wing:MAC:at25percent:x"
-        ] = 1.0
-        partials[
-            "data:geometry:wing:tip:leading_edge:x:absolute", "data:geometry:wing:MAC:length"
-        ] = -0.25
-        partials[
-            "data:geometry:wing:tip:leading_edge:x:absolute",
-            "data:geometry:wing:MAC:leading_edge:x:local",
-        ] = -1.0
-        partials[
-            "data:geometry:wing:tip:leading_edge:x:absolute",
-            "data:geometry:wing:tip:leading_edge:x:local",
-        ] = 1.0

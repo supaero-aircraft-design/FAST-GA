@@ -120,6 +120,8 @@ def test_compute_vt_mac():
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
     assert vt_z0 == pytest.approx(0.672, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_mac_fl():
     """Tests computation of the horizontal tail mac"""
@@ -214,6 +216,8 @@ def test_compute_ht_distance():
     lp_vt = problem.get_val("data:geometry:horizontal_tail:z:from_wingMAC25", units="m")
     assert lp_vt == pytest.approx(1.458, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_chord():
     """Tests computation of the horizontal tail chords"""
@@ -301,6 +305,8 @@ def test_compute_ht_wet_area():
     problem = run_system(ComputeHTWetArea(), ivc)
     wet_area = problem.get_val("data:geometry:horizontal_tail:wet_area", units="m**2")
     assert wet_area == pytest.approx(6.239, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_ht_volume_coefficient():
@@ -476,6 +482,8 @@ def test_geometry_wing_toc():
     assert toc_kink == pytest.approx(0.141, abs=1e-3)
     toc_tip = problem["data:geometry:wing:tip:thickness_ratio"]
     assert toc_tip == pytest.approx(0.129, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_y():
@@ -695,6 +703,8 @@ def test_geometry_wing_mfw_advanced():
     problem = run_system(ComputeMFWAdvanced(), ivc)
     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
     assert mfw == pytest.approx(304.73, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_nacelle():

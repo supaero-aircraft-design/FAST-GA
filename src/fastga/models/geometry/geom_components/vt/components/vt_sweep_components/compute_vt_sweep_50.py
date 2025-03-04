@@ -21,6 +21,8 @@ import openmdao.api as om
 class ComputeVTSweep50(om.ExplicitComponent):
     """Estimation of vertical tail sweep at l/c=50%"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:vertical_tail:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:vertical_tail:taper_ratio", val=np.nan)
@@ -30,30 +32,34 @@ class ComputeVTSweep50(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:vertical_tail:sweep_0"]
 
-        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_vt * (1.0 - taper_vt) / (1.0 + taper_vt))
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_vt * (1 - taper_vt) / (1 + taper_vt))
 
         outputs["data:geometry:vertical_tail:sweep_50"] = sweep_50
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ar_vt = inputs["data:geometry:vertical_tail:aspect_ratio"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:vertical_tail:sweep_0"]
 
         common_denominator = (
-            ar_vt * np.tan(sweep_0) - 2.0 * (1.0 - taper_vt) / (1.0 + taper_vt)
-        ) ** 2.0 + ar_vt**2.0
+            ar_vt * np.tan(sweep_0) - 2 * (1 - taper_vt) / (1 + taper_vt)
+        ) ** 2 + ar_vt**2
 
         partials[
             "data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:aspect_ratio"
-        ] = 2.0 * (1.0 - taper_vt) / (1.0 + taper_vt) / common_denominator
+        ] = 2 * (1 - taper_vt) / (1 + taper_vt) / common_denominator
         partials[
             "data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:taper_ratio"
-        ] = 4.0 * ar_vt / common_denominator / (taper_vt + 1) ** 2
+        ] = 4 * ar_vt / common_denominator / (taper_vt + 1) ** 2
         partials["data:geometry:vertical_tail:sweep_50", "data:geometry:vertical_tail:sweep_0"] = (
-            ar_vt**2.0 / np.cos(sweep_0) ** 2.0 / common_denominator
+            ar_vt**2 / np.cos(sweep_0) ** 2 / common_denominator
         )

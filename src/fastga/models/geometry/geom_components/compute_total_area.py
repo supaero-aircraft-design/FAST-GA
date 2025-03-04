@@ -28,6 +28,8 @@ class ComputeTotalArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Total aircraft wet area estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:wet_area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:wet_area", val=np.nan, units="m**2")
@@ -53,6 +55,8 @@ class ComputeTotalArea(ExplicitComponent):
             ["data:geometry:propulsion:nacelle:wet_area", "data:geometry:propulsion:engine:count"],
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wet_area_wing = inputs["data:geometry:wing:wet_area"]
         wet_area_fus = inputs["data:geometry:fuselage:wet_area"]
@@ -67,6 +71,8 @@ class ComputeTotalArea(ExplicitComponent):
 
         outputs["data:geometry:aircraft:wet_area"] = wet_area_total
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wet_area_nac = inputs["data:geometry:propulsion:nacelle:wet_area"]
         nacelle_nb = inputs["data:geometry:propulsion:engine:count"]

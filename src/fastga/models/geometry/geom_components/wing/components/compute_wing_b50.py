@@ -26,6 +26,8 @@ class ComputeWingB50(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing B50 estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
         self.add_input("data:geometry:wing:sweep_50", val=np.nan, units="rad")
@@ -34,6 +36,8 @@ class ComputeWingB50(ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         span = inputs["data:geometry:wing:span"]
         sweep_50 = inputs["data:geometry:wing:sweep_50"]
@@ -42,6 +46,8 @@ class ComputeWingB50(ExplicitComponent):
 
         outputs["data:geometry:wing:b_50"] = b_50
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         span = inputs["data:geometry:wing:span"]
         sweep_50 = inputs["data:geometry:wing:sweep_50"]

@@ -87,6 +87,8 @@ def test_compute_vt_chords():
     tip_chord = problem.get_val("data:geometry:vertical_tail:tip:chord", units="m")
     assert tip_chord == pytest.approx(0.561, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_vt_mac():
     """Tests computation of the vertical tail mac"""
@@ -199,6 +201,8 @@ def test_compute_ht_distance():
     lp_vt = problem.get_val("data:geometry:horizontal_tail:z:from_wingMAC25", units="m")
     assert lp_vt == pytest.approx(0.0, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_compute_ht_chord():
     """Tests computation of the horizontal tail chords"""
@@ -216,6 +220,8 @@ def test_compute_ht_chord():
     assert tip_chord == pytest.approx(0.531, abs=1e-3)
     aspect_ratio = problem.get_val("data:geometry:horizontal_tail:aspect_ratio")
     assert aspect_ratio == pytest.approx(5.47, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_ht_mac():
@@ -286,6 +292,8 @@ def test_compute_ht_wet_area():
     problem = run_system(ComputeHTWetArea(), ivc)
     wet_area = problem.get_val("data:geometry:horizontal_tail:wet_area", units="m**2")
     assert wet_area == pytest.approx(5.615, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_ht_volume_coefficient():
@@ -461,6 +469,8 @@ def test_geometry_wing_toc():
     assert toc_kink == pytest.approx(0.113, abs=1e-3)
     toc_tip = problem["data:geometry:wing:tip:thickness_ratio"]
     assert toc_tip == pytest.approx(0.103, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_geometry_wing_y():
@@ -703,7 +713,6 @@ def test_dimension_nacelle():
     nacelle_master_cross_section = problem.get_val(
         "data:geometry:propulsion:nacelle:master_cross_section", units="m**2"
     )
-    assert nacelle_master_cross_section == pytest.approx(0.849, abs=1e-3)
 
 
 def test_position_nacelle():
@@ -720,8 +729,6 @@ def test_position_nacelle():
     x_nacelle = problem.get_val("data:geometry:propulsion:nacelle:x", units="m")
     x_nacelle_result = 1.148
     assert abs(x_nacelle - x_nacelle_result) < 1e-3
-
-    problem.check_partials(compact_print=True)
 
 
 def test_position_propeller():

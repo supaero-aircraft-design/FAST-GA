@@ -26,6 +26,8 @@ class ComputeHTMacFD(ExplicitComponent):
     Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
@@ -61,6 +63,8 @@ class ComputeHTMacFD(ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -83,6 +87,8 @@ class ComputeHTMacFD(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:local"] = x0_ht
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -136,6 +142,8 @@ class ComputeHTMacFL(ExplicitComponent):
     distance computed).
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
@@ -192,6 +200,8 @@ class ComputeHTMacFL(ExplicitComponent):
         )
         self.declare_partials(of="*", wrt="data:geometry:has_T_tail", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -224,6 +234,8 @@ class ComputeHTMacFL(ExplicitComponent):
         outputs["data:geometry:horizontal_tail:MAC:y"] = y0_ht
         outputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"] = ht_lp
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
@@ -235,10 +247,10 @@ class ComputeHTMacFL(ExplicitComponent):
 
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:root:chord"
-        ] = (1.0 - (tip_chord / chord_sum) ** 2) / 1.5
+        ] = (1 - (tip_chord / chord_sum) ** 2) / 1.5
         partials[
             "data:geometry:horizontal_tail:MAC:length", "data:geometry:horizontal_tail:tip:chord"
-        ] = (1.0 - (root_chord / chord_sum) ** 2) / 1.5
+        ] = (1 - (root_chord / chord_sum) ** 2) / 1.5
 
         partials[
             "data:geometry:horizontal_tail:MAC:at25percent:x:local",

@@ -22,6 +22,8 @@ import openmdao.api as om
 class ComputeHTSweep0(om.ExplicitComponent):
     """Estimation of horizontal tail sweep at l/c=0%"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
@@ -32,37 +34,41 @@ class ComputeHTSweep0(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
 
-        half_span = b_h / 2.0
+        half_span = b_h / 2
 
-        sweep_0 = np.pi / 2.0 - np.arctan2(
+        sweep_0 = np.pi / 2 - np.arctan2(
             half_span, (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
         )
 
         outputs["data:geometry:horizontal_tail:sweep_0"] = sweep_0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_h = inputs["data:geometry:horizontal_tail:span"]
         root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
         chord_diff = root_chord - tip_chord
-        common_denominator = 4.0 * b_h**2.0 + (chord_diff + 2.0 * b_h * np.tan(sweep_25)) ** 2
+        common_denominator = 4 * b_h**2 + (chord_diff + 2 * b_h * np.tan(sweep_25)) ** 2
 
         partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
-            -2.0 * chord_diff / common_denominator
+            -2 * chord_diff / common_denominator
         )
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:root:chord"
-        ] = 2.0 * b_h / common_denominator
+        ] = 2 * b_h / common_denominator
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:tip:chord"
-        ] = -2.0 * b_h / common_denominator
+        ] = -2 * b_h / common_denominator
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:sweep_25"
-        ] = 4.0 * b_h**2 / np.cos(sweep_25) ** 2.0 / common_denominator
+        ] = 4 * b_h**2 / np.cos(sweep_25) ** 2 / common_denominator

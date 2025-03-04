@@ -24,6 +24,8 @@ class ComputeNacellePosition(om.Group):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "nacelle_x_position",

@@ -24,6 +24,8 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
     Computes nose length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:nacelle:length", val=np.nan, units="m")
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
@@ -47,6 +49,8 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
             method="fd",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
@@ -56,13 +60,15 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
         if prop_layout == 3.0:  # engine located in nose
             lav = nacelle_length + spinner_length
         else:
-            lav = 1.40 * h_f
+            lav = 1.4 * h_f
             # Used to be 1.7, supposedly as an A320 according to FAST legacy. Results on the BE76
             # tend to say it is around 1.40, though it varies a lot depending on the airplane and
             # its use
 
         outputs["data:geometry:fuselage:front_length"] = lav
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
 
@@ -82,4 +88,4 @@ class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
             partials["data:geometry:fuselage:front_length", "data:geometry:propeller:depth"] = 0.0
             partials[
                 "data:geometry:fuselage:front_length", "data:geometry:fuselage:maximum_height"
-            ] = 1.40
+            ] = 1.4

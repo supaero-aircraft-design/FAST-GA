@@ -80,7 +80,7 @@ class ComputeWingTanksCapacity(om.ExplicitComponent):
         #       * (y_array[1:] - y_array[:-1])
         #   )
         #
-        outputs["data:geometry:propulsion:tank:capacity"] = 2.0 * trapezoid(
+        outputs["data:geometry:propulsion:tank:capacity"] = 2 * trapezoid(
             cross_section_array, y_array
         )
 

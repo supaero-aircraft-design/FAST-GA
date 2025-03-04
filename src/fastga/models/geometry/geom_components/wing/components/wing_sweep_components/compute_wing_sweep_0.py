@@ -19,6 +19,8 @@ import openmdao.api as om
 class ComputeWingSweep0(om.ExplicitComponent):
     """Estimation of wing sweep at l/c=0%"""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -28,6 +30,8 @@ class ComputeWingSweep0(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]
@@ -37,6 +41,8 @@ class ComputeWingSweep0(om.ExplicitComponent):
 
         outputs["data:geometry:wing:sweep_0"] = sweep_0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
         y2_wing = inputs["data:geometry:wing:root:y"]

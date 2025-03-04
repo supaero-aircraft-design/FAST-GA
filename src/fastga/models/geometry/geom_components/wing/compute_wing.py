@@ -37,6 +37,8 @@ class ComputeWingGeometry(Group):
     # TODO: Document equations. Cite sources
     """Wing geometry estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "wing_toc",

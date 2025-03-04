@@ -26,6 +26,8 @@ class ComputeWingL1AndL4(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing chords (l1 and l4) estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -38,13 +40,15 @@ class ComputeWingL1AndL4(ExplicitComponent):
         self.declare_partials(of="data:geometry:wing:root:virtual_chord", wrt="*", method="exact")
         self.declare_partials(of="data:geometry:wing:tip:chord", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
-        l1_wing = wing_area / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio))
+        l1_wing = wing_area / (2 * y2_wing + (y4_wing - y2_wing) * (1 + taper_ratio))
 
         l4_wing = l1_wing * taper_ratio
 
@@ -59,42 +63,31 @@ class ComputeWingL1AndL4(ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
-        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:area"] = 1.0 / (
-            2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)
+        common_denominator = 2 * y2_wing + (y4_wing - y2_wing) * (1 + taper_ratio)
+
+        partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:area"] = (
+            1 / common_denominator
         )
         partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:root:y"] = (
-            -wing_area
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
-            * (2.0 - (1.0 + taper_ratio))
+            -wing_area * (1 - taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:tip:y"] = (
-            -wing_area
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
-            * (1.0 + taper_ratio)
+            -wing_area * (1 + taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:root:virtual_chord", "data:geometry:wing:taper_ratio"] = (
-            -wing_area
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
-            * (y4_wing - y2_wing)
+            -wing_area * (y4_wing - y2_wing) / common_denominator**2
         )
 
-        partials["data:geometry:wing:tip:chord", "data:geometry:wing:area"] = taper_ratio / (
-            2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)
+        partials["data:geometry:wing:tip:chord", "data:geometry:wing:area"] = (
+            taper_ratio / common_denominator
         )
+
         partials["data:geometry:wing:tip:chord", "data:geometry:wing:root:y"] = (
-            -wing_area
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
-            * (2.0 - (1.0 + taper_ratio))
-            * taper_ratio
+            -wing_area * (1 - taper_ratio) * taper_ratio / common_denominator**2
         )
         partials["data:geometry:wing:tip:chord", "data:geometry:wing:tip:y"] = (
-            -wing_area
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
-            * (1.0 + taper_ratio)
-            * taper_ratio
+            -wing_area * (1 + taper_ratio) * taper_ratio / common_denominator**2
         )
         partials["data:geometry:wing:tip:chord", "data:geometry:wing:taper_ratio"] = (
-            wing_area
-            * (y4_wing + y2_wing)
-            / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)) ** 2.0
+            wing_area * (y4_wing + y2_wing) / common_denominator**2
         )

@@ -34,9 +34,13 @@ class ComputeNacelleDimension(om.ExplicitComponent):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -49,6 +53,8 @@ class ComputeNacelleDimension(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         propulsion_model = FuelEngineSet(self._engine_wrapper.get_model(inputs), 1.0)
 

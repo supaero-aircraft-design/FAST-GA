@@ -28,6 +28,8 @@ from ..constants import SUBMODEL_PROPELLER_POSITION
 class ComputePropellerPosition(om.ExplicitComponent):
     """Propeller position with respect to the leading edge estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propulsion:engine:layout", val=np.nan)
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -59,6 +61,8 @@ class ComputePropellerPosition(om.ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
         self.declare_partials("*", "data:geometry:propulsion:engine:layout", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
@@ -101,6 +105,8 @@ class ComputePropellerPosition(om.ExplicitComponent):
 
         outputs["data:geometry:propulsion:nacelle:from_LE"] = x_from_le_array
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
@@ -112,7 +118,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         nacelle_length = float(inputs["data:geometry:propulsion:nacelle:length"])
 
         if prop_layout == 1.0:
-            y_nacelle_array = y_ratio * span / 2.0
+            y_nacelle_array = y_ratio * span / 2
 
             d_x_from_le_d_nacelle_length = np.copy(y_nacelle_array)
             d_x_from_le_d_y2_wing = np.copy(y_nacelle_array)
@@ -136,22 +142,20 @@ class ComputePropellerPosition(om.ExplicitComponent):
                         d_x_from_le_d_y2_wing[idx] = (
                             -(l4_wing - l2_wing)
                             * (-(y4_wing - y2_wing) + (y_nacelle - y2_wing))
-                            / (y4_wing - y2_wing) ** 2.0
+                            / (y4_wing - y2_wing) ** 2
                         )
                         d_x_from_le_d_l2_wing[idx] = -(
                             1 - (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                         )
                         d_x_from_le_d_y4_wing[idx] = (
-                            -(l4_wing - l2_wing)
-                            * (y_nacelle - y2_wing)
-                            / (y4_wing - y2_wing) ** 2.0
+                            -(l4_wing - l2_wing) * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2
                         )
                         d_x_from_le_d_l4_wing[idx] = -(y_nacelle - y2_wing) / (y4_wing - y2_wing)
                         d_x_from_le_d_span[idx] = (
-                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * y_ratio / 2.0
+                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * y_ratio / 2
                         )
                         d_x_from_le_d_y_ratio[idx, idx] = (
-                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * span / 2.0
+                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * span / 2
                         )
                     else:
                         d_x_from_le_d_y2_wing[idx] = 0.0

@@ -26,6 +26,8 @@ from .constants import SUBMODEL_PROPELLER_POSITION, SUBMODEL_PROPELLER_INSTALLAT
 class ComputePropellerGeometry(om.Group):
     """Propeller position with respect to the leading edge estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "propeller_position",

@@ -25,6 +25,8 @@ class ComputeWingY(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing Ys estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -65,6 +67,8 @@ class ComputeWingY(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -74,8 +78,8 @@ class ComputeWingY(om.ExplicitComponent):
         span = np.sqrt(lambda_wing * wing_area)
 
         # Wing geometry
-        y4_wing = span / 2.0
-        y2_wing = width_max / 2.0
+        y4_wing = span / 2
+        y2_wing = width_max / 2
         y3_wing = y4_wing * wing_break
 
         outputs["data:geometry:wing:span"] = span
