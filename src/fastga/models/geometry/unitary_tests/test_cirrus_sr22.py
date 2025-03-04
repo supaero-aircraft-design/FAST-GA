@@ -713,6 +713,7 @@ def test_dimension_nacelle():
     nacelle_master_cross_section = problem.get_val(
         "data:geometry:propulsion:nacelle:master_cross_section", units="m**2"
     )
+    assert nacelle_master_cross_section == pytest.approx(0.849, abs=1e-3)
 
 
 def test_position_nacelle():
