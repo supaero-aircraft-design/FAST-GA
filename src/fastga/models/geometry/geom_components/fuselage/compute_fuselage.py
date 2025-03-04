@@ -28,10 +28,14 @@ from fastga.models.options import CABIN_SIZING_OPTION
 
 
 class ComputeFuselageAlternate(Group):
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(
@@ -61,10 +65,14 @@ class ComputeFuselageAlternate(Group):
 
 
 class ComputeFuselageLegacy(Group):
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(

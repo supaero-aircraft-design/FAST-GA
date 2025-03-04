@@ -1,6 +1,6 @@
 """FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -51,10 +51,14 @@ class GeometryFixedFuselage(om.Group):
     static margin derivative relative to wing position.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
@@ -118,10 +122,14 @@ class GeometryFixedTailDistance(om.Group):
     margin derivative relative to wing position.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(

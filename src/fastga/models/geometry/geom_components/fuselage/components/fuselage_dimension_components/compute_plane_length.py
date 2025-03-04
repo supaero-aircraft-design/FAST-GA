@@ -34,9 +34,9 @@ class ComputePlaneLength(om.ExplicitComponent):
         )
         self.add_input("data:geometry:horizontal_tail:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:vertical_tail:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
 
         self.add_output("data:geometry:aircraft:length", units="m")
@@ -55,8 +55,8 @@ class ComputePlaneLength(om.ExplicitComponent):
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
         plane_length = fa_length + max(
-            ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht * np.pi / 180.0),
-            vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt * np.pi / 180.0),
+            ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht),
+            vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt),
         )
 
         outputs["data:geometry:aircraft:length"] = plane_length
@@ -71,8 +71,8 @@ class ComputePlaneLength(om.ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        if (ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht * np.pi / 180.0)) > (
-            vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt * np.pi / 180.0)
+        if (ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht)) > (
+            vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt)
         ):
             partials[
                 "data:geometry:aircraft:length",
@@ -91,10 +91,10 @@ class ComputePlaneLength(om.ExplicitComponent):
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:sweep_25"] = (
-                b_h * np.pi * (np.tan((np.pi * sweep_25_ht) / 180.0) ** 2.0 + 1.0)
-            ) / 360.0
+                b_h * (np.tan(sweep_25_ht) ** 2.0 + 1.0) / 2
+            )
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:span"] = (
-                np.tan((np.pi * sweep_25_ht) / 180.0) / 2.0
+                np.tan(sweep_25_ht) / 2
             )
         else:
             partials[
@@ -112,10 +112,10 @@ class ComputePlaneLength(om.ExplicitComponent):
                 0.75
             )
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = (
-                b_v * np.pi * (np.tan((np.pi * sweep_25_vt) / 180.0) ** 2.0 + 1.0)
-            ) / 180.0
+                b_v * (np.tan(sweep_25_vt) ** 2.0 + 1.0)
+            )
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = np.tan(
-                (np.pi * sweep_25_vt) / 180.0
+                sweep_25_vt
             )
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:sweep_25"] = (
                 0.0

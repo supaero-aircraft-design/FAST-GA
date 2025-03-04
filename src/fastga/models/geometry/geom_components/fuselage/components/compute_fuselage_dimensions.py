@@ -39,6 +39,8 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
     Geometry of fuselage - Cabin length defined with total fuselage length input (no sizing).
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
@@ -53,6 +55,8 @@ class ComputeFuselageGeometryBasic(ExplicitComponent):
             val=-1.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         fus_length = inputs["data:geometry:fuselage:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
@@ -75,9 +79,13 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "number_of_passenger",
@@ -142,9 +150,13 @@ class ComputeFuselageGeometryCabinSizingFL(om.Group):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "number_of_passenger",

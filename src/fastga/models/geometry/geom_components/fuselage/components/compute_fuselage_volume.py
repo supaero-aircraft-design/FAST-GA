@@ -30,6 +30,8 @@ class ComputeFuselageVolume(ExplicitComponent):
     cylindrical at the center section and conical at the front and back.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -45,6 +47,8 @@ class ComputeFuselageVolume(ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -55,10 +59,12 @@ class ComputeFuselageVolume(ExplicitComponent):
         l_f = np.sqrt(b_f * h_f)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = np.pi * l_f**2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = np.pi * l_f**2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
 
         outputs["data:geometry:fuselage:volume"] = volume_fus
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -67,17 +73,17 @@ class ComputeFuselageVolume(ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
 
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_width"] = (
-            np.pi * h_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * h_f / 4 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_height"] = (
-            np.pi * b_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * b_f / 4 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:length"] = (
-            np.pi * b_f * h_f / 4.0
+            np.pi * b_f * h_f / 4
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:rear_length"] = (
-            -0.5 * np.pi * b_f * h_f / 4.0
+            -0.5 * np.pi * b_f * h_f / 4
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:front_length"] = (
-            -0.3 * np.pi * b_f * h_f / 4.0
+            -0.3 * np.pi * b_f * h_f / 4
         )

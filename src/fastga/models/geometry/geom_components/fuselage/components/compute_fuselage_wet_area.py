@@ -32,6 +32,8 @@ class ComputeFuselageWetArea(ExplicitComponent):
     cone at the front a cylinder in the middle and a cone at the back.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -42,8 +44,15 @@ class ComputeFuselageWetArea(ExplicitComponent):
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
         self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
+        self.declare_partials(
+            "data:geometry:fuselage:master_cross_section",
+            ["data:geometry:fuselage:maximum_width", "data:geometry:fuselage:maximum_height"],
+            method="exact",
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -59,11 +68,13 @@ class ComputeFuselageWetArea(ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
-        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
+        master_cross_section = np.pi * (fus_dia / 2) ** 2
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -91,10 +102,10 @@ class ComputeFuselageWetArea(ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
-        ] = (np.pi * h_f) / 4.0
+        ] = (np.pi * h_f) / 4
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
-        ] = (np.pi * b_f) / 4.0
+        ] = (np.pi * b_f) / 4
 
 
 @oad.RegisterSubmodel(
@@ -107,6 +118,8 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
     Equation 61.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
@@ -115,8 +128,15 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
         self.add_output("data:geometry:fuselage:wet_area", units="m**2")
         self.add_output("data:geometry:fuselage:master_cross_section", units="m**2")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:geometry:fuselage:wet_area", "*", method="exact")
+        self.declare_partials(
+            "data:geometry:fuselage:master_cross_section",
+            ["data:geometry:fuselage:maximum_width", "data:geometry:fuselage:maximum_height"],
+            method="exact",
+        )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -124,13 +144,15 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
         # Using the formula from The Flight Optimization System Weights Estimation Method
         fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia**2.0
+        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia**2
 
-        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
+        master_cross_section = np.pi * (fus_dia / 2) ** 2
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
@@ -139,11 +161,11 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
             h_f * np.pi * (fus_length / fus_dia - 1.7)
-            - (np.pi * b_f * fus_length * h_f**2.0) / (2.0 * fus_dia**3)
+            - (np.pi * b_f * fus_length * h_f**2) / (2 * fus_dia**3)
         )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
             b_f * np.pi * (fus_length / fus_dia - 1.7)
-            - (np.pi * b_f**2.0 * fus_length * h_f) / (2.0 * fus_dia**3)
+            - (np.pi * b_f**2 * fus_length * h_f) / (2 * fus_dia**3)
         )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
             np.pi * b_f * h_f
@@ -151,7 +173,7 @@ class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
-        ] = (np.pi * h_f) / 4.0
+        ] = (np.pi * h_f) / 4
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
-        ] = (np.pi * b_f) / 4.0
+        ] = (np.pi * b_f) / 4
