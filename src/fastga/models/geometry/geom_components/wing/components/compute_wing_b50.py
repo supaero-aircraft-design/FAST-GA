@@ -27,54 +27,26 @@ class ComputeWingB50(ExplicitComponent):
     """Wing B50 estimation."""
 
     def setup(self):
-        self.add_input("data:geometry:wing:tip:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+        self.add_input("data:geometry:wing:sweep_50", val=np.nan, units="rad")
 
         self.add_output("data:geometry:wing:b_50", units="m")
 
-        self.declare_partials("data:geometry:wing:b_50", "*", method="exact")
+        self.declare_partials("*", "*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
         span = inputs["data:geometry:wing:span"]
+        sweep_50 = inputs["data:geometry:wing:sweep_50"]
 
-        sweep_50 = np.arctan2((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing), (y4_wing - y2_wing))
         b_50 = span / np.cos(sweep_50)
 
         outputs["data:geometry:wing:b_50"] = b_50
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        x4_wing = inputs["data:geometry:wing:tip:leading_edge:x:local"]
-        y2_wing = inputs["data:geometry:wing:root:y"]
-        y4_wing = inputs["data:geometry:wing:tip:y"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        l4_wing = inputs["data:geometry:wing:tip:chord"]
         span = inputs["data:geometry:wing:span"]
+        sweep_50 = inputs["data:geometry:wing:sweep_50"]
 
-        sweep_50 = np.arctan2((x4_wing + l4_wing * 0.5 - 0.5 * l1_wing), (y4_wing - y2_wing))
-        d_b50_d_span = 1 / np.cos(sweep_50)
-
-        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:leading_edge:x:local"] = (
-            span * (l4_wing - l1_wing + 2 * x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
-        partials["data:geometry:wing:b_50", "data:geometry:wing:root:y"] = -(
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
-        ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
-        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:y"] = (
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing) ** 2
-        ) / (d_b50_d_span * (y2_wing - y4_wing) ** 3)
-        partials["data:geometry:wing:b_50", "data:geometry:wing:root:virtual_chord"] = -(
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
-        partials["data:geometry:wing:b_50", "data:geometry:wing:tip:chord"] = (
-            span * (l4_wing / 2 - l1_wing / 2 + x4_wing)
-        ) / (2 * d_b50_d_span * (y2_wing - y4_wing) ** 2)
-        partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = d_b50_d_span
+        partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = 1 / np.cos(sweep_50)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:sweep_50"] = (
+            span * np.tan(sweep_50) / np.cos(sweep_50)
+        )

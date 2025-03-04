@@ -59,9 +59,6 @@ class ComputeWingGeometry(Group):
             "wing_x", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_X_LOCAL), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_b50", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_B50), promotes=["*"]
-        )
-        self.add_subsystem(
             "wing_mac", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_MAC), promotes=["*"]
         )
         self.add_subsystem(
@@ -71,6 +68,9 @@ class ComputeWingGeometry(Group):
         )
         self.add_subsystem(
             "wing_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_SWEEP), promotes=["*"]
+        )
+        self.add_subsystem(
+            "wing_b50", oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_B50), promotes=["*"]
         )
         self.add_subsystem(
             "wing_wet_area",

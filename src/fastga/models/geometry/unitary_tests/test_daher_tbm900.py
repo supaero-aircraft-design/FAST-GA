@@ -592,16 +592,12 @@ def test_geometry_wing_b50():
     # Define input values calculated from other modules
     ivc = om.IndepVarComp()
     ivc.add_output("data:geometry:wing:span", 12.363, units="m")
-    ivc.add_output("data:geometry:wing:root:y", 0.6, units="m")
-    ivc.add_output("data:geometry:wing:tip:y", 6.181, units="m")
-    ivc.add_output("data:geometry:wing:root:virtual_chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:tip:chord", 1.549, units="m")
-    ivc.add_output("data:geometry:wing:tip:leading_edge:x:local", 0.0, units="m")
+    ivc.add_output("data:geometry:wing:sweep_50", -1.53, units="deg")
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeWingB50(), ivc)
     wing_b_50 = problem.get_val("data:geometry:wing:b_50", units="m")
-    assert wing_b_50 == pytest.approx(12.363, abs=1e-3)
+    assert wing_b_50 == pytest.approx(12.367, abs=1e-3)
 
     problem.check_partials(compact_print=True)
 
