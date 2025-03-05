@@ -1,4 +1,7 @@
-"""Estimation of max fuel weight."""
+"""
+Python module for maximum fuel weight calculation with simple approach, part of the geometry
+component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -24,7 +27,7 @@ oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_LEGACY)
 class ComputeMFWSimple(om.ExplicitComponent):
-    """Max fuel weight estimation based o RAYMER table 10.5 p269."""
+    """Max fuel weight estimation based on RAYMER table 10.5 p269."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

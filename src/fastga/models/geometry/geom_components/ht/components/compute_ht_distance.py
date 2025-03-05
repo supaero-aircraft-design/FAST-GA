@@ -1,5 +1,6 @@
 """
-Estimation of horizontal tail distance.
+Python module for the calculation of horizontal tail distance from 25% wing MAC, part of the
+horizontal tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

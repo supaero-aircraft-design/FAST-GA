@@ -1,5 +1,6 @@
-"""Estimation of wing chords (l2 and l3)."""
-
+"""
+Python module for wing chords of calculations (l2 and l3), part of the wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

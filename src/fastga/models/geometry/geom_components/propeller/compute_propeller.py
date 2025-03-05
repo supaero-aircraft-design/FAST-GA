@@ -1,4 +1,7 @@
-"""Estimation of propeller position wrt to the wing."""
+"""
+Python module for the calculation of the effect from presence of propeller, part of the geometry
+component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

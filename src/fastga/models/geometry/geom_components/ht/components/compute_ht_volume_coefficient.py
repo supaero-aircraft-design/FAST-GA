@@ -1,4 +1,7 @@
-"""Estimation of horizontal tail volume coefficient."""
+"""
+Python module for horizontal tail volume coefficient calculation, part of the horizontal tail
+geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

@@ -1,4 +1,6 @@
-"""Estimation of wing B50."""
+"""
+Python module for wing half-span calculation, part of the wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

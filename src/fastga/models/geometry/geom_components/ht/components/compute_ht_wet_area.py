@@ -1,5 +1,5 @@
 """
-Estimation of horizontal tail wet area.
+Python module for horizontal tail wet area calculation, part of the horizontal tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

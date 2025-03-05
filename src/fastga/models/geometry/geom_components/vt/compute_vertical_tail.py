@@ -1,5 +1,5 @@
 """
-Estimation of geometry of vertical tail
+Python module for vertical tail geometry calculation, part of the geometry component.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

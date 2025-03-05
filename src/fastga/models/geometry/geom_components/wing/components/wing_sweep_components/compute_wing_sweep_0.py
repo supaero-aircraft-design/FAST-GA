@@ -1,4 +1,6 @@
-"""Estimation of wing sweep at l/c=0%."""
+"""
+Python module for wing sweep angle calculation at l/c=0% , part of the wing sweep angle.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

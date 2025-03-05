@@ -1,4 +1,7 @@
-"""Estimation of fuselage average depth around the vertical tail."""
+"""
+Python module for the calculation of fuselage average depth around the vertical tail, part of the
+fuselage geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

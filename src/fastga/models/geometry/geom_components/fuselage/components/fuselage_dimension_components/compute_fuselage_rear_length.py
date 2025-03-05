@@ -1,5 +1,5 @@
 """
-Estimation of geometry of fuselage part A - Cabin (Commercial).
+Python module for fuselage rear length calculation, part of the fuselage dimension.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

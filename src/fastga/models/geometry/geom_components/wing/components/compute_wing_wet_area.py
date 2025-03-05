@@ -1,4 +1,6 @@
-"""Estimation of wing wet area."""
+"""
+Python module for wing wet area and wing outer area calculation, part of the wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -22,8 +24,10 @@ from ..constants import SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY
 @oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY)
 class ComputeWingWetArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Wing wet area estimation, the wing wet area calculation can be found at page 707 of
-    :cite:`gudmundsson:2013`."""
+    """
+    Wing wet area estimation, the wing wet area calculation can be found at page 707 of
+    :cite:`gudmundsson:2013`.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

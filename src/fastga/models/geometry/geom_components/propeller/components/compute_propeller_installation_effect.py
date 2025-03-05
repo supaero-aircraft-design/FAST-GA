@@ -1,4 +1,6 @@
-"""Estimation of propeller effective advance ratio."""
+"""
+Python module for propeller effective advance ratio calculation, part of the propeller component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

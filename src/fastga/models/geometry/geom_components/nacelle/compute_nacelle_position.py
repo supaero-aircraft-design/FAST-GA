@@ -1,4 +1,6 @@
-"""Estimation of nacelle and pylon geometry."""
+"""
+Python module for nacelle position calculations, part of the geometry component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify

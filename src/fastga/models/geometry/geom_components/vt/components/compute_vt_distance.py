@@ -1,4 +1,7 @@
-"""Estimation of vertical tail mean aerodynamic chord position."""
+"""
+Python module for the calculation of vertical tail distance from 25% wing MAC, part of the
+vertical tail geometry.
+"""
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

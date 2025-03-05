@@ -1,4 +1,7 @@
-"""Estimation of wing Xs."""
+"""
+Python module for distance calculation between the nose and leading edge at different section,
+part of the wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
