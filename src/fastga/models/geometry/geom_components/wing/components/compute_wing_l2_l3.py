@@ -14,14 +14,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SERVICE_WING_L2_L3, SUBMODEL_WING_L2_L3_LEGACY
 
 
 @oad.RegisterSubmodel(SERVICE_WING_L2_L3, SUBMODEL_WING_L2_L3_LEGACY)
-class ComputeWingL2AndL3(ExplicitComponent):
+class ComputeWingL2AndL3(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing chords (l2 and l3) estimation."""
 

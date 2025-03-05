@@ -13,14 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SERVICE_WING_X_ABSOLUTE, SUBMODEL_WING_X_ABSOLUTE_LEGACY
 
 
 @oad.RegisterSubmodel(SERVICE_WING_X_ABSOLUTE, SUBMODEL_WING_X_ABSOLUTE_LEGACY)
-class ComputeWingXAbsolute(ExplicitComponent):
+class ComputeWingXAbsolute(om.ExplicitComponent):
     """
     Wing absolute Xs estimation, distance from the nose to the leading edge at different
     section.

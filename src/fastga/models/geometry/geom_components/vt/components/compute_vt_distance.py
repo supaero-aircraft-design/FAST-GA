@@ -16,6 +16,7 @@
 import numpy as np
 import openmdao.api as om
 
+
 class ComputeVTMacDistanceFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """

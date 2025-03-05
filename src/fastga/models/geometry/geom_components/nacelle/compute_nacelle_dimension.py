@@ -14,6 +14,7 @@
 
 import openmdao.api as om
 import fastoad.api as oad
+
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet

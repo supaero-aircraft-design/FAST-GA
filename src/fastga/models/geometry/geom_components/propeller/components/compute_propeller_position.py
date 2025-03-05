@@ -13,10 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
-
 import numpy as np
 import openmdao.api as om
-
 import fastoad.api as oad
 
 from ..constants import SERVICE_PROPELLER_POSITION, SUBMODEL_PROPELLER_POSITION_LEGACY

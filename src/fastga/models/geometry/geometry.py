@@ -63,9 +63,7 @@ class GeometryFixedFuselage(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle_dimension",
-            oad.RegisterSubmodel.get_submodel(
-                SERVICE_NACELLE_DIMENSION, options=propulsion_option
-            ),
+            oad.RegisterSubmodel.get_submodel(SERVICE_NACELLE_DIMENSION, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -134,9 +132,7 @@ class GeometryFixedTailDistance(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "compute_engine_nacelle_dimension",
-            oad.RegisterSubmodel.get_submodel(
-                SERVICE_NACELLE_DIMENSION, options=propulsion_option
-            ),
+            oad.RegisterSubmodel.get_submodel(SERVICE_NACELLE_DIMENSION, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem("compute_vt", ComputeVerticalTailGeometryFD(), promotes=["*"])

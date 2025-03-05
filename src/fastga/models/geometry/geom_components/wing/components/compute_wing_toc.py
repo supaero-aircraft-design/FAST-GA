@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from ..constants import SERVICE_WING_THICKNESS_RATIO, SUBMODEL_WING_THICKNESS_RATIO_LEGACY
 
+
 # TODO: computes relative thickness and generates profiles --> decompose
 @oad.RegisterSubmodel(SERVICE_WING_THICKNESS_RATIO, SUBMODEL_WING_THICKNESS_RATIO_LEGACY)
 class ComputeWingToc(om.ExplicitComponent):

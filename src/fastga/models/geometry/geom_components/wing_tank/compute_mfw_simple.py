@@ -12,14 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 import warnings
+import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
 from ...constants import SERVICE_MFW, SUBMODEL_MFW_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_LEGACY
+
 
 @oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_LEGACY)
 class ComputeMFWSimple(om.ExplicitComponent):

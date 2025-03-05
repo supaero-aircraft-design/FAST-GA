@@ -16,4 +16,6 @@ SERVICE_PROPELLER_POSITION = "service.geometry.propeller.position"
 SERVICE_PROPELLER_INSTALLATION = "service.geometry.propeller.installation_effect"
 
 SUBMODEL_PROPELLER_POSITION_LEGACY = "fastga.submodel.geometry.propeller.position.legacy"
-SUBMODEL_PROPELLER_INSTALLATION_LEGACY = "fastga.submodel.geometry.propeller.installation_effect.legacy"
+SUBMODEL_PROPELLER_INSTALLATION_LEGACY = (
+    "fastga.submodel.geometry.propeller.installation_effect.legacy"
+)

@@ -24,4 +24,6 @@ SUBMODEL_HT_SWEEP_LEGACY = "fastga.submodel.geometry.horizontal_tail.sweep.legac
 SUBMODEL_HT_WET_AREA_LEGACY = "fastga.submodel.geometry.horizontal_tail.wet_area.legacy"
 SUBMODEL_HT_DISTANCE_LEGACY = "fastga.submodel.geometry.horizontal_tail.distance.legacy"
 SUBMODEL_HT_EFFICIENCY_LEGACY = "fastga.submodel.geometry.horizontal_tail.efficiency.legacy"
-SUBMODEL_HT_VOLUME_COEFF_LEGACY = "fastga.submodel.geometry.horizontal_tail.volume_coefficient.legacy"
+SUBMODEL_HT_VOLUME_COEFF_LEGACY = (
+    "fastga.submodel.geometry.horizontal_tail.volume_coefficient.legacy"
+)

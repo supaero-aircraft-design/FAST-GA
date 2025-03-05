@@ -17,7 +17,12 @@ Estimation of geometry of vertical tail
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeVTMacFD, ComputeVTMacFL, ComputeVTMacDistanceFD, ComputeVTMacDistanceFL
+from .components import (
+    ComputeVTMacFD,
+    ComputeVTMacFL,
+    ComputeVTMacDistanceFD,
+    ComputeVTMacDistanceFL,
+)
 from .constants import (
     SERVICE_VT_CHORD,
     SERVICE_VT_SWEEP,
@@ -35,7 +40,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
-        self.add_subsystem("vt_distance",ComputeVTMacDistanceFD(),promotes=["*"])
+        self.add_subsystem("vt_distance", ComputeVTMacDistanceFD(), promotes=["*"])
         self.add_subsystem(
             "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]
         )
@@ -54,7 +59,7 @@ class ComputeVerticalTailGeometryFL(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
-        self.add_subsystem("vt_distance",ComputeVTMacDistanceFL(),promotes=["*"])
+        self.add_subsystem("vt_distance", ComputeVTMacDistanceFL(), promotes=["*"])
         self.add_subsystem(
             "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]
         )

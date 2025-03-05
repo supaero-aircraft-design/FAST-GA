@@ -15,15 +15,14 @@ Estimation of vertical tail chords and span
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..constants import SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY
 
 
 @oad.RegisterSubmodel(SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY)
-class ComputeVTChords(ExplicitComponent):
+class ComputeVTChords(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail chords and span estimation"""
 
