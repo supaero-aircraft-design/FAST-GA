@@ -13,19 +13,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
+import fastoad.api as oad
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-import fastoad.api as oad
-
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
-from ...constants import SUBMODEL_NACELLE_DIMENSION
+from ...constants import SERVICE_NACELLE_DIMENSION, SUBMODEL_NACELLE_DIMENSION_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_NACELLE_DIMENSION, "fastga.submodel.geometry.nacelle.dimension.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_NACELLE_DIMENSION, SUBMODEL_NACELLE_DIMENSION_LEGACY)
 class ComputeNacelleDimension(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Nacelle and pylon geometry estimation."""

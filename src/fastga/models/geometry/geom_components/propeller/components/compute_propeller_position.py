@@ -19,12 +19,10 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_PROPELLER_POSITION
+from ..constants import SERVICE_PROPELLER_POSITION, SUBMODEL_PROPELLER_POSITION_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_PROPELLER_POSITION, "fastga.submodel.geometry.propeller.position.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_PROPELLER_POSITION, SUBMODEL_PROPELLER_POSITION_LEGACY)
 class ComputePropellerPosition(om.ExplicitComponent):
     """Propeller position with respect to the leading edge estimation."""
 

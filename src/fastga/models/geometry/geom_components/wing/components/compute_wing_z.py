@@ -13,18 +13,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-
 import numpy as np
-
 import openmdao.api as om
 import fastoad.api as oad
 
-from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_HEIGHT
+from ..constants import SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY)
 class ComputeWingZ(om.ExplicitComponent):
     """
     Computation of the distance between the fuselage center line and the wing. Based on simple

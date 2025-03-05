@@ -12,6 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_FUSELAGE_WET_AREA = "submodel.geometry.fuselage.wet_area"
-SUBMODEL_FUSELAGE_DEPTH = "submodel.geometry.fuselage.depth"
-SUBMODEL_FUSELAGE_VOLUME = "submodel.geometry.fuselage.volume"
+SERVICE_FUSELAGE_WET_AREA = "service.geometry.fuselage.wet_area"
+SERVICE_FUSELAGE_DEPTH = "service.geometry.fuselage.depth"
+SERVICE_FUSELAGE_VOLUME = "service.geometry.fuselage.volume"
+
+SUBMODEL_FUSELAGE_WET_AREA_LEGACY = "fastga.submodel.geometry.fuselage.wet_area.legacy"
+SUBMODEL_FUSELAGE_WET_AREA_FLOPS = "fastga.submodel.geometry.fuselage.wet_area.flops"
+SUBMODEL_FUSELAGE_DEPTH_LEGACY = "fastga.submodel.geometry.fuselage.depth.legacy"
+SUBMODEL_FUSELAGE_VOLUME_LEGACY = "fastga.submodel.geometry.fuselage.volume.legacy"

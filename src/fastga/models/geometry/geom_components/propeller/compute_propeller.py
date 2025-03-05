@@ -13,16 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_PROPELLER_GEOMETRY
-from .constants import SUBMODEL_PROPELLER_POSITION, SUBMODEL_PROPELLER_INSTALLATION
+from ...constants import SERVICE_PROPELLER_GEOMETRY, SUBMODEL_PROPELLER_GEOMETRY_LEGACY
+from .constants import SERVICE_PROPELLER_POSITION, SERVICE_PROPELLER_INSTALLATION
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_PROPELLER_GEOMETRY, "fastga.submodel.geometry.propeller.geometry.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_PROPELLER_GEOMETRY, SUBMODEL_PROPELLER_GEOMETRY_LEGACY)
 class ComputePropellerGeometry(om.Group):
     """Propeller position with respect to the leading edge estimation."""
 
@@ -31,11 +28,11 @@ class ComputePropellerGeometry(om.Group):
     def setup(self):
         self.add_subsystem(
             "propeller_position",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_POSITION),
+            oad.RegisterSubmodel.get_submodel(SERVICE_PROPELLER_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
             "propeller_effective_advance_ratio",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_INSTALLATION),
+            oad.RegisterSubmodel.get_submodel(SERVICE_PROPELLER_INSTALLATION),
             promotes=["*"],
         )

@@ -19,6 +19,6 @@ Estimation of vertical tail geometry (components)
 
 from .compute_vt_chords import ComputeVTChords
 from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
-from .compute_vt_distance import ComputeVTMacPositionFD, ComputeVTMacPositionFL
+from .compute_vt_distance import ComputeVTMacDistanceFD, ComputeVTMacDistanceFL
 from .compute_vt_sweep import ComputeVTSweep
 from .compute_vt_wet_area import ComputeVTWetArea

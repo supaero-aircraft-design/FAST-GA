@@ -13,18 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_AIRCRAFT_WET_AREA
+from ..constants import SERVICE_AIRCRAFT_WET_AREA, SUBMODEL_AIRCRAFT_WET_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_AIRCRAFT_WET_AREA, "fastga.submodel.geometry.aircraft.wet_area.legacy"
-)
-class ComputeTotalArea(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_AIRCRAFT_WET_AREA, SUBMODEL_AIRCRAFT_WET_AREA_LEGACY)
+class ComputeTotalArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Total aircraft wet area estimation."""
 

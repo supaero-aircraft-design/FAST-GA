@@ -16,17 +16,14 @@ Estimation of horizontal tail efficiency
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_HT_WET_EFFICIENCY
+from ..constants import SERVICE_HT_EFFICIENCY, SUBMODEL_HT_EFFICIENCY_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HT_WET_EFFICIENCY, "fastga.submodel.geometry.horizontal_tail.efficiency.legacy"
-)
-class ComputeHTEfficiency(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_HT_EFFICIENCY, SUBMODEL_HT_EFFICIENCY_LEGACY)
+class ComputeHTEfficiency(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail dynamic pressure reduction due to geometric positioning"""
 

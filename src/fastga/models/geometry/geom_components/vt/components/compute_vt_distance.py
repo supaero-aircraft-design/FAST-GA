@@ -14,20 +14,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-import fastoad.api as oad
+import openmdao.api as om
 
-from ..constants import SUBMODEL_VT_POSITION_FL, SUBMODEL_VT_POSITION_FD
-
-oad.RegisterSubmodel.active_models[SUBMODEL_VT_POSITION_FD] = (
-    "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
-)
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_POSITION_FD, "fastga.submodel.geometry.vertical_tail.position.fd.legacy"
-)
-class ComputeVTMacPositionFD(ExplicitComponent):
+class ComputeVTMacDistanceFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord position estimation based on (F)ixed tail (D)istance.
@@ -93,15 +82,7 @@ class ComputeVTMacPositionFD(ExplicitComponent):
         ] = -0.6 * np.tan(sweep_25_vt) * b_v
 
 
-oad.RegisterSubmodel.active_models[SUBMODEL_VT_POSITION_FL] = (
-    "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
-)
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_POSITION_FL, "fastga.submodel.geometry.vertical_tail.position.fl.legacy"
-)
-class ComputeVTMacPositionFL(ExplicitComponent):
+class ComputeVTMacDistanceFL(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord position estimation based on (F)ixed fuselage (L)ength (VTP

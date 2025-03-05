@@ -13,18 +13,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-from ..constants import SUBMODEL_FUSELAGE_DEPTH
+from ..constants import SERVICE_FUSELAGE_DEPTH, SUBMODEL_FUSELAGE_DEPTH_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_DEPTH] = (
-    "fastga.submodel.geometry.fuselage.depth.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_DEPTH] = SUBMODEL_FUSELAGE_DEPTH_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_FUSELAGE_DEPTH, "fastga.submodel.geometry.fuselage.depth.legacy")
-class ComputeFuselageDepth(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_DEPTH, SUBMODEL_FUSELAGE_DEPTH_LEGACY)
+class ComputeFuselageDepth(om.ExplicitComponent):
     """
     Fuselage average depth at the vertical tail location computation. Based on geometric
     consideration assuming the fuselage is cylindrical at the center section and the average

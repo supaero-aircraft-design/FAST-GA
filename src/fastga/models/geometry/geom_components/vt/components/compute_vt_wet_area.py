@@ -18,12 +18,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_VT_WET_AREA
+from ..constants import SERVICE_VT_WET_AREA, SUBMODEL_VT_WET_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_WET_AREA, "fastga.submodel.geometry.vertical_tail.wet_area.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_VT_WET_AREA, SUBMODEL_VT_WET_AREA_LEGACY)
 class ComputeVTWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Vertical tail wet area estimation"""

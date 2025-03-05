@@ -49,8 +49,8 @@ from ..geom_components.vt.components import (
     ComputeVTChords,
     ComputeVTMacFD,
     ComputeVTMacFL,
-    ComputeVTMacPositionFD,
-    ComputeVTMacPositionFL,
+    ComputeVTMacDistanceFD,
+    ComputeVTMacDistanceFL,
     ComputeVTSweep,
     ComputeVTWetArea,
 )
@@ -143,10 +143,10 @@ def test_compute_vt_mac_position():
     """Tests computation of the vertical tail mac position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacDistanceFD()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacPositionFD(), ivc)
+    problem = run_system(ComputeVTMacDistanceFD(), ivc)
     lp_vt = problem.get_val(
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
@@ -159,10 +159,10 @@ def test_compute_vt_mac_position_fl():
     """Tests computation of the vertical tail mac position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacPositionFL()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMacDistanceFL()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacPositionFL(), ivc)
+    problem = run_system(ComputeVTMacDistanceFL(), ivc)
     lp_vt = problem.get_val(
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )

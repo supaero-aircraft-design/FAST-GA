@@ -15,7 +15,7 @@
 import openmdao.api as om
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_MFW
+from ...constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
 
 from .wing_tank_components import (
     ComputeWingTankSpans,
@@ -31,7 +31,7 @@ from .wing_tank_components import (
 )
 
 
-@oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
+@oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_ADVANCED)
 class ComputeMFWAdvanced(om.Group):
     """
     Max fuel weight estimation based on :cite:`jenkinson:2003` p.65. It discretizes the fuel tank in

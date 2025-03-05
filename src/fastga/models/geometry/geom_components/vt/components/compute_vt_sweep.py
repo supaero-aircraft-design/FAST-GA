@@ -12,15 +12,15 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import openmdao.api as om
+import fastoad.api as oad
 
 from .vt_sweep_components import ComputeVTSweep0, ComputeVTSweep50, ComputeVTSweep100
-from ..constants import SUBMODEL_VT_SWEEP
+from ..constants import SERVICE_VT_SWEEP, SUBMODEL_VT_SWEEP_LEGACY
 
 
 # TODO: HT and VT components are similar --> factorize
-@oad.RegisterSubmodel(SUBMODEL_VT_SWEEP, "fastga.submodel.geometry.vertical_tail.sweep.legacy")
+@oad.RegisterSubmodel(SERVICE_VT_SWEEP, SUBMODEL_VT_SWEEP_LEGACY)
 class ComputeVTSweep(om.Group):
     # TODO: Document equations. Cite sources
     """Vertical tail sweeps estimation."""

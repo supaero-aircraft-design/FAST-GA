@@ -12,5 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_PROPELLER_POSITION = "submodel.geometry.propeller.position"
-SUBMODEL_PROPELLER_INSTALLATION = "submodel.geometry.propeller.installation_effect"
+SERVICE_PROPELLER_POSITION = "service.geometry.propeller.position"
+SERVICE_PROPELLER_INSTALLATION = "service.geometry.propeller.installation_effect"
+
+SUBMODEL_PROPELLER_POSITION_LEGACY = "fastga.submodel.geometry.propeller.position.legacy"
+SUBMODEL_PROPELLER_INSTALLATION_LEGACY = "fastga.submodel.geometry.propeller.installation_effect.legacy"

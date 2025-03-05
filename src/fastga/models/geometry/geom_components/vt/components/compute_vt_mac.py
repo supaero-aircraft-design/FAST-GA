@@ -16,10 +16,10 @@ Estimation of vertical tail mean aerodynamic chords
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeVTMacFD(ExplicitComponent):
+class ComputeVTMacFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
@@ -124,7 +124,7 @@ class ComputeVTMacFD(ExplicitComponent):
         ] = (chord_sum + tip_chord) * np.tan(sweep_25_vt) / (3 * chord_sum)
 
 
-class ComputeVTMacFL(ExplicitComponent):
+class ComputeVTMacFL(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (VTP

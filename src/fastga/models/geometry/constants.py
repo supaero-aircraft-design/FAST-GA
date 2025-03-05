@@ -12,10 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_WING_GEOMETRY = "submodel.geometry.wing"
-SUBMODEL_NACELLE_DIMENSION = "submodel.geometry.nacelle.dimension"
-SUBMODEL_NACELLE_POSITION = "submodel.geometry.nacelle.position"
-SUBMODEL_PROPELLER_GEOMETRY = "submodel.geometry.propeller.geometry"
-SUBMODEL_LANDING_GEAR_GEOMETRY = "submodel.geometry.landing_gear"
-SUBMODEL_MFW = "submodel.geometry.mfw"
-SUBMODEL_AIRCRAFT_WET_AREA = "submodel.geometry.aircraft.wet_area"
+SERVICE_WING_GEOMETRY = "service.geometry.wing"
+SERVICE_NACELLE_DIMENSION = "service.geometry.nacelle.dimension"
+SERVICE_NACELLE_POSITION = "service.geometry.nacelle.position"
+SERVICE_PROPELLER_GEOMETRY = "service.geometry.propeller.geometry"
+SERVICE_LANDING_GEAR_GEOMETRY = "service.geometry.landing_gear"
+SERVICE_MFW = "service.geometry.mfw"
+SERVICE_AIRCRAFT_WET_AREA = "service.geometry.aircraft.wet_area"
+
+SUBMODEL_WING_GEOMETRY_LEGACY = "fastga.submodel.geometry.wing.legacy"
+SUBMODEL_NACELLE_DIMENSION_LEGACY = "fastga.submodel.geometry.nacelle.dimension.legacy"
+SUBMODEL_NACELLE_POSITION_LEGACY = "fastga.submodel.geometry.nacelle.position.legacy"
+SUBMODEL_PROPELLER_GEOMETRY_LEGACY = "fastga.submodel.geometry.propeller.geometry.legacy"
+SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY = "fastga.submodel.geometry.landing_gear.legacy"
+SUBMODEL_MFW_LEGACY = "fastga.submodel.geometry.mfw.legacy"
+SUBMODEL_MFW_ADVANCED = "fastga.submodel.geometry.mfw.advanced"
+SUBMODEL_AIRCRAFT_WET_AREA_LEGACY = "fastga.submodel.geometry.aircraft.wet_area.legacy"

@@ -19,12 +19,10 @@ import openmdao.api as om
 
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_PROPELLER_INSTALLATION
+from ..constants import SERVICE_PROPELLER_INSTALLATION, SUBMODEL_PROPELLER_INSTALLATION_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_PROPELLER_INSTALLATION, "fastga.submodel.geometry.propeller.installation_effect.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_PROPELLER_INSTALLATION, SUBMODEL_PROPELLER_INSTALLATION_LEGACY)
 class ComputePropellerInstallationEffect(om.ExplicitComponent):
     """Propeller effective advance ratio computation based on the blockage surface behind it."""
 

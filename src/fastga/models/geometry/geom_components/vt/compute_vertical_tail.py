@@ -15,16 +15,13 @@ Estimation of geometry of vertical tail
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 import fastoad.api as oad
 
-from .components import ComputeVTMacFD, ComputeVTMacFL
+from .components import ComputeVTMacFD, ComputeVTMacFL, ComputeVTMacDistanceFD, ComputeVTMacDistanceFL
 from .constants import (
-    SUBMODEL_VT_CHORD,
-    SUBMODEL_VT_SWEEP,
-    SUBMODEL_VT_WET_AREA,
-    SUBMODEL_VT_POSITION_FD,
-    SUBMODEL_VT_POSITION_FL,
+    SERVICE_VT_CHORD,
+    SERVICE_VT_SWEEP,
+    SERVICE_VT_WET_AREA,
 )
 
 
@@ -35,19 +32,15 @@ class ComputeVerticalTailGeometryFD(om.Group):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
-            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFD(), promotes=["*"])
+        self.add_subsystem("vt_distance",ComputeVTMacDistanceFD(),promotes=["*"])
         self.add_subsystem(
-            "vt_position",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FD),
-            promotes=["*"],
+            "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
-        )
-        self.add_subsystem(
-            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
+            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SERVICE_VT_WET_AREA), promotes=["*"]
         )
 
 
@@ -58,17 +51,13 @@ class ComputeVerticalTailGeometryFL(om.Group):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
-            "vt_chords", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_CHORD), promotes=["*"]
+            "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMacFL(), promotes=["*"])
+        self.add_subsystem("vt_distance",ComputeVTMacDistanceFL(),promotes=["*"])
         self.add_subsystem(
-            "vt_position",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_POSITION_FL),
-            promotes=["*"],
+            "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "vt_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_SWEEP), promotes=["*"]
-        )
-        self.add_subsystem(
-            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_WET_AREA), promotes=["*"]
+            "vt_wet_area", oad.RegisterSubmodel.get_submodel(SERVICE_VT_WET_AREA), promotes=["*"]
         )

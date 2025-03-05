@@ -13,15 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-import fastoad.api as oad
-
-from ..constants import SUBMODEL_WING_WET_AREA
+from ..constants import SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, "fastga.submodel.geometry.wing.wet_area.legacy")
+@oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY)
 class ComputeWingWetArea(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing wet area estimation, the wing wet area calculation can be found at page 707 of

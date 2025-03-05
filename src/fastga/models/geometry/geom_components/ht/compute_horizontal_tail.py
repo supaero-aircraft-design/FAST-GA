@@ -15,17 +15,16 @@ Estimation of geometry of horizontal tail.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-
 import fastoad.api as oad
 
 from .components import ComputeHTMacFD, ComputeHTMacFL
 from .constants import (
-    SUBMODEL_HT_CHORD,
-    SUBMODEL_HT_SWEEP,
-    SUBMODEL_HT_WET_AREA,
-    SUBMODEL_HT_WET_DISTANCE,
-    SUBMODEL_HT_WET_EFFICIENCY,
-    SUBMODEL_HT_VOLUME_COEFF,
+    SERVICE_HT_CHORD,
+    SERVICE_HT_SWEEP,
+    SERVICE_HT_WET_AREA,
+    SERVICE_HT_DISTANCE,
+    SERVICE_HT_EFFICIENCY,
+    SERVICE_HT_VOLUME_COEFF,
 )
 
 
@@ -36,26 +35,26 @@ class ComputeHorizontalTailGeometryFD(om.Group):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
-            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+            "ht_chord", oad.RegisterSubmodel.get_submodel(SERVICE_HT_CHORD), promotes=["*"]
         )
         self.add_subsystem("ht_mac", ComputeHTMacFD(), promotes=["*"])
         self.add_subsystem(
-            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+            "ht_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_HT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SERVICE_HT_WET_AREA), promotes=["*"]
         )
         self.add_subsystem(
             "ht_distance",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HT_DISTANCE),
             promotes=["*"],
         )
         self.add_subsystem(
-            "ht_eff", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+            "ht_eff", oad.RegisterSubmodel.get_submodel(SERVICE_HT_EFFICIENCY), promotes=["*"]
         )
         self.add_subsystem(
             "ht_volume_coeff",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_VOLUME_COEFF),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HT_VOLUME_COEFF),
             promotes=["*"],
         )
 
@@ -67,20 +66,20 @@ class ComputeHorizontalTailGeometryFL(om.Group):
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
-            "ht_chord", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_CHORD), promotes=["*"]
+            "ht_chord", oad.RegisterSubmodel.get_submodel(SERVICE_HT_CHORD), promotes=["*"]
         )
         self.add_subsystem("ht_mac", ComputeHTMacFL(), promotes=["*"])
         self.add_subsystem(
-            "ht_sweep", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_SWEEP), promotes=["*"]
+            "ht_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_HT_SWEEP), promotes=["*"]
         )
         self.add_subsystem(
-            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_AREA), promotes=["*"]
+            "ht_wet_area", oad.RegisterSubmodel.get_submodel(SERVICE_HT_WET_AREA), promotes=["*"]
         )
         self.add_subsystem(
             "ht_distance",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_DISTANCE),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HT_DISTANCE),
             promotes=["*"],
         )
         self.add_subsystem(
-            "ht_eff", oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_WET_EFFICIENCY), promotes=["*"]
+            "ht_eff", oad.RegisterSubmodel.get_submodel(SERVICE_HT_EFFICIENCY), promotes=["*"]
         )

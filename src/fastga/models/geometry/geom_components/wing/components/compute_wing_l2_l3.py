@@ -14,15 +14,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
+import fastoad.api as oad
 from openmdao.core.explicitcomponent import ExplicitComponent
 
-import fastoad.api as oad
-
-from ..constants import SUBMODEL_WING_L2_L3
+from ..constants import SERVICE_WING_L2_L3, SUBMODEL_WING_L2_L3_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_L2_L3, "fastga.submodel.geometry.wing.l2_l3.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_L2_L3, SUBMODEL_WING_L2_L3_LEGACY)
 class ComputeWingL2AndL3(ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing chords (l2 and l3) estimation."""

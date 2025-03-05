@@ -12,22 +12,19 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 
+from fastga.models.options import CABIN_SIZING_OPTION
 from .components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
 )
-
-from .constants import SUBMODEL_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_DEPTH, SUBMODEL_FUSELAGE_VOLUME
-
-from fastga.models.options import CABIN_SIZING_OPTION
+from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVICE_FUSELAGE_VOLUME
 
 
-class ComputeFuselageAlternate(Group):
+class ComputeFuselageAlternate(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
@@ -49,22 +46,22 @@ class ComputeFuselageAlternate(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_WET_AREA),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_avg_fuselage_depth",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DEPTH),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_DEPTH),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_fuselage_volume",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_VOLUME),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_VOLUME),
             promotes=["*"],
         )
 
 
-class ComputeFuselageLegacy(Group):
+class ComputeFuselageLegacy(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
@@ -86,16 +83,16 @@ class ComputeFuselageLegacy(Group):
             )
         self.add_subsystem(
             "compute_fus_wet_area",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_WET_AREA),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_avg_fuselage_depth",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_DEPTH),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_DEPTH),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_fuselage_volume",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_FUSELAGE_VOLUME),
+            oad.RegisterSubmodel.get_submodel(SERVICE_FUSELAGE_VOLUME),
             promotes=["*"],
         )

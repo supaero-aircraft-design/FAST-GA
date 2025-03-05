@@ -12,9 +12,16 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_HT_CHORD = "submodel.geometry.horizontal_tail.chord"
-SUBMODEL_HT_SWEEP = "submodel.geometry.horizontal_tail.sweep"
-SUBMODEL_HT_WET_AREA = "submodel.geometry.horizontal_tail.wet_area"
-SUBMODEL_HT_WET_DISTANCE = "submodel.geometry.horizontal_tail.distance"
-SUBMODEL_HT_WET_EFFICIENCY = "submodel.geometry.horizontal_tail.efficiency"
-SUBMODEL_HT_VOLUME_COEFF = "submodel.geometry.horizontal_tail.volume_coefficient"
+SERVICE_HT_CHORD = "service.geometry.horizontal_tail.chord"
+SERVICE_HT_SWEEP = "service.geometry.horizontal_tail.sweep"
+SERVICE_HT_WET_AREA = "service.geometry.horizontal_tail.wet_area"
+SERVICE_HT_DISTANCE = "service.geometry.horizontal_tail.distance"
+SERVICE_HT_EFFICIENCY = "service.geometry.horizontal_tail.efficiency"
+SERVICE_HT_VOLUME_COEFF = "service.geometry.horizontal_tail.volume_coefficient"
+
+SUBMODEL_HT_CHORD_LEGACY = "fastga.submodel.geometry.horizontal_tail.chord.legacy"
+SUBMODEL_HT_SWEEP_LEGACY = "fastga.submodel.geometry.horizontal_tail.sweep.legacy"
+SUBMODEL_HT_WET_AREA_LEGACY = "fastga.submodel.geometry.horizontal_tail.wet_area.legacy"
+SUBMODEL_HT_DISTANCE_LEGACY = "fastga.submodel.geometry.horizontal_tail.distance.legacy"
+SUBMODEL_HT_EFFICIENCY_LEGACY = "fastga.submodel.geometry.horizontal_tail.efficiency.legacy"
+SUBMODEL_HT_VOLUME_COEFF_LEGACY = "fastga.submodel.geometry.horizontal_tail.volume_coefficient.legacy"

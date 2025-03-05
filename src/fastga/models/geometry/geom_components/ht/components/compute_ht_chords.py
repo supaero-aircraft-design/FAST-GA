@@ -15,15 +15,14 @@ Estimation of horizontal tail chords and span
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_HT_CHORD
+from ..constants import SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_HT_CHORD, "fastga.submodel.geometry.horizontal_tail.chord.legacy")
-class ComputeHTChord(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY)
+class ComputeHTChord(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail chords and span estimation"""
 

@@ -17,15 +17,12 @@ Estimation of horizontal tail distance.
 
 import numpy as np
 import openmdao.api as om
-
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_HT_WET_DISTANCE
+from ..constants import SERVICE_HT_DISTANCE, SUBMODEL_HT_DISTANCE_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HT_WET_DISTANCE, "fastga.submodel.geometry.horizontal_tail.distance.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_HT_DISTANCE, SUBMODEL_HT_DISTANCE_LEGACY)
 class ComputeHTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Horizontal tail distance estimation"""

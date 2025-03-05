@@ -13,14 +13,13 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_SPAN
+from ..constants import SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY)
 class ComputeWingY(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Wing Ys estimation."""

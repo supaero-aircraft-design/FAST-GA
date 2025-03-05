@@ -21,10 +21,10 @@ from .wing_sweep_components import (
     ComputeWingSweep100Inner,
     ComputeWingSweep100Outer,
 )
-from ..constants import SUBMODEL_WING_SWEEP
+from ..constants import SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_SWEEP, "fastga.submodel.geometry.wing.sweep.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY)
 class ComputeWingSweep(om.Group):
     # TODO: Document equations. Cite sources
     """Wing sweeps estimation."""

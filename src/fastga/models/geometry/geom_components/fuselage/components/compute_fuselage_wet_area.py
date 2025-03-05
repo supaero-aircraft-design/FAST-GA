@@ -13,20 +13,20 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
 
-from openmdao.core.explicitcomponent import ExplicitComponent
-from ..constants import SUBMODEL_FUSELAGE_WET_AREA
-
-oad.RegisterSubmodel.active_models[SUBMODEL_FUSELAGE_WET_AREA] = (
-    "fastga.submodel.geometry.fuselage.wet_area.legacy"
+from ..constants import (
+    SERVICE_FUSELAGE_WET_AREA,
+    SUBMODEL_FUSELAGE_WET_AREA_LEGACY,
+    SUBMODEL_FUSELAGE_WET_AREA_FLOPS,
 )
 
+oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_WET_AREA] = SUBMODEL_FUSELAGE_WET_AREA_LEGACY
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.legacy"
-)
-class ComputeFuselageWetArea(ExplicitComponent):
+
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_WET_AREA_LEGACY)
+class ComputeFuselageWetArea(om.ExplicitComponent):
     """
     Fuselage wet area estimation, based on a simple geometric description of the fuselage one
     cone at the front a cylinder in the middle and a cone at the back.
@@ -108,10 +108,8 @@ class ComputeFuselageWetArea(ExplicitComponent):
         ] = (np.pi * b_f) / 4
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_FUSELAGE_WET_AREA, "fastga.submodel.geometry.fuselage.wet_area.flops"
-)
-class ComputeFuselageWetAreaFLOPS(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_WET_AREA_FLOPS)
+class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
     """
     Fuselage wet area estimation, determined based on Wells, Douglas P., Bryce L. Horvath,
     and Linwood A. McCullers. "The Flight Optimization System Weights Estimation Method." (2017).

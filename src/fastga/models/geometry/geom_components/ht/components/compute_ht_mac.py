@@ -16,11 +16,10 @@ Estimation of horizontal tail mean aerodynamic chords.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 
-from openmdao.core.explicitcomponent import ExplicitComponent
 
-
-class ComputeHTMacFD(ExplicitComponent):
+class ComputeHTMacFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance.
@@ -135,7 +134,7 @@ class ComputeHTMacFD(ExplicitComponent):
         ] = b_h * root_chord / (6 * chord_sum**2)
 
 
-class ComputeHTMacFL(ExplicitComponent):
+class ComputeHTMacFL(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail mean aerodynamic chord estimation based on (F)ixed fuselage (L)ength (HTP

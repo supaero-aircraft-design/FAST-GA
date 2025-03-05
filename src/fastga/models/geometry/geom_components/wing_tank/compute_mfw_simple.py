@@ -13,20 +13,16 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import warnings
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_MFW
+from ...constants import SERVICE_MFW, SUBMODEL_MFW_LEGACY
 
-oad.RegisterSubmodel.active_models[SUBMODEL_MFW] = "fastga.submodel.geometry.mfw.legacy"
+oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_LEGACY
 
-
-@oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.legacy")
-class ComputeMFWSimple(ExplicitComponent):
+@oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_LEGACY)
+class ComputeMFWSimple(om.ExplicitComponent):
     """Max fuel weight estimation based o RAYMER table 10.5 p269."""
 
     # pylint: disable=missing-function-docstring

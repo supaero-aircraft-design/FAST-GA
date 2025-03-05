@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import openmdao.api as om
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from fastga.models.geometry.geom_components import (
@@ -28,13 +28,13 @@ from fastga.models.geometry.geom_components.fuselage.compute_fuselage import (
 )
 from fastga.models.options import CABIN_SIZING_OPTION
 from .constants import (
-    SUBMODEL_WING_GEOMETRY,
-    SUBMODEL_NACELLE_DIMENSION,
-    SUBMODEL_NACELLE_POSITION,
-    SUBMODEL_LANDING_GEAR_GEOMETRY,
-    SUBMODEL_MFW,
-    SUBMODEL_AIRCRAFT_WET_AREA,
-    SUBMODEL_PROPELLER_GEOMETRY,
+    SERVICE_WING_GEOMETRY,
+    SERVICE_NACELLE_DIMENSION,
+    SERVICE_NACELLE_POSITION,
+    SERVICE_LANDING_GEAR_GEOMETRY,
+    SERVICE_MFW,
+    SERVICE_AIRCRAFT_WET_AREA,
+    SERVICE_PROPELLER_GEOMETRY,
 )
 
 
@@ -64,7 +64,7 @@ class GeometryFixedFuselage(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle_dimension",
             oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_NACELLE_DIMENSION, options=propulsion_option
+                SERVICE_NACELLE_DIMENSION, options=propulsion_option
             ),
             promotes=["*"],
         )
@@ -80,31 +80,31 @@ class GeometryFixedFuselage(om.Group):
         self.add_subsystem("compute_ht", ComputeHorizontalTailGeometryFL(), promotes=["*"])
         self.add_subsystem(
             "compute_wing",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_WING_GEOMETRY),
             promotes=["*"],
         )
 
         self.add_subsystem(
             "compute_engine_nacelle_position",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
+            oad.RegisterSubmodel.get_submodel(SERVICE_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_propeller_geometry",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_lg",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_LANDING_GEAR_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
-            "compute_tank", oad.RegisterSubmodel.get_submodel(SUBMODEL_MFW), promotes=["*"]
+            "compute_tank", oad.RegisterSubmodel.get_submodel(SERVICE_MFW), promotes=["*"]
         )
         self.add_subsystem(
             "compute_total_area",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_WET_AREA),
             promotes=["*"],
         )
 
@@ -135,7 +135,7 @@ class GeometryFixedTailDistance(om.Group):
         self.add_subsystem(
             "compute_engine_nacelle_dimension",
             oad.RegisterSubmodel.get_submodel(
-                SUBMODEL_NACELLE_DIMENSION, options=propulsion_option
+                SERVICE_NACELLE_DIMENSION, options=propulsion_option
             ),
             promotes=["*"],
         )
@@ -151,29 +151,29 @@ class GeometryFixedTailDistance(om.Group):
         )
         self.add_subsystem(
             "compute_wing",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_WING_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_WING_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_engine_nacelle",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_NACELLE_POSITION),
+            oad.RegisterSubmodel.get_submodel(SERVICE_NACELLE_POSITION),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_propeller_geometry",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_PROPELLER_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_PROPELLER_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
             "compute_lg",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_LANDING_GEAR_GEOMETRY),
+            oad.RegisterSubmodel.get_submodel(SERVICE_LANDING_GEAR_GEOMETRY),
             promotes=["*"],
         )
         self.add_subsystem(
-            "compute_tank", oad.RegisterSubmodel.get_submodel(SUBMODEL_MFW), promotes=["*"]
+            "compute_tank", oad.RegisterSubmodel.get_submodel(SERVICE_MFW), promotes=["*"]
         )
         self.add_subsystem(
             "compute_total_area",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_AIRCRAFT_WET_AREA),
+            oad.RegisterSubmodel.get_submodel(SERVICE_AIRCRAFT_WET_AREA),
             promotes=["*"],
         )
