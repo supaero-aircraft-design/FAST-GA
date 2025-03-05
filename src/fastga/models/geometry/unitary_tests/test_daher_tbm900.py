@@ -779,6 +779,8 @@ def test_landing_gear_geometry():
     lg_position = problem.get_val("data:geometry:landing_gear:y", units="m")
     assert lg_position == pytest.approx(1.816, abs=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def test_geometry_total_area():
     """Tests computation of the total area"""
@@ -805,7 +807,9 @@ def test_complete_geometry_FD():
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
-    run_system(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), ivc)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_complete_geometry_FL():
@@ -822,3 +826,5 @@ def test_complete_geometry_FL():
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
     assert total_surface == pytest.approx(98.261, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
