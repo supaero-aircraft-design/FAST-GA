@@ -28,6 +28,10 @@ from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVIC
 
 
 class ComputeFuselageAlternate(om.Group):
+    """
+    Fuselage geometry calculations with fixed fuselage length cabin sizing.
+    """
+
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
@@ -65,6 +69,10 @@ class ComputeFuselageAlternate(om.Group):
 
 
 class ComputeFuselageLegacy(om.Group):
+    """
+    Fuselage geometry calculations with fixed MACs distance cabin sizing.
+    """
+
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
