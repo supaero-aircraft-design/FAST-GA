@@ -66,9 +66,9 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
 
         if prop_layout == 1.0:
-            y_nacelle_array = y_ratio * span / 2.0
+            y_nacelle_array = y_ratio * span / 2
         elif prop_layout == 2.0:
-            y_nacelle_array = b_f / 2.0 + 0.8 * nac_width
+            y_nacelle_array = b_f / 2 + 0.8 * nac_width
         elif prop_layout == 3.0:
             y_nacelle_array = 0.0
         else:
@@ -93,12 +93,10 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:nacelle:width"
             ] = 0.0
-            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = (
-                y_ratio / 2.0
-            )
+            partials["data:geometry:propulsion:nacelle:y", "data:geometry:wing:span"] = y_ratio / 2
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:propulsion:engine:y_ratio"
-            ] = span / 2.0
+            ] = span / 2
             partials[
                 "data:geometry:propulsion:nacelle:y", "data:geometry:fuselage:maximum_width"
             ] = 0.0

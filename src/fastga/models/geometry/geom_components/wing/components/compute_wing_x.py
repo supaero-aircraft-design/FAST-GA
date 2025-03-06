@@ -98,7 +98,7 @@ class ComputeWingX(om.ExplicitComponent):
         ] = -0.25
         partials["data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:sweep_25"] = (
             y3_wing - y2_wing
-        ) / np.cos(sweep_25) ** 2.0
+        ) / np.cos(sweep_25) ** 2
 
         partials[
             "data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:root:y"
@@ -111,4 +111,4 @@ class ComputeWingX(om.ExplicitComponent):
         ] = -0.25
         partials["data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:sweep_25"] = (
             y4_wing - y2_wing
-        ) / np.cos(sweep_25) ** 2.0
+        ) / np.cos(sweep_25) ** 2

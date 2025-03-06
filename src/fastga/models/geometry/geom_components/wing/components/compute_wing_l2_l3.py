@@ -48,7 +48,7 @@ class ComputeWingL2AndL3(om.ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
-        l2_wing = wing_area / (2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio))
+        l2_wing = wing_area / (2 * y2_wing + (y4_wing - y2_wing) * (1 + taper_ratio))
 
         l3_wing = l2_wing
 
@@ -63,30 +63,30 @@ class ComputeWingL2AndL3(om.ExplicitComponent):
         y4_wing = inputs["data:geometry:wing:tip:y"]
         taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
-        common_denominator = 2.0 * y2_wing + (y4_wing - y2_wing) * (1.0 + taper_ratio)
+        common_denominator = 2 * y2_wing + (y4_wing - y2_wing) * (1 + taper_ratio)
 
         partials["data:geometry:wing:root:chord", "data:geometry:wing:area"] = (
-            1.0 / common_denominator
+            1 / common_denominator
         )
         partials["data:geometry:wing:root:chord", "data:geometry:wing:root:y"] = (
-            -wing_area * (1.0 - taper_ratio) / common_denominator**2.0
+            -wing_area * (1 - taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:root:chord", "data:geometry:wing:tip:y"] = (
-            -wing_area * (1.0 + taper_ratio) / common_denominator**2.0
+            -wing_area * (1 + taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:root:chord", "data:geometry:wing:taper_ratio"] = (
-            -wing_area * (y4_wing - y2_wing) / common_denominator**2.0
+            -wing_area * (y4_wing - y2_wing) / common_denominator**2
         )
 
         partials["data:geometry:wing:kink:chord", "data:geometry:wing:area"] = (
-            1.0 / common_denominator
+            1 / common_denominator
         )
         partials["data:geometry:wing:kink:chord", "data:geometry:wing:root:y"] = (
-            -wing_area * (1.0 - taper_ratio) / common_denominator**2.0
+            -wing_area * (1 - taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:kink:chord", "data:geometry:wing:tip:y"] = (
-            -wing_area * (1.0 + taper_ratio) / common_denominator**2.0
+            -wing_area * (1 + taper_ratio) / common_denominator**2
         )
         partials["data:geometry:wing:kink:chord", "data:geometry:wing:taper_ratio"] = (
-            -wing_area * (y4_wing - y2_wing) / common_denominator**2.0
+            -wing_area * (y4_wing - y2_wing) / common_denominator**2
         )

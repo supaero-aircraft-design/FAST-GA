@@ -43,7 +43,7 @@ class ComputeVTSweep100(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:vertical_tail:sweep_25"]
         b_v = inputs["data:geometry:vertical_tail:span"]
 
-        sweep_100 = np.pi / 2.0 - np.arctan2(
+        sweep_100 = np.pi / 2 - np.arctan2(
             b_v, (b_v * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
         )
 
@@ -58,7 +58,7 @@ class ComputeVTSweep100(om.ExplicitComponent):
         b_v = inputs["data:geometry:vertical_tail:span"]
 
         common_denominator = (
-            b_v**2.0 + (b_v * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord) ** 2.0
+            b_v**2 + (b_v * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord) ** 2
         )
 
         partials[
@@ -69,7 +69,7 @@ class ComputeVTSweep100(om.ExplicitComponent):
         ] = 0.75 * b_v / common_denominator
         partials[
             "data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:sweep_25"
-        ] = b_v**2.0 / np.cos(sweep_25) ** 2.0 / common_denominator
+        ] = b_v**2 / np.cos(sweep_25) ** 2 / common_denominator
         partials["data:geometry:vertical_tail:sweep_100", "data:geometry:vertical_tail:span"] = (
             0.75 * (root_chord - tip_chord) / common_denominator
         )

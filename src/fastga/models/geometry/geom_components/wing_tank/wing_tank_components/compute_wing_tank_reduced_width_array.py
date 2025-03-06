@@ -127,9 +127,9 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
 
         if engine_config == 1.0:
-            for y_eng in y_ratio * span / 2.0:
+            for y_eng in y_ratio * span / 2:
                 self.in_engine = np.where(
-                    np.abs(y_array - y_eng) < nacelle_width / 2.0,
+                    np.abs(y_array - y_eng) < nacelle_width / 2,
                     np.full_like(self.in_engine, True),
                     self.in_engine,
                 )

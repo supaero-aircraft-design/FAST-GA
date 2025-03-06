@@ -71,7 +71,7 @@ class ComputeVTMacDistanceFD(om.ExplicitComponent):
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = 1.0
+        ] = 1
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:span",
@@ -79,7 +79,7 @@ class ComputeVTMacDistanceFD(om.ExplicitComponent):
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:sweep_25",
-        ] = -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2.0
+        ] = -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:has_T_tail",
@@ -156,8 +156,8 @@ class ComputeVTMacDistanceFL(om.ExplicitComponent):
 
         x0_vt = (
             (root_chord * 0.25 + b_v * np.tan(sweep_25_vt) - tip_chord * 0.25)
-            * (root_chord + 2.0 * tip_chord)
-            / (3.0 * (root_chord + tip_chord))
+            * (root_chord + 2 * tip_chord)
+            / (3 * (root_chord + tip_chord))
         )
 
         vt_lp = (x_vt + x0_vt) - x_wing25
@@ -180,57 +180,53 @@ class ComputeVTMacDistanceFL(om.ExplicitComponent):
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:root:chord",
-        ] = (
-            chord_sum**2.0 + 2.0 * tip_chord**2.0 - 4.0 * b_v * tip_chord * np.tan(sweep_25_vt)
-        ) / (12.0 * chord_sum**2.0)
+        ] = (chord_sum**2 + 2 * tip_chord**2 - 4 * b_v * tip_chord * np.tan(sweep_25_vt)) / (
+            12 * chord_sum**2
+        )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:tip:chord",
         ] = (
-            2.0 * root_chord * b_v * np.tan(sweep_25_vt)
-            - tip_chord**2.0
-            - 2.0 * root_chord * tip_chord
-        ) / (6.0 * chord_sum**2.0)
+            2 * root_chord * b_v * np.tan(sweep_25_vt) - tip_chord**2 - 2 * root_chord * tip_chord
+        ) / (6 * chord_sum**2)
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:sweep_25",
-        ] = b_v * (chord_sum + tip_chord) / (3.0 * chord_sum) / np.cos(sweep_25_vt) ** 2.0
+        ] = b_v * (chord_sum + tip_chord) / (3 * chord_sum) / np.cos(sweep_25_vt) ** 2
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:span",
-        ] = (np.tan(sweep_25_vt) * (chord_sum + tip_chord)) / (3.0 * chord_sum)
+        ] = (np.tan(sweep_25_vt) * (chord_sum + tip_chord)) / (3 * chord_sum)
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:root:chord",
-        ] = (
-            chord_sum**2.0 + 2.0 * tip_chord**2.0 - 4.0 * b_v * tip_chord * np.tan(sweep_25_vt)
-        ) / (12.0 * chord_sum**2.0)
+        ] = (chord_sum**2 + 2 * tip_chord**2 - 4 * b_v * tip_chord * np.tan(sweep_25_vt)) / (
+            12 * chord_sum**2
+        )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:tip:chord",
         ] = (
-            2.0 * root_chord * b_v * np.tan(sweep_25_vt)
-            - tip_chord**2.0
-            - 2.0 * root_chord * tip_chord
-        ) / (6.0 * chord_sum**2.0)
+            2 * root_chord * b_v * np.tan(sweep_25_vt) - tip_chord**2 - 2 * root_chord * tip_chord
+        ) / (6 * chord_sum**2)
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:sweep_25",
-        ] = b_v * (chord_sum + tip_chord) / (3.0 * chord_sum) / np.cos(sweep_25_vt) ** 2.0
+        ] = b_v * (chord_sum + tip_chord) / (3 * chord_sum) / np.cos(sweep_25_vt) ** 2
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
             "data:geometry:vertical_tail:span",
-        ] = (np.tan(sweep_25_vt) * (chord_sum + tip_chord)) / (3.0 * chord_sum)
+        ] = (np.tan(sweep_25_vt) * (chord_sum + tip_chord)) / (3 * chord_sum)
 
         partials["data:geometry:vertical_tail:tip:x", "data:geometry:vertical_tail:span"] = np.tan(
             sweep_25_vt
         )
 
         partials["data:geometry:vertical_tail:tip:x", "data:geometry:vertical_tail:sweep_25"] = (
-            b_v / np.cos(sweep_25_vt) ** 2.0
+            b_v / np.cos(sweep_25_vt) ** 2
         )

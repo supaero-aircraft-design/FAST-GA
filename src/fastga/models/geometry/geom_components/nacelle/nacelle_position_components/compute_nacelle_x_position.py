@@ -92,7 +92,7 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                 if y_nacelle > y2_wing:  # Nacelle in the tapered part of the wing
                     delta_x_nacelle = x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                 else:  # Nacelle in the straight part of the wing
-                    delta_x_nacelle = 0.0
+                    delta_x_nacelle = 0
                 x_nacelle_array[idx] = fa_length - x0_wing - 0.25 * l0_wing + delta_x_nacelle
 
         elif prop_layout == 2.0:
@@ -130,11 +130,11 @@ class ComputeNacelleXPosition(om.ExplicitComponent):
                     d_x_nacelle_d_y2_wing[idx] = (
                         x4_wing
                         * (-(y4_wing - y2_wing) + (y_nacelle - y2_wing))
-                        / (y4_wing - y2_wing) ** 2.0
+                        / (y4_wing - y2_wing) ** 2
                     )
                     d_x_nacelle_d_x4_wing[idx] = (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                     d_x_nacelle_d_y4_wing[idx] = (
-                        -x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2.0
+                        -x4_wing * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2
                     )
                     d_x_nacelle_d_y_nacelle[idx, idx] = x4_wing / (y4_wing - y2_wing)
                 else:  # Nacelle in the straight part of the wing

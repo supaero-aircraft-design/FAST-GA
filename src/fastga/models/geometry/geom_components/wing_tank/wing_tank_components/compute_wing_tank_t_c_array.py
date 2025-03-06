@@ -112,7 +112,7 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),
-            1.0 - y_array / (tip_y - root_y),
+            1 - y_array / (tip_y - root_y),
         )
         partials[
             "data:geometry:propulsion:tank:relative_thickness_array",
@@ -125,7 +125,7 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),
-            y_array * (tip_tc - root_tc) / (tip_y - root_y) ** 2.0,
+            y_array * (tip_tc - root_tc) / (tip_y - root_y) ** 2,
         )
         partials[
             "data:geometry:propulsion:tank:relative_thickness_array",
@@ -133,7 +133,7 @@ class ComputeWingTankRelativeThicknessArray(om.ExplicitComponent):
         ] = np.where(
             y_array < root_y,
             np.full_like(y_array, 1e-6),
-            -y_array * (tip_tc - root_tc) / (tip_y - root_y) ** 2.0,
+            -y_array * (tip_tc - root_tc) / (tip_y - root_y) ** 2,
         )
 
         partials[

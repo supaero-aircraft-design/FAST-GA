@@ -152,7 +152,7 @@ class ComputeWingZ(om.ExplicitComponent):
         partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:y"] = -np.tan(dihedral_angle)
         partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = (
             y2_wing - y4_wing
-        ) / np.cos(dihedral_angle) ** 2.0
+        ) / np.cos(dihedral_angle) ** 2
 
         if wing_config == 2.0:
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0

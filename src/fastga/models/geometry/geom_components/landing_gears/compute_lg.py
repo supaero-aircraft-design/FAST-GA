@@ -49,7 +49,7 @@ class ComputeLGGeometry(om.ExplicitComponent):
         prop_dia = inputs["data:geometry:propeller:diameter"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         lg_height = 0.41 * prop_dia
-        y_lg = fuselage_max_width / 2.0 + lg_height * 1.2
+        y_lg = fuselage_max_width / 2 + lg_height * 1.2
 
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg

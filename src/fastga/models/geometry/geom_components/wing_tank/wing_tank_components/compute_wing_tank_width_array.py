@@ -92,7 +92,7 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
         chord_array = inputs["data:geometry:propulsion:tank:chord_array"]
 
         outputs["data:geometry:propulsion:tank:width_array"] = chord_array * (
-            1.0
+            1
             - le_chord_percentage
             - te_chord_percentage
             - np.maximum(flap_chord_ratio, aileron_chord_ratio)
@@ -113,7 +113,7 @@ class ComputeWingTankWidthArray(om.ExplicitComponent):
             "data:geometry:propulsion:tank:chord_array",
         ] = np.full_like(
             chord_array,
-            1.0
+            1
             - le_chord_percentage
             - te_chord_percentage
             - np.maximum(flap_chord_ratio, aileron_chord_ratio),

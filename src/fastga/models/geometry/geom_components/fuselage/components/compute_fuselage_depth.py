@@ -57,7 +57,7 @@ class ComputeFuselageDepth(om.ExplicitComponent):
         root_chord_vt = inputs["data:geometry:vertical_tail:root:chord"]
 
         # Using the simple geometric description
-        avg_fus_depth = np.sqrt(b_f * h_f) * root_chord_vt / (2.0 * lar)
+        avg_fus_depth = np.sqrt(b_f * h_f) * root_chord_vt / (2 * lar)
 
         outputs["data:geometry:fuselage:average_depth"] = avg_fus_depth
 
@@ -70,14 +70,14 @@ class ComputeFuselageDepth(om.ExplicitComponent):
         root_chord_vt = inputs["data:geometry:vertical_tail:root:chord"]
 
         partials["data:geometry:fuselage:average_depth", "data:geometry:fuselage:maximum_width"] = (
-            np.sqrt(h_f / b_f) * root_chord_vt / (2.0 * lar) / 2.0
+            np.sqrt(h_f / b_f) * root_chord_vt / (2 * lar) / 2
         )
         partials[
             "data:geometry:fuselage:average_depth", "data:geometry:fuselage:maximum_height"
-        ] = np.sqrt(b_f / h_f) * root_chord_vt / (2.0 * lar) / 2.0
+        ] = np.sqrt(b_f / h_f) * root_chord_vt / (2 * lar) / 2
         partials[
             "data:geometry:fuselage:average_depth", "data:geometry:vertical_tail:root:chord"
-        ] = np.sqrt(b_f * h_f) / (2.0 * lar)
+        ] = np.sqrt(b_f * h_f) / (2 * lar)
         partials["data:geometry:fuselage:average_depth", "data:geometry:fuselage:rear_length"] = (
-            -np.sqrt(b_f * h_f) * root_chord_vt / (2.0 * lar**2.0)
+            -np.sqrt(b_f * h_f) * root_chord_vt / (2 * lar**2)
         )
