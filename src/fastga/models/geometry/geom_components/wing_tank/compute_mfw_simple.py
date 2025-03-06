@@ -77,7 +77,7 @@ class ComputeMFWSimple(om.ExplicitComponent):
 
         # Tanks are between 1st (30% MAC) and 3rd (60% MAC) longeron: 30% of the wing
         ave_thickness = (
-            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
         )
         mfv = 0.3 * wing_area * ave_thickness
         mfw = mfv * m_vol_fuel
@@ -104,7 +104,7 @@ class ComputeMFWSimple(om.ExplicitComponent):
             m_vol_fuel = 718.9
 
         ave_thickness = (
-            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2
+            0.7 * (root_chord * root_thickness_ratio + tip_chord * tip_thickness_ratio) / 2.0
         )
         partials["data:weight:aircraft:MFW", "data:geometry:wing:area"] = (
             0.3 * ave_thickness * m_vol_fuel

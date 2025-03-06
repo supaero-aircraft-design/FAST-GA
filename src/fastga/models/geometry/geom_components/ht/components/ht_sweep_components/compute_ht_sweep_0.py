@@ -43,9 +43,9 @@ class ComputeHTSweep0(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
 
-        half_span = b_h / 2
+        half_span = b_h / 2.0
 
-        sweep_0 = np.pi / 2 - np.arctan2(
+        sweep_0 = np.pi / 2.0 - np.arctan2(
             half_span, (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
         )
 
@@ -59,17 +59,17 @@ class ComputeHTSweep0(om.ExplicitComponent):
         tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
         sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
         chord_diff = root_chord - tip_chord
-        common_denominator = 4 * b_h**2 + (chord_diff + 2 * b_h * np.tan(sweep_25)) ** 2
+        common_denominator = 4.0 * b_h**2.0 + (chord_diff + 2.0 * b_h * np.tan(sweep_25)) ** 2.0
 
         partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
-            -2 * chord_diff / common_denominator
+            -2.0 * chord_diff / common_denominator
         )
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:root:chord"
-        ] = 2 * b_h / common_denominator
+        ] = 2.0 * b_h / common_denominator
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:tip:chord"
-        ] = -2 * b_h / common_denominator
+        ] = -2.0 * b_h / common_denominator
         partials[
             "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:sweep_25"
-        ] = 4 * b_h**2 / np.cos(sweep_25) ** 2 / common_denominator
+        ] = 4.0 * b_h**2.0 / np.cos(sweep_25) ** 2.0 / common_denominator

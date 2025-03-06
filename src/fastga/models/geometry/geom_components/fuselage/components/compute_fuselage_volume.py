@@ -59,7 +59,7 @@ class ComputeFuselageVolume(om.ExplicitComponent):
         l_f = np.sqrt(b_f * h_f)
         l_cyc = fus_length - lav - lar
         # estimation of fuselage volume
-        volume_fus = np.pi * l_f**2 / 4 * (0.7 * lav + 0.5 * lar + l_cyc)
+        volume_fus = np.pi * l_f**2.0 / 4.0 * (0.7 * lav + 0.5 * lar + l_cyc)
 
         outputs["data:geometry:fuselage:volume"] = volume_fus
 
@@ -73,17 +73,17 @@ class ComputeFuselageVolume(om.ExplicitComponent):
         lav = inputs["data:geometry:fuselage:front_length"]
 
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_width"] = (
-            np.pi * h_f / 4 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * h_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:maximum_height"] = (
-            np.pi * b_f / 4 * (-0.3 * lav - 0.5 * lar + fus_length)
+            np.pi * b_f / 4.0 * (-0.3 * lav - 0.5 * lar + fus_length)
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:length"] = (
-            np.pi * b_f * h_f / 4
+            np.pi * b_f * h_f / 4.0
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:rear_length"] = (
-            -0.5 * np.pi * b_f * h_f / 4
+            -0.5 * np.pi * b_f * h_f / 4.0
         )
         partials["data:geometry:fuselage:volume", "data:geometry:fuselage:front_length"] = (
-            -0.3 * np.pi * b_f * h_f / 4
+            -0.3 * np.pi * b_f * h_f / 4.0
         )

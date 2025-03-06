@@ -86,17 +86,17 @@ class ComputeWingMAC(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
         l0_wing = (
-            3 * y2_wing * l2_wing**2
-            + (y4_wing - y2_wing) * (l2_wing**2 + l4_wing**2 + l2_wing * l4_wing)
-        ) * (2 / (3 * wing_area))
+            3.0 * y2_wing * l2_wing**2.0
+            + (y4_wing - y2_wing) * (l2_wing**2.0 + l4_wing**2.0 + l2_wing * l4_wing)
+        ) * (2.0 / (3.0 * wing_area))
 
-        x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2 * l4_wing + l2_wing))) / (3 * wing_area)
+        x0_wing = (x4_wing * ((y4_wing - y2_wing) * (2.0 * l4_wing + l2_wing))) / (3.0 * wing_area)
 
         y0_wing = (
-            3 * y2_wing**2 * l2_wing
+            3.0 * y2_wing**2.0 * l2_wing
             + (y4_wing - y2_wing)
-            * (l4_wing * (y2_wing + 2 * y4_wing) + l2_wing * (y4_wing + 2 * y2_wing))
-        ) / (3 * wing_area)
+            * (l4_wing * (y2_wing + 2.0 * y4_wing) + l2_wing * (y4_wing + 2.0 * y2_wing))
+        ) / (3.0 * wing_area)
 
         outputs["data:geometry:wing:MAC:length"] = l0_wing
         outputs["data:geometry:wing:MAC:leading_edge:x:local"] = x0_wing
@@ -113,64 +113,64 @@ class ComputeWingMAC(om.ExplicitComponent):
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
         partials["data:geometry:wing:MAC:length", "data:geometry:wing:area"] = (
-            2
+            2.0
             * (
-                (y2_wing - y4_wing) * (l2_wing**2 + l2_wing * l4_wing + l4_wing**2)
-                - 3 * l2_wing**2 * y2_wing
+                (y2_wing - y4_wing) * (l2_wing**2.0 + l2_wing * l4_wing + l4_wing**2.0)
+                - 3.0 * l2_wing**2.0 * y2_wing
             )
-        ) / (3 * wing_area**2)
+        ) / (3.0 * wing_area**2.0)
         partials["data:geometry:wing:MAC:length", "data:geometry:wing:root:y"] = -(
-            2 * (-2 * l2_wing**2 + l2_wing * l4_wing + l4_wing**2)
-        ) / (3 * wing_area)
+            2.0 * (-2.0 * l2_wing**2.0 + l2_wing * l4_wing + l4_wing**2.0)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:length", "data:geometry:wing:tip:y"] = (
-            2 * (l2_wing**2 + l2_wing * l4_wing + l4_wing**2)
-        ) / (3 * wing_area)
+            2.0 * (l2_wing**2.0 + l2_wing * l4_wing + l4_wing**2.0)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:length", "data:geometry:wing:root:chord"] = (
-            2 * (6 * l2_wing * y2_wing - (2 * l2_wing + l4_wing) * (y2_wing - y4_wing))
-        ) / (3 * wing_area)
+            2.0 * (6.0 * l2_wing * y2_wing - (2.0 * l2_wing + l4_wing) * (y2_wing - y4_wing))
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:length", "data:geometry:wing:tip:chord"] = -(
-            2 * (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
-        ) / (3 * wing_area)
+            2.0 * (l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area)
 
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:area"] = (
-            x4_wing * (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
-        ) / (3 * wing_area**2)
+            x4_wing * (l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area**2.0)
         partials[
             "data:geometry:wing:MAC:leading_edge:x:local",
             "data:geometry:wing:tip:leading_edge:x:local",
-        ] = -((l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)) / (3 * wing_area)
+        ] = -((l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:y"] = -(
-            x4_wing * (l2_wing + 2 * l4_wing)
-        ) / (3 * wing_area)
+            x4_wing * (l2_wing + 2.0 * l4_wing)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:y"] = (
-            x4_wing * (l2_wing + 2 * l4_wing)
-        ) / (3 * wing_area)
+            x4_wing * (l2_wing + 2.0 * l4_wing)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:root:chord"] = (
-            -(x4_wing * (y2_wing - y4_wing)) / (3 * wing_area)
+            -(x4_wing * (y2_wing - y4_wing)) / (3.0 * wing_area)
         )
         partials["data:geometry:wing:MAC:leading_edge:x:local", "data:geometry:wing:tip:chord"] = -(
-            2 * x4_wing * (y2_wing - y4_wing)
-        ) / (3 * wing_area)
+            2.0 * x4_wing * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area)
 
         partials["data:geometry:wing:MAC:y", "data:geometry:wing:area"] = (
-            (l2_wing * (2 * y2_wing + y4_wing) + l4_wing * (y2_wing + 2 * y4_wing))
+            (l2_wing * (2.0 * y2_wing + y4_wing) + l4_wing * (y2_wing + 2.0 * y4_wing))
             * (y2_wing - y4_wing)
-            - 3 * l2_wing * y2_wing**2
-        ) / (3 * wing_area**2)
+            - 3.0 * l2_wing * y2_wing**2.0
+        ) / (3.0 * wing_area**2.0)
         partials["data:geometry:wing:MAC:y", "data:geometry:wing:root:y"] = -(
-            l2_wing * (2 * y2_wing + y4_wing)
-            - 6 * l2_wing * y2_wing
-            + l4_wing * (y2_wing + 2 * y4_wing)
-            + (2 * l2_wing + l4_wing) * (y2_wing - y4_wing)
-        ) / (3 * wing_area)
+            l2_wing * (2.0 * y2_wing + y4_wing)
+            - 6.0 * l2_wing * y2_wing
+            + l4_wing * (y2_wing + 2.0 * y4_wing)
+            + (2.0 * l2_wing + l4_wing) * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:y", "data:geometry:wing:tip:y"] = (
-            l2_wing * (2 * y2_wing + y4_wing)
-            + l4_wing * (y2_wing + 2 * y4_wing)
-            - (l2_wing + 2 * l4_wing) * (y2_wing - y4_wing)
-        ) / (3 * wing_area)
+            l2_wing * (2.0 * y2_wing + y4_wing)
+            + l4_wing * (y2_wing + 2.0 * y4_wing)
+            - (l2_wing + 2.0 * l4_wing) * (y2_wing - y4_wing)
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:y", "data:geometry:wing:root:chord"] = -(
-            (y2_wing - y4_wing) * (2 * y2_wing + y4_wing) - 3 * y2_wing**2
-        ) / (3 * wing_area)
+            (y2_wing - y4_wing) * (2.0 * y2_wing + y4_wing) - 3.0 * y2_wing**2.0
+        ) / (3.0 * wing_area)
         partials["data:geometry:wing:MAC:y", "data:geometry:wing:tip:chord"] = -(
-            (y2_wing - y4_wing) * (y2_wing + 2 * y4_wing)
-        ) / (3 * wing_area)
+            (y2_wing - y4_wing) * (y2_wing + 2.0 * y4_wing)
+        ) / (3.0 * wing_area)

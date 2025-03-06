@@ -107,7 +107,7 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             np.where(
                 y_array < root_y,
                 np.full_like(y_array, 1e-6),
-                1 - y_array / (tip_y - root_y),
+                1.0 - y_array / (tip_y - root_y),
             )
         )
         partials["data:geometry:propulsion:tank:chord_array", "data:geometry:wing:tip:chord"] = (
@@ -118,14 +118,14 @@ class ComputeWingTankChordArray(om.ExplicitComponent):
             np.where(
                 y_array < root_y,
                 np.full_like(y_array, 1e-6),
-                y_array * (tip_chord - root_chord) / (tip_y - root_y) ** 2,
+                y_array * (tip_chord - root_chord) / (tip_y - root_y) ** 2.0,
             )
         )
         partials["data:geometry:propulsion:tank:chord_array", "data:geometry:wing:tip:y"] = (
             np.where(
                 y_array < root_y,
                 np.full_like(y_array, 1e-6),
-                -y_array * (tip_chord - root_chord) / (tip_y - root_y) ** 2,
+                -y_array * (tip_chord - root_chord) / (tip_y - root_y) ** 2.0,
             )
         )
 

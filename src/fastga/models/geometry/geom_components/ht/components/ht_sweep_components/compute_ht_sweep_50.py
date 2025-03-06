@@ -41,7 +41,7 @@ class ComputeHTSweep50(om.ExplicitComponent):
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
-        sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_ht * (1 - taper_ht) / (1 + taper_ht))
+        sweep_50 = np.arctan(np.tan(sweep_0) - 2.0 / ar_ht * (1.0 - taper_ht) / (1.0 + taper_ht))
 
         outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
 
@@ -53,15 +53,15 @@ class ComputeHTSweep50(om.ExplicitComponent):
         sweep_0 = inputs["data:geometry:horizontal_tail:sweep_0"]
 
         common_denominator = (
-            ar_ht * np.tan(sweep_0) - 2 * (1 - taper_ht) / (1 + taper_ht)
-        ) ** 2 + ar_ht**2
+            ar_ht * np.tan(sweep_0) - 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht)
+        ) ** 2.0 + ar_ht**2.0
 
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = 2 * (1 - taper_ht) / (1 + taper_ht) / common_denominator
+        ] = 2.0 * (1.0 - taper_ht) / (1.0 + taper_ht) / common_denominator
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:taper_ratio"
-        ] = 4 * ar_ht / common_denominator / (taper_ht + 1) ** 2
+        ] = 4.0 * ar_ht / common_denominator / (taper_ht + 1.0) ** 2.0
         partials[
             "data:geometry:horizontal_tail:sweep_50", "data:geometry:horizontal_tail:sweep_0"
-        ] = ar_ht**2 / np.cos(sweep_0) ** 2 / common_denominator
+        ] = ar_ht**2.0 / np.cos(sweep_0) ** 2.0 / common_denominator

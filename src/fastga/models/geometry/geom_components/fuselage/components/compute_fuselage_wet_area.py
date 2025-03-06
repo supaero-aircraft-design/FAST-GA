@@ -70,7 +70,7 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
-        master_cross_section = np.pi * (fus_dia / 2) ** 2
+        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
@@ -104,10 +104,10 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
-        ] = (np.pi * h_f) / 4
+        ] = (np.pi * h_f) / 4.0
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
-        ] = (np.pi * b_f) / 4
+        ] = (np.pi * b_f) / 4.0
 
 
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_WET_AREA_FLOPS)
@@ -144,9 +144,9 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         # Using the formula from The Flight Optimization System Weights Estimation Method
         fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia**2
+        wet_area_fus = np.pi * (fus_length / fus_dia - 1.7) * fus_dia**2.0
 
-        master_cross_section = np.pi * (fus_dia / 2) ** 2
+        master_cross_section = np.pi * (fus_dia / 2.0) ** 2.0
 
         outputs["data:geometry:fuselage:wet_area"] = wet_area_fus
         outputs["data:geometry:fuselage:master_cross_section"] = master_cross_section
@@ -161,11 +161,11 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
             h_f * np.pi * (fus_length / fus_dia - 1.7)
-            - (np.pi * b_f * fus_length * h_f**2) / (2 * fus_dia**3)
+            - (np.pi * b_f * fus_length * h_f * 2.0) / (2.0 * fus_dia**3.0)
         )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
             b_f * np.pi * (fus_length / fus_dia - 1.7)
-            - (np.pi * b_f**2 * fus_length * h_f) / (2 * fus_dia**3)
+            - (np.pi * b_f**2.0 * fus_length * h_f) / (2.0 * fus_dia**3.0)
         )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
             np.pi * b_f * h_f
@@ -173,7 +173,7 @@ class ComputeFuselageWetAreaFLOPS(om.ExplicitComponent):
 
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_width"
-        ] = (np.pi * h_f) / 4
+        ] = (np.pi * h_f) / 4.0
         partials[
             "data:geometry:fuselage:master_cross_section", "data:geometry:fuselage:maximum_height"
-        ] = (np.pi * b_f) / 4
+        ] = (np.pi * b_f) / 4.0
