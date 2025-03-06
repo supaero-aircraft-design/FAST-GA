@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeFuselageLengthFL(om.ExplicitComponent):
     """
-    Computes fuselage length.
+    Computes fuselage length with fixing the fuselage length as constant.
     """
 
     # pylint: disable=missing-function-docstring

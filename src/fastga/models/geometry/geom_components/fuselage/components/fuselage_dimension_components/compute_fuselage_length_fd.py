@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeFuselageLengthFD(om.ExplicitComponent):
     """
-    Computes fuselage length.
+    Computes fuselage length with fixing the distance between wing MAC and HTP MAC as constant.
     """
 
     # pylint: disable=missing-function-docstring
@@ -51,10 +51,7 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
         ht_length = inputs["data:geometry:horizontal_tail:MAC:length"]
         vt_length = inputs["data:geometry:vertical_tail:MAC:length"]
 
-        if ht_lp + 0.75 * ht_length != vt_lp + 0.75 * vt_length:
-            fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
-        else:
-            fus_length = fa_length + 0.5 * (ht_lp + 0.75 * ht_length + vt_lp + 0.75 * vt_length)
+        fus_length = fa_length + max(ht_lp + 0.75 * ht_length, vt_lp + 0.75 * vt_length)
 
         outputs["data:geometry:fuselage:length"] = fus_length
 
@@ -98,20 +95,4 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
             ] = 1.0
             partials["data:geometry:fuselage:length", "data:geometry:vertical_tail:MAC:length"] = (
                 0.75
-            )
-
-        if (ht_lp + 0.75 * ht_length) == (vt_lp + 0.75 * vt_length):
-            partials[
-                "data:geometry:fuselage:length",
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = 0.5
-            partials[
-                "data:geometry:fuselage:length", "data:geometry:horizontal_tail:MAC:length"
-            ] = 0.375
-            partials[
-                "data:geometry:fuselage:length",
-                "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            ] = 0.5
-            partials["data:geometry:fuselage:length", "data:geometry:vertical_tail:MAC:length"] = (
-                0.375
             )

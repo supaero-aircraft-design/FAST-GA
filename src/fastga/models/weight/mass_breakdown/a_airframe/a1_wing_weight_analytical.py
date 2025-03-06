@@ -1,7 +1,7 @@
 """
 Python module for wing weight calculation using the analytical breakdown.
 Based on the model presented by Raquel ALONSO in her MAE research project report.
-:cite:`alonso2021wing`
+:cite:`alonso:2021`
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

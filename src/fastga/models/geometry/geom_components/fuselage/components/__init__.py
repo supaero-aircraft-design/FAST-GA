@@ -1,4 +1,6 @@
-"""Estimation of fuselage geometry components."""
+"""
+Python package for estimations of each fuselage geometry component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -23,3 +25,4 @@ from .compute_fuselage_dimensions import (
 from .compute_fuselage_wet_area import ComputeFuselageWetArea, ComputeFuselageWetAreaFLOPS
 from .compute_fuselage_depth import ComputeFuselageDepth
 from .compute_fuselage_volume import ComputeFuselageVolume
+from .compute_fuselage_master_cross_section import ComputeFuselageMajorCrossSection

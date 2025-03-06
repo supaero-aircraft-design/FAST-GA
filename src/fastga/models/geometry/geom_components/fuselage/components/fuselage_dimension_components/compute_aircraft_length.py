@@ -19,9 +19,9 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputePlaneLength(om.ExplicitComponent):
+class ComputeAircraftLength(om.ExplicitComponent):
     """
-    Computes plane length.
+    Computes aircraft length.
     """
 
     # pylint: disable=missing-function-docstring
@@ -58,12 +58,12 @@ class ComputePlaneLength(om.ExplicitComponent):
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         b_h = inputs["data:geometry:horizontal_tail:span"]
 
-        plane_length = fa_length + max(
+        aircraft_length = fa_length + max(
             ht_lp + 0.75 * ht_length + b_h / 2.0 * np.tan(sweep_25_ht),
             vt_lp + 0.75 * vt_length + b_v * np.tan(sweep_25_vt),
         )
 
-        outputs["data:geometry:aircraft:length"] = plane_length
+        outputs["data:geometry:aircraft:length"] = aircraft_length
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used

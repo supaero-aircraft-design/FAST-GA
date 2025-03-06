@@ -1,4 +1,6 @@
-"""Estimation of fuselage dimension components."""
+"""
+Python package for estimations of each fuselage dimension component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -25,5 +27,5 @@ from .compute_fuselage_length_fd import ComputeFuselageLengthFD
 from .compute_fuselage_length_fl import ComputeFuselageLengthFL
 from .compute_fuselage_nose_length_fd import ComputeFuselageNoseLengthFD
 from .compute_fuselage_nose_length_fl import ComputeFuselageNoseLengthFL
-from .compute_plane_length import ComputePlaneLength
+from .compute_aircraft_length import ComputeAircraftLength
 from .compute_fuselage_rear_length import ComputeFuselageRearLength

@@ -29,7 +29,7 @@ from .fuselage_dimension_components import (
     ComputeFuselageLengthFL,
     ComputeFuselageNoseLengthFD,
     ComputeFuselageNoseLengthFL,
-    ComputePlaneLength,
+    ComputeAircraftLength,
     ComputeFuselageRearLength,
 )
 
@@ -129,7 +129,7 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         )
         self.add_subsystem(
             "aircraft_length",
-            ComputePlaneLength(),
+            ComputeAircraftLength(),
             promotes=["*"],
         )
         self.add_subsystem(

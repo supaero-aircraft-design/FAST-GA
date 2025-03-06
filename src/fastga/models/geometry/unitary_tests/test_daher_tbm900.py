@@ -28,6 +28,7 @@ from ..geom_components.fuselage.components import (
     ComputeFuselageVolume,
     ComputeFuselageWetArea,
     ComputeFuselageWetAreaFLOPS,
+    ComputeFuselageMajorCrossSection,
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
@@ -405,8 +406,6 @@ def test_fuselage_wet_area():
     problem = run_system(ComputeFuselageWetArea(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(42.311, abs=1e-3)
-    fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
-    assert fuselage_master_cross_section == pytest.approx(1.730, abs=1e-3)
 
     problem.check_partials(compact_print=True)
 
@@ -421,8 +420,20 @@ def test_fuselage_wet_area_flops():
     problem = run_system(ComputeFuselageWetAreaFLOPS(), ivc)
     fuselage_wet_area = problem["data:geometry:fuselage:wet_area"]
     assert fuselage_wet_area == pytest.approx(38.296, abs=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_fuselage_major_cross_section():
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeFuselageMajorCrossSection()),
+        __file__,
+        XML_FILE,
+    )
+
+    problem = run_system(ComputeFuselageMajorCrossSection(), ivc)
     fuselage_master_cross_section = problem["data:geometry:fuselage:master_cross_section"]
-    assert fuselage_master_cross_section == pytest.approx(1.730, abs=1e-3)
+    assert fuselage_master_cross_section == pytest.approx(1.73, abs=1e-3)
 
     problem.check_partials(compact_print=True)
 

@@ -1,5 +1,5 @@
 """
-Estimation of geometry components.
+Python package for the estimation of the geometry of components.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

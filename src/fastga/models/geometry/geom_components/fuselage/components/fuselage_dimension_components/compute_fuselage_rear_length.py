@@ -1,5 +1,5 @@
 """
-Python module for fuselage rear length calculation, part of the fuselage dimension.
+Python module for fuselage rear length calculation, part of the fuselage dimension with FD.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -21,7 +21,8 @@ import openmdao.api as om
 
 class ComputeFuselageRearLength(om.ExplicitComponent):
     """
-    Computes fuselage rear length.
+    Computes fuselage rear length, this calculation is only applied while calculating fuselage
+    geometry with constant distance between wing MAC and HTP MAC.
     """
 
     # pylint: disable=missing-function-docstring
