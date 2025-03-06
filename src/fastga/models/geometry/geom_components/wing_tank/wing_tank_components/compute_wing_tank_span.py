@@ -57,12 +57,12 @@ class ComputeWingTankSpans(om.ExplicitComponent):
         outputs["data:geometry:propulsion:tank:y_beginning"] = (
             inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"]
             * inputs["data:geometry:wing:span"]
-            / 2
+            / 2.0
         )
         outputs["data:geometry:propulsion:tank:y_end"] = (
             inputs["data:geometry:propulsion:tank:y_ratio_tank_end"]
             * inputs["data:geometry:wing:span"]
-            / 2
+            / 2.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -71,15 +71,15 @@ class ComputeWingTankSpans(om.ExplicitComponent):
         partials[
             "data:geometry:propulsion:tank:y_beginning",
             "data:geometry:propulsion:tank:y_ratio_tank_beginning",
-        ] = inputs["data:geometry:wing:span"] / 2
+        ] = inputs["data:geometry:wing:span"] / 2.0
         partials["data:geometry:propulsion:tank:y_beginning", "data:geometry:wing:span"] = (
-            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2
+            inputs["data:geometry:propulsion:tank:y_ratio_tank_beginning"] / 2.0
         )
 
         partials[
             "data:geometry:propulsion:tank:y_end",
             "data:geometry:propulsion:tank:y_ratio_tank_end",
-        ] = inputs["data:geometry:wing:span"] / 2
+        ] = inputs["data:geometry:wing:span"] / 2.0
         partials["data:geometry:propulsion:tank:y_end", "data:geometry:wing:span"] = (
-            inputs["data:geometry:propulsion:tank:y_ratio_tank_end"] / 2
+            inputs["data:geometry:propulsion:tank:y_ratio_tank_end"] / 2.0
         )

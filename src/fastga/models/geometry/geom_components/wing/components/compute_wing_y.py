@@ -79,8 +79,8 @@ class ComputeWingY(om.ExplicitComponent):
         span = np.sqrt(lambda_wing * wing_area)
 
         # Wing geometry
-        y4_wing = span / 2
-        y2_wing = width_max / 2
+        y4_wing = span / 2.0
+        y2_wing = width_max / 2.0
         y3_wing = y4_wing * wing_break
 
         outputs["data:geometry:wing:span"] = span

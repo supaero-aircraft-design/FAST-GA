@@ -54,7 +54,7 @@ class ComputeVTChords(om.ExplicitComponent):
 
         b_v = np.sqrt(max(aspect_ratio * s_v, 0.1))
         # !!!: to avoid 0 division if s_v initialised to 0
-        root_chord = s_v * 2 / (1 + taper_vt) / b_v
+        root_chord = s_v * 2.0 / (1.0 + taper_vt) / b_v
         tip_chord = root_chord * taper_vt
 
         outputs["data:geometry:vertical_tail:span"] = b_v
@@ -69,34 +69,34 @@ class ComputeVTChords(om.ExplicitComponent):
         aspect_ratio = inputs["data:geometry:vertical_tail:aspect_ratio"]
 
         if aspect_ratio * s_v < 0.1:
-            partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = 0
+            partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = 0.0
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"
-            ] = 0
+            ] = 0.0
         else:
             partials["data:geometry:vertical_tail:span", "data:geometry:vertical_tail:area"] = (
-                np.sqrt(aspect_ratio) / (2 * np.sqrt(s_v))
+                np.sqrt(aspect_ratio) / (2.0 * np.sqrt(s_v))
             )
             partials[
                 "data:geometry:vertical_tail:span", "data:geometry:vertical_tail:aspect_ratio"
-            ] = np.sqrt(s_v) / (2 * np.sqrt(aspect_ratio))
+            ] = np.sqrt(s_v) / (2.0 * np.sqrt(aspect_ratio))
 
         partials["data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:area"] = (
-            1 / (2 * np.sqrt(s_v * aspect_ratio)) * 2 / (1 + taper_vt)
+            1.0 / (2.0 * np.sqrt(s_v * aspect_ratio)) * 2.0 / (1.0 + taper_vt)
         )
         partials[
             "data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_v / aspect_ratio**3) * 2 / (1 + taper_vt)
+        ] = -0.5 * np.sqrt(s_v / aspect_ratio**3.0) * 2.0 / (1.0 + taper_vt)
         partials[
             "data:geometry:vertical_tail:root:chord", "data:geometry:vertical_tail:taper_ratio"
-        ] = -np.sqrt(s_v / aspect_ratio) * 2 / (1 + taper_vt) ** 2
+        ] = -np.sqrt(s_v / aspect_ratio) * 2.0 / (1.0 + taper_vt) ** 2.0
 
         partials["data:geometry:vertical_tail:tip:chord", "data:geometry:vertical_tail:area"] = (
-            1 / (2 * np.sqrt(s_v * aspect_ratio)) * 2 * taper_vt / (1 + taper_vt)
+            1.0 / (2.0 * np.sqrt(s_v * aspect_ratio)) * 2.0 * taper_vt / (1.0 + taper_vt)
         )
         partials[
             "data:geometry:vertical_tail:tip:chord", "data:geometry:vertical_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_v / aspect_ratio**3) * 2 * taper_vt / (1 + taper_vt)
+        ] = -0.5 * np.sqrt(s_v / aspect_ratio**3.0) * 2.0 * taper_vt / (1.0 + taper_vt)
         partials[
             "data:geometry:vertical_tail:tip:chord", "data:geometry:vertical_tail:taper_ratio"
-        ] = np.sqrt(s_v / aspect_ratio) * 2 / (1 + taper_vt) ** 2
+        ] = np.sqrt(s_v / aspect_ratio) * 2.0 / (1.0 + taper_vt) ** 2.0

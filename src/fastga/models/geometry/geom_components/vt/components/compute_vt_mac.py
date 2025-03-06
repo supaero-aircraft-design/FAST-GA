@@ -66,11 +66,11 @@ class ComputeVTMacFD(om.ExplicitComponent):
 
         chord_sum = root_chord + tip_chord
 
-        mac_vt = (chord_sum**2 - root_chord * tip_chord) / (1.5 * chord_sum)
+        mac_vt = (chord_sum**2.0 - root_chord * tip_chord) / (1.5 * chord_sum)
         x0_vt = (
-            (root_chord + 4 * b_v * np.tan(sweep_25_vt) - tip_chord) * (chord_sum + tip_chord)
-        ) / (12 * chord_sum)
-        z0_vt = b_v * (chord_sum + tip_chord) / (3 * chord_sum)
+            (root_chord + 4.0 * b_v * np.tan(sweep_25_vt) - tip_chord) * (chord_sum + tip_chord)
+        ) / (12.0 * chord_sum)
+        z0_vt = b_v * (chord_sum + tip_chord) / (3.0 * chord_sum)
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
         outputs["data:geometry:vertical_tail:MAC:at25percent:x:local"] = x0_vt
@@ -88,41 +88,41 @@ class ComputeVTMacFD(om.ExplicitComponent):
 
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
-        ] = (1 - (tip_chord / chord_sum) ** 2) / 1.5
+        ] = (1.0 - (tip_chord / chord_sum) ** 2.0) / 1.5
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
-        ] = (1 - (root_chord / chord_sum) ** 2) / 1.5
+        ] = (1.0 - (root_chord / chord_sum) ** 2.0) / 1.5
 
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
             chord_sum + tip_chord
-        ) / (3 * chord_sum)
+        ) / (3.0 * chord_sum)
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
-            -b_v * tip_chord / (3 * chord_sum**2)
+            -b_v * tip_chord / (3.0 * chord_sum**2.0)
         )
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
-            b_v * root_chord / (3 * chord_sum**2)
+            b_v * root_chord / (3.0 * chord_sum**2.0)
         )
 
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:root:chord",
-        ] = (chord_sum**2 + 2 * tip_chord * (tip_chord - 2 * b_v * np.tan(sweep_25_vt))) / (
-            12 * chord_sum**2
+        ] = (chord_sum**2.0 + 2.0 * tip_chord * (tip_chord - 2.0 * b_v * np.tan(sweep_25_vt))) / (
+            12.0 * chord_sum**2.0
         )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:tip:chord",
-        ] = -(chord_sum**2 - root_chord * (root_chord + 2 * b_v * np.tan(sweep_25_vt))) / (
-            6 * chord_sum**2
+        ] = -(chord_sum**2.0 - root_chord * (root_chord + 2.0 * b_v * np.tan(sweep_25_vt))) / (
+            6.0 * chord_sum**2.0
         )
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:sweep_25",
-        ] = (b_v * (chord_sum + tip_chord)) / (3 * chord_sum * np.cos(sweep_25_vt) ** 2)
+        ] = (b_v * (chord_sum + tip_chord)) / (3.0 * chord_sum * np.cos(sweep_25_vt) ** 2.0)
         partials[
             "data:geometry:vertical_tail:MAC:at25percent:x:local",
             "data:geometry:vertical_tail:span",
-        ] = (chord_sum + tip_chord) * np.tan(sweep_25_vt) / (3 * chord_sum)
+        ] = (chord_sum + tip_chord) * np.tan(sweep_25_vt) / (3.0 * chord_sum)
 
 
 class ComputeVTMacFL(om.ExplicitComponent):
@@ -158,9 +158,9 @@ class ComputeVTMacFL(om.ExplicitComponent):
 
         chord_sum = root_chord + tip_chord
 
-        mac_vt = (chord_sum**2 - root_chord * tip_chord) / (1.5 * chord_sum)
+        mac_vt = (chord_sum**2.0 - root_chord * tip_chord) / (1.5 * chord_sum)
 
-        z0_vt = b_v * (chord_sum + tip_chord) / (3 * chord_sum)
+        z0_vt = b_v * (chord_sum + tip_chord) / (3.0 * chord_sum)
 
         outputs["data:geometry:vertical_tail:MAC:length"] = mac_vt
         outputs["data:geometry:vertical_tail:MAC:z"] = z0_vt
@@ -176,17 +176,17 @@ class ComputeVTMacFL(om.ExplicitComponent):
 
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:root:chord"
-        ] = (1 - (tip_chord / chord_sum) ** 2) / 1.5
+        ] = (1.0 - (tip_chord / chord_sum) ** 2.0) / 1.5
         partials[
             "data:geometry:vertical_tail:MAC:length", "data:geometry:vertical_tail:tip:chord"
-        ] = (1 - (root_chord / chord_sum) ** 2) / 1.5
+        ] = (1.0 - (root_chord / chord_sum) ** 2.0) / 1.5
 
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:span"] = (
             chord_sum + tip_chord
-        ) / (3 * chord_sum)
+        ) / (3.0 * chord_sum)
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:root:chord"] = (
-            -b_v * tip_chord / (3 * chord_sum**2)
+            -b_v * tip_chord / (3.0 * chord_sum**2.0)
         )
         partials["data:geometry:vertical_tail:MAC:z", "data:geometry:vertical_tail:tip:chord"] = (
-            b_v * root_chord / (3 * chord_sum**2)
+            b_v * root_chord / (3.0 * chord_sum**2.0)
         )

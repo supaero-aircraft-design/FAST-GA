@@ -75,7 +75,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         nacelle_x = np.array(inputs["data:geometry:propulsion:nacelle:x"])
 
         if prop_layout == 1.0:
-            y_nacelle_array = y_ratio * span / 2
+            y_nacelle_array = y_ratio * span / 2.0
 
             x_from_le_array = np.copy(y_nacelle_array)
 
@@ -116,7 +116,7 @@ class ComputePropellerPosition(om.ExplicitComponent):
         nacelle_length = float(inputs["data:geometry:propulsion:nacelle:length"])
 
         if prop_layout == 1.0:
-            y_nacelle_array = y_ratio * span / 2
+            y_nacelle_array = y_ratio * span / 2.0
 
             d_x_from_le_d_nacelle_length = np.copy(y_nacelle_array)
             d_x_from_le_d_y2_wing = np.copy(y_nacelle_array)
@@ -140,20 +140,22 @@ class ComputePropellerPosition(om.ExplicitComponent):
                         d_x_from_le_d_y2_wing[idx] = (
                             -(l4_wing - l2_wing)
                             * (-(y4_wing - y2_wing) + (y_nacelle - y2_wing))
-                            / (y4_wing - y2_wing) ** 2
+                            / (y4_wing - y2_wing) ** 2.0
                         )
                         d_x_from_le_d_l2_wing[idx] = -(
-                            1 - (y_nacelle - y2_wing) / (y4_wing - y2_wing)
+                            1.0 - (y_nacelle - y2_wing) / (y4_wing - y2_wing)
                         )
                         d_x_from_le_d_y4_wing[idx] = (
-                            -(l4_wing - l2_wing) * (y_nacelle - y2_wing) / (y4_wing - y2_wing) ** 2
+                            -(l4_wing - l2_wing)
+                            * (y_nacelle - y2_wing)
+                            / (y4_wing - y2_wing) ** 2.0
                         )
                         d_x_from_le_d_l4_wing[idx] = -(y_nacelle - y2_wing) / (y4_wing - y2_wing)
                         d_x_from_le_d_span[idx] = (
-                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * y_ratio / 2
+                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * y_ratio / 2.0
                         )
                         d_x_from_le_d_y_ratio[idx, idx] = (
-                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * span / 2
+                            -(l4_wing - l2_wing) / (y4_wing - y2_wing) * span / 2.0
                         )
                     else:
                         d_x_from_le_d_y2_wing[idx] = 0.0

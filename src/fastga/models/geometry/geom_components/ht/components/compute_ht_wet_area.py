@@ -43,7 +43,7 @@ class ComputeHTWetArea(om.ExplicitComponent):
         area = inputs["data:geometry:horizontal_tail:area"]
         tail_type = inputs["data:geometry:has_T_tail"]
 
-        wet_area = (2 - 0.4 * tail_type) * 1.05 * area
+        wet_area = (2.0 - 0.4 * tail_type) * 1.05 * area
 
         outputs["data:geometry:horizontal_tail:wet_area"] = wet_area
 
@@ -57,5 +57,5 @@ class ComputeHTWetArea(om.ExplicitComponent):
             -0.4 * 1.05 * area
         )
         partials["data:geometry:horizontal_tail:wet_area", "data:geometry:horizontal_tail:area"] = (
-            2 - 0.4 * tail_type
+            2.0 - 0.4 * tail_type
         ) * 1.05
