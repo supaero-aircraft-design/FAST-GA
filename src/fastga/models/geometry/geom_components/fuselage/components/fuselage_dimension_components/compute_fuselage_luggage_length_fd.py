@@ -19,7 +19,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeFuselageLuggageLength(om.ExplicitComponent):
+class ComputeFuselageLuggageLengthFD(om.ExplicitComponent):
     """
     Computes luggage length.
 

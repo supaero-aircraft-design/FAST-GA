@@ -20,7 +20,7 @@ import openmdao.api as om
 
 from .fuselage_dimension_components import (
     ComputeFuselageCabinLength,
-    ComputeFuselageLuggageLength,
+    ComputeFuselageLuggageLengthFD,
     ComputeFuselageMaxHeight,
     ComputeFuselageMaxWidth,
     ComputeFuselageNPAX,
@@ -109,7 +109,7 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         )
         self.add_subsystem(
             "luggage_area_length",
-            ComputeFuselageLuggageLength(),
+            ComputeFuselageLuggageLengthFD(),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -180,7 +180,7 @@ class ComputeFuselageGeometryCabinSizingFL(om.Group):
         )
         self.add_subsystem(
             "luggage_area_length",
-            ComputeFuselageLuggageLength(),
+            ComputeFuselageLuggageLengthFD(),
             promotes=["*"],
         )
         self.add_subsystem(

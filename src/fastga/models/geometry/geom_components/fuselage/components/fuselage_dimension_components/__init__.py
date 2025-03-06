@@ -18,7 +18,7 @@ Python package for estimations of each fuselage dimension component.
 # flake8: noqa
 
 from .compute_fuselage_cabin_length import ComputeFuselageCabinLength
-from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
+from .compute_fuselage_luggage_length_fd import ComputeFuselageLuggageLengthFD
 from .compute_fuselage_max_height import ComputeFuselageMaxHeight
 from .compute_fuselage_max_width import ComputeFuselageMaxWidth
 from .compute_fuselage_npax import ComputeFuselageNPAX
