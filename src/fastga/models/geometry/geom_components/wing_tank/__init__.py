@@ -1,5 +1,5 @@
 """
-Estimation of fuselage geometry.
+Python package for estimation of fuel tank geometry.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
