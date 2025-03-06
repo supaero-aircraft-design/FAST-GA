@@ -1,6 +1,6 @@
 """
-Python module for horizontal tail sweep angle calculation at l/c=50% , part of the horizontal tail
-sweep angle.
+Python module for horizontal tail sweep angle calculation at 50% of the MAC, part of the
+horizontal tail sweep angle.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

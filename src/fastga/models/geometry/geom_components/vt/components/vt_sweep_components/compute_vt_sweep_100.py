@@ -1,6 +1,6 @@
 """
-Python module for vertical tail sweep angle calculation at l/c=100% , part of the vertical tail
-sweep angle.
+Python module for vertical tail sweep angle calculation at 100% of the MAC, part of the vertical
+tail sweep angle.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

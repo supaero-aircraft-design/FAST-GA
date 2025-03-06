@@ -17,7 +17,7 @@ Python module for nacelle position calculations, part of the geometry component.
 import openmdao.api as om
 import fastoad.api as oad
 
-from .nacelle_position_components import ComputeNacelleXPosition, ComputeNacelleYPosition
+from .nacelle_components import ComputeNacelleXPosition, ComputeNacelleYPosition
 from ...constants import SERVICE_NACELLE_POSITION, SUBMODEL_NACELLE_POSITION_LEGACY
 
 
