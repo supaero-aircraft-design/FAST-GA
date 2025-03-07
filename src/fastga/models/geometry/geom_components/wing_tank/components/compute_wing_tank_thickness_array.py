@@ -1,6 +1,5 @@
 """
-Python module for tank cross-section computation class(es), part of the advanced MFW computation
-method.
+Python module for tank thickness computation class(es), part of the advanced MFW computation method.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
@@ -15,13 +14,14 @@ method.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import openmdao.api as om
 import numpy as np
+import openmdao.api as om
 
 
-class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
+class ComputeWingTankThicknessArray(om.ExplicitComponent):
     """
-    Computes the cross-section of the wing tank at selected station based on its chord and height.
+    Computes the thickness for each section of the tank. Based on wing thickness and a correction
+    penalty.
     """
 
     # pylint: disable=missing-function-docstring
@@ -41,53 +41,73 @@ class ComputeWingTankCrossSectionArray(om.ExplicitComponent):
         nb_point_wing = self.options["number_points_wing_mfw"]
 
         self.add_input(
-            "data:geometry:propulsion:tank:reduced_width_array",
+            "data:geometry:propulsion:tank:chord_array",
             units="m",
             shape=nb_point_wing,
             val=np.nan,
         )
         self.add_input(
-            "data:geometry:propulsion:tank:thickness_array",
+            "data:geometry:propulsion:tank:relative_thickness_array",
             shape=nb_point_wing,
-            units="m",
             val=np.nan,
         )
+        self.add_input("settings:geometry:fuel_tanks:depth", val=np.nan)
 
         self.add_output(
-            "data:geometry:propulsion:tank:cross_section_array",
-            units="m**2",
+            "data:geometry:propulsion:tank:thickness_array",
+            units="m",
             shape=nb_point_wing,
-            val=np.full(nb_point_wing, 0.02),
+            val=np.full(nb_point_wing, 0.2),
         )
 
         self.declare_partials(
-            of="data:geometry:propulsion:tank:cross_section_array",
+            of="data:geometry:propulsion:tank:thickness_array",
             wrt=[
-                "data:geometry:propulsion:tank:thickness_array",
-                "data:geometry:propulsion:tank:reduced_width_array",
+                "data:geometry:propulsion:tank:chord_array",
+                "data:geometry:propulsion:tank:relative_thickness_array",
             ],
             method="exact",
             rows=np.arange(nb_point_wing),
             cols=np.arange(nb_point_wing),
         )
+        self.declare_partials(
+            of="data:geometry:propulsion:tank:thickness_array",
+            wrt="settings:geometry:fuel_tanks:depth",
+            method="exact",
+            rows=np.arange(nb_point_wing),
+            cols=np.zeros(nb_point_wing),
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs["data:geometry:propulsion:tank:cross_section_array"] = (
-            inputs["data:geometry:propulsion:tank:thickness_array"]
-            * inputs["data:geometry:propulsion:tank:reduced_width_array"]
-            * 0.85
+        outputs["data:geometry:propulsion:tank:thickness_array"] = (
+            inputs["data:geometry:propulsion:tank:chord_array"]
+            * inputs["data:geometry:propulsion:tank:relative_thickness_array"]
+            * inputs["settings:geometry:fuel_tanks:depth"]
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials[
-            "data:geometry:propulsion:tank:cross_section_array",
             "data:geometry:propulsion:tank:thickness_array",
-        ] = inputs["data:geometry:propulsion:tank:reduced_width_array"] * 0.85
+            "data:geometry:propulsion:tank:chord_array",
+        ] = (
+            inputs["data:geometry:propulsion:tank:relative_thickness_array"]
+            * inputs["settings:geometry:fuel_tanks:depth"]
+        )
         partials[
-            "data:geometry:propulsion:tank:cross_section_array",
-            "data:geometry:propulsion:tank:reduced_width_array",
-        ] = inputs["data:geometry:propulsion:tank:thickness_array"] * 0.85
+            "data:geometry:propulsion:tank:thickness_array",
+            "data:geometry:propulsion:tank:relative_thickness_array",
+        ] = (
+            inputs["data:geometry:propulsion:tank:chord_array"]
+            * inputs["settings:geometry:fuel_tanks:depth"]
+        )
+        partials[
+            "data:geometry:propulsion:tank:thickness_array",
+            "settings:geometry:fuel_tanks:depth",
+        ] = (
+            inputs["data:geometry:propulsion:tank:relative_thickness_array"]
+            * inputs["data:geometry:propulsion:tank:chord_array"]
+        )

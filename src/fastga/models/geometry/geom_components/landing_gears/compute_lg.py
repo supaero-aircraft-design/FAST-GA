@@ -1,6 +1,8 @@
-"""Estimation of landing gears geometry."""
+"""
+Python module for landing gear geometry calculation, part of the geometry component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,15 +16,13 @@
 
 import numpy as np
 import openmdao.api as om
-
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_LANDING_GEAR_GEOMETRY
+from ...constants import SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_LANDING_GEAR_GEOMETRY, "fastga.submodel.geometry.landing_gear.legacy"
-)
+# pylint: disable=too-few-public-methods
+@oad.RegisterSubmodel(SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY)
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
@@ -30,6 +30,8 @@ class ComputeLGGeometry(om.ExplicitComponent):
     analysis.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:propeller:diameter", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -42,15 +44,19 @@ class ComputeLGGeometry(om.ExplicitComponent):
         )
         self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         prop_dia = inputs["data:geometry:propeller:diameter"]
         fuselage_max_width = inputs["data:geometry:fuselage:maximum_width"]
         lg_height = 0.41 * prop_dia
-        y_lg = fuselage_max_width / 2 + lg_height * 1.2
+        y_lg = fuselage_max_width / 2.0 + lg_height * 1.2
 
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
         partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2
