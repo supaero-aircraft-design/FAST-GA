@@ -22,6 +22,7 @@ from ...constants import SERVICE_PROPELLER_GEOMETRY, SUBMODEL_PROPELLER_GEOMETRY
 from .constants import SERVICE_PROPELLER_POSITION, SERVICE_PROPELLER_INSTALLATION
 
 
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_PROPELLER_GEOMETRY, SUBMODEL_PROPELLER_GEOMETRY_LEGACY)
 class ComputePropellerGeometry(om.Group):
     """Propeller position with respect to the leading edge estimation."""

@@ -68,6 +68,7 @@ class ComputeFuselageGeometryBasic(om.ExplicitComponent):
         outputs["data:geometry:cabin:length"] = cabin_length
 
 
+# pylint: disable=too-few-public-methods
 class ComputeFuselageGeometryCabinSizingFD(om.Group):
     # TODO: Document equations. Cite sources
     """
@@ -139,6 +140,7 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         )
 
 
+# pylint: disable=too-few-public-methods
 class ComputeFuselageGeometryCabinSizingFL(om.Group):
     # TODO: Document equations. Cite sources
     """

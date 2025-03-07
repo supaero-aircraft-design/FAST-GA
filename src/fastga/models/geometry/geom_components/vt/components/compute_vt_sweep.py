@@ -17,11 +17,13 @@ Python module for vertical tail sweep angle calculations, part of the vertical t
 import openmdao.api as om
 import fastoad.api as oad
 
-from .vt_sweep_components import ComputeVTSweep0, ComputeVTSweep50, ComputeVTSweep100
+from .compute_vt_sweep_0 import ComputeVTSweep0
+from .compute_vt_sweep_50 import ComputeVTSweep50
+from .compute_vt_sweep_100 import ComputeVTSweep100
 from ..constants import SERVICE_VT_SWEEP, SUBMODEL_VT_SWEEP_LEGACY
 
 
-# TODO: HT and VT components are similar --> factorize
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_VT_SWEEP, SUBMODEL_VT_SWEEP_LEGACY)
 class ComputeVTSweep(om.Group):
     # TODO: Document equations. Cite sources

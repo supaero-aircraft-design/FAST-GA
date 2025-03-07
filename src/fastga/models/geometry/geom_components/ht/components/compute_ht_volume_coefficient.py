@@ -17,12 +17,8 @@ geometry.
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
-
-from ..constants import SERVICE_HT_VOLUME_COEFF, SUBMODEL_HT_VOLUME_COEFF_LEGACY
 
 
-@oad.RegisterSubmodel(SERVICE_HT_VOLUME_COEFF, SUBMODEL_HT_VOLUME_COEFF_LEGACY)
 class ComputeHTVolumeCoefficient(om.ExplicitComponent):
     """
     Computation of the Volume coefficient for the horizontal tail. It is a result and not an

@@ -17,15 +17,14 @@ Python module for wing sweep angle calculations, part of the wing geometry.
 import openmdao.api as om
 import fastoad.api as oad
 
-from .wing_sweep_components import (
-    ComputeWingSweep0,
-    ComputeWingSweep50,
-    ComputeWingSweep100Inner,
-    ComputeWingSweep100Outer,
-)
+from .compute_wing_sweep_0 import ComputeWingSweep0
+from .compute_wing_sweep_50 import ComputeWingSweep50
+from .compute_wing_sweep_100_inner import ComputeWingSweep100Inner
+from .compute_wing_sweep_100_outer import ComputeWingSweep100Outer
 from ..constants import SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY
 
 
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY)
 class ComputeWingSweep(om.Group):
     # TODO: Document equations. Cite sources

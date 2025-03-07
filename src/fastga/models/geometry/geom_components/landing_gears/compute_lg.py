@@ -21,6 +21,7 @@ import fastoad.api as oad
 from ...constants import SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY
 
 
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY)
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources

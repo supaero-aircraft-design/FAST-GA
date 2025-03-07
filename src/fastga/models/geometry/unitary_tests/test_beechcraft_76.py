@@ -72,7 +72,7 @@ from ..geom_components.wing_tank import ComputeMFWSimple, ComputeMFWAdvanced
 from ..geometry import GeometryFixedFuselage, GeometryFixedTailDistance
 
 
-from ..geom_components.wing_tank.wing_tank_components import (
+from ..geom_components.wing_tank.components import (
     ComputeWingTankSpans,
     ComputeWingTankYArray,
     ComputeWingTankChordArray,

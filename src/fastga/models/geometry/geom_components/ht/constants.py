@@ -19,7 +19,6 @@ SERVICE_HT_SWEEP = "service.geometry.horizontal_tail.sweep"
 SERVICE_HT_WET_AREA = "service.geometry.horizontal_tail.wet_area"
 SERVICE_HT_DISTANCE = "service.geometry.horizontal_tail.distance"
 SERVICE_HT_EFFICIENCY = "service.geometry.horizontal_tail.efficiency"
-SERVICE_HT_VOLUME_COEFF = "service.geometry.horizontal_tail.volume_coefficient"
 
 SUBMODEL_HT_CHORD_LEGACY = "fastga.submodel.geometry.horizontal_tail.chord.legacy"
 SUBMODEL_HT_SWEEP_LEGACY = "fastga.submodel.geometry.horizontal_tail.sweep.legacy"

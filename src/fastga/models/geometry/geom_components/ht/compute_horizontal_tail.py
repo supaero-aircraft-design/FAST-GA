@@ -17,17 +17,17 @@ Python module for horizontal tail geometry calculation, part of the geometry com
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeHTMacFD, ComputeHTMacFL
+from .components import ComputeHTMacFD, ComputeHTMacFL, ComputeHTVolumeCoefficient
 from .constants import (
     SERVICE_HT_CHORD,
     SERVICE_HT_SWEEP,
     SERVICE_HT_WET_AREA,
     SERVICE_HT_DISTANCE,
     SERVICE_HT_EFFICIENCY,
-    SERVICE_HT_VOLUME_COEFF,
 )
 
 
+# pylint: disable=too-few-public-methods
 class ComputeHorizontalTailGeometryFD(om.Group):
     """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
 
@@ -52,13 +52,10 @@ class ComputeHorizontalTailGeometryFD(om.Group):
         self.add_subsystem(
             "ht_eff", oad.RegisterSubmodel.get_submodel(SERVICE_HT_EFFICIENCY), promotes=["*"]
         )
-        self.add_subsystem(
-            "ht_volume_coeff",
-            oad.RegisterSubmodel.get_submodel(SERVICE_HT_VOLUME_COEFF),
-            promotes=["*"],
-        )
+        self.add_subsystem("ht_volume_coeff", ComputeHTVolumeCoefficient(), promotes=["*"])
 
 
+# pylint: disable=too-few-public-methods
 class ComputeHorizontalTailGeometryFL(om.Group):
     """Horizontal tail geometry estimation based on fixed fuselage length"""
 

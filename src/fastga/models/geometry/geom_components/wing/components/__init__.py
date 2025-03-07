@@ -1,5 +1,5 @@
 """
-Estimation of wing geometry (components).
+Python package for estimations of each wing geometry component.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

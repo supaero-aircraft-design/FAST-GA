@@ -19,9 +19,8 @@ import numpy as np
 import openmdao.api as om
 
 
-# TODO: HT and VT components are similar --> factorize
 class ComputeVTSweep50(om.ExplicitComponent):
-    """Estimation of vertical tail sweep at l/c=50%"""
+    """Estimation of vertical tail sweep at 50% of the MAC."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

@@ -21,7 +21,7 @@ import openmdao.api as om
 
 
 class ComputeHTSweep50(om.ExplicitComponent):
-    """Estimation of horizontal tail sweep at l/c=50%"""
+    """Estimation of horizontal tail sweep at 50% of the MAC."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

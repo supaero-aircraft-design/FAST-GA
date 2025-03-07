@@ -1,4 +1,6 @@
-"""Estimation of horizon tail sweep components."""
+"""
+Python package for estimations of each nacelle geometry component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -15,6 +17,5 @@
 # pylint: disable=unused-import
 # flake8: noqa
 
-from .compute_ht_sweep_0 import ComputeHTSweep0
-from .compute_ht_sweep_50 import ComputeHTSweep50
-from .compute_ht_sweep_100 import ComputeHTSweep100
+from .compute_nacelle_x_position import ComputeNacelleXPosition
+from .compute_nacelle_y_position import ComputeNacelleYPosition

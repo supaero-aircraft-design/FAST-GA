@@ -20,7 +20,7 @@ import fastoad.api as oad
 
 from ...constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
 
-from .wing_tank_components import (
+from .components import (
     ComputeWingTankSpans,
     ComputeWingTankYArray,
     ComputeWingTankChordArray,
@@ -34,6 +34,7 @@ from .wing_tank_components import (
 )
 
 
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_ADVANCED)
 class ComputeMFWAdvanced(om.Group):
     """

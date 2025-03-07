@@ -28,6 +28,7 @@ from .components import (
 from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVICE_FUSELAGE_VOLUME
 
 
+# pylint: disable=too-few-public-methods
 class ComputeFuselageAlternate(om.Group):
     """
     Fuselage geometry calculations with fixed fuselage length cabin sizing.
@@ -74,6 +75,7 @@ class ComputeFuselageAlternate(om.Group):
         )
 
 
+# pylint: disable=too-few-public-methods
 class ComputeFuselageLegacy(om.Group):
     """
     Fuselage geometry calculations with fixed MACs distance cabin sizing.

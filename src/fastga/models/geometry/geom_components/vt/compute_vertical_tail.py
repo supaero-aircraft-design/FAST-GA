@@ -30,6 +30,7 @@ from .constants import (
 )
 
 
+# pylint: disable=too-few-public-methods
 class ComputeVerticalTailGeometryFD(om.Group):
     """Vertical tail geometry estimation based on fixed HTP/VTP distance"""
 
@@ -49,6 +50,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
         )
 
 
+# pylint: disable=too-few-public-methods
 class ComputeVerticalTailGeometryFL(om.Group):
     """Vertical tail geometry estimation based on fixed fuselage length"""
 

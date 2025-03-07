@@ -1,5 +1,5 @@
 """
-Python module for wing sweep angle calculation at inner 100% of the MAC, part of the wing sweep
+Python module for wing sweep angle calculation at outer 100% of the MAC, part of the wing sweep
 angle.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -19,8 +19,8 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeWingSweep100Inner(om.ExplicitComponent):
-    """Estimation of inner wing sweep at l/c=100%"""
+class ComputeWingSweep100Outer(om.ExplicitComponent):
+    """Estimation of outer wing sweep at outer 100% of the MAC."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -31,7 +31,7 @@ class ComputeWingSweep100Inner(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
         self.add_input("data:geometry:wing:tip:chord", val=np.nan, units="m")
 
-        self.add_output("data:geometry:wing:sweep_100_inner", units="rad")
+        self.add_output("data:geometry:wing:sweep_100_outer", units="rad")
 
         self.declare_partials(of="*", wrt="*", method="exact")
 
@@ -44,7 +44,7 @@ class ComputeWingSweep100Inner(om.ExplicitComponent):
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
-        outputs["data:geometry:wing:sweep_100_inner"] = np.arctan2(
+        outputs["data:geometry:wing:sweep_100_outer"] = np.arctan2(
             (x4_wing + l4_wing - l2_wing), (y4_wing - y2_wing)
         )
 
@@ -60,18 +60,18 @@ class ComputeWingSweep100Inner(om.ExplicitComponent):
         common_denominator = (x4_wing + l4_wing - l2_wing) ** 2 + (y4_wing - y2_wing) ** 2
 
         partials[
-            "data:geometry:wing:sweep_100_inner", "data:geometry:wing:tip:leading_edge:x:local"
+            "data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:leading_edge:x:local"
         ] = (y4_wing - y2_wing) / common_denominator
-        partials["data:geometry:wing:sweep_100_inner", "data:geometry:wing:root:y"] = (
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:root:y"] = (
             x4_wing + l4_wing - l2_wing
         ) / common_denominator
-        partials["data:geometry:wing:sweep_100_inner", "data:geometry:wing:tip:y"] = -(
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:y"] = -(
             (x4_wing + l4_wing - l2_wing) / common_denominator
         )
-        partials["data:geometry:wing:sweep_100_inner", "data:geometry:wing:root:chord"] = (
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:root:chord"] = (
             -(y4_wing - y2_wing) / common_denominator
         )
 
-        partials["data:geometry:wing:sweep_100_inner", "data:geometry:wing:tip:chord"] = (
+        partials["data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:chord"] = (
             y4_wing - y2_wing
         ) / common_denominator
