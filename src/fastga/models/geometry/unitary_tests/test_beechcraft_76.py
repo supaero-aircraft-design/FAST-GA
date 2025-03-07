@@ -16,10 +16,12 @@ Test module for geometry functions of the different components.
 
 import numpy as np
 import openmdao.api as om
+import fastoad.api as oad
 import pytest
 
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from .dummy_engines import ENGINE_WRAPPER_BE76 as ENGINE_WRAPPER
+from ..constants import SUBMODEL_MFW_ADVANCED, SERVICE_MFW
 from ..geom_components import ComputeTotalArea
 from ..geom_components.fuselage.components import (
     ComputeFuselageGeometryBasic,
@@ -1266,5 +1268,46 @@ def test_mfw_from_wing_tanks_capacity():
     problem = run_system(ComputeMFWFromWingTanksCapacity(), ivc)
     mfw = problem.get_val("data:weight:aircraft:MFW", units="kg")
     assert mfw == pytest.approx(304.73, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
+
+
+def test_complete_geometry_FD_advance_wing_tank():
+    """Run computation of all models for fixed distance hypothesis"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_ADVANCED
+    ivc = get_indep_var_comp(
+        list_inputs(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(GeometryFixedTailDistance(propulsion_id=ENGINE_WRAPPER), ivc)
+    assert oad.RegisterSubmodel.active_models[SERVICE_MFW] == SUBMODEL_MFW_ADVANCED
+
+    problem.check_partials(compact_print=True)
+
+
+def test_complete_geometry_FL_advance_wing_tank():
+    """Run computation of all models for fixed length hypothesis"""
+
+    # Research independent input value in .xml file and add values calculated from other modules
+    # noinspection PyTypeChecker
+    oad.RegisterSubmodel.active_models[SERVICE_MFW] = SUBMODEL_MFW_ADVANCED
+    ivc = get_indep_var_comp(
+        list_inputs(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER)),
+        __file__,
+        XML_FILE,
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
+    total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
+    assert total_surface == pytest.approx(80.932, abs=1e-3)
 
     problem.check_partials(compact_print=True)
