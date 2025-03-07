@@ -226,7 +226,7 @@ def test_compute_ht_mac():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_ht_mac_fl():
+def test_compute_ht_mac_from_wing_25():
     """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
@@ -234,12 +234,6 @@ def test_compute_ht_mac_fl():
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeHTMacFromWing25(), ivc)
-    length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
-    assert length == pytest.approx(1.009, abs=1e-3)
-    ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
-    assert ht_x0 == pytest.approx(0.042, abs=1e-3)
-    ht_y0 = problem.get_val("data:geometry:horizontal_tail:MAC:y", units="m")
-    assert ht_y0 == pytest.approx(1.178, abs=1e-3)
     lp_ht = problem.get_val(
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
