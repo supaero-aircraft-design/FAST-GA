@@ -33,8 +33,8 @@ from ..geom_components.fuselage.components import (
 )
 from ..geom_components.ht.components import (
     ComputeHTChord,
-    ComputeHTMacFD,
-    ComputeHTMacFL,
+    ComputeHTMac,
+    ComputeHTMacFromWing25,
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
@@ -48,8 +48,7 @@ from ..geom_components.propeller.components import (
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
-    ComputeVTMacFD,
-    ComputeVTMacFL,
+    ComputeVTMac,
     ComputeVTMacDistanceFD,
     ComputeVTMacDistanceFL,
     ComputeVTSweep,
@@ -110,28 +109,10 @@ def test_compute_vt_mac():
     """Tests computation of the vertical tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMac()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacFD(), ivc)
-    length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
-    assert length == pytest.approx(1.237, abs=1e-3)
-    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
-    assert vt_x0 == pytest.approx(0.453, abs=1e-3)
-    vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
-    assert vt_z0 == pytest.approx(0.672, abs=1e-3)
-
-    problem.check_partials(compact_print=True)
-
-
-def test_compute_vt_mac_fl():
-    """Tests computation of the horizontal tail mac"""
-
-    # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMacFL()), __file__, XML_FILE)
-
-    # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMacFL(), ivc)
+    problem = run_system(ComputeVTMac(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
@@ -152,6 +133,8 @@ def test_compute_vt_mac_position():
         "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
     assert lp_vt == pytest.approx(4.294, abs=1e-3)
+    vt_x0 = problem.get_val("data:geometry:vertical_tail:MAC:at25percent:x:local", units="m")
+    assert vt_x0 == pytest.approx(0.453, abs=1e-3)
 
     problem.check_partials(compact_print=True)
 
@@ -242,10 +225,10 @@ def test_compute_ht_mac():
     """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFD()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMac()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTMacFD(), ivc)
+    problem = run_system(ComputeHTMac(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
     ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")
@@ -260,10 +243,10 @@ def test_compute_ht_mac_fl():
     """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFL()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFromWing25()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTMacFL(), ivc)
+    problem = run_system(ComputeHTMacFromWing25(), ivc)
     length = problem.get_val("data:geometry:horizontal_tail:MAC:length", units="m")
     assert length == pytest.approx(0.983, abs=1e-3)
     ht_x0 = problem.get_val("data:geometry:horizontal_tail:MAC:at25percent:x:local", units="m")

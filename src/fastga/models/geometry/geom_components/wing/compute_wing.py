@@ -65,7 +65,7 @@ class ComputeWingGeometry(om.Group):
             "wing_mac", oad.RegisterSubmodel.get_submodel(SERVICE_WING_MAC), promotes=["*"]
         )
         self.add_subsystem(
-            "wing_xabsolute",
+            "wing_x_absolute",
             oad.RegisterSubmodel.get_submodel(SERVICE_WING_X_ABSOLUTE),
             promotes=["*"],
         )

@@ -1,6 +1,6 @@
 """
-Python module for the calculation of vertical tail distance from 25% wing MAC, part of the
-vertical tail geometry.
+Python module for the calculation of vertical tail distance from 25% wing MAC with fixed fuselage
+length, part of the vertical tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -18,72 +18,6 @@ vertical tail geometry.
 
 import numpy as np
 import openmdao.api as om
-
-
-class ComputeVTMacDistanceFD(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """
-    Vertical tail mean aerodynamic chord position estimation based on (F)ixed tail (D)istance.
-    """
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO setup
-    def setup(self):
-        self.add_input(
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
-        )
-        self.add_input("data:geometry:has_T_tail", val=np.nan)
-        self.add_input("data:geometry:vertical_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:vertical_tail:span", val=np.nan, units="m")
-
-        self.add_output("data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", units="m")
-
-        self.declare_partials(
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            [
-                "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-                "data:geometry:vertical_tail:span",
-                "data:geometry:vertical_tail:sweep_25",
-                "data:geometry:has_T_tail",
-            ],
-            method="exact",
-        )
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute, not all arguments are used
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        b_v = inputs["data:geometry:vertical_tail:span"]
-        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
-        has_t_tail = inputs["data:geometry:has_T_tail"]
-
-        vt_lp = lp_ht - 0.6 * b_v * np.tan(sweep_25_vt) * has_t_tail
-
-        outputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"] = vt_lp
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute_partials, not all arguments are used
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        sweep_25_vt = inputs["data:geometry:vertical_tail:sweep_25"]
-        b_v = inputs["data:geometry:vertical_tail:span"]
-        has_t_tail = inputs["data:geometry:has_T_tail"]
-
-        partials[
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = 1.0
-        partials[
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:vertical_tail:span",
-        ] = -0.6 * np.tan(sweep_25_vt) * has_t_tail
-        partials[
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:vertical_tail:sweep_25",
-        ] = -0.6 * b_v * has_t_tail / np.cos(sweep_25_vt) ** 2.0
-        partials[
-            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-            "data:geometry:has_T_tail",
-        ] = -0.6 * np.tan(sweep_25_vt) * b_v
 
 
 class ComputeVTMacDistanceFL(om.ExplicitComponent):

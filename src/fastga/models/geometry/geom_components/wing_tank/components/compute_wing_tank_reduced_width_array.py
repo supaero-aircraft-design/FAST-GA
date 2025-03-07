@@ -99,11 +99,6 @@ class ComputeWingTankReducedWidthArray(om.ExplicitComponent):
             method="exact",
             val=0.0,
         )
-        self.declare_partials(
-            "*",
-            ["data:geometry:landing_gear:type", "data:geometry:propulsion:engine:layout"],
-            method="fd",
-        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
