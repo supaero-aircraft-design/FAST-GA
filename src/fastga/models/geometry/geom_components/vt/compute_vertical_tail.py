@@ -17,29 +17,19 @@ Python module for vertical tail geometry calculation, part of the geometry compo
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeVTMac
+from .components import ComputeVTMac, ComputeVTMacDistanceXLocal
 from .constants import (
     SERVICE_VT_CHORD,
     SERVICE_VT_SWEEP,
     SERVICE_VT_WET_AREA,
-    SERVICE_VT_DISTANCE,
-    SUBMODEL_VT_DISTANCE_FL,
-    SUBMODEL_VT_DISTANCE_FD,
+    SERVICE_VT_DISTANCE_FL,
+    SERVICE_VT_DISTANCE_FD,
 )
 
 
 # pylint: disable=too-few-public-methods
 class ComputeVerticalTailGeometryFD(om.Group):
     """Vertical tail geometry estimation based on fixed HTP/VTP distance"""
-
-    def __init__(self, **kwargs):
-        """
-        Set up corresponded components if user didn't define specifically.
-        """
-        super().__init__(**kwargs)
-
-        if not oad.RegisterSubmodel.active_models.get(SERVICE_VT_DISTANCE):
-            oad.RegisterSubmodel.active_models[SERVICE_VT_DISTANCE] = SUBMODEL_VT_DISTANCE_FD
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -48,8 +38,11 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMac(), promotes=["*"])
+        self.add_subsystem("vt_mac_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
-            "vt_distance", oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE), promotes=["*"]
+            "vt_distance",
+            oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FD),
+            promotes=["*"],
         )
         self.add_subsystem(
             "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]
@@ -63,15 +56,6 @@ class ComputeVerticalTailGeometryFD(om.Group):
 class ComputeVerticalTailGeometryFL(om.Group):
     """Vertical tail geometry estimation based on fixed fuselage length"""
 
-    def __init__(self, **kwargs):
-        """
-        Set up corresponded components if user didn't define specifically.
-        """
-        super().__init__(**kwargs)
-
-        if not oad.RegisterSubmodel.active_models.get(SERVICE_VT_DISTANCE):
-            oad.RegisterSubmodel.active_models[SERVICE_VT_DISTANCE] = SUBMODEL_VT_DISTANCE_FL
-
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
@@ -79,8 +63,11 @@ class ComputeVerticalTailGeometryFL(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_mac", ComputeVTMac(), promotes=["*"])
+        self.add_subsystem("vt_mac_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
-            "vt_distance", oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE), promotes=["*"]
+            "vt_distance",
+            oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FL),
+            promotes=["*"],
         )
         self.add_subsystem(
             "vt_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_VT_SWEEP), promotes=["*"]

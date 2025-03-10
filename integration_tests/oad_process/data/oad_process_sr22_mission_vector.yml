@@ -53,5 +53,5 @@ model:
         id: fastga.aerodynamics.stability_derivatives.legacy
 
 submodels:
-    service.geometry.vertical_tail.distance: null
+    service.geometry.vertical_tail.distance.fd: null
     service.geometry.fuselage.wet_area: fastga.submodel.geometry.fuselage.wet_area.flops
