@@ -53,5 +53,5 @@ model:
             id: fastga.loop.wing_area
 
 submodels:
-    service.geometry.vertical_tail.position.fd: null
+    service.geometry.vertical_tail.distance: null
     service.geometry.fuselage.wet_area: fastga.submodel.geometry.fuselage.wet_area.flops

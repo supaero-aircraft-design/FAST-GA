@@ -80,7 +80,7 @@ submodels:
     service.geometry.wing.thickness_ratio: null
     submodel.aerodynamics.high_lift.delta: null
     service.geometry.mfw: fastga.submodel.geometry.mfw.advanced
-    service.geometry.vertical_tail.position.fd: null
+    service.geometry.vertical_tail.distance: null
     submodel.performances.mission.descent_speed: null
     submodel.performances.mission.climb_speed: null
 

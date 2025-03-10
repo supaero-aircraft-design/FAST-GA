@@ -18,8 +18,12 @@ length, part of the vertical tail geometry.
 
 import numpy as np
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SERVICE_VT_DISTANCE, SUBMODEL_VT_DISTANCE_FL
 
 
+@oad.RegisterSubmodel(SERVICE_VT_DISTANCE, SUBMODEL_VT_DISTANCE_FL)
 class ComputeVTMacDistanceFL(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """

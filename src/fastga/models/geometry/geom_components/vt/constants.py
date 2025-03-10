@@ -17,7 +17,10 @@ Python module for storing constants for the vertical tail geometry submodels.
 SERVICE_VT_CHORD = "service.geometry.vertical_tail.chord"
 SERVICE_VT_SWEEP = "service.geometry.vertical_tail.sweep"
 SERVICE_VT_WET_AREA = "service.geometry.vertical_tail.wet_area"
+SERVICE_VT_DISTANCE = "service.geometry.vertical_tail.distance"
 
 SUBMODEL_VT_CHORD_LEGACY = "fastga.submodel.geometry.vertical_tail.chord.legacy"
 SUBMODEL_VT_SWEEP_LEGACY = "fastga.submodel.geometry.vertical_tail.sweep.legacy"
+SUBMODEL_VT_DISTANCE_FD = "fastga.submodel.geometry.vertical_tail.distance.fd.legacy"
+SUBMODEL_VT_DISTANCE_FL = "fastga.submodel.geometry.vertical_tail.distance.fl.legacy"
 SUBMODEL_VT_WET_AREA_LEGACY = "fastga.submodel.geometry.vertical_tail.wet_area.legacy"

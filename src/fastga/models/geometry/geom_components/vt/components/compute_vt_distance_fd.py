@@ -18,8 +18,12 @@ between MACs, part of the vertical tail geometry.
 
 import numpy as np
 import openmdao.api as om
+import fastoad.api as oad
+
+from ..constants import SERVICE_VT_DISTANCE, SUBMODEL_VT_DISTANCE_FD
 
 
+@oad.RegisterSubmodel(SERVICE_VT_DISTANCE, SUBMODEL_VT_DISTANCE_FD)
 class ComputeVTMacDistanceFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
