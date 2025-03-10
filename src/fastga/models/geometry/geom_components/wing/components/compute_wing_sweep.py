@@ -27,8 +27,7 @@ from ..constants import SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY
 # pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_WING_SWEEP, SUBMODEL_WING_SWEEP_LEGACY)
 class ComputeWingSweep(om.Group):
-    # TODO: Document equations. Cite sources
-    """Wing sweeps estimation."""
+    """Wing sweeps estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

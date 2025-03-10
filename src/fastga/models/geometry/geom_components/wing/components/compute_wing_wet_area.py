@@ -23,7 +23,6 @@ from ..constants import SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY
 
 @oad.RegisterSubmodel(SUBMODEL_WING_WET_AREA, SUBMODEL_WING_WET_AREA_LEGACY)
 class ComputeWingWetArea(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
     Wing wet area estimation, the wing wet area calculation can be found at page 707 of
     :cite:`gudmundsson:2013`.

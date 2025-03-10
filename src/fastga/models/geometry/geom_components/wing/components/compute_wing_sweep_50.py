@@ -19,7 +19,7 @@ import openmdao.api as om
 
 
 class ComputeWingSweep50(om.ExplicitComponent):
-    """Estimation of wing sweep at 50% of the MAC."""
+    """Estimation of wing sweep at 50% of the MAC, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

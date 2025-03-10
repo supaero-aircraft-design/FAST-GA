@@ -24,8 +24,7 @@ from ...constants import SERVICE_NACELLE_POSITION, SUBMODEL_NACELLE_POSITION_LEG
 # pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_NACELLE_POSITION, SUBMODEL_NACELLE_POSITION_LEGACY)
 class ComputeNacellePosition(om.Group):
-    # TODO: Document equations. Cite sources
-    """Nacelle and pylon geometry estimation."""
+    """Nacelle and pylon geometry estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

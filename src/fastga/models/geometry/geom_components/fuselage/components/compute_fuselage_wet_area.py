@@ -31,7 +31,8 @@ oad.RegisterSubmodel.active_models[SERVICE_FUSELAGE_WET_AREA] = SUBMODEL_FUSELAG
 class ComputeFuselageWetArea(om.ExplicitComponent):
     """
     Fuselage wet area estimation, based on a simple geometric description of the fuselage one
-    cone at the front a cylinder in the middle and a cone at the back.
+    cone at the front a cylinder in the middle and a cone at the back, obtained from
+    :cite:`supaero:2014`.
     """
 
     # pylint: disable=missing-function-docstring

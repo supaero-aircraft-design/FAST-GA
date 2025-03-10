@@ -23,8 +23,7 @@ from ..constants import SERVICE_WING_L1_L4, SUBMODEL_WING_L1_L4_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_WING_L1_L4, SUBMODEL_WING_L1_L4_LEGACY)
 class ComputeWingL1AndL4(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing chords (l1 and l4) estimation."""
+    """Wing chords (l1 and l4) estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

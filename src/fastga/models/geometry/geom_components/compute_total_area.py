@@ -23,8 +23,7 @@ from ..constants import SERVICE_AIRCRAFT_WET_AREA, SUBMODEL_AIRCRAFT_WET_AREA_LE
 
 @oad.RegisterSubmodel(SERVICE_AIRCRAFT_WET_AREA, SUBMODEL_AIRCRAFT_WET_AREA_LEGACY)
 class ComputeTotalArea(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Total aircraft wet area estimation."""
+    """Total aircraft wet area estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

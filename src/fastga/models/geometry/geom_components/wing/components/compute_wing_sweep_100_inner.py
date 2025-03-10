@@ -20,7 +20,7 @@ import openmdao.api as om
 
 
 class ComputeWingSweep100Inner(om.ExplicitComponent):
-    """Estimation of inner wing sweep at inner 100% of the MAC."""
+    """Estimation of inner wing sweep at inner 100% of the MAC, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

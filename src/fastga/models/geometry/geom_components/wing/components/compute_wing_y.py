@@ -23,8 +23,7 @@ from ..constants import SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY)
 class ComputeWingY(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing Ys estimation."""
+    """Wing Ys estimation, , obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

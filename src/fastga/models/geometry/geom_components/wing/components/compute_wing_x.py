@@ -23,8 +23,7 @@ from ..constants import SERVICE_WING_X_LOCAL, SUBMODEL_WING_X_LOCAL_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_WING_X_LOCAL, SUBMODEL_WING_X_LOCAL_LEGACY)
 class ComputeWingX(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing Xs estimation."""
+    """Wing Xs estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

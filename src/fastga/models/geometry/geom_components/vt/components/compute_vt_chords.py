@@ -24,7 +24,7 @@ from ..constants import SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY
 @oad.RegisterSubmodel(SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY)
 class ComputeVTChords(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Vertical tail chords and span estimation"""
+    """Vertical tail chords and span estimation."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

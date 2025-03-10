@@ -35,8 +35,7 @@ from ...constants import SERVICE_WING_GEOMETRY, SUBMODEL_WING_GEOMETRY_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, SUBMODEL_WING_GEOMETRY_LEGACY)
 class ComputeWingGeometry(om.Group):
-    # TODO: Document equations. Cite sources
-    """Wing geometry estimation."""
+    """Wing geometry estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

@@ -23,8 +23,7 @@ from ..constants import SERVICE_VT_WET_AREA, SUBMODEL_VT_WET_AREA_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_VT_WET_AREA, SUBMODEL_VT_WET_AREA_LEGACY)
 class ComputeVTWetArea(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Vertical tail wet area estimation"""
+    """Vertical tail wet area estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

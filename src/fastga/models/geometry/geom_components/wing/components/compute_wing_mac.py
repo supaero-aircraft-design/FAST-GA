@@ -23,8 +23,7 @@ from ..constants import SERVICE_WING_MAC, SUBMODEL_WING_MAC_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_WING_MAC, SUBMODEL_WING_MAC_LEGACY)
 class ComputeWingMAC(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing mean aerodynamic chord estimation."""
+    """Wing mean aerodynamic chord estimation, obtained from :cite:`supaero:2014`."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

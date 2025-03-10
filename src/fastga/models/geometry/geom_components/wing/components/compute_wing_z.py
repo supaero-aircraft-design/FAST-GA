@@ -28,8 +28,8 @@ _LOGGER = logging.getLogger(__name__)
 @oad.RegisterSubmodel(SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY)
 class ComputeWingZ(om.ExplicitComponent):
     """
-    Computation of the distance between the fuselage center line and the wing. Based on simple
-    geometric considerations.
+    Computation of the distance between the fuselage center line and the wing , obtained from
+    :cite:`supaero:2014`. It's based on simple geometric considerations.
     """
 
     # pylint: disable=missing-function-docstring

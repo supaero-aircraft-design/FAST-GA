@@ -21,8 +21,8 @@ import openmdao.api as om
 
 class ComputeHTVolumeCoefficient(om.ExplicitComponent):
     """
-    Computation of the Volume coefficient for the horizontal tail. It is a result and not an
-    input of the sizing of the HTP.
+    Computation of the Volume coefficient for the horizontal tail, obtained from
+    :cite:`supaero:2014`. It is a result and not an input of the sizing of the HTP.
     """
 
     # pylint: disable=missing-function-docstring
