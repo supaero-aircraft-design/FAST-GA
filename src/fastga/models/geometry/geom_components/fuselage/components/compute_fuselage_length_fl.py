@@ -1,5 +1,5 @@
 """
-Python module for fuselage length calculation with fixed fuselage length, part of the fuselage
+Python module for fuselage length calculation with fixed rear fuselage length, part of the fuselage
 dimension.
 """
 
@@ -22,7 +22,7 @@ import openmdao.api as om
 
 class ComputeFuselageLengthFL(om.ExplicitComponent):
     """
-    Computes fuselage length with fixing the fuselage length as constant.
+    Computes fuselage length with given rear length.
     """
 
     # pylint: disable=missing-function-docstring

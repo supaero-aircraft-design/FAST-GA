@@ -62,9 +62,9 @@ class ComputeHTChord(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         s_h = inputs["data:geometry:horizontal_tail:area"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
-        aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        b_h = np.sqrt(max(aspect_ratio * s_h, 0.1))
+        b_h = np.sqrt(max(aspect_ratio_ht * s_h, 0.1))
         # !!!: to avoid 0 division if s_h initialised to 0
         root_chord = s_h * 2.0 / (1.0 + taper_ht) / b_h
         tip_chord = root_chord * taper_ht
@@ -78,9 +78,9 @@ class ComputeHTChord(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         s_h = inputs["data:geometry:horizontal_tail:area"]
         taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
-        aspect_ratio = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        aspect_ratio_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
 
-        if aspect_ratio * s_h < 0.1:
+        if aspect_ratio_ht * s_h < 0.1:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
                 0.0
             )
@@ -89,28 +89,28 @@ class ComputeHTChord(om.ExplicitComponent):
             ] = 0.0
         else:
             partials["data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:area"] = (
-                np.sqrt(aspect_ratio) / (2.0 * np.sqrt(s_h))
+                np.sqrt(aspect_ratio_ht) / (2.0 * np.sqrt(s_h))
             )
             partials[
                 "data:geometry:horizontal_tail:span", "data:geometry:horizontal_tail:aspect_ratio"
-            ] = np.sqrt(s_h) / (2.0 * np.sqrt(aspect_ratio))
+            ] = np.sqrt(s_h) / (2.0 * np.sqrt(aspect_ratio_ht))
 
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:area"
-        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio)) * 2.0 / (1.0 + taper_ht)
+        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio_ht)) * 2.0 / (1.0 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3.0) * 2.0 / (1.0 + taper_ht)
+        ] = -0.5 * np.sqrt(s_h / aspect_ratio_ht**3.0) * 2.0 / (1.0 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:root:chord", "data:geometry:horizontal_tail:taper_ratio"
-        ] = -np.sqrt(s_h / aspect_ratio) * 2.0 / (1.0 + taper_ht) ** 2.0
+        ] = -np.sqrt(s_h / aspect_ratio_ht) * 2.0 / (1.0 + taper_ht) ** 2.0
 
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:area"
-        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio)) * 2.0 * taper_ht / (1.0 + taper_ht)
+        ] = 1.0 / (2.0 * np.sqrt(s_h * aspect_ratio_ht)) * 2.0 * taper_ht / (1.0 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:aspect_ratio"
-        ] = -0.5 * np.sqrt(s_h / aspect_ratio**3.0) * 2.0 * taper_ht / (1.0 + taper_ht)
+        ] = -0.5 * np.sqrt(s_h / aspect_ratio_ht**3.0) * 2.0 * taper_ht / (1.0 + taper_ht)
         partials[
             "data:geometry:horizontal_tail:tip:chord", "data:geometry:horizontal_tail:taper_ratio"
-        ] = np.sqrt(s_h / aspect_ratio) * 2.0 / (1.0 + taper_ht) ** 2.0
+        ] = np.sqrt(s_h / aspect_ratio_ht) * 2.0 / (1.0 + taper_ht) ** 2.0

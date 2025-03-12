@@ -108,8 +108,8 @@ def test_compute_vt_chords():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_vt_mac():
-    """Tests computation of the vertical tail mac"""
+def test_compute_vt_MAC():
+    """Tests computation of the vertical tail MAC"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMAC()), __file__, XML_FILE)
@@ -124,8 +124,8 @@ def test_compute_vt_mac():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_vt_mac_local_position():
-    """Tests computation of the vertical tail mac local position"""
+def test_compute_vt_MAC_local_position():
+    """Tests computation of the vertical tail MAC local position"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMacDistanceXLocal()), __file__, XML_FILE)
@@ -138,8 +138,8 @@ def test_compute_vt_mac_local_position():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_vt_mac_position_from_wing25():
-    """Tests computation of the vertical tail mac position w.r.t wing MAC 25%"""
+def test_compute_vt_MAC_position_from_wing25():
+    """Tests computation of the vertical tail MAC position w.r.t wing MAC 25%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMacDistanceFD()), __file__, XML_FILE)
@@ -154,8 +154,8 @@ def test_compute_vt_mac_position_from_wing25():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_vt_mac_position_from_wing25_fl():
-    """Tests computation of the vertical tail mac position w.r.t wing MAC 25%"""
+def test_compute_vt_MAC_position_from_wing25_fl():
+    """Tests computation of the vertical tail MAC position w.r.t wing MAC 25%"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeVTMacDistanceFL()), __file__, XML_FILE)
@@ -234,8 +234,8 @@ def test_compute_ht_chord():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_ht_mac():
-    """Tests computation of the horizontal tail mac"""
+def test_compute_ht_MAC():
+    """Tests computation of the horizontal tail MAC"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTMac()), __file__, XML_FILE)
@@ -252,8 +252,8 @@ def test_compute_ht_mac():
     problem.check_partials(compact_print=True)
 
 
-def test_compute_ht_mac_from_wing_25():
-    """Tests computation of the horizontal tail mac"""
+def test_compute_ht_MAC_from_wing_25():
+    """Tests computation of the horizontal tail MAC"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(list_inputs(ComputeHTMACFromWing25()), __file__, XML_FILE)
@@ -626,7 +626,7 @@ def test_geometry_wing_b50():
     problem.check_partials(compact_print=True)
 
 
-def test_geometry_wing_mac():
+def test_geometry_wing_MAC():
     """Tests computation of the wing mean aerodynamic chord"""
 
     # Research independent input value in .xml file and add values calculated from other modules
