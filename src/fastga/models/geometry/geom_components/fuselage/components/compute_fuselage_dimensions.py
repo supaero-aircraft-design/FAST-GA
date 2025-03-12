@@ -18,20 +18,17 @@ Python module for fuselage dimension calculation, part of the fuselage geometry.
 import numpy as np
 import openmdao.api as om
 
-from .fuselage_dimension_components import (
-    ComputeFuselageCabinLength,
-    ComputeFuselageLuggageLengthFD,
-    ComputeFuselageMaxHeight,
-    ComputeFuselageMaxWidth,
-    ComputeFuselageNPAX,
-    ComputeFuselagePAXLength,
-    ComputeFuselageLengthFD,
-    ComputeFuselageLengthFL,
-    ComputeFuselageNoseLengthFD,
-    ComputeFuselageNoseLengthFL,
-    ComputeAircraftLength,
-    ComputeFuselageRearLength,
-)
+from .compute_aircraft_length import ComputeAircraftLength
+from .compute_fuselage_cabin_length import ComputeFuselageCabinLength
+from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
+from .compute_fuselage_max_height import ComputeFuselageMaxHeight
+from .compute_fuselage_max_width import ComputeFuselageMaxWidth
+from .compute_fuselage_npax import ComputeFuselageNPAX
+from .compute_fuselage_pax_length import ComputeFuselagePAXLength
+from .compute_fuselage_length_fd import ComputeFuselageLengthFD
+from .compute_fuselage_length_fl import ComputeFuselageLengthFL
+from .compute_fuselage_nose_length import ComputeFuselageNoseLength
+from .compute_fuselage_rear_length import ComputeFuselageRearLength
 
 
 class ComputeFuselageGeometryBasic(om.ExplicitComponent):
@@ -76,15 +73,6 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
     (Fixed tail Distance).
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._engine_wrapper = None
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
@@ -110,7 +98,7 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         )
         self.add_subsystem(
             "luggage_area_length",
-            ComputeFuselageLuggageLengthFD(),
+            ComputeFuselageLuggageLength(),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -120,7 +108,7 @@ class ComputeFuselageGeometryCabinSizingFD(om.Group):
         )
         self.add_subsystem(
             "nose_length",
-            ComputeFuselageNoseLengthFD(),
+            ComputeFuselageNoseLength(),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -148,15 +136,6 @@ class ComputeFuselageGeometryCabinSizingFL(om.Group):
     length (Fixed Length).
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._engine_wrapper = None
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
@@ -182,7 +161,7 @@ class ComputeFuselageGeometryCabinSizingFL(om.Group):
         )
         self.add_subsystem(
             "luggage_area_length",
-            ComputeFuselageLuggageLengthFD(),
+            ComputeFuselageLuggageLength(),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -192,7 +171,7 @@ class ComputeFuselageGeometryCabinSizingFL(om.Group):
         )
         self.add_subsystem(
             "nose_length",
-            ComputeFuselageNoseLengthFL(),
+            ComputeFuselageNoseLength(),
             promotes=["*"],
         )
         self.add_subsystem(

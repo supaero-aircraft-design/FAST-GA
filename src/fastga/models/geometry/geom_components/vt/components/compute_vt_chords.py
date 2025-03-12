@@ -23,7 +23,6 @@ from ..constants import SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY
 
 @oad.RegisterSubmodel(SERVICE_VT_CHORD, SUBMODEL_VT_CHORD_LEGACY)
 class ComputeVTChords(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """Vertical tail chords and span estimation."""
 
     # pylint: disable=missing-function-docstring
@@ -48,8 +47,8 @@ class ComputeVTChords(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        aspect_ratio = float(inputs["data:geometry:vertical_tail:aspect_ratio"])
-        s_v = float(inputs["data:geometry:vertical_tail:area"])
+        aspect_ratio = inputs["data:geometry:vertical_tail:aspect_ratio"]
+        s_v = inputs["data:geometry:vertical_tail:area"]
         taper_vt = inputs["data:geometry:vertical_tail:taper_ratio"]
 
         b_v = np.sqrt(max(aspect_ratio * s_v, 0.1))

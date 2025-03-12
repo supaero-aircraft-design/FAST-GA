@@ -33,6 +33,7 @@ from .constants import (
 from ...constants import SERVICE_WING_GEOMETRY, SUBMODEL_WING_GEOMETRY_LEGACY
 
 
+# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_WING_GEOMETRY, SUBMODEL_WING_GEOMETRY_LEGACY)
 class ComputeWingGeometry(om.Group):
     """Wing geometry estimation, obtained from :cite:`supaero:2014`."""

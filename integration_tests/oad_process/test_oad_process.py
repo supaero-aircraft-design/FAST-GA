@@ -172,7 +172,7 @@ def test_oad_process_tbm_900(cleanup):
     # noinspection PyTypeChecker
     assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 3361.0, atol=1)
     # noinspection PyTypeChecker
-    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2114.0, atol=2)
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 2114.0, atol=1)
 
 
 def test_oad_process_vlm_mission_vector(cleanup):

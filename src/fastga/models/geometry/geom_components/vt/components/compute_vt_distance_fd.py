@@ -46,7 +46,7 @@ class ComputeVTMacDistanceFD(om.ExplicitComponent):
         self.declare_partials("*", "*", method="exact")
 
         self.declare_partials(
-            "*", "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25" "", val=1.0
+            "*", "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=1.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument

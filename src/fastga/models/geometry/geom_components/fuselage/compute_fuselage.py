@@ -38,7 +38,6 @@ class ComputeFuselageAlternate(om.Group):
     # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare("propulsion_id", default="", types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -46,7 +45,7 @@ class ComputeFuselageAlternate(om.Group):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(
                 "compute_fuselage_dim",
-                ComputeFuselageGeometryCabinSizingFL(propulsion_id=self.options["propulsion_id"]),
+                ComputeFuselageGeometryCabinSizingFL(),
                 promotes=["*"],
             )
         else:
@@ -85,7 +84,6 @@ class ComputeFuselageLegacy(om.Group):
     # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare("propulsion_id", default="", types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -93,7 +91,7 @@ class ComputeFuselageLegacy(om.Group):
         if self.options[CABIN_SIZING_OPTION] == 1.0:
             self.add_subsystem(
                 "compute_fuselage_dim",
-                ComputeFuselageGeometryCabinSizingFD(propulsion_id=self.options["propulsion_id"]),
+                ComputeFuselageGeometryCabinSizingFD(),
                 promotes=["*"],
             )
         else:

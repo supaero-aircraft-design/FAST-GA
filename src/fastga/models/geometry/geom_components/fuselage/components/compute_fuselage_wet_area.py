@@ -40,7 +40,7 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
     def setup(self):
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_height", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
+        self.add_input("data:geometry:cabin:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:front_length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:rear_length", val=np.nan, units="m")
 
@@ -53,15 +53,14 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
-        fus_length = inputs["data:geometry:fuselage:length"]
+        cabin_length = inputs["data:geometry:cabin:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
 
         # Using the simple geometric description
         fus_dia = np.sqrt(b_f * h_f)  # equivalent diameter of the fuselage
-        cyl_length = fus_length - lav - lar
         wet_area_nose = 2.45 * fus_dia * lav
-        wet_area_cyl = np.pi * fus_dia * cyl_length
+        wet_area_cyl = np.pi * fus_dia * cabin_length
         wet_area_tail = 2.3 * fus_dia * lar
         wet_area_fus = wet_area_nose + wet_area_cyl + wet_area_tail
 
@@ -72,27 +71,24 @@ class ComputeFuselageWetArea(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_f = inputs["data:geometry:fuselage:maximum_width"]
         h_f = inputs["data:geometry:fuselage:maximum_height"]
-        fus_length = inputs["data:geometry:fuselage:length"]
+        cabin_length = inputs["data:geometry:cabin:length"]
         lav = inputs["data:geometry:fuselage:front_length"]
         lar = inputs["data:geometry:fuselage:rear_length"]
         fus_dia = np.sqrt(b_f * h_f)
-        cyl_length = fus_length - lav - lar
 
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_width"] = (
-            1.225 * h_f * lav + 0.5 * (h_f * np.pi * cyl_length) + 1.15 * h_f * lar
+            1.225 * h_f * lav + 0.5 * (h_f * np.pi * cabin_length) + 1.15 * h_f * lar
         ) / fus_dia
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:maximum_height"] = (
-            1.225 * b_f * lav + 0.5 * (b_f * np.pi * cyl_length) + 1.15 * b_f * lar
+            1.225 * b_f * lav + 0.5 * (b_f * np.pi * cabin_length) + 1.15 * b_f * lar
         ) / fus_dia
-        partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:length"] = (
-            np.pi * fus_dia
-        )
+        partials["data:geometry:fuselage:wet_area", "data:geometry:cabin:length"] = np.pi * fus_dia
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:front_length"] = (
-            2.45 - np.pi
-        ) * fus_dia
+            2.45 * fus_dia
+        )
         partials["data:geometry:fuselage:wet_area", "data:geometry:fuselage:rear_length"] = (
-            2.3 - np.pi
-        ) * fus_dia
+            2.3 * fus_dia
+        )
 
 
 @oad.RegisterSubmodel(SERVICE_FUSELAGE_WET_AREA, SUBMODEL_FUSELAGE_WET_AREA_FLOPS)

@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeHTMacFromWing25(om.ExplicitComponent):
+class ComputeHTMACFromWing25(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail MAC distance from the 25% wing MAC estimation with (F)ixed fuselage(L)ength.

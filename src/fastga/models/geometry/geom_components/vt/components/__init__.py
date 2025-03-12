@@ -18,7 +18,7 @@ Python package for estimations of each vertical tail geometry component.
 # flake8: noqa
 
 from .compute_vt_chords import ComputeVTChords
-from .compute_vt_mac import ComputeVTMac
+from .compute_vt_mac import ComputeVTMAC
 from .compute_vt_distance_x_local import ComputeVTMacDistanceXLocal
 from .compute_vt_distance_fd import ComputeVTMacDistanceFD
 from .compute_vt_distance_fl import ComputeVTMacDistanceFL

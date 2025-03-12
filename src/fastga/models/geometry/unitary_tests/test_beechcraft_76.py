@@ -36,7 +36,7 @@ from ..geom_components.fuselage.components import (
 from ..geom_components.ht.components import (
     ComputeHTChord,
     ComputeHTMac,
-    ComputeHTMacFromWing25,
+    ComputeHTMACFromWing25,
     ComputeHTSweep,
     ComputeHTWetArea,
     ComputeHTDistance,
@@ -50,7 +50,7 @@ from ..geom_components.propeller.components import (
 )
 from ..geom_components.vt.components import (
     ComputeVTChords,
-    ComputeVTMac,
+    ComputeVTMAC,
     ComputeVTMacDistanceFD,
     ComputeVTMacDistanceFL,
     ComputeVTMacDistanceXLocal,
@@ -112,10 +112,10 @@ def test_compute_vt_mac():
     """Tests computation of the vertical tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeVTMac()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeVTMAC()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeVTMac(), ivc)
+    problem = run_system(ComputeVTMAC(), ivc)
     length = problem.get_val("data:geometry:vertical_tail:MAC:length", units="m")
     assert length == pytest.approx(1.237, abs=1e-3)
     vt_z0 = problem.get_val("data:geometry:vertical_tail:MAC:z", units="m")
@@ -256,10 +256,10 @@ def test_compute_ht_mac_from_wing_25():
     """Tests computation of the horizontal tail mac"""
 
     # Research independent input value in .xml file and add values calculated from other modules
-    ivc = get_indep_var_comp(list_inputs(ComputeHTMacFromWing25()), __file__, XML_FILE)
+    ivc = get_indep_var_comp(list_inputs(ComputeHTMACFromWing25()), __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeHTMacFromWing25(), ivc)
+    problem = run_system(ComputeHTMACFromWing25(), ivc)
     lp_ht = problem.get_val(
         "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", units="m"
     )
@@ -319,13 +319,13 @@ def test_compute_fuselage_cabin_sizing_fd():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER)),
+        list_inputs(ComputeFuselageGeometryCabinSizingFD()),
         __file__,
         XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeFuselageGeometryCabinSizingFD(), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(2.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
@@ -353,23 +353,23 @@ def test_compute_fuselage_cabin_sizing_fl():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER)),
+        list_inputs(ComputeFuselageGeometryCabinSizingFL()),
         __file__,
         XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeFuselageGeometryCabinSizingFL(), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(2.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
-    assert fuselage_length == pytest.approx(9.396, abs=1e-3)
+    assert fuselage_length == pytest.approx(8.995, abs=1e-3)
     fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
     assert fuselage_width_max == pytest.approx(1.198, abs=1e-3)
     fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
     assert fuselage_height_max == pytest.approx(1.338, abs=1e-3)
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
-    assert fuselage_lav == pytest.approx(2.274, abs=1e-3)
+    assert fuselage_lav == pytest.approx(1.873, abs=1e-3)
     fuselage_lpax = problem.get_val("data:geometry:fuselage:PAX_length", units="m")
     assert fuselage_lpax == pytest.approx(1.5, abs=1e-3)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
@@ -845,7 +845,7 @@ def test_complete_geometry_FL():
     # noinspection PyTypeChecker
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
-    assert total_surface == pytest.approx(80.932, abs=1e-3)
+    assert total_surface == pytest.approx(79.688, abs=1e-3)
 
     problem.check_partials(compact_print=True)
 
@@ -1319,6 +1319,6 @@ def test_complete_geometry_FL_advance_wing_tank():
     # noinspection PyTypeChecker
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
-    assert total_surface == pytest.approx(80.932, abs=1e-3)
+    assert total_surface == pytest.approx(79.688, abs=1e-3)
 
     problem.check_partials(compact_print=True)

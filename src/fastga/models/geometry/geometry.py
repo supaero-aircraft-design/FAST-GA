@@ -70,7 +70,6 @@ class GeometryFixedFuselage(om.Group):
             "compute_fuselage",
             ComputeFuselageAlternate(
                 cabin_sizing=self.options[CABIN_SIZING_OPTION],
-                propulsion_id=self.options["propulsion_id"],
             ),
             promotes=["*"],
         )
@@ -141,7 +140,6 @@ class GeometryFixedTailDistance(om.Group):
             "compute_fuselage",
             ComputeFuselageLegacy(
                 cabin_sizing=self.options[CABIN_SIZING_OPTION],
-                propulsion_id=self.options["propulsion_id"],
             ),
             promotes=["*"],
         )

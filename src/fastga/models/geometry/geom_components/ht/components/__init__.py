@@ -20,7 +20,7 @@ Python package for estimations of each horizontal tail geometry component.
 from .compute_ht_chords import ComputeHTChord
 from .compute_ht_distance import ComputeHTDistance
 from .compute_ht_efficiency import ComputeHTEfficiency
-from .compute_ht_mac_from_wing_25 import ComputeHTMacFromWing25
+from .compute_ht_mac_from_wing_25 import ComputeHTMACFromWing25
 from .compute_ht_mac import ComputeHTMac
 from .compute_ht_sweep import ComputeHTSweep
 from .compute_ht_volume_coefficient import ComputeHTVolumeCoefficient

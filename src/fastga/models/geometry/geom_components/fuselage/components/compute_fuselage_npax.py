@@ -42,6 +42,6 @@ class ComputeFuselageNPAX(om.ExplicitComponent):
         seats_p_row = inputs["data:geometry:cabin:seats:passenger:count_by_row"]
 
         # noinspection PyBroadException
-        npax = np.ceil(float(npax_max) / float(seats_p_row)) * float(seats_p_row)
+        npax = np.ceil(npax_max / seats_p_row) * seats_p_row
 
         outputs["data:geometry:cabin:NPAX"] = npax

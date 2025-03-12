@@ -40,7 +40,7 @@ class ComputeWingSweep50(om.ExplicitComponent):
         sweep_0 = inputs["data:geometry:wing:sweep_0"]
 
         outputs["data:geometry:wing:sweep_50"] = np.arctan(
-            np.tan(sweep_0) - 2 / wing_ar * (1 - taper_ratio_wing) / (1 + taper_ratio_wing)
+            np.tan(sweep_0) - 2.0 / wing_ar * (1.0 - taper_ratio_wing) / (1.0 + taper_ratio_wing)
         )
 
     # pylint: disable=missing-function-docstring, unused-argument

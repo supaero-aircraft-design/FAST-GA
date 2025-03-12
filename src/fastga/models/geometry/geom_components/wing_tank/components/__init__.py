@@ -18,12 +18,12 @@ Python package that contains the module for the computation of the MFW with the 
 # flake8: noqa
 
 from .compute_wing_tank_span import ComputeWingTankSpans
-from .compute_wing_tank_y_array import ComputeWingTankYArray
 from .compute_wing_tank_chord_array import ComputeWingTankChordArray
 from .compute_wing_tank_t_c_array import ComputeWingTankRelativeThicknessArray
 from .compute_wing_tank_thickness_array import ComputeWingTankThicknessArray
-from .compute_wing_tank_width_array import ComputeWingTankWidthArray
 from .compute_wing_tank_reduced_width_array import ComputeWingTankReducedWidthArray
 from .compute_wing_tank_cross_section import ComputeWingTankCrossSectionArray
-from .compute_wing_tanks_capacity import ComputeWingTanksCapacity
 from .compute_mfw_from_wing_tanks_capacity import ComputeMFWFromWingTanksCapacity
+from .compute_wing_tank_width_array import ComputeWingTankWidthArray
+from .compute_wing_tank_y_array import ComputeWingTankYArray
+from .compute_wing_tanks_capacity import ComputeWingTanksCapacity

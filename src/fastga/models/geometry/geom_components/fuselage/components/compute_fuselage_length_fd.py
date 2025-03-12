@@ -22,7 +22,8 @@ import openmdao.api as om
 
 class ComputeFuselageLengthFD(om.ExplicitComponent):
     """
-    Computes fuselage length with fixing the distance between wing MAC and HTP MAC as constant.
+    Computes fuselage length with fixing the distance between the wing MAC and the tail MAC as
+    constant.
     """
 
     # pylint: disable=missing-function-docstring
@@ -81,7 +82,7 @@ class ComputeFuselageLengthFD(om.ExplicitComponent):
                 0.0
             )
 
-        elif (ht_lp + 0.75 * ht_length) < (vt_lp + 0.75 * vt_length):
+        else:
             partials[
                 "data:geometry:fuselage:length",
                 "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",

@@ -94,14 +94,14 @@ class ComputeAircraftLength(om.ExplicitComponent):
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:MAC:length"] = (
                 0.0
             )
-            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = 0.0
-            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:sweep_25"] = (
                 b_h * (np.tan(sweep_25_ht) ** 2.0 + 1.0) / 2.0
             )
+            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = 0.0
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:span"] = (
                 np.tan(sweep_25_ht) / 2.0
             )
+            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = 0.0
         else:
             partials[
                 "data:geometry:aircraft:length",
@@ -117,15 +117,15 @@ class ComputeAircraftLength(om.ExplicitComponent):
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:MAC:length"] = (
                 0.75
             )
-            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = (
-                b_v * (np.tan(sweep_25_vt) ** 2.0 + 1.0)
-            )
-            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = np.tan(
-                sweep_25_vt
-            )
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:sweep_25"] = (
                 0.0
             )
+            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:sweep_25"] = (
+                b_v * (np.tan(sweep_25_vt) ** 2.0 + 1.0)
+            )
             partials["data:geometry:aircraft:length", "data:geometry:horizontal_tail:span"] = 0.0
+            partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = np.tan(
+                sweep_25_vt
+            )
 
         partials["data:geometry:aircraft:length", "data:geometry:wing:MAC:at25percent:x"] = 1.0

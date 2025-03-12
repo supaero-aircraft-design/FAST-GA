@@ -42,10 +42,20 @@ class ComputeWingX(om.ExplicitComponent):
         self.declare_partials("*", "data:geometry:wing:root:virtual_chord", val=0.25)
         self.declare_partials(
             "data:geometry:wing:kink:leading_edge:x:local",
+            "data:geometry:wing:kink:chord",
+            val=-0.25,
+        )
+        self.declare_partials(
+            "data:geometry:wing:tip:leading_edge:x:local",
+            "data:geometry:wing:tip:chord",
+            val=-0.25,
+        )
+
+        self.declare_partials(
+            "data:geometry:wing:kink:leading_edge:x:local",
             [
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:kink:y",
-                "data:geometry:wing:kink:chord",
                 "data:geometry:wing:sweep_25",
             ],
             method="exact",
@@ -55,7 +65,6 @@ class ComputeWingX(om.ExplicitComponent):
             [
                 "data:geometry:wing:root:y",
                 "data:geometry:wing:tip:y",
-                "data:geometry:wing:tip:chord",
                 "data:geometry:wing:sweep_25",
             ],
             method="exact",
@@ -92,9 +101,6 @@ class ComputeWingX(om.ExplicitComponent):
         partials["data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:kink:y"] = (
             np.tan(sweep_25)
         )
-        partials[
-            "data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:kink:chord"
-        ] = -0.25
         partials["data:geometry:wing:kink:leading_edge:x:local", "data:geometry:wing:sweep_25"] = (
             y3_wing - y2_wing
         ) / np.cos(sweep_25) ** 2.0
@@ -105,9 +111,6 @@ class ComputeWingX(om.ExplicitComponent):
         partials["data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:tip:y"] = (
             np.tan(sweep_25)
         )
-        partials[
-            "data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:tip:chord"
-        ] = -0.25
         partials["data:geometry:wing:tip:leading_edge:x:local", "data:geometry:wing:sweep_25"] = (
             y4_wing - y2_wing
         ) / np.cos(sweep_25) ** 2.0

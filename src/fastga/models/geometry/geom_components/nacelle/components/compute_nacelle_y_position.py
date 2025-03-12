@@ -21,7 +21,7 @@ import openmdao.api as om
 
 class ComputeNacelleYPosition(om.ExplicitComponent):
     """
-    Estimates x position of the nacelle.
+    Estimates y position of the nacelle.
     """
 
     # pylint: disable=missing-function-docstring
@@ -73,11 +73,10 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
             y_nacelle_array = 0.0
         else:
             y_nacelle_array = 0.0
-
             warnings.warn(
-                "Propulsion layout {} not implemented in model, replaced by layout 3!".format(
-                    prop_layout
-                )
+                f"Propulsion layout {prop_layout} not implemented in model, "
+                f"replaced by layout 3!",
+                category=UserWarning,
             )
 
         outputs["data:geometry:propulsion:nacelle:y"] = y_nacelle_array

@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeFuselageNoseLengthFD(om.ExplicitComponent):
+class ComputeFuselageNoseLength(om.ExplicitComponent):
     """
     Computes nose length.
     """

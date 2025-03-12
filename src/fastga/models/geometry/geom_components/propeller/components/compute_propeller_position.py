@@ -66,13 +66,13 @@ class ComputePropellerPosition(om.ExplicitComponent):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
-        y2_wing = float(inputs["data:geometry:wing:root:y"])
-        l2_wing = float(inputs["data:geometry:wing:root:chord"])
-        l0_wing = float(inputs["data:geometry:wing:MAC:length"])
-        fa_length = float(inputs["data:geometry:wing:MAC:at25percent:x"])
-        y4_wing = float(inputs["data:geometry:wing:tip:y"])
-        l4_wing = float(inputs["data:geometry:wing:tip:chord"])
-        nacelle_length = float(inputs["data:geometry:propulsion:nacelle:length"])
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        l0_wing = inputs["data:geometry:wing:MAC:length"]
+        fa_length = inputs["data:geometry:wing:MAC:at25percent:x"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+        nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
         nacelle_x = np.array(inputs["data:geometry:propulsion:nacelle:x"])
 
         if prop_layout == 1.0:
@@ -110,11 +110,11 @@ class ComputePropellerPosition(om.ExplicitComponent):
         prop_layout = inputs["data:geometry:propulsion:engine:layout"]
         span = inputs["data:geometry:wing:span"]
         y_ratio = np.array(inputs["data:geometry:propulsion:engine:y_ratio"])
-        y2_wing = float(inputs["data:geometry:wing:root:y"])
-        l2_wing = float(inputs["data:geometry:wing:root:chord"])
-        y4_wing = float(inputs["data:geometry:wing:tip:y"])
-        l4_wing = float(inputs["data:geometry:wing:tip:chord"])
-        nacelle_length = float(inputs["data:geometry:propulsion:nacelle:length"])
+        y2_wing = inputs["data:geometry:wing:root:y"]
+        l2_wing = inputs["data:geometry:wing:root:chord"]
+        y4_wing = inputs["data:geometry:wing:tip:y"]
+        l4_wing = inputs["data:geometry:wing:tip:chord"]
+        nacelle_length = inputs["data:geometry:propulsion:nacelle:length"]
 
         if prop_layout == 1.0:
             y_nacelle_array = y_ratio * span / 2.0

@@ -23,7 +23,7 @@ import openmdao.api as om
 class ComputeHTMac(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Horizontal tail mean aerodynamic chord estimation based on (F)ixed tail (D)istance from wing.
+    Horizontal tail mean aerodynamic chord estimation.
     """
 
     # pylint: disable=missing-function-docstring

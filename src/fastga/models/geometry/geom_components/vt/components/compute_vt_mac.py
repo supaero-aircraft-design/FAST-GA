@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeVTMac(om.ExplicitComponent):
+class ComputeVTMAC(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord estimations.

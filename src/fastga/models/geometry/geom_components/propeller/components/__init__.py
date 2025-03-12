@@ -1,5 +1,5 @@
 """
-Python package for Estimation of geometric properties related to propeller.
+Python package for estimation of geometric properties related to propeller.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

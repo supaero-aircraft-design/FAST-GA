@@ -17,7 +17,7 @@ Python module for vertical tail geometry calculation, part of the geometry compo
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeVTMac, ComputeVTMacDistanceXLocal
+from .components import ComputeVTMAC, ComputeVTMacDistanceXLocal
 from .constants import (
     SERVICE_VT_CHORD,
     SERVICE_VT_SWEEP,
@@ -37,7 +37,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
         self.add_subsystem(
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("vt_mac", ComputeVTMac(), promotes=["*"])
+        self.add_subsystem("vt_mac", ComputeVTMAC(), promotes=["*"])
         self.add_subsystem("vt_mac_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",
@@ -62,7 +62,7 @@ class ComputeVerticalTailGeometryFL(om.Group):
         self.add_subsystem(
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("vt_mac", ComputeVTMac(), promotes=["*"])
+        self.add_subsystem("vt_mac", ComputeVTMAC(), promotes=["*"])
         self.add_subsystem("vt_mac_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",

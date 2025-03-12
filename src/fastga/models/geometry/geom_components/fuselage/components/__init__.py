@@ -17,12 +17,23 @@ Python package for estimations of each fuselage geometry component.
 # pylint: disable=unused-import
 # flake8: noqa
 
+from .compute_aircraft_length import ComputeAircraftLength
+from .compute_fuselage_cabin_length import ComputeFuselageCabinLength
+from .compute_fuselage_depth import ComputeFuselageDepth
 from .compute_fuselage_dimensions import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
 )
-from .compute_fuselage_wet_area import ComputeFuselageWetArea, ComputeFuselageWetAreaFLOPS
-from .compute_fuselage_depth import ComputeFuselageDepth
-from .compute_fuselage_volume import ComputeFuselageVolume
+from .compute_fuselage_length_fd import ComputeFuselageLengthFD
+from .compute_fuselage_length_fl import ComputeFuselageLengthFL
+from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
 from .compute_fuselage_master_cross_section import ComputeFuselageMajorCrossSection
+from .compute_fuselage_max_height import ComputeFuselageMaxHeight
+from .compute_fuselage_max_width import ComputeFuselageMaxWidth
+from .compute_fuselage_nose_length import ComputeFuselageNoseLength
+from .compute_fuselage_npax import ComputeFuselageNPAX
+from .compute_fuselage_pax_length import ComputeFuselagePAXLength
+from .compute_fuselage_rear_length import ComputeFuselageRearLength
+from .compute_fuselage_volume import ComputeFuselageVolume
+from .compute_fuselage_wet_area import ComputeFuselageWetArea, ComputeFuselageWetAreaFLOPS

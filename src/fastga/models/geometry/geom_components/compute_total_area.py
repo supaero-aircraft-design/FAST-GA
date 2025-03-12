@@ -50,6 +50,7 @@ class ComputeTotalArea(om.ExplicitComponent):
         self.declare_partials(
             "*",
             ["data:geometry:propulsion:nacelle:wet_area", "data:geometry:propulsion:engine:count"],
+            method="exact",
         )
 
     # pylint: disable=missing-function-docstring, unused-argument

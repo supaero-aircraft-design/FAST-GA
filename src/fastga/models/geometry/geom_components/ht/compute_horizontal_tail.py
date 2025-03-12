@@ -17,7 +17,7 @@ Python module for horizontal tail geometry calculation, part of the geometry com
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeHTMac, ComputeHTMacFromWing25, ComputeHTVolumeCoefficient
+from .components import ComputeHTMac, ComputeHTMACFromWing25, ComputeHTVolumeCoefficient
 from .constants import (
     SERVICE_HT_CHORD,
     SERVICE_HT_SWEEP,
@@ -66,7 +66,7 @@ class ComputeHorizontalTailGeometryFL(om.Group):
             "ht_chord", oad.RegisterSubmodel.get_submodel(SERVICE_HT_CHORD), promotes=["*"]
         )
         self.add_subsystem("ht_mac", ComputeHTMac(), promotes=["*"])
-        self.add_subsystem("ht_mac_from_wing_25", ComputeHTMacFromWing25(), promotes=["*"])
+        self.add_subsystem("ht_mac_from_wing_25", ComputeHTMACFromWing25(), promotes=["*"])
         self.add_subsystem(
             "ht_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_HT_SWEEP), promotes=["*"]
         )
