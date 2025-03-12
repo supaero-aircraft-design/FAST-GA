@@ -1,5 +1,5 @@
 """
-Python module for wing sweep angle calculation at 50% of the MAC , part of the wing sweep angle.
+Python module for wing sweep angle calculation at 50% of the MAC, part of the wing sweep angle.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025 ONERA & ISAE-SUPAERO
