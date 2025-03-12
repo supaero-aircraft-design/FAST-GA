@@ -1,6 +1,5 @@
 """
-Python module for tank width computation class(es), part of the advanced MFW computation
-method.
+Python module for tank width computation class(es), part of the advanced MFW computation method.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO

@@ -25,7 +25,7 @@ from ..constants import SERVICE_HT_WET_AREA, SUBMODEL_HT_WET_AREA_LEGACY
 @oad.RegisterSubmodel(SERVICE_HT_WET_AREA, SUBMODEL_HT_WET_AREA_LEGACY)
 class ComputeHTWetArea(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Horizontal tail wet area estimation"""
+    """Horizontal tail wet area estimation."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

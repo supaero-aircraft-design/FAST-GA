@@ -29,7 +29,7 @@ from .constants import (
 
 # pylint: disable=too-few-public-methods
 class ComputeHorizontalTailGeometryFD(om.Group):
-    """Horizontal tail geometry estimation based on fixed HTP/VTP distance"""
+    """Horizontal tail geometry estimation based on fixed HTP/VTP distance."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -57,7 +57,7 @@ class ComputeHorizontalTailGeometryFD(om.Group):
 
 # pylint: disable=too-few-public-methods
 class ComputeHorizontalTailGeometryFL(om.Group):
-    """Horizontal tail geometry estimation based on fixed fuselage length"""
+    """Horizontal tail geometry estimation based on fixed fuselage length."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

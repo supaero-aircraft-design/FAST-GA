@@ -26,7 +26,7 @@ from ..constants import SERVICE_HT_DISTANCE, SUBMODEL_HT_DISTANCE_LEGACY
 @oad.RegisterSubmodel(SERVICE_HT_DISTANCE, SUBMODEL_HT_DISTANCE_LEGACY)
 class ComputeHTDistance(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Horizontal tail distance estimation"""
+    """Horizontal tail distance estimation."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

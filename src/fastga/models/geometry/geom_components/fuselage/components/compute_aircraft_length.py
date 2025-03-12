@@ -44,6 +44,7 @@ class ComputeAircraftLength(om.ExplicitComponent):
         self.add_output("data:geometry:aircraft:length", units="m")
 
         self.declare_partials(of="*", wrt="*", method="exact")
+        self.declare_partials("*", "data:geometry:wing:MAC:at25percent:x", val=1.0)
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
@@ -127,5 +128,3 @@ class ComputeAircraftLength(om.ExplicitComponent):
             partials["data:geometry:aircraft:length", "data:geometry:vertical_tail:span"] = np.tan(
                 sweep_25_vt
             )
-
-        partials["data:geometry:aircraft:length", "data:geometry:wing:MAC:at25percent:x"] = 1.0

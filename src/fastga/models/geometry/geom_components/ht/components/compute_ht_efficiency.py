@@ -25,7 +25,7 @@ from ..constants import SERVICE_HT_EFFICIENCY, SUBMODEL_HT_EFFICIENCY_LEGACY
 @oad.RegisterSubmodel(SERVICE_HT_EFFICIENCY, SUBMODEL_HT_EFFICIENCY_LEGACY)
 class ComputeHTEfficiency(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Horizontal tail dynamic pressure reduction due to geometric positioning"""
+    """Horizontal tail dynamic pressure reduction due to geometric positioning."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

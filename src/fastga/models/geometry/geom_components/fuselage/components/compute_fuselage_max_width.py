@@ -23,7 +23,7 @@ class ComputeFuselageMaxWidth(om.ExplicitComponent):
     """
     Computes maximum cabin width.
 
-    Cabin width considered is for side by side seats and it is computed based on
+    Cabin width considered is for side by side seats, and it is computed based on
     cylindrical fuselage.
     """
 

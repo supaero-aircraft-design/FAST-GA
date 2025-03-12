@@ -1,5 +1,5 @@
 """
-Python module for fuselage major cross-section calculation, part of the fuselage dimension.
+Python module for fuselage master cross-section calculation, part of the fuselage dimension.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

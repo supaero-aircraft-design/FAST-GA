@@ -29,7 +29,7 @@ from .constants import (
 
 # pylint: disable=too-few-public-methods
 class ComputeVerticalTailGeometryFD(om.Group):
-    """Vertical tail geometry estimation based on fixed HTP/VTP distance"""
+    """Vertical tail geometry estimation based on fixed HTP/VTP distance."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

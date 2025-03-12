@@ -68,7 +68,7 @@ class ComputeFuselageAlternate(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "fuselage_major_cross_section",
+            "fuselage_master_cross_section",
             ComputeFuselageMasterCrossSection(),
             promotes=["*"],
         )
@@ -114,7 +114,7 @@ class ComputeFuselageLegacy(om.Group):
             promotes=["*"],
         )
         self.add_subsystem(
-            "fuselage_major_cross_section",
+            "fuselage_master_cross_section",
             ComputeFuselageMasterCrossSection(),
             promotes=["*"],
         )

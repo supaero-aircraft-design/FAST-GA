@@ -22,7 +22,7 @@ import openmdao.api as om
 class ComputeFuselageRearLength(om.ExplicitComponent):
     """
     Computes fuselage rear length, this calculation is only applied while calculating fuselage
-    geometry with constant distance between wing MAC and HTP MAC.
+    geometry with constant distance between wing MAC and tail MAC.
     """
 
     # pylint: disable=missing-function-docstring

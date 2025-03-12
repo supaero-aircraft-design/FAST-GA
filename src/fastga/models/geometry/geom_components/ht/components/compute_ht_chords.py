@@ -25,7 +25,7 @@ from ..constants import SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY
 @oad.RegisterSubmodel(SERVICE_HT_CHORD, SUBMODEL_HT_CHORD_LEGACY)
 class ComputeHTChord(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
-    """Horizontal tail chords and span estimation"""
+    """Horizontal tail chords and span estimation."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
