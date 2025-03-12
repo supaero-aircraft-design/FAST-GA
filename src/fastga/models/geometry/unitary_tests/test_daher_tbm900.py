@@ -304,13 +304,13 @@ def test_compute_fuselage_cabin_sizing_fd():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER)),
+        list_inputs(ComputeFuselageGeometryCabinSizingFD()),
         __file__,
         XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageGeometryCabinSizingFD(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeFuselageGeometryCabinSizingFD(), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(4.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
@@ -357,23 +357,23 @@ def test_compute_fuselage_cabin_sizing_fl():
 
     # Research independent input value in .xml file and add values calculated from other modules
     ivc = get_indep_var_comp(
-        list_inputs(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER)),
+        list_inputs(ComputeFuselageGeometryCabinSizingFL()),
         __file__,
         XML_FILE,
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeFuselageGeometryCabinSizingFL(propulsion_id=ENGINE_WRAPPER), ivc)
+    problem = run_system(ComputeFuselageGeometryCabinSizingFL(), ivc)
     npax = problem.get_val("data:geometry:cabin:NPAX")
     assert npax == pytest.approx(4.0, abs=1)
     fuselage_length = problem.get_val("data:geometry:fuselage:length", units="m")
-    assert fuselage_length == pytest.approx(11.109, abs=1e-3)
+    assert fuselage_length == pytest.approx(11.809, abs=1e-3)
     fuselage_width_max = problem.get_val("data:geometry:fuselage:maximum_width", units="m")
     assert fuselage_width_max == pytest.approx(1.3568, abs=1e-3)
     fuselage_height_max = problem.get_val("data:geometry:fuselage:maximum_height", units="m")
     assert fuselage_height_max == pytest.approx(1.4968, abs=1e-3)
     fuselage_lav = problem.get_val("data:geometry:fuselage:front_length", units="m")
-    assert fuselage_lav == pytest.approx(2.5649, abs=1e-3)
+    assert fuselage_lav == pytest.approx(3.2649, abs=1e-3)
     fuselage_lpax = problem.get_val("data:geometry:fuselage:PAX_length", units="m")
     assert fuselage_lpax == pytest.approx(3.2, abs=1e-3)
     fuselage_lcabin = problem.get_val("data:geometry:cabin:length", units="m")
@@ -824,6 +824,6 @@ def test_complete_geometry_FL():
     # noinspection PyTypeChecker
     problem = run_system(GeometryFixedFuselage(propulsion_id=ENGINE_WRAPPER), ivc)
     total_surface = problem.get_val("data:geometry:aircraft:wet_area", units="m**2")
-    assert total_surface == pytest.approx(98.261, abs=1e-3)
+    assert total_surface == pytest.approx(100.705, abs=1e-3)
 
     problem.check_partials(compact_print=True)
