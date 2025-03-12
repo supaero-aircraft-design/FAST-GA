@@ -1,6 +1,6 @@
 """
-Python module for the calculation of the effect from presence of propeller, part of the geometry
-component.
+Python module for the calculation of propeller position and effective advance ratio, part of the
+geometry component.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
