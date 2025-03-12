@@ -19,7 +19,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeFuselageMajorCrossSection(om.ExplicitComponent):
+class ComputeFuselageMasterCrossSection(om.ExplicitComponent):
     """
     Computes master cross-section of the fuselage by multiplying the maximum height and width of
     fuselage.

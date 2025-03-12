@@ -28,7 +28,7 @@ from .compute_fuselage_dimensions import (
 from .compute_fuselage_length_fd import ComputeFuselageLengthFD
 from .compute_fuselage_length_fl import ComputeFuselageLengthFL
 from .compute_fuselage_luggage_length import ComputeFuselageLuggageLength
-from .compute_fuselage_master_cross_section import ComputeFuselageMajorCrossSection
+from .compute_fuselage_master_cross_section import ComputeFuselageMasterCrossSection
 from .compute_fuselage_max_height import ComputeFuselageMaxHeight
 from .compute_fuselage_max_width import ComputeFuselageMaxWidth
 from .compute_fuselage_nose_length import ComputeFuselageNoseLength

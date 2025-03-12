@@ -23,7 +23,7 @@ from .components import (
     ComputeFuselageGeometryBasic,
     ComputeFuselageGeometryCabinSizingFD,
     ComputeFuselageGeometryCabinSizingFL,
-    ComputeFuselageMajorCrossSection,
+    ComputeFuselageMasterCrossSection,
 )
 from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVICE_FUSELAGE_VOLUME
 
@@ -69,7 +69,7 @@ class ComputeFuselageAlternate(om.Group):
         )
         self.add_subsystem(
             "fuselage_major_cross_section",
-            ComputeFuselageMajorCrossSection(),
+            ComputeFuselageMasterCrossSection(),
             promotes=["*"],
         )
 
@@ -115,6 +115,6 @@ class ComputeFuselageLegacy(om.Group):
         )
         self.add_subsystem(
             "fuselage_major_cross_section",
-            ComputeFuselageMajorCrossSection(),
+            ComputeFuselageMasterCrossSection(),
             promotes=["*"],
         )
