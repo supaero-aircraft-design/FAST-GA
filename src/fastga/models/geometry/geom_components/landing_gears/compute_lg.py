@@ -21,7 +21,6 @@ import fastoad.api as oad
 from ...constants import SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY
 
 
-# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_LANDING_GEAR_GEOMETRY, SUBMODEL_LANDING_GEAR_GEOMETRY_LEGACY)
 class ComputeLGGeometry(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
@@ -40,9 +39,14 @@ class ComputeLGGeometry(om.ExplicitComponent):
         self.add_output("data:geometry:landing_gear:y", units="m")
 
         self.declare_partials(
-            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", method="exact"
+            "data:geometry:landing_gear:height", "data:geometry:propeller:diameter", val=0.41
         )
-        self.declare_partials("data:geometry:landing_gear:y", "*", method="exact")
+        self.declare_partials(
+            "data:geometry:landing_gear:y", "data:geometry:propeller:diameter", val=0.492
+        )
+        self.declare_partials(
+            "data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width", val=0.5
+        )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
@@ -54,10 +58,3 @@ class ComputeLGGeometry(om.ExplicitComponent):
 
         outputs["data:geometry:landing_gear:height"] = lg_height
         outputs["data:geometry:landing_gear:y"] = y_lg
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute_partials, not all arguments are used
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["data:geometry:landing_gear:height", "data:geometry:propeller:diameter"] = 0.41
-        partials["data:geometry:landing_gear:y", "data:geometry:propeller:diameter"] = 0.41 * 1.2
-        partials["data:geometry:landing_gear:y", "data:geometry:fuselage:maximum_width"] = 0.5

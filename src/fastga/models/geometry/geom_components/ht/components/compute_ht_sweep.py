@@ -28,7 +28,7 @@ from ..constants import SERVICE_HT_SWEEP, SUBMODEL_HT_SWEEP_LEGACY
 @oad.RegisterSubmodel(SERVICE_HT_SWEEP, SUBMODEL_HT_SWEEP_LEGACY)
 class ComputeHTSweep(om.Group):
     # TODO: Document equations. Cite sources
-    """Horizontal tail sweeps and aspect ratio estimation"""
+    """Horizontal tail sweeps and aspect ratio estimation."""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
