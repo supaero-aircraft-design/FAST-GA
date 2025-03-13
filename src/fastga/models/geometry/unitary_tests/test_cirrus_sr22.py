@@ -810,7 +810,7 @@ def test_complete_geometry_FD():
 
 
 def test_complete_geometry_FL():
-    """Run computation of all models for fixed length hypothesis"""
+    """Run computation of all models for fixed rear length hypothesis"""
 
     # Research independent input value in .xml file and add values calculated from other modules
     # noinspection PyTypeChecker

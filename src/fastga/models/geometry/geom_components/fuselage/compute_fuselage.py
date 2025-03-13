@@ -31,7 +31,7 @@ from .constants import SERVICE_FUSELAGE_WET_AREA, SERVICE_FUSELAGE_DEPTH, SERVIC
 # pylint: disable=too-few-public-methods
 class ComputeFuselageAlternate(om.Group):
     """
-    Fuselage geometry calculations with fixed fuselage length cabin sizing.
+    Fuselage geometry calculations with fixed rear fuselage length cabin sizing.
     """
 
     # pylint: disable=missing-function-docstring

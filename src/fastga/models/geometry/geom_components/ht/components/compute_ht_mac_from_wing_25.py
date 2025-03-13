@@ -1,6 +1,6 @@
 """
 Python module for horizontal tail MAC distance from the 25% wing MAC calculation with fixed
-fuselage length, part of the horizontal tail geometry.
+rear fuselage length, part of the horizontal tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -23,7 +23,8 @@ import openmdao.api as om
 class ComputeHTMACFromWing25(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Horizontal tail MAC distance from the 25% wing MAC estimation with (F)ixed fuselage(L)ength.
+    Horizontal tail MAC distance from the 25% wing MAC estimation with (F)ixed rear fuselage(
+    L)ength.
     """
 
     # pylint: disable=missing-function-docstring

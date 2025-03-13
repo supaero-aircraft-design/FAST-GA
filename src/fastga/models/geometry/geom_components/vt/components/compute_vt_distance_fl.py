@@ -1,6 +1,6 @@
 """
-Python module for the calculation of vertical tail distance from 25% wing MAC with fixed fuselage
-length, part of the vertical tail geometry.
+Python module for the calculation of vertical tail distance from 25% wing MAC with fixed rear
+fuselage length, part of the vertical tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -27,7 +27,8 @@ from ..constants import SERVICE_VT_DISTANCE_FL, SUBMODEL_VT_DISTANCE_FL
 class ComputeVTMacDistanceFL(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
-    Vertical tail mean aerodynamic chord distance estimation based on (F)ixed fuselage (L)ength (VTP
+    Vertical tail mean aerodynamic chord distance estimation based on (F)ixed rear fuselage (
+    L)ength (VTP
     distance computed).
     """
 

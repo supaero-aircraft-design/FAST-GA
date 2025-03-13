@@ -54,7 +54,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
 
 # pylint: disable=too-few-public-methods
 class ComputeVerticalTailGeometryFL(om.Group):
-    """Vertical tail geometry estimation based on fixed fuselage length"""
+    """Vertical tail geometry estimation based on fixed rear fuselage length"""
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
