@@ -51,7 +51,7 @@ class ComputeWingB50(om.ExplicitComponent):
         span = inputs["data:geometry:wing:span"]
         sweep_50 = inputs["data:geometry:wing:sweep_50"]
 
-        partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = 1 / np.cos(sweep_50)
+        partials["data:geometry:wing:b_50", "data:geometry:wing:span"] = 1.0 / np.cos(sweep_50)
         partials["data:geometry:wing:b_50", "data:geometry:wing:sweep_50"] = (
             span * np.tan(sweep_50) / np.cos(sweep_50)
         )

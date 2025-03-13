@@ -59,7 +59,7 @@ class ComputeWingSweep100Outer(om.ExplicitComponent):
         l2_wing = inputs["data:geometry:wing:root:chord"]
         l4_wing = inputs["data:geometry:wing:tip:chord"]
 
-        common_denominator = (x4_wing + l4_wing - l2_wing) ** 2 + (y4_wing - y2_wing) ** 2
+        common_denominator = (x4_wing + l4_wing - l2_wing) ** 2.0 + (y4_wing - y2_wing) ** 2.0
 
         partials[
             "data:geometry:wing:sweep_100_outer", "data:geometry:wing:tip:leading_edge:x:local"
