@@ -17,7 +17,7 @@ Python module for vertical tail geometry calculation, part of the geometry compo
 import openmdao.api as om
 import fastoad.api as oad
 
-from .components import ComputeVTMAC, ComputeVTMacDistanceXLocal
+from .components import ComputeVTMAC, ComputeVTMACDistanceXLocal
 from .constants import (
     SERVICE_VT_CHORD,
     SERVICE_VT_SWEEP,
@@ -38,7 +38,7 @@ class ComputeVerticalTailGeometryFD(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_MAC", ComputeVTMAC(), promotes=["*"])
-        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
+        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",
             oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FD),
@@ -63,7 +63,7 @@ class ComputeVerticalTailGeometryFL(om.Group):
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
         self.add_subsystem("vt_MAC", ComputeVTMAC(), promotes=["*"])
-        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMacDistanceXLocal(), promotes=["*"])
+        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",
             oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FL),

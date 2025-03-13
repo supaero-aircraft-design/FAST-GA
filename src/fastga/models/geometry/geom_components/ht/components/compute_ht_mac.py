@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeHTMac(om.ExplicitComponent):
+class ComputeHTMAC(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Horizontal tail mean aerodynamic chord estimation.

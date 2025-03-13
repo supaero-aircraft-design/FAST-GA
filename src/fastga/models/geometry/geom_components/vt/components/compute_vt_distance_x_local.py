@@ -20,7 +20,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeVTMacDistanceXLocal(om.ExplicitComponent):
+class ComputeVTMACDistanceXLocal(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord X-position estimation of vertical tail w.r.t. leading

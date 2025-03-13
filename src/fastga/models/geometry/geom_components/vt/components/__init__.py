@@ -19,8 +19,8 @@ Python package for estimations of each vertical tail geometry component.
 
 from .compute_vt_chords import ComputeVTChords
 from .compute_vt_mac import ComputeVTMAC
-from .compute_vt_distance_x_local import ComputeVTMacDistanceXLocal
-from .compute_vt_distance_fd import ComputeVTMacDistanceFD
-from .compute_vt_distance_fl import ComputeVTMacDistanceFL
+from .compute_vt_distance_x_local import ComputeVTMACDistanceXLocal
+from .compute_vt_distance_fd import ComputeVTMACDistanceFD
+from .compute_vt_distance_fl import ComputeVTMACDistanceFL
 from .compute_vt_sweep import ComputeVTSweep
 from .compute_vt_wet_area import ComputeVTWetArea

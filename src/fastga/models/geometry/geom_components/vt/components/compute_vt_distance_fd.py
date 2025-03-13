@@ -24,7 +24,7 @@ from ..constants import SERVICE_VT_DISTANCE_FD, SUBMODEL_VT_DISTANCE_FD
 
 
 @oad.RegisterSubmodel(SERVICE_VT_DISTANCE_FD, SUBMODEL_VT_DISTANCE_FD)
-class ComputeVTMacDistanceFD(om.ExplicitComponent):
+class ComputeVTMACDistanceFD(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Vertical tail mean aerodynamic chord distance estimation based on (F)ixed tail (D)istance

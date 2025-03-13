@@ -21,10 +21,9 @@ import openmdao.api as om
 
 
 class ComputeHTMACFromWing25(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
     """
-    Horizontal tail MAC distance from the 25% wing MAC estimation with (F)ixed rear fuselage(
-    L)ength.
+    Horizontal tail MAC distance from the 25% wing MAC estimation with (F)ixed rear fuselage
+    (L)ength.
     """
 
     # pylint: disable=missing-function-docstring
