@@ -11,8 +11,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# pylint: disable=unused-import
-# flake8: noqa
 
 from .analysis_and_plots import (
     aircraft_geometry_plot,
@@ -35,3 +33,21 @@ from .propeller.analysis_and_plots_propeller import (
     propeller_efficiency_map_plot,
     propeller_coeff_map_plot,
 )
+
+__all__ = [
+    "aircraft_geometry_plot",
+    "evolution_diagram",
+    "compressibility_effects_diagram",
+    "cl_wing_diagram",
+    "drag_breakdown_diagram",
+    "aircraft_polar",
+    "cg_lateral_diagram",
+    "mass_breakdown_bar_plot",
+    "mass_breakdown_sun_plot",
+    "payload_range",
+    "force_repartition_diagram",
+    "rbm_diagram",
+    "shear_diagram",
+    "propeller_efficiency_map_plot",
+    "propeller_coeff_map_plot",
+]
