@@ -34,7 +34,6 @@ from .components import (
 )
 
 
-# pylint: disable=too-few-public-methods
 @oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_ADVANCED)
 class ComputeMFWAdvanced(om.Group):
     """
