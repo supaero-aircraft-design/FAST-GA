@@ -37,7 +37,7 @@ class ComputeHorizontalTailGeometryFD(om.Group):
         self.add_subsystem(
             "ht_chord", oad.RegisterSubmodel.get_submodel(SERVICE_HT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("ht_MAC", ComputeHTMAC(), promotes=["*"])
+        self.add_subsystem("ht_mac", ComputeHTMAC(), promotes=["*"])
         self.add_subsystem(
             "ht_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_HT_SWEEP), promotes=["*"]
         )
@@ -65,8 +65,8 @@ class ComputeHorizontalTailGeometryFL(om.Group):
         self.add_subsystem(
             "ht_chord", oad.RegisterSubmodel.get_submodel(SERVICE_HT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("ht_MAC", ComputeHTMAC(), promotes=["*"])
-        self.add_subsystem("ht_MAC_from_wing_25", ComputeHTMACFromWing25(), promotes=["*"])
+        self.add_subsystem("ht_mac", ComputeHTMAC(), promotes=["*"])
+        self.add_subsystem("ht_mac_from_wing_25", ComputeHTMACFromWing25(), promotes=["*"])
         self.add_subsystem(
             "ht_sweep", oad.RegisterSubmodel.get_submodel(SERVICE_HT_SWEEP), promotes=["*"]
         )

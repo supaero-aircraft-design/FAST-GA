@@ -37,8 +37,8 @@ class ComputeVerticalTailGeometryFD(om.Group):
         self.add_subsystem(
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("vt_MAC", ComputeVTMAC(), promotes=["*"])
-        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
+        self.add_subsystem("vt_mac", ComputeVTMAC(), promotes=["*"])
+        self.add_subsystem("vt_mac_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",
             oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FD),
@@ -62,8 +62,8 @@ class ComputeVerticalTailGeometryFL(om.Group):
         self.add_subsystem(
             "vt_chords", oad.RegisterSubmodel.get_submodel(SERVICE_VT_CHORD), promotes=["*"]
         )
-        self.add_subsystem("vt_MAC", ComputeVTMAC(), promotes=["*"])
-        self.add_subsystem("vt_MAC_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
+        self.add_subsystem("vt_mac", ComputeVTMAC(), promotes=["*"])
+        self.add_subsystem("vt_mac_x_local_distance", ComputeVTMACDistanceXLocal(), promotes=["*"])
         self.add_subsystem(
             "vt_distance",
             oad.RegisterSubmodel.get_submodel(SERVICE_VT_DISTANCE_FL),
