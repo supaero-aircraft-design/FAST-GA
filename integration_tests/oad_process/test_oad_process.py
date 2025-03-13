@@ -34,6 +34,8 @@ NOTEBOOKS_PATH = PATH[0] + os.path.sep
 for folder in PATH[1 : len(PATH) - 3]:
     NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, folder)
 NOTEBOOKS_PATH = pth.join(NOTEBOOKS_PATH, "notebooks")
+SERVICE_MFW = "service.geometry.mfw"
+SUBMODEL_MFW_ADVANCED = "fastga.submodel.geometry.mfw.advanced"
 
 
 @pytest.fixture(scope="module")
@@ -439,10 +441,7 @@ def test_oad_process_advance_wing_tank(cleanup):
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
 
-    assert (
-        oad.RegisterSubmodel.active_models["service.geometry.mfw"]
-        == "fastga.submodel.geometry.mfw.advanced"
-    )
+    assert oad.RegisterSubmodel.active_models[SERVICE_MFW] == SUBMODEL_MFW_ADVANCED
     # noinspection PyTypeChecker
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 252.0, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
