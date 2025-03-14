@@ -1,6 +1,9 @@
-"""Estimation of wing Zs."""
+"""
+Python module for distance calculation between fuselage center line and the wing, part of the
+wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2023  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,24 +16,24 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-
 import numpy as np
-
 import openmdao.api as om
 import fastoad.api as oad
 
-from fastga.models.geometry.geom_components.wing.constants import SUBMODEL_WING_HEIGHT
+from ..constants import SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY
 
 _LOGGER = logging.getLogger(__name__)
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_HEIGHT, "fastga.submodel.geometry.wing.height.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_HEIGHT, SUBMODEL_WING_HEIGHT_LEGACY)
 class ComputeWingZ(om.ExplicitComponent):
     """
-    Computation of the distance between the fuselage center line and the wing. Based on simple
-    geometric considerations.
+    Computation of the distance between the fuselage center line and the wing , obtained from
+    :cite:`supaero:2014`. It's based on simple geometric considerations.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:tip:y", val=np.nan, units="m")
         self.add_input("data:geometry:wing:root:y", val=np.nan, units="m")
@@ -76,7 +79,10 @@ class ComputeWingZ(om.ExplicitComponent):
             ],
             method="exact",
         )
+        self.declare_partials(of="*", wrt="data:geometry:wing_configuration", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
@@ -129,6 +135,8 @@ class ComputeWingZ(om.ExplicitComponent):
         outputs["data:geometry:wing:root:z"] = z2_wing
         outputs["data:geometry:wing:tip:z"] = z4_wing
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         y2_wing = inputs["data:geometry:wing:root:y"]
         y4_wing = inputs["data:geometry:wing:tip:y"]
@@ -140,22 +148,19 @@ class ComputeWingZ(om.ExplicitComponent):
 
         dihedral_angle = inputs["data:geometry:wing:dihedral"]
 
+        partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = np.tan(dihedral_angle)
+        partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:y"] = -np.tan(dihedral_angle)
+        partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = (
+            y2_wing - y4_wing
+        ) / np.cos(dihedral_angle) ** 2.0
+
         if wing_config == 2.0:
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:thickness_ratio"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:wing:root:chord"] = 0.0
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = -np.tan(
-                dihedral_angle
-            )
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:y"] = np.tan(
-                dihedral_angle
-            )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:thickness_ratio"] = 0.0
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:chord"] = 0.0
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
-                y4_wing - y2_wing
-            )
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.0
 
         elif wing_config == 3.0:
@@ -167,20 +172,11 @@ class ComputeWingZ(om.ExplicitComponent):
             )
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = np.tan(
-                dihedral_angle
-            )
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:y"] = -np.tan(
-                dihedral_angle
-            )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:thickness_ratio"] = (
                 0.5 * l4_wing
             )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:chord"] = (
                 0.5 * tip_thickness_ratio
-            )
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
-                y4_wing - y2_wing
             )
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = -0.5
 
@@ -193,19 +189,10 @@ class ComputeWingZ(om.ExplicitComponent):
             )
             partials["data:geometry:wing:root:z", "data:geometry:fuselage:maximum_height"] = 0.5
 
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:root:y"] = np.tan(
-                dihedral_angle
-            )
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:y"] = -np.tan(
-                dihedral_angle
-            )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:thickness_ratio"] = (
                 -0.5 * l4_wing
             )
             partials["data:geometry:wing:tip:z", "data:geometry:wing:tip:chord"] = (
                 -0.5 * tip_thickness_ratio
-            )
-            partials["data:geometry:wing:tip:z", "data:geometry:wing:dihedral"] = -(
-                y4_wing - y2_wing
             )
             partials["data:geometry:wing:tip:z", "data:geometry:fuselage:maximum_height"] = 0.5

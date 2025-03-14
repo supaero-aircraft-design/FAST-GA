@@ -1,6 +1,9 @@
-"""Estimation of max fuel weight."""
+"""
+Python module for maximum fuel weight calculation with detailed approach, part of the geometry
+component.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2024  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,9 +18,9 @@
 import openmdao.api as om
 import fastoad.api as oad
 
-from ...constants import SUBMODEL_MFW
+from ...constants import SERVICE_MFW, SUBMODEL_MFW_ADVANCED
 
-from .wing_tank_components import (
+from .components import (
     ComputeWingTankSpans,
     ComputeWingTankYArray,
     ComputeWingTankChordArray,
@@ -31,7 +34,7 @@ from .wing_tank_components import (
 )
 
 
-@oad.RegisterSubmodel(SUBMODEL_MFW, "fastga.submodel.geometry.mfw.advanced")
+@oad.RegisterSubmodel(SERVICE_MFW, SUBMODEL_MFW_ADVANCED)
 class ComputeMFWAdvanced(om.Group):
     """
     Max fuel weight estimation based on :cite:`jenkinson:2003` p.65. It discretizes the fuel tank in
@@ -56,6 +59,8 @@ class ComputeMFWAdvanced(om.Group):
             "advanced model. Reducing that number can improve convergence.",
         )
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         nb_point_wing = self.options["number_points_wing_mfw"]
 

@@ -3,7 +3,7 @@ Python module for MFW from tank volume computation class(es), part of the advanc
 method.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ method.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import warnings
-
 import numpy as np
 import openmdao.api as om
 
@@ -41,17 +40,8 @@ class ComputeMFWFromWingTanksCapacity(om.ExplicitComponent):
 
         self.add_output("data:weight:aircraft:MFW", units="kg", val=500.0)
 
-        self.declare_partials(
-            of="data:weight:aircraft:MFW",
-            wrt="data:geometry:propulsion:tank:capacity",
-            method="exact",
-        )
-        self.declare_partials(
-            of="data:weight:aircraft:MFW",
-            wrt="data:propulsion:fuel_type",
-            method="exact",
-            val=0.0,
-        )
+        self.declare_partials(of="*", wrt="data:geometry:propulsion:tank:capacity", method="exact")
+        self.declare_partials("*", "data:propulsion:fuel_type", method="fd")
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute

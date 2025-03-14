@@ -1,6 +1,8 @@
-"""Constants for the horizontal tail geometry submodels."""
+"""
+Python module for storing constants for the horizontal tail geometry submodels.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,5 +14,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_PROPELLER_POSITION = "submodel.geometry.propeller.position"
-SUBMODEL_PROPELLER_INSTALLATION = "submodel.geometry.propeller.installation_effect"
+SERVICE_PROPELLER_POSITION = "service.geometry.propeller.position"
+SERVICE_PROPELLER_INSTALLATION = "service.geometry.propeller.installation_effect"
+
+SUBMODEL_PROPELLER_POSITION_LEGACY = "fastga.submodel.geometry.propeller.position.legacy"
+SUBMODEL_PROPELLER_INSTALLATION_LEGACY = (
+    "fastga.submodel.geometry.propeller.installation_effect.legacy"
+)

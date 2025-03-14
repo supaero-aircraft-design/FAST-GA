@@ -1,6 +1,8 @@
-"""Constants for the vertical tail geometry submodels."""
+"""
+Python module for storing constants for the vertical tail geometry submodels.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,8 +14,14 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_VT_CHORD = "submodel.geometry.vertical_tail.chord"
-SUBMODEL_VT_POSITION_FD = "submodel.geometry.vertical_tail.position.fd"
-SUBMODEL_VT_POSITION_FL = "submodel.geometry.vertical_tail.position.fl"
-SUBMODEL_VT_SWEEP = "submodel.geometry.vertical_tail.sweep"
-SUBMODEL_VT_WET_AREA = "submodel.geometry.vertical_tail.wet_area"
+SERVICE_VT_CHORD = "service.geometry.vertical_tail.chord"
+SERVICE_VT_SWEEP = "service.geometry.vertical_tail.sweep"
+SERVICE_VT_WET_AREA = "service.geometry.vertical_tail.wet_area"
+SERVICE_VT_DISTANCE_FD = "service.geometry.vertical_tail.distance.fd"
+SERVICE_VT_DISTANCE_FL = "service.geometry.vertical_tail.distance.fl"
+
+SUBMODEL_VT_CHORD_LEGACY = "fastga.submodel.geometry.vertical_tail.chord.legacy"
+SUBMODEL_VT_SWEEP_LEGACY = "fastga.submodel.geometry.vertical_tail.sweep.legacy"
+SUBMODEL_VT_DISTANCE_FD = "fastga.submodel.geometry.vertical_tail.distance.fd.legacy"
+SUBMODEL_VT_DISTANCE_FL = "fastga.submodel.geometry.vertical_tail.distance.fl.legacy"
+SUBMODEL_VT_WET_AREA_LEGACY = "fastga.submodel.geometry.vertical_tail.wet_area.legacy"

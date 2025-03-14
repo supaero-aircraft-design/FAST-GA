@@ -1,8 +1,8 @@
 """
-Estimation of vertical tail geometry (components)
+Python package for estimations of each vertical tail geometry component.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,9 @@ Estimation of vertical tail geometry (components)
 # flake8: noqa
 
 from .compute_vt_chords import ComputeVTChords
-from .compute_vt_mac import ComputeVTMacFD, ComputeVTMacFL
-from .compute_vt_distance import ComputeVTMacPositionFD, ComputeVTMacPositionFL
+from .compute_vt_mac import ComputeVTMAC
+from .compute_vt_distance_x_local import ComputeVTMACDistanceXLocal
+from .compute_vt_distance_fd import ComputeVTMACDistanceFD
+from .compute_vt_distance_fl import ComputeVTMACDistanceFL
 from .compute_vt_sweep import ComputeVTSweep
 from .compute_vt_wet_area import ComputeVTWetArea

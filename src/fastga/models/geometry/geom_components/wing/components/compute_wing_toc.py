@@ -1,6 +1,9 @@
-"""Estimation of wing ToC."""
+"""
+Python module for wing thickness ratio calculations for different positions, part of the wing
+geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,20 +17,17 @@
 
 import numpy as np
 import openmdao.api as om
-
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_THICKNESS_RATIO
+from ..constants import SERVICE_WING_THICKNESS_RATIO, SUBMODEL_WING_THICKNESS_RATIO_LEGACY
 
 
-# TODO: computes relative thickness and generates profiles --> decompose
-@oad.RegisterSubmodel(
-    SUBMODEL_WING_THICKNESS_RATIO, "fastga.submodel.geometry.wing.thickness_ratio.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_WING_THICKNESS_RATIO, SUBMODEL_WING_THICKNESS_RATIO_LEGACY)
 class ComputeWingToc(om.ExplicitComponent):
-    # TODO: Document hypothesis. Cite sources
-    """Wing ToC estimation."""
+    """Wing ToC estimation, obtained from :cite:`supaero:2014`."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:thickness_ratio", val=np.nan)
 
@@ -35,8 +35,12 @@ class ComputeWingToc(om.ExplicitComponent):
         self.add_output("data:geometry:wing:kink:thickness_ratio")
         self.add_output("data:geometry:wing:tip:thickness_ratio")
 
-        self.declare_partials("*", "*", method="fd")
+        self.declare_partials("data:geometry:wing:root:thickness_ratio", "*", val=1.24)
+        self.declare_partials("data:geometry:wing:kink:thickness_ratio", "*", val=0.94)
+        self.declare_partials("data:geometry:wing:tip:thickness_ratio", "*", val=0.86)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         el_aero = inputs["data:geometry:wing:thickness_ratio"]
 

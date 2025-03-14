@@ -1,9 +1,9 @@
 """
-Estimation of horizontal tail sweeps and aspect ratio.
+Python module for horizontal tail sweep angle calculations, part of the horizontal tail geometry.
 """
 
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -15,138 +15,38 @@ Estimation of horizontal tail sweeps and aspect ratio.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_HT_SWEEP
+from fastga.models.geometry.geom_components.ht.components.compute_ht_sweep_0 import ComputeHTSweep0
+from .compute_ht_sweep_50 import ComputeHTSweep50
+from .compute_ht_sweep_100 import ComputeHTSweep100
+from ..constants import SERVICE_HT_SWEEP, SUBMODEL_HT_SWEEP_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_HT_SWEEP, "fastga.submodel.geometry.horizontal_tail.sweep.legacy")
-class ComputeHTSweep(ExplicitComponent):
+# pylint: disable=too-few-public-methods
+@oad.RegisterSubmodel(SERVICE_HT_SWEEP, SUBMODEL_HT_SWEEP_LEGACY)
+class ComputeHTSweep(om.Group):
     # TODO: Document equations. Cite sources
-    """Horizontal tail sweeps and aspect ratio estimation"""
+    """Horizontal tail sweeps and aspect ratio estimation."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:tip:chord", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:span", val=np.nan, units="m")
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:taper_ratio", val=np.nan)
-
-        self.add_output("data:geometry:horizontal_tail:sweep_0", units="rad")
-        self.add_output("data:geometry:horizontal_tail:sweep_50", units="rad")
-        self.add_output("data:geometry:horizontal_tail:sweep_100", units="rad")
-
-        self.declare_partials(
-            of="data:geometry:horizontal_tail:sweep_0",
-            wrt=[
-                "data:geometry:horizontal_tail:span",
-                "data:geometry:horizontal_tail:root:chord",
-                "data:geometry:horizontal_tail:tip:chord",
-                "data:geometry:horizontal_tail:sweep_25",
-            ],
-            method="exact",
-        )
-        # TODO: Too time consuming for now to compute the partial derivative by hand
-        self.declare_partials(
-            of="data:geometry:horizontal_tail:sweep_50",
-            wrt=[
-                "data:geometry:horizontal_tail:span",
-                "data:geometry:horizontal_tail:root:chord",
-                "data:geometry:horizontal_tail:tip:chord",
-                "data:geometry:horizontal_tail:sweep_25",
-                "data:geometry:horizontal_tail:aspect_ratio",
-                "data:geometry:horizontal_tail:taper_ratio",
-            ],
-            method="fd",
-        )
-        self.declare_partials(
-            of="data:geometry:horizontal_tail:sweep_100",
-            wrt=[
-                "data:geometry:horizontal_tail:span",
-                "data:geometry:horizontal_tail:root:chord",
-                "data:geometry:horizontal_tail:tip:chord",
-                "data:geometry:horizontal_tail:sweep_25",
-            ],
-            method="exact",
+        self.add_subsystem(
+            "HT_sweep_0",
+            ComputeHTSweep0(),
+            promotes=["*"],
         )
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        b_h = inputs["data:geometry:horizontal_tail:span"]
-        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
-        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
-        sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
-        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
-        taper_ht = inputs["data:geometry:horizontal_tail:taper_ratio"]
-
-        half_span = b_h / 2.0
-        # TODO: The unit conversion can be handled by OpenMDAO
-        sweep_0 = np.pi / 2 - np.arctan2(
-            half_span, (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
+        self.add_subsystem(
+            "HT_sweep_50",
+            ComputeHTSweep50(),
+            promotes=["*"],
         )
 
-        sweep_50 = np.arctan(np.tan(sweep_0) - 2 / ar_ht * ((1 - taper_ht) / (1 + taper_ht)))
-
-        sweep_100 = np.pi / 2 - np.arctan(
-            half_span / (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
+        self.add_subsystem(
+            "HT_sweep_100",
+            ComputeHTSweep100(),
+            promotes=["*"],
         )
-
-        outputs["data:geometry:horizontal_tail:sweep_0"] = sweep_0
-        outputs["data:geometry:horizontal_tail:sweep_50"] = sweep_50
-        outputs["data:geometry:horizontal_tail:sweep_100"] = sweep_100
-
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        b_h = inputs["data:geometry:horizontal_tail:span"]
-        root_chord = inputs["data:geometry:horizontal_tail:root:chord"]
-        tip_chord = inputs["data:geometry:horizontal_tail:tip:chord"]
-        sweep_25 = inputs["data:geometry:horizontal_tail:sweep_25"]
-
-        half_span = b_h / 2.0
-
-        tmp_0 = half_span / (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
-        tmp_100 = half_span / (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
-
-        d_tmp_0_d_half_span = (
-            (0.25 * root_chord - 0.25 * tip_chord + half_span * np.tan(sweep_25))
-            - half_span * np.tan(sweep_25)
-        ) / tmp_0**2.0
-        d_tmp_0_d_rc = -(tmp_0**2.0) / half_span * 0.25
-        d_tmp_0_d_tc = (tmp_0**2.0) / half_span * 0.25
-        d_tmp_0_d_sweep = -(tmp_0**2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
-
-        d_tmp_100_d_half_span = (
-            (half_span * np.tan(sweep_25) - 0.75 * root_chord + 0.75 * tip_chord)
-            - half_span * np.tan(sweep_25)
-        ) / tmp_100**2.0
-        d_tmp_100_d_rc = (tmp_100**2.0) / half_span * 0.75
-        d_tmp_100_d_tc = -(tmp_100**2.0) / half_span * 0.75
-        d_tmp_100_d_sweep = -(tmp_100**2.0) * (1.0 + np.tan(sweep_25) ** 2.0)
-
-        partials["data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:span"] = (
-            -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_half_span / 2.0
-        )
-        partials[
-            "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:root:chord"
-        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_rc
-        partials[
-            "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:tip:chord"
-        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_tc
-        partials[
-            "data:geometry:horizontal_tail:sweep_0", "data:geometry:horizontal_tail:sweep_25"
-        ] = -1.0 / (1.0 + tmp_0**2.0) * d_tmp_0_d_sweep
-
-        partials[
-            "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:span"
-        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_half_span / 2.0
-        partials[
-            "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:root:chord"
-        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_rc
-        partials[
-            "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:tip:chord"
-        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_tc
-        partials[
-            "data:geometry:horizontal_tail:sweep_100", "data:geometry:horizontal_tail:sweep_25"
-        ] = -1.0 / (1.0 + tmp_100**2.0) * d_tmp_100_d_sweep

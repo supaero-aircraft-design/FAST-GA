@@ -1,6 +1,8 @@
-"""Estimation of wing Ys (sections span)."""
+"""
+Python module for span calculations of different wing sections, part of the wing geometry.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,18 +15,18 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..constants import SUBMODEL_WING_SPAN
+from ..constants import SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY
 
 
-@oad.RegisterSubmodel(SUBMODEL_WING_SPAN, "fastga.submodel.geometry.wing.span.legacy")
+@oad.RegisterSubmodel(SERVICE_WING_SPAN, SUBMODEL_WING_SPAN_LEGACY)
 class ComputeWingY(om.ExplicitComponent):
-    # TODO: Document equations. Cite sources
-    """Wing Ys estimation."""
+    """Wing Ys estimation, obtained from :cite:`supaero:2014`."""
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
@@ -65,6 +67,8 @@ class ComputeWingY(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         lambda_wing = inputs["data:geometry:wing:aspect_ratio"]
         wing_area = inputs["data:geometry:wing:area"]

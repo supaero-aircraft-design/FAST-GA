@@ -1,8 +1,8 @@
 """
-Estimation of horizontal tail geometry (components).
+Python package for estimations of each horizontal tail geometry component.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,7 +20,8 @@ Estimation of horizontal tail geometry (components).
 from .compute_ht_chords import ComputeHTChord
 from .compute_ht_distance import ComputeHTDistance
 from .compute_ht_efficiency import ComputeHTEfficiency
-from .compute_ht_mac import ComputeHTMacFD, ComputeHTMacFL
+from .compute_ht_mac_from_wing_25 import ComputeHTMACFromWing25
+from .compute_ht_mac import ComputeHTMAC
 from .compute_ht_sweep import ComputeHTSweep
 from .compute_ht_volume_coefficient import ComputeHTVolumeCoefficient
 from .compute_ht_wet_area import ComputeHTWetArea
