@@ -350,7 +350,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
                 val=self.opr_d,
             )
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_sizing",
@@ -479,7 +479,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if not self._turboprop_max_thrust_power_limit_problem_setup:
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_max_power",
@@ -518,7 +518,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if not self._turboprop_max_thrust_opr_limit_problem_setup:
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_max_power",
@@ -557,7 +557,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if not self._turboprop_max_thrust_itt_limit_problem_setup:
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_max_power",
@@ -596,7 +596,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         if not self._turboprop_max_thrust_propeller_thrust_limit_problem_setup:
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_max_power",
@@ -764,7 +764,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             # worth the new lines that would have been necessary to implement a new method
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_fuel",
@@ -806,7 +806,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
             # worth the new lines that would have been necessary to implement a new method
             ivc = self.get_ivc_max_thrust_problem()
 
-            prob = om.Problem()
+            prob = om.Problem(reports=False)
             prob.model.add_subsystem("ivc", ivc, promotes=["*"])
             prob.model.add_subsystem(
                 "turboshaft_off_design_fuel",
