@@ -20,8 +20,10 @@ from importlib.resources import path
 import numpy as np
 import pandas as pd
 
+from distutils.dir_util import copy_tree
+
 # noinspection PyProtectedMember
-from fastoad._utils.resource_management.copy import copy_resource, copy_resource_folder
+from fastoad._utils.resource_management.copy import copy_resource
 
 from openmdao.components.external_code_comp import ExternalCodeComp
 from openmdao.utils.file_wrap import InputFileGenerator
@@ -383,7 +385,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
-        copy_resource_folder(openvsp3201, target_directory)
+        copy_tree(pth.dirname(openvsp3201.__file__), target_directory, verbose=0)
         if self.options["airfoil_folder_path"] is None:
             if comp_opt == "wing":
                 copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
@@ -1367,7 +1369,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         self.stderr = pth.join(target_directory, STDERR_FILE_NAME)
         # Copy resource in working (target) directory
         # noinspection PyTypeChecker
-        copy_resource_folder(openvsp3201, target_directory)
+        copy_tree(pth.dirname(openvsp3201.__file__), target_directory, verbose=0)
         # noinspection PyTypeChecker
         if self.options["airfoil_folder_path"] is None:
             copy_resource(airfoil_folder, self.options["wing_airfoil_file"], target_directory)
