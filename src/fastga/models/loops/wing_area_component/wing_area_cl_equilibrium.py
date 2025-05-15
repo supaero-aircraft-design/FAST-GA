@@ -218,7 +218,7 @@ def compute_wing_area(inputs, propulsion_id):
     ivc.add_output(name="true_airspeed", val=np.array([stall_speed, stall_speed]), units="m/s")
     ivc.add_output(name="engine_setting", val=np.full(2, EngineSetting.TAKEOFF))
 
-    problem = om.Problem()
+    problem = om.Problem(reports=False)
     model = problem.model
 
     model.add_subsystem("ivc", ivc, promotes_outputs=["*"])
