@@ -839,8 +839,11 @@ name = "docutils"
 version = "0.17.1"
 description = "Docutils -- Python Documentation Utilities"
 optional = false
-python-versions = "*"
-files = []
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+files = [
+    {file = "docutils-0.17.1-py2.py3-none-any.whl", hash = "sha256:cf316c8370a737a022b72b56874f6602acf974a37a9fba42ec2876387549fc61"},
+    {file = "docutils-0.17.1.tar.gz", hash = "sha256:686577d2e4c32380bb50cbb22f575ed742d58168cee37e99117a854bcd88f125"},
+]
 
 [[package]]
 name = "ensure"
@@ -889,13 +892,13 @@ tests = ["asttokens (>=2.1.0)", "coverage", "coverage-enable-subprocess", "ipyth
 
 [[package]]
 name = "fast-oad-core"
-version = "1.7.4"
+version = "1.8.0"
 description = "FAST-OAD is a framework for performing rapid Overall Aircraft Design"
 optional = false
 python-versions = "<3.12,>=3.8"
 files = [
-    {file = "fast_oad_core-1.7.4-py3-none-any.whl", hash = "sha256:0390cf22e87fefab3b822e462cb0bb3f30d5687346e422c76d28d79a6838d71c"},
-    {file = "fast_oad_core-1.7.4.tar.gz", hash = "sha256:7b62f335e3e4280b126e9ea147ce0a4cb4e2b42c6f199b033981c10d1948b3d3"},
+    {file = "fast_oad_core-1.8.0-py3-none-any.whl", hash = "sha256:6be38856c9871be498243467762e7b7686a999e0cc8ac7c1a7aac4d17591edd8"},
+    {file = "fast_oad_core-1.8.0.tar.gz", hash = "sha256:b47d888e3476e81c4386cf5a2ad508ec3175783974ab26c4e33e08109fc5ab23"},
 ]
 
 [package.dependencies]
@@ -904,16 +907,19 @@ click = ">=8.0.3,<9.0.0"
 Deprecated = ">=1.2.13,<2.0.0"
 ensure = ">=1.0.0,<2.0.0"
 importlib-metadata = {version = ">=4.2,<5.0", markers = "python_version < \"3.10\""}
-ipopo = ">=1.0.0,<2.0.0"
+importlib_resources = {version = ">=5.12,<6.0", markers = "python_version < \"3.9\""}
+ipopo = [
+    {version = ">=1.0.0,<2.0.0", markers = "python_version >= \"3.8\" and python_version < \"3.10\""},
+    {version = ">=3.0.0,<4.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
+]
 ipysheet = ">=0.5.0,<1"
-ipywidgets = ">=7.7.0,<8.0.0"
+ipywidgets = ">=7.7.0,<9"
 jsonschema = ">=3.2.0,<5"
-jupyterlab = ">=3.3.0,<4.0.0"
+jupyterlab = ">=3.3.0,<5"
 lxml = [
     {version = ">=4.6.5,<6", markers = "python_version >= \"3.8\" and python_version < \"3.11\""},
     {version = ">=4.9.3,<6", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
-notebook = ">=6.0,<7.0"
 numpy = [
     {version = ">=1.22.0,<1.25", markers = "python_version >= \"3.8\" and python_version < \"3.9\""},
     {version = ">=1.23.2,<3", markers = "python_version >= \"3.9\" and python_version < \"3.12\""},
@@ -924,7 +930,7 @@ pandas = [
     {version = ">=1.5.3,<3", markers = "python_version >= \"3.11\" and python_version < \"4.0\""},
 ]
 plotly = ">=5.0.0,<6.0.0"
-pyDOE2 = ">=1.3.0,<2.0.0"
+pyDOE3 = ">=1.0.0,<2.0.0"
 "ruamel.yaml" = ">=0.15.78,<0.18"
 scipy = [
     {version = ">=1.9.3,<1.11", markers = "python_version >= \"3.8\" and python_version < \"3.9\""},
@@ -1101,21 +1107,21 @@ testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packag
 
 [[package]]
 name = "importlib-resources"
-version = "6.4.0"
+version = "5.13.0"
 description = "Read resources from Python packages"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "importlib_resources-6.4.0-py3-none-any.whl", hash = "sha256:50d10f043df931902d4194ea07ec57960f66a80449ff867bfe782b4c486ba78c"},
-    {file = "importlib_resources-6.4.0.tar.gz", hash = "sha256:cdb2b453b8046ca4e3798eb1d84f3cce1446a0e8e7b5ef4efb600f19fc398145"},
+    {file = "importlib_resources-5.13.0-py3-none-any.whl", hash = "sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2"},
+    {file = "importlib_resources-5.13.0.tar.gz", hash = "sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528"},
 ]
 
 [package.dependencies]
 zipp = {version = ">=3.1.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
-docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (<7.2.5)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["jaraco.test (>=5.4)", "pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)", "zipp (>=3.17)"]
+docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
+testing = ["pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy (>=0.9.1)", "pytest-ruff"]
 
 [[package]]
 name = "iniconfig"
@@ -1149,6 +1155,30 @@ rsa = ["osgiservicebridge (>=1.5.1)", "python-etcd (>=0.4.5)"]
 xmpp = ["sleekxmpp (>=1.3.1)"]
 zeroconf = ["zeroconf (==0.19)"]
 zookeeper = ["kazoo (>=2.4)"]
+
+[[package]]
+name = "ipopo"
+version = "3.1.0"
+description = "A service-oriented component model framework"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "ipopo-3.1.0-py3-none-any.whl", hash = "sha256:018623fdb1bd740fe68daec57e765a7332fac35c5d3101e4d5ce90c9adb83514"},
+    {file = "ipopo-3.1.0.tar.gz", hash = "sha256:f2f0ed6b7153561bd247b436adecbaa271d8a679626e9beb9a4045c01015576d"},
+]
+
+[package.dependencies]
+jsonrpclib-pelix = ">=0.4.3"
+
+[package.extras]
+etcd2 = ["osgiservicebridge (>=1.5.8)", "python-etcd (==0.4.5)"]
+mqtt = ["paho-mqtt (>=2.1)"]
+redis = ["redis (>=2.10)"]
+rsa = ["grpcio (>=1.71.0)", "grpcio-tools (>=1.71.0)", "osgiservicebridge (>=1.5.8)"]
+xmpp = ["slixmpp (==1.10)"]
+yaml = ["pyyaml (>=6.0)"]
+zeroconf = ["zeroconf (==0.19)"]
+zookeeper = ["kazoo (==2.8.0)"]
 
 [[package]]
 name = "ipykernel"
@@ -3024,13 +3054,14 @@ files = [
 ]
 
 [[package]]
-name = "pydoe2"
-version = "1.3.0"
+name = "pydoe3"
+version = "1.0.4"
 description = "Design of experiments for Python"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pyDOE2-1.3.0.tar.gz", hash = "sha256:5492b0f984af52da3af20b1cd61deb21b067c858e65243ec3ba573375f0d6720"},
+    {file = "pydoe3-1.0.4-py2.py3-none-any.whl", hash = "sha256:233b15a2191c70a0d35a1306d23c45423b2995472c2c1402a60fdf4408caf3dd"},
+    {file = "pydoe3-1.0.4.tar.gz", hash = "sha256:904f52eba87d9a1b9e0c14705cd07ff8fd53af01568c77dca5f4fe7a5ce7fd36"},
 ]
 
 [package.dependencies]
@@ -4518,4 +4549,4 @@ jupyterlab = ["jupyterlab"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8, <3.12"
-content-hash = "32b7f0a5792207f7e1810c1fa9268334f8a8121d44eaa753d7c5675637c3ead2"
+content-hash = "c37cdec07068379d964746a20e8196d5cd388d06957174034446e840dac85b1b"
