@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_WING
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
 
 @oad.RegisterSubmodel(
@@ -52,49 +53,82 @@ class ComputeExtremeCLWing(om.Group):
                 "data:aerodynamics:wing:tip:low_speed:reynolds",
             ],
         )
-        self.add_subsystem(
-            "wing_root_polar",
-            XfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                alpha_end=20.0,
-                airfoil_file=self.options["wing_airfoil_file"],
-                activate_negative_angle=True,
-            ),
-            promotes=[],
-        )
-        self.add_subsystem(
-            "wing_tip_polar",
-            XfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                alpha_end=20.0,
-                airfoil_file=self.options["wing_airfoil_file"],
-                activate_negative_angle=True,
-            ),
-            promotes=[],
-        )
+        if self.options["neuralfoil"]:
+            self.add_subsystem(
+                "wing_root_polar",
+                NeuralfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["wing_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+            self.add_subsystem(
+                "wing_tip_polar",
+                NeuralfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["wing_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+        else:
+            self.add_subsystem(
+                "wing_root_polar",
+                XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["wing_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+            self.add_subsystem(
+                "wing_tip_polar",
+                XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["wing_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
 
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
 
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_root_polar.xfoil:mach")
+        if self.options["neuralfoil"]:
+            airfoil_model = "neuralfoil"
+        else:
+            airfoil_model = "xfoil"
+            self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_tip_polar.xfoil:mach")
+            self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_root_polar.xfoil:mach")
+
         self.connect(
-            "data:aerodynamics:wing:root:low_speed:reynolds", "wing_root_polar.xfoil:reynolds"
+            "data:aerodynamics:wing:root:low_speed:reynolds",
+            "wing_root_polar." + airfoil_model + ":reynolds",
         )
         self.connect(
-            "wing_root_polar.xfoil:CL_max_2D", "data:aerodynamics:wing:low_speed:root:CL_max_2D"
+            "wing_root_polar." + airfoil_model + ":CL_max_2D",
+            "data:aerodynamics:wing:low_speed:root:CL_max_2D",
         )
         self.connect(
-            "wing_root_polar.xfoil:CL_min_2D", "data:aerodynamics:wing:low_speed:root:CL_min_2D"
+            "wing_root_polar." + airfoil_model + ":CL_min_2D",
+            "data:aerodynamics:wing:low_speed:root:CL_min_2D",
         )
 
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_tip_polar.xfoil:mach")
         self.connect(
-            "data:aerodynamics:wing:tip:low_speed:reynolds", "wing_tip_polar.xfoil:reynolds"
+            "data:aerodynamics:wing:tip:low_speed:reynolds",
+            "wing_tip_polar." + airfoil_model + ":reynolds",
         )
         self.connect(
-            "wing_tip_polar.xfoil:CL_max_2D", "data:aerodynamics:wing:low_speed:tip:CL_max_2D"
+            "wing_tip_polar." + airfoil_model + ":CL_max_2D",
+            "data:aerodynamics:wing:low_speed:tip:CL_max_2D",
         )
         self.connect(
-            "wing_tip_polar.xfoil:CL_min_2D", "data:aerodynamics:wing:low_speed:tip:CL_min_2D"
+            "wing_tip_polar." + airfoil_model + ":CL_min_2D",
+            "data:aerodynamics:wing:low_speed:tip:CL_min_2D",
         )
 
 

@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_HT
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
 
 @oad.RegisterSubmodel(
@@ -36,6 +37,7 @@ class ComputeExtremeCLHtp(om.Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("neuralfoil", default=False, types=bool)
 
     def setup(self):
         self.add_subsystem(
@@ -51,53 +53,83 @@ class ComputeExtremeCLHtp(om.Group):
                 "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
             ],
         )
-        self.add_subsystem(
-            "htp_root_polar",
-            XfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                alpha_end=20.0,
-                airfoil_file=self.options["htp_airfoil_file"],
-                activate_negative_angle=True,
-            ),
-            promotes=[],
-        )
-        self.add_subsystem(
-            "htp_tip_polar",
-            XfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                alpha_end=20.0,
-                airfoil_file=self.options["htp_airfoil_file"],
-                activate_negative_angle=True,
-            ),
-            promotes=[],
-        )
+        if self.options["neuralfoil"]:
+            self.add_subsystem(
+                "htp_root_polar",
+                NeuralfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["htp_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+            self.add_subsystem(
+                "htp_tip_polar",
+                NeuralfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["htp_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+        else:
+            self.add_subsystem(
+                "htp_root_polar",
+                XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["htp_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+            self.add_subsystem(
+                "htp_tip_polar",
+                XfoilPolar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    alpha_end=20.0,
+                    airfoil_file=self.options["htp_airfoil_file"],
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
         self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
+        if self.options["neuralfoil"]:
+            airfoil_model = "neuralfoil"
+        else:
+            airfoil_model = "xfoil"
+            self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_tip_polar.xfoil:mach")
+            self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_root_polar.xfoil:mach")
 
-        self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_root_polar.xfoil:mach")
         self.connect(
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
-            "htp_root_polar.xfoil:reynolds",
+            "htp_root_polar." + airfoil_model + ":reynolds",
         )
         self.connect(
-            "htp_root_polar.xfoil:CL_max_2D",
+            "htp_root_polar." + airfoil_model + ":CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D",
         )
         self.connect(
-            "htp_root_polar.xfoil:CL_min_2D",
+            "htp_root_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
         )
 
-        self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_tip_polar.xfoil:mach")
         self.connect(
-            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
-            "htp_tip_polar.xfoil:reynolds",
+            "comp_local_reynolds_htp." + airfoil_model + ":mach",
+            "htp_tip_polar." + airfoil_model + ":mach",
         )
         self.connect(
-            "htp_tip_polar.xfoil:CL_max_2D",
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "htp_tip_polar." + airfoil_model + ":reynolds",
+        )
+        self.connect(
+            "htp_tip_polar." + airfoil_model + ":CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D",
         )
         self.connect(
-            "htp_tip_polar.xfoil:CL_min_2D",
+            "htp_tip_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D",
         )
 

@@ -44,8 +44,10 @@ class NeuralfoilGroup(Group):
             ),
             promotes=[],
         )
-        self.connect("neuralfoil_group_prep.neuralfoil_group:reynolds",
-                     "neuralfoil_polar.neuralfoil:reynolds")
+        self.connect(
+            "neuralfoil_group_prep.neuralfoil_group:reynolds",
+            "neuralfoil_polar.neuralfoil:reynolds",
+        )
 
 
 class _NeuralfoilGroupPrep(ExplicitComponent):
