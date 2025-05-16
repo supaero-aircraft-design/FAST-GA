@@ -22,6 +22,7 @@ from openmdao.core.group import Group
 
 from .vlm import VLMSimpleGeometry
 from ..xfoil.xfoil_polar import XfoilPolar
+from ..neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 
@@ -56,10 +57,11 @@ class ComputeAeroVLM(Group):
             ComputeLocalReynolds(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["*"],
         )
+        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "wing_polar_ls",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
@@ -69,7 +71,7 @@ class ComputeAeroVLM(Group):
             )
             self.add_subsystem(
                 "htp_polar_ls",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,
@@ -80,7 +82,7 @@ class ComputeAeroVLM(Group):
         else:
             self.add_subsystem(
                 "wing_polar_hs",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
@@ -90,7 +92,7 @@ class ComputeAeroVLM(Group):
             )
             self.add_subsystem(
                 "htp_polar_hs",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,

@@ -41,7 +41,7 @@ from fastga.models.aerodynamics.components import (
     ComputeHingeMomentsTail,
     ComputeMachInterpolation,
     ComputeCyDeltaRudder,
-    ComputeAirfoilLiftCurveSlope,
+    ComputeAirfoilLiftCurveSlopeXfoil,
     ComputeVNAndVH,
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
@@ -734,7 +734,7 @@ def airfoil_slope_wt_xfoil(
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(
         list_inputs(
-            ComputeAirfoilLiftCurveSlope(
+            ComputeAirfoilLiftCurveSlopeXfoil(
                 wing_airfoil_file=wing_airfoil_file,
                 htp_airfoil_file=htp_airfoil_file,
                 vtp_airfoil_file=vtp_airfoil_file,
@@ -746,7 +746,7 @@ def airfoil_slope_wt_xfoil(
 
     # Run problem
     problem = run_system(
-        ComputeAirfoilLiftCurveSlope(
+        ComputeAirfoilLiftCurveSlopeXfoil(
             wing_airfoil_file=wing_airfoil_file,
             htp_airfoil_file=htp_airfoil_file,
             vtp_airfoil_file=vtp_airfoil_file,

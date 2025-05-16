@@ -37,7 +37,7 @@ oad.RegisterSubmodel.active_models[SUBMODEL_AIRFOIL_LIFT_SLOPE] = (
 @oad.RegisterSubmodel(
     SUBMODEL_AIRFOIL_LIFT_SLOPE, "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.xfoil"
 )
-class ComputeAirfoilLiftCurveSlope(om.Group):
+class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -124,7 +124,7 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
     SUBMODEL_AIRFOIL_LIFT_SLOPE,
     "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.neuralfoil",
 )
-class ComputeAirfoilLiftCurveSlope(om.Group):
+class ComputeAirfoilLiftCurveSlopeNeuralfoil(om.Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(

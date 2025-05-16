@@ -53,56 +53,37 @@ class ComputeExtremeCLHtp(om.Group):
                 "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
             ],
         )
-        if self.options["neuralfoil"]:
-            self.add_subsystem(
-                "htp_root_polar",
-                NeuralfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["htp_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-            self.add_subsystem(
-                "htp_tip_polar",
-                NeuralfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["htp_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-        else:
-            self.add_subsystem(
-                "htp_root_polar",
-                XfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["htp_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-            self.add_subsystem(
-                "htp_tip_polar",
-                XfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["htp_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-        self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
-        if self.options["neuralfoil"]:
-            airfoil_model = "neuralfoil"
-        else:
-            airfoil_model = "xfoil"
-            self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_tip_polar.xfoil:mach")
-            self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_root_polar.xfoil:mach")
 
+        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+
+        self.add_subsystem(
+            "htp_root_polar",
+            airfoil_polar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
+                alpha_end=20.0,
+                airfoil_file=self.options["htp_airfoil_file"],
+                activate_negative_angle=True,
+            ),
+            promotes=[],
+        )
+        self.add_subsystem(
+            "htp_tip_polar",
+            airfoil_polar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
+                alpha_end=20.0,
+                airfoil_file=self.options["htp_airfoil_file"],
+                activate_negative_angle=True,
+            ),
+            promotes=[],
+        )
+
+        self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
+
+        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        self.connect(
+            "comp_local_reynolds_htp." + airfoil_model + ":mach",
+            "htp_root_polar." + airfoil_model + ":mach",
+        )
         self.connect(
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
             "htp_root_polar." + airfoil_model + ":reynolds",
@@ -115,7 +96,6 @@ class ComputeExtremeCLHtp(om.Group):
             "htp_root_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
         )
-
         self.connect(
             "comp_local_reynolds_htp." + airfoil_model + ":mach",
             "htp_tip_polar." + airfoil_model + ":mach",

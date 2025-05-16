@@ -53,58 +53,37 @@ class ComputeExtremeCLWing(om.Group):
                 "data:aerodynamics:wing:tip:low_speed:reynolds",
             ],
         )
-        if self.options["neuralfoil"]:
-            self.add_subsystem(
-                "wing_root_polar",
-                NeuralfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["wing_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-            self.add_subsystem(
-                "wing_tip_polar",
-                NeuralfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["wing_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-        else:
-            self.add_subsystem(
-                "wing_root_polar",
-                XfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["wing_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
-            self.add_subsystem(
-                "wing_tip_polar",
-                XfoilPolar(
-                    airfoil_folder_path=self.options["airfoil_folder_path"],
-                    alpha_end=20.0,
-                    airfoil_file=self.options["wing_airfoil_file"],
-                    activate_negative_angle=True,
-                ),
-                promotes=[],
-            )
+
+        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+
+        self.add_subsystem(
+            "wing_root_polar",
+            airfoil_polar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
+                alpha_end=20.0,
+                airfoil_file=self.options["wing_airfoil_file"],
+                activate_negative_angle=True,
+            ),
+            promotes=[],
+        )
+        self.add_subsystem(
+            "wing_tip_polar",
+            airfoil_polar(
+                airfoil_folder_path=self.options["airfoil_folder_path"],
+                alpha_end=20.0,
+                airfoil_file=self.options["wing_airfoil_file"],
+                activate_negative_angle=True,
+            ),
+            promotes=[],
+        )
 
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
 
-        if self.options["neuralfoil"]:
-            airfoil_model = "neuralfoil"
-        else:
-            airfoil_model = "xfoil"
-            self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_tip_polar.xfoil:mach")
-            self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_root_polar.xfoil:mach")
-
+        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        self.connect(
+            "comp_local_reynolds_wing." + airfoil_model + ":mach",
+            "wing_tip_polar." + airfoil_model + ":mach",
+        )
         self.connect(
             "data:aerodynamics:wing:root:low_speed:reynolds",
             "wing_root_polar." + airfoil_model + ":reynolds",
@@ -117,7 +96,10 @@ class ComputeExtremeCLWing(om.Group):
             "wing_root_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:wing:low_speed:root:CL_min_2D",
         )
-
+        self.connect(
+            "comp_local_reynolds_wing." + airfoil_model + ":mach",
+            "wing_root_polar." + airfoil_model + ":mach",
+        )
         self.connect(
             "data:aerodynamics:wing:tip:low_speed:reynolds",
             "wing_tip_polar." + airfoil_model + ":reynolds",

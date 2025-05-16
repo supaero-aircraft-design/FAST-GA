@@ -64,42 +64,28 @@ class ComputePropellerPerformance(om.Group):
         ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
         self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
-            if self.options["neuralfoil"]:
-                self.add_subsystem(
-                    profile + "_polar_efficiency",
-                    NeuralfoilPolar(
-                        airfoil_folder_path=self.options["airfoil_folder_path"],
-                        airfoil_file=profile + ".af",
-                        alpha_end=30.0,
-                        activate_negative_angle=True,
-                    ),
-                    promotes=[],
-                )
-                airfoil_model = "neuralfoil"
-                self.connect(
-                    "data:aerodynamics:propeller:reynolds",
-                    profile + "_polar_efficiency." + airfoil_model + ":reynolds",
-                )
-            else:
-                self.add_subsystem(
-                    profile + "_polar_efficiency",
-                    XfoilPolar(
-                        airfoil_folder_path=self.options["airfoil_folder_path"],
-                        airfoil_file=profile + ".af",
-                        alpha_end=30.0,
-                        activate_negative_angle=True,
-                    ),
-                    promotes=[],
-                )
-                airfoil_model = "xfoil"
-                self.connect(
-                    "data:aerodynamics:propeller:mach",
-                    profile + "_polar_efficiency." + airfoil_model + ":mach",
-                )
-                self.connect(
-                    "data:aerodynamics:propeller:reynolds",
-                    profile + "_polar_efficiency." + airfoil_model + ":reynolds",
-                )
+            airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+            self.add_subsystem(
+                profile + "_polar_efficiency",
+                airfoil_polar(
+                    airfoil_folder_path=self.options["airfoil_folder_path"],
+                    airfoil_file=profile + ".af",
+                    alpha_end=30.0,
+                    activate_negative_angle=True,
+                ),
+                promotes=[],
+            )
+            
+            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+            self.connect(
+                "data:aerodynamics:propeller:mach",
+                profile + "_polar_efficiency." + airfoil_model + ":mach",
+            )
+            self.connect(
+                "data:aerodynamics:propeller:reynolds",
+                profile + "_polar_efficiency." + airfoil_model + ":reynolds",
+            )
+            
         self.add_subsystem(
             "propeller_aero",
             _ComputePropellerPerformance(
@@ -113,6 +99,7 @@ class ComputePropellerPerformance(om.Group):
         )
 
         for profile in self.options["sections_profile_name_list"]:
+            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
             self.connect(
                 profile + "_polar_efficiency." + airfoil_model + ":alpha",
                 "propeller_aero." + profile + "_polar:alpha",
@@ -125,6 +112,7 @@ class ComputePropellerPerformance(om.Group):
                 profile + "_polar_efficiency." + airfoil_model + ":CD",
                 "propeller_aero." + profile + "_polar:CD",
             )
+            
         self.connect("data:aerodynamics:propeller:reynolds", "propeller_aero.reference_reynolds")
 
 

@@ -65,6 +65,7 @@ class NeuralfoilPolar(ExternalCodeComp):
         multiple_aoa = not self.options["single_AoA"]
 
         self.add_input("neuralfoil:reynolds", val=np.nan)
+        self.add_input("neuralfoil:mach", val=np.nan)
 
         if multiple_aoa:
             self.add_output("neuralfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")

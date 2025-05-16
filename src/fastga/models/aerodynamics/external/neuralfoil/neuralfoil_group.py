@@ -18,6 +18,7 @@ function.
 import numpy as np
 from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.group import Group
+from stdatm import Atmosphere
 
 from .neuralfoil_polar import _DEFAULT_AIRFOIL_FILE, NeuralfoilPolar
 
@@ -48,6 +49,10 @@ class NeuralfoilGroup(Group):
             "neuralfoil_group_prep.neuralfoil_group:reynolds",
             "neuralfoil_polar.neuralfoil:reynolds",
         )
+        self.connect(
+            "neuralfoil_group_prep.neuralfoil_group:mach",
+            "neuralfoil_polar.neuralfoil:mach",
+        )
 
 
 class _NeuralfoilGroupPrep(ExplicitComponent):
@@ -55,8 +60,12 @@ class _NeuralfoilGroupPrep(ExplicitComponent):
 
     def setup(self):
         self.add_input("data:Xfoil_pre_processing:reynolds", val=np.nan)
+        self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
         self.add_output("neuralfoil_group:reynolds")
+        self.add_output("neuralfoil_group:mach")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        sos = Atmosphere(0.0).speed_of_sound
+        outputs["neuralfoil_group:mach"] = inputs["data:TLAR:v_approach"] / sos
         outputs["neuralfoil_group:reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]
