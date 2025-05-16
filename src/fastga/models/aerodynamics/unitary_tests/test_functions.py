@@ -110,6 +110,7 @@ from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import 
 from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from fastga.models.aerodynamics.load_factor import LoadFactor
 from tests.testing_utilities import run_system, get_indep_var_comp, list_inputs
 from tests.xfoil_exe.get_xfoil import get_xfoil_path
@@ -339,7 +340,7 @@ def cd0_low_speed(
     )
 
 
-def polar(
+def polar_xfoil(
     XML_FILE: str,
     mach_high_speed: float,
     reynolds_high_speed: float,
@@ -394,6 +395,50 @@ def polar(
     cl = problem["xfoil:CL"]
     cdp = problem["xfoil:CDp"]
     assert problem["xfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
+    cl, cdp = reshape_polar(cl, cdp)
+    assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
+
+
+def polar_neuralfoil(
+    XML_FILE: str,
+    mach_high_speed: float,
+    reynolds_high_speed: float,
+    mach_low_speed: float,
+    reynolds_low_speed: float,
+    cdp_1_high_speed: float,
+    cl_max_2d: float,
+    cdp_1_low_speed: float,
+):
+    """Tests polar execution (NeuralFOIL) @ high and low speed!"""
+
+    # Define high-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("neuralfoil:mach", mach_high_speed)
+    ivc.add_output("neuralfoil:reynolds", reynolds_high_speed)
+
+    # Run problem
+    neuralfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=20.0)
+    problem = run_system(neuralfoil_comp, ivc)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["neuralfoil:CL"]
+    cdp = problem["neuralfoil:CDp"]
+    cl, cdp = reshape_polar(cl, cdp)
+    assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_high_speed, abs=1e-4)
+
+    # Define low-speed parameters (with .xml file and additional inputs)
+    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
+    ivc.add_output("neuralfoil:mach", mach_low_speed)
+    ivc.add_output("neuralfoil:reynolds", reynolds_low_speed)
+
+    # Run problem
+    neuralfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=25.0)
+    problem = run_system(neuralfoil_comp, ivc)
+
+    # Check obtained value(s) is/(are) correct
+    cl = problem["neuralfoil:CL"]
+    cdp = problem["neuralfoil:CDp"]
+    assert problem["neuralfoil:CL_max_2D"] == pytest.approx(cl_max_2d, abs=1e-4)
     cl, cdp = reshape_polar(cl, cdp)
     assert np.interp(1.0, cl, cdp) == pytest.approx(cdp_1_low_speed, abs=1e-4)
 

@@ -21,6 +21,7 @@ import neuralfoil as nf
 
 from openmdao.components.external_code_comp import ExternalCodeComp
 from pathlib import Path
+from fastga.models.aerodynamics import airfoil_folder
 from fastga.command.api import string_to_array
 from ...constants import POLAR_POINT_COUNT
 
@@ -56,6 +57,18 @@ class NeuralfoilPolar(ExternalCodeComp):
         self.options.declare(OPTION_ALPHA_END, default=90.0, types=float)
         self.options.declare(OPTION_COMP_NEG_AIR_SYM, default=False, types=bool)
         self.options.declare("inviscid_calculation", default=False, types=bool)
+        self.options.declare(
+            "single_AoA",
+            default=False,
+            types=bool,
+            desc="If only one angle of attack is required, Cl_max_2D and Cl_min_2D won't be "
+            "returned and results won't be written in the resources nor will they be read from "
+            "them. In addition to that, options "
+            + OPTION_ALPHA_START
+            + " and "
+            + OPTION_ALPHA_END
+            + " must match",
+        )
 
     def setup(self):
         """
@@ -71,7 +84,7 @@ class NeuralfoilPolar(ExternalCodeComp):
             self.add_output("neuralfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
             self.add_output("neuralfoil:CL", shape=POLAR_POINT_COUNT)
             self.add_output("neuralfoil:CD", shape=POLAR_POINT_COUNT)
-            self.add_output("neuralfoil:CDp", shape=POLAR_POINT_COUNT)
+            self.add_output("neuralfoil:CDp", val=np.zeros(POLAR_POINT_COUNT))
             self.add_output("neuralfoil:CM", shape=POLAR_POINT_COUNT)
             self.add_output("neuralfoil:CL_max_2D")
             self.add_output("neuralfoil:CL_min_2D")
@@ -81,7 +94,7 @@ class NeuralfoilPolar(ExternalCodeComp):
             self.add_output("neuralfoil:alpha", units="deg")
             self.add_output("neuralfoil:CL")
             self.add_output("neuralfoil:CD")
-            self.add_output("neuralfoil:CDp")
+            self.add_output("neuralfoil:CDp", val=0.0)
             self.add_output("neuralfoil:CM")
 
         self.declare_partials("*", "*", method="fd")
@@ -122,20 +135,28 @@ class NeuralfoilPolar(ExternalCodeComp):
 
         if interpolated_result is None:
             alpha = self.options[OPTION_ALPHA_START]
-            airfoil_path = Path(self.options["airfoil_folder_path"] + self.options["airfoil_file"])
+            if self.options["airfoil_folder_path"] is None:
+                self.options["airfoil_folder_path"] = airfoil_folder.__path__[0]
+            airfoil_path = Path(self.options["airfoil_folder_path"]) / self.options["airfoil_file"]
 
             if multiple_aoa:
                 alpha = np.arange(
                     -alpha_end if self.options[OPTION_COMP_NEG_AIR_SYM] else alpha_start,
-                    alpha_end,
+                    alpha_end + ALPHA_STEP,
                     ALPHA_STEP,
                 )
 
             results = nf.get_aero_from_dat_file(airfoil_path, alpha=alpha, Re=reynolds)
-
             cl = results["CL"]
             cd = results["CD"]
             cm = results["CM"]
+
+            if multiple_aoa:
+                results["AoA"] = alpha
+                cl_max_2d = np.max(cl)
+                cl_min_2d = np.min(cl)
+                cd_min_2d = np.min(cd)
+                alpha, cl, cd, cm = self._fix_calculation_result_length(results)
 
         else:
             # adjust the interpolated results size for other model use
@@ -155,13 +176,11 @@ class NeuralfoilPolar(ExternalCodeComp):
         outputs["neuralfoil:alpha"] = alpha
         outputs["neuralfoil:CL"] = cl
         outputs["neuralfoil:CD"] = cd
-        outputs["neuralfoil:CDp"] = 0.0
         outputs["neuralfoil:CM"] = cm
         if multiple_aoa:
-            outputs["neuralfoil:CL_max_2D"] = np.max(cl)
-            outputs["neuralfoil:CL_min_2D"] = np.min(cl)
-            outputs["neuralfoil:CD_min_2D"] = np.min(cd)
-            outputs["neuralfoil:CDp"] = np.zeros_like(cd)
+            outputs["neuralfoil:CL_max_2D"] = cl_max_2d
+            outputs["neuralfoil:CL_min_2D"] = cl_min_2d
+            outputs["neuralfoil:CD_min_2D"] = cd_min_2d
 
     def _define_result_file_path(self):
         """
@@ -340,3 +359,36 @@ class NeuralfoilPolar(ExternalCodeComp):
             cm = np.append(cm, filler)
 
         return alpha, cl, cd, cdp, cm, cl_max_2d, cl_min_2d, cd_min_2d
+
+    @staticmethod
+    def _fix_calculation_result_length(computed_result):
+        """
+        Format the size of results that need to be passed as array to the size declared to
+        OpenMDAO if the original array is bigger we resize it, otherwise filled with zeros.
+
+        :param interpolated_result: result dataset with labels and values
+
+        :return: length-modified aerodynamic characteristic array
+        """
+
+        # Extract results
+
+        alpha = computed_result["AoA"]
+        cl = computed_result["CL"]
+        cd = computed_result["CD"]
+        cm = computed_result["CM"]
+
+        # Modify vector length if necessary
+        if POLAR_POINT_COUNT < len(alpha):
+            alpha = np.linspace(alpha[0], alpha[-1], POLAR_POINT_COUNT)
+            cl = np.interp(alpha, alpha, cl)
+            cd = np.interp(alpha, alpha, cd)
+            cm = np.interp(alpha, alpha, cm)
+        else:
+            filler = np.zeros(POLAR_POINT_COUNT - len(alpha))
+            alpha = np.append(alpha, filler)
+            cl = np.append(cl, filler)
+            cd = np.append(cd, filler)
+            cm = np.append(cm, filler)
+
+        return alpha, cl, cd, cm

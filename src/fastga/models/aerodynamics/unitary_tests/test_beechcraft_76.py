@@ -23,7 +23,8 @@ from .test_functions import (
     compute_reynolds,
     cd0_high_speed,
     cd0_low_speed,
-    polar,
+    polar_xfoil,
+    polar_neuralfoil,
     polar_single_aoa,
     polar_interpolation,
     polar_single_aoa_inv,
@@ -146,13 +147,13 @@ def test_cd0_low_speed():
     )
 
 
-@pytest.mark.skipif(
-    system() != "Windows" and xfoil_path is None or SKIP_STEPS,
-    reason="No XFOIL executable available",
-)
-def test_polar():
+# @pytest.mark.skipif(
+#     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
+#     reason="No XFOIL executable available",
+# )
+def test_polar_xfoil():
     """Tests polar execution (XFOIL) @ high and low speed."""
-    polar(
+    polar_xfoil(
         XML_FILE,
         mach_high_speed=0.245,
         reynolds_high_speed=4571770 * 1.549,
@@ -161,6 +162,20 @@ def test_polar():
         cdp_1_high_speed=0.0046,
         cl_max_2d=1.6965,
         cdp_1_low_speed=0.0049,
+    )
+
+
+def test_polar_neuralfoil():
+    """Tests polar execution (NeuralFOIL) @ high and low speed."""
+    polar_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.245,
+        reynolds_high_speed=4571770 * 1.549,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=0.3324403,
+        cdp_1_low_speed=0.0,
     )
 
 
