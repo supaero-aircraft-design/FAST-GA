@@ -26,11 +26,16 @@ from .test_functions import (
     polar_xfoil,
     polar_neuralfoil,
     polar_single_aoa,
+    polar_single_aoa_neuralfoil,
     polar_interpolation,
+    polar_interpolation_neuralfoil,
     polar_single_aoa_inv,
     polar_ext_folder_inv,
+    polar_ext_folder_neuralfoil,
     airfoil_slope_wt_xfoil,
+    airfoil_slope_wt_neuralfoil,
     airfoil_slope_xfoil,
+    airfoil_slope_neuralfoil,
     comp_high_speed,
     comp_low_speed,
     comp_low_speed_input_aoa,
@@ -192,6 +197,15 @@ def test_polar_single_aoa():
     )
 
 
+def test_polar_single_aoa_neuralfoil():
+    """Tests polar execution (XFOIL) @ low speed."""
+    polar_single_aoa_neuralfoil(
+        XML_FILE,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -199,6 +213,13 @@ def test_polar_single_aoa():
 def test_polar_interpolation():
     """Tests polar execution interpolation (XFOIL)."""
     polar_interpolation(
+        mach=0.1179,
+    )
+
+
+def test_polar_interpolation_neuralfoil():
+    """Tests polar execution interpolation (NeuralFoil)."""
+    polar_interpolation_neuralfoil(
         mach=0.1179,
     )
 
@@ -234,6 +255,20 @@ def test_polar_with_ext_folder():
     )
 
 
+def test_polar_with_ext_folder_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ high and low speed."""
+    polar_ext_folder_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.53835122,
+        reynolds_high_speed=5381384,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=0.43175,
+        cdp_1_low_speed=0.0,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available",
@@ -264,6 +299,19 @@ def test_airfoil_slope():
     )
 
 
+def test_airfoil_slope_neuralfoil():
+    """Tests polar execution (Neuralfoil) @ low speed."""
+    airfoil_slope_neuralfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+        cl_alpha_wing=6.4981,
+        cl_alpha_htp=6.3412,
+        cl_alpha_vtp=6.3412,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -271,6 +319,16 @@ def test_airfoil_slope():
 def test_airfoil_slope_wt_xfoil():
     """Tests polar reading @ low speed."""
     airfoil_slope_wt_xfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+    )
+
+
+def test_airfoil_slope_wt_neuralfoil():
+    """Tests polar reading @ low speed."""
+    airfoil_slope_wt_neuralfoil(
         XML_FILE,
         wing_airfoil_file="naca63_415.af",
         htp_airfoil_file="naca0012.af",

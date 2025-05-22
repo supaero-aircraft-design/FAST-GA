@@ -90,7 +90,7 @@ class XfoilPolar(ExternalCodeComp):
             "them. In addition to that, options "
             + OPTION_ALPHA_START
             + " and "
-            + OPTION_ALPHA_END
+            + OPTION_ALPHA_START
             + " must match",
         )
 

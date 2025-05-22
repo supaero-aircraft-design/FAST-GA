@@ -14,7 +14,10 @@
 # pylint: disable=unused-import
 # flake8: noqa
 
-from .airfoil_lift_curve_slope import ComputeAirfoilLiftCurveSlopeXfoil
+from .airfoil_lift_curve_slope import (
+    ComputeAirfoilLiftCurveSlopeXfoil,
+    ComputeAirfoilLiftCurveSlopeNeuralfoil,
+)
 from .compute_L_D_max import ComputeLDMax
 from .compute_cl_extreme import ComputeAircraftMaxCl
 from .compute_cl_extreme_htp import ComputeExtremeCLHtp
