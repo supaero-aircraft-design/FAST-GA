@@ -39,11 +39,14 @@ class ComputeExtremeCLWing(om.Group):
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
+        self.options.declare("neuralfoil", default=False, types=bool)
 
     def setup(self):
+        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+
         self.add_subsystem(
             "comp_local_reynolds_wing",
-            ComputeLocalReynolds(),
+            ComputeLocalReynolds(airfoil_model=airfoil_model),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
                 "data:aerodynamics:low_speed:unit_reynolds",
@@ -79,7 +82,6 @@ class ComputeExtremeCLWing(om.Group):
 
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
 
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
         self.connect(
             "comp_local_reynolds_wing." + airfoil_model + ":mach",
             "wing_tip_polar." + airfoil_model + ":mach",
@@ -115,7 +117,12 @@ class ComputeExtremeCLWing(om.Group):
 
 
 class ComputeLocalReynolds(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
+
     def setup(self):
+        af_model = self.options["airfoil_model"]
+
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:root:chord", val=np.nan, units="m")
@@ -123,11 +130,13 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:root:low_speed:reynolds")
         self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
-        self.add_output("xfoil:mach")
+        self.add_output(name=af_model + ":mach")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        af_model = self.options["airfoil_model"]
+
         outputs["data:aerodynamics:wing:root:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:root:chord"]
@@ -136,7 +145,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:tip:chord"]
         )
-        outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs[af_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class ComputeWing3DExtremeCL(om.ExplicitComponent):

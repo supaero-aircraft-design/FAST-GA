@@ -37,9 +37,13 @@ from .test_functions import (
     airfoil_slope_xfoil,
     airfoil_slope_neuralfoil,
     comp_high_speed,
+    comp_high_speed_neuralfoil,
     comp_low_speed,
+    comp_low_speed_neuralfoil,
     comp_low_speed_input_aoa,
+    comp_low_speed_input_aoa_neuralfoil,
     comp_high_speed_input_aoa,
+    comp_high_speed_input_aoa_neuralfoil,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
@@ -362,6 +366,26 @@ def test_vlm_comp_high_speed():
     )
 
 
+def test_vlm_comp_high_speed_neuralfoil():
+    """Tests vlm components @ high speed."""
+    comp_high_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=-0.0004732,
+        cl_ref_wing=0.84031781,
+        cl_alpha_wing=4.764742,
+        cm0=-0.0229502,
+        coeff_k_wing=0.04560849,
+        cl0_htp=-3.51454933e-05,
+        cl_alpha_htp=0.56919111,
+        cl_alpha_htp_isolated=0.9230808,
+        coeff_k_htp=0.34084416,
+        cl_alpha_vector=np.array(
+            [5.23342164, 5.23342164, 5.29274838, 5.37031882, 5.4644133, 5.57808899]
+        ),
+        mach_vector=np.array([0.0, 0.15, 0.21372738, 0.27363573, 0.33015704, 0.38365387]),
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
@@ -374,6 +398,12 @@ def test_vlm_comp_high_speed_input_aoa():
         XML_FILE,
         use_openvsp=False,
     )
+
+
+def test_vlm_comp_high_speed_input_aoa_neuralfoil():
+    """Tests openvsp components @ low speed."""
+
+    comp_high_speed_input_aoa_neuralfoil(XML_FILE)
 
 
 @pytest.mark.skipif(
@@ -509,6 +539,133 @@ def test_vlm_comp_low_speed():
     )
 
 
+def test_vlm_comp_low_speed_neuralfoil():
+    """Tests vlm components @ low speed."""
+    y_vector_wing = np.array(
+        [
+            0.09981667,
+            0.29945,
+            0.49908333,
+            0.85770879,
+            1.37532637,
+            1.89294395,
+            2.41056153,
+            2.92817911,
+            3.44579669,
+            3.96341426,
+            4.33314111,
+            4.55497721,
+            4.77681332,
+            4.99864942,
+            5.22048553,
+            5.44232163,
+            5.66415774,
+        ]
+    )
+    cl_vector_wing = np.array(
+        [
+            1.00520647,
+            1.00403894,
+            1.00150662,
+            0.99610044,
+            0.97692565,
+            0.95058388,
+            0.91818959,
+            0.87954133,
+            0.8334678,
+            0.77813305,
+            0.72702565,
+            0.68384063,
+            0.63643825,
+            0.58090541,
+            0.51256445,
+            0.4230701,
+            0.29162547,
+        ]
+    )
+    chord_vector_wing = np.array(
+        [
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+            1.44720606,
+        ]
+    )
+    y_vector_htp = np.array(
+        [
+            0.05852163,
+            0.17556488,
+            0.29260813,
+            0.40965139,
+            0.52669464,
+            0.64373789,
+            0.76078115,
+            0.8778244,
+            0.99486765,
+            1.11191091,
+            1.22895416,
+            1.34599741,
+            1.46304067,
+            1.58008392,
+            1.69712718,
+            1.81417043,
+            1.93121368,
+        ]
+    )
+    cl_vector_htp = np.array(
+        [
+            0.11823122,
+            0.11796622,
+            0.11743024,
+            0.11661099,
+            0.11548919,
+            0.1140374,
+            0.11221833,
+            0.10998224,
+            0.10726321,
+            0.10397342,
+            0.09999428,
+            0.09516184,
+            0.08924102,
+            0.08187565,
+            0.07247648,
+            0.05991316,
+            0.04129893,
+        ]
+    )
+    comp_low_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=-0.00046164,
+        cl_ref_wing=0.81979372,
+        cl_alpha_wing=4.64836698,
+        cm0=-0.02238966,
+        coeff_k_wing=0.0434078,
+        cl0_htp=3.34496579e-05,
+        cl_alpha_htp=0.56372144,
+        cl_alpha_htp_isolated=0.90053529,
+        coeff_k_htp=0.34084416,
+        y_vector_wing=y_vector_wing,
+        cl_vector_wing=cl_vector_wing,
+        chord_vector_wing=chord_vector_wing,
+        cl_ref_htp=0.0984214,
+        y_vector_htp=y_vector_htp,
+        cl_vector_htp=cl_vector_htp,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
@@ -521,6 +678,12 @@ def test_vlm_comp_low_speed_input_aoa():
         XML_FILE,
         use_openvsp=False,
     )
+
+
+def test_vlm_comp_low_speed_input_aoa_neuralfoil():
+    """Tests openvsp components @ low speed."""
+
+    comp_low_speed_input_aoa_neuralfoil(XML_FILE)
 
 
 @pytest.mark.skipif(
