@@ -62,7 +62,11 @@ class ComputeMachInterpolation(om.Group):
             ),
             promotes=[],
         )
-        self.add_subsystem("mach_interpolation", _ComputeMachInterpolation(), promotes=["*"])
+        self.add_subsystem(
+            "mach_interpolation",
+            _ComputeMachInterpolation(neuralfoil=self.options["neuralfoil"]),
+            promotes=["*"],
+        )
 
         airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
 
@@ -89,6 +93,9 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
     # Based on the equation of Roskam Part VI
     """Lift curve slope coefficient as a function of Mach number"""
 
+    def initialize(self):
+        self.options.declare("neuralfoil", default=False, types=bool)
+
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -112,17 +119,17 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input(
-            "" + airfoil_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
+            airfoil_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
         )
-        self.add_input("" + airfoil_model + ":wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(airfoil_model + ":wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            "" + airfoil_model + ":horizontal_tail:alpha",
+            airfoil_model + ":horizontal_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="deg",
         )
         self.add_input(
-            "" + airfoil_model + ":horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT
+            airfoil_model + ":horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT
         )
 
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)

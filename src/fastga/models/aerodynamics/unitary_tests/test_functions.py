@@ -2209,6 +2209,23 @@ def compute_mach_interpolation_roskam(
     assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
 
 
+def compute_mach_interpolation_roskam_neuralfoil(
+    XML_FILE: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
+):
+    """Tests computation of the mach interpolation vector using Roskam's approach!"""
+    # Research independent input value in .xml file
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeMachInterpolation(neuralfoil=True)), __file__, XML_FILE
+    )
+
+    # Run problem and check obtained value(s) is/(are) correct
+    problem = run_system(ComputeMachInterpolation(neuralfoil=True), ivc)
+    cl_alpha_result = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
+    assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
+    mach_result = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
+    assert np.max(np.abs(mach_vector - mach_result)) <= 1e-2
+
+
 def cl_alpha_vt(
     XML_FILE: str, cl_alpha_vt_ls: float, k_ar_effective: float, cl_alpha_vt_cruise: float
 ):
@@ -2440,6 +2457,75 @@ def propeller(
             sections_profile_name_list=["naca4430"],
             sections_profile_position_list=[0],
             elements_number=3,
+        ),
+        ivc,
+    )
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    # Check obtained value(s) is/(are) correct
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust", units="N"
+    ) == pytest.approx(thrust_SL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_SL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:sea_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:sea_level:efficiency") == pytest.approx(
+        efficiency_SL, abs=1e-5
+    )
+
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust", units="N"
+    ) == pytest.approx(thrust_CL, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:thrust_limit", units="N"
+    ) == pytest.approx(thrust_CL_limit, abs=1)
+    assert problem.get_val(
+        "data:aerodynamics:propeller:cruise_level:speed", units="m/s"
+    ) == pytest.approx(speed, abs=1e-2)
+    assert problem.get_val("data:aerodynamics:propeller:cruise_level:efficiency") == pytest.approx(
+        efficiency_CL, abs=1e-5
+    )
+
+
+def propeller_neuralfoil(
+    XML_FILE: str,
+    thrust_SL: np.ndarray,
+    thrust_SL_limit: np.ndarray,
+    efficiency_SL: np.ndarray,
+    thrust_CL: np.ndarray,
+    thrust_CL_limit: np.ndarray,
+    efficiency_CL: np.ndarray,
+    speed: np.ndarray,
+):
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # load all inputs and add missing ones
+    ivc = get_indep_var_comp(
+        list_inputs(
+            ComputePropellerPerformance(
+                sections_profile_name_list=["naca4430"],
+                sections_profile_position_list=[0],
+                elements_number=3,
+                neuralfoil=True,
+            )
+        ),
+        __file__,
+        XML_FILE,
+    )
+
+    # Run problem
+    problem = run_system(
+        ComputePropellerPerformance(
+            sections_profile_name_list=["naca4430"],
+            sections_profile_position_list=[0],
+            elements_number=3,
+            neuralfoil=True,
         ),
         ivc,
     )
