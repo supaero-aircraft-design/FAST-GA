@@ -1941,6 +1941,31 @@ def wing_extreme_cl_clean(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_
     )
 
 
+def wing_extreme_cl_clean_neuralfoil(
+    XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float
+):
+    """Tests maximum minimum lift coefficient for clean wing."""
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file for Openvsp test
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLWing(neuralfoil=True)), __file__, XML_FILE)
+
+    # Run problem
+    problem = run_system(ComputeExtremeCLWing(neuralfoil=True), ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    assert problem["data:aerodynamics:wing:low_speed:CL_max_clean"] == pytest.approx(
+        cl_max_clean_wing, abs=1e-2
+    )
+    assert problem["data:aerodynamics:wing:low_speed:CL_min_clean"] == pytest.approx(
+        cl_min_clean_wing, abs=1e-2
+    )
+
+
 def htp_extreme_cl_clean(
     XML_FILE: str,
     cl_max_clean_htp: float,
@@ -1958,6 +1983,41 @@ def htp_extreme_cl_clean(
 
     # Run problem
     problem = run_system(ComputeExtremeCLHtp(), ivc)
+
+    # Retrieve polar results from temporary folder
+    polar_result_retrieve(tmp_folder)
+
+    assert problem["data:aerodynamics:horizontal_tail:low_speed:CL_max_clean"] == pytest.approx(
+        cl_max_clean_htp, abs=1e-2
+    )
+    assert problem["data:aerodynamics:horizontal_tail:low_speed:CL_min_clean"] == pytest.approx(
+        cl_min_clean_htp, abs=1e-2
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_max", units="deg"
+    ) == pytest.approx(alpha_max_clean_htp, abs=1e-2)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:low_speed:clean:alpha_aircraft_min", units="deg"
+    ) == pytest.approx(alpha_min_clean_htp, abs=1e-2)
+
+
+def htp_extreme_cl_clean_neuralfoil(
+    XML_FILE: str,
+    cl_max_clean_htp: float,
+    cl_min_clean_htp: float,
+    alpha_max_clean_htp: float,
+    alpha_min_clean_htp: float,
+):
+    """Tests maximum minimum lift coefficient for clean htp."""
+
+    # Transfer saved polar results to temporary folder
+    tmp_folder = polar_result_transfer()
+
+    # Research independent input value in .xml file for Openvsp test
+    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLHtp(neuralfoil=True)), __file__, XML_FILE)
+
+    # Run problem
+    problem = run_system(ComputeExtremeCLHtp(neuralfoil=True), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)

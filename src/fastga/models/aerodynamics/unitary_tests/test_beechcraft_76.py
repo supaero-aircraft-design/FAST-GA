@@ -50,7 +50,9 @@ from .test_functions import (
     high_lift,
     extreme_cl,
     wing_extreme_cl_clean,
+    wing_extreme_cl_clean_neuralfoil,
     htp_extreme_cl_clean,
+    htp_extreme_cl_clean_neuralfoil,
     l_d_max,
     cnbeta,
     slipstream_openvsp_cruise,
@@ -1008,6 +1010,15 @@ def test_extreme_cl_wing_clean():
     )
 
 
+def test_extreme_cl_wing_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    wing_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_wing=0.25652093,
+        cl_min_clean_wing=-0.34223937,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows",
     reason="No XFOIL executable available: not computed with empty result folder",
@@ -1020,6 +1031,17 @@ def test_extreme_cl_htp_clean():
         cl_min_clean_htp=-0.20504416,
         alpha_max_clean_htp=20.854251,
         alpha_min_clean_htp=-20.6853228,
+    )
+
+
+def test_extreme_cl_htp_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    htp_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_htp=0.04469597,
+        cl_min_clean_htp=-0.04013622,
+        alpha_max_clean_htp=4.54585511,
+        alpha_min_clean_htp=-4.08210067,
     )
 
 
