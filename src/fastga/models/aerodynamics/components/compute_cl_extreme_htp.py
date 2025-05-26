@@ -120,7 +120,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
 
     def setup(self):
-        af_model = self.options["airfoil_model"]
+        airfoil_model = self.options["airfoil_model"]
 
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
@@ -130,12 +130,12 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:horizontal_tail:root:low_speed:reynolds")
         self.add_output("data:aerodynamics:horizontal_tail:tip:low_speed:reynolds")
-        self.add_output(name=af_model + ":mach")
+        self.add_output(name=airfoil_model + ":mach")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        af_model = self.options["airfoil_model"]
+        airfoil_model = self.options["airfoil_model"]
 
         outputs["data:aerodynamics:horizontal_tail:root:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
@@ -147,7 +147,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:horizontal_tail:tip:chord"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-        outputs[af_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs[airfoil_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class ComputeHtp3DExtremeCL(om.ExplicitComponent):

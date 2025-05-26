@@ -57,6 +57,7 @@ class AerodynamicsLowSpeed(om.Group):
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+        self.options.declare("neuralfoil", default=False, types=bool)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -71,6 +72,7 @@ class AerodynamicsLowSpeed(om.Group):
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
                     input_angle_of_attack=self.options["input_angle_of_attack"],
+                    neuralfoil=self.options["neuralfoil"],
                 ),
                 promotes=["*"],
             )
