@@ -151,7 +151,7 @@ class NeuralfoilPolar(ExternalCodeComp):
                     alpha_end + ALPHA_STEP,
                     ALPHA_STEP,
                 )
-
+            _LOGGER.info("Entering Neuralfoil computation")
             results = nf.get_aero_from_dat_file(airfoil_path, alpha=alpha, Re=reynolds)
             # Only apply for Cl and Cm based on the documentation of Neuralfoil
             cl = results["CL"] / (

@@ -416,7 +416,6 @@ def test_oad_process_neuralfoil(cleanup):
 
     # Check that weight-performances loop correctly converged
     _check_weight_performance_loop(problem)
-
     # noinspection PyTypeChecker
     assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 247.05, atol=1)
     assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
