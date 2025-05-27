@@ -122,7 +122,7 @@ class NeuralfoilPolar(ExternalCodeComp):
         reynolds = round(float(inputs["neuralfoil:reynolds"]))
 
         # Compressibility correction
-        beta = np.sqrt(1.0 - mach ** 2.0)
+        beta = np.sqrt(1.0 - mach**2.0)
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
@@ -154,11 +154,13 @@ class NeuralfoilPolar(ExternalCodeComp):
 
             results = nf.get_aero_from_dat_file(airfoil_path, alpha=alpha, Re=reynolds)
             # Only apply for Cl and Cm based on the documentation of Neuralfoil
-            cl = results["CL"] / (beta + mach**2.0/beta * 0.5 * results["CL"]*(1.0 + 0.2 *
-                                                                               mach**2.0))
+            cl = results["CL"] / (
+                beta + mach**2.0 / beta * 0.5 * results["CL"] * (1.0 + 0.2 * mach**2.0)
+            )
             cd = results["CD"]
-            cm = results["CM"] / (beta + mach**2.0/beta * 0.5 * results["CM"]*(1.0 + 0.2 *
-                                                                               mach**2.0))
+            cm = results["CM"] / (
+                beta + mach**2.0 / beta * 0.5 * results["CM"] * (1.0 + 0.2 * mach**2.0)
+            )
 
             if multiple_aoa:
                 results["AoA"] = alpha
