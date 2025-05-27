@@ -1,4 +1,6 @@
-"""Computation of the airfoil aerodynamic properties using Xfoil."""
+"""
+Computation of the airfoil aerodynamic properties using Neuralfoil from :cite:`neuralfoil:2023`.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -40,7 +42,7 @@ _XFOIL_PATH_LIMIT = 64
 
 
 class NeuralfoilPolar(ExternalCodeComp):
-    """Runs a polar computation with XFOIL and returns the 2D max lift coefficient."""
+    """Runs a polar computation with Neuralfoil and returns 2D aerodynamic coefficients."""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -116,7 +118,11 @@ class NeuralfoilPolar(ExternalCodeComp):
         self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
+        mach = round(float(inputs["neuralfoil:mach"]), 4)
         reynolds = round(float(inputs["neuralfoil:reynolds"]))
+
+        # Compressibility correction
+        beta = np.sqrt(1.0 - mach ** 2.0)
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
@@ -147,9 +153,12 @@ class NeuralfoilPolar(ExternalCodeComp):
                 )
 
             results = nf.get_aero_from_dat_file(airfoil_path, alpha=alpha, Re=reynolds)
-            cl = results["CL"]
+            # Only apply for Cl and Cm based on the documentation of Neuralfoil
+            cl = results["CL"] / (beta + mach**2.0/beta * 0.5 * results["CL"]*(1.0 + 0.2 *
+                                                                               mach**2.0))
             cd = results["CD"]
-            cm = results["CM"]
+            cm = results["CM"] / (beta + mach**2.0/beta * 0.5 * results["CM"]*(1.0 + 0.2 *
+                                                                               mach**2.0))
 
             if multiple_aoa:
                 results["AoA"] = alpha

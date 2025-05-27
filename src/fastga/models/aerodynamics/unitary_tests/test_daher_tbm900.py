@@ -180,7 +180,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.26139144,
+        cl_max_2d=0.2629951,
         cdp_1_low_speed=0.0,
     )
 
@@ -247,7 +247,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.43175005,
+        cl_max_2d=0.43377882,
         cdp_1_low_speed=0.0,
     )
 
@@ -937,8 +937,8 @@ def test_extreme_cl_htp_clean_neuralfoil():
         XML_FILE,
         cl_max_clean_htp=0.06992596,
         cl_min_clean_htp=-0.0633022,
-        alpha_max_clean_htp=5.68204853,
-        alpha_min_clean_htp=-5.14381451,
+        alpha_max_clean_htp=5.71121945,
+        alpha_min_clean_htp=-5.20193072,
     )
 
 

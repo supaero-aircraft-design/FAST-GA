@@ -1,6 +1,6 @@
 """Test module for aerodynamics groups"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -182,7 +182,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.3324403,
+        cl_max_2d=0.33399045,
         cdp_1_low_speed=0.0,
     )
 
@@ -249,7 +249,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.43175,
+        cl_max_2d=0.43377882,
         cdp_1_low_speed=0.0,
     )
 
@@ -1005,8 +1005,8 @@ def test_extreme_cl_htp_clean_neuralfoil():
         XML_FILE,
         cl_max_clean_htp=0.02815538,
         cl_min_clean_htp=-0.03847098,
-        alpha_max_clean_htp=3.065155,
-        alpha_min_clean_htp=-4.1881695,
+        alpha_max_clean_htp=3.08414215,
+        alpha_min_clean_htp=-4.22462768,
     )
 
 
