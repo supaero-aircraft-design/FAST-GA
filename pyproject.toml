@@ -30,7 +30,7 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -44,7 +44,7 @@ classifiers = [
 # of poetry.lock file will modify docs/requirements.txt and make
 # the commit fail because "files were modified by this hook". In that case,
 # doing again the commit including changes in docs/requirements.txt will succeed.
-python = "^3.8, <3.12"
+python = "^3.9, <3.12"
 fast-oad-core = "^1.7"
 stdatm = ">=0.2.0"
 pyparsing = "*"
@@ -57,7 +57,7 @@ jupyterlab = ["jupyterlab"]
 
 [tool.poetry.group.dev.dependencies]
 matplotlib = [
-    { version = "^3.5.0", python = "~3.8" },
+    { version = "^3.5.0", python = "~3.9" },
     { version = "^3.9.0", python = "^3.9" },
 ]
 
