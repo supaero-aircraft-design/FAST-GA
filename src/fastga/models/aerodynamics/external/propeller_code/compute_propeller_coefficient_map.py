@@ -51,7 +51,7 @@ class ComputePropellerCoefficientMap(om.Group):
             types=list,
         )
         self.options.declare("elements_number", default=20, types=int)
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -59,7 +59,7 @@ class ComputePropellerCoefficientMap(om.Group):
         ivc.add_output("data:aerodynamics:propeller:coefficient_map:reynolds", val=1e6)
         self.add_subsystem("propeller_coeff_map_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
-            airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+            airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
             self.add_subsystem(
                 profile + "_polar_coeff_map",
                 airfoil_polar(
@@ -71,7 +71,7 @@ class ComputePropellerCoefficientMap(om.Group):
                 promotes=[],
             )
 
-            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
                 "data:aerodynamics:propeller:coefficient_map:mach",
                 profile + "_polar_coeff_map." + airfoil_model + ":mach",
@@ -93,7 +93,7 @@ class ComputePropellerCoefficientMap(om.Group):
         )
 
         for profile in self.options["sections_profile_name_list"]:
-            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
                 profile + "_polar_coeff_map." + airfoil_model + ":alpha",
                 "propeller_coeff_map." + profile + "_polar:alpha",

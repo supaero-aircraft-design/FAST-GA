@@ -3,7 +3,7 @@ Estimation of the dependency of the aircraft lift slope coefficient as a functio
 number.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,7 @@ class ComputeMachInterpolation(om.Group):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -40,7 +40,7 @@ class ComputeMachInterpolation(om.Group):
         ivc_conditions.add_output("reynolds", val=0.5e6)
         self.add_subsystem("incompressible_conditions", ivc_conditions, promotes=[])
 
-        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
 
         self.add_subsystem(
             "wing_airfoil",
@@ -62,13 +62,14 @@ class ComputeMachInterpolation(om.Group):
             ),
             promotes=[],
         )
+
+        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
+
         self.add_subsystem(
             "mach_interpolation",
-            _ComputeMachInterpolation(neuralfoil=self.options["neuralfoil"]),
+            _ComputeMachInterpolation(airfoil_model=airfoil_model),
             promotes=["*"],
         )
-
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
 
         self.connect("incompressible_conditions.mach", "wing_airfoil." + airfoil_model + ":mach")
         self.connect(
@@ -94,7 +95,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
     """Lift curve slope coefficient as a function of Mach number"""
 
     def initialize(self):
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -115,7 +116,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        airfoil_model = self.options["airfoil_model"]
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
         self.add_input(
@@ -168,7 +169,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         ).speed_of_sound
         mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
 
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        airfoil_model = self.options["airfoil_model"]
 
         wing_cl = self._reshape(
             inputs[airfoil_model + ":wing:alpha"], inputs[airfoil_model + ":wing:CL"]

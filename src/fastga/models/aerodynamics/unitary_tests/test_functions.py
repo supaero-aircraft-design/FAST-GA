@@ -653,7 +653,8 @@ def polar_single_aoa_neuralfoil(
 
     # Check obtained value(s) is/(are) correct
     cl_s = problem["neuralfoil:CL"]
-    assert cl_5 == pytest.approx(cl_s, abs=1e-3) #tolerance increased
+    assert cl_5 == pytest.approx(cl_s, abs=1e-3)  # tolerance increased
+
 
 def polar_single_aoa_inv(
     XML_FILE: str,
@@ -1183,7 +1184,7 @@ def compute_aero_neuralfoil(
     # Research independent input value in .xml file
 
     ivc = get_indep_var_comp(
-        list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero, neuralfoil=True)),
+        list_inputs(ComputeAeroVLM(low_speed_aero=low_speed_aero, use_neuralfoil=True)),
         __file__,
         XML_FILE,
     )
@@ -1193,7 +1194,7 @@ def compute_aero_neuralfoil(
     # noinspection PyTypeChecker
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
-        neuralfoil=True,
+        use_neuralfoil=True,
         result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
     )
@@ -1205,7 +1206,7 @@ def compute_aero_neuralfoil(
     # noinspection PyTypeChecker
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
-        neuralfoil=True,
+        use_neuralfoil=True,
         result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
     )
@@ -1946,10 +1947,12 @@ def wing_extreme_cl_clean_neuralfoil(
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLWing(neuralfoil=True)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeExtremeCLWing(use_neuralfoil=True)), __file__, XML_FILE
+    )
 
     # Run problem
-    problem = run_system(ComputeExtremeCLWing(neuralfoil=True), ivc)
+    problem = run_system(ComputeExtremeCLWing(use_neuralfoil=True), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
@@ -2010,10 +2013,12 @@ def htp_extreme_cl_clean_neuralfoil(
     tmp_folder = polar_result_transfer()
 
     # Research independent input value in .xml file for Openvsp test
-    ivc = get_indep_var_comp(list_inputs(ComputeExtremeCLHtp(neuralfoil=True)), __file__, XML_FILE)
+    ivc = get_indep_var_comp(
+        list_inputs(ComputeExtremeCLHtp(use_neuralfoil=True)), __file__, XML_FILE
+    )
 
     # Run problem
-    problem = run_system(ComputeExtremeCLHtp(neuralfoil=True), ivc)
+    problem = run_system(ComputeExtremeCLHtp(use_neuralfoil=True), ivc)
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
@@ -2211,11 +2216,11 @@ def compute_mach_interpolation_roskam_neuralfoil(
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
-        list_inputs(ComputeMachInterpolation(neuralfoil=True)), __file__, XML_FILE
+        list_inputs(ComputeMachInterpolation(use_neuralfoil=True)), __file__, XML_FILE
     )
 
     # Run problem and check obtained value(s) is/(are) correct
-    problem = run_system(ComputeMachInterpolation(neuralfoil=True), ivc)
+    problem = run_system(ComputeMachInterpolation(use_neuralfoil=True), ivc)
     cl_alpha_result = problem["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
     assert np.max(np.abs(cl_alpha_vector - cl_alpha_result)) <= 1e-2
     mach_result = problem["data:aerodynamics:aircraft:mach_interpolation:mach_vector"]
@@ -2508,7 +2513,7 @@ def propeller_neuralfoil(
                 sections_profile_name_list=["naca4430"],
                 sections_profile_position_list=[0],
                 elements_number=3,
-                neuralfoil=True,
+                use_neuralfoil=True,
             )
         ),
         __file__,
@@ -2521,7 +2526,7 @@ def propeller_neuralfoil(
             sections_profile_name_list=["naca4430"],
             sections_profile_position_list=[0],
             elements_number=3,
-            neuralfoil=True,
+            use_neuralfoil=True,
         ),
         ivc,
     )

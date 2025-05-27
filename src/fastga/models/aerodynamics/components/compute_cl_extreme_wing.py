@@ -1,6 +1,6 @@
 """Estimation of the 3D maximum lift coefficients for clean wing."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -39,10 +39,10 @@ class ComputeExtremeCLWing(om.Group):
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
 
         self.add_subsystem(
             "comp_local_reynolds_wing",
@@ -57,7 +57,7 @@ class ComputeExtremeCLWing(om.Group):
             ],
         )
 
-        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
 
         self.add_subsystem(
             "wing_root_polar",

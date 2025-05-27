@@ -56,7 +56,7 @@ class ComputePropellerPerformance(om.Group):
             desc="Fineness between two blade pitch for the construction of the propeller efficiency"
             "map, in deg",
         )
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -64,7 +64,7 @@ class ComputePropellerPerformance(om.Group):
         ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
         self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
-            airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+            airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
             self.add_subsystem(
                 profile + "_polar_efficiency",
                 airfoil_polar(
@@ -76,7 +76,7 @@ class ComputePropellerPerformance(om.Group):
                 promotes=[],
             )
 
-            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
                 "data:aerodynamics:propeller:mach",
                 profile + "_polar_efficiency." + airfoil_model + ":mach",
@@ -99,7 +99,7 @@ class ComputePropellerPerformance(om.Group):
         )
 
         for profile in self.options["sections_profile_name_list"]:
-            airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
                 profile + "_polar_efficiency." + airfoil_model + ":alpha",
                 "propeller_aero." + profile + "_polar:alpha",

@@ -45,7 +45,7 @@ class ComputeAeroVLM(Group):
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
-        self.options.declare("neuralfoil", default=False, types=bool)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         self.add_subsystem(
@@ -58,7 +58,7 @@ class ComputeAeroVLM(Group):
             ComputeLocalReynolds(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["*"],
         )
-        airfoil_polar = NeuralfoilPolar if self.options["neuralfoil"] else XfoilPolar
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "wing_polar_ls",
@@ -115,7 +115,7 @@ class ComputeAeroVLM(Group):
             promotes=["*"],
         )
 
-        airfoil_model = "neuralfoil" if self.options["neuralfoil"] else "xfoil"
+        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
 
         if self.options["low_speed_aero"]:
             self.connect(
