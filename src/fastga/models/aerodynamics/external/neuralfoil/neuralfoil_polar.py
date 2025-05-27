@@ -68,7 +68,7 @@ class NeuralfoilPolar(ExternalCodeComp):
             "them. In addition to that, options "
             + OPTION_ALPHA_START
             + " and "
-            + OPTION_ALPHA_START
+            + OPTION_ALPHA_END
             + " must match",
         )
 
