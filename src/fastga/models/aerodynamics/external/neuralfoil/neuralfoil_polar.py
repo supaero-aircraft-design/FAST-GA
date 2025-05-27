@@ -74,7 +74,9 @@ class NeuralfoilPolar(ExternalCodeComp):
 
     def setup(self):
         """
-        Set up inputs and outputs required for this operation
+        Set up inputs and outputs required for this operation.The pressure drag coefficient ratio
+        (CDp) is set to zero in all computations, as NeuralFoil does not provide it, ensuring
+        backward compatibility.
         """
 
         multiple_aoa = not self.options["single_AoA"]
