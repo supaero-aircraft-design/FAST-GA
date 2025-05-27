@@ -26,14 +26,14 @@ model:
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
             result_folder_path: ../workdir
             compute_slipstream: false
-            use_neuralfoil: True
+            use_neuralfoil: true
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
             result_folder_path : ../workdir
             compute_mach_interpolation : false
             compute_slipstream : false
-            use_neuralfoil: True
+            use_neuralfoil: true
         weight:
             id: fastga.weight.legacy
             propulsion_id: fastga.wrapper.propulsion.basicIC_engine
