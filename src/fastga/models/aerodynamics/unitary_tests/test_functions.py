@@ -1060,7 +1060,7 @@ def airfoil_slope_neuralfoil(
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
-    problem = airfoil_slope_wt_xfoil(
+    problem = airfoil_slope_wt_neuralfoil(
         XML_FILE,
         wing_airfoil_file,
         htp_airfoil_file,
@@ -1343,6 +1343,7 @@ def comp_aero_input_aoa_neuralfoil(
         result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
         input_angle_of_attack=10.5,
+        use_neuralfoil=True,
     )
 
     problem = run_system(vlm_comp, ivc)
@@ -1355,6 +1356,7 @@ def comp_aero_input_aoa_neuralfoil(
         result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
         input_angle_of_attack=10.5,
+        use_neuralfoil=True,
     )
 
     problem = run_system(vlm_comp, ivc)

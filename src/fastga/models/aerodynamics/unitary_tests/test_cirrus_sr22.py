@@ -278,9 +278,9 @@ def test_airfoil_slope_neuralfoil():
         wing_airfoil_file="roncz.af",
         htp_airfoil_file="naca0012.af",
         vtp_airfoil_file="naca0012.af",
-        cl_alpha_wing=6.5755,
-        cl_alpha_htp=6.2703,
-        cl_alpha_vtp=6.2703,
+        cl_alpha_wing=-0.40136348,
+        cl_alpha_htp=0.11987274,
+        cl_alpha_vtp=0.11987274,
     )
 
 
