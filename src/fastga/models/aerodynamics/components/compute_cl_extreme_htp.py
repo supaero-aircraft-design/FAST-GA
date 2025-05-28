@@ -1,6 +1,6 @@
 """Estimation of the 3D maximum lift coefficients for clean tail."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_HT
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
 
 @oad.RegisterSubmodel(
@@ -36,11 +37,14 @@ class ComputeExtremeCLHtp(om.Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
+        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
+
         self.add_subsystem(
             "comp_local_reynolds_htp",
-            ComputeLocalReynolds(),
+            ComputeLocalReynolds(airfoil_model=airfoil_model),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
                 "data:aerodynamics:low_speed:unit_reynolds",
@@ -51,9 +55,12 @@ class ComputeExtremeCLHtp(om.Group):
                 "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
             ],
         )
+
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
+
         self.add_subsystem(
             "htp_root_polar",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
@@ -63,7 +70,7 @@ class ComputeExtremeCLHtp(om.Group):
         )
         self.add_subsystem(
             "htp_tip_polar",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
@@ -71,39 +78,50 @@ class ComputeExtremeCLHtp(om.Group):
             ),
             promotes=[],
         )
+
         self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
 
-        self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_root_polar.xfoil:mach")
         self.connect(
-            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
-            "htp_root_polar.xfoil:reynolds",
+            "comp_local_reynolds_htp." + airfoil_model + ":mach",
+            "htp_root_polar." + airfoil_model + ":mach",
         )
         self.connect(
-            "htp_root_polar.xfoil:CL_max_2D",
+            "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
+            "htp_root_polar." + airfoil_model + ":reynolds",
+        )
+        self.connect(
+            "htp_root_polar." + airfoil_model + ":CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D",
         )
         self.connect(
-            "htp_root_polar.xfoil:CL_min_2D",
+            "htp_root_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
         )
-
-        self.connect("comp_local_reynolds_htp.xfoil:mach", "htp_tip_polar.xfoil:mach")
         self.connect(
-            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
-            "htp_tip_polar.xfoil:reynolds",
+            "comp_local_reynolds_htp." + airfoil_model + ":mach",
+            "htp_tip_polar." + airfoil_model + ":mach",
         )
         self.connect(
-            "htp_tip_polar.xfoil:CL_max_2D",
+            "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
+            "htp_tip_polar." + airfoil_model + ":reynolds",
+        )
+        self.connect(
+            "htp_tip_polar." + airfoil_model + ":CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D",
         )
         self.connect(
-            "htp_tip_polar.xfoil:CL_min_2D",
+            "htp_tip_polar." + airfoil_model + ":CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D",
         )
 
 
 class ComputeLocalReynolds(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
+
     def setup(self):
+        airfoil_model = self.options["airfoil_model"]
+
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
@@ -112,11 +130,13 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:horizontal_tail:root:low_speed:reynolds")
         self.add_output("data:aerodynamics:horizontal_tail:tip:low_speed:reynolds")
-        self.add_output("xfoil:mach")
+        self.add_output(name=airfoil_model + ":mach")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        airfoil_model = self.options["airfoil_model"]
+
         outputs["data:aerodynamics:horizontal_tail:root:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:horizontal_tail:root:chord"]
@@ -127,7 +147,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:horizontal_tail:tip:chord"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-        outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs[airfoil_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class ComputeHtp3DExtremeCL(om.ExplicitComponent):
