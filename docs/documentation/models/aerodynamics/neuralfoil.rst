@@ -3,9 +3,9 @@ Neuralfoil model
 ################
 
 NeuralFoil :cite:`neuralfoil:2023` is a fast 2D airfoil analysis tool based on neural networks, offering XFoil-like
-functionality without divergence issues and with reduced computation time. This airfoil computation tool, applied in
-both ``highspeed`` and ``lowspeed`` aerodynamics models, is disabled by default in the current version but may
-replace XFoil in future updates.
+functionality without divergence issues and with reduced computation time. This package, used exclusively for airfoil
+aerodynamic computations in both the ``highspeed`` and ``lowspeed`` aerodynamic submodels, is disabled by default in the
+current version but may eventually replace XFoil in future updates.
 
 .. code:: yaml
 
