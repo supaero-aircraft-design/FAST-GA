@@ -15,7 +15,7 @@
 # flake8: noqa
 
 from .airfoil_lift_curve_slope import (
-    ComputeAirfoilLiftCurveSlopeXfoil,
+    ComputeAirfoilLiftCurveSlope,
     ComputeAirfoilLiftCurveSlopeNeuralfoil,
 )
 from .compute_L_D_max import ComputeLDMax

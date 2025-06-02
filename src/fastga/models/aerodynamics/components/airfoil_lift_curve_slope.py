@@ -1,5 +1,6 @@
 """
-Estimation of the slope of the airfoil of the lifting surface using the results of xfoil runs.
+Estimation of the slope of the airfoil of the lifting surface using the results of xfoil
+/ Neuralfoil runs.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
@@ -30,14 +31,14 @@ ALPHA_END_LINEAR = 10.0
 _LOGGER = logging.getLogger(__name__)
 
 oad.RegisterSubmodel.active_models[SUBMODEL_AIRFOIL_LIFT_SLOPE] = (
-    "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.xfoil"
+    "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope"
 )
 
 
 @oad.RegisterSubmodel(
-    SUBMODEL_AIRFOIL_LIFT_SLOPE, "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.xfoil"
+    SUBMODEL_AIRFOIL_LIFT_SLOPE, "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope"
 )
-class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
+class ComputeAirfoilLiftCurveSlope(om.Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -45,12 +46,15 @@ class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     # noinspection PyTypeChecker
     def setup(self):
+        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
+
         self.add_subsystem(
             "comp_local_reynolds_airfoil",
-            ComputeLocalReynolds(airfoil_model="xfoil"),
+            ComputeLocalReynolds(airfoil_model=airfoil_model),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
                 "data:aerodynamics:low_speed:unit_reynolds",
@@ -64,9 +68,11 @@ class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
             ],
         )
 
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
+
         self.add_subsystem(
             "wing_airfoil_slope",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["wing_airfoil_file"],
                 activate_negative_angle=True,
@@ -76,7 +82,7 @@ class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
         )
         self.add_subsystem(
             "htp_airfoil_slope",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["htp_airfoil_file"],
                 activate_negative_angle=True,
@@ -86,7 +92,7 @@ class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
         )
         self.add_subsystem(
             "vtp_airfoil_slope",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["vtp_airfoil_file"],
                 activate_negative_angle=True,
@@ -97,120 +103,52 @@ class ComputeAirfoilLiftCurveSlopeXfoil(om.Group):
 
         self.add_subsystem(
             "airfoil_lift_slope",
-            _ComputeAirfoilLiftCurveSlope(airfoil_model="xfoil"),
+            _ComputeAirfoilLiftCurveSlope(airfoil_model=airfoil_model),
             promotes=["*"],
         )
 
-        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "wing_airfoil_slope.xfoil:mach")
         self.connect(
-            "data:aerodynamics:wing:MAC:low_speed:reynolds", "wing_airfoil_slope.xfoil:reynolds"
+            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
+            "wing_airfoil_slope." + airfoil_model + ":mach",
         )
-        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "htp_airfoil_slope.xfoil:mach")
-        self.connect(
-            "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
-            "htp_airfoil_slope.xfoil:reynolds",
-        )
-        self.connect("comp_local_reynolds_airfoil.xfoil:mach", "vtp_airfoil_slope.xfoil:mach")
-        self.connect(
-            "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
-            "vtp_airfoil_slope.xfoil:reynolds",
-        )
-
-        self.connect("wing_airfoil_slope.xfoil:alpha", "xfoil:wing:alpha")
-        self.connect("wing_airfoil_slope.xfoil:CL", "xfoil:wing:CL")
-        self.connect("htp_airfoil_slope.xfoil:alpha", "xfoil:horizontal_tail:alpha")
-        self.connect("htp_airfoil_slope.xfoil:CL", "xfoil:horizontal_tail:CL")
-        self.connect("vtp_airfoil_slope.xfoil:alpha", "xfoil:vertical_tail:alpha")
-        self.connect("vtp_airfoil_slope.xfoil:CL", "xfoil:vertical_tail:CL")
-
-
-@oad.RegisterSubmodel(
-    SUBMODEL_AIRFOIL_LIFT_SLOPE,
-    "fastga.submodel.aerodynamics.airfoil.all.lift_curve_slope.neuralfoil",
-)
-class ComputeAirfoilLiftCurveSlopeNeuralfoil(om.Group):
-    def initialize(self):
-        self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
-        self.options.declare(
-            "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
-        )
-        self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-        self.options.declare("vtp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-
-    # noinspection PyTypeChecker
-    def setup(self):
-        self.add_subsystem(
-            "comp_local_reynolds_airfoil",
-            ComputeLocalReynolds(airfoil_model="neuralfoil"),
-            promotes=[
-                "data:aerodynamics:low_speed:mach",
-                "data:aerodynamics:low_speed:unit_reynolds",
-                "data:geometry:wing:MAC:length",
-                "data:geometry:horizontal_tail:MAC:length",
-                "data:aerodynamics:horizontal_tail:efficiency",
-                "data:geometry:vertical_tail:MAC:length",
-                "data:aerodynamics:wing:MAC:low_speed:reynolds",
-                "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
-                "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
-            ],
-        )
-
-        self.add_subsystem(
-            "wing_airfoil_slope",
-            NeuralfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                airfoil_file=self.options["wing_airfoil_file"],
-                activate_negative_angle=True,
-                alpha_end=20.0,
-            ),
-            promotes=[],
-        )
-        self.add_subsystem(
-            "htp_airfoil_slope",
-            NeuralfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                airfoil_file=self.options["htp_airfoil_file"],
-                activate_negative_angle=True,
-                alpha_end=20.0,
-            ),
-            promotes=[],
-        )
-        self.add_subsystem(
-            "vtp_airfoil_slope",
-            NeuralfoilPolar(
-                airfoil_folder_path=self.options["airfoil_folder_path"],
-                airfoil_file=self.options["vtp_airfoil_file"],
-                activate_negative_angle=True,
-                alpha_end=20.0,
-            ),
-            promotes=[],
-        )
-
-        self.add_subsystem(
-            "airfoil_lift_slope",
-            _ComputeAirfoilLiftCurveSlope(airfoil_model="neuralfoil"),
-            promotes=["*"],
-        )
-
         self.connect(
             "data:aerodynamics:wing:MAC:low_speed:reynolds",
-            "wing_airfoil_slope.neuralfoil:reynolds",
+            "wing_airfoil_slope." + airfoil_model + ":reynolds",
+        )
+        self.connect(
+            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
+            "htp_airfoil_slope." + airfoil_model + ":mach",
         )
         self.connect(
             "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
-            "htp_airfoil_slope.neuralfoil:reynolds",
+            "htp_airfoil_slope." + airfoil_model + ":reynolds",
+        )
+        self.connect(
+            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
+            "vtp_airfoil_slope." + airfoil_model + ":mach",
         )
         self.connect(
             "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
-            "vtp_airfoil_slope.neuralfoil:reynolds",
+            "vtp_airfoil_slope." + airfoil_model + ":reynolds",
         )
 
-        self.connect("wing_airfoil_slope.neuralfoil:alpha", "neuralfoil:wing:alpha")
-        self.connect("wing_airfoil_slope.neuralfoil:CL", "neuralfoil:wing:CL")
-        self.connect("htp_airfoil_slope.neuralfoil:alpha", "neuralfoil:horizontal_tail:alpha")
-        self.connect("htp_airfoil_slope.neuralfoil:CL", "neuralfoil:horizontal_tail:CL")
-        self.connect("vtp_airfoil_slope.neuralfoil:alpha", "neuralfoil:vertical_tail:alpha")
-        self.connect("vtp_airfoil_slope.neuralfoil:CL", "neuralfoil:vertical_tail:CL")
+        self.connect(
+            "wing_airfoil_slope." + airfoil_model + ":alpha", airfoil_model + ":wing:alpha"
+        )
+        self.connect("wing_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":wing:CL")
+        self.connect(
+            "htp_airfoil_slope." + airfoil_model + ":alpha",
+            airfoil_model + ":horizontal_tail:alpha",
+        )
+        self.connect(
+            "htp_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":horizontal_tail:CL"
+        )
+        self.connect(
+            "vtp_airfoil_slope." + airfoil_model + ":alpha", airfoil_model + ":vertical_tail:alpha"
+        )
+        self.connect(
+            "vtp_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":vertical_tail:CL"
+        )
 
 
 class ComputeLocalReynolds(om.ExplicitComponent):

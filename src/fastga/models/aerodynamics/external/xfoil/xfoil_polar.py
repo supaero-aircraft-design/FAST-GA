@@ -1,6 +1,6 @@
 """Computation of the airfoil aerodynamic properties using Xfoil."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,23 +35,25 @@ from fastga.command.api import string_to_array
 from fastga.models.aerodynamics.external.xfoil import xfoil699
 from fastga.models.geometry.profiles.get_profile import get_profile
 from . import resources as local_resources
-from ...constants import POLAR_POINT_COUNT
+from ...constants import (
+    POLAR_POINT_COUNT,
+    OPTION_ALPHA_START,
+    OPTION_ALPHA_END,
+    OPTION_COMP_NEG_AIR_SYM,
+    _DEFAULT_AIRFOIL_FILE,
+    ALPHA_STEP,
+    DEFAULT_2D_CL_MAX,
+    DEFAULT_2D_CL_MIN,
+)
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
 OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
-OPTION_ALPHA_START = "alpha_start"
-OPTION_ALPHA_END = "alpha_end"
 OPTION_ITER_LIMIT = "iter_limit"
-OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
-DEFAULT_2D_CL_MAX = 1.9
-DEFAULT_2D_CL_MIN = -1.7
-ALPHA_STEP = 0.5
 
 _INPUT_FILE_NAME = "polar_session.txt"
 _STDOUT_FILE_NAME = "polar_calc.log"
 _STDERR_FILE_NAME = "polar_calc.err"
-_DEFAULT_AIRFOIL_FILE = "naca23012.af"
 _TMP_PROFILE_FILE_NAME = "in"  # as short as possible to avoid problems of path length
 _TMP_RESULT_FILE_NAME = "out"  # as short as possible to avoid problems of path length
 XFOIL_EXE_NAME = "xfoil.exe"  # name of embedded XFoil executable

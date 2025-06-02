@@ -1,5 +1,5 @@
 """
-Creation of a group to ease the use of the Xfoil Polar ExternalCodeComp in the block analysis
+Creation of a group to ease the use of the Neuralfoil Polar ExternalCodeComp in the block analysis
 function.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design

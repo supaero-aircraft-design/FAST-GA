@@ -41,8 +41,7 @@ from fastga.models.aerodynamics.components import (
     ComputeHingeMomentsTail,
     ComputeMachInterpolation,
     ComputeCyDeltaRudder,
-    ComputeAirfoilLiftCurveSlopeXfoil,
-    ComputeAirfoilLiftCurveSlopeNeuralfoil,
+    ComputeAirfoilLiftCurveSlope,
     ComputeVNAndVH,
     ComputeEquilibratedPolar,
     ComputeNonEquilibratedPolar,
@@ -492,52 +491,6 @@ def polar_interpolation(mach: float):
     assert t3_duration < (t1_duration + t2_duration) / 2
 
 
-def polar_interpolation_neuralfoil(mach: float):
-    """
-    Tests the interpolation mechanism from NeuralfoilPolar. To do so we will run NeuralfoilPolar twice and
-    then a third time a Reynolds number in between, it should trigger the interpolation mechanism.
-    """
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
-    ivc = om.IndepVarComp()
-    ivc.add_output("neuralfoil:mach", mach)
-    ivc.add_output("neuralfoil:reynolds", 5e6)
-
-    # Run problem
-    xfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=20.0)
-    t1_start = time.time()
-    _ = run_system(xfoil_comp, ivc)
-    t1_end = time.time()
-    t1_duration = t1_end - t1_start
-
-    ivc = om.IndepVarComp()
-    ivc.add_output("neuralfoil:mach", mach)
-    ivc.add_output("neuralfoil:reynolds", 7e6)
-    t2_start = time.time()
-    _ = run_system(xfoil_comp, ivc)
-    t2_end = time.time()
-    t2_duration = t2_end - t2_start
-
-    # Run a third time between the two other Reynolds
-
-    ivc = om.IndepVarComp()
-    ivc.add_output("neuralfoil:mach", mach)
-    ivc.add_output("neuralfoil:reynolds", 6e6)
-
-    # Run problem
-    t3_start = time.time()
-    _ = run_system(xfoil_comp, ivc)
-    t3_end = time.time()
-    t3_duration = t3_end - t3_start
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    assert t3_duration < (t1_duration + t2_duration) / 2
-
-
 def polar_single_aoa(
     XML_FILE: str,
     mach_low_speed: float,
@@ -954,7 +907,7 @@ def airfoil_slope_wt_xfoil(
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(
         list_inputs(
-            ComputeAirfoilLiftCurveSlopeXfoil(
+            ComputeAirfoilLiftCurveSlope(
                 wing_airfoil_file=wing_airfoil_file,
                 htp_airfoil_file=htp_airfoil_file,
                 vtp_airfoil_file=vtp_airfoil_file,
@@ -966,7 +919,7 @@ def airfoil_slope_wt_xfoil(
 
     # Run problem
     problem = run_system(
-        ComputeAirfoilLiftCurveSlopeXfoil(
+        ComputeAirfoilLiftCurveSlope(
             wing_airfoil_file=wing_airfoil_file,
             htp_airfoil_file=htp_airfoil_file,
             vtp_airfoil_file=vtp_airfoil_file,
@@ -988,10 +941,11 @@ def airfoil_slope_wt_neuralfoil(
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(
         list_inputs(
-            ComputeAirfoilLiftCurveSlopeNeuralfoil(
+            ComputeAirfoilLiftCurveSlope(
                 wing_airfoil_file=wing_airfoil_file,
                 htp_airfoil_file=htp_airfoil_file,
                 vtp_airfoil_file=vtp_airfoil_file,
+                use_neuralfoil=True,
             )
         ),
         __file__,
@@ -1000,10 +954,11 @@ def airfoil_slope_wt_neuralfoil(
 
     # Run problem
     problem = run_system(
-        ComputeAirfoilLiftCurveSlopeNeuralfoil(
+        ComputeAirfoilLiftCurveSlope(
             wing_airfoil_file=wing_airfoil_file,
             htp_airfoil_file=htp_airfoil_file,
             vtp_airfoil_file=vtp_airfoil_file,
+            use_neuralfoil=True,
         ),
         ivc,
     )
