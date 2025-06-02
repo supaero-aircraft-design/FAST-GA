@@ -2,6 +2,16 @@
 Changelog
 =========
 
+Version 1.3.1
+==================
+
+- Developper environment update + Ruff usage + Minor fixes by @florentLutz
+- Advanced MFW computation revamped by @florentLutz
+- Derivative rework and unit test refinement on mass breakdown  by @johnathanasd
+- Split VTP and HTP weight computation by @johnathanasd
+- Derivative and service / submodel naming string rework on geometry by @johnathanasd
+- Compatibility with FAST 1.8.0  by @florentLutz
+
 Version 1.3.0
 ==================
 
