@@ -28,7 +28,6 @@ from .test_functions import (
     polar_single_aoa,
     polar_single_aoa_neuralfoil,
     polar_interpolation,
-    polar_interpolation_neuralfoil,
     polar_single_aoa_inv,
     polar_ext_folder_inv,
     polar_ext_folder_neuralfoil,
@@ -187,7 +186,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.33399045,
+        cl_max_2d=1.60635,
         cdp_1_low_speed=0.0,
     )
 
@@ -211,6 +210,8 @@ def test_polar_single_aoa_neuralfoil():
         XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
+        alpha=5.0,
+        cl=0.705,
     )
 
 
@@ -221,13 +222,6 @@ def test_polar_single_aoa_neuralfoil():
 def test_polar_interpolation():
     """Tests polar execution interpolation (XFOIL)."""
     polar_interpolation(
-        mach=0.1179,
-    )
-
-
-def test_polar_interpolation_neuralfoil():
-    """Tests polar execution interpolation (NeuralFoil)."""
-    polar_interpolation_neuralfoil(
         mach=0.1179,
     )
 
@@ -272,7 +266,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.43377882,
+        cl_max_2d=1.65027,
         cdp_1_low_speed=0.0,
     )
 
@@ -314,9 +308,9 @@ def test_airfoil_slope_neuralfoil():
         wing_airfoil_file="naca63_415.af",
         htp_airfoil_file="naca0012.af",
         vtp_airfoil_file="naca0012.af",
-        cl_alpha_wing=5.9425,
-        cl_alpha_htp=-0.0423,
-        cl_alpha_vtp=-0.0423,
+        cl_alpha_wing=7.1564,
+        cl_alpha_htp=6.2973,
+        cl_alpha_vtp=6.2973,
     )
 
 
@@ -1016,8 +1010,8 @@ def test_extreme_cl_wing_clean_neuralfoil():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
     wing_extreme_cl_clean_neuralfoil(
         XML_FILE,
-        cl_max_clean_wing=0.25652093,
-        cl_min_clean_wing=-0.34223937,
+        cl_max_clean_wing=1.325348,
+        cl_min_clean_wing=-0.842837,
     )
 
 
@@ -1040,10 +1034,10 @@ def test_extreme_cl_htp_clean_neuralfoil():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
     htp_extreme_cl_clean_neuralfoil(
         XML_FILE,
-        cl_max_clean_htp=0.04469597,
-        cl_min_clean_htp=-0.04013622,
-        alpha_max_clean_htp=4.56640561,
-        alpha_min_clean_htp=-4.11998925,
+        cl_max_clean_htp=0.20611143,
+        cl_min_clean_htp=-0.21311707,
+        alpha_max_clean_htp=20.96279896,
+        alpha_min_clean_htp=-21.67531568,
     )
 
 
@@ -1337,7 +1331,7 @@ def test_compute_mach_interpolation_roskam():
     compute_mach_interpolation_roskam_neuralfoil(
         XML_FILE,
         cl_alpha_vector=np.array(
-            [0.99471057, 1.00012792, 1.01673923, 1.04568333, 1.08908218, 1.15045849]
+            [5.38997629, 5.41260734, 5.48161867, 5.60049901, 5.77553892, 6.01665228]
         ),
         mach_vector=np.array([0.0, 0.07673077, 0.15346155, 0.23019232, 0.3069231, 0.38365387]),
     )

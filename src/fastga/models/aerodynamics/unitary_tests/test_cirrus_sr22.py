@@ -182,7 +182,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.33399045,
+        cl_max_2d=1.6063499,
         cdp_1_low_speed=0.0,
     )
 
@@ -206,6 +206,8 @@ def test_polar_single_aoa_neuralfoil():
         XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
+        alpha=5.0,
+        cl=0.70515,
     )
 
 
@@ -249,7 +251,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=0.43377882,
+        cl_max_2d=1.65027027,
         cdp_1_low_speed=0.0,
     )
 
@@ -278,9 +280,9 @@ def test_airfoil_slope_neuralfoil():
         wing_airfoil_file="roncz.af",
         htp_airfoil_file="naca0012.af",
         vtp_airfoil_file="naca0012.af",
-        cl_alpha_wing=-0.40136348,
-        cl_alpha_htp=0.11987274,
-        cl_alpha_vtp=0.11987274,
+        cl_alpha_wing=6.4508134,
+        cl_alpha_htp=6.27633,
+        cl_alpha_vtp=6.27633,
     )
 
 
@@ -979,8 +981,8 @@ def test_extreme_cl_wing_clean_neuralfoil():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
     wing_extreme_cl_clean_neuralfoil(
         XML_FILE,
-        cl_max_clean_wing=0.26474019,
-        cl_min_clean_wing=-0.38407058,
+        cl_max_clean_wing=1.50641977,
+        cl_min_clean_wing=-1.03149819,
     )
 
 
@@ -1003,10 +1005,10 @@ def test_extreme_cl_htp_clean_neuralfoil():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
     htp_extreme_cl_clean_neuralfoil(
         XML_FILE,
-        cl_max_clean_htp=0.02815538,
-        cl_min_clean_htp=-0.03847098,
-        alpha_max_clean_htp=3.08414215,
-        alpha_min_clean_htp=-4.22462768,
+        cl_max_clean_htp=0.28126055,
+        cl_min_clean_htp=-0.28842343,
+        alpha_max_clean_htp=30.61962342,
+        alpha_min_clean_htp=-31.39941503,
     )
 
 
@@ -1290,7 +1292,7 @@ def test_compute_mach_interpolation_roskam():
     compute_mach_interpolation_roskam_neuralfoil(
         XML_FILE,
         cl_alpha_vector=np.array(
-            [0.96150738, 0.9668586, 0.98327505, 1.0119083, 1.05490941, 1.11586366]
+            [5.46792373, 5.49297247, 5.56948779, 5.70176324, 5.89762278, 6.16960541]
         ),
         mach_vector=np.array([0.0, 0.07713463, 0.15426927, 0.2314039, 0.30853854, 0.38567317]),
     )

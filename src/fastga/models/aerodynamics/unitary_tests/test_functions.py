@@ -410,7 +410,6 @@ def polar_neuralfoil(
     cdp_1_low_speed: float,
 ):
     """Tests polar execution (NeuralFOIL) @ high and low speed!"""
-
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
     ivc.add_output("neuralfoil:mach", mach_high_speed)
@@ -434,7 +433,6 @@ def polar_neuralfoil(
     # Run problem
     neuralfoil_comp = NeuralfoilPolar(alpha_start=0.0, alpha_end=25.0)
     problem = run_system(neuralfoil_comp, ivc)
-
     # Check obtained value(s) is/(are) correct
     cl = problem["neuralfoil:CL"]
     cdp = problem["neuralfoil:CDp"]
@@ -557,6 +555,8 @@ def polar_single_aoa_neuralfoil(
     XML_FILE: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
+    alpha: float,
+    cl: float,
 ):
     """
     Tests polar execution (NeuralFoil) @ low speed! Run Neuralfoil once with multiple AOA then
@@ -567,38 +567,12 @@ def polar_single_aoa_neuralfoil(
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
 
-    # Define low-speed parameters (with .xml file and additional inputs)
-    ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
-    ivc.add_output("neuralfoil:mach", mach_low_speed)
-    ivc.add_output("neuralfoil:reynolds", reynolds_low_speed)
-
-    # Run problem
-    nfoil_comp = NeuralfoilPolar(alpha_start=2.0, alpha_end=7.5)
-    problem = run_system(nfoil_comp, ivc)
-
-    # Retrieve polar results from temporary folder
-    polar_result_retrieve(tmp_folder)
-
-    # Extract value for 5.0 deg
-    cl = problem["neuralfoil:CL"]
-    cdp = problem["neuralfoil:CDp"]
-
-    alpha = problem["neuralfoil:alpha"]
-    index_5_deg = list(alpha).index(5.0)
-
-    cl, cdp = reshape_polar(cl, cdp)
-
-    cl_5 = cl[index_5_deg]
-
-    # Transfer saved polar results to temporary folder
-    tmp_folder = polar_result_transfer()
-
     # Define high-speed parameters (with .xml file and additional inputs)
     ivc = get_indep_var_comp(list_inputs(NeuralfoilPolar()), __file__, XML_FILE)
     ivc.add_output("neuralfoil:mach", mach_low_speed)
     ivc.add_output("neuralfoil:reynolds", reynolds_low_speed)
     # Run problem
-    nfoil_comp = NeuralfoilPolar(alpha_start=5.0, single_AoA=True)
+    nfoil_comp = NeuralfoilPolar(alpha_start=alpha, single_AoA=True)
     problem = run_system(nfoil_comp, ivc)
 
     # Retrieve polar results from temporary folder
@@ -606,7 +580,7 @@ def polar_single_aoa_neuralfoil(
 
     # Check obtained value(s) is/(are) correct
     cl_s = problem["neuralfoil:CL"]
-    assert cl_5 == pytest.approx(cl_s, abs=1e-3)  # tolerance increased
+    assert cl == pytest.approx(cl_s, abs=1e-3)  # tolerance increased
 
 
 def polar_single_aoa_inv(

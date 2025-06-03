@@ -25,8 +25,8 @@ from ..constants import POLAR_POINT_COUNT, SUBMODEL_AIRFOIL_LIFT_SLOPE
 from ..external.xfoil.xfoil_polar import XfoilPolar
 from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
-ALPHA_START_LINEAR = -5.0
-ALPHA_END_LINEAR = 10.0
+ALPHA_START_LINEAR = np.deg2rad(-5.0)
+ALPHA_END_LINEAR = np.deg2rad(10.0)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -204,14 +204,14 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         af_model = self.options["airfoil_model"]
 
         self.add_input(
-            name=af_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
+            name=af_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="rad"
         )
         self.add_input(name=af_model + ":wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
             name=af_model + ":horizontal_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
-            units="deg",
+            units="rad",
         )
         self.add_input(
             name=af_model + ":horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT
@@ -220,7 +220,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
             name=af_model + ":vertical_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
-            units="deg",
+            units="rad",
         )
         self.add_input(name=af_model + ":vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
@@ -242,7 +242,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         wing_airfoil_cl_alpha_array = (
             wing_cl[index_start_wing + 1 : index_end_wing] - wing_cl[index_start_wing]
         ) / (wing_alpha[index_start_wing + 1 : index_end_wing] - wing_alpha[index_start_wing])
-        wing_airfoil_cl_alpha = np.mean(wing_airfoil_cl_alpha_array) * 180.0 / np.pi
+        wing_airfoil_cl_alpha = np.mean(wing_airfoil_cl_alpha_array)
 
         htp_cl_orig = inputs[af_model + ":horizontal_tail:CL"]
         htp_alpha_orig = inputs[af_model + ":horizontal_tail:alpha"]
@@ -255,7 +255,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         htp_airfoil_cl_alpha_array = (
             htp_cl[index_start_htp + 1 : index_end_htp] - htp_cl[index_start_htp]
         ) / (htp_alpha[index_start_htp + 1 : index_end_htp] - htp_alpha[index_start_htp])
-        htp_airfoil_cl_alpha = np.mean(htp_airfoil_cl_alpha_array) * 180.0 / np.pi
+        htp_airfoil_cl_alpha = np.mean(htp_airfoil_cl_alpha_array)
 
         vtp_cl_orig = inputs[af_model + ":horizontal_tail:CL"]
         vtp_alpha_orig = inputs[af_model + ":horizontal_tail:alpha"]
@@ -268,7 +268,7 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         vtp_airfoil_cl_alpha_array = (
             vtp_cl[index_start_vtp + 1 : index_end_vtp] - vtp_cl[index_start_vtp]
         ) / (vtp_alpha[index_start_vtp + 1 : index_end_vtp] - vtp_alpha[index_start_vtp])
-        vtp_airfoil_cl_alpha = np.mean(vtp_airfoil_cl_alpha_array) * 180.0 / np.pi
+        vtp_airfoil_cl_alpha = np.mean(vtp_airfoil_cl_alpha_array)
 
         outputs["data:aerodynamics:horizontal_tail:airfoil:CL_alpha"] = htp_airfoil_cl_alpha
         outputs["data:aerodynamics:vertical_tail:airfoil:CL_alpha"] = vtp_airfoil_cl_alpha
