@@ -115,62 +115,46 @@ class ComputeAeroVLM(Group):
             promotes=["*"],
         )
 
-        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
-
         if self.options["low_speed_aero"]:
-            self.connect(
-                "data:aerodynamics:low_speed:mach", "wing_polar_ls." + airfoil_model + ":mach"
-            )
+            self.connect("data:aerodynamics:low_speed:mach", "wing_polar_ls.mach")
             self.connect(
                 "data:aerodynamics:wing:low_speed:reynolds",
-                "wing_polar_ls." + airfoil_model + ":reynolds",
+                "wing_polar_ls.reynolds",
             )
-            self.connect(
-                "wing_polar_ls." + airfoil_model + ":CL", "data:aerodynamics:wing:low_speed:CL"
-            )
-            self.connect(
-                "wing_polar_ls." + airfoil_model + ":CDp", "data:aerodynamics:wing:low_speed:CDp"
-            )
-            self.connect(
-                "data:aerodynamics:low_speed:mach", "htp_polar_ls." + airfoil_model + ":mach"
-            )
+            self.connect("wing_polar_ls.CL", "data:aerodynamics:wing:low_speed:CL")
+            self.connect("wing_polar_ls.CDp", "data:aerodynamics:wing:low_speed:CDp")
+            self.connect("data:aerodynamics:low_speed:mach", "htp_polar_ls.mach")
             self.connect(
                 "data:aerodynamics:horizontal_tail:low_speed:reynolds",
-                "htp_polar_ls." + airfoil_model + ":reynolds",
+                "htp_polar_ls.reynolds",
             )
             self.connect(
-                "htp_polar_ls." + airfoil_model + ":CL",
+                "htp_polar_ls.CL",
                 "data:aerodynamics:horizontal_tail:low_speed:CL",
             )
             self.connect(
-                "htp_polar_ls." + airfoil_model + ":CDp",
+                "htp_polar_ls.CDp",
                 "data:aerodynamics:horizontal_tail:low_speed:CDp",
             )
         else:
-            self.connect(
-                "data:aerodynamics:cruise:mach", "wing_polar_hs." + airfoil_model + ":mach"
-            )
+            self.connect("data:aerodynamics:cruise:mach", "wing_polar_hs.mach")
             self.connect(
                 "data:aerodynamics:wing:cruise:reynolds",
-                "wing_polar_hs." + airfoil_model + ":reynolds",
+                "wing_polar_hs.reynolds",
             )
-            self.connect(
-                "wing_polar_hs." + airfoil_model + ":CL", "data:aerodynamics:wing:cruise:CL"
-            )
-            self.connect(
-                "wing_polar_hs." + airfoil_model + ":CDp", "data:aerodynamics:wing:cruise:CDp"
-            )
-            self.connect("data:aerodynamics:cruise:mach", "htp_polar_hs." + airfoil_model + ":mach")
+            self.connect("wing_polar_hs.CL", "data:aerodynamics:wing:cruise:CL")
+            self.connect("wing_polar_hs.CDp", "data:aerodynamics:wing:cruise:CDp")
+            self.connect("data:aerodynamics:cruise:mach", "htp_polar_hs.mach")
             self.connect(
                 "data:aerodynamics:horizontal_tail:cruise:reynolds",
-                "htp_polar_hs." + airfoil_model + ":reynolds",
+                "htp_polar_hs.reynolds",
             )
             self.connect(
-                "htp_polar_hs." + airfoil_model + ":CL",
+                "htp_polar_hs.CL",
                 "data:aerodynamics:horizontal_tail:cruise:CL",
             )
             self.connect(
-                "htp_polar_hs." + airfoil_model + ":CDp",
+                "htp_polar_hs.CDp",
                 "data:aerodynamics:horizontal_tail:cruise:CDp",
             )
 

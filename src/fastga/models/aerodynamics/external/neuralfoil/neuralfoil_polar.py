@@ -70,25 +70,25 @@ class NeuralfoilPolar(ExternalCodeComp):
 
         multiple_aoa = not self.options["single_AoA"]
 
-        self.add_input("neuralfoil:reynolds", val=np.nan)
-        self.add_input("neuralfoil:mach", val=np.nan)
+        self.add_input("reynolds", val=np.nan)
+        self.add_input("mach", val=np.nan)
 
         if multiple_aoa:
-            self.add_output("neuralfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
-            self.add_output("neuralfoil:CL", shape=POLAR_POINT_COUNT)
-            self.add_output("neuralfoil:CD", shape=POLAR_POINT_COUNT)
-            self.add_output("neuralfoil:CDp", val=np.zeros(POLAR_POINT_COUNT))
-            self.add_output("neuralfoil:CM", shape=POLAR_POINT_COUNT)
-            self.add_output("neuralfoil:CL_max_2D")
-            self.add_output("neuralfoil:CL_min_2D")
-            self.add_output("neuralfoil:CD_min_2D")
+            self.add_output("alpha", shape=POLAR_POINT_COUNT, units="deg")
+            self.add_output("CL", shape=POLAR_POINT_COUNT)
+            self.add_output("CD", shape=POLAR_POINT_COUNT)
+            self.add_output("CDp", val=np.zeros(POLAR_POINT_COUNT))
+            self.add_output("CM", shape=POLAR_POINT_COUNT)
+            self.add_output("CL_max_2D")
+            self.add_output("CL_min_2D")
+            self.add_output("CD_min_2D")
 
         else:
-            self.add_output("neuralfoil:alpha", units="deg")
-            self.add_output("neuralfoil:CL")
-            self.add_output("neuralfoil:CD")
-            self.add_output("neuralfoil:CDp", val=0.0)
-            self.add_output("neuralfoil:CM")
+            self.add_output("alpha", units="deg")
+            self.add_output("CL")
+            self.add_output("CD")
+            self.add_output("CDp", val=0.0)
+            self.add_output("CM")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -106,8 +106,8 @@ class NeuralfoilPolar(ExternalCodeComp):
         """
 
         # Get inputs and initialise outputs
-        mach = round(float(inputs["neuralfoil:mach"]), 4)
-        reynolds = round(float(inputs["neuralfoil:reynolds"]))
+        mach = round(float(inputs["mach"]), 4)
+        reynolds = round(float(inputs["reynolds"]))
 
         # Compressibility correction
         beta = np.sqrt(1.0 - mach**2.0)
@@ -152,14 +152,14 @@ class NeuralfoilPolar(ExternalCodeComp):
             alpha, cl, cd, cm = self._fix_calculation_result_length(results)
 
         # Defining outputs -------------------------------------------------------------------------
-        outputs["neuralfoil:alpha"] = alpha
-        outputs["neuralfoil:CL"] = cl
-        outputs["neuralfoil:CD"] = cd
-        outputs["neuralfoil:CM"] = cm
+        outputs["alpha"] = alpha
+        outputs["CL"] = cl
+        outputs["CD"] = cd
+        outputs["CM"] = cm
         if multiple_aoa:
-            outputs["neuralfoil:CL_max_2D"] = cl_max_2d
-            outputs["neuralfoil:CL_min_2D"] = cl_min_2d
-            outputs["neuralfoil:CD_min_2D"] = cd_min_2d
+            outputs["CL_max_2D"] = cl_max_2d
+            outputs["CL_min_2D"] = cl_min_2d
+            outputs["CD_min_2D"] = cd_min_2d
 
         if os.path.exists(airfoil_path):
             os.remove(airfoil_path)

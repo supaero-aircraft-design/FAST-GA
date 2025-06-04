@@ -50,11 +50,9 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
 
     # noinspection PyTypeChecker
     def setup(self):
-        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
-
         self.add_subsystem(
             "comp_local_reynolds_airfoil",
-            ComputeLocalReynolds(airfoil_model=airfoil_model),
+            ComputeLocalReynolds(),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
                 "data:aerodynamics:low_speed:unit_reynolds",
@@ -103,61 +101,48 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
 
         self.add_subsystem(
             "airfoil_lift_slope",
-            _ComputeAirfoilLiftCurveSlope(airfoil_model=airfoil_model),
+            _ComputeAirfoilLiftCurveSlope(),
             promotes=["*"],
         )
 
         self.connect(
-            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
-            "wing_airfoil_slope." + airfoil_model + ":mach",
+            "comp_local_reynolds_airfoil.mach",
+            "wing_airfoil_slope.mach",
         )
         self.connect(
             "data:aerodynamics:wing:MAC:low_speed:reynolds",
-            "wing_airfoil_slope." + airfoil_model + ":reynolds",
+            "wing_airfoil_slope.reynolds",
         )
         self.connect(
-            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
-            "htp_airfoil_slope." + airfoil_model + ":mach",
+            "comp_local_reynolds_airfoil.mach",
+            "htp_airfoil_slope.mach",
         )
         self.connect(
             "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
-            "htp_airfoil_slope." + airfoil_model + ":reynolds",
+            "htp_airfoil_slope.reynolds",
         )
         self.connect(
-            "comp_local_reynolds_airfoil." + airfoil_model + ":mach",
-            "vtp_airfoil_slope." + airfoil_model + ":mach",
+            "comp_local_reynolds_airfoil.mach",
+            "vtp_airfoil_slope.mach",
         )
         self.connect(
             "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
-            "vtp_airfoil_slope." + airfoil_model + ":reynolds",
+            "vtp_airfoil_slope.reynolds",
         )
 
+        self.connect("wing_airfoil_slope.alpha", "wing:alpha")
+        self.connect("wing_airfoil_slope.CL", "wing:CL")
         self.connect(
-            "wing_airfoil_slope." + airfoil_model + ":alpha", airfoil_model + ":wing:alpha"
+            "htp_airfoil_slope.alpha",
+            "horizontal_tail:alpha",
         )
-        self.connect("wing_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":wing:CL")
-        self.connect(
-            "htp_airfoil_slope." + airfoil_model + ":alpha",
-            airfoil_model + ":horizontal_tail:alpha",
-        )
-        self.connect(
-            "htp_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":horizontal_tail:CL"
-        )
-        self.connect(
-            "vtp_airfoil_slope." + airfoil_model + ":alpha", airfoil_model + ":vertical_tail:alpha"
-        )
-        self.connect(
-            "vtp_airfoil_slope." + airfoil_model + ":CL", airfoil_model + ":vertical_tail:CL"
-        )
+        self.connect("htp_airfoil_slope.CL", "horizontal_tail:CL")
+        self.connect("vtp_airfoil_slope.alpha", "vertical_tail:alpha")
+        self.connect("vtp_airfoil_slope.CL", "vertical_tail:CL")
 
 
 class ComputeLocalReynolds(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
-
     def setup(self):
-        airfoil_model = self.options["airfoil_model"]
-
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -169,13 +154,11 @@ class ComputeLocalReynolds(om.ExplicitComponent):
         self.add_output("data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds")
         self.add_output("data:aerodynamics:vertical_tail:MAC:low_speed:reynolds")
 
-        self.add_output(name=airfoil_model + ":mach")
+        self.add_output(name="mach")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        airfoil_model = self.options["airfoil_model"]
-
         outputs["data:aerodynamics:wing:MAC:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:MAC:length"]
@@ -190,49 +173,39 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:vertical_tail:MAC:length"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-        outputs[airfoil_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
     """Lift curve slope coefficient from Xfoil or Neuralfoil polars."""
 
-    def initialize(self):
-        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
-
     def setup(self):
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
-        af_model = self.options["airfoil_model"]
 
+        self.add_input(name="wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="rad")
+        self.add_input(name="wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            name=af_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="rad"
-        )
-        self.add_input(name=af_model + ":wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
-        self.add_input(
-            name=af_model + ":horizontal_tail:alpha",
+            name="horizontal_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="rad",
         )
+        self.add_input(name="horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            name=af_model + ":horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT
-        )
-        self.add_input(
-            name=af_model + ":vertical_tail:alpha",
+            name="vertical_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="rad",
         )
-        self.add_input(name=af_model + ":vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input(name="vertical_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
         self.add_output("data:aerodynamics:horizontal_tail:airfoil:CL_alpha", units="rad**-1")
         self.add_output("data:aerodynamics:vertical_tail:airfoil:CL_alpha", units="rad**-1")
         self.add_output("data:aerodynamics:wing:airfoil:CL_alpha", units="rad**-1")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        af_model = self.options["airfoil_model"]
-
-        wing_cl_orig = inputs[af_model + ":wing:CL"]
-        wing_alpha_orig = inputs[af_model + ":wing:alpha"]
+        wing_cl_orig = inputs["wing:CL"]
+        wing_alpha_orig = inputs["wing:alpha"]
         wing_alpha, wing_cl = self.delete_additional_zeros(
             np.array(wing_alpha_orig), np.array(wing_cl_orig)
         )
@@ -244,8 +217,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         ) / (wing_alpha[index_start_wing + 1 : index_end_wing] - wing_alpha[index_start_wing])
         wing_airfoil_cl_alpha = np.mean(wing_airfoil_cl_alpha_array)
 
-        htp_cl_orig = inputs[af_model + ":horizontal_tail:CL"]
-        htp_alpha_orig = inputs[af_model + ":horizontal_tail:alpha"]
+        htp_cl_orig = inputs["horizontal_tail:CL"]
+        htp_alpha_orig = inputs["horizontal_tail:alpha"]
         htp_alpha, htp_cl = self.delete_additional_zeros(
             np.array(htp_alpha_orig), np.array(htp_cl_orig)
         )
@@ -257,8 +230,8 @@ class _ComputeAirfoilLiftCurveSlope(om.ExplicitComponent):
         ) / (htp_alpha[index_start_htp + 1 : index_end_htp] - htp_alpha[index_start_htp])
         htp_airfoil_cl_alpha = np.mean(htp_airfoil_cl_alpha_array)
 
-        vtp_cl_orig = inputs[af_model + ":horizontal_tail:CL"]
-        vtp_alpha_orig = inputs[af_model + ":horizontal_tail:alpha"]
+        vtp_cl_orig = inputs["horizontal_tail:CL"]
+        vtp_alpha_orig = inputs["horizontal_tail:alpha"]
         vtp_alpha, vtp_cl = self.delete_additional_zeros(
             np.array(vtp_alpha_orig), np.array(vtp_cl_orig)
         )

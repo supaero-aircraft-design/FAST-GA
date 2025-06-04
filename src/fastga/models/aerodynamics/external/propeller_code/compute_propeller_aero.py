@@ -76,14 +76,13 @@ class ComputePropellerPerformance(om.Group):
                 promotes=[],
             )
 
-            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
                 "data:aerodynamics:propeller:mach",
-                profile + "_polar_efficiency." + airfoil_model + ":mach",
+                profile + "_polar_efficiency.mach",
             )
             self.connect(
                 "data:aerodynamics:propeller:reynolds",
-                profile + "_polar_efficiency." + airfoil_model + ":reynolds",
+                profile + "_polar_efficiency.reynolds",
             )
 
         self.add_subsystem(
@@ -99,17 +98,16 @@ class ComputePropellerPerformance(om.Group):
         )
 
         for profile in self.options["sections_profile_name_list"]:
-            airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
             self.connect(
-                profile + "_polar_efficiency." + airfoil_model + ":alpha",
+                profile + "_polar_efficiency.alpha",
                 "propeller_aero." + profile + "_polar:alpha",
             )
             self.connect(
-                profile + "_polar_efficiency." + airfoil_model + ":CL",
+                profile + "_polar_efficiency.CL",
                 "propeller_aero." + profile + "_polar:CL",
             )
             self.connect(
-                profile + "_polar_efficiency." + airfoil_model + ":CD",
+                profile + "_polar_efficiency.CD",
                 "propeller_aero." + profile + "_polar:CD",
             )
 

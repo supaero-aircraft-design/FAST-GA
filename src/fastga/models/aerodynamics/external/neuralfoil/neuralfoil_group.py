@@ -46,12 +46,12 @@ class NeuralfoilGroup(Group):
             promotes=[],
         )
         self.connect(
-            "neuralfoil_group_prep.neuralfoil_group:reynolds",
-            "neuralfoil_polar.neuralfoil:reynolds",
+            "neuralfoil_group_prep.reynolds",
+            "neuralfoil_polar.reynolds",
         )
         self.connect(
-            "neuralfoil_group_prep.neuralfoil_group:mach",
-            "neuralfoil_polar.neuralfoil:mach",
+            "neuralfoil_group_prep.mach",
+            "neuralfoil_polar.mach",
         )
 
 
@@ -62,10 +62,10 @@ class _NeuralfoilGroupPrep(ExplicitComponent):
         self.add_input("data:Xfoil_pre_processing:reynolds", val=np.nan)
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
-        self.add_output("neuralfoil_group:reynolds")
-        self.add_output("neuralfoil_group:mach")
+        self.add_output("reynolds")
+        self.add_output("mach")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sos = Atmosphere(0.0).speed_of_sound
-        outputs["neuralfoil_group:mach"] = inputs["data:TLAR:v_approach"] / sos
-        outputs["neuralfoil_group:reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]
+        outputs["mach"] = inputs["data:TLAR:v_approach"] / sos
+        outputs["reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]

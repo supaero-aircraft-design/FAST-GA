@@ -40,11 +40,9 @@ class ComputeExtremeCLHtp(om.Group):
         self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
-        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
-
         self.add_subsystem(
             "comp_local_reynolds_htp",
-            ComputeLocalReynolds(airfoil_model=airfoil_model),
+            ComputeLocalReynolds(),
             promotes=[
                 "data:aerodynamics:low_speed:mach",
                 "data:aerodynamics:low_speed:unit_reynolds",
@@ -82,46 +80,41 @@ class ComputeExtremeCLHtp(om.Group):
         self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
 
         self.connect(
-            "comp_local_reynolds_htp." + airfoil_model + ":mach",
-            "htp_root_polar." + airfoil_model + ":mach",
+            "comp_local_reynolds_htp.mach",
+            "htp_root_polar.mach",
         )
         self.connect(
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
-            "htp_root_polar." + airfoil_model + ":reynolds",
+            "htp_root_polar.reynolds",
         )
         self.connect(
-            "htp_root_polar." + airfoil_model + ":CL_max_2D",
+            "htp_root_polar.CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_max_2D",
         )
         self.connect(
-            "htp_root_polar." + airfoil_model + ":CL_min_2D",
+            "htp_root_polar.CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
         )
         self.connect(
-            "comp_local_reynolds_htp." + airfoil_model + ":mach",
-            "htp_tip_polar." + airfoil_model + ":mach",
+            "comp_local_reynolds_htp.mach",
+            "htp_tip_polar.mach",
         )
         self.connect(
             "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
-            "htp_tip_polar." + airfoil_model + ":reynolds",
+            "htp_tip_polar.reynolds",
         )
         self.connect(
-            "htp_tip_polar." + airfoil_model + ":CL_max_2D",
+            "htp_tip_polar.CL_max_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_max_2D",
         )
         self.connect(
-            "htp_tip_polar." + airfoil_model + ":CL_min_2D",
+            "htp_tip_polar.CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:tip:CL_min_2D",
         )
 
 
 class ComputeLocalReynolds(om.ExplicitComponent):
-    def initialize(self):
-        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
-
     def setup(self):
-        airfoil_model = self.options["airfoil_model"]
-
         self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
         self.add_input("data:aerodynamics:low_speed:unit_reynolds", val=np.nan, units="m**-1")
         self.add_input("data:geometry:horizontal_tail:root:chord", val=np.nan, units="m")
@@ -130,13 +123,11 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:horizontal_tail:root:low_speed:reynolds")
         self.add_output("data:aerodynamics:horizontal_tail:tip:low_speed:reynolds")
-        self.add_output(name=airfoil_model + ":mach")
+        self.add_output(name="mach")
 
         self.declare_partials("*", "*", method="fd")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        airfoil_model = self.options["airfoil_model"]
-
         outputs["data:aerodynamics:horizontal_tail:root:low_speed:reynolds"] = (
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:horizontal_tail:root:chord"]
@@ -147,7 +138,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             * inputs["data:geometry:horizontal_tail:tip:chord"]
             * np.sqrt(inputs["data:aerodynamics:horizontal_tail:efficiency"])
         )
-        outputs[airfoil_model + ":mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class ComputeHtp3DExtremeCL(om.ExplicitComponent):

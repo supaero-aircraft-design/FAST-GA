@@ -62,40 +62,26 @@ class ComputeMachInterpolation(om.Group):
             ),
             promotes=[],
         )
-
-        airfoil_model = "neuralfoil" if self.options["use_neuralfoil"] else "xfoil"
-
         self.add_subsystem(
             "mach_interpolation",
-            _ComputeMachInterpolation(airfoil_model=airfoil_model),
+            _ComputeMachInterpolation(),
             promotes=["*"],
         )
 
-        self.connect("incompressible_conditions.mach", "wing_airfoil." + airfoil_model + ":mach")
-        self.connect(
-            "incompressible_conditions.reynolds", "wing_airfoil." + airfoil_model + ":reynolds"
-        )
-        self.connect("incompressible_conditions.mach", "htp_airfoil." + airfoil_model + ":mach")
-        self.connect(
-            "incompressible_conditions.reynolds", "htp_airfoil." + airfoil_model + ":reynolds"
-        )
+        self.connect("incompressible_conditions.mach", "wing_airfoil.mach")
+        self.connect("incompressible_conditions.reynolds", "wing_airfoil.reynolds")
+        self.connect("incompressible_conditions.mach", "htp_airfoil.mach")
+        self.connect("incompressible_conditions.reynolds", "htp_airfoil.reynolds")
 
-        self.connect("wing_airfoil." + airfoil_model + ":alpha", "" + airfoil_model + ":wing:alpha")
-        self.connect("wing_airfoil." + airfoil_model + ":CL", "" + airfoil_model + ":wing:CL")
-        self.connect(
-            "htp_airfoil." + airfoil_model + ":alpha", "" + airfoil_model + ":horizontal_tail:alpha"
-        )
-        self.connect(
-            "htp_airfoil." + airfoil_model + ":CL", "" + airfoil_model + ":horizontal_tail:CL"
-        )
+        self.connect("wing_airfoil.alpha", "wing:alpha")
+        self.connect("wing_airfoil.CL", "wing:CL")
+        self.connect("htp_airfoil.alpha", "horizontal_tail:alpha")
+        self.connect("htp_airfoil.CL", "horizontal_tail:CL")
 
 
 class _ComputeMachInterpolation(om.ExplicitComponent):
     # Based on the equation of Roskam Part VI
     """Lift curve slope coefficient as a function of Mach number"""
-
-    def initialize(self):
-        self.options.declare("airfoil_model", default="xfoil", values=["xfoil", "neuralfoil"])
 
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -116,22 +102,16 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         self.add_input("data:TLAR:v_cruise", val=np.nan, units="m/s")
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
-        airfoil_model = self.options["airfoil_model"]
-
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
+        self.add_input("wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
+        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            airfoil_model + ":wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
-        )
-        self.add_input(airfoil_model + ":wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
-        self.add_input(
-            airfoil_model + ":horizontal_tail:alpha",
+            "horizontal_tail:alpha",
             val=nans_array,
             shape=POLAR_POINT_COUNT,
             units="deg",
         )
-        self.add_input(
-            airfoil_model + ":horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT
-        )
+        self.add_input("horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
 
@@ -169,25 +149,19 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         ).speed_of_sound
         mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
 
-        airfoil_model = self.options["airfoil_model"]
-
-        wing_cl = self._reshape(
-            inputs[airfoil_model + ":wing:alpha"], inputs[airfoil_model + ":wing:CL"]
-        )
-        wing_alpha = self._reshape(
-            inputs[airfoil_model + ":wing:alpha"], inputs[airfoil_model + ":wing:alpha"]
-        )
+        wing_cl = self._reshape(inputs["wing:alpha"], inputs["wing:CL"])
+        wing_alpha = self._reshape(inputs["wing:alpha"], inputs["wing:alpha"])
         wing_airfoil_cl_alpha = (
             np.interp(11.0, wing_alpha, wing_cl) - np.interp(1.0, wing_alpha, wing_cl)
         ) / (10.0 * np.pi / 180.0)
 
         htp_cl = self._reshape(
-            inputs[airfoil_model + ":horizontal_tail:alpha"],
-            inputs[airfoil_model + ":horizontal_tail:CL"],
+            inputs["horizontal_tail:alpha"],
+            inputs["horizontal_tail:CL"],
         )
         htp_alpha = self._reshape(
-            inputs[airfoil_model + ":horizontal_tail:alpha"],
-            inputs[airfoil_model + ":horizontal_tail:alpha"],
+            inputs["horizontal_tail:alpha"],
+            inputs["horizontal_tail:alpha"],
         )
         htp_airfoil_cl_alpha = (
             np.interp(11.0, htp_alpha, htp_cl) - np.interp(1.0, htp_alpha, htp_cl)

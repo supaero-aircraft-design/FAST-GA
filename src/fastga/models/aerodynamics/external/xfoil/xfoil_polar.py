@@ -103,25 +103,25 @@ class XfoilPolar(ExternalCodeComp):
 
         multiple_aoa = not self.options["single_AoA"]
 
-        self.add_input("xfoil:mach", val=np.nan)
-        self.add_input("xfoil:reynolds", val=np.nan)
+        self.add_input("mach", val=np.nan)
+        self.add_input("reynolds", val=np.nan)
 
         if multiple_aoa:
-            self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
-            self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CDp", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CM", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CL_max_2D")
-            self.add_output("xfoil:CL_min_2D")
-            self.add_output("xfoil:CD_min_2D")
+            self.add_output("alpha", shape=POLAR_POINT_COUNT, units="deg")
+            self.add_output("CL", shape=POLAR_POINT_COUNT)
+            self.add_output("CD", shape=POLAR_POINT_COUNT)
+            self.add_output("CDp", shape=POLAR_POINT_COUNT)
+            self.add_output("CM", shape=POLAR_POINT_COUNT)
+            self.add_output("CL_max_2D")
+            self.add_output("CL_min_2D")
+            self.add_output("CD_min_2D")
 
         else:
-            self.add_output("xfoil:alpha", units="deg")
-            self.add_output("xfoil:CL")
-            self.add_output("xfoil:CD")
-            self.add_output("xfoil:CDp")
-            self.add_output("xfoil:CM")
+            self.add_output("alpha", units="deg")
+            self.add_output("CL")
+            self.add_output("CD")
+            self.add_output("CDp")
+            self.add_output("CM")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -142,8 +142,8 @@ class XfoilPolar(ExternalCodeComp):
         self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
-        mach = round(float(inputs["xfoil:mach"]), 4)
-        reynolds = round(float(inputs["xfoil:reynolds"]))
+        mach = round(float(inputs["mach"]), 4)
+        reynolds = round(float(inputs["reynolds"]))
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
@@ -245,15 +245,15 @@ class XfoilPolar(ExternalCodeComp):
             ) = self._extract_fix_interpolated_result_length(interpolated_result)
 
         # Defining outputs -------------------------------------------------------------------------
-        outputs["xfoil:alpha"] = alpha
-        outputs["xfoil:CL"] = cl
-        outputs["xfoil:CD"] = cd
-        outputs["xfoil:CDp"] = cdp
-        outputs["xfoil:CM"] = cm
+        outputs["alpha"] = alpha
+        outputs["CL"] = cl
+        outputs["CD"] = cd
+        outputs["CDp"] = cdp
+        outputs["CM"] = cm
         if multiple_aoa:
-            outputs["xfoil:CL_max_2D"] = cl_max_2d
-            outputs["xfoil:CL_min_2D"] = cl_min_2d
-            outputs["xfoil:CD_min_2D"] = cd_min_2d
+            outputs["CL_max_2D"] = cl_max_2d
+            outputs["CL_min_2D"] = cl_min_2d
+            outputs["CD_min_2D"] = cd_min_2d
 
     def _write_script_file(
         self,

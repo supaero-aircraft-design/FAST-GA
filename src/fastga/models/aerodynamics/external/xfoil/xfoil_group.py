@@ -46,8 +46,8 @@ class XfoilGroup(Group):
             promotes=[],
         )
 
-        self.connect("pre_xfoil_group_prep.xfoil_group:mach", "pre_xfoil_polar.xfoil:mach")
-        self.connect("pre_xfoil_group_prep.xfoil_group:reynolds", "pre_xfoil_polar.xfoil:reynolds")
+        self.connect("pre_xfoil_group_prep.mach", "pre_xfoil_polar.mach")
+        self.connect("pre_xfoil_group_prep.reynolds", "pre_xfoil_polar.reynolds")
 
 
 class _XfoilGroupPrep(ExplicitComponent):
@@ -57,10 +57,10 @@ class _XfoilGroupPrep(ExplicitComponent):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:Xfoil_pre_processing:reynolds", val=np.nan)
 
-        self.add_output("xfoil_group:mach")
-        self.add_output("xfoil_group:reynolds")
+        self.add_output("mach")
+        self.add_output("reynolds")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sos = Atmosphere(0.0).speed_of_sound
-        outputs["xfoil_group:mach"] = inputs["data:TLAR:v_approach"] / sos
-        outputs["xfoil_group:reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]
+        outputs["mach"] = inputs["data:TLAR:v_approach"] / sos
+        outputs["reynolds"] = inputs["data:Xfoil_pre_processing:reynolds"]
