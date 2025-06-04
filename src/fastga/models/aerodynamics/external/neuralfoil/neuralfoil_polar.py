@@ -105,9 +105,6 @@ class NeuralfoilPolar(ExternalCodeComp):
         @param outputs: outputs parameters defined within FAST-OAD-GA
         """
 
-        # Define timeout for the function
-        self.options["timeout"] = 15.0
-
         # Get inputs and initialise outputs
         mach = round(float(inputs["neuralfoil:mach"]), 4)
         reynolds = round(float(inputs["neuralfoil:reynolds"]))
