@@ -63,7 +63,7 @@ class NeuralfoilPolar(ExternalCodeComp):
 
     def setup(self):
         """
-        Set up inputs and outputs required for this operation.The pressure drag coefficient ratio
+        Set up inputs and outputs required for this operation.The pressure drag coefficient
         (CDp) is set to zero in all computations, as NeuralFoil does not provide it, ensuring
         backward compatibility.
         """
@@ -98,7 +98,7 @@ class NeuralfoilPolar(ExternalCodeComp):
 
     def compute(self, inputs, outputs):
         """
-        Function that computes airfoil aerodynamics with XFoil and returns the different 2D
+        Function that computes airfoil aerodynamics with NeuralFoil and returns the different 2D
         aerodynamic parameters.
 
         @param inputs: inputs parameters defined within FAST-OAD-GA
