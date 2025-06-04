@@ -48,7 +48,6 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
         self.options.declare("vtp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("use_neuralfoil", default=False, types=bool)
 
-    # noinspection PyTypeChecker
     def setup(self):
         self.add_subsystem(
             "comp_local_reynolds_airfoil",
