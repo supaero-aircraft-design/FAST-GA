@@ -40,6 +40,8 @@ class ComputeMachInterpolation(om.Group):
         ivc_conditions.add_output("reynolds", val=0.5e6)
         self.add_subsystem("incompressible_conditions", ivc_conditions, promotes=[])
 
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
         airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
 
         self.add_subsystem(

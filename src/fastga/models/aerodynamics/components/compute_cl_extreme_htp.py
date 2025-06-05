@@ -54,6 +54,8 @@ class ComputeExtremeCLHtp(om.Group):
             ],
         )
 
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
         airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
 
         self.add_subsystem(

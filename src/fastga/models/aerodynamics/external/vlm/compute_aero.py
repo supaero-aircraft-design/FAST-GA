@@ -58,6 +58,8 @@ class ComputeAeroVLM(Group):
             ComputeLocalReynolds(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["*"],
         )
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
         airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
         if self.options["low_speed_aero"]:
             self.add_subsystem(

@@ -64,6 +64,8 @@ class ComputePropellerPerformance(om.Group):
         ivc.add_output("data:aerodynamics:propeller:reynolds", val=1e6)
         self.add_subsystem("propeller_efficiency_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
+            # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+            # otherwise, uses Xfoil
             airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
             self.add_subsystem(
                 profile + "_polar_efficiency",
