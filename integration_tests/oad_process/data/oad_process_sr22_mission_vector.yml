@@ -11,6 +11,12 @@ output_file: ../results/oad_process_outputs.xml
 # Definition of problem driver assuming the OpenMDAO convention "import openmdao.api as om"
 driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 
+model_options:
+    "*":
+        propulsion_id: fastga.wrapper.propulsion.basicIC_engine
+        result_folder_path: ../workdir
+        compute_slipstream: false
+
 model:
     propeller:
         id: fastga.aerodynamics.propeller
@@ -19,28 +25,18 @@ model:
         linear_solver: om.DirectSolver()
         geometry:
             id: fastga.geometry.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-            result_folder_path: ../workdir
-            compute_slipstream: false
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-            result_folder_path : ../workdir
             compute_mach_interpolation : false
-            compute_slipstream : false
         weight:
             id: fastga.weight.legacy
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
         performance:
             id: fastga.performances.mission_vector
-            propulsion_id: fastga.wrapper.propulsion.basicIC_engine
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing
-                propulsion_id: fastga.wrapper.propulsion.basicIC_engine
             static_margin:
                 id: fastga.handling_qualities.static_margin
         mtow:
