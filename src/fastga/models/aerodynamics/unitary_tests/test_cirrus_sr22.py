@@ -25,20 +25,20 @@ from .test_functions import (
     cd0_low_speed,
     polar_xfoil,
     polar_neuralfoil,
-    polar_single_aoa,
+    polar_single_aoa_xfoil,
     polar_single_aoa_neuralfoil,
     polar_single_aoa_inv,
     airfoil_slope_wt_xfoil,
     airfoil_slope_wt_neuralfoil,
     airfoil_slope_xfoil,
     airfoil_slope_neuralfoil,
-    comp_high_speed,
+    comp_high_speed_xfoil,
     comp_high_speed_neuralfoil,
-    comp_low_speed,
+    comp_low_speed_xfoil,
     comp_low_speed_neuralfoil,
-    comp_high_speed_input_aoa,
+    comp_high_speed_input_aoa_xfoil,
     comp_high_speed_input_aoa_neuralfoil,
-    comp_low_speed_input_aoa,
+    comp_low_speed_input_aoa_xfoil,
     comp_low_speed_input_aoa_neuralfoil,
     hinge_moment_2d,
     hinge_moment_3d,
@@ -46,15 +46,15 @@ from .test_functions import (
     high_lift,
     elevator,
     extreme_cl,
-    wing_extreme_cl_clean,
+    wing_extreme_cl_clean_xfoil,
     wing_extreme_cl_clean_neuralfoil,
-    htp_extreme_cl_clean,
+    htp_extreme_cl_clean_xfoil,
     htp_extreme_cl_clean_neuralfoil,
     l_d_max,
     cnbeta,
     slipstream_openvsp_cruise,
     slipstream_openvsp_low_speed,
-    compute_mach_interpolation_roskam,
+    compute_mach_interpolation_roskam_xfoil,
     compute_mach_interpolation_roskam_neuralfoil,
     cl_alpha_vt,
     cy_delta_r,
@@ -174,7 +174,7 @@ def test_polar():
 
 
 def test_polar_neuralfoil():
-    """Tests polar execution (XFOIL) @ high and low speed."""
+    """Tests polar execution (Neuralfoil) @ high and low speed."""
     polar_neuralfoil(
         XML_FILE,
         mach_high_speed=0.245,
@@ -182,7 +182,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
         cdp_1_high_speed=0.0,
-        cl_max_2d=1.6063499,
+        cl_max_2d=1.6072,
         cdp_1_low_speed=0.0,
     )
 
@@ -193,7 +193,7 @@ def test_polar_neuralfoil():
 )
 def test_polar_single_aoa():
     """Tests polar execution (XFOIL) @ low speed."""
-    polar_single_aoa(
+    polar_single_aoa_xfoil(
         XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
@@ -207,7 +207,7 @@ def test_polar_single_aoa_neuralfoil():
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
         alpha=5.0,
-        cl=0.70515,
+        cl=0.69915,
     )
 
 
@@ -251,7 +251,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=1.65027027,
+        cl_max_2d=1.65027,
         cdp_1_low_speed=0.0,
     )
 
@@ -280,7 +280,7 @@ def test_airfoil_slope_neuralfoil():
         wing_airfoil_file="roncz.af",
         htp_airfoil_file="naca0012.af",
         vtp_airfoil_file="naca0012.af",
-        cl_alpha_wing=6.4508134,
+        cl_alpha_wing=6.4901,
         cl_alpha_htp=6.27633,
         cl_alpha_vtp=6.27633,
     )
@@ -317,7 +317,7 @@ def test_airfoil_slope_wt_neuralfoil():
 )
 def test_vlm_comp_high_speed():
     """Tests vlm components @ high speed!"""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.09622569,
@@ -364,7 +364,7 @@ def test_vlm_comp_high_speed_neuralfoil():
 def test_vlm_comp_high_speed_input_aoa():
     """Tests vlm components @ low speed."""
 
-    comp_high_speed_input_aoa(
+    comp_high_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=False,
     )
@@ -490,7 +490,7 @@ def test_vlm_comp_low_speed():
             0.05193693,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.09386187,
@@ -646,7 +646,7 @@ def test_vlm_comp_low_speed_neuralfoil():
 def test_vlm_comp_low_speed_input_aoa():
     """Tests vlm components @ low speed."""
 
-    comp_low_speed_input_aoa(
+    comp_low_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=False,
     )
@@ -665,7 +665,7 @@ def test_vlm_comp_low_speed_input_aoa_neuralfoil():
 )
 def test_openvsp_comp_high_speed():
     """Tests openvsp components @ high speed."""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.12700925,
@@ -690,7 +690,7 @@ def test_openvsp_comp_high_speed():
 def test_openvsp_comp_high_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
-    comp_high_speed_input_aoa(
+    comp_high_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=True,
     )
@@ -886,7 +886,7 @@ def test_openvsp_comp_low_speed():
             0.04775093,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.1243628,
@@ -913,7 +913,7 @@ def test_openvsp_comp_low_speed():
 def test_openvsp_comp_low_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
-    comp_low_speed_input_aoa(
+    comp_low_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=True,
     )
@@ -970,7 +970,7 @@ def test_high_lift():
 )
 def test_extreme_cl_wing_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    wing_extreme_cl_clean(
+    wing_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_wing=1.58443803,
         cl_min_clean_wing=-1.26,
@@ -982,7 +982,7 @@ def test_extreme_cl_wing_clean_neuralfoil():
     wing_extreme_cl_clean_neuralfoil(
         XML_FILE,
         cl_max_clean_wing=1.50641977,
-        cl_min_clean_wing=-1.03149819,
+        cl_min_clean_wing=-1.058,
     )
 
 
@@ -992,7 +992,7 @@ def test_extreme_cl_wing_clean_neuralfoil():
 )
 def test_extreme_cl_htp_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    htp_extreme_cl_clean(
+    htp_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_htp=0.27,
         cl_min_clean_htp=-0.27,
@@ -1283,7 +1283,7 @@ def test_slipstream_openvsp_low_speed():
 
 def test_compute_mach_interpolation_roskam():
     """Tests computation of the mach interpolation vector using Roskam's approach."""
-    compute_mach_interpolation_roskam(
+    compute_mach_interpolation_roskam_xfoil(
         XML_FILE,
         cl_alpha_vector=np.array([5.48, 5.51, 5.58, 5.72, 5.91, 6.18]),
         mach_vector=np.array([0.0, 0.07, 0.15, 0.23, 0.30, 0.38]),
@@ -1292,7 +1292,7 @@ def test_compute_mach_interpolation_roskam():
     compute_mach_interpolation_roskam_neuralfoil(
         XML_FILE,
         cl_alpha_vector=np.array(
-            [5.46792373, 5.49297247, 5.56948779, 5.70176324, 5.89762278, 6.16960541]
+            [5.48207049, 5.50717042, 5.58384105, 5.7163812, 5.91262363, 6.18511941]
         ),
         mach_vector=np.array([0.0, 0.07713463, 0.15426927, 0.2314039, 0.30853854, 0.38567317]),
     )

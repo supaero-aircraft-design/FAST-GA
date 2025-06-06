@@ -128,6 +128,7 @@ class AerodynamicsLowSpeed(om.Group):
             "wing_airfoil_file": self.options["wing_airfoil"],
             "htp_airfoil_file": self.options["htp_airfoil"],
             "vtp_airfoil_file": self.options["vtp_airfoil"],
+            "use_neuralfoil": self.options["use_neuralfoil"],
         }
         self.add_subsystem(
             "airfoil_lift_slope",
@@ -146,6 +147,7 @@ class AerodynamicsLowSpeed(om.Group):
         option_wing_airfoil = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
             "wing_airfoil_file": self.options["wing_airfoil"],
+            "use_neuralfoil": self.options["use_neuralfoil"],
         }
         self.add_subsystem(
             "wing_extreme_cl_clean",
@@ -158,6 +160,7 @@ class AerodynamicsLowSpeed(om.Group):
         option_htp_airfoil = {
             "airfoil_folder_path": self.options["airfoil_folder_path"],
             "htp_airfoil_file": self.options["htp_airfoil"],
+            "use_neuralfoil": self.options["use_neuralfoil"],
         }
         self.add_subsystem(
             "htp_extreme_cl_clean",

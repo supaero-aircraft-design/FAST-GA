@@ -106,26 +106,17 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
             promotes=["*"],
         )
 
-        self.connect(
-            "comp_local_reynolds_airfoil.mach",
-            "wing_airfoil_slope.mach",
-        )
+        self.connect("comp_local_reynolds_airfoil.mach", "wing_airfoil_slope.mach")
         self.connect(
             "data:aerodynamics:wing:MAC:low_speed:reynolds",
             "wing_airfoil_slope.reynolds",
         )
-        self.connect(
-            "comp_local_reynolds_airfoil.mach",
-            "htp_airfoil_slope.mach",
-        )
+        self.connect("comp_local_reynolds_airfoil.mach", "htp_airfoil_slope.mach")
         self.connect(
             "data:aerodynamics:horizontal_tail:MAC:low_speed:reynolds",
             "htp_airfoil_slope.reynolds",
         )
-        self.connect(
-            "comp_local_reynolds_airfoil.mach",
-            "vtp_airfoil_slope.mach",
-        )
+        self.connect("comp_local_reynolds_airfoil.mach", "vtp_airfoil_slope.mach")
         self.connect(
             "data:aerodynamics:vertical_tail:MAC:low_speed:reynolds",
             "vtp_airfoil_slope.reynolds",
@@ -133,10 +124,7 @@ class ComputeAirfoilLiftCurveSlope(om.Group):
 
         self.connect("wing_airfoil_slope.alpha", "wing:alpha")
         self.connect("wing_airfoil_slope.CL", "wing:CL")
-        self.connect(
-            "htp_airfoil_slope.alpha",
-            "horizontal_tail:alpha",
-        )
+        self.connect("htp_airfoil_slope.alpha", "horizontal_tail:alpha")
         self.connect("htp_airfoil_slope.CL", "horizontal_tail:CL")
         self.connect("vtp_airfoil_slope.alpha", "vertical_tail:alpha")
         self.connect("vtp_airfoil_slope.CL", "vertical_tail:CL")

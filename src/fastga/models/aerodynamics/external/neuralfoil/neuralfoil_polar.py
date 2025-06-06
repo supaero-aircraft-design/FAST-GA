@@ -21,7 +21,7 @@ from typing import Tuple
 import tempfile
 import os
 
-from openmdao.components.external_code_comp import ExternalCodeComp
+import openmdao.api as om
 from pathlib import Path
 from fastga.models.aerodynamics import airfoil_folder
 from ...constants import (
@@ -39,7 +39,7 @@ from ...constants import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class NeuralfoilPolar(ExternalCodeComp):
+class NeuralfoilPolar(om.ExplicitComponent):
     """Runs a polar computation with Neuralfoil and returns 2D aerodynamic coefficients."""
 
     def initialize(self):
@@ -92,11 +92,7 @@ class NeuralfoilPolar(ExternalCodeComp):
 
         self.declare_partials("*", "*", method="fd")
 
-    def check_config(self, logger):
-        # let void to avoid logger error on "The command cannot be empty"
-        pass
-
-    def compute(self, inputs, outputs):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         """
         Function that computes airfoil aerodynamics with NeuralFoil and returns the different 2D
         aerodynamic parameters.
@@ -106,8 +102,8 @@ class NeuralfoilPolar(ExternalCodeComp):
         """
 
         # Get inputs and initialise outputs
-        mach = round(float(inputs["mach"]), 4)
-        reynolds = round(float(inputs["reynolds"]))
+        mach = np.round(inputs["mach"], 4)
+        reynolds = np.round(inputs["reynolds"])
 
         # Compressibility correction
         beta = np.sqrt(1.0 - mach**2.0)
@@ -274,6 +270,7 @@ class NeuralfoilPolar(ExternalCodeComp):
         """
 
         def is_coordinate_line(line):
+            """Check if line contains valid airfoil coordinate pair (x, y)."""
             parts = line.strip().split()
             if len(parts) != 2:
                 return False
@@ -281,35 +278,33 @@ class NeuralfoilPolar(ExternalCodeComp):
                 x, y = float(parts[0]), float(parts[1])
                 # Additional check: coordinates should be reasonable airfoil values
                 # x typically 0-1, y typically -0.5 to 0.5
-                if not (-0.5 <= x <= 1.5 and -1.0 <= y <= 1.0):
+                if not (0.0 <= x <= 1.0 and -0.5 <= y <= 0.5):
                     return False
                 return True
             except ValueError:
                 return False
 
+        # Read and filter coordinate lines from file
         with open(original_file_path, "r") as f:
             coord_lines = [line.strip() for line in f if is_coordinate_line(line)]
 
+        # Convert string coordinates to float tuples
         coords = [tuple(map(float, line.split())) for line in coord_lines]
         if len(coords) < 3:
             raise ValueError("Insufficient coordinate points.")
 
-        # Check if first coordinate is (0.0000, 0.0000) - proceed if not
-        if not (abs(coords[0][0]) < 1e-6 and abs(coords[0][1]) < 1e-6):
-            pass  # Continue with conversion
-
         # Separate upper and lower surfaces based on y values
-        # Use small tolerance to handle -0.0000000 cases
+        # Use small tolerance to handle floating-point precision issues like -0.0000000
         upper_coords = []
         lower_coords = []
         leading_edge_points = []  # Collect points at (0,0)
 
         for pt in coords:
-            if pt[1] > 1e-8:  # Clearly positive y
+            if pt[1] > 1e-8:  # Clearly positive y - upper surface
                 upper_coords.append(pt)
-            elif pt[1] < -1e-8:  # Clearly negative y
+            elif pt[1] < -1e-8:  # Clearly negative y - lower surface
                 lower_coords.append(pt)
-            else:  # Near zero y values
+            else:  # Near zero y values - need special handling
                 if abs(pt[0]) < 1e-6:  # Leading edge point (0,0)
                     leading_edge_points.append(pt)
                 elif pt[0] < 0.5:  # Other leading edge area points
@@ -317,44 +312,48 @@ class NeuralfoilPolar(ExternalCodeComp):
                 else:  # Trailing edge area points
                     upper_coords.append(pt)
 
-        # Handle leading edge points: put one in lower surface, rest in upper
+        # Handle leading edge points: distribute between upper and lower surfaces
+        # Put one in lower surface, rest in upper to maintain proper connectivity
         if leading_edge_points:
-            lower_coords.append(leading_edge_points[-1])  # Last one to lower (as requested)
+            lower_coords.append(leading_edge_points[-1])  # Last one to lower
             if len(leading_edge_points) > 1:
                 upper_coords.extend(leading_edge_points[:-1])  # Rest to upper
 
-        # Sort upper surface from TE to LE (x decreasing)
+        # Sort upper surface from trailing edge to leading edge (x decreasing)
         upper = sorted(upper_coords, key=lambda pt: pt[0], reverse=True)
 
-        # Sort lower coordinates by x (LE to TE)
+        # Sort lower surface from leading edge to trailing edge (x increasing)
         lower = sorted(lower_coords, key=lambda pt: pt[0])
 
-        # Check for duplicate [1,0] points in upper surface
+        # Handle duplicate trailing edge points [1,0] in upper surface
         trailing_edge_points = []
         upper_filtered = []
 
         for pt in upper:
-            if abs(pt[0] - 1.0) < 1e-6 and abs(pt[1]) < 1e-6:  # Point is approximately [1,0]
+            # Check if point is approximately [1,0] (trailing edge)
+            if abs(pt[0] - 1.0) < 1e-6 and abs(pt[1]) < 1e-6:
                 trailing_edge_points.append(pt)
             else:
                 upper_filtered.append(pt)
 
-        # Handle [1,0] points: keep one at the beginning of upper surface for correct order
+        # Consolidate trailing edge points: keep one at beginning of upper surface
+        # Move extras to end of lower surface to maintain proper airfoil closure
         if len(trailing_edge_points) > 1:
-            upper = [trailing_edge_points[0]] + upper_filtered  # Put first [1,0] at beginning
+            upper = [trailing_edge_points[0]] + upper_filtered  # First [1,0] at beginning
             lower.extend(trailing_edge_points[1:])  # Move rest to end of lower
         elif len(trailing_edge_points) == 1:
             upper = [trailing_edge_points[0]] + upper_filtered  # Put [1,0] at beginning
         else:
             upper = upper_filtered
 
-        # Generate Selig format with blank line separator
+        # Generate Selig format: name line, upper coordinates, blank line, lower coordinates
         selig_lines = ["ConvertedAirfoil"]
         selig_lines += [f"{x:.7f} {y:.7f}" for x, y in upper]
-        selig_lines.append("")  # Blank line separator between upper and lower
+        selig_lines.append("")  # Blank line separator between upper and lower surfaces
         selig_lines += [f"{x:.7f} {y:.7f}" for x, y in lower]
 
-        tmp_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".dat", delete=False)
+        # Create temporary file and write Selig format data
+        tmp_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".af", delete=False)
         tmp_file.write("\n".join(selig_lines))
         tmp_file_path = tmp_file.name
         tmp_file.close()

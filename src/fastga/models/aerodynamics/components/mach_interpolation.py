@@ -157,14 +157,8 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
             np.interp(11.0, wing_alpha, wing_cl) - np.interp(1.0, wing_alpha, wing_cl)
         ) / (10.0 * np.pi / 180.0)
 
-        htp_cl = self._reshape(
-            inputs["horizontal_tail:alpha"],
-            inputs["horizontal_tail:CL"],
-        )
-        htp_alpha = self._reshape(
-            inputs["horizontal_tail:alpha"],
-            inputs["horizontal_tail:alpha"],
-        )
+        htp_cl = self._reshape(inputs["horizontal_tail:alpha"], inputs["horizontal_tail:CL"])
+        htp_alpha = self._reshape(inputs["horizontal_tail:alpha"], inputs["horizontal_tail:alpha"])
         htp_airfoil_cl_alpha = (
             np.interp(11.0, htp_alpha, htp_cl) - np.interp(1.0, htp_alpha, htp_cl)
         ) / (10.0 * np.pi / 180.0)

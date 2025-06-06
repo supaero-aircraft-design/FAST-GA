@@ -489,7 +489,7 @@ def polar_interpolation(mach: float):
     assert t3_duration < (t1_duration + t2_duration) / 2
 
 
-def polar_single_aoa(
+def polar_single_aoa_xfoil(
     XML_FILE: str,
     mach_low_speed: float,
     reynolds_low_speed: float,
@@ -1305,7 +1305,7 @@ def comp_aero_input_aoa_neuralfoil(
     return problem
 
 
-def comp_high_speed(
+def comp_high_speed_xfoil(
     XML_FILE: str,
     use_openvsp: bool,
     cl0_wing: float,
@@ -1418,7 +1418,7 @@ def comp_high_speed_neuralfoil(
             ] == pytest.approx(coeff_k_htp, abs=1e-4)
 
 
-def comp_high_speed_input_aoa(
+def comp_high_speed_input_aoa_xfoil(
     XML_FILE: str,
     use_openvsp: bool,
 ):
@@ -1513,7 +1513,7 @@ def comp_high_speed_input_aoa_neuralfoil(XML_FILE: str):
             )
 
 
-def comp_low_speed(
+def comp_low_speed_xfoil(
     XML_FILE: str,
     use_openvsp: bool,
     cl0_wing: float,
@@ -1652,7 +1652,7 @@ def comp_low_speed_neuralfoil(
     assert np.max(np.abs(cl_vector_htp - cl)) <= 1e-3
 
 
-def comp_low_speed_input_aoa(
+def comp_low_speed_input_aoa_xfoil(
     XML_FILE: str,
     use_openvsp: bool,
 ):
@@ -1846,7 +1846,7 @@ def high_lift(
     )
 
 
-def wing_extreme_cl_clean(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float):
+def wing_extreme_cl_clean_xfoil(XML_FILE: str, cl_max_clean_wing: float, cl_min_clean_wing: float):
     """Tests maximum minimum lift coefficient for clean wing."""
 
     # Transfer saved polar results to temporary folder
@@ -1896,7 +1896,7 @@ def wing_extreme_cl_clean_neuralfoil(
     )
 
 
-def htp_extreme_cl_clean(
+def htp_extreme_cl_clean_xfoil(
     XML_FILE: str,
     cl_max_clean_htp: float,
     cl_min_clean_htp: float,
@@ -2126,7 +2126,7 @@ def slipstream_openvsp_low_speed(
     assert delta_cl_result == pytest.approx(delta_cl, abs=1e-4)
 
 
-def compute_mach_interpolation_roskam(
+def compute_mach_interpolation_roskam_xfoil(
     XML_FILE: str, cl_alpha_vector: np.ndarray, mach_vector: np.ndarray
 ):
     """Tests computation of the mach interpolation vector using Roskam's approach!"""
@@ -2357,7 +2357,7 @@ def load_factor(
     ) == pytest.approx(vd, abs=1e-2)
 
 
-def propeller(
+def propeller_xfoil(
     XML_FILE: str,
     thrust_SL: np.ndarray,
     thrust_SL_limit: np.ndarray,

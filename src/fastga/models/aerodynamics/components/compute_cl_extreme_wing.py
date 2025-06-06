@@ -82,10 +82,7 @@ class ComputeExtremeCLWing(om.Group):
 
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
 
-        self.connect(
-            "comp_local_reynolds_wing.mach",
-            "wing_tip_polar.mach",
-        )
+        self.connect("comp_local_reynolds_wing.mach", "wing_tip_polar.mach")
         self.connect(
             "data:aerodynamics:wing:root:low_speed:reynolds",
             "wing_root_polar.reynolds",
@@ -98,10 +95,7 @@ class ComputeExtremeCLWing(om.Group):
             "wing_root_polar.CL_min_2D",
             "data:aerodynamics:wing:low_speed:root:CL_min_2D",
         )
-        self.connect(
-            "comp_local_reynolds_wing.mach",
-            "wing_root_polar.mach",
-        )
+        self.connect("comp_local_reynolds_wing.mach", "wing_root_polar.mach")
         self.connect(
             "data:aerodynamics:wing:tip:low_speed:reynolds",
             "wing_tip_polar.reynolds",

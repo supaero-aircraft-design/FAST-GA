@@ -138,6 +138,7 @@ class AerodynamicsHighSpeed(Group):
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        use_neuralfoil=self.options["use_neuralfoil"],
                     ),
                     promotes=["*"],
                 )

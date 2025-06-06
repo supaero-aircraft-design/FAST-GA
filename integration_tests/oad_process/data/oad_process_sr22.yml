@@ -14,8 +14,7 @@ driver: om.ScipyOptimizeDriver(tol=1e-2, optimizer='COBYLA')
 model_options:
     "*":
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine
-        result_folder_path: ../workdir
-        compute_slipstream: false
+
 model:
     propeller:
         id: fastga.aerodynamics.propeller
@@ -27,9 +26,13 @@ model:
             id: fastga.geometry.legacy
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
+            result_folder_path: ../workdir
+            compute_slipstream: false
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
-            compute_mach_interpolation : false
+            result_folder_path: ../workdir
+            compute_mach_interpolation: false
+            compute_slipstream: false
         weight:
             id: fastga.weight.legacy
         performance:

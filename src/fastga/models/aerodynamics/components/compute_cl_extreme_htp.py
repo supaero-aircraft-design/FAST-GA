@@ -81,10 +81,7 @@ class ComputeExtremeCLHtp(om.Group):
 
         self.add_subsystem("CL_3D_htp", ComputeHtp3DExtremeCL(), promotes=["*"])
 
-        self.connect(
-            "comp_local_reynolds_htp.mach",
-            "htp_root_polar.mach",
-        )
+        self.connect("comp_local_reynolds_htp.mach", "htp_root_polar.mach")
         self.connect(
             "data:aerodynamics:horizontal_tail:root:low_speed:reynolds",
             "htp_root_polar.reynolds",
@@ -97,10 +94,7 @@ class ComputeExtremeCLHtp(om.Group):
             "htp_root_polar.CL_min_2D",
             "data:aerodynamics:horizontal_tail:low_speed:root:CL_min_2D",
         )
-        self.connect(
-            "comp_local_reynolds_htp.mach",
-            "htp_tip_polar.mach",
-        )
+        self.connect("comp_local_reynolds_htp.mach", "htp_tip_polar.mach")
         self.connect(
             "data:aerodynamics:horizontal_tail:tip:low_speed:reynolds",
             "htp_tip_polar.reynolds",

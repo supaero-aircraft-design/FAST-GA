@@ -15,10 +15,6 @@ model_options:
     "*":
         number_points_wing_mfw: 40
         propulsion_id: fastga.wrapper.propulsion.basicTurbopropMapped
-        result_folder_path: ../workdir
-        wing_airfoil: naca63_415.af
-        use_openvsp: true
-        compute_slipstream: true
 
 model:
     propeller:
@@ -34,9 +30,17 @@ model:
             cabin_sizing: 0.0
         aerodynamics_lowspeed:
             id: fastga.aerodynamics.lowspeed.legacy
+            wing_airfoil: naca63_415.af
+            result_folder_path: ../workdir
+            use_openvsp: true
+            compute_slipstream: true
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
+            wing_airfoil: naca63_415.af
+            result_folder_path: ../workdir
             compute_mach_interpolation: false
+            use_openvsp: true
+            compute_slipstream: true
         weight:
             id: fastga.weight.legacy
         performance:
