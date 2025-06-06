@@ -1,5 +1,5 @@
 """
-Estimation of the slope of the airfoil of the lifting surface using the results of xfoil
+Estimation of the slope of the airfoil of the lifting surface using the results of Xfoil
 / Neuralfoil runs.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
