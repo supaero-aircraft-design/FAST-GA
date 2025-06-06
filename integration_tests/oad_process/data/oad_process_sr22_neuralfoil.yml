@@ -16,6 +16,9 @@ model_options:
         propulsion_id: fastga.wrapper.propulsion.basicIC_engine
 
 model:
+    propeller:
+        id: fastga.aerodynamics.propeller
+        pitch_step_size: 2.5
     aircraft_sizing:
         nonlinear_solver: om.NonlinearBlockGS(maxiter=100, iprint=2, rtol=1e-3, debug_print=True, reraise_child_analysiserror=True)
         linear_solver: om.DirectSolver()
@@ -25,24 +28,18 @@ model:
             id: fastga.aerodynamics.lowspeed.legacy
             result_folder_path: ../workdir
             compute_slipstream: false
+            use_neuralfoil: true
         aerodynamics_highspeed:
             id: fastga.aerodynamics.highspeed.legacy
             result_folder_path: ../workdir
             compute_mach_interpolation: false
             compute_slipstream: false
+            use_neuralfoil: true
         weight:
             id: fastga.weight.legacy
-        pre_mission_builder:
-            id: fastga.performances.mission_builder_prep
-        polar:
-            id: fastga.aerodynamics.cl_cd_polar
-            cg_ratio: 0.5
         performance:
-            id: fastoad.performances.mission
-            mission_file_path: ../workdir/sizing_mission_fastga.yml
-            is_sizing: True
-            adjust_fuel: True
-            use_initializer_iteration: True
+            id: fastga.performances.mission
+            out_file: ../workdir/cirrus_sr22.csv
         hq:
             tail_sizing:
                 id: fastga.handling_qualities.tail_sizing

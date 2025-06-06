@@ -1,9 +1,9 @@
 """
-Creation of a group to ease the use of the Xfoil Polar ExternalCodeComp in the block analysis
+Creation of a group to ease the use of the Neuralfoil Polar ExternalCodeComp in the block analysis
 function.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -20,10 +20,10 @@ from openmdao.core.explicitcomponent import ExplicitComponent
 from openmdao.core.group import Group
 from stdatm import Atmosphere
 
-from .xfoil_polar import _DEFAULT_AIRFOIL_FILE, XfoilPolar
+from .neuralfoil_polar import _DEFAULT_AIRFOIL_FILE, NeuralfoilPolar
 
 
-class XfoilGroup(Group):
+class NeuralfoilGroup(Group):
     def initialize(self):
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("airfoil_file", default=_DEFAULT_AIRFOIL_FILE, types=str)
@@ -31,13 +31,13 @@ class XfoilGroup(Group):
 
     def setup(self):
         self.add_subsystem(
-            "pre_xfoil_group_prep",
-            _XfoilGroupPrep(),
-            promotes=["data:TLAR:v_approach", "data:Xfoil_pre_processing:reynolds"],
+            "neuralfoil_group_prep",
+            _NeuralfoilGroupPrep(),
+            promotes="data:Xfoil_pre_processing:reynolds",
         )
         self.add_subsystem(
-            "pre_xfoil_polar",
-            XfoilPolar(
+            "neuralfoil_polar",
+            NeuralfoilPolar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 airfoil_file=self.options["airfoil_file"],
                 alpha_end=20.0,
@@ -45,20 +45,25 @@ class XfoilGroup(Group):
             ),
             promotes=[],
         )
+        self.connect(
+            "neuralfoil_group_prep.reynolds",
+            "neuralfoil_polar.reynolds",
+        )
+        self.connect(
+            "neuralfoil_group_prep.mach",
+            "neuralfoil_polar.mach",
+        )
 
-        self.connect("pre_xfoil_group_prep.mach", "pre_xfoil_polar.mach")
-        self.connect("pre_xfoil_group_prep.reynolds", "pre_xfoil_polar.reynolds")
 
-
-class _XfoilGroupPrep(ExplicitComponent):
-    """Compute the correct mach number for the Xfoil preprocessing"""
+class _NeuralfoilGroupPrep(ExplicitComponent):
+    """Rename reynolds number for preprocessing"""
 
     def setup(self):
-        self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
         self.add_input("data:Xfoil_pre_processing:reynolds", val=np.nan)
+        self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
 
-        self.add_output("mach")
         self.add_output("reynolds")
+        self.add_output("mach")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         sos = Atmosphere(0.0).speed_of_sound

@@ -1,6 +1,6 @@
 """Test module for aerodynamics groups."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,25 +23,34 @@ from .test_functions import (
     compute_reynolds,
     cd0_high_speed,
     cd0_low_speed,
-    polar,
-    polar_single_aoa,
+    polar_xfoil,
+    polar_neuralfoil,
+    polar_single_aoa_xfoil,
+    polar_single_aoa_neuralfoil,
     polar_single_aoa_inv,
     airfoil_slope_wt_xfoil,
+    airfoil_slope_wt_neuralfoil,
     airfoil_slope_xfoil,
-    comp_high_speed,
-    comp_low_speed,
+    airfoil_slope_neuralfoil,
+    comp_high_speed_xfoil,
+    comp_high_speed_neuralfoil,
+    comp_low_speed_xfoil,
+    comp_low_speed_neuralfoil,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
     high_lift,
     extreme_cl,
-    wing_extreme_cl_clean,
-    htp_extreme_cl_clean,
+    wing_extreme_cl_clean_xfoil,
+    wing_extreme_cl_clean_neuralfoil,
+    htp_extreme_cl_clean_xfoil,
+    htp_extreme_cl_clean_neuralfoil,
     l_d_max,
     cnbeta,
     slipstream_openvsp_cruise,
     slipstream_openvsp_low_speed,
-    compute_mach_interpolation_roskam,
+    compute_mach_interpolation_roskam_xfoil,
+    compute_mach_interpolation_roskam_neuralfoil,
     cl_alpha_vt,
     cy_delta_r,
     effective_efficiency,
@@ -50,7 +59,8 @@ from .test_functions import (
     low_speed_connection,
     v_n_diagram,
     load_factor,
-    propeller,
+    propeller_xfoil,
+    propeller_neuralfoil,
     non_equilibrated_cl_cd_polar,
     equilibrated_cl_cd_polar,
     elevator,
@@ -93,6 +103,7 @@ from .test_functions import (
     yaw_moment_yaw_rate_vt,
     yaw_moment_yaw_rate_aircraft,
     polar_ext_folder,
+    polar_ext_folder_neuralfoil,
 )
 
 XML_FILE = "daher_tbm900.xml"
@@ -148,7 +159,7 @@ def test_cd0_low_speed():
 )
 def test_polar():
     """Tests polar execution (XFOIL) @ high and low speed."""
-    polar(
+    polar_xfoil(
         XML_FILE,
         mach_high_speed=0.53835122,
         reynolds_high_speed=5381384,
@@ -160,16 +171,41 @@ def test_polar():
     )
 
 
+def test_polar_neuralfoil():
+    """Tests polar execution (Neuralfoil) @ high and low speed."""
+    polar_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.53835122,
+        reynolds_high_speed=5381384,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=1.569296,
+        cdp_1_low_speed=0.0,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_polar_single_aoa():
     """Tests polar execution (XFOIL) @ low speed."""
-    polar_single_aoa(
+    polar_single_aoa_xfoil(
         XML_FILE,
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
+    )
+
+
+def test_polar_single_aoa_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ low speed."""
+    polar_single_aoa_neuralfoil(
+        XML_FILE,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        alpha=5.0,
+        cl=0.692158,
     )
 
 
@@ -204,6 +240,20 @@ def test_polar_with_ext_folder():
     )
 
 
+def test_polar_with_ext_folder_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ high and low speed."""
+    polar_ext_folder_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.53835122,
+        reynolds_high_speed=5381384,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=1.65027027,
+        cdp_1_low_speed=0.0,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -221,6 +271,19 @@ def test_airfoil_slope():
     )
 
 
+def test_airfoil_slope_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ low speed."""
+    airfoil_slope_neuralfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+        cl_alpha_wing=7.1528,
+        cl_alpha_htp=6.2982,
+        cl_alpha_vtp=6.2982,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -235,6 +298,16 @@ def test_airfoil_slope_wt_xfoil():
     )
 
 
+def test_airfoil_slope_wt_neuralfoil():
+    """Tests polar reading @ low speed."""
+    airfoil_slope_wt_neuralfoil(
+        XML_FILE,
+        wing_airfoil_file="naca63_415.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
@@ -242,7 +315,7 @@ def test_airfoil_slope_wt_xfoil():
 )
 def test_vlm_comp_high_speed():
     """Tests vlm components @ high speed."""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.03868354,
@@ -254,6 +327,26 @@ def test_vlm_comp_high_speed():
         cl_alpha_htp=0.74395071,
         cl_alpha_htp_isolated=1.33227995,
         coeff_k_htp=0.26432897,
+        cl_alpha_vector=np.array(
+            [5.52158091, 5.52158091, 5.84690417, 6.44350232, 7.43487177, 9.28709846]
+        ),
+        mach_vector=np.array([0.0, 0.15, 0.36967152, 0.54967167, 0.7021609, 0.83444439]),
+    )
+
+
+def test_vlm_comp_high_speed_neuralfoil():
+    """Tests vlm components @ high speed."""
+    comp_high_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=0.03868354,
+        cl_ref_wing=1.03681066,
+        cl_alpha_wing=5.64556031,
+        cm0=-0.03122047,
+        coeff_k_wing=0.05838084,
+        cl0_htp=-0.00403328,
+        cl_alpha_htp=0.74395071,
+        cl_alpha_htp_isolated=1.33227995,
+        coeff_k_htp=0.23209324,
         cl_alpha_vector=np.array(
             [5.52158091, 5.52158091, 5.84690417, 6.44350232, 7.43487177, 9.28709846]
         ),
@@ -374,7 +467,7 @@ def test_vlm_comp_low_speed():
         ]
     )
 
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.03287854,
@@ -395,12 +488,140 @@ def test_vlm_comp_low_speed():
     )
 
 
+def test_vlm_comp_low_speed_neuralfoil():
+    """Tests vlm components @ low speed."""
+    y_vector_wing = np.array(
+        [
+            0.11333333,
+            0.34,
+            0.56666667,
+            0.97062582,
+            1.55187746,
+            2.1331291,
+            2.71438074,
+            3.29563238,
+            3.87688402,
+            4.45813566,
+            4.84563676,
+            5.0393873,
+            5.23313785,
+            5.4268884,
+            5.62063894,
+            5.81438949,
+            6.00814004,
+        ]
+    )
+    cl_vector_wing = np.array(
+        [
+            0.94143722,
+            0.93937731,
+            0.93476706,
+            0.94348403,
+            0.95227165,
+            0.95171913,
+            0.94336188,
+            0.92703571,
+            0.90112313,
+            0.86274848,
+            0.82385374,
+            0.78356254,
+            0.7393898,
+            0.68564668,
+            0.61586078,
+            0.51858127,
+            0.3655492,
+        ]
+    )
+    chord_vector_wing = np.array(
+        [
+            1.79674552,
+            1.79674552,
+            1.79674552,
+            1.75920638,
+            1.68412808,
+            1.60904979,
+            1.53397149,
+            1.4588932,
+            1.3838149,
+            1.30873661,
+            1.25868441,
+            1.23365831,
+            1.20863221,
+            1.18360611,
+            1.15858002,
+            1.13355392,
+            1.10852782,
+        ]
+    )
+    y_vector_htp = np.array(
+        [
+            0.07363186,
+            0.22089559,
+            0.36815931,
+            0.51542303,
+            0.66268676,
+            0.80995048,
+            0.9572142,
+            1.10447793,
+            1.25174165,
+            1.39900537,
+            1.5462691,
+            1.69353282,
+            1.84079655,
+            1.98806027,
+            2.13532399,
+            2.28258772,
+            2.42985144,
+        ]
+    )
+    cl_vector_htp = np.array(
+        [
+            0.12769726,
+            0.12932555,
+            0.13056921,
+            0.13146178,
+            0.13200424,
+            0.13217929,
+            0.13195305,
+            0.13127257,
+            0.13006013,
+            0.12820381,
+            0.12554199,
+            0.1218372,
+            0.11672994,
+            0.10964977,
+            0.09962262,
+            0.08476022,
+            0.0603171,
+        ]
+    )
+
+    comp_low_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=0.03287854,
+        cl_ref_wing=0.88122299,
+        cl_alpha_wing=4.79836648,
+        cm0=-0.02653541,
+        coeff_k_wing=0.04217343,
+        cl0_htp=-0.00291361,
+        cl_alpha_htp=0.70734892,
+        cl_alpha_htp_isolated=1.13235305,
+        coeff_k_htp=0.23209099,
+        y_vector_wing=y_vector_wing,
+        cl_vector_wing=cl_vector_wing,
+        chord_vector_wing=chord_vector_wing,
+        cl_ref_htp=0.12054207,
+        y_vector_htp=y_vector_htp,
+        cl_vector_htp=cl_vector_htp,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS, reason="OPENVSP is windows dependent platform (or skipped)"
 )
 def test_openvsp_comp_high_speed():
     """Tests openvsp components @ high speed."""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.0804987,
@@ -609,7 +830,7 @@ def test_openvsp_comp_low_speed():
             0.06189955,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.06999277,
@@ -681,10 +902,19 @@ def test_high_lift():
 )
 def test_extreme_cl_wing_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    wing_extreme_cl_clean(
+    wing_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_wing=1.79808306,
         cl_min_clean_wing=-1.41861461,
+    )
+
+
+def test_extreme_cl_wing_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    wing_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_wing=1.70998331,
+        cl_min_clean_wing=-1.455995,
     )
 
 
@@ -694,12 +924,23 @@ def test_extreme_cl_wing_clean():
 )
 def test_extreme_cl_htp_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    htp_extreme_cl_clean(
+    htp_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_htp=0.30,
         cl_min_clean_htp=-0.30,
         alpha_max_clean_htp=24.50,
         alpha_min_clean_htp=-24.48,
+    )
+
+
+def test_extreme_cl_htp_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    htp_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_htp=0.30475354,
+        cl_min_clean_htp=-0.31579422,
+        alpha_max_clean_htp=24.76368,
+        alpha_min_clean_htp=-25.66083,
     )
 
 
@@ -976,10 +1217,18 @@ def test_slipstream_openvsp_low_speed():
 
 def test_compute_mach_interpolation_roskam():
     """Tests computation of the mach interpolation vector using Roskam's approach."""
-    compute_mach_interpolation_roskam(
+    compute_mach_interpolation_roskam_xfoil(
         XML_FILE,
         cl_alpha_vector=np.array(
             [5.42636279, 5.53599343, 5.89199453, 6.59288196, 7.87861309, 10.28594769]
+        ),
+        mach_vector=np.array([0.0, 0.16688888, 0.33377775, 0.50066663, 0.66755551, 0.83444439]),
+    )
+
+    compute_mach_interpolation_roskam_neuralfoil(
+        XML_FILE,
+        cl_alpha_vector=np.array(
+            [5.42358072, 5.53312878, 5.88886155, 6.58922965, 7.87411818, 10.28092082]
         ),
         mach_vector=np.array([0.0, 0.16688888, 0.33377775, 0.50066663, 0.66755551, 0.83444439]),
     )
@@ -2029,7 +2278,778 @@ def test_propeller():
             197.54666667,
         ]
     )
-    propeller(
+    propeller_xfoil(
+        XML_FILE,
+        thrust_SL=thrust_SL,
+        thrust_SL_limit=thrust_SL_limit,
+        efficiency_SL=efficiency_SL,
+        thrust_CL=thrust_CL,
+        thrust_CL_limit=thrust_CL_limit,
+        efficiency_CL=efficiency_CL,
+        speed=speed,
+    )
+
+
+def test_propeller_neuralfoil():
+    thrust_SL = np.array(
+        [
+            1747.41909353,
+            2745.28898913,
+            3743.15888473,
+            4741.02878033,
+            5738.89867593,
+            6736.76857153,
+            7734.63846713,
+            8732.50836273,
+            9730.37825833,
+            10728.24815393,
+            11726.11804953,
+            12723.98794513,
+            13721.85784073,
+            14719.72773633,
+            15717.59763193,
+            16715.46752753,
+            17713.33742313,
+            18711.20731873,
+            19709.07721433,
+            20706.94710993,
+            21704.81700553,
+            22702.68690113,
+            23700.55679673,
+            24698.42669233,
+            25696.29658793,
+            26694.16648353,
+            27692.03637913,
+            28689.90627473,
+            29687.77617033,
+            30685.64606593,
+        ]
+    )
+    thrust_SL_limit = np.array(
+        [
+            12960.50147297,
+            14740.7211897,
+            16767.05867291,
+            18363.25985933,
+            19989.23617409,
+            21765.74969016,
+            23695.37374879,
+            25844.96466343,
+            28186.98005996,
+            30685.64606593,
+        ]
+    )
+    efficiency_SL = np.array(
+        [
+            [
+                0.1400506,
+                0.15194911,
+                0.14798152,
+                0.13940134,
+                0.13006199,
+                0.1211425,
+                0.11297262,
+                0.1055822,
+                0.0988541,
+                0.09242725,
+                0.08590425,
+                0.07952221,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+                0.07758517,
+            ],
+            [
+                0.50202309,
+                0.53888056,
+                0.53548791,
+                0.51867608,
+                0.4974421,
+                0.47525919,
+                0.45356127,
+                0.43292838,
+                0.41354619,
+                0.39531322,
+                0.37771127,
+                0.36049905,
+                0.34328115,
+                0.32370619,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+                0.32323541,
+            ],
+            [
+                0.64814254,
+                0.68814852,
+                0.69406168,
+                0.6839246,
+                0.66807834,
+                0.64953319,
+                0.6301554,
+                0.61072362,
+                0.59171624,
+                0.57328705,
+                0.55541292,
+                0.53777142,
+                0.52024787,
+                0.50231786,
+                0.48380751,
+                0.45846467,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+                0.45544838,
+            ],
+            [
+                0.69644446,
+                0.74472037,
+                0.75860164,
+                0.75713455,
+                0.74816321,
+                0.73595825,
+                0.72192783,
+                0.70696755,
+                0.69168035,
+                0.67634241,
+                0.66113125,
+                0.6459993,
+                0.63080527,
+                0.6154866,
+                0.59975006,
+                0.58334791,
+                0.56511776,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+                0.54515805,
+            ],
+            [
+                0.70009705,
+                0.76249138,
+                0.78467487,
+                0.79047472,
+                0.78798347,
+                0.78119914,
+                0.77209315,
+                0.76158599,
+                0.75022943,
+                0.73835423,
+                0.72619098,
+                0.71391066,
+                0.70146325,
+                0.68876136,
+                0.67587831,
+                0.66249581,
+                0.64864853,
+                0.63342935,
+                0.615057,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+                0.60549138,
+            ],
+            [
+                0.7019771,
+                0.76746739,
+                0.79481172,
+                0.80579946,
+                0.80841252,
+                0.80626821,
+                0.80123568,
+                0.79437183,
+                0.78631199,
+                0.77744855,
+                0.76804799,
+                0.75829809,
+                0.74829282,
+                0.7379987,
+                0.72741557,
+                0.71655745,
+                0.70528327,
+                0.69349818,
+                0.68096188,
+                0.66674106,
+                0.64524325,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+                0.64052828,
+            ],
+            [
+                0.6730489,
+                0.7564343,
+                0.79315189,
+                0.8105535,
+                0.81812713,
+                0.82006751,
+                0.81824375,
+                0.81440926,
+                0.80914756,
+                0.8028635,
+                0.79583536,
+                0.78826277,
+                0.78029568,
+                0.77202458,
+                0.76343229,
+                0.75449489,
+                0.74527724,
+                0.73575726,
+                0.72568984,
+                0.71508175,
+                0.70367239,
+                0.69028693,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+                0.6644174,
+            ],
+            [
+                0.65346398,
+                0.74955871,
+                0.78917375,
+                0.80923103,
+                0.82075091,
+                0.82635388,
+                0.82770808,
+                0.82632304,
+                0.82344835,
+                0.81939128,
+                0.81441849,
+                0.80868177,
+                0.80241391,
+                0.79578033,
+                0.78883335,
+                0.78158645,
+                0.77401715,
+                0.766116,
+                0.75792731,
+                0.74937245,
+                0.74028076,
+                0.73069199,
+                0.72018811,
+                0.7077711,
+                0.69067041,
+                0.6812219,
+                0.6812219,
+                0.6812219,
+                0.6812219,
+                0.6812219,
+            ],
+            [
+                0.64064911,
+                0.72899412,
+                0.77630731,
+                0.80500282,
+                0.81842517,
+                0.82658171,
+                0.83119749,
+                0.83204674,
+                0.83124365,
+                0.82923881,
+                0.82593717,
+                0.82182434,
+                0.81719325,
+                0.81209646,
+                0.80646839,
+                0.80057428,
+                0.79442264,
+                0.7880098,
+                0.78125706,
+                0.7741679,
+                0.76680609,
+                0.75910939,
+                0.75085404,
+                0.74209346,
+                0.73251465,
+                0.72115918,
+                0.70692979,
+                0.69288736,
+                0.69288736,
+                0.69288736,
+            ],
+            [
+                0.62857076,
+                0.70038364,
+                0.76426994,
+                0.79027394,
+                0.81052974,
+                0.82140361,
+                0.82804949,
+                0.83211119,
+                0.83293423,
+                0.83294059,
+                0.83124979,
+                0.828806,
+                0.82575068,
+                0.82184256,
+                0.81764314,
+                0.81303653,
+                0.80802472,
+                0.80280355,
+                0.79735045,
+                0.79158119,
+                0.7855531,
+                0.77924672,
+                0.77265311,
+                0.76573038,
+                0.75830942,
+                0.75025067,
+                0.74159249,
+                0.73159188,
+                0.71920493,
+                0.68967932,
+            ],
+        ]
+    )
+    thrust_CL = np.array(
+        [
+            691.40775838,
+            1106.23115528,
+            1521.05455218,
+            1935.87794907,
+            2350.70134597,
+            2765.52474287,
+            3180.34813977,
+            3595.17153666,
+            4009.99493356,
+            4424.81833046,
+            4839.64172735,
+            5254.46512425,
+            5669.28852115,
+            6084.11191805,
+            6498.93531494,
+            6913.75871184,
+            7328.58210874,
+            7743.40550563,
+            8158.22890253,
+            8573.05229943,
+            8987.87569633,
+            9402.69909322,
+            9817.52249012,
+            10232.34588702,
+            10647.16928391,
+            11061.99268081,
+            11476.81607771,
+            11891.63947461,
+            12306.4628715,
+            12721.2862684,
+        ]
+    )
+    thrust_CL_limit = np.array(
+        [
+            5245.7329211,
+            5970.99951001,
+            6799.98756135,
+            7462.10776339,
+            8133.10578313,
+            8880.7682357,
+            9701.41070537,
+            10616.12962659,
+            11627.62364331,
+            12721.2862684,
+        ]
+    )
+    efficiency_CL = np.array(
+        [
+            [
+                0.12840582,
+                0.14421898,
+                0.14266689,
+                0.1353255,
+                0.12669389,
+                0.1181922,
+                0.11027915,
+                0.10305178,
+                0.09639594,
+                0.08984423,
+                0.08320992,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+                0.07611246,
+            ],
+            [
+                0.46963412,
+                0.51687491,
+                0.5196237,
+                0.50619392,
+                0.48688718,
+                0.46585921,
+                0.44487858,
+                0.42470275,
+                0.40559112,
+                0.38744466,
+                0.36973034,
+                0.35208948,
+                0.33404311,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+                0.31827115,
+            ],
+            [
+                0.6098914,
+                0.66442572,
+                0.67677819,
+                0.6698526,
+                0.65602883,
+                0.6386917,
+                0.62005811,
+                0.60108483,
+                0.5823273,
+                0.56404188,
+                0.54619073,
+                0.52834362,
+                0.51037473,
+                0.4916789,
+                0.47137504,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+                0.44800577,
+            ],
+            [
+                0.66311782,
+                0.72104841,
+                0.7405589,
+                0.74275094,
+                0.7356658,
+                0.72471593,
+                0.71150203,
+                0.69704159,
+                0.68206158,
+                0.66687111,
+                0.65171616,
+                0.63655233,
+                0.62114731,
+                0.6054502,
+                0.5889976,
+                0.57139186,
+                0.54994441,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+                0.53654223,
+            ],
+            [
+                0.66393428,
+                0.73727883,
+                0.76544676,
+                0.77481225,
+                0.77483687,
+                0.76935634,
+                0.76114537,
+                0.75125048,
+                0.74030456,
+                0.7286915,
+                0.71666576,
+                0.70443387,
+                0.69196361,
+                0.6790887,
+                0.66590464,
+                0.6519351,
+                0.63718205,
+                0.62040553,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+                0.59594846,
+            ],
+            [
+                0.66118539,
+                0.73868308,
+                0.77278981,
+                0.78789978,
+                0.79318034,
+                0.79283553,
+                0.78905123,
+                0.78306506,
+                0.77560962,
+                0.76714347,
+                0.75801771,
+                0.74843098,
+                0.73851628,
+                0.7282681,
+                0.71758837,
+                0.70649715,
+                0.69484111,
+                0.68238312,
+                0.66887902,
+                0.65266225,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+                0.62921502,
+            ],
+            [
+                0.62563596,
+                0.7241793,
+                0.76833421,
+                0.79016195,
+                0.80027399,
+                0.80378758,
+                0.80368944,
+                0.80108661,
+                0.79671913,
+                0.79109126,
+                0.78455168,
+                0.77733882,
+                0.76962288,
+                0.76151798,
+                0.75305309,
+                0.74416281,
+                0.73483507,
+                0.72510942,
+                0.71463557,
+                0.70336312,
+                0.6907676,
+                0.67530834,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+                0.65104136,
+            ],
+            [
+                0.6050283,
+                0.71145827,
+                0.75439617,
+                0.78207976,
+                0.79805998,
+                0.80593702,
+                0.80896449,
+                0.80947155,
+                0.80798051,
+                0.80496826,
+                0.80058522,
+                0.7954726,
+                0.78974745,
+                0.78351873,
+                0.77688019,
+                0.76989939,
+                0.76255499,
+                0.7547424,
+                0.74650105,
+                0.73779347,
+                0.72836406,
+                0.71809065,
+                0.70662993,
+                0.69220993,
+                0.66488928,
+                0.66488928,
+                0.66488928,
+                0.66488928,
+                0.66488928,
+                0.66488928,
+            ],
+            [
+                0.58683942,
+                0.66868715,
+                0.73358462,
+                0.76566868,
+                0.78512233,
+                0.79852642,
+                0.80470514,
+                0.80834845,
+                0.80993158,
+                0.80894581,
+                0.80700707,
+                0.80418208,
+                0.80032061,
+                0.79588231,
+                0.79098794,
+                0.78567127,
+                0.77989705,
+                0.77384216,
+                0.76745496,
+                0.76067431,
+                0.75344097,
+                0.74570751,
+                0.73736312,
+                0.728018,
+                0.71766932,
+                0.70481155,
+                0.68656267,
+                0.6715433,
+                0.6715433,
+                0.6715433,
+            ],
+            [
+                0.46310598,
+                0.62275483,
+                0.68464548,
+                0.7297772,
+                0.75484308,
+                0.7730201,
+                0.78442105,
+                0.7918611,
+                0.79672438,
+                0.7988404,
+                0.80009259,
+                0.79921698,
+                0.79793748,
+                0.79556653,
+                0.79262771,
+                0.78924929,
+                0.78517705,
+                0.78084113,
+                0.77617759,
+                0.77107136,
+                0.76572091,
+                0.76008331,
+                0.75408774,
+                0.74745162,
+                0.74020018,
+                0.73225651,
+                0.72300298,
+                0.71176864,
+                0.69730125,
+                0.66666466,
+            ],
+        ]
+    )
+    speed = np.array(
+        [
+            5.0,
+            26.39407407,
+            47.78814815,
+            69.18222222,
+            90.5762963,
+            111.97037037,
+            133.36444444,
+            154.75851852,
+            176.15259259,
+            197.54666667,
+        ]
+    )
+    propeller_neuralfoil(
         XML_FILE,
         thrust_SL=thrust_SL,
         thrust_SL_limit=thrust_SL_limit,
