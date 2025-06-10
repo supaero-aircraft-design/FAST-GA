@@ -364,7 +364,6 @@ def test_vlm_comp_high_speed():
     )
 
 
-@pytest.mark.skipif(system() != "Windows")
 def test_vlm_comp_high_speed_neuralfoil():
     """Tests vlm components @ high speed."""
     comp_high_speed_neuralfoil(
@@ -399,7 +398,6 @@ def test_vlm_comp_high_speed_input_aoa():
     )
 
 
-@pytest.mark.skipif(system() != "Windows")
 def test_vlm_comp_high_speed_input_aoa_neuralfoil():
     """Tests vlm components @ low speed."""
 
