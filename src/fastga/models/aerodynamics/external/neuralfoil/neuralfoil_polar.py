@@ -337,7 +337,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
         # Move extras to end of lower surface to maintain proper airfoil closure
         if len(trailing_edge_points) > 1:
             upper = [trailing_edge_points[0]] + upper_filtered  # First [1,0] at beginning
-            lower.extend(trailing_edge_points[1:])  # Move rest to end of lower
+            lower.extend(trailing_edge_points[1:2])  # Move rest to end of lower
         elif len(trailing_edge_points) == 1:
             upper = [trailing_edge_points[0]] + upper_filtered  # Put [1,0] at beginning
         else:
