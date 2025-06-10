@@ -195,7 +195,6 @@ class NeuralfoilPolar(om.ExplicitComponent):
 
     def _get_max_cl(self, alpha: np.ndarray, lift_coeff: np.ndarray) -> Tuple[float, bool]:
         """
-
         :param alpha:
         :param lift_coeff: CL
         :return: max CL within +/- 0.3 around linear zone if enough alpha computed, or default value
