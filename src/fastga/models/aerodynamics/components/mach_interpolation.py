@@ -108,10 +108,7 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         self.add_input("wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
         self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            "horizontal_tail:alpha",
-            val=nans_array,
-            shape=POLAR_POINT_COUNT,
-            units="deg",
+            "horizontal_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
         )
         self.add_input("horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
