@@ -55,7 +55,7 @@ neuralfoil = "^0.3.0"
 jupyterlab = ["jupyterlab"]
 
 [tool.poetry.group.dev.dependencies]
-matplotlib = { version = "^3.9.0", python = "^3.9" }
+matplotlib = "^3.9.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.0"
