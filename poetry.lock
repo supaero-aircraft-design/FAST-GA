@@ -4436,4 +4436,4 @@ jupyterlab = ["jupyterlab"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9, <3.12"
-content-hash = "8f49a3aa3c8ac534169dbae2893d0d4f4a42543448929bae152af86a553f2efc"
+content-hash = "e2f87e266fab3c2822506f0e88d65fd04432e10afce81116e0ec893939df6524"

@@ -102,8 +102,8 @@ class NeuralfoilPolar(om.ExplicitComponent):
         """
 
         # Get inputs and initialise outputs
-        mach = np.round(inputs["mach"], 4)
-        reynolds = np.round(inputs["reynolds"])
+        mach = inputs["mach"]
+        reynolds = inputs["reynolds"]
 
         # Compressibility correction
         beta = np.sqrt(1.0 - mach**2.0)

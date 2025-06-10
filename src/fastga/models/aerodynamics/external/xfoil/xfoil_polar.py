@@ -142,8 +142,8 @@ class XfoilPolar(ExternalCodeComp):
         self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
-        mach = np.round(inputs["mach"], 4)
-        reynolds = np.round(inputs["reynolds"])
+        mach = np.round(float(inputs["mach"]), 4)
+        reynolds = np.round(float(inputs["reynolds"]))
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
