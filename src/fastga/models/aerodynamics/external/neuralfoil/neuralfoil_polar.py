@@ -306,9 +306,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
             else:  # Near zero y values - need special handling
                 if abs(pt[0]) < 1e-6:  # Leading edge point (0,0)
                     leading_edge_points.append(pt)
-                elif pt[0] < 0.5:  # Other leading edge area points
-                    upper_coords.append(pt)
-                else:  # Trailing edge area points
+                else:  # All other points with near-zero y
                     upper_coords.append(pt)
 
         # Handle leading edge points: distribute between upper and lower surfaces
@@ -329,8 +327,8 @@ class NeuralfoilPolar(om.ExplicitComponent):
         upper_filtered = []
 
         for pt in upper:
-            # Check if point is approximately [1,0] (trailing edge)
-            if abs(pt[0] - 1.0) < 1e-6 and abs(pt[1]) < 1e-6:
+            # Check if point is approximately x=1.0 (trailing edge)
+            if abs(pt[0] - 1.0) < 1e-6:
                 trailing_edge_points.append(pt)
             else:
                 upper_filtered.append(pt)
