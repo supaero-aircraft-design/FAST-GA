@@ -341,7 +341,7 @@ class NeuralfoilPolar(om.ExplicitComponent):
         elif len(trailing_edge_points) == 1:
             upper = [trailing_edge_points[0]] + upper_filtered  # Put [1,0] at beginning
         else:
-            upper = upper_filtered
+            upper = [(1.0, 0.0)] + upper_filtered  # No trailing edge points found, add one at [1,0]
 
         # Generate Selig format: name line, upper coordinates, blank line, lower coordinates
         selig_lines = ["ConvertedAirfoil"]
