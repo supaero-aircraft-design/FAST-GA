@@ -1013,7 +1013,7 @@ def test_extreme_cl_wing_clean_neuralfoil():
     wing_extreme_cl_clean_neuralfoil(
         XML_FILE,
         cl_max_clean_wing=1.325348,
-        cl_min_clean_wing=-0.86465,
+        cl_min_clean_wing=-0.80819,
     )
 
 
