@@ -1,6 +1,6 @@
 """Computation of the airfoil aerodynamic properties using Xfoil."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -35,23 +35,25 @@ from fastga.command.api import string_to_array
 from fastga.models.aerodynamics.external.xfoil import xfoil699
 from fastga.models.geometry.profiles.get_profile import get_profile
 from . import resources as local_resources
-from ...constants import POLAR_POINT_COUNT
+from ...constants import (
+    POLAR_POINT_COUNT,
+    OPTION_ALPHA_START,
+    OPTION_ALPHA_END,
+    OPTION_COMP_NEG_AIR_SYM,
+    _DEFAULT_AIRFOIL_FILE,
+    ALPHA_STEP,
+    DEFAULT_2D_CL_MAX,
+    DEFAULT_2D_CL_MIN,
+)
 
 OPTION_RESULT_POLAR_FILENAME = "result_polar_filename"
 OPTION_RESULT_FOLDER_PATH = "result_folder_path"
 OPTION_XFOIL_EXE_PATH = "xfoil_exe_path"
-OPTION_ALPHA_START = "alpha_start"
-OPTION_ALPHA_END = "alpha_end"
 OPTION_ITER_LIMIT = "iter_limit"
-OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
-DEFAULT_2D_CL_MAX = 1.9
-DEFAULT_2D_CL_MIN = -1.7
-ALPHA_STEP = 0.5
 
 _INPUT_FILE_NAME = "polar_session.txt"
 _STDOUT_FILE_NAME = "polar_calc.log"
 _STDERR_FILE_NAME = "polar_calc.err"
-_DEFAULT_AIRFOIL_FILE = "naca23012.af"
 _TMP_PROFILE_FILE_NAME = "in"  # as short as possible to avoid problems of path length
 _TMP_RESULT_FILE_NAME = "out"  # as short as possible to avoid problems of path length
 XFOIL_EXE_NAME = "xfoil.exe"  # name of embedded XFoil executable
@@ -88,7 +90,7 @@ class XfoilPolar(ExternalCodeComp):
             desc="If only one angle of attack is required, Cl_max_2D and Cl_min_2D won't be "
             "returned and results won't be written in the resources nor will they be read from "
             "them. In addition to that, options "
-            + OPTION_ALPHA_END
+            + OPTION_ALPHA_START
             + " and "
             + OPTION_ALPHA_END
             + " must match",
@@ -101,25 +103,25 @@ class XfoilPolar(ExternalCodeComp):
 
         multiple_aoa = not self.options["single_AoA"]
 
-        self.add_input("xfoil:mach", val=np.nan)
-        self.add_input("xfoil:reynolds", val=np.nan)
+        self.add_input("mach", val=np.nan)
+        self.add_input("reynolds", val=np.nan)
 
         if multiple_aoa:
-            self.add_output("xfoil:alpha", shape=POLAR_POINT_COUNT, units="deg")
-            self.add_output("xfoil:CL", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CD", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CDp", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CM", shape=POLAR_POINT_COUNT)
-            self.add_output("xfoil:CL_max_2D")
-            self.add_output("xfoil:CL_min_2D")
-            self.add_output("xfoil:CD_min_2D")
+            self.add_output("alpha", shape=POLAR_POINT_COUNT, units="deg")
+            self.add_output("CL", shape=POLAR_POINT_COUNT)
+            self.add_output("CD", shape=POLAR_POINT_COUNT)
+            self.add_output("CDp", shape=POLAR_POINT_COUNT)
+            self.add_output("CM", shape=POLAR_POINT_COUNT)
+            self.add_output("CL_max_2D")
+            self.add_output("CL_min_2D")
+            self.add_output("CD_min_2D")
 
         else:
-            self.add_output("xfoil:alpha", units="deg")
-            self.add_output("xfoil:CL")
-            self.add_output("xfoil:CD")
-            self.add_output("xfoil:CDp")
-            self.add_output("xfoil:CM")
+            self.add_output("alpha", units="deg")
+            self.add_output("CL")
+            self.add_output("CD")
+            self.add_output("CDp")
+            self.add_output("CM")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -140,8 +142,8 @@ class XfoilPolar(ExternalCodeComp):
         self.options["timeout"] = 15.0
 
         # Get inputs and initialise outputs
-        mach = round(float(inputs["xfoil:mach"]), 4)
-        reynolds = round(float(inputs["xfoil:reynolds"]))
+        mach = np.round(inputs["mach"], 4).item()
+        reynolds = np.round(inputs["reynolds"]).item()
 
         # Search if data already stored for this profile and mach with reynolds values bounding
         # current value. If so, use linear interpolation with the nearest upper/lower reynolds
@@ -243,15 +245,15 @@ class XfoilPolar(ExternalCodeComp):
             ) = self._extract_fix_interpolated_result_length(interpolated_result)
 
         # Defining outputs -------------------------------------------------------------------------
-        outputs["xfoil:alpha"] = alpha
-        outputs["xfoil:CL"] = cl
-        outputs["xfoil:CD"] = cd
-        outputs["xfoil:CDp"] = cdp
-        outputs["xfoil:CM"] = cm
+        outputs["alpha"] = alpha
+        outputs["CL"] = cl
+        outputs["CD"] = cd
+        outputs["CDp"] = cdp
+        outputs["CM"] = cm
         if multiple_aoa:
-            outputs["xfoil:CL_max_2D"] = cl_max_2d
-            outputs["xfoil:CL_min_2D"] = cl_min_2d
-            outputs["xfoil:CD_min_2D"] = cd_min_2d
+            outputs["CL_max_2D"] = cl_max_2d
+            outputs["CL_min_2D"] = cl_min_2d
+            outputs["CD_min_2D"] = cd_min_2d
 
     def _write_script_file(
         self,

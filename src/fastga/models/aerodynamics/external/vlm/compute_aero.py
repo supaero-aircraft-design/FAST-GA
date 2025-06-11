@@ -22,6 +22,7 @@ from openmdao.core.group import Group
 
 from .vlm import VLMSimpleGeometry
 from ..xfoil.xfoil_polar import XfoilPolar
+from ..neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 
@@ -44,6 +45,7 @@ class ComputeAeroVLM(Group):
             "htp_airfoil_file", default=DEFAULT_HTP_AIRFOIL, types=str, allow_none=True
         )
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         self.add_subsystem(
@@ -56,10 +58,13 @@ class ComputeAeroVLM(Group):
             ComputeLocalReynolds(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["*"],
         )
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
         if self.options["low_speed_aero"]:
             self.add_subsystem(
                 "wing_polar_ls",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
@@ -69,7 +74,7 @@ class ComputeAeroVLM(Group):
             )
             self.add_subsystem(
                 "htp_polar_ls",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,
@@ -80,7 +85,7 @@ class ComputeAeroVLM(Group):
         else:
             self.add_subsystem(
                 "wing_polar_hs",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["wing_airfoil_file"],
                     alpha_end=20.0,
@@ -90,7 +95,7 @@ class ComputeAeroVLM(Group):
             )
             self.add_subsystem(
                 "htp_polar_hs",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=self.options["htp_airfoil_file"],
                     alpha_end=20.0,
@@ -113,32 +118,47 @@ class ComputeAeroVLM(Group):
         )
 
         if self.options["low_speed_aero"]:
-            self.connect("data:aerodynamics:low_speed:mach", "wing_polar_ls.xfoil:mach")
+            self.connect("data:aerodynamics:low_speed:mach", "wing_polar_ls.mach")
             self.connect(
-                "data:aerodynamics:wing:low_speed:reynolds", "wing_polar_ls.xfoil:reynolds"
+                "data:aerodynamics:wing:low_speed:reynolds",
+                "wing_polar_ls.reynolds",
             )
-            self.connect("wing_polar_ls.xfoil:CL", "data:aerodynamics:wing:low_speed:CL")
-            self.connect("wing_polar_ls.xfoil:CDp", "data:aerodynamics:wing:low_speed:CDp")
-            self.connect("data:aerodynamics:low_speed:mach", "htp_polar_ls.xfoil:mach")
+            self.connect("wing_polar_ls.CL", "data:aerodynamics:wing:low_speed:CL")
+            self.connect("wing_polar_ls.CDp", "data:aerodynamics:wing:low_speed:CDp")
+            self.connect("data:aerodynamics:low_speed:mach", "htp_polar_ls.mach")
             self.connect(
                 "data:aerodynamics:horizontal_tail:low_speed:reynolds",
-                "htp_polar_ls.xfoil:reynolds",
+                "htp_polar_ls.reynolds",
             )
-            self.connect("htp_polar_ls.xfoil:CL", "data:aerodynamics:horizontal_tail:low_speed:CL")
             self.connect(
-                "htp_polar_ls.xfoil:CDp", "data:aerodynamics:horizontal_tail:low_speed:CDp"
+                "htp_polar_ls.CL",
+                "data:aerodynamics:horizontal_tail:low_speed:CL",
+            )
+            self.connect(
+                "htp_polar_ls.CDp",
+                "data:aerodynamics:horizontal_tail:low_speed:CDp",
             )
         else:
-            self.connect("data:aerodynamics:cruise:mach", "wing_polar_hs.xfoil:mach")
-            self.connect("data:aerodynamics:wing:cruise:reynolds", "wing_polar_hs.xfoil:reynolds")
-            self.connect("wing_polar_hs.xfoil:CL", "data:aerodynamics:wing:cruise:CL")
-            self.connect("wing_polar_hs.xfoil:CDp", "data:aerodynamics:wing:cruise:CDp")
-            self.connect("data:aerodynamics:cruise:mach", "htp_polar_hs.xfoil:mach")
+            self.connect("data:aerodynamics:cruise:mach", "wing_polar_hs.mach")
             self.connect(
-                "data:aerodynamics:horizontal_tail:cruise:reynolds", "htp_polar_hs.xfoil:reynolds"
+                "data:aerodynamics:wing:cruise:reynolds",
+                "wing_polar_hs.reynolds",
             )
-            self.connect("htp_polar_hs.xfoil:CL", "data:aerodynamics:horizontal_tail:cruise:CL")
-            self.connect("htp_polar_hs.xfoil:CDp", "data:aerodynamics:horizontal_tail:cruise:CDp")
+            self.connect("wing_polar_hs.CL", "data:aerodynamics:wing:cruise:CL")
+            self.connect("wing_polar_hs.CDp", "data:aerodynamics:wing:cruise:CDp")
+            self.connect("data:aerodynamics:cruise:mach", "htp_polar_hs.mach")
+            self.connect(
+                "data:aerodynamics:horizontal_tail:cruise:reynolds",
+                "htp_polar_hs.reynolds",
+            )
+            self.connect(
+                "htp_polar_hs.CL",
+                "data:aerodynamics:horizontal_tail:cruise:CL",
+            )
+            self.connect(
+                "htp_polar_hs.CDp",
+                "data:aerodynamics:horizontal_tail:cruise:CDp",
+            )
 
 
 class ComputeLocalReynolds(ExplicitComponent):
