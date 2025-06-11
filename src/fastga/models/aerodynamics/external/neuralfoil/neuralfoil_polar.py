@@ -137,13 +137,9 @@ class NeuralfoilPolar(om.ExplicitComponent):
         )
 
         if multiple_aoa:
-            alpha_neg = self._take_first_half(alpha)
-            alpha_pos = self._take_second_half(alpha)
-            cl_neg = self._take_first_half(cl)
-            cl_pos = self._take_second_half(cl)
             results["AoA"] = alpha
-            cl_max_2d, _ = self._get_max_cl(alpha_pos, cl_pos)
-            cl_min_2d, _ = self._get_min_cl(alpha_neg, cl_neg)
+            cl_max_2d, _ = self._get_max_cl(alpha, cl)
+            cl_min_2d, _ = self._get_min_cl(alpha, cl)
             cd_min_2d = np.min(cd)
             alpha, cl, cd, cm = self._fix_calculation_result_length(results)
 
@@ -201,6 +197,11 @@ class NeuralfoilPolar(om.ExplicitComponent):
         otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
+
+        if self.options[OPTION_COMP_NEG_AIR_SYM]:
+            alpha = self._take_second_half(alpha)
+            lift_coeff = self._take_second_half(lift_coeff)
+
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if np.abs(covered_range / alpha_range) >= 0.4:
@@ -228,6 +229,11 @@ class NeuralfoilPolar(om.ExplicitComponent):
         otherwise
         """
         alpha_range = self.options[OPTION_ALPHA_END] - self.options[OPTION_ALPHA_START]
+
+        if self.options[OPTION_COMP_NEG_AIR_SYM]:
+            alpha = self._take_first_half(alpha)
+            lift_coeff = self._take_first_half(lift_coeff)
+
         if len(alpha) > 2:
             covered_range = max(alpha) - min(alpha)
             if covered_range / alpha_range >= 0.4:

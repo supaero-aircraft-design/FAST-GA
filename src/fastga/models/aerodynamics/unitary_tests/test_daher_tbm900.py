@@ -180,7 +180,7 @@ def test_polar_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=1.569296,
+        cl_max_2d=1.5683,
         cdp_1_low_speed=0.0,
     )
 
@@ -249,7 +249,7 @@ def test_polar_with_ext_folder_neuralfoil():
         mach_low_speed=0.1284,
         reynolds_low_speed=2993524,
         cdp_1_high_speed=0.0,
-        cl_max_2d=1.65027027,
+        cl_max_2d=1.6316,
         cdp_1_low_speed=0.0,
     )
 
