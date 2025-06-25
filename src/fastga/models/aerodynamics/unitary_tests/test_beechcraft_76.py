@@ -721,12 +721,12 @@ def test_2d_hinge_moment():
 
 def test_3d_hinge_moment():
     """Tests tail hinge-moments."""
-    hinge_moment_3d(XML_FILE, ch_alpha=-0.28421252, ch_delta=-0.7115188)
+    hinge_moment_3d(XML_FILE, ch_alpha=-0.28421252, ch_delta=-0.71255199)
 
 
 def test_all_hinge_moment():
     """Tests tail hinge-moments full computation."""
-    hinge_moments(XML_FILE, ch_alpha=-0.28421252, ch_delta=-0.7115188)
+    hinge_moments(XML_FILE, ch_alpha=-0.28421252, ch_delta=-0.71255199)
 
 
 def test_elevator():

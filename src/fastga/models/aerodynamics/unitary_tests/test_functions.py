@@ -1225,6 +1225,8 @@ def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
     ) == pytest.approx(ch_delta, abs=1e-4)
 
+    problem.check_partials(compact_print=True)
+
 
 def elevator(
     XML_FILE: str,

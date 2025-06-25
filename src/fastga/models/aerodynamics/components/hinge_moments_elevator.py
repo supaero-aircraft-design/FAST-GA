@@ -1,6 +1,6 @@
 """FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +25,8 @@ from ..constants import (
     SUBMODEL_HINGE_MOMENTS_TAIL_3D,
     SUBMODEL_HINGE_MOMENTS_TAIL,
 )
+
+from .digitization.compute_k_prime_single_slotted import ComputeSingleSlottedLiftEffectiveness
 
 
 @oad.RegisterSubmodel(
@@ -200,7 +202,103 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 @oad.RegisterSubmodel(
     SUBMODEL_HINGE_MOMENTS_TAIL_3D, "fastga.submodel.aerodynamics.tail.hinge_moments.3d.legacy"
 )
-class Compute3DHingeMomentsTail(FigureDigitization):
+class Compute3DHingeMomentsTail(om.Group):
+    """
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
+    """
+
+    def setup(self):
+        self.add_subsystem(
+            name="hinge_moment_alpha_three_d", subsys=Compute3DHingeMomentAlpha(), promotes=["*"]
+        )
+
+        self.add_subsystem(
+            name="single_slotted_lift_effectiveness",
+            subsys=ComputeSingleSlottedLiftEffectiveness(),
+            promotes=[
+                ("deflection_angle", "data:mission:sizing:takeoff:elevator_angle"),
+                ("chord_ratio", "data:geometry:horizontal_tail:elevator_chord_ratio"),
+            ],
+        )
+
+        self.add_subsystem(
+            name="hinge_moment_delta_three_d", subsys=Compute3DHingeMomentDelta(), promotes=["*"]
+        )
+
+        self.connect(
+            "single_slotted_lift_effectiveness.lift_effectiveness",
+            "max_lift_effectiveness",
+        )
+
+
+class Compute3DHingeMomentAlpha(om.ExplicitComponent):
+    """
+    Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
+    Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
+    delta_Ch_alpha we will ignore it for now, same for delta_Ch_delta
+    """
+
+    def setup(self):
+        self.add_input(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
+            val=np.nan,
+            units="rad**-1",
+        )
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
+
+        self.add_output(
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
+        )
+
+        self.declare_partials(
+            of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
+            wrt="*",
+            method="exact",
+        )
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
+        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+
+        outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha"] = (
+            (ar_ht * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht))
+        ) * ch_alpha_2d
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
+        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
+        ] = (ar_ht * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht))
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
+            "data:geometry:horizontal_tail:sweep_25",
+        ] = (
+            -ch_alpha_2d
+            * ar_ht**2.0
+            * np.sin(sweep_25_ht)
+            / (2.0 * np.cos(sweep_25_ht) + ar_ht) ** 2.0
+        )
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha",
+            "data:geometry:horizontal_tail:aspect_ratio",
+        ] = (
+            2.0
+            * ch_alpha_2d
+            * np.cos(sweep_25_ht) ** 2.0
+            / (2.0 * np.cos(sweep_25_ht) + ar_ht) ** 2.0
+        )
+
+
+class Compute3DHingeMomentDelta(om.ExplicitComponent):
     """
     Based on : Roskam, Jan. Airplane Design: Part 6-Preliminary Calculation of Aerodynamic,
     Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
@@ -217,42 +315,32 @@ class Compute3DHingeMomentsTail(FigureDigitization):
             val=np.nan,
             units="rad**-1",
         )
-        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="deg")
+        self.add_input("data:geometry:horizontal_tail:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:horizontal_tail:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
-        self.add_input("data:mission:sizing:takeoff:elevator_angle", val=np.nan, units="deg")
+        self.add_input("max_lift_effectiveness", val=np.nan)
 
         self.add_output(
-            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha", units="rad**-1"
-        )
-        self.add_output(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
+        )
+
+        self.declare_partials(
+            of="data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            wrt="*",
+            method="exact",
         )
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
-        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"] * np.pi / 180.0
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
         ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
-        elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
-        elevator_angle = float(abs(inputs["data:mission:sizing:takeoff:elevator_angle"]))
-
-        # Section 10.4.2.1
-        # Step 1. : delta_Ch_alpha we will ignore it for now, same for delta_Ch_delta
-
-        ch_alpha_3d = (
-            (ar_ht * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht))
-        ) * ch_alpha_2d
+        a_delta = inputs["max_lift_effectiveness"]
 
         # Section 10.4.2.2
         # We assume the same sweep angle for hl and tail
         sweep_hl = sweep_25_ht
 
-        # We'll compute the elevator effectiveness factor in the worst case scenario, i.e,
-        # with the highest deflection angle which we will take at 25 degree
-        a_delta = self.k_prime_single_slotted(elevator_angle, float(elevator_chord_ratio))
-
-        ch_delta_3d = (
+        outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta"] = (
             np.cos(sweep_25_ht)
             * np.cos(sweep_hl)
             * (
@@ -263,5 +351,45 @@ class Compute3DHingeMomentsTail(FigureDigitization):
             )
         )
 
-        outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha"] = ch_alpha_3d
-        outputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta"] = ch_delta_3d
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
+        ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
+        sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
+        ar_ht = inputs["data:geometry:horizontal_tail:aspect_ratio"]
+        a_delta = inputs["max_lift_effectiveness"]
+        common_denominator = 2.0 * np.cos(sweep_25_ht) + ar_ht
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            "data:geometry:horizontal_tail:sweep_25",
+        ] = (
+            -2.0
+            * np.cos(sweep_25_ht)
+            * np.sin(sweep_25_ht)
+            * (
+                4.0 * (ch_delta_2d + a_delta * ch_alpha_2d) * np.cos(sweep_25_ht) ** 2.0
+                + (4.0 * ch_delta_2d + 3.0 * a_delta * ch_alpha_2d) * ar_ht * np.cos(sweep_25_ht)
+                + ch_delta_2d * ar_ht**2.0
+            )
+            / common_denominator**2.0
+        )
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
+        ] = 2.0 * a_delta * np.cos(sweep_25_ht) ** 3.0 / common_denominator
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D",
+        ] = np.cos(sweep_25_ht) ** 2.0
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            "max_lift_effectiveness",
+        ] = 2.0 * ch_alpha_2d * np.cos(sweep_25_ht) ** 3.0 / common_denominator
+
+        partials[
+            "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta",
+            "data:geometry:horizontal_tail:aspect_ratio",
+        ] = -(2.0 * a_delta * ch_alpha_2d * np.cos(sweep_25_ht) ** 3.0) / common_denominator**2.0
