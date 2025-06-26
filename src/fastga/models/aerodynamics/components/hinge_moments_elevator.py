@@ -217,7 +217,7 @@ class Compute3DHingeMomentsTail(om.Group):
             name="single_slotted_lift_effectiveness",
             subsys=ComputeSingleSlottedLiftEffectiveness(),
             promotes=[
-                ("deflection_angle", "data:mission:sizing:takeoff:elevator_angle"),
+                ("flap_angle", "data:mission:sizing:takeoff:elevator_angle"),
                 ("chord_ratio", "data:geometry:horizontal_tail:elevator_chord_ratio"),
             ],
         )
