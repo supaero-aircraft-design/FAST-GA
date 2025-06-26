@@ -1209,6 +1209,8 @@ def hinge_moment_3d(XML_FILE: str, ch_alpha: float, ch_delta: float):
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
     ) == pytest.approx(ch_delta, abs=1e-4)
 
+    problem.check_partials(compact_print=True)
+
 
 def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
     """Tests tail hinge-moments complete computation!"""
@@ -1224,8 +1226,6 @@ def hinge_moments(XML_FILE: str, ch_alpha: float, ch_delta: float):
     assert problem.get_val(
         "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta", units="rad**-1"
     ) == pytest.approx(ch_delta, abs=1e-4)
-
-    problem.check_partials(compact_print=True)
 
 
 def elevator(
@@ -2559,6 +2559,8 @@ def roll_authority_aileron(
     assert problem.get_val(
         "data:aerodynamics:aileron:low_speed:Cl_delta_a", units="rad**-1"
     ) == pytest.approx(cl_delta_a_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(

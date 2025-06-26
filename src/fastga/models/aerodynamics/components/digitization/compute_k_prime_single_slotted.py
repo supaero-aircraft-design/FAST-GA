@@ -26,7 +26,7 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
     """
 
     def setup(self):
-        self.add_input("deflection_angle", val=np.nan, units="deg")
+        self.add_input("deflection_angle", val=0.0, units="deg")
         self.add_input("chord_ratio", val=np.nan)
 
         self.add_output("lift_effectiveness", val=0.1)
@@ -63,15 +63,21 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
         d_angle = inputs["deflection_angle"]
         cr = inputs["chord_ratio"]
 
-        partials["lift_effectiveness", "deflection_angle"] = (
-            0.006 - 0.0004 * d_angle - 0.0121 * cr - 0.0004 * d_angle * cr + 0.0354 * cr**2.0
+        partials["lift_effectiveness", "deflection_angle"] = np.where(
+            d_angle == np.clip(d_angle, -0.08, 79.32),
+            (0.006 - 0.0004 * d_angle - 0.0121 * cr - 0.0004 * d_angle * cr + 0.0354 * cr**2.0),
+            1e-6,
         )
 
-        partials["lift_effectiveness", "chord_ratio"] = (
-            2.6633
-            - 0.0121 * d_angle
-            - 5.9858 * cr
-            - 0.0002 * d_angle**2.0
-            + 0.0708 * d_angle * cr
-            - 1.7793 * cr**2.0
+        partials["lift_effectiveness", "chord_ratio"] = np.where(
+            cr == np.clip(cr, 0.15, 0.4),
+            (
+                2.6633
+                - 0.0121 * d_angle
+                - 5.9858 * cr
+                - 0.0002 * d_angle**2.0
+                + 0.0708 * d_angle * cr
+                - 1.7793 * cr**2.0
+            ),
+            1e-6,
         )
