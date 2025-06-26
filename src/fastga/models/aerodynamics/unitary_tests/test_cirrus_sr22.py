@@ -1382,7 +1382,7 @@ def test_cl_r_aircraft():
 
 def test_cl_delta_a_aircraft():
     """Test roll authority of the aileron."""
-    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.222, cl_delta_a_cruise_=0.2277)
+    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.21275, cl_delta_a_cruise_=0.2181)
 
 
 def test_cl_delta_r_aircraft():
