@@ -26,6 +26,7 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
     """
 
     def setup(self):
+        # The flap angle is set to 0.0 as default to match the original aileron dCL computation.
         self.add_input("flap_angle", val=0.0, units="deg")
         self.add_input("chord_ratio", val=np.nan)
 
@@ -33,9 +34,7 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
 
         self.declare_partials(of="lift_effectiveness", wrt="*", method="exact")
 
-    def compute(
-        self, inputs, outputs, dischord_ratioete_inputs=None, dischord_ratioete_outputs=None
-    ):
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         flap_angle = inputs["flap_angle"]
         chord_ratio = inputs["chord_ratio"]
 
@@ -61,7 +60,7 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
             - 0.5931 * chord_ratio**3.0
         )
 
-    def compute_partials(self, inputs, partials, dischord_ratioete_inputs=None):
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
         flap_angle = inputs["flap_angle"]
         chord_ratio = inputs["chord_ratio"]
 
