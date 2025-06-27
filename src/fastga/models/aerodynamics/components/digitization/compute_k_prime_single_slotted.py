@@ -26,7 +26,6 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
     """
 
     def setup(self):
-        # The flap angle is set to 0.0 as default to match the original aileron dCL computation.
         self.add_input("flap_angle", val=0.0, units="deg")
         self.add_input("chord_ratio", val=np.nan)
 
