@@ -34,9 +34,13 @@ class ComputeClDeltaAileron(om.Group):
     Based on the methodology presented in :cite:`gudmundsson:2013`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             name="aileron_alpha",
@@ -70,9 +74,13 @@ class _ComputeClDeltaAileron(om.ExplicitComponent):
     Based on the methodology presented in :cite:`gudmundsson:2013`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("alpha_aileron", val=np.nan)
         self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
@@ -100,6 +108,8 @@ class _ComputeClDeltaAileron(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_span = inputs["data:geometry:wing:span"]
         wing_area = inputs["data:geometry:wing:area"]
@@ -135,6 +145,8 @@ class _ComputeClDeltaAileron(om.ExplicitComponent):
         else:
             outputs["data:aerodynamics:aileron:cruise:Cl_delta_a"] = cl_delta_a
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_span = inputs["data:geometry:wing:span"]
         wing_area = inputs["data:geometry:wing:area"]

@@ -33,6 +33,10 @@ from .digitization.compute_k_prime_single_slotted import ComputeSingleSlottedLif
     SUBMODEL_HINGE_MOMENTS_TAIL, "fastga.submodel.aerodynamics.tail.hinge_moments.legacy"
 )
 class ComputeHingeMomentsTail(om.Group):
+    """This group collect all tail hinge moment calculations."""
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "two_d_hinge_moments",
@@ -55,6 +59,8 @@ class Compute2DHingeMomentsTail(FigureDigitization):
     Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1, 10.4.2.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:horizontal_tail:elevator_chord_ratio", val=np.nan)
         self.add_input("data:geometry:horizontal_tail:thickness_ratio", val=np.nan)
@@ -73,6 +79,8 @@ class Compute2DHingeMomentsTail(FigureDigitization):
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D", units="rad**-1"
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         elevator_chord_ratio = inputs["data:geometry:horizontal_tail:elevator_chord_ratio"]
         tail_thickness_ratio = inputs["data:geometry:horizontal_tail:thickness_ratio"]
@@ -208,6 +216,8 @@ class Compute3DHingeMomentsTail(om.Group):
     Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             name="hinge_moment_alpha_three_d", subsys=Compute3DHingeMomentAlpha(), promotes=["*"]
@@ -239,6 +249,8 @@ class Compute3DHingeMomentAlpha(om.ExplicitComponent):
     delta_Ch_alpha we will ignore it for now, same for delta_Ch_delta
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
@@ -258,6 +270,8 @@ class Compute3DHingeMomentAlpha(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
@@ -267,6 +281,8 @@ class Compute3DHingeMomentAlpha(om.ExplicitComponent):
             (ar_ht * np.cos(sweep_25_ht)) / (ar_ht + 2.0 * np.cos(sweep_25_ht))
         ) * ch_alpha_2d
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         sweep_25_ht = inputs["data:geometry:horizontal_tail:sweep_25"]
@@ -304,6 +320,8 @@ class Compute3DHingeMomentDelta(om.ExplicitComponent):
     Thrust and Power Characteristics. DAR corporation, 1985. Section 10.4.1.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input(
             "data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D",
@@ -329,6 +347,8 @@ class Compute3DHingeMomentDelta(om.ExplicitComponent):
             method="exact",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]
@@ -351,6 +371,8 @@ class Compute3DHingeMomentDelta(om.ExplicitComponent):
             )
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ch_alpha_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_alpha_2D"]
         ch_delta_2d = inputs["data:aerodynamics:horizontal_tail:cruise:hinge_moment:CH_delta_2D"]

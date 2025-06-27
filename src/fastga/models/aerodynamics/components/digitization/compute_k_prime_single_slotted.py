@@ -25,6 +25,8 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
     the book.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("flap_angle", val=0.0, units="deg")
         self.add_input("chord_ratio", val=np.nan)
@@ -33,6 +35,8 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
 
         self.declare_partials(of="lift_effectiveness", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         flap_angle = inputs["flap_angle"]
         chord_ratio = inputs["chord_ratio"]
@@ -59,6 +63,8 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
             - 0.5931 * chord_ratio**3.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         flap_angle = inputs["flap_angle"]
         chord_ratio = inputs["chord_ratio"]
