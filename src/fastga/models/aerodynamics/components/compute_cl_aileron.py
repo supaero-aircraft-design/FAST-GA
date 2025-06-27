@@ -109,11 +109,9 @@ class _ComputeClDeltaAileron(om.ExplicitComponent):
         tip_effect_factor = inputs["settings:aerodynamics:aileron:tip_effect:k_factor"]
 
         if self.options["low_speed_aero"]:
-            mach_variable_name = "data:aerodynamics:low_speed:mach"
+            mach = inputs["data:aerodynamics:low_speed:mach"]
         else:
-            mach_variable_name = "data:aerodynamics:cruise:mach"
-
-        mach = inputs[mach_variable_name]
+            mach = inputs["data:aerodynamics:cruise:mach"]
 
         aileron_outer_span = wing_span / 2.0
         aileron_inner_span = wing_span * (1.0 - aileron_span_ratio) / 2.0
@@ -132,11 +130,9 @@ class _ComputeClDeltaAileron(om.ExplicitComponent):
         ) * tip_effect_factor
 
         if self.options["low_speed_aero"]:
-            cl_delta_a_variable_name = "data:aerodynamics:aileron:low_speed:Cl_delta_a"
+            outputs["data:aerodynamics:aileron:low_speed:Cl_delta_a"] = cl_delta_a
         else:
-            cl_delta_a_variable_name = "data:aerodynamics:aileron:cruise:Cl_delta_a"
-
-        outputs[cl_delta_a_variable_name] = cl_delta_a
+            outputs["data:aerodynamics:aileron:cruise:Cl_delta_a"] = cl_delta_a
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_span = inputs["data:geometry:wing:span"]
