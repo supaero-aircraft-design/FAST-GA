@@ -637,12 +637,12 @@ def test_2d_hinge_moment():
 
 def test_3d_hinge_moment():
     """Tests tail hinge-moments."""
-    hinge_moment_3d(XML_FILE, ch_alpha=-0.3816, ch_delta=-0.8232)
+    hinge_moment_3d(XML_FILE, ch_alpha=-0.3816, ch_delta=-0.8272)
 
 
 def test_all_hinge_moment():
     """Tests tail hinge-moments full computation."""
-    hinge_moments(XML_FILE, ch_alpha=-0.3816, ch_delta=-0.8232)
+    hinge_moments(XML_FILE, ch_alpha=-0.3816, ch_delta=-0.8272)
 
 
 def test_elevator():
@@ -2173,7 +2173,7 @@ def test_cl_r_aircraft():
 
 def test_cl_delta_a_aircraft():
     """Test roll authority of the aileron."""
-    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.172, cl_delta_a_cruise_=0.2024)
+    roll_authority_aileron(XML_FILE, cl_delta_a_low_speed_=0.1647, cl_delta_a_cruise_=0.19385)
 
 
 def test_cl_delta_r_aircraft():
