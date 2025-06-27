@@ -45,7 +45,7 @@ class ComputeClDeltaAileron(om.Group):
                 ("chord_ratio", "data:geometry:wing:aileron:chord_ratio"),
             ],
         )
-        # The connection of aileron deflection and flap_angle is omitted due to same default value.
+        # Flap deflection angle is not promoted, meaning it's default value of 0 will always be used. This is the intended behviour as aileron will mostly be used around 0 degree
 
         self.add_subsystem(
             name="aileron_cl_delta",
