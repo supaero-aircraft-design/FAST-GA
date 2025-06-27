@@ -1,4 +1,4 @@
-#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Airchord_ratioaft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -33,51 +33,59 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
 
         self.declare_partials(of="lift_effectiveness", wrt="*", method="exact")
 
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        d_angle = inputs["flap_angle"]
-        cr = inputs["chord_ratio"]
+    def compute(
+        self, inputs, outputs, dischord_ratioete_inputs=None, dischord_ratioete_outputs=None
+    ):
+        flap_angle = inputs["flap_angle"]
+        chord_ratio = inputs["chord_ratio"]
 
-        if d_angle != np.clip(d_angle, -0.08, 79.32):
-            d_angle = np.clip(d_angle, -0.08, 79.32)
+        if flap_angle != np.clip(flap_angle, -0.08, 79.32):
+            flap_angle = np.clip(flap_angle, -0.08, 79.32)
             _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
 
-        if cr != np.clip(cr, 0.15, 0.4):
-            cr = np.clip(cr, 0.15, 0.4)
+        if chord_ratio != np.clip(chord_ratio, 0.15, 0.4):
+            chord_ratio = np.clip(chord_ratio, 0.15, 0.4)
             _LOGGER.warning(
                 "Chord ratio value outside of the range in Roskam's book, value clipped"
             )
 
         outputs["lift_effectiveness"] = (
             0.0239
-            + 0.006 * d_angle
-            + 2.6633 * cr
-            - 0.0002 * d_angle**2.0
-            - 0.0121 * d_angle * cr
-            - 2.9929 * cr**2.0
-            - 0.0002 * d_angle**2.0 * cr
-            + 0.0354 * d_angle * cr**2.0
-            - 0.5931 * cr**3.0
+            + 0.006 * flap_angle
+            + 2.6633 * chord_ratio
+            - 0.0002 * flap_angle**2.0
+            - 0.0121 * flap_angle * chord_ratio
+            - 2.9929 * chord_ratio**2.0
+            - 0.0002 * flap_angle**2.0 * chord_ratio
+            + 0.0354 * flap_angle * chord_ratio**2.0
+            - 0.5931 * chord_ratio**3.0
         )
 
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        d_angle = inputs["flap_angle"]
-        cr = inputs["chord_ratio"]
+    def compute_partials(self, inputs, partials, dischord_ratioete_inputs=None):
+        flap_angle = inputs["flap_angle"]
+        chord_ratio = inputs["chord_ratio"]
 
         partials["lift_effectiveness", "flap_angle"] = np.where(
-            d_angle == np.clip(d_angle, -0.08, 79.32),
-            (0.006 - 0.0004 * d_angle - 0.0121 * cr - 0.0004 * d_angle * cr + 0.0354 * cr**2.0),
+            flap_angle == np.clip(flap_angle, -0.08, 79.32),
+            (
+                0.006
+                - 0.0004 * flap_angle
+                - 0.0121 * chord_ratio
+                - 0.0004 * flap_angle * chord_ratio
+                + 0.0354 * chord_ratio**2.0
+            ),
             1e-6,
         )
 
         partials["lift_effectiveness", "chord_ratio"] = np.where(
-            cr == np.clip(cr, 0.15, 0.4),
+            chord_ratio == np.clip(chord_ratio, 0.15, 0.4),
             (
                 2.6633
-                - 0.0121 * d_angle
-                - 5.9858 * cr
-                - 0.0002 * d_angle**2.0
-                + 0.0708 * d_angle * cr
-                - 1.7793 * cr**2.0
+                - 0.0121 * flap_angle
+                - 5.9858 * chord_ratio
+                - 0.0002 * flap_angle**2.0
+                + 0.0708 * flap_angle * chord_ratio
+                - 1.7793 * chord_ratio**2.0
             ),
             1e-6,
         )
