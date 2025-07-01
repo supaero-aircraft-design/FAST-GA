@@ -1,6 +1,6 @@
 """FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -56,6 +56,7 @@ class AerodynamicsHighSpeed(Group):
         self.options.declare("htp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("vtp_airfoil", default="naca0012.af", types=str, allow_none=True)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -71,6 +72,7 @@ class AerodynamicsHighSpeed(Group):
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                         input_angle_of_attack=self.options["input_angle_of_attack"],
+                        use_neuralfoil=self.options["use_neuralfoil"],
                     ),
                     promotes=["*"],
                 )
@@ -85,6 +87,7 @@ class AerodynamicsHighSpeed(Group):
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
                         input_angle_of_attack=self.options["input_angle_of_attack"],
+                        use_neuralfoil=self.options["use_neuralfoil"],
                     ),
                     promotes=["*"],
                 )
@@ -94,6 +97,7 @@ class AerodynamicsHighSpeed(Group):
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        use_neuralfoil=self.options["use_neuralfoil"],
                     ),
                     promotes=["*"],
                 )
@@ -134,6 +138,7 @@ class AerodynamicsHighSpeed(Group):
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
                         htp_airfoil_file=self.options["htp_airfoil"],
+                        use_neuralfoil=self.options["use_neuralfoil"],
                     ),
                     promotes=["*"],
                 )

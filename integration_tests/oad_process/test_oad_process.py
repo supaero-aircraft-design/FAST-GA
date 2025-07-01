@@ -382,6 +382,49 @@ def test_oad_process_mission_builder_2_engine(cleanup):
     assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1106.0, atol=1)
 
 
+def test_oad_process_neuralfoil(cleanup):
+    """Test the overall aircraft design process with wing positioning under VLM method."""
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("fastoad.module_management._bundle_loader").disabled = True
+    logging.getLogger("fastoad.openmdao.variables.variable").disabled = True
+
+    # Define used files depending on options
+    xml_file_name = "input_sr22.xml"
+    process_file_name = "oad_process_sr22_neuralfoil.yml"
+
+    configurator = oad.FASTOADProblemConfigurator(pth.join(DATA_FOLDER_PATH, process_file_name))
+
+    # Create inputs
+    ref_inputs = pth.join(DATA_FOLDER_PATH, xml_file_name)
+
+    # Create problems with inputs
+    problem = configurator.get_problem()
+    problem.write_needed_inputs(ref_inputs)
+    problem.read_inputs()
+    problem.setup()
+    problem.run_model()
+    problem.write_outputs()
+
+    if not pth.exists(RESULTS_FOLDER_PATH):
+        os.mkdir(RESULTS_FOLDER_PATH)
+    om.view_connections(
+        problem,
+        outfile=pth.join(RESULTS_FOLDER_PATH, "connections.html"),
+        show_browser=False,
+    )
+    om.n2(problem, outfile=pth.join(RESULTS_FOLDER_PATH, "n2.html"), show_browser=False)
+
+    # Check that weight-performances loop correctly converged
+    _check_weight_performance_loop(problem)
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:mission:sizing:fuel", units="kg"), 249.2, atol=1)
+    assert_allclose(problem["data:handling_qualities:stick_fixed_static_margin"], 0.15, atol=1e-2)
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:weight:aircraft:MTOW", units="kg"), 1661.1, atol=1)
+    # noinspection PyTypeChecker
+    assert_allclose(problem.get_val("data:weight:aircraft:OWE", units="kg"), 1036.9, atol=1)
+
+
 def _check_weight_performance_loop(problem):
     assert_allclose(
         problem["data:weight:aircraft:OWE"],

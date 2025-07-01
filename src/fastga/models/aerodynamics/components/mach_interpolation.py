@@ -3,7 +3,7 @@ Estimation of the dependency of the aircraft lift slope coefficient as a functio
 number.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +21,7 @@ from stdatm import Atmosphere
 
 from ..constants import POLAR_POINT_COUNT, MACH_NB_PTS
 from ..external.xfoil.xfoil_polar import XfoilPolar
+from ..external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
 
 class ComputeMachInterpolation(om.Group):
@@ -30,6 +31,7 @@ class ComputeMachInterpolation(om.Group):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     # noinspection PyTypeChecker
     def setup(self):
@@ -38,9 +40,13 @@ class ComputeMachInterpolation(om.Group):
         ivc_conditions.add_output("reynolds", val=0.5e6)
         self.add_subsystem("incompressible_conditions", ivc_conditions, promotes=[])
 
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
+
         self.add_subsystem(
             "wing_airfoil",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["wing_airfoil_file"],
@@ -50,7 +56,7 @@ class ComputeMachInterpolation(om.Group):
         )
         self.add_subsystem(
             "htp_airfoil",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["htp_airfoil_file"],
@@ -58,17 +64,21 @@ class ComputeMachInterpolation(om.Group):
             ),
             promotes=[],
         )
-        self.add_subsystem("mach_interpolation", _ComputeMachInterpolation(), promotes=["*"])
+        self.add_subsystem(
+            "mach_interpolation",
+            _ComputeMachInterpolation(),
+            promotes=["*"],
+        )
 
-        self.connect("incompressible_conditions.mach", "wing_airfoil.xfoil:mach")
-        self.connect("incompressible_conditions.reynolds", "wing_airfoil.xfoil:reynolds")
-        self.connect("incompressible_conditions.mach", "htp_airfoil.xfoil:mach")
-        self.connect("incompressible_conditions.reynolds", "htp_airfoil.xfoil:reynolds")
+        self.connect("incompressible_conditions.mach", "wing_airfoil.mach")
+        self.connect("incompressible_conditions.reynolds", "wing_airfoil.reynolds")
+        self.connect("incompressible_conditions.mach", "htp_airfoil.mach")
+        self.connect("incompressible_conditions.reynolds", "htp_airfoil.reynolds")
 
-        self.connect("wing_airfoil.xfoil:alpha", "xfoil:wing:alpha")
-        self.connect("wing_airfoil.xfoil:CL", "xfoil:wing:CL")
-        self.connect("htp_airfoil.xfoil:alpha", "xfoil:horizontal_tail:alpha")
-        self.connect("htp_airfoil.xfoil:CL", "xfoil:horizontal_tail:CL")
+        self.connect("wing_airfoil.alpha", "wing:alpha")
+        self.connect("wing_airfoil.CL", "wing:CL")
+        self.connect("htp_airfoil.alpha", "horizontal_tail:alpha")
+        self.connect("htp_airfoil.CL", "horizontal_tail:CL")
 
 
 class _ComputeMachInterpolation(om.ExplicitComponent):
@@ -95,12 +105,12 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         self.add_input("data:mission:sizing:main_route:cruise:altitude", val=np.nan, units="m")
 
         nans_array = np.full(POLAR_POINT_COUNT, np.nan)
-        self.add_input("xfoil:wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
-        self.add_input("xfoil:wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input("wing:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg")
+        self.add_input("wing:CL", val=nans_array, shape=POLAR_POINT_COUNT)
         self.add_input(
-            "xfoil:horizontal_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
+            "horizontal_tail:alpha", val=nans_array, shape=POLAR_POINT_COUNT, units="deg"
         )
-        self.add_input("xfoil:horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
+        self.add_input("horizontal_tail:CL", val=nans_array, shape=POLAR_POINT_COUNT)
 
         self.add_input("data:aerodynamics:horizontal_tail:efficiency", val=np.nan)
 
@@ -138,18 +148,14 @@ class _ComputeMachInterpolation(om.ExplicitComponent):
         ).speed_of_sound
         mach_cruise = float(inputs["data:TLAR:v_cruise"]) / float(sos_cruise)
 
-        wing_cl = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:CL"])
-        wing_alpha = self._reshape(inputs["xfoil:wing:alpha"], inputs["xfoil:wing:alpha"])
+        wing_cl = self._reshape(inputs["wing:alpha"], inputs["wing:CL"])
+        wing_alpha = self._reshape(inputs["wing:alpha"], inputs["wing:alpha"])
         wing_airfoil_cl_alpha = (
             np.interp(11.0, wing_alpha, wing_cl) - np.interp(1.0, wing_alpha, wing_cl)
         ) / (10.0 * np.pi / 180.0)
 
-        htp_cl = self._reshape(
-            inputs["xfoil:horizontal_tail:alpha"], inputs["xfoil:horizontal_tail:CL"]
-        )
-        htp_alpha = self._reshape(
-            inputs["xfoil:horizontal_tail:alpha"], inputs["xfoil:horizontal_tail:alpha"]
-        )
+        htp_cl = self._reshape(inputs["horizontal_tail:alpha"], inputs["horizontal_tail:CL"])
+        htp_alpha = self._reshape(inputs["horizontal_tail:alpha"], inputs["horizontal_tail:alpha"])
         htp_airfoil_cl_alpha = (
             np.interp(11.0, htp_alpha, htp_cl) - np.interp(1.0, htp_alpha, htp_cl)
         ) / (10.0 * np.pi / 180.0)

@@ -1,6 +1,6 @@
 """Estimation of the 3D maximum lift coefficients for clean wing."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -18,6 +18,7 @@ import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SPAN_MESH_POINT, SUBMODEL_CL_EXTREME_CLEAN_WING
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 
 
 @oad.RegisterSubmodel(
@@ -38,6 +39,7 @@ class ComputeExtremeCLWing(om.Group):
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         self.add_subsystem(
@@ -52,9 +54,14 @@ class ComputeExtremeCLWing(om.Group):
                 "data:aerodynamics:wing:tip:low_speed:reynolds",
             ],
         )
+
+        # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+        # otherwise, uses Xfoil
+        airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
+
         self.add_subsystem(
             "wing_root_polar",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["wing_airfoil_file"],
@@ -64,7 +71,7 @@ class ComputeExtremeCLWing(om.Group):
         )
         self.add_subsystem(
             "wing_tip_polar",
-            XfoilPolar(
+            airfoil_polar(
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 alpha_end=20.0,
                 airfoil_file=self.options["wing_airfoil_file"],
@@ -75,26 +82,31 @@ class ComputeExtremeCLWing(om.Group):
 
         self.add_subsystem("CL_3D_wing", ComputeWing3DExtremeCL(), promotes=["*"])
 
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_root_polar.xfoil:mach")
+        self.connect("comp_local_reynolds_wing.mach", "wing_tip_polar.mach")
         self.connect(
-            "data:aerodynamics:wing:root:low_speed:reynolds", "wing_root_polar.xfoil:reynolds"
+            "data:aerodynamics:wing:root:low_speed:reynolds",
+            "wing_root_polar.reynolds",
         )
         self.connect(
-            "wing_root_polar.xfoil:CL_max_2D", "data:aerodynamics:wing:low_speed:root:CL_max_2D"
+            "wing_root_polar.CL_max_2D",
+            "data:aerodynamics:wing:low_speed:root:CL_max_2D",
         )
         self.connect(
-            "wing_root_polar.xfoil:CL_min_2D", "data:aerodynamics:wing:low_speed:root:CL_min_2D"
+            "wing_root_polar.CL_min_2D",
+            "data:aerodynamics:wing:low_speed:root:CL_min_2D",
         )
-
-        self.connect("comp_local_reynolds_wing.xfoil:mach", "wing_tip_polar.xfoil:mach")
+        self.connect("comp_local_reynolds_wing.mach", "wing_root_polar.mach")
         self.connect(
-            "data:aerodynamics:wing:tip:low_speed:reynolds", "wing_tip_polar.xfoil:reynolds"
-        )
-        self.connect(
-            "wing_tip_polar.xfoil:CL_max_2D", "data:aerodynamics:wing:low_speed:tip:CL_max_2D"
+            "data:aerodynamics:wing:tip:low_speed:reynolds",
+            "wing_tip_polar.reynolds",
         )
         self.connect(
-            "wing_tip_polar.xfoil:CL_min_2D", "data:aerodynamics:wing:low_speed:tip:CL_min_2D"
+            "wing_tip_polar.CL_max_2D",
+            "data:aerodynamics:wing:low_speed:tip:CL_max_2D",
+        )
+        self.connect(
+            "wing_tip_polar.CL_min_2D",
+            "data:aerodynamics:wing:low_speed:tip:CL_min_2D",
         )
 
 
@@ -107,7 +119,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:root:low_speed:reynolds")
         self.add_output("data:aerodynamics:wing:tip:low_speed:reynolds")
-        self.add_output("xfoil:mach")
+        self.add_output(name="mach")
 
         self.declare_partials("*", "*", method="fd")
 
@@ -120,7 +132,7 @@ class ComputeLocalReynolds(om.ExplicitComponent):
             inputs["data:aerodynamics:low_speed:unit_reynolds"]
             * inputs["data:geometry:wing:tip:chord"]
         )
-        outputs["xfoil:mach"] = inputs["data:aerodynamics:low_speed:mach"]
+        outputs["mach"] = inputs["data:aerodynamics:low_speed:mach"]
 
 
 class ComputeWing3DExtremeCL(om.ExplicitComponent):

@@ -1,6 +1,6 @@
 """Test module for aerodynamics groups"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -23,28 +23,39 @@ from .test_functions import (
     compute_reynolds,
     cd0_high_speed,
     cd0_low_speed,
-    polar,
-    polar_single_aoa,
+    polar_xfoil,
+    polar_neuralfoil,
+    polar_single_aoa_xfoil,
+    polar_single_aoa_neuralfoil,
     polar_single_aoa_inv,
     airfoil_slope_wt_xfoil,
+    airfoil_slope_wt_neuralfoil,
     airfoil_slope_xfoil,
-    comp_high_speed,
-    comp_low_speed,
-    comp_high_speed_input_aoa,
-    comp_low_speed_input_aoa,
+    airfoil_slope_neuralfoil,
+    comp_high_speed_xfoil,
+    comp_high_speed_neuralfoil,
+    comp_low_speed_xfoil,
+    comp_low_speed_neuralfoil,
+    comp_high_speed_input_aoa_xfoil,
+    comp_high_speed_input_aoa_neuralfoil,
+    comp_low_speed_input_aoa_xfoil,
+    comp_low_speed_input_aoa_neuralfoil,
     hinge_moment_2d,
     hinge_moment_3d,
     hinge_moments,
     high_lift,
     elevator,
     extreme_cl,
-    wing_extreme_cl_clean,
-    htp_extreme_cl_clean,
+    wing_extreme_cl_clean_xfoil,
+    wing_extreme_cl_clean_neuralfoil,
+    htp_extreme_cl_clean_xfoil,
+    htp_extreme_cl_clean_neuralfoil,
     l_d_max,
     cnbeta,
     slipstream_openvsp_cruise,
     slipstream_openvsp_low_speed,
-    compute_mach_interpolation_roskam,
+    compute_mach_interpolation_roskam_xfoil,
+    compute_mach_interpolation_roskam_neuralfoil,
     cl_alpha_vt,
     cy_delta_r,
     effective_efficiency,
@@ -94,6 +105,7 @@ from .test_functions import (
     yaw_moment_yaw_rate_vt,
     yaw_moment_yaw_rate_aircraft,
     polar_ext_folder,
+    polar_ext_folder_neuralfoil,
 )
 
 XML_FILE = "cirrus_sr22.xml"
@@ -149,7 +161,7 @@ def test_cd0_low_speed():
 )
 def test_polar():
     """Tests polar execution (XFOIL) @ high and low speed."""
-    polar(
+    polar_xfoil(
         XML_FILE,
         mach_high_speed=0.245,
         reynolds_high_speed=4571770 * 1.549,
@@ -161,16 +173,41 @@ def test_polar():
     )
 
 
+def test_polar_neuralfoil():
+    """Tests polar execution (Neuralfoil) @ high and low speed."""
+    polar_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.245,
+        reynolds_high_speed=4571770 * 1.549,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=1.6012,
+        cdp_1_low_speed=0.0,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
 )
 def test_polar_single_aoa():
     """Tests polar execution (XFOIL) @ low speed."""
-    polar_single_aoa(
+    polar_single_aoa_xfoil(
         XML_FILE,
         mach_low_speed=0.1179,
         reynolds_low_speed=2746999 * 1.549,
+    )
+
+
+def test_polar_single_aoa_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ low speed."""
+    polar_single_aoa_neuralfoil(
+        XML_FILE,
+        mach_low_speed=0.1179,
+        reynolds_low_speed=2746999 * 1.549,
+        alpha=5.0,
+        cl=0.72787,
     )
 
 
@@ -205,6 +242,20 @@ def test_polar_with_ext_folder():
     )
 
 
+def test_polar_with_ext_folder_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ high and low speed."""
+    polar_ext_folder_neuralfoil(
+        XML_FILE,
+        mach_high_speed=0.53835122,
+        reynolds_high_speed=5381384,
+        mach_low_speed=0.1284,
+        reynolds_low_speed=2993524,
+        cdp_1_high_speed=0.0,
+        cl_max_2d=1.6316,
+        cdp_1_low_speed=0.0,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -222,6 +273,19 @@ def test_airfoil_slope():
     )
 
 
+def test_airfoil_slope_neuralfoil():
+    """Tests polar execution (NeuralFoil) @ low speed!"""
+    airfoil_slope_neuralfoil(
+        XML_FILE,
+        wing_airfoil_file="roncz.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+        cl_alpha_wing=6.36312,
+        cl_alpha_htp=6.27633,
+        cl_alpha_vtp=6.27633,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" and xfoil_path is None or SKIP_STEPS,
     reason="No XFOIL executable available (or skipped)",
@@ -236,6 +300,16 @@ def test_airfoil_slope_wt_xfoil():
     )
 
 
+def test_airfoil_slope_wt_neuralfoil():
+    """Tests polar reading @ low speed!"""
+    airfoil_slope_wt_neuralfoil(
+        XML_FILE,
+        wing_airfoil_file="roncz.af",
+        htp_airfoil_file="naca0012.af",
+        vtp_airfoil_file="naca0012.af",
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
@@ -243,7 +317,7 @@ def test_airfoil_slope_wt_xfoil():
 )
 def test_vlm_comp_high_speed():
     """Tests vlm components @ high speed!"""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.09622569,
@@ -262,17 +336,47 @@ def test_vlm_comp_high_speed():
     )
 
 
+@pytest.mark.skipif(system() != "Windows", reason="May result in unexpected values")
+def test_vlm_comp_high_speed_neuralfoil():
+    """Tests vlm components @ high speed!"""
+    comp_high_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=0.09622569,
+        cl_ref_wing=1.01291563,
+        cl_alpha_wing=5.2123498,
+        cm0=-0.02801145,
+        coeff_k_wing=0.03598314,
+        cl0_htp=-0.00537875,
+        cl_alpha_htp=0.59284874,
+        cl_alpha_htp_isolated=0.88397051,
+        coeff_k_htp=0.28777347,
+        cl_alpha_vector=np.array(
+            [5.69251652, 5.69251652, 5.75815554, 5.84566987, 5.95244226, 6.07946045]
+        ),
+        mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
 def test_vlm_comp_high_speed_input_aoa():
-    """Tests openvsp components @ low speed."""
+    """Tests vlm components @ low speed."""
 
-    comp_high_speed_input_aoa(
+    comp_high_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=False,
+    )
+
+
+@pytest.mark.skipif(system() != "Windows", reason="May result in unexpected values")
+def test_vlm_comp_high_speed_input_aoa_neuralfoil():
+    """Tests vlm components @ low speed."""
+
+    comp_high_speed_input_aoa_neuralfoil(
+        XML_FILE,
     )
 
 
@@ -388,7 +492,7 @@ def test_vlm_comp_low_speed():
             0.05193693,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=False,
         cl0_wing=0.09386187,
@@ -409,17 +513,154 @@ def test_vlm_comp_low_speed():
     )
 
 
+@pytest.mark.skipif(system() != "Windows", reason="May result in unexpected values")
+def test_vlm_comp_low_speed_neuralfoil():
+    """Tests vlm components @ low speed."""
+    y_vector_wing = np.array(
+        [
+            0.106,
+            0.318,
+            0.53,
+            0.83149394,
+            1.22248183,
+            1.61346972,
+            2.00445761,
+            2.3954455,
+            2.78643339,
+            3.17742128,
+            3.54627778,
+            3.89300289,
+            4.239728,
+            4.58645311,
+            4.93317822,
+            5.27990333,
+            5.62662844,
+        ]
+    )
+    cl_vector_wing = np.array(
+        [
+            0.97866667,
+            0.97680367,
+            0.97267907,
+            0.98176565,
+            1.00028125,
+            1.01487291,
+            1.02633147,
+            1.03490258,
+            1.04053245,
+            1.0429698,
+            1.0405289,
+            1.03236792,
+            1.01707211,
+            0.98988675,
+            0.94154398,
+            0.85075402,
+            0.65555692,
+        ]
+    )
+    chord_vector_wing = np.array(
+        [
+            1.47443128,
+            1.47443128,
+            1.47443128,
+            1.44652241,
+            1.39070465,
+            1.33488689,
+            1.27906914,
+            1.22325138,
+            1.16743363,
+            1.11161587,
+            1.05895761,
+            1.00945885,
+            0.95996008,
+            0.91046132,
+            0.86096255,
+            0.81146379,
+            0.76196502,
+        ]
+    )
+    y_vector_htp = np.array(
+        [
+            0.05627362,
+            0.16882086,
+            0.2813681,
+            0.39391534,
+            0.50646259,
+            0.61900983,
+            0.73155707,
+            0.84410431,
+            0.95665155,
+            1.06919879,
+            1.18174603,
+            1.29429327,
+            1.40684051,
+            1.51938776,
+            1.631935,
+            1.74448224,
+            1.85702948,
+        ]
+    )
+    cl_vector_htp = np.array(
+        [
+            0.09902212,
+            0.10071269,
+            0.10209038,
+            0.10319359,
+            0.10402982,
+            0.1045907,
+            0.10485421,
+            0.10478287,
+            0.10431916,
+            0.10337737,
+            0.10183014,
+            0.09948513,
+            0.09604307,
+            0.09101606,
+            0.08354914,
+            0.07195107,
+            0.05193693,
+        ]
+    )
+    comp_low_speed_neuralfoil(
+        XML_FILE,
+        cl0_wing=0.09386187,
+        cl_ref_wing=0.98803303,
+        cl_alpha_wing=5.08430673,
+        cm0=-0.02732334,
+        coeff_k_wing=0.03423698,
+        cl0_htp=-0.00511773,
+        cl_alpha_htp=0.58526104,
+        cl_alpha_htp_isolated=0.86225549,
+        coeff_k_htp=0.28777347,
+        y_vector_wing=y_vector_wing,
+        cl_vector_wing=cl_vector_wing,
+        chord_vector_wing=chord_vector_wing,
+        cl_ref_htp=0.09702959,
+        y_vector_htp=y_vector_htp,
+        cl_vector_htp=cl_vector_htp,
+    )
+
+
 @pytest.mark.skipif(
     system() != "Windows" or SKIP_STEPS,
     reason="No XFOIL executable available: VLM basic function not computed with "
     "empty result folder (or skipped)",
 )
 def test_vlm_comp_low_speed_input_aoa():
-    """Tests openvsp components @ low speed."""
+    """Tests vlm components @ low speed."""
 
-    comp_low_speed_input_aoa(
+    comp_low_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=False,
+    )
+
+
+@pytest.mark.skipif(system() != "Windows", reason="May result in unexpected values")
+def test_vlm_comp_low_speed_input_aoa_neuralfoil():
+    """Tests vlm components @ low speed."""
+
+    comp_low_speed_input_aoa_neuralfoil(
+        XML_FILE,
     )
 
 
@@ -428,7 +669,7 @@ def test_vlm_comp_low_speed_input_aoa():
 )
 def test_openvsp_comp_high_speed():
     """Tests openvsp components @ high speed."""
-    comp_high_speed(
+    comp_high_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.12700925,
@@ -453,7 +694,7 @@ def test_openvsp_comp_high_speed():
 def test_openvsp_comp_high_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
-    comp_high_speed_input_aoa(
+    comp_high_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=True,
     )
@@ -649,7 +890,7 @@ def test_openvsp_comp_low_speed():
             0.04775093,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.1243628,
@@ -676,7 +917,7 @@ def test_openvsp_comp_low_speed():
 def test_openvsp_comp_low_speed_input_aoa():
     """Tests openvsp components @ low speed."""
 
-    comp_low_speed_input_aoa(
+    comp_low_speed_input_aoa_xfoil(
         XML_FILE,
         use_openvsp=True,
     )
@@ -733,10 +974,19 @@ def test_high_lift():
 )
 def test_extreme_cl_wing_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    wing_extreme_cl_clean(
+    wing_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_wing=1.58443803,
         cl_min_clean_wing=-1.26,
+    )
+
+
+def test_extreme_cl_wing_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    wing_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_wing=1.50641977,
+        cl_min_clean_wing=-0.93373,
     )
 
 
@@ -746,12 +996,23 @@ def test_extreme_cl_wing_clean():
 )
 def test_extreme_cl_htp_clean():
     """Tests maximum/minimum cl component with default result cl=f(y) curve."""
-    htp_extreme_cl_clean(
+    htp_extreme_cl_clean_xfoil(
         XML_FILE,
         cl_max_clean_htp=0.27,
         cl_min_clean_htp=-0.27,
         alpha_max_clean_htp=30.37,
         alpha_min_clean_htp=-30.36,
+    )
+
+
+def test_extreme_cl_htp_clean_neuralfoil():
+    """Tests maximum/minimum cl component with default result cl=f(y) curve."""
+    htp_extreme_cl_clean_neuralfoil(
+        XML_FILE,
+        cl_max_clean_htp=0.28126055,
+        cl_min_clean_htp=-0.28842343,
+        alpha_max_clean_htp=30.61962342,
+        alpha_min_clean_htp=-31.39941503,
     )
 
 
@@ -1026,10 +1287,18 @@ def test_slipstream_openvsp_low_speed():
 
 def test_compute_mach_interpolation_roskam():
     """Tests computation of the mach interpolation vector using Roskam's approach."""
-    compute_mach_interpolation_roskam(
+    compute_mach_interpolation_roskam_xfoil(
         XML_FILE,
         cl_alpha_vector=np.array([5.48, 5.51, 5.58, 5.72, 5.91, 6.18]),
         mach_vector=np.array([0.0, 0.07, 0.15, 0.23, 0.30, 0.38]),
+    )
+
+    compute_mach_interpolation_roskam_neuralfoil(
+        XML_FILE,
+        cl_alpha_vector=np.array(
+            [5.4274298, 5.45233134, 5.52839995, 5.65991385, 5.85467127, 6.12517585]
+        ),
+        mach_vector=np.array([0.0, 0.07713463, 0.15426927, 0.2314039, 0.30853854, 0.38567317]),
     )
 
 

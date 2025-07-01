@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,6 +17,14 @@ MACH_NB_PTS = 5
 ENGINE_COUNT = 10
 FIRST_INVALID_COEFF = 100.0
 DEFAULT_INPUT_AOA = 10.0  # only one value given since calculation is done by default around 0.0!
+
+OPTION_ALPHA_START = "alpha_start"
+OPTION_ALPHA_END = "alpha_end"
+OPTION_COMP_NEG_AIR_SYM = "activate_negative_angle"
+ALPHA_STEP = 0.5
+_DEFAULT_AIRFOIL_FILE = "naca23012.af"
+DEFAULT_2D_CL_MAX = 1.9
+DEFAULT_2D_CL_MIN = -1.7
 
 SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
 SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"

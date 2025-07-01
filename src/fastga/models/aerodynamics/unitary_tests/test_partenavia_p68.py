@@ -20,7 +20,7 @@ import pytest
 
 import numpy as np
 
-from .test_functions import comp_low_speed
+from .test_functions import comp_low_speed_xfoil
 
 XML_FILE = "partenavia_p68.xml"
 SKIP_STEPS = True  # avoid some tests to accelerate validation process (intermediary VLM/OpenVSP)
@@ -218,7 +218,7 @@ def test_openvsp_comp_low_speed():
             0.02686199,
         ]
     )
-    comp_low_speed(
+    comp_low_speed_xfoil(
         XML_FILE,
         use_openvsp=True,
         cl0_wing=0.0529865,

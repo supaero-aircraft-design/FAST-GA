@@ -21,15 +21,8 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]') }}
     strategy:
       matrix:
-        python-version: [ "3.8", "3.10", "3.11" ]
+        python-version: [ "3.9", "3.10", "3.11" ]
         os: [ ubuntu-latest, windows-latest, macos-latest ]
-        # Exceptions:
-        # - Python 3.8 and 3.9 is on macos-13 but not macos-latest (macos-14-arm64)
-        #   https://github.com/actions/setup-python/issues/696#issuecomment-1637587760
-        exclude:
-          - { python-version: "3.8", os: "macos-latest" }
-        include:
-          - { python-version: "3.8", os: "macos-13" }
 
     steps:
       - uses: actions/checkout@v4
@@ -74,7 +67,7 @@ jobs:
           coverage-reports: coverage.xml
 
       - uses: codecov/codecov-action@v4
-        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.8' }} # Using Windows for covering XFOIL calls
+        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.9' }} # Using Windows for covering XFOIL calls
         with:
           #          flags: unittests  # optional
           name: codecov-FAST-GA  # optional

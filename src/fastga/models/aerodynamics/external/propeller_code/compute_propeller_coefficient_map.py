@@ -23,6 +23,7 @@ from fastoad.module_management.constants import ModelDomain
 from stdatm import Atmosphere
 
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
+from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
 from .propeller_core import PropellerCoreModule
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,6 +51,7 @@ class ComputePropellerCoefficientMap(om.Group):
             types=list,
         )
         self.options.declare("elements_number", default=20, types=int)
+        self.options.declare("use_neuralfoil", default=False, types=bool)
 
     def setup(self):
         ivc = om.IndepVarComp()
@@ -57,9 +59,12 @@ class ComputePropellerCoefficientMap(om.Group):
         ivc.add_output("data:aerodynamics:propeller:coefficient_map:reynolds", val=1e6)
         self.add_subsystem("propeller_coeff_map_aero_conditions", ivc, promotes=["*"])
         for profile in self.options["sections_profile_name_list"]:
+            # Selects the tool for airfoil analysis: uses NeuralFoil if 'use_neuralfoil' is True;
+            # otherwise, uses Xfoil
+            airfoil_polar = NeuralfoilPolar if self.options["use_neuralfoil"] else XfoilPolar
             self.add_subsystem(
                 profile + "_polar_coeff_map",
-                XfoilPolar(
+                airfoil_polar(
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     airfoil_file=profile + ".af",
                     alpha_end=30.0,
@@ -67,14 +72,16 @@ class ComputePropellerCoefficientMap(om.Group):
                 ),
                 promotes=[],
             )
+
             self.connect(
                 "data:aerodynamics:propeller:coefficient_map:mach",
-                profile + "_polar_coeff_map.xfoil:mach",
+                profile + "_polar_coeff_map.mach",
             )
             self.connect(
                 "data:aerodynamics:propeller:coefficient_map:reynolds",
-                profile + "_polar_coeff_map.xfoil:reynolds",
+                profile + "_polar_coeff_map.reynolds",
             )
+
         self.add_subsystem(
             "propeller_coeff_map",
             _ComputePropellerCoefficientMap(
@@ -88,15 +95,15 @@ class ComputePropellerCoefficientMap(om.Group):
 
         for profile in self.options["sections_profile_name_list"]:
             self.connect(
-                profile + "_polar_coeff_map.xfoil:alpha",
+                profile + "_polar_coeff_map.alpha",
                 "propeller_coeff_map." + profile + "_polar:alpha",
             )
             self.connect(
-                profile + "_polar_coeff_map.xfoil:CL",
+                profile + "_polar_coeff_map.CL",
                 "propeller_coeff_map." + profile + "_polar:CL",
             )
             self.connect(
-                profile + "_polar_coeff_map.xfoil:CD",
+                profile + "_polar_coeff_map.CD",
                 "propeller_coeff_map." + profile + "_polar:CD",
             )
         self.connect(

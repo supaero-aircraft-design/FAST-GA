@@ -1,14 +1,15 @@
 .. _models-index:
 
-========================
+===================
 Model documentation
-========================
+===================
 
 Here you will find the documentation on the models used in FAST-OAD_CS23 for the following disciplines:
 
 .. toctree::
    :maxdepth: 1
 
+    Aerodynamics <aerodynamics/index>
     Geometry <geometry/index>
 
 For a description of the rest of the models, you may see the automatically generated :ref:`model documentation<fastga.models package>`.
