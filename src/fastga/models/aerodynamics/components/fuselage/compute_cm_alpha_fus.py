@@ -17,8 +17,9 @@ import openmdao.api as om
 import fastoad.api as oad
 
 from fastga.models.aerodynamics.constants import SUBMODEL_CM_ALPHA_FUSELAGE
-
-from ..digitization.compute_k_fuselage import ComputeFuselagePitchMomentFactor
+from fastga.models.aerodynamics.components.digitization.compute_k_fuselage import (
+    ComputeFuselagePitchMomentFactor,
+)
 
 
 @oad.RegisterSubmodel(
