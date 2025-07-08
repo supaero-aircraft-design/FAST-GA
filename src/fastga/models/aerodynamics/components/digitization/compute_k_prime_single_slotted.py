@@ -1,4 +1,4 @@
-#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Airchord_ratioaft Design
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

@@ -1,4 +1,4 @@
-#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Airchord_ratioaft Design
+#  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     def setup(self):
         self.add_input("x0_ratio", val=np.nan)
 
-        self.add_output("fuselage_pitch_moment_factor", val=0.02)
+        self.add_output("fuselage_pitch_moment_factor", val=0.02, units="deg**-1")
 
         self.declare_partials(of="fuselage_pitch_moment_factor", wrt="x0_ratio", method="exact")
 

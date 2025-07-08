@@ -45,7 +45,7 @@ class ComputeCmAlphaFuselage(om.Group):
             name="k_fuselage", subsys=ComputeFuselagePitchMomentFactor(), promotes=["*"]
         )
         self.add_subsystem(
-            name="cm_alpha_fuselage", subsys=_ComputeCmAlphaFuselage(), promotes=["*"]
+            name="cm_alpha_fuselage", subsys=ComputeCmAlphaFuselageNacelle(), promotes=["*"]
         )
 
 
@@ -97,7 +97,7 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
         partials["x0_ratio", "data:geometry:wing:root:virtual_chord"] = 0.25 / fus_length
 
 
-class _ComputeCmAlphaFuselage(om.ExplicitComponent):
+class ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
     """
     Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
     of Raymer :cite:`raymer:2012`.
@@ -110,9 +110,9 @@ class _ComputeCmAlphaFuselage(om.ExplicitComponent):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-        self.add_input("fuselage_pitch_moment_factor", val=np.nan)
+        self.add_input("fuselage_pitch_moment_factor", val=np.nan, units="rad**-1")
 
-        self.add_output("data:aerodynamics:fuselage:cm_alpha", units="deg**-1")
+        self.add_output("data:aerodynamics:fuselage:cm_alpha", units="rad**-1")
 
         self.declare_partials("data:aerodynamics:fuselage:cm_alpha", "*", method="exact")
 
