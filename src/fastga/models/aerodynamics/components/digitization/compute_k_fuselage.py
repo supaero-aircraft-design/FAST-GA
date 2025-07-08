@@ -20,7 +20,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     """
-    Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14), from :cite:'raymer:2012'.
+    Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14),
+    from :cite:'raymer:2012'.
 
     :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
     wing from the nose.
@@ -31,68 +32,32 @@ class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("flap_angle", val=0.0, units="deg")
-        self.add_input("chord_ratio", val=np.nan)
+        self.add_input("x0_ratio", val=np.nan)
 
-        self.add_output("lift_effectiveness", val=0.1)
+        self.add_output("fuselage_pitch_moment_factor", val=0.02)
 
-        self.declare_partials(of="lift_effectiveness", wrt="*", method="exact")
+        self.declare_partials(of="fuselage_pitch_moment_factor", wrt="x0_ratio", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        flap_angle = inputs["flap_angle"]
-        chord_ratio = inputs["chord_ratio"]
+        x0_ratio = inputs["x0_ratio"]
 
-        if flap_angle != np.clip(flap_angle, -0.08, 79.32):
-            flap_angle = np.clip(flap_angle, -0.08, 79.32)
-            _LOGGER.warning("Flap angle value outside of the range in Roskam's book, value clipped")
-
-        if chord_ratio != np.clip(chord_ratio, 0.15, 0.4):
-            chord_ratio = np.clip(chord_ratio, 0.15, 0.4)
+        if x0_ratio != np.clip(inputs["x0_ratio"], 0.1, 0.62):
+            x0_ratio = np.clip(inputs["x0_ratio"], 0.1, 0.62)
             _LOGGER.warning(
-                "Chord ratio value outside of the range in Roskam's book, value clipped"
+                "Thickness ratio value outside of the range in Raymer's book, value clipped"
             )
 
-        outputs["lift_effectiveness"] = (
-            0.0239
-            + 0.006 * flap_angle
-            + 2.6633 * chord_ratio
-            - 0.0002 * flap_angle**2.0
-            - 0.0121 * flap_angle * chord_ratio
-            - 2.9929 * chord_ratio**2.0
-            - 0.0002 * flap_angle**2.0 * chord_ratio
-            + 0.0354 * flap_angle * chord_ratio**2.0
-            - 0.5931 * chord_ratio**3.0
-        )
+        outputs["fuselage_pitch_moment_factor"] = 0.01 - 0.063 * x0_ratio + 0.211 * x0_ratio**2.0
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        flap_angle = inputs["flap_angle"]
-        chord_ratio = inputs["chord_ratio"]
+        x0_ratio = inputs["x0_ratio"]
 
-        partials["lift_effectiveness", "flap_angle"] = np.where(
-            flap_angle == np.clip(flap_angle, -0.08, 79.32),
-            (
-                0.006
-                - 0.0004 * flap_angle
-                - 0.0121 * chord_ratio
-                - 0.0004 * flap_angle * chord_ratio
-                + 0.0354 * chord_ratio**2.0
-            ),
-            1e-6,
-        )
-
-        partials["lift_effectiveness", "chord_ratio"] = np.where(
-            chord_ratio == np.clip(chord_ratio, 0.15, 0.4),
-            (
-                2.6633
-                - 0.0121 * flap_angle
-                - 5.9858 * chord_ratio
-                - 0.0002 * flap_angle**2.0
-                + 0.0708 * flap_angle * chord_ratio
-                - 1.7793 * chord_ratio**2.0
-            ),
+        partials["fuselage_pitch_moment_factor", "x0_ratio"] = np.where(
+            x0_ratio == np.clip(x0_ratio, 0.1, 0.62),
+            (-0.063 + 0.422 * x0_ratio),
             1e-6,
         )

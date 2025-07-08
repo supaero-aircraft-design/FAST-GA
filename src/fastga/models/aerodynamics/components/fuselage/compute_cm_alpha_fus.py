@@ -16,14 +16,15 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from fastga.models.aerodynamics.components.figure_digitization import FigureDigitization
 from fastga.models.aerodynamics.constants import SUBMODEL_CM_ALPHA_FUSELAGE
+
+from ..digitization.compute_k_fuselage import ComputeFuselagePitchMomentFactor
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment_alpha.legacy"
 )
-class ComputeCmAlphaFuselage(FigureDigitization):
+class ComputeCmAlphaFuselage(om.Group):
     """
     Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
     of Raymer
@@ -33,35 +34,17 @@ class ComputeCmAlphaFuselage(FigureDigitization):
     """
 
     def setup(self):
-        self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:MAC:at25percent:x", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
-        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
-        self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
-        self.add_input("data:geometry:fuselage:maximum_width", val=np.nan, units="m")
-
-        self.add_output("data:aerodynamics:fuselage:cm_alpha", units="rad**-1")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_area = inputs["data:geometry:wing:area"]
-        x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
-        x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
-        l0_wing = inputs["data:geometry:wing:MAC:length"]
-        l1_wing = inputs["data:geometry:wing:root:virtual_chord"]
-        fus_length = inputs["data:geometry:fuselage:length"]
-        width_max = inputs["data:geometry:fuselage:maximum_width"]
-
-        x0_25 = x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing
-        ratio_x025 = x0_25 / fus_length
-
-        k_fus = self.k_fus(ratio_x025)
-
-        cm_alpha_fus = -k_fus * width_max**2 * fus_length / (l0_wing * wing_area) * 180.0 / np.pi
-
-        outputs["data:aerodynamics:fuselage:cm_alpha"] = cm_alpha_fus
+        self.add_subsystem(
+            name="quarter_root_chord_position",
+            subsys=ComputeQuarterRootChordPositionRatio(),
+            promotes=["*"],
+        )
+        self.add_subsystem(
+            name="k_fuselage", subsys=ComputeFuselagePitchMomentFactor(), promotes=["*"]
+        )
+        self.add_subsystem(
+            name="cm_alpha_fuselage", subsys=_ComputeCmAlphaFuselage(), promotes=["*"]
+        )
 
 
 class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
@@ -77,7 +60,7 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
         self.add_input("data:geometry:wing:root:virtual_chord", val=np.nan, units="m")
         self.add_input("data:geometry:fuselage:length", val=np.nan, units="m")
 
-        self.add_output("x0_ratio", val=0.02)
+        self.add_output("x0_ratio", val=0.2)
 
         self.declare_partials("x0_ratio", "*", method="exact")
 
