@@ -33,6 +33,8 @@ class ComputeCmAlphaFuselage(om.Group):
     Series)." Reston, Virginia (2012).
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             name="quarter_root_chord_position",
@@ -53,6 +55,8 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
     fuselage length.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:MAC:leading_edge:x:local", val=np.nan, units="m")
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
@@ -64,6 +68,8 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
 
         self.declare_partials("x0_ratio", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
@@ -73,6 +79,8 @@ class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
 
         outputs["x0_ratio"] = (x_wing - 0.25 * l0_wing - x0_wing + 0.25 * l1_wing) / fus_length
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         x_wing = inputs["data:geometry:wing:MAC:at25percent:x"]
         x0_wing = inputs["data:geometry:wing:MAC:leading_edge:x:local"]
@@ -95,6 +103,8 @@ class _ComputeCmAlphaFuselage(om.ExplicitComponent):
     of Raymer :cite:`raymer:2012`.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
@@ -106,6 +116,8 @@ class _ComputeCmAlphaFuselage(om.ExplicitComponent):
 
         self.declare_partials("data:aerodynamics:fuselage:cm_alpha", "*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]
@@ -117,6 +129,8 @@ class _ComputeCmAlphaFuselage(om.ExplicitComponent):
             -k_fus * width_max**2.0 * fus_length / (l0_wing * wing_area)
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         l0_wing = inputs["data:geometry:wing:MAC:length"]

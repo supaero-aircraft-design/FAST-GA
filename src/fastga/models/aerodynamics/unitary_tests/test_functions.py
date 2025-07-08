@@ -2247,6 +2247,8 @@ def cm_alpha_fus(XML_FILE: str, cm_alpha_fus_: float):
         cm_alpha_fus_, abs=1e-4
     )
 
+    problem.check_partials(compact_print=True)
+
 
 def high_speed_connection(XML_FILE: str, ENGINE_WRAPPER: str, use_openvsp: bool):
     """Tests high speed components connection!"""
