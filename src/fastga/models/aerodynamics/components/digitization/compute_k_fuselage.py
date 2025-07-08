@@ -20,12 +20,11 @@ _LOGGER = logging.getLogger(__name__)
 
 class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     """
-    Raymer data to estimate the empirical pitching moment factor K_fus (figure 16.14),
+    Raymer data to estimate the empirical pitching moment factor coefficient K_fus (figure 16.14),
     from :cite:'raymer:2012'.
 
     :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
-    wing from the nose.
-    divided by the total length of the fuselage.
+    wing from the nose divided by the total length of the fuselage.
     :return k_fus: the empirical pitching moment factor.
     """
 
