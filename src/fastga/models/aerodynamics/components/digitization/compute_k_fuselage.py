@@ -1,5 +1,5 @@
 """
-Python module for pitching moment factor coefficient calculation, part of the aerodynamic
+Python module for fuselage pitching moment factor coefficient calculation, part of the aerodynamic
 component computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
