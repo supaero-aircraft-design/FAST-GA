@@ -42,9 +42,9 @@ class ComputeClDeltaAileron(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        speed = "_low_speed" if self.options["low_speed_aero"] else "cruise"
+        ls_tag = "_low_speed" if self.options["low_speed_aero"] else "cruise"
         self.add_subsystem(
-            name="aileron_alpha" + speed,
+            name="aileron_alpha" + ls_tag,
             subsys=ComputeSingleSlottedLiftEffectiveness(),
             promotes=[
                 ("chord_ratio", "data:geometry:wing:aileron:chord_ratio"),
@@ -60,7 +60,7 @@ class ComputeClDeltaAileron(om.Group):
         )
 
         self.connect(
-            "aileron_alpha" + speed + ".lift_effectiveness",
+            "aileron_alpha" + ls_tag + ".lift_effectiveness",
             "alpha_aileron",
         )
 
