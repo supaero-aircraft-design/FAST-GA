@@ -18,6 +18,7 @@ from scipy import optimize
 
 # Second order polynomial function
 def polynomial_func(x, a, b, c):
+    """Define regression model"""
     return a * x**2 + b * x + c
 
 
@@ -131,7 +132,10 @@ if __name__ == "__main__":
     )
 
     # Add function text to the plot
-    function_text = f"k_fus = {polynomial_params[0]:.6f}x_0_25² + {polynomial_params[1]:.6f}x_0_25 + {polynomial_params[2]:.6f}"
+    function_text = (
+        f"k_fus = {polynomial_params[0]:.6f}x_0_25² +"
+        f" {polynomial_params[1]:.6f}x_0_25 + {polynomial_params[2]:.6f}"
+    )
     fig.add_annotation(
         x=max(x_0_25),
         y=min(k_fus),
@@ -150,6 +154,7 @@ if __name__ == "__main__":
     fig.show()
 
     print(
-        f"Polynomial: k_fus = {polynomial_params[0]:.6f}x_0_25² + {polynomial_params[1]:.6f}x_0_25 + {polynomial_params[2]:.6f}"
+        f"Polynomial: k_fus = {polynomial_params[0]:.6f}x_0_25² +"
+        f" {polynomial_params[1]:.6f}x_0_25 + {polynomial_params[2]:.6f}"
     )
     print(f"R² = {r2_polynomial:.3f}")

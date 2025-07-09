@@ -1,3 +1,7 @@
+"""
+Python module for lift effectiveness of single-slotted flap calculation, part of the aerodynamic
+component computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -11,9 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import numpy as np
 import openmdao.api as om
-import logging
 
 _LOGGER = logging.getLogger(__name__)
 
