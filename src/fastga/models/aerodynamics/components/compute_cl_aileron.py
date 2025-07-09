@@ -42,14 +42,16 @@ class ComputeClDeltaAileron(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
+        speed = "_low_speed" if self.options["low_speed_aero"] else "cruise"
         self.add_subsystem(
-            name="aileron_alpha",
+            name="aileron_alpha" + speed,
             subsys=ComputeSingleSlottedLiftEffectiveness(),
             promotes=[
                 ("chord_ratio", "data:geometry:wing:aileron:chord_ratio"),
             ],
         )
-        # Flap deflection angle is not promoted, meaning it's default value of 0 will always be used. This is the intended behviour as aileron will mostly be used around 0 degree
+        # Flap deflection angle is not promoted, meaning it's default value of 0 will always be
+        # used. This is the intended behavior as aileron will mostly be used around 0 degree
 
         self.add_subsystem(
             name="aileron_cl_delta",
@@ -58,7 +60,7 @@ class ComputeClDeltaAileron(om.Group):
         )
 
         self.connect(
-            "aileron_alpha.lift_effectiveness",
+            "aileron_alpha" + speed + ".lift_effectiveness",
             "alpha_aileron",
         )
 
