@@ -25,7 +25,7 @@ from fastga.models.aerodynamics.components.digitization.compute_k_fuselage impor
 @oad.RegisterSubmodel(
     SUBMODEL_CM_ALPHA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.pitching_moment_alpha.legacy"
 )
-class ComputeCmAlphaFuselage(om.Group): # pylint: disable=too-few-public-methods
+class ComputeCmAlphaFuselage(om.Group):  # pylint: disable=too-few-public-methods
     """
     Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
     of Raymer
