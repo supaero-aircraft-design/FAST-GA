@@ -48,7 +48,6 @@ K_CH_ALPHA = "k_ch_alpha.csv"
 CH_ALPHA_TH = "ch_alpha_th.csv"
 K_CH_DELTA = "k_ch_delta.csv"
 CH_DELTA_TH = "ch_delta_th.csv"
-K_FUS = "k_fus.csv"
 CL_BETA_SWEEP = "cl_beta_sweep_contribution.csv"
 K_M_LAMBDA = "sweep_compressibility_correction.csv"
 K_FUSELAGE = "cl_beta_fuselage_correction.csv"
@@ -1031,34 +1030,6 @@ class FigureDigitization(om.ExplicitComponent):
         ch_delta_th = float(np.interp(chord_ratio, [0.1, 0.4], [ch_delta_min, ch_delta_max]))
 
         return ch_delta_th
-
-    @staticmethod
-    def k_fus(root_quarter_chord_position_ratio) -> float:
-        """
-        Roskam data to estimate the empirical pitching moment factor K_fus (figure 16.14).
-
-        :param root_quarter_chord_position_ratio: the position of the root quarter chord of the
-        wing from the nose.
-        divided by the total length of the fuselage.
-        :return k_fus: the empirical pitching moment factor.
-        """
-
-        file = pth.join(resources.__path__[0], K_FUS)
-        db = pd.read_csv(file)
-
-        x, y = filter_nans(db, ["X_0_25_RATIO", "K_FUS"])
-
-        if float(root_quarter_chord_position_ratio) != np.clip(
-            float(root_quarter_chord_position_ratio), min(x), max(x)
-        ):
-            _LOGGER.warning(
-                "Position of the root quarter-chord as percent of fuselage length is outside of "
-                "the range in Roskam's book, value clipped"
-            )
-
-        k_fus = float(np.interp(np.clip(root_quarter_chord_position_ratio, min(x), max(x)), x, y))
-
-        return k_fus
 
     @staticmethod
     def cl_beta_sweep_contribution(taper_ratio, aspect_ratio, sweep_50) -> float:

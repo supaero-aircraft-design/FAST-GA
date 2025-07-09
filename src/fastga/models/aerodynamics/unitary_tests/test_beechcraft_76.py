@@ -1523,7 +1523,7 @@ def test_effective_efficiency():
 
 def test_cm_alpha_fus():
     """Tests cy delta of the rudder."""
-    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.18329318)
+    cm_alpha_fus(XML_FILE, cm_alpha_fus_=-0.42322479)
 
 
 @pytest.mark.skipif(
