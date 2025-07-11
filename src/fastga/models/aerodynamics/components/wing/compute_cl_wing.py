@@ -16,7 +16,7 @@ import numpy as np
 import openmdao.api as om
 
 
-class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
+class ComputeWingLiftCoefficient(om.ExplicitComponent):
     """
     Computation of the wing lift coefficient.
     """
@@ -38,7 +38,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
             val=aoa,
         )
 
-        self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7)
+        self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7, units="rad**-1")
 
     def setup_partials(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"

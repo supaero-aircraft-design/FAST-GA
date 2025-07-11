@@ -3558,6 +3558,8 @@ def yaw_moment_roll_rate_wing(
         cn_p_wing_cruise_, rel=1e-3
     )
 
+    problem.check_partials(compact_print=True)
+
 
 def yaw_moment_roll_rate_vt(
     XML_FILE: str,
