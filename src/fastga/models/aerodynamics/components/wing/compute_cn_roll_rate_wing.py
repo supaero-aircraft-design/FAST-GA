@@ -12,7 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
+import openmdao.api as om
 import fastoad.api as oad
 
 from ..figure_digitization import FigureDigitization
@@ -98,7 +98,7 @@ class ComputeCnRollRateWing(FigureDigitization):
             cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
             cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
 
-        cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
+        cl_w = cl_0_wing + cl_alpha_wing * aoa_ref  # public method
 
         cn_p_to_cl_mach_0 = (
             -1.0
@@ -110,7 +110,7 @@ class ComputeCnRollRateWing(FigureDigitization):
             / (wing_ar + 4.0 * np.cos(wing_sweep_25))
         )
 
-        b_coeff = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
+        b_coeff = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)  # public method
 
         cn_p_to_cl_mach = (
             (wing_ar + 4.0 * np.cos(wing_sweep_25))
@@ -137,3 +137,122 @@ class ComputeCnRollRateWing(FigureDigitization):
             outputs["data:aerodynamics:wing:low_speed:Cn_p"] = cn_p_w
         else:
             outputs["data:aerodynamics:wing:cruise:Cn_p"] = cn_p_w
+
+
+class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
+    """
+    Class to compute the wing yaw moment coefficient from the roll rate at the condition
+    that the lift and mach number are both zero. This calculation is based on
+    :cite:`roskampart6:1985` section 10.2.6,  equation 10.65.
+    """
+
+    def setup(self):
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
+
+        self.add_output("cn_p_wing_mach_0", val=1.0)
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        outputs["cn_p_wing_mach_0"] = (
+            -1.0
+            / 6.0
+            * (
+                wing_ar
+                + 6.0 * (wing_ar + np.cos(wing_sweep_25)) * (np.tan(wing_sweep_25) ** 2.0 / 12.0)
+            )
+            / (wing_ar + 4.0 * np.cos(wing_sweep_25))
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        partials["cn_p_wing_mach_0", "data:geometry:wing:sweep_25"] = -(
+            3.0 * wing_ar * np.sin(wing_sweep_25) * np.tan(wing_sweep_25) ** 2.0
+            + (
+                8.0 * np.cos(wing_sweep_25) ** 2.0
+                + 10.0 * wing_ar * np.cos(wing_sweep_25)
+                + 2.0 * wing_ar**2.0
+            )
+            * np.cos(wing_sweep_25) ** -2.0
+            * np.tan(wing_sweep_25)
+            + 8.0 * wing_ar * np.sin(wing_sweep_25)
+        ) / (12.0 * (4.0 * np.cos(wing_sweep_25) + wing_ar) ** 2.0)
+
+        partials["cn_p_wing_mach_0", "data:geometry:wing:aspect_ratio"] = -(
+            np.cos(wing_sweep_25) * (3.0 * np.tan(wing_sweep_25) ^ 2.0 + 8.0)
+        ) / (12.0 * (wing_ar + 4.0 * np.cos(wing_sweep_25)) ^ 2.0)
+
+
+class _ComputeCnRollRateWithMach(om.ExplicitComponent):
+    """
+    Class to compute the wing yaw moment coefficient from the roll rate at the condition
+    that the lift is zero with compressibility correction. This calculation is based on
+    :cite:`roskampart6:1985` section 10.2.6,  equation 10.63.
+    """
+
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("cn_p_wing_mach_0", val=np.nan)
+        self.add_input("data:aerodynamics:wing:" + ls_tag + ":mach_correction", val=np.nan)
+
+        self.add_output("cn_p_wing_mach", val=1.0)
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        cn_p_to_cl_mach_0 = inputs["cn_p_wing_mach_0"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        b_coeff = inputs["data:aerodynamics:wing:" + ls_tag + ":mach_correction"]
+
+        outputs["cn_p_wing_mach"] = (
+            (wing_ar + 4.0 * np.cos(wing_sweep_25))
+            / (wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25))
+            * (
+                wing_ar * b_coeff
+                + 1.0
+                / 2.0
+                * (wing_ar * b_coeff + np.cos(wing_sweep_25))
+                * np.tan(wing_sweep_25) ** 2.0
+            )
+            / (
+                wing_ar
+                + 1.0 / 2.0 * (wing_ar + np.cos(wing_sweep_25)) * np.tan(wing_sweep_25) ** 2.0
+            )
+        ) * cn_p_to_cl_mach_0
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        partials["cn_p_wing_mach_0", "data:geometry:wing:sweep_25"] = -(
+            3.0 * wing_ar * np.sin(wing_sweep_25) * np.tan(wing_sweep_25) ** 2.0
+            + (
+                8.0 * np.cos(wing_sweep_25) ** 2.0
+                + 10.0 * wing_ar * np.cos(wing_sweep_25)
+                + 2.0 * wing_ar**2.0
+            )
+            * np.cos(wing_sweep_25) ** -2.0
+            * np.tan(wing_sweep_25)
+            + 8.0 * wing_ar * np.sin(wing_sweep_25)
+        ) / (12.0 * (4.0 * np.cos(wing_sweep_25) + wing_ar) ** 2.0)
+
+        partials["cn_p_wing_mach_0", "data:geometry:wing:aspect_ratio"] = -(
+            np.cos(wing_sweep_25) * (3.0 * np.tan(wing_sweep_25) ^ 2.0 + 8.0)
+        ) / (12.0 * (wing_ar + 4.0 * np.cos(wing_sweep_25)) ^ 2.0)
