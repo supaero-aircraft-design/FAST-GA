@@ -238,21 +238,71 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
         ) * cn_p_to_cl_mach_0
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        cn_p_to_cl_mach_0 = inputs["cn_p_wing_mach_0"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        b_coeff = inputs["data:aerodynamics:wing:" + ls_tag + ":mach_correction"]
 
-        partials["cn_p_wing_mach_0", "data:geometry:wing:sweep_25"] = -(
-            3.0 * wing_ar * np.sin(wing_sweep_25) * np.tan(wing_sweep_25) ** 2.0
-            + (
-                8.0 * np.cos(wing_sweep_25) ** 2.0
-                + 10.0 * wing_ar * np.cos(wing_sweep_25)
-                + 2.0 * wing_ar**2.0
+        frac_1n = wing_ar + 4.0 * np.cos(wing_sweep_25)
+        frac_1d = wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25)
+        frac_2n = (
+            wing_ar * b_coeff
+            + 1.0 / 2.0 * (wing_ar * b_coeff + np.cos(wing_sweep_25)) * np.tan(wing_sweep_25) ** 2.0
+        )
+        frac_2d = (
+            wing_ar + 1.0 / 2.0 * (wing_ar + np.cos(wing_sweep_25)) * np.tan(wing_sweep_25) ** 2.0
+        )
+
+        frac1 = frac_1n / frac_1d
+        frac2 = frac_2n / frac_2d
+
+        partials["cn_p_wing_mach", "cn_p_wing_mach_0"] = frac1 * frac2
+
+        partials["cn_p_wing_mach", "data:geometry:wing:sweep_25"] = (
+            cn_p_to_cl_mach_0
+            * (
+                (((-4.0 * np.sin(wing_sweep_25) * (frac_1d - frac_1n)) / frac_1d**2.0) * frac2)
+                + frac1
+                * (
+                    0.5
+                    * frac_2d
+                    * (
+                        2.0
+                        * (wing_ar * b_coeff + np.cos(wing_sweep_25))
+                        * np.tan(wing_sweep_25)
+                        * np.cos(wing_sweep_25) ** -2.0
+                        - np.sin(wing_sweep_25) * np.tan(wing_sweep_25) ** 2.0
+                    )
+                    - 0.5
+                    * frac_2n
+                    * (
+                        2.0
+                        * (wing_ar + np.cos(wing_sweep_25))
+                        * np.tan(wing_sweep_25)
+                        * np.cos(wing_sweep_25) ** -2.0
+                        - np.sin(wing_sweep_25) * np.tan(wing_sweep_25) ** 2.0
+                    )
+                )
             )
-            * np.cos(wing_sweep_25) ** -2.0
-            * np.tan(wing_sweep_25)
-            + 8.0 * wing_ar * np.sin(wing_sweep_25)
-        ) / (12.0 * (4.0 * np.cos(wing_sweep_25) + wing_ar) ** 2.0)
+            / frac_2d**2.0
+        )
 
-        partials["cn_p_wing_mach_0", "data:geometry:wing:aspect_ratio"] = -(
-            np.cos(wing_sweep_25) * (3.0 * np.tan(wing_sweep_25) ^ 2.0 + 8.0)
-        ) / (12.0 * (wing_ar + 4.0 * np.cos(wing_sweep_25)) ^ 2.0)
+        partials["cn_p_wing_mach", "data:geometry:wing:aspect_ratio"] = cn_p_to_cl_mach_0 * (
+            (frac2 * (frac_1d - frac_1n * b_coeff) / frac_1d**2.0)
+            + frac1
+            * (
+                frac_2d * (b_coeff + 0.5 * b_coeff * np.tan(wing_sweep_25) ** 2.0)
+                - frac_2n * (1.0 + 0.5 * np.tan(wing_sweep_25) ** 2.0)
+            )
+            / frac_2d**2.0
+        )
+
+        partials["cn_p_wing_mach", "data:aerodynamics:wing:" + ls_tag + ":mach_correction"] = (
+            cn_p_to_cl_mach_0
+            * (
+                frac1 * (wing_ar + 0.5 * wing_ar * np.tan(wing_sweep_25) ** 2.0) / frac_2d
+                - frac2 * frac_1n * wing_ar / frac_1d**2.0
+            )
+        )
