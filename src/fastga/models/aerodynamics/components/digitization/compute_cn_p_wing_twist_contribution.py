@@ -51,8 +51,8 @@ class ComputeWingTwistContributionCnp(om.ExplicitComponent):
             wing_taper_ratio = np.clip(wing_taper_ratio, 0.0, 1.0)
             _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
 
-        if wing_ar != np.clip(wing_ar, 1.986, 12.007):
-            wing_ar = np.clip(wing_ar, 1.986, 12.007)
+        if wing_ar != np.clip(wing_ar, 2.0, 12.0):
+            wing_ar = np.clip(wing_ar, 2.0, 12.0)
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["twist_contribution_cn_p"] = (
@@ -75,7 +75,7 @@ class ComputeWingTwistContributionCnp(om.ExplicitComponent):
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
         partials["twist_contribution_cn_p", "data:geometry:wing:aspect_ratio"] = np.where(
-            wing_ar == np.clip(wing_ar, 1.986, 12.007),
+            wing_ar == np.clip(wing_ar, 2.0, 12.0),
             (
                 2.411e-04
                 - 3.280e-05 * wing_ar
