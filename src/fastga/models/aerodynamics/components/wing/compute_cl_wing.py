@@ -42,7 +42,7 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
             val=aoa,
         )
 
-        self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7, units="rad**-1")
+        self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7, units="unitless")
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials

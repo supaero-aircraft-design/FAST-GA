@@ -311,7 +311,7 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
         )
         self.add_input("cn_p_wing_mach", val=np.nan)
         self.add_input("twist_contribution_cn_p", val=np.nan)
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=np.nan, units="rad**-1")
+        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=np.nan, units="unitless")
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_p", units="rad**-1")
 
