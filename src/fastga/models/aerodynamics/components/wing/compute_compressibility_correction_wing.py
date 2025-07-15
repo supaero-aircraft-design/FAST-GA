@@ -34,7 +34,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:aerodynamics:" + ls_tag + ":mach", val=np.nan)
 
-        self.add_output("data:aerodynamics:wing:" + ls_tag + ":mach_correction", val=1.0)
+        self.add_output("mach_correction_wing", val=1.0)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -49,9 +49,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
         mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
 
-        outputs["data:aerodynamics:wing:" + ls_tag + ":mach_correction"] = np.sqrt(
-            1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0
-        )
+        outputs["mach_correction_wing"] = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
@@ -62,17 +60,15 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
         mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
 
         partials[
-            "data:aerodynamics:wing:" + ls_tag + ":mach_correction",
+            "mach_correction_wing",
             "data:aerodynamics:" + ls_tag + ":mach",
         ] = (
-            -(mach)
+            -mach
             * np.cos(wing_sweep_25) ** 2.0
             / np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
         )
 
-        partials[
-            "data:aerodynamics:wing:" + ls_tag + ":mach_correction", "data:geometry:wing:sweep_25"
-        ] = (
+        partials["mach_correction_wing", "data:geometry:wing:sweep_25"] = (
             mach**2.0
             * np.cos(wing_sweep_25)
             * np.sin(wing_sweep_25)

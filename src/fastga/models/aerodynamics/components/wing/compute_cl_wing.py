@@ -1,4 +1,4 @@
-"""Estimate wing lift coefficient."""
+"""Estimate wing lift coefficient only for analytical derivatives."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,7 +18,8 @@ import openmdao.api as om
 
 class ComputeWingLiftCoefficient(om.ExplicitComponent):
     """
-    Computation of the wing lift coefficient.
+    Computation of the wing lift coefficient for the use of defining analytical derivative
+    of aerodynamics calculation.
     """
 
     # pylint: disable=missing-function-docstring
@@ -42,7 +43,12 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
             val=aoa,
         )
 
-        self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7, units="unitless")
+        self.add_output(
+            "CL_wing",
+            val=0.7,
+            units="unitless",
+            desc="Wing lift coefficient only applies in aerodynamic calculations",
+        )
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -51,7 +57,7 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
 
         self.declare_partials(of="*", wrt="*", method="exact")
         self.declare_partials(
-            of="data:aerodynamics:wing:" + ls_tag + ":CL_wing",
+            of="CL_wing",
             wrt="data:aerodynamics:wing:" + ls_tag + ":CL0_clean",
             val=1.0,
         )
@@ -61,7 +67,7 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        outputs["data:aerodynamics:wing:" + ls_tag + ":CL_wing"] = (
+        outputs["CL_wing"] = (
             inputs["data:aerodynamics:wing:" + ls_tag + ":CL0_clean"]
             + inputs["data:aerodynamics:wing:" + ls_tag + ":CL_alpha"]
             * inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
@@ -73,11 +79,11 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         partials[
-            "data:aerodynamics:wing:" + ls_tag + ":CL_wing",
+            "CL_wing",
             "data:aerodynamics:wing:" + ls_tag + ":CL_alpha",
         ] = inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
 
         partials[
-            "data:aerodynamics:wing:" + ls_tag + ":CL_wing",
+            "CL_wing",
             "settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA",
         ] = inputs["data:aerodynamics:wing:" + ls_tag + ":CL_alpha"]

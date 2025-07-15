@@ -51,52 +51,46 @@ class ComputeCnRollRateWing(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
-
         self.add_subsystem(
-            name="cl_w",
+            name="cl_w_cnp_wing",
             subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=["*"],
+            promotes=["data:*"],
         )
         self.add_subsystem(
-            name="compressibility_correction_wing",
+            name="compressibility_correction_wing_cnp",
             subsys=ComputeCompressibilityCorrectionWing(
                 low_speed_aero=self.options["low_speed_aero"]
             ),
-            promotes=["*"],
+            promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_p_wing_mach_0_" + ls_tag,
+            name="cn_p_wing_mach_0",
             subsys=_ComputeCnRollRateWithZeroMach(),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_p_wing_mach_" + ls_tag,
-            subsys=_ComputeCnRollRateWithMach(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=["data:*"],
+            name="cn_p_wing_mach",
+            subsys=_ComputeCnRollRateWithMach(),
+            promotes=[
+                "data:*",
+                ("cn_p_wing_mach_0", "cn_p_wing_mach_0.cn_p_wing_mach_0"),
+                ("mach_correction", "compressibility_correction_wing_cnp.mach_correction_wing"),
+            ],
         )
         self.add_subsystem(
-            name="twist_contribution_" + ls_tag,
+            name="twist_contribution",
             subsys=ComputeWingTwistContributionCnp(),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_roll_rate_wing_" + ls_tag,
+            name="cn_roll_rate_wing",
             subsys=_ComputeCnRollRateWing(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=["data:*"],
-        )
-
-        self.connect(
-            "cn_p_wing_mach_0_" + ls_tag + ".cn_p_wing_mach_0",
-            "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach_0",
-        )
-        self.connect(
-            "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach",
-            "cn_roll_rate_wing_" + ls_tag + ".cn_p_wing_mach",
-        )
-        self.connect(
-            "twist_contribution_" + ls_tag + ".twist_contribution_cn_p",
-            "cn_roll_rate_wing_" + ls_tag + ".twist_contribution_cn_p",
+            promotes=[
+                "data:*",
+                ("CL_wing", "cl_w_cnp_wing.CL_wing"),
+                ("twist_contribution_cn_p", "twist_contribution.twist_contribution_cn_p"),
+                ("cn_p_wing_mach", "cn_p_wing_mach.cn_p_wing_mach"),
+            ],
         )
 
 
@@ -167,19 +161,12 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
     """
 
     # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("low_speed_aero", default=False, types=bool)
-
-    # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
-
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("cn_p_wing_mach_0", val=np.nan)
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":mach_correction", val=np.nan)
+        self.add_input("mach_correction", val=np.nan)
 
         self.add_output("cn_p_wing_mach", val=1.0)
 
@@ -191,12 +178,10 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         cn_p_to_cl_mach_0 = inputs["cn_p_wing_mach_0"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
-        b_coeff = inputs["data:aerodynamics:wing:" + ls_tag + ":mach_correction"]
+        b_coeff = inputs["mach_correction"]
 
         outputs["cn_p_wing_mach"] = (
             (wing_ar + 4.0 * np.cos(wing_sweep_25))
@@ -217,12 +202,10 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
-
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         cn_p_to_cl_mach_0 = inputs["cn_p_wing_mach_0"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
-        b_coeff = inputs["data:aerodynamics:wing:" + ls_tag + ":mach_correction"]
+        b_coeff = inputs["mach_correction"]
 
         frac_1n = wing_ar + 4.0 * np.cos(wing_sweep_25)
         frac_1d = wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25)
@@ -278,12 +261,9 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
             / frac_2d**2.0
         )
 
-        partials["cn_p_wing_mach", "data:aerodynamics:wing:" + ls_tag + ":mach_correction"] = (
-            cn_p_to_cl_mach_0
-            * (
-                frac1 * (wing_ar + 0.5 * wing_ar * np.tan(wing_sweep_25) ** 2.0) / frac_2d
-                - frac2 * frac_1n * wing_ar / frac_1d**2.0
-            )
+        partials["cn_p_wing_mach", "mach_correction"] = cn_p_to_cl_mach_0 * (
+            frac1 * (wing_ar + 0.5 * wing_ar * np.tan(wing_sweep_25) ** 2.0) / frac_2d
+            - frac2 * frac_1n * wing_ar / frac_1d**2.0
         )
 
 
@@ -311,7 +291,7 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
         )
         self.add_input("cn_p_wing_mach", val=np.nan)
         self.add_input("twist_contribution_cn_p", val=np.nan)
-        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=np.nan, units="unitless")
+        self.add_input("CL_wing", val=np.nan, units="unitless")
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_p", units="rad**-1")
 
@@ -327,7 +307,7 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
 
         wing_twist = inputs["data:geometry:wing:twist"]  # In deg, not specified in the
         cn_p_to_cl_mach = inputs["cn_p_wing_mach"]
-        cl_w = inputs["data:aerodynamics:wing:" + ls_tag + ":CL_wing"]
+        cl_w = inputs["CL_wing"]
         twist_contribution = inputs["twist_contribution_cn_p"]
 
         outputs["data:aerodynamics:wing:" + ls_tag + ":Cn_p"] = (
@@ -341,12 +321,12 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
 
         wing_twist = inputs["data:geometry:wing:twist"]  # In deg, not specified in the
         cn_p_to_cl_mach = inputs["cn_p_wing_mach"]
-        cl_w = inputs["data:aerodynamics:wing:" + ls_tag + ":CL_wing"]
+        cl_w = inputs["CL_wing"]
         twist_contribution = inputs["twist_contribution_cn_p"]
 
         partials[
             "data:aerodynamics:wing:" + ls_tag + ":Cn_p",
-            "data:aerodynamics:wing:" + ls_tag + ":CL_wing",
+            "CL_wing",
         ] = -cn_p_to_cl_mach
 
         partials["data:aerodynamics:wing:" + ls_tag + ":Cn_p", "cn_p_wing_mach"] = -cl_w
