@@ -1,4 +1,4 @@
-"""Estimate wing lift coefficient"""
+"""Estimate wing lift coefficient."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,9 +21,13 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
     Computation of the wing lift coefficient.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
         aoa = np.deg2rad(5.0) if self.options["low_speed_aero"] else np.deg2rad(1.0)
@@ -40,6 +44,8 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":CL_wing", val=0.7, units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -50,6 +56,8 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
             val=1.0,
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -59,6 +67,8 @@ class ComputeWingLiftCoefficient(om.ExplicitComponent):
             * inputs["settings:aerodynamics:reference_flight_conditions:" + ls_tag + ":AOA"]
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 

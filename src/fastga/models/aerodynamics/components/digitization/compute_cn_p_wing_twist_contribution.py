@@ -29,17 +29,20 @@ class ComputeWingTwistContributionCnp(om.ExplicitComponent):
     """
 
     # pylint: disable=missing-function-docstring
-    # Overriding OpenMDwing_arO setup
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
         self.add_output("twist_contribution_cn_p", val=0.1)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
         self.declare_partials(of="twist_contribution_cn_p", wrt="*", method="exact")
 
     # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDwing_arO compute, not all arguments are used
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -66,7 +69,7 @@ class ComputeWingTwistContributionCnp(om.ExplicitComponent):
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDwing_arO compute_partials, not all arguments are used
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]

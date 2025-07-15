@@ -43,9 +43,13 @@ class ComputeCnRollRateWing(om.Group):
     was multiplied by tan(sweep_25).
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -103,15 +107,21 @@ class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
     :cite:`roskampart6:1985` section 10.2.6,  equation 10.65.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("cn_p_wing_mach_0", val=1.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -126,6 +136,8 @@ class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
             / (wing_ar + 4.0 * np.cos(wing_sweep_25))
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -154,9 +166,13 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
     :cite:`roskampart6:1985` section 10.2.6,  equation 10.63.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -167,9 +183,13 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
 
         self.add_output("cn_p_wing_mach", val=1.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -194,6 +214,8 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
             )
         ) * cn_p_to_cl_mach_0
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -271,9 +293,13 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
     Based on :cite:`roskampart6:1985` section 10.2.6, equation 10.62.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -289,9 +315,13 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_p", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -304,6 +334,8 @@ class _ComputeCnRollRateWing(om.ExplicitComponent):
             -cn_p_to_cl_mach * cl_w + twist_contribution * wing_twist
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 

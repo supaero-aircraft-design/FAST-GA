@@ -1,4 +1,4 @@
-"""Compressibility correction for swept wing"""
+"""Compressibility correction for swept wing."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -21,9 +21,13 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
     Computation of compressibility correction factor for swept wing.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -32,9 +36,13 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":mach_correction", val=1.0)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -45,6 +53,8 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
             1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
