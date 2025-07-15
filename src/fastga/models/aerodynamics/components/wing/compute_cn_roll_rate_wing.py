@@ -102,8 +102,8 @@ class ComputeCnRollRateWing(om.Group):
 
 class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
     """
-    Class to compute the wing yaw moment coefficient from the roll rate at the condition
-    that the lift and mach number are both zero. This calculation is based on
+    Class to compute the wing yaw moment coefficient from the roll rate with lift coefficient
+    and Mach number both equal to zero. This calculation is based on
     :cite:`roskampart6:1985` section 10.2.6,  equation 10.65.
     """
 
@@ -161,8 +161,8 @@ class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
 
 class _ComputeCnRollRateWithMach(om.ExplicitComponent):
     """
-    Class to compute the wing yaw moment coefficient from the roll rate at the condition
-    that the lift is zero with compressibility correction. This calculation is based on
+    Class to compute the wing yaw moment coefficient from the roll rate when the
+    lift coefficient is zero with compressibility correction. This calculation is based on
     :cite:`roskampart6:1985` section 10.2.6,  equation 10.63.
     """
 
