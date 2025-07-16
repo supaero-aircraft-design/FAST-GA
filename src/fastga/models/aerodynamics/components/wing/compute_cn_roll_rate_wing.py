@@ -117,7 +117,7 @@ class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
-        self.add_output("cn_p_wing_mach_0", val=1.0)
+        self.add_output("cn_p_wing_mach_0", val=0.01)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
@@ -178,7 +178,7 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
         self.add_input("cn_p_wing_mach_0", val=np.nan)
         self.add_input("mach_correction", val=np.nan)
 
-        self.add_output("cn_p_wing_mach", val=1.0)
+        self.add_output("cn_p_wing_mach", val=0.01)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
