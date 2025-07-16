@@ -1,4 +1,7 @@
-"""Computation of wing lift coefficient in reference conditions, used only for the computation of certain aerodynmic derivatives."""
+"""
+Computation of wing lift coefficient in reference conditions, used only for the computation of
+certain aerodynamic derivatives.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
