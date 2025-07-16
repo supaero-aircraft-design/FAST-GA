@@ -56,12 +56,11 @@ class ComputeClDeltaAileron(om.Group):
         self.add_subsystem(
             name="aileron_cl_delta",
             subsys=_ComputeClDeltaAileron(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=["*"],
-        )
-
-        self.connect(
-            "aileron_alpha" + ls_tag + ".lift_effectiveness",
-            "alpha_aileron",
+            promotes=[
+                "data:*",
+                "settings:*",
+                ("alpha_aileron", "aileron_alpha" + ls_tag + ".lift_effectiveness"),
+            ],
         )
 
 

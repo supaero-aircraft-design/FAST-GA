@@ -51,45 +51,52 @@ class ComputeCnRollRateWing(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
         self.add_subsystem(
-            name="cl_w_cnp_wing",
+            name="cl_w_" + ls_tag,
             subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="compressibility_correction_wing_cnp",
+            name="compressibility_correction_" + ls_tag,
             subsys=ComputeCompressibilityCorrectionWing(
                 low_speed_aero=self.options["low_speed_aero"]
             ),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_p_wing_mach_0",
+            name="cn_p_wing_mach_0_" + ls_tag,
             subsys=_ComputeCnRollRateWithZeroMach(),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_p_wing_mach",
+            name="cn_p_wing_mach_" + ls_tag,
             subsys=_ComputeCnRollRateWithMach(),
             promotes=[
                 "data:*",
-                ("cn_p_wing_mach_0", "cn_p_wing_mach_0.cn_p_wing_mach_0"),
-                ("mach_correction", "compressibility_correction_wing_cnp.mach_correction_wing"),
+                ("cn_p_wing_mach_0", "cn_p_wing_mach_0_" + ls_tag + ".cn_p_wing_mach_0"),
+                (
+                    "mach_correction",
+                    "compressibility_correction_" + ls_tag + ".mach_correction_wing",
+                ),
             ],
         )
         self.add_subsystem(
-            name="twist_contribution",
+            name="twist_contribution_" + ls_tag,
             subsys=ComputeWingTwistContributionCnp(),
             promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cn_roll_rate_wing",
+            name="cn_roll_rate_wing_" + ls_tag,
             subsys=_ComputeCnRollRateWing(low_speed_aero=self.options["low_speed_aero"]),
             promotes=[
                 "data:*",
-                ("CL_wing", "cl_w_cnp_wing.CL_wing"),
-                ("twist_contribution_cn_p", "twist_contribution.twist_contribution_cn_p"),
-                ("cn_p_wing_mach", "cn_p_wing_mach.cn_p_wing_mach"),
+                ("CL_wing", "cl_w_" + ls_tag + ".CL_wing"),
+                (
+                    "twist_contribution_cn_p",
+                    "twist_contribution_" + ls_tag + ".twist_contribution_cn_p",
+                ),
+                ("cn_p_wing_mach", "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach"),
             ],
         )
 
