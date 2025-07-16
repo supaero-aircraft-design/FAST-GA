@@ -1,4 +1,4 @@
-"""Estimate wing lift coefficient only for analytical derivatives."""
+"""Computation of wing lift coefficient in reference conditions, used only for the computation of certain aerodynmic derivatives."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -18,8 +18,7 @@ import openmdao.api as om
 
 class ComputeWingLiftCoefficient(om.ExplicitComponent):
     """
-    Computation of the wing lift coefficient for the use of defining analytical derivative
-    of aerodynamics calculation.
+    Computation of the wing lift coefficient for use in the computation of aerodynamic derivatives.
     """
 
     # pylint: disable=missing-function-docstring
