@@ -46,7 +46,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
         mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
 
         outputs["mach_correction_wing"] = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
@@ -56,7 +56,7 @@ class ComputeCompressibilityCorrectionWing(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
         mach = inputs["data:aerodynamics:" + ls_tag + ":mach"]
 
         partials[
