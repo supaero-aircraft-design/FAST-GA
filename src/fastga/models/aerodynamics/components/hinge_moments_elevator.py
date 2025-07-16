@@ -233,12 +233,14 @@ class Compute3DHingeMomentsTail(om.Group):
         )
 
         self.add_subsystem(
-            name="hinge_moment_delta_three_d", subsys=Compute3DHingeMomentDelta(), promotes=["*"]
+            name="hinge_moment_delta_three_d",
+            subsys=Compute3DHingeMomentDelta(),
+            promotes=["data:*"],
         )
 
         self.connect(
             "single_slotted_lift_effectiveness.lift_effectiveness",
-            "max_lift_effectiveness",
+            "hinge_moment_delta_three_d.max_lift_effectiveness",
         )
 
 

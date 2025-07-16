@@ -44,7 +44,7 @@ class ComputeClDeltaAileron(om.Group):
     def setup(self):
         ls_tag = "_low_speed" if self.options["low_speed_aero"] else "cruise"
         self.add_subsystem(
-            name="aileron_alpha" + ls_tag,
+            name="aileron_alpha_" + ls_tag,
             subsys=ComputeSingleSlottedLiftEffectiveness(),
             promotes=[
                 ("chord_ratio", "data:geometry:wing:aileron:chord_ratio"),
@@ -56,11 +56,11 @@ class ComputeClDeltaAileron(om.Group):
         self.add_subsystem(
             name="aileron_cl_delta",
             subsys=_ComputeClDeltaAileron(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=[
-                "data:*",
-                "settings:*",
-                ("alpha_aileron", "aileron_alpha" + ls_tag + ".lift_effectiveness"),
-            ],
+            promotes=["data:*", "settings:*"],
+        )
+
+        self.connect(
+            "aileron_alpha_" + ls_tag + ".lift_effectiveness", "aileron_cl_delta.alpha_aileron"
         )
 
 

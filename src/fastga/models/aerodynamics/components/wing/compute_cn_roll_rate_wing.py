@@ -72,14 +72,7 @@ class ComputeCnRollRateWing(om.Group):
         self.add_subsystem(
             name="cn_p_wing_mach_" + ls_tag,
             subsys=_ComputeCnRollRateWithMach(),
-            promotes=[
-                "data:*",
-                ("cn_p_wing_mach_0", "cn_p_wing_mach_0_" + ls_tag + ".cn_p_wing_mach_0"),
-                (
-                    "mach_correction",
-                    "compressibility_correction_" + ls_tag + ".mach_correction_wing",
-                ),
-            ],
+            promotes=["data:*"],
         )
         self.add_subsystem(
             name="twist_contribution_" + ls_tag,
@@ -89,15 +82,25 @@ class ComputeCnRollRateWing(om.Group):
         self.add_subsystem(
             name="cn_roll_rate_wing_" + ls_tag,
             subsys=_ComputeCnRollRateWing(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=[
-                "data:*",
-                ("CL_wing", "cl_w_" + ls_tag + ".CL_wing"),
-                (
-                    "twist_contribution_cn_p",
-                    "twist_contribution_" + ls_tag + ".twist_contribution_cn_p",
-                ),
-                ("cn_p_wing_mach", "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach"),
-            ],
+            promotes=["data:*"],
+        )
+
+        self.connect(
+            "cn_p_wing_mach_0_" + ls_tag + ".cn_p_wing_mach_0",
+            "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach_0",
+        )
+        self.connect(
+            "compressibility_correction_" + ls_tag + ".mach_correction_wing",
+            "cn_p_wing_mach_" + ls_tag + ".mach_correction",
+        )
+        self.connect("cl_w_" + ls_tag + ".CL_wing", "cn_roll_rate_wing_" + ls_tag + ".CL_wing")
+        self.connect(
+            "twist_contribution_" + ls_tag + ".twist_contribution_cn_p",
+            "cn_roll_rate_wing_" + ls_tag + ".twist_contribution_cn_p",
+        )
+        self.connect(
+            "cn_p_wing_mach_" + ls_tag + ".cn_p_wing_mach",
+            "cn_roll_rate_wing_" + ls_tag + ".cn_p_wing_mach",
         )
 
 
