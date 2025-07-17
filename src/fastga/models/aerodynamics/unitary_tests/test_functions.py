@@ -3260,6 +3260,8 @@ def roll_authority_aileron(
         "data:aerodynamics:aileron:cruise:Cl_delta_a", units="rad**-1"
     ) == pytest.approx(cl_delta_a_cruise_, rel=1e-3)
 
+    problem.check_partials(compact_print=True)
+
 
 def roll_moment_rudder(
     XML_FILE: str,
@@ -3557,6 +3559,8 @@ def yaw_moment_roll_rate_wing(
     assert problem.get_val("data:aerodynamics:wing:cruise:Cn_p", units="rad**-1") == pytest.approx(
         cn_p_wing_cruise_, rel=1e-3
     )
+
+    problem.check_partials(compact_print=True)
 
 
 def yaw_moment_roll_rate_vt(

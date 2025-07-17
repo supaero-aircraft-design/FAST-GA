@@ -40,13 +40,17 @@ class ComputeCmAlphaFuselage(om.Group):  # pylint: disable=too-few-public-method
         self.add_subsystem(
             name="quarter_root_chord_position",
             subsys=_ComputeQuarterRootChordPositionRatio(),
-            promotes=["*"],
+            promotes=["data:*"],
         )
+        self.add_subsystem(name="k_fuselage", subsys=ComputeFuselagePitchMomentFactor())
         self.add_subsystem(
-            name="k_fuselage", subsys=ComputeFuselagePitchMomentFactor(), promotes=["*"]
+            name="cm_alpha_fuselage", subsys=_ComputeCmAlphaFuselageNacelle(), promotes=["data:*"]
         )
-        self.add_subsystem(
-            name="cm_alpha_fuselage", subsys=_ComputeCmAlphaFuselageNacelle(), promotes=["*"]
+
+        self.connect("quarter_root_chord_position.x0_ratio", "k_fuselage.x0_ratio")
+        self.connect(
+            "k_fuselage.fuselage_pitch_moment_factor",
+            "cm_alpha_fuselage.fuselage_pitch_moment_factor",
         )
 
 
