@@ -55,7 +55,7 @@ class ComputeCnRollRateWing(om.Group):
         self.add_subsystem(
             name="cl_w_" + ls_tag,
             subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
-            promotes=["data:*"],
+            promotes=["data:*", "settings:*"],
         )
         self.add_subsystem(
             name="compressibility_correction_" + ls_tag,
