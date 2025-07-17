@@ -61,7 +61,7 @@ class ComputeCnYawRateWing(om.Group):
         )
         self.add_subsystem(
             name="cn_yaw_wing_" + ls_tag,
-            subsys=_ComputeCnYawRateWing(),
+            subsys=_ComputeCnYawRateWing(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
         )
 

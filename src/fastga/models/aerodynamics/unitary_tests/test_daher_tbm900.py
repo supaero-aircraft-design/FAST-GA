@@ -3269,7 +3269,7 @@ def test_cn_p_aircraft():
 def test_cn_r_wing():
     """Test cn r of the wing."""
     yaw_moment_yaw_rate_wing(
-        XML_FILE, cn_r_wing_low_speed_=-0.00724264, cn_r_wing_cruise_=-0.00359692
+        XML_FILE, cn_r_wing_low_speed_=-0.02973149, cn_r_wing_cruise_=-0.01095347
     )
 
 
@@ -3280,4 +3280,4 @@ def test_cn_r_vt():
 
 def test_cn_r_aircraft():
     """Tests cn r of the aircraft."""
-    yaw_moment_yaw_rate_aircraft(XML_FILE, cn_r_low_speed_=-0.14238406, cn_r_cruise_=-0.14187046)
+    yaw_moment_yaw_rate_aircraft(XML_FILE, cn_r_low_speed_=-0.16487291, cn_r_cruise_=-0.14922701)
