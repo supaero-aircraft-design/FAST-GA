@@ -41,9 +41,13 @@ class ComputeCnYawRateWing(om.Group):
     Based on :cite:`roskampart6:1985` section 10.2.8
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
