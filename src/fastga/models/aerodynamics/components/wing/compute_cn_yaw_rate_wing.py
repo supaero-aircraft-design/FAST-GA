@@ -114,10 +114,8 @@ class _ComputeCnYawRateWing(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
     def setup_partials(self):
-        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
-
         self.declare_partials(
-            of="data:aerodynamics:wing:" + ls_tag + ":Cn_r", wrt="*", method="exact"
+            of="*", wrt="*", method="exact"
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
