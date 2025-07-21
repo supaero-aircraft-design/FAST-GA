@@ -1,5 +1,5 @@
 """
-Python module for wing drag effect of Cn_r calculation, part of the aerodynamic
+Python module for wing drag effect on Cn_r calculation, part of the aerodynamic
 component computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
