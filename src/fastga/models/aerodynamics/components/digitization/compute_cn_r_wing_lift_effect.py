@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 class ComputeWingLiftEffectCnr(om.Group):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the lift effect in the yaw moment
-    computation result from yaw rate (yaw damping). (figure 10.48)
+    computation result from yaw rate (yaw damping). (figure 10.44)
     """
 
     # pylint: disable=missing-function-docstring
@@ -34,7 +34,7 @@ class ComputeWingLiftEffectCnr(om.Group):
     def setup(self):
         self.add_subsystem(
             name="middle_coefficient",
-            subsys=_ComputeMiddleCoefficient(),
+            subsys=_ComputeIntermediateParameter(),
             promotes=["*"],
         )
         self.add_subsystem(
@@ -44,16 +44,10 @@ class ComputeWingLiftEffectCnr(om.Group):
         )
 
 
-class _ComputeMiddleCoefficient(om.ExplicitComponent):
+class _ComputeIntermediateParameter(om.ExplicitComponent):
     """
     Middle coefficient from Roskam's date :cite:`roskampart6:1985` to estimate the lift effect in
-    the yaw moment computation result from yaw rate (yaw damping). (figure 10.48)
-
-    :param static_margin: distance between aft cg and aircraft aerodynamic center divided by MAC
-    :param sweep_25: the sweep at 25% of the lifting surface
-    :param aspect_ratio: the aspect ratio of the lifting surface
-
-    :return middle_coeff: the intermediate coefficient for lift effect calculation
+    the yaw moment computation result from yaw rate (yaw damping). (figure 10.44)
     """
 
     # pylint: disable=missing-function-docstring
@@ -176,14 +170,7 @@ class _ComputeMiddleCoefficient(om.ExplicitComponent):
 class _ComputeWingLiftEffectCnr(om.ExplicitComponent):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the lift effect in the yaw moment
-    computation result from yaw rate (yaw damping). (figure 10.48)
-
-    :param middle_coeff: the intermediate coefficient for lift effect calculation derived from
-    3rd-order regression model
-    :param taper_ratio: the taper ratio of the lifting surface
-
-    :return lift_effect: the effect of lift fot the computation of the yaw moment due to yaw
-    rate
+    computation result from yaw rate (yaw damping). (figure 10.44)
     """
 
     # pylint: disable=missing-function-docstring
