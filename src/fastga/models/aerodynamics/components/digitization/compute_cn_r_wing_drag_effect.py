@@ -25,14 +25,14 @@ _LOGGER = logging.getLogger(__name__)
 
 class ComputeWingDragEffectCnr(om.ExplicitComponent):
     """
-    Roskam data to estimate the effect of drag for the computation of the yaw moment
-    due yaw rate (yaw damping). (figure 10.48)
+    Roskam data :cite:`roskampart6:1985` to estimate the drag effect in the yaw moment
+    computation result from yaw rate (yaw damping). (figure 10.48)
 
     :param static_margin: distance between aft cg and aircraft aerodynamic center divided by MAC
     :param sweep_25: the sweep at 25% of the lifting surface
     :param aspect_ratio: the aspect ratio of the lifting surface
-    :return drag_effect: the effect of drag for the computation of the yaw moment due to yaw
-    rate
+
+    :return drag_effect: the effect of drag for the computation of the yaw moment due to yaw rate
     """
 
     # pylint: disable=missing-function-docstring
