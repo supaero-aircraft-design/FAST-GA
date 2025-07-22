@@ -54,8 +54,8 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
             static_margin = np.clip(static_margin, 0.0, 0.4)
             _LOGGER.warning("Static margin is outside of the range in Roskam's book, value clipped")
 
-        if sweep_25 != np.clip(sweep_25, 0.0, 60.0):
-            sweep_25 = np.clip(sweep_25, 0.0, 60.0)
+        if sweep_25 != np.clip(sweep_25, 0.0, 50.0):
+            sweep_25 = np.clip(sweep_25, 0.0, 50.0)
             _LOGGER.warning(
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
@@ -65,26 +65,16 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["drag_effect"] = (
-            -0.59726930
-            - 0.83734303 * static_margin
-            - 0.01801259 * sweep_25
-            + 0.53191492 * ln_ar
-            - 0.38000723 * static_margin**2
-            - 0.00186004 * static_margin * sweep_25
-            + 1.05520927 * static_margin * ln_ar
-            + 0.00093863 * sweep_25**2
-            - 0.00036945 * sweep_25 * ln_ar
-            - 0.35723706 * ln_ar**2
-            - 0.16101689 * static_margin**3
-            + 0.00282320 * static_margin**2 * sweep_25
-            + 0.33612886 * static_margin**2 * ln_ar
-            + 0.00015169 * static_margin * sweep_25**2
-            - 0.00285983 * static_margin * sweep_25 * ln_ar
-            - 0.35821746 * static_margin * ln_ar**2
-            - 0.00001259 * sweep_25**3
-            - 0.00007595 * sweep_25**2 * ln_ar
-            + 0.00101888 * sweep_25 * ln_ar**2
-            + 0.08306687 * ln_ar**3
+            -0.61144468
+            - 0.70264474 * static_margin
+            + 0.00962168 * sweep_25
+            + 0.44131919 * ln_ar
+            - 0.05601423 * static_margin**2
+            + 0.00328669 * static_margin * sweep_25
+            + 0.37739783 * static_margin * ln_ar
+            - 0.00024876 * sweep_25**2
+            - 0.00235158 * sweep_25 * ln_ar
+            - 0.14846284 * ln_ar**2
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -96,55 +86,22 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
 
         lar = np.clip(ln_ar, np.log(1.0), np.log(8.0))
         sm = np.clip(static_margin, 0.0, 0.4)
-        sw = np.clip(sweep_25, 0.0, 60.0)
+        sw = np.clip(sweep_25, 0.0, 50.0)
 
         partials["drag_effect", "ln_ar"] = np.where(
             ln_ar == np.clip(ln_ar, np.log(1.0), np.log(8.0)),
-            (
-                0.24920061 * lar**2
-                - 0.71643492 * lar * sm
-                + 0.00203776 * lar * sw
-                - 0.71447412 * lar
-                + 0.33612886 * sm**2
-                - 0.00285983 * sm * sw
-                + 1.05520927 * sm
-                - 7.595e-5 * sw**2
-                - 0.00036945 * sw
-                + 0.53191492
-            ),
+            (-0.29692568 * lar + 0.37739783 * sm - 0.00235158 * sw + 0.44131919),
             1e-6,
         )
 
         partials["drag_effect", "data:geometry:wing:sweep_25"] = np.where(
-            sweep_25 == np.clip(sweep_25, 0.0, 60.0),
-            (
-                0.00101888 * lar**2
-                - 0.00285983 * lar * sm
-                - 0.0001519 * lar * sw
-                - 0.00036945 * lar
-                + 0.0028232 * sm**2
-                + 0.00030338 * sm * sw
-                - 0.00186004 * sm
-                - 3.777e-5 * sw**2
-                + 0.00187726 * sw
-                - 0.01801259
-            ),
+            sweep_25 == np.clip(sweep_25, 0.0, 50.0),
+            (-0.00235158 * lar + 0.00328669 * sm - 0.00049752 * sw + 0.00962168),
             1e-6,
         )
 
         partials["drag_effect", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
             static_margin == np.clip(static_margin, 0.0, 0.4),
-            (
-                -0.35821746 * lar**2
-                + 0.67225772 * lar * sm
-                - 0.00285983 * lar * sw
-                + 1.05520927 * lar
-                - 0.48305067 * sm**2
-                + 0.0056464 * sm * sw
-                - 0.76001446 * sm
-                + 0.00015169 * sw**2
-                - 0.00186004 * sw
-                - 0.83734303
-            ),
+            (0.37739783 * lar - 0.11202846 * sm + 0.00328669 * sw - 0.70264474),
             1e-6,
         )

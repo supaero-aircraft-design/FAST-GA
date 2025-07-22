@@ -54,8 +54,8 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
             static_margin = np.clip(static_margin, 0.0, 0.4)
             _LOGGER.warning("Static margin is outside of the range in Roskam's book, value clipped")
 
-        if sweep_25 != np.clip(sweep_25, 0.0, 60.0):
-            sweep_25 = np.clip(sweep_25, 0.0, 60.0)
+        if sweep_25 != np.clip(sweep_25, 0.0, 50.0):
+            sweep_25 = np.clip(sweep_25, 0.0, 50.0)
             _LOGGER.warning(
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
@@ -65,26 +65,26 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["middle_coeff"] = (
-            0.44349717
-            + 4.53744392 * static_margin
-            + 0.08353393 * sweep_25
-            + 2.01798623 * ln_ar
-            - 3.58167734 * static_margin**2
-            + 0.00871889 * static_margin * sweep_25
-            - 5.14471767 * static_margin * ln_ar
-            - 0.00407792 * sweep_25**2
-            + 0.00001685 * sweep_25 * ln_ar
-            - 0.38974151 * ln_ar**2
-            - 2.51200192 * static_margin**3
-            + 0.11946688 * static_margin**2 * sweep_25
-            + 1.34092802 * static_margin**2 * ln_ar
-            + 0.00096608 * static_margin * sweep_25**2
-            - 0.04698288 * static_margin * sweep_25 * ln_ar
-            + 1.62056258 * static_margin * ln_ar**2
-            + 0.00006323 * sweep_25**3
-            - 0.00075789 * sweep_25**2 * ln_ar
-            + 0.01156277 * sweep_25 * ln_ar**2
-            - 0.04624397 * ln_ar**3
+            0.46236794
+            + 5.91939258 * static_margin
+            - 0.00000138 * sweep_25
+            + 1.80469105 * ln_ar
+            - 6.62557472 * static_margin**2
+            - 0.04095218 * static_margin * sweep_25
+            - 5.91325304 * static_margin * ln_ar
+            - 0.00003059 * sweep_25**2
+            - 0.00142883 * sweep_25 * ln_ar
+            - 0.19838867 * ln_ar**2
+            - 4.44889624 * static_margin**3
+            + 0.17317666 * static_margin**2 * sweep_25
+            + 3.79534719 * static_margin**2 * ln_ar
+            + 0.00160670 * static_margin * sweep_25**2
+            - 0.04621831 * static_margin * sweep_25 * ln_ar
+            + 1.54501070 * static_margin * ln_ar**2
+            + 0.00001442 * sweep_25**3
+            - 0.00060596 * sweep_25**2 * ln_ar
+            + 0.00926858 * sweep_25 * ln_ar**2
+            - 0.08765596 * ln_ar**3
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -96,38 +96,38 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
 
         lar = np.clip(ln_ar, np.log(0.7), np.log(10.0))
         sm = np.clip(static_margin, 0.0, 0.4)
-        sw = np.clip(sweep_25, 0.0, 60.0)
+        sw = np.clip(sweep_25, 0.0, 50.0)
 
         partials["middle_coeff", "ln_ar"] = np.where(
             ln_ar == np.clip(ln_ar, np.log(0.7), np.log(10.0)),
             (
-                -0.13873191 * lar**2
-                + 3.24112516 * lar * sm
-                + 0.02312554 * lar * sw
-                - 0.77948302 * lar
-                + 1.34092802 * sm**2
-                - 0.04698288 * sm * sw
-                - 5.14471767 * sm
-                - 0.00075789 * sw**2
-                + 1.685e-5 * sw
-                + 2.01798623
+                -0.26296788 * lar**2
+                + 3.0900214 * lar * sm
+                + 0.01853716 * lar * sw
+                - 0.39677734 * lar
+                + 3.79534719 * sm**2
+                - 0.04621831 * sm * sw
+                - 5.91325304 * sm
+                - 0.00060596 * sw**2
+                - 0.00142883 * sw
+                + 1.80469105
             ),
             1e-6,
         )
 
         partials["middle_coeff", "data:geometry:wing:sweep_25"] = np.where(
-            sweep_25 == np.clip(sweep_25, 0.0, 60.0),
+            sweep_25 == np.clip(sweep_25, 0.0, 50.0),
             (
-                0.01156277 * lar**2
-                - 0.04698288 * lar * sm
-                - 0.00151578 * lar * sw
-                + 1.685e-5 * lar
-                + 0.11946688 * sm**2
-                + 0.00193216 * sm * sw
-                + 0.00871889 * sm
-                + 0.00018969 * sw**2
-                - 0.00815584 * sw
-                + 0.08353393
+                0.00926858 * lar**2
+                - 0.04621831 * lar * sm
+                - 0.00121192 * lar * sw
+                - 0.00142883 * lar
+                + 0.17317666 * sm**2
+                + 0.0032134 * sm * sw
+                - 0.04095218 * sm
+                + 4.326e-5 * sw**2
+                - 6.118e-5 * sw
+                - 1.38e-6
             ),
             1e-6,
         )
@@ -135,16 +135,16 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         partials["middle_coeff", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
             static_margin == np.clip(static_margin, 0.0, 0.4),
             (
-                1.62056258 * lar**2
-                + 2.68185604 * lar * sm
-                - 0.04698288 * lar * sw
-                - 5.14471767 * lar
-                - 7.53600576 * sm**2
-                + 0.23893376 * sm * sw
-                - 7.16335468 * sm
-                + 0.00096608 * sw**2
-                + 0.00871889 * sw
-                + 4.53744392
+                1.5450107 * lar**2
+                + 7.59069438 * lar * sm
+                - 0.04621831 * lar * sw
+                - 5.91325304 * lar
+                - 13.34668872 * sm**2
+                + 0.34635332 * sm * sw
+                - 13.25114944 * sm
+                + 0.0016067 * sw**2
+                - 0.04095218 * sw
+                + 5.91939258
             ),
             1e-6,
         )
