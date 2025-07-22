@@ -94,8 +94,8 @@ class ComputeCnYawRateWing(om.Group):
             "drag_effect_" + ls_tag + ".ln_ar",
         )
         self.connect(
-            "lift_intermediate_" + ls_tag + ".middle_coeff",
-            "lift_effect_" + ls_tag + ".middle_coeff",
+            "lift_intermediate_" + ls_tag + ".intermediate_coeff",
+            "lift_effect_" + ls_tag + ".intermediate_coeff",
         )
         self.connect("wing_lift_coeff_" + ls_tag + ".CL_wing", "cn_yaw_wing_" + ls_tag + ".CL_wing")
         self.connect(
