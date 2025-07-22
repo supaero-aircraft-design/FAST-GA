@@ -167,12 +167,12 @@ class ComputeWingLiftEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup_partials
     def setup_partials(self):
-        self.declare_partials(of="lift_effect", wrt="middle_coeff", val=0.5)
-        self.declare_partials(of="lift_effect", wrt="data:geometry:wing:taper_ratio", val=-0.15)
+        self.declare_partials(of="lift_effect", wrt="middle_coeff", val=0.05)
+        self.declare_partials(of="lift_effect", wrt="data:geometry:wing:taper_ratio", val=-0.015)
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs["lift_effect"] = 0.5 * (
+        outputs["lift_effect"] = 0.05 * (
             inputs["middle_coeff"] - 2.7 - 0.3 * inputs["data:geometry:wing:taper_ratio"]
         )
