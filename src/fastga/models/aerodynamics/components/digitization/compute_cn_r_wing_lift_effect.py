@@ -1,5 +1,5 @@
 """
-Python module for wing lift effect on Cn_r calculation, part of the aerodynamic component
+Python module for lift effect on wing Cn_r calculation, part of the aerodynamic component
 computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
