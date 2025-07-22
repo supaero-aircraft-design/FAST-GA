@@ -32,7 +32,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("ln_ar", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
 
@@ -46,7 +46,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
+        ln_ar = inputs["ln_ar"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
@@ -60,53 +60,57 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
 
-        if aspect_ratio != np.clip(aspect_ratio, 1.0, 8.0):
-            aspect_ratio = np.clip(aspect_ratio, 1.0, 8.0)
+        if ln_ar != np.clip(ln_ar, np.log(1.0), np.log(8.0)):
+            ln_ar = np.clip(ln_ar, np.log(1.0), np.log(8.0))
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["drag_effect"] = (
-            -0.86676535
-            - 1.00338040 * static_margin
-            - 0.01526337 * sweep_25
-            + 0.36546427 * aspect_ratio
-            - 0.28212678 * static_margin**2.0
-            - 0.00177067 * static_margin * sweep_25
-            + 0.36960477 * static_margin * aspect_ratio
-            + 0.00090898 * sweep_25**2.0
-            - 0.00123072 * sweep_25 * aspect_ratio
-            - 0.07411481 * aspect_ratio**2.0
-            - 0.08900564 * static_margin**3.0
-            - 0.00114702 * static_margin**2.0 * sweep_25
-            + 0.09569751 * static_margin**2.0 * aspect_ratio
-            + 0.00016781 * static_margin * sweep_25**2.0
-            - 0.00074218 * static_margin * sweep_25 * aspect_ratio
-            - 0.03526457 * static_margin * aspect_ratio**2.0
-            - 0.00001244 * sweep_25**3.0
-            - 0.00001957 * sweep_25**2.0 * aspect_ratio
-            + 0.00019188 * sweep_25 * aspect_ratio**2.0
-            + 0.00470529 * aspect_ratio**3.0
+            -0.59726930
+            - 0.83734303 * static_margin
+            - 0.01801259 * sweep_25
+            + 0.53191492 * ln_ar
+            - 0.38000723 * static_margin**2
+            - 0.00186004 * static_margin * sweep_25
+            + 1.05520927 * static_margin * ln_ar
+            + 0.00093863 * sweep_25**2
+            - 0.00036945 * sweep_25 * ln_ar
+            - 0.35723706 * ln_ar**2
+            - 0.16101689 * static_margin**3
+            + 0.00282320 * static_margin**2 * sweep_25
+            + 0.33612886 * static_margin**2 * ln_ar
+            + 0.00015169 * static_margin * sweep_25**2
+            - 0.00285983 * static_margin * sweep_25 * ln_ar
+            - 0.35821746 * static_margin * ln_ar**2
+            - 0.00001259 * sweep_25**3
+            - 0.00007595 * sweep_25**2 * ln_ar
+            + 0.00101888 * sweep_25 * ln_ar**2
+            + 0.08306687 * ln_ar**3
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
+        ln_ar = inputs["ln_ar"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
-        partials["drag_effect", "data:geometry:wing:aspect_ratio"] = np.where(
-            aspect_ratio == np.clip(aspect_ratio, 1.0, 8.0),
+        lar = np.clip(ln_ar, np.log(1.0), np.log(8.0))
+        sm = np.clip(static_margin, 0.0, 0.4)
+        sw = np.clip(sweep_25, 0.0, 60.0)
+
+        partials["drag_effect", "ln_ar"] = np.where(
+            ln_ar == np.clip(ln_ar, np.log(1.0), np.log(8.0)),
             (
-                0.36546427
-                - 0.14822962 * aspect_ratio
-                + 0.36960477 * static_margin
-                - 0.00123072 * sweep_25
-                + 0.09569751 * static_margin**2.0
-                - 0.00074218 * static_margin * sweep_25
-                - 0.07052914 * static_margin * aspect_ratio
-                - 0.00001957 * sweep_25**2.0
-                + 0.00038376 * sweep_25 * aspect_ratio
-                + 0.01411587 * aspect_ratio**2.0
+                0.24920061 * lar**2
+                - 0.71643492 * lar * sm
+                + 0.00203776 * lar * sw
+                - 0.71447412 * lar
+                + 0.33612886 * sm**2
+                - 0.00285983 * sm * sw
+                + 1.05520927 * sm
+                - 7.595e-5 * sw**2
+                - 0.00036945 * sw
+                + 0.53191492
             ),
             1e-6,
         )
@@ -114,16 +118,16 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         partials["drag_effect", "data:geometry:wing:sweep_25"] = np.where(
             sweep_25 == np.clip(sweep_25, 0.0, 60.0),
             (
-                -0.01526337
-                - 0.00177067 * static_margin
-                + 0.00181796 * sweep_25
-                - 0.00123072 * aspect_ratio
-                - 0.00114702 * static_margin**2.0
-                + 0.00033562 * static_margin * sweep_25
-                - 0.00074218 * static_margin * aspect_ratio
-                - 0.00003732 * sweep_25**2.0
-                - 0.00003914 * sweep_25 * aspect_ratio
-                + 0.00019188 * aspect_ratio**2.0
+                0.00101888 * lar**2
+                - 0.00285983 * lar * sm
+                - 0.0001519 * lar * sw
+                - 0.00036945 * lar
+                + 0.0028232 * sm**2
+                + 0.00030338 * sm * sw
+                - 0.00186004 * sm
+                - 3.777e-5 * sw**2
+                + 0.00187726 * sw
+                - 0.01801259
             ),
             1e-6,
         )
@@ -131,16 +135,16 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         partials["drag_effect", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
             static_margin == np.clip(static_margin, 0.0, 0.4),
             (
-                -1.00338040
-                - 0.56425356 * static_margin
-                - 0.00177067 * sweep_25
-                + 0.36960477 * aspect_ratio
-                - 0.26701692 * static_margin**2.0
-                - 0.00229404 * static_margin * sweep_25
-                + 0.19139502 * static_margin * aspect_ratio
-                + 0.00016781 * sweep_25**2.0
-                - 0.00074218 * sweep_25 * aspect_ratio
-                - 0.03526457 * aspect_ratio**2.0
+                -0.35821746 * lar**2
+                + 0.67225772 * lar * sm
+                - 0.00285983 * lar * sw
+                + 1.05520927 * lar
+                - 0.48305067 * sm**2
+                + 0.0056464 * sm * sw
+                - 0.76001446 * sm
+                + 0.00015169 * sw**2
+                - 0.00186004 * sw
+                - 0.83734303
             ),
             1e-6,
         )
