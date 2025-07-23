@@ -69,22 +69,22 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
             - 0.57304492 * taper_ratio
             + 0.21707743 * aspect_ratio
             + 0.10407542 * aileron_inner_span_ratio
-            + 0.61587892 * taper_ratio**2
+            + 0.61587892 * taper_ratio**2.0
             + 0.04971284 * taper_ratio * aspect_ratio
             - 0.20067475 * taper_ratio * aileron_inner_span_ratio
-            - 0.02997066 * aspect_ratio**2
+            - 0.02997066 * aspect_ratio**2.0
             - 0.00550507 * aspect_ratio * aileron_inner_span_ratio
-            - 0.00622554 * aileron_inner_span_ratio**2
-            - 0.23509612 * taper_ratio**3
-            - 0.02728276 * taper_ratio**2 * aspect_ratio
-            + 0.12690424 * taper_ratio**2 * aileron_inner_span_ratio
-            - 0.00050367 * taper_ratio * aspect_ratio**2
+            - 0.00622554 * aileron_inner_span_ratio**2.0
+            - 0.23509612 * taper_ratio**3.0
+            - 0.02728276 * taper_ratio**2.0 * aspect_ratio
+            + 0.12690424 * taper_ratio**2.0 * aileron_inner_span_ratio
+            - 0.00050367 * taper_ratio * aspect_ratio**2.0
             - 0.01379183 * taper_ratio * aspect_ratio * aileron_inner_span_ratio
-            + 0.04289006 * taper_ratio * aileron_inner_span_ratio**2
-            + 0.00140254 * aspect_ratio**3
-            + 0.00149011 * aspect_ratio**2 * aileron_inner_span_ratio
-            - 0.00553262 * aspect_ratio * aileron_inner_span_ratio**2
-            - 0.06766704 * aileron_inner_span_ratio**3
+            + 0.04289006 * taper_ratio * aileron_inner_span_ratio**2.0
+            + 0.00140254 * aspect_ratio**3.0
+            + 0.00149011 * aspect_ratio**2.0 * aileron_inner_span_ratio
+            - 0.00553262 * aspect_ratio * aileron_inner_span_ratio**2.0
+            - 0.06766704 * aileron_inner_span_ratio**3.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
@@ -101,14 +101,14 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
         partials["aileron_correlation_constant", "data:geometry:wing:taper_ratio"] = np.where(
             taper_ratio == np.clip(taper_ratio, 0.25, 1.0),
             (
-                -0.00050367 * aspect_ratio_clipped**2
+                -0.00050367 * aspect_ratio_clipped**2.0
                 + 0.01379183 * aspect_ratio_clipped * span_ratio_clipped
                 - 0.05456552 * aspect_ratio_clipped * taper_ratio_clipped
                 + 0.03592101 * aspect_ratio_clipped
-                + 0.04289006 * span_ratio_clipped**2
+                + 0.04289006 * span_ratio_clipped**2.0
                 - 0.25380848 * span_ratio_clipped * taper_ratio_clipped
                 + 0.11489463 * span_ratio_clipped
-                - 0.70528836 * taper_ratio_clipped**2
+                - 0.70528836 * taper_ratio_clipped**2.0
                 + 1.48556632 * taper_ratio_clipped
                 - 0.73082961
             ),
@@ -118,14 +118,14 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
         partials["aileron_correlation_constant", "data:geometry:wing:aspect_ratio"] = np.where(
             aspect_ratio == np.clip(aspect_ratio, 3.0, 8.0),
             (
-                0.00420762 * aspect_ratio_clipped**2
+                0.00420762 * aspect_ratio_clipped**2.0
                 - 0.00298022 * aspect_ratio_clipped * span_ratio_clipped
                 - 0.00100734 * aspect_ratio_clipped * taper_ratio_clipped
                 - 0.0569611 * aspect_ratio_clipped
-                - 0.00553262 * span_ratio_clipped**2
+                - 0.00553262 * span_ratio_clipped**2.0
                 + 0.01379183 * span_ratio_clipped * taper_ratio_clipped
                 + 0.01657031 * span_ratio_clipped
-                - 0.02728276 * taper_ratio_clipped**2
+                - 0.02728276 * taper_ratio_clipped**2.0
                 + 0.03592101 * taper_ratio_clipped
                 + 0.20603974
             ),
@@ -136,14 +136,14 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
             np.where(
                 span_ratio == np.clip(span_ratio, 0.09, 1.0),
                 (
-                    -0.00149011 * aspect_ratio_clipped**2
+                    -0.00149011 * aspect_ratio_clipped**2.0
                     - 0.01106524 * aspect_ratio_clipped * span_ratio_clipped
                     + 0.01379183 * aspect_ratio_clipped * taper_ratio_clipped
                     + 0.01657031 * aspect_ratio_clipped
-                    + 0.20300112 * span_ratio_clipped**2
+                    + 0.20300112 * span_ratio_clipped**2.0
                     + 0.08578012 * span_ratio_clipped * taper_ratio_clipped
                     - 0.41845332 * span_ratio_clipped
-                    - 0.12690424 * taper_ratio_clipped**2
+                    - 0.12690424 * taper_ratio_clipped**2.0
                     + 0.11489463 * taper_ratio_clipped
                     + 0.11137678
                 ),
