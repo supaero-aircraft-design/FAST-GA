@@ -116,7 +116,7 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
         )
 
         partials["aileron_correlation_constant", "data:geometry:wing:aspect_ratio"] = np.where(
-            aspect_ratio == np.clip(aspect_ratio, 3.0, 8.0),
+            aspect_ratio == aspect_ratio_clipped,
             (
                 0.00420762 * aspect_ratio_clipped**2.0
                 - 0.00298022 * aspect_ratio_clipped * span_ratio_clipped
@@ -134,7 +134,7 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
 
         partials["aileron_correlation_constant", "data:geometry:wing:aileron:span_ratio"] = (
             np.where(
-                span_ratio == np.clip(span_ratio, 0.09, 1.0),
+                span_ratio == span_ratio_clipped,
                 (
                     -0.00149011 * aspect_ratio_clipped**2.0
                     - 0.01106524 * aspect_ratio_clipped * span_ratio_clipped

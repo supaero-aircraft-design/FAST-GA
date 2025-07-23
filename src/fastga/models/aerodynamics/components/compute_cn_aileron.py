@@ -1,6 +1,9 @@
-"""Estimation of rolling moment du to the ailerons."""
+"""
+Python module for calcutaion of rolling moment due to aileron, part of the aerodynamic
+component computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,11 +16,12 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import fastoad.api as oad
 import openmdao.api as om
+import fastoad.api as oad
+
 
 from .wing.compute_cl_wing import ComputeWingLiftCoefficient
-from .digitization.compute_cn_delta_a_correlation_constatnt import (
+from .digitization.compute_cn_delta_a_correlation_constant import (
     ComputeAileronYawCorrelationConstant,
 )
 from ..constants import SUBMODEL_CN_AILERON
@@ -41,7 +45,7 @@ class ComputeCnDeltaAileron(om.Group):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         self.add_subsystem(
-            name="cl_w_" + ls_tag,
+            name="cn_d_a_cl_w_" + ls_tag,
             subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*", "settings:*"],
         )
@@ -56,7 +60,9 @@ class ComputeCnDeltaAileron(om.Group):
             promotes=["data:*"],
         )
 
-        self.connect("cl_w_" + ls_tag + ".CL_wing", "cn_delta_aileron_" + ls_tag + ".CL_wing")
+        self.connect(
+            "cn_d_a_cl_w_" + ls_tag + ".CL_wing", "cn_delta_aileron_" + ls_tag + ".CL_wing"
+        )
         self.connect(
             "correlation_constant_" + ls_tag + ".aileron_correlation_constant",
             "cn_delta_aileron_" + ls_tag + ".aileron_correlation_constant",
