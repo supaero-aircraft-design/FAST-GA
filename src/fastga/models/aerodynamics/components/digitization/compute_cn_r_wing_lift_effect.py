@@ -57,7 +57,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         if sweep_25 != np.clip(sweep_25, 0.0, 50.0):
             sweep_25 = np.clip(sweep_25, 0.0, 50.0)
             # Wing sweep is limited to 50° since transonic wing designs are not relevant for
-            # propeller aircraft
+            # propeller aircraft. This also reduces the regression model complexity.
             _LOGGER.warning(
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
