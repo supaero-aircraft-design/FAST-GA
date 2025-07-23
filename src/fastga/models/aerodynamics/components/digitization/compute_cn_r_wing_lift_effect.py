@@ -96,40 +96,40 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
-        ar = np.clip(aspect_ratio, 0.7, 10.0)
-        sm = np.clip(static_margin, 0.0, 0.4)
-        sw = np.clip(sweep_25, 0.0, 50.0)
+        aspect_ratio_clipped = np.clip(aspect_ratio, 0.7, 10.0)
+        static_margin_clipped = np.clip(static_margin, 0.0, 0.4)
+        sweep_25_clipped = np.clip(sweep_25, 0.0, 50.0)
 
         partials["intermediate_coeff", "data:geometry:wing:aspect_ratio"] = np.where(
             aspect_ratio == np.clip(aspect_ratio, 0.7, 10.0),
             (
                 1.80469105
-                - 5.91325304 * sm
-                - 0.00142883 * sw
-                - 0.39677734 * np.log(ar)
-                + 3.79534719 * sm**2.0
-                - 0.04621831 * sm * sweep_25
-                + 3.0900214 * sm * np.log(ar)
-                - 0.00060596 * sw**2.0
-                + 0.01853716 * sw * np.log(ar)
-                - 0.26296788 * np.log(ar) ** 2.0
+                - 5.91325304 * static_margin_clipped
+                - 0.00142883 * sweep_25_clipped
+                - 0.39677734 * np.log(aspect_ratio_clipped)
+                + 3.79534719 * static_margin_clipped**2.0
+                - 0.04621831 * static_margin_clipped * sweep_25_clipped
+                + 3.0900214 * static_margin_clipped * np.log(aspect_ratio_clipped)
+                - 0.00060596 * sweep_25_clipped**2.0
+                + 0.01853716 * sweep_25_clipped * np.log(aspect_ratio_clipped)
+                - 0.26296788 * np.log(aspect_ratio_clipped) ** 2.0
             )
-            / ar,
+            / aspect_ratio_clipped,
             1e-6,
         )
 
         partials["intermediate_coeff", "data:geometry:wing:sweep_25"] = np.where(
             sweep_25 == np.clip(sweep_25, 0.0, 50.0),
             (
-                0.00926858 * np.log(ar) ** 2.0
-                - 0.04621831 * np.log(ar) * sm
-                - 0.00121192 * np.log(ar) * sw
-                - 0.00142883 * np.log(ar)
-                + 0.17317666 * sm**2.0
-                + 0.0032134 * sm * sw
-                - 0.04095218 * sm
-                + 4.326e-5 * sw**2.0
-                - 6.118e-5 * sw
+                0.00926858 * np.log(aspect_ratio_clipped) ** 2.0
+                - 0.04621831 * np.log(aspect_ratio_clipped) * static_margin_clipped
+                - 0.00121192 * np.log(aspect_ratio_clipped) * sweep_25_clipped
+                - 0.00142883 * np.log(aspect_ratio_clipped)
+                + 0.17317666 * static_margin_clipped**2.0
+                + 0.0032134 * static_margin_clipped * sweep_25_clipped
+                - 0.04095218 * static_margin_clipped
+                + 4.326e-5 * sweep_25_clipped**2.0
+                - 6.118e-5 * sweep_25_clipped
                 - 1.38e-6
             ),
             1e-6,
@@ -139,15 +139,15 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
             np.where(
                 static_margin == np.clip(static_margin, 0.0, 0.4),
                 (
-                    1.5450107 * np.log(ar) ** 2.0
-                    + 7.59069438 * np.log(ar) * sm
-                    - 0.04621831 * np.log(ar) * sw
-                    - 5.91325304 * np.log(ar)
-                    - 13.34668872 * sm**2.0
-                    + 0.34635332 * sm * sw
-                    - 13.25114944 * sm
-                    + 0.0016067 * sw**2.0
-                    - 0.04095218 * sw
+                    1.5450107 * np.log(aspect_ratio_clipped) ** 2.0
+                    + 7.59069438 * np.log(aspect_ratio_clipped) * static_margin_clipped
+                    - 0.04621831 * np.log(aspect_ratio_clipped) * sweep_25_clipped
+                    - 5.91325304 * np.log(aspect_ratio_clipped)
+                    - 13.34668872 * static_margin_clipped**2.0
+                    + 0.34635332 * static_margin_clipped * sweep_25_clipped
+                    - 13.25114944 * static_margin_clipped
+                    + 0.0016067 * sweep_25_clipped**2.0
+                    - 0.04095218 * sweep_25_clipped
                     + 5.91939258
                 ),
                 1e-6,

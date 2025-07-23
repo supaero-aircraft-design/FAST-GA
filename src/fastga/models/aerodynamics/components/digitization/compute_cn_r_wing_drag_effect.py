@@ -86,30 +86,40 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
-        ar = np.clip(aspect_ratio, 1.0, 8.0)
-        sm = np.clip(static_margin, 0.0, 0.4)
-        sw = np.clip(sweep_25, 0.0, 50.0)
+        aspect_ratio_clipped = np.clip(aspect_ratio, 1.0, 8.0)
+        static_margin_clipped = np.clip(static_margin, 0.0, 0.4)
+        sweep_25_clipped = np.clip(sweep_25, 0.0, 50.0)
 
         partials["drag_effect", "data:geometry:wing:aspect_ratio"] = np.where(
             aspect_ratio == np.clip(aspect_ratio, 1.0, 8.0),
             (
                 0.44131919
-                + 0.37739783 * static_margin
-                - 0.29692568 * np.log(ar)
-                - 0.00235158 * sweep_25
+                + 0.37739783 * static_margin_clipped
+                - 0.29692568 * np.log(aspect_ratio_clipped)
+                - 0.00235158 * sweep_25_clipped
             )
-            / ar,
+            / aspect_ratio_clipped,
             1e-6,
         )
 
         partials["drag_effect", "data:geometry:wing:sweep_25"] = np.where(
             sweep_25 == np.clip(sweep_25, 0.0, 50.0),
-            (-0.00235158 * np.log(ar) + 0.00328669 * sm - 0.00049752 * sw + 0.00962168),
+            (
+                -0.00235158 * np.log(aspect_ratio_clipped)
+                + 0.00328669 * static_margin_clipped
+                - 0.00049752 * sweep_25_clipped
+                + 0.00962168
+            ),
             1e-6,
         )
 
         partials["drag_effect", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
             static_margin == np.clip(static_margin, 0.0, 0.4),
-            (0.37739783 * np.log(ar) - 0.11202846 * sm + 0.00328669 * sw - 0.70264474),
+            (
+                0.37739783 * np.log(aspect_ratio_clipped)
+                - 0.11202846 * static_margin_clipped
+                + 0.00328669 * sweep_25_clipped
+                - 0.70264474
+            ),
             1e-6,
         )
