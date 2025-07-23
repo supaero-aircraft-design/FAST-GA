@@ -23,7 +23,7 @@ import openmdao.api as om
 _LOGGER = logging.getLogger(__name__)
 
 
-class ComputeIntermediateParameter(om.ExplicitComponent):
+class _ComputeIntermediateParameter(om.ExplicitComponent):
     """
     Intermediate coefficient from Roskam's date :cite:`roskampart6:1985` to estimate the lift
     effect in
@@ -33,7 +33,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("ln_ar", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
 
@@ -47,7 +47,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        ln_ar = inputs["ln_ar"]
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
@@ -57,76 +57,79 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
 
         if sweep_25 != np.clip(sweep_25, 0.0, 50.0):
             sweep_25 = np.clip(sweep_25, 0.0, 50.0)
+            # Wing sweep is limited to 50° since transonic wing designs are not relevant for
+            # propeller aircraft
             _LOGGER.warning(
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
 
-        if ln_ar != np.clip(ln_ar, np.log(0.7), np.log(10.0)):
-            ln_ar = np.clip(ln_ar, np.log(0.7), np.log(10.0))
+        if aspect_ratio != np.clip(aspect_ratio, 0.7, 10.0):
+            aspect_ratio = np.clip(aspect_ratio, 0.7, 10.0)
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["intermediate_coeff"] = (
             0.46236794
             + 5.91939258 * static_margin
             - 0.00000138 * sweep_25
-            + 1.80469105 * ln_ar
-            - 6.62557472 * static_margin**2
+            + 1.80469105 * np.log(aspect_ratio)
+            - 6.62557472 * static_margin**2.0
             - 0.04095218 * static_margin * sweep_25
-            - 5.91325304 * static_margin * ln_ar
-            - 0.00003059 * sweep_25**2
-            - 0.00142883 * sweep_25 * ln_ar
-            - 0.19838867 * ln_ar**2
-            - 4.44889624 * static_margin**3
-            + 0.17317666 * static_margin**2 * sweep_25
-            + 3.79534719 * static_margin**2 * ln_ar
-            + 0.00160670 * static_margin * sweep_25**2
-            - 0.04621831 * static_margin * sweep_25 * ln_ar
-            + 1.54501070 * static_margin * ln_ar**2
-            + 0.00001442 * sweep_25**3
-            - 0.00060596 * sweep_25**2 * ln_ar
-            + 0.00926858 * sweep_25 * ln_ar**2
-            - 0.08765596 * ln_ar**3
+            - 5.91325304 * static_margin * np.log(aspect_ratio)
+            - 0.00003059 * sweep_25**2.0
+            - 0.00142883 * sweep_25 * np.log(aspect_ratio)
+            - 0.19838867 * np.log(aspect_ratio) ** 2.0
+            - 4.44889624 * static_margin**3.0
+            + 0.17317666 * static_margin**2.0 * sweep_25
+            + 3.79534719 * static_margin**2.0 * np.log(aspect_ratio)
+            + 0.00160670 * static_margin * sweep_25**2.0
+            - 0.04621831 * static_margin * sweep_25 * np.log(aspect_ratio)
+            + 1.54501070 * static_margin * np.log(aspect_ratio) ** 2.0
+            + 0.00001442 * sweep_25**3.0
+            - 0.00060596 * sweep_25**2.0 * np.log(aspect_ratio)
+            + 0.00926858 * sweep_25 * np.log(aspect_ratio) ** 2.0
+            - 0.08765596 * np.log(aspect_ratio) ** 3.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        ln_ar = inputs["ln_ar"]
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
-        lar = np.clip(ln_ar, np.log(0.7), np.log(10.0))
+        ar = np.clip(aspect_ratio, 0.7, 10.0)
         sm = np.clip(static_margin, 0.0, 0.4)
         sw = np.clip(sweep_25, 0.0, 50.0)
 
-        partials["intermediate_coeff", "ln_ar"] = np.where(
-            ln_ar == np.clip(ln_ar, np.log(0.7), np.log(10.0)),
+        partials["intermediate_coeff", "data:geometry:wing:aspect_ratio"] = np.where(
+            aspect_ratio == np.clip(aspect_ratio, 0.7, 10.0),
             (
-                -0.26296788 * lar**2
-                + 3.0900214 * lar * sm
-                + 0.01853716 * lar * sw
-                - 0.39677734 * lar
-                + 3.79534719 * sm**2
-                - 0.04621831 * sm * sw
+                1.80469105
                 - 5.91325304 * sm
-                - 0.00060596 * sw**2
                 - 0.00142883 * sw
-                + 1.80469105
-            ),
+                - 0.39677734 * np.log(ar)
+                + 3.79534719 * sm**2.0
+                - 0.04621831 * sm * sweep_25
+                + 3.0900214 * sm * np.log(ar)
+                - 0.00060596 * sw**2.0
+                + 0.01853716 * sw * np.log(ar)
+                - 0.26296788 * np.log(ar) ** 2.0
+            )
+            / ar,
             1e-6,
         )
 
         partials["intermediate_coeff", "data:geometry:wing:sweep_25"] = np.where(
             sweep_25 == np.clip(sweep_25, 0.0, 50.0),
             (
-                0.00926858 * lar**2
-                - 0.04621831 * lar * sm
-                - 0.00121192 * lar * sw
-                - 0.00142883 * lar
-                + 0.17317666 * sm**2
+                0.00926858 * np.log(ar) ** 2.0
+                - 0.04621831 * np.log(ar) * sm
+                - 0.00121192 * np.log(ar) * sw
+                - 0.00142883 * np.log(ar)
+                + 0.17317666 * sm**2.0
                 + 0.0032134 * sm * sw
                 - 0.04095218 * sm
-                + 4.326e-5 * sw**2
+                + 4.326e-5 * sw**2.0
                 - 6.118e-5 * sw
                 - 1.38e-6
             ),
@@ -137,14 +140,14 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
             np.where(
                 static_margin == np.clip(static_margin, 0.0, 0.4),
                 (
-                    1.5450107 * lar**2
-                    + 7.59069438 * lar * sm
-                    - 0.04621831 * lar * sw
-                    - 5.91325304 * lar
-                    - 13.34668872 * sm**2
+                    1.5450107 * np.log(ar) ** 2.0
+                    + 7.59069438 * np.log(ar) * sm
+                    - 0.04621831 * np.log(ar) * sw
+                    - 5.91325304 * np.log(ar)
+                    - 13.34668872 * sm**2.0
                     + 0.34635332 * sm * sw
                     - 13.25114944 * sm
-                    + 0.0016067 * sw**2
+                    + 0.0016067 * sw**2.0
                     - 0.04095218 * sw
                     + 5.91939258
                 ),
@@ -153,7 +156,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         )
 
 
-class ComputeWingLiftEffectCnr(om.ExplicitComponent):
+class _ComputeWingLiftEffectCnr(om.ExplicitComponent):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the lift effect in the yaw moment
     computation result from yaw rate (yaw damping). (figure 10.44)

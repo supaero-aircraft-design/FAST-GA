@@ -23,7 +23,7 @@ import openmdao.api as om
 _LOGGER = logging.getLogger(__name__)
 
 
-class ComputeWingDragEffectCnr(om.ExplicitComponent):
+class _ComputeWingDragEffectCnr(om.ExplicitComponent):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the drag effect in the yaw moment
     computation result from yaw rate (yaw damping). (figure 10.45)
@@ -32,7 +32,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("ln_ar", val=np.nan)
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
 
@@ -46,7 +46,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        ln_ar = inputs["ln_ar"]
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
@@ -56,52 +56,60 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
 
         if sweep_25 != np.clip(sweep_25, 0.0, 50.0):
             sweep_25 = np.clip(sweep_25, 0.0, 50.0)
+            # Wing sweep is limited to 50° since transonic wing designs are not relevant for
+            # propeller aircraft
             _LOGGER.warning(
                 "Sweep at 25% chord is outside of the range in Roskam's book, value clipped"
             )
 
-        if ln_ar != np.clip(ln_ar, np.log(1.0), np.log(8.0)):
-            ln_ar = np.clip(ln_ar, np.log(1.0), np.log(8.0))
+        if aspect_ratio != np.clip(aspect_ratio, 1.0, 8.0):
+            aspect_ratio = np.clip(aspect_ratio, 1.0, 8.0)
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
 
         outputs["drag_effect"] = (
             -0.61144468
             - 0.70264474 * static_margin
             + 0.00962168 * sweep_25
-            + 0.44131919 * ln_ar
-            - 0.05601423 * static_margin**2
+            + 0.44131919 * np.log(aspect_ratio)
+            - 0.05601423 * static_margin**2.0
             + 0.00328669 * static_margin * sweep_25
-            + 0.37739783 * static_margin * ln_ar
-            - 0.00024876 * sweep_25**2
-            - 0.00235158 * sweep_25 * ln_ar
-            - 0.14846284 * ln_ar**2
+            + 0.37739783 * static_margin * np.log(aspect_ratio)
+            - 0.00024876 * sweep_25**2.0
+            - 0.00235158 * sweep_25 * np.log(aspect_ratio)
+            - 0.14846284 * np.log(aspect_ratio) ** 2.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        ln_ar = inputs["ln_ar"]
+        aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
         sweep_25 = inputs["data:geometry:wing:sweep_25"]
         static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
 
-        lar = np.clip(ln_ar, np.log(1.0), np.log(8.0))
+        ar = np.clip(aspect_ratio, 1.0, 8.0)
         sm = np.clip(static_margin, 0.0, 0.4)
         sw = np.clip(sweep_25, 0.0, 50.0)
 
-        partials["drag_effect", "ln_ar"] = np.where(
-            ln_ar == np.clip(ln_ar, np.log(1.0), np.log(8.0)),
-            (-0.29692568 * lar + 0.37739783 * sm - 0.00235158 * sw + 0.44131919),
+        partials["drag_effect", "data:geometry:wing:aspect_ratio"] = np.where(
+            aspect_ratio == np.clip(aspect_ratio, 1.0, 8.0),
+            (
+                0.44131919
+                + 0.37739783 * static_margin
+                - 0.29692568 * np.log(ar)
+                - 0.00235158 * sweep_25
+            )
+            / ar,
             1e-6,
         )
 
         partials["drag_effect", "data:geometry:wing:sweep_25"] = np.where(
             sweep_25 == np.clip(sweep_25, 0.0, 50.0),
-            (-0.00235158 * lar + 0.00328669 * sm - 0.00049752 * sw + 0.00962168),
+            (-0.00235158 * np.log(ar) + 0.00328669 * sm - 0.00049752 * sw + 0.00962168),
             1e-6,
         )
 
         partials["drag_effect", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
             static_margin == np.clip(static_margin, 0.0, 0.4),
-            (0.37739783 * lar - 0.11202846 * sm + 0.00328669 * sw - 0.70264474),
+            (0.37739783 * np.log(ar) - 0.11202846 * sm + 0.00328669 * sw - 0.70264474),
             1e-6,
         )

@@ -20,10 +20,10 @@ import fastoad.api as oad
 
 from .compute_cl_wing import ComputeWingLiftCoefficient
 from ..digitization.compute_cn_r_wing_lift_effect import (
-    ComputeWingLiftEffectCnr,
-    ComputeIntermediateParameter,
+    _ComputeWingLiftEffectCnr,
+    _ComputeIntermediateParameter,
 )
-from ..digitization.compute_cn_r_wing_drag_effect import ComputeWingDragEffectCnr
+from ..digitization.compute_cn_r_wing_drag_effect import _ComputeWingDragEffectCnr
 
 from ...constants import SUBMODEL_CN_R_WING
 
@@ -60,23 +60,18 @@ class ComputeCnYawRateWing(om.Group):
             promotes=["data:*", "settings:*"],
         )
         self.add_subsystem(
-            name="ar_log_" + ls_tag,
-            subsys=_ComputeAspectRatioLog(),
-            promotes=["data:*"],
-        )
-        self.add_subsystem(
             name="lift_intermediate_" + ls_tag,
-            subsys=ComputeIntermediateParameter(),
+            subsys=_ComputeIntermediateParameter(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="lift_effect_" + ls_tag,
-            subsys=ComputeWingLiftEffectCnr(),
+            subsys=_ComputeWingLiftEffectCnr(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="drag_effect_" + ls_tag,
-            subsys=ComputeWingDragEffectCnr(),
+            subsys=_ComputeWingDragEffectCnr(),
             promotes=["data:*"],
         )
         self.add_subsystem(
@@ -85,14 +80,6 @@ class ComputeCnYawRateWing(om.Group):
             promotes=["data:*"],
         )
 
-        self.connect(
-            "ar_log_" + ls_tag + ".ln_ar",
-            "lift_intermediate_" + ls_tag + ".ln_ar",
-        )
-        self.connect(
-            "ar_log_" + ls_tag + ".ln_ar",
-            "drag_effect_" + ls_tag + ".ln_ar",
-        )
         self.connect(
             "lift_intermediate_" + ls_tag + ".intermediate_coeff",
             "lift_effect_" + ls_tag + ".intermediate_coeff",
@@ -176,34 +163,3 @@ class _ComputeCnYawRateWing(om.ExplicitComponent):
             "data:aerodynamics:wing:" + ls_tag + ":Cn_r",
             "data:aerodynamics:wing:" + ls_tag + ":CD0",
         ] = drag_effect
-
-
-class _ComputeAspectRatioLog(om.ExplicitComponent):
-    """
-    Class to compute the natural logarithm of wing aspect ratio for better model accuracy. This
-    is only applied in wing Cn_r calculation.
-    """
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO setup
-    def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-
-        self.add_output("ln_ar", val=1.2)
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO setup_partials
-    def setup_partials(self):
-        self.declare_partials(of="*", wrt="*", method="exact")
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute, not all arguments are used
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        outputs["ln_ar"] = np.log(inputs["data:geometry:wing:aspect_ratio"])
-
-    # pylint: disable=missing-function-docstring, unused-argument
-    # Overriding OpenMDAO compute_partials, not all arguments are used
-    def compute_partials(self, inputs, partials, discrete_inputs=None):
-        partials["ln_ar", "data:geometry:wing:aspect_ratio"] = (
-            1.0 / inputs["data:geometry:wing:aspect_ratio"]
-        )
