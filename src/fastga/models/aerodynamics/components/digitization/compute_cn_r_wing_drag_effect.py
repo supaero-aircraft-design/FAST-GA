@@ -71,10 +71,10 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
             - 0.70264474 * static_margin
             + 0.00962168 * sweep_25
             + 0.44131919 * np.log(aspect_ratio)
-            - 0.05601423 * static_margin ** 2.0
+            - 0.05601423 * static_margin**2.0
             + 0.00328669 * static_margin * sweep_25
             + 0.37739783 * static_margin * np.log(aspect_ratio)
-            - 0.00024876 * sweep_25 ** 2.0
+            - 0.00024876 * sweep_25**2.0
             - 0.00235158 * sweep_25 * np.log(aspect_ratio)
             - 0.14846284 * np.log(aspect_ratio) ** 2.0
         )
