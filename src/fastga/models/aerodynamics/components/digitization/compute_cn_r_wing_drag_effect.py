@@ -23,7 +23,7 @@ import openmdao.api as om
 _LOGGER = logging.getLogger(__name__)
 
 
-class _ComputeWingDragEffectCnr(om.ExplicitComponent):
+class ComputeWingDragEffectCnr(om.ExplicitComponent):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the drag effect in the yaw moment
     computation result from yaw rate (yaw damping). (figure 10.45)

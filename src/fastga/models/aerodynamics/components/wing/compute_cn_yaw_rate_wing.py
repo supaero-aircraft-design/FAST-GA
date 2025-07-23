@@ -20,10 +20,10 @@ import fastoad.api as oad
 
 from .compute_cl_wing import ComputeWingLiftCoefficient
 from ..digitization.compute_cn_r_wing_lift_effect import (
-    _ComputeWingLiftEffectCnr,
-    _ComputeIntermediateParameter,
+    ComputeWingLiftEffectCnr,
+    ComputeIntermediateParameter,
 )
-from ..digitization.compute_cn_r_wing_drag_effect import _ComputeWingDragEffectCnr
+from ..digitization.compute_cn_r_wing_drag_effect import ComputeWingDragEffectCnr
 
 from ...constants import SUBMODEL_CN_R_WING
 
@@ -61,22 +61,22 @@ class ComputeCnYawRateWing(om.Group):
         )
         self.add_subsystem(
             name="lift_intermediate_" + ls_tag,
-            subsys=_ComputeIntermediateParameter(),
+            subsys=ComputeIntermediateParameter(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="lift_effect_" + ls_tag,
-            subsys=_ComputeWingLiftEffectCnr(),
+            subsys=ComputeWingLiftEffectCnr(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="drag_effect_" + ls_tag,
-            subsys=_ComputeWingDragEffectCnr(),
+            subsys=ComputeWingDragEffectCnr(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="cn_yaw_wing_" + ls_tag,
-            subsys=_ComputeCnYawRateWing(low_speed_aero=self.options["low_speed_aero"]),
+            subsys=ComputeCnrWing(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
         )
 
@@ -93,7 +93,7 @@ class ComputeCnYawRateWing(om.Group):
         )
 
 
-class _ComputeCnYawRateWing(om.ExplicitComponent):
+class ComputeCnrWing(om.ExplicitComponent):
     """
     Class to compute the contribution of the wing to the yaw moment coefficient due to yaw rate (
     yaw damping). Depends on the lift coefficient of the wing, hence on the reference angle of

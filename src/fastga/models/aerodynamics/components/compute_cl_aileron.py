@@ -55,7 +55,7 @@ class ComputeClDeltaAileron(om.Group):
 
         self.add_subsystem(
             name="aileron_cl_delta",
-            subsys=_ComputeClDeltaAileron(low_speed_aero=self.options["low_speed_aero"]),
+            subsys=ComputeCLDeltaA(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*", "settings:*"],
         )
 
@@ -64,7 +64,7 @@ class ComputeClDeltaAileron(om.Group):
         )
 
 
-class _ComputeClDeltaAileron(om.ExplicitComponent):
+class ComputeCLDeltaA(om.ExplicitComponent):
     """
     Roll moment due to aileron deflection estimated based on the methodology presented in
     Gudmundsson. This methodology is known to overestimate the coefficient so a correction factor
