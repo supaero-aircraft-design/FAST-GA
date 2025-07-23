@@ -26,8 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 class _ComputeIntermediateParameter(om.ExplicitComponent):
     """
     Intermediate coefficient from Roskam's date :cite:`roskampart6:1985` to estimate the lift
-    effect in
-    the yaw moment computation result from yaw rate (yaw damping). (figure 10.44)
+    effect in the yaw moment computation resulting from yaw rate (yaw damping). (figure 10.44)
     """
 
     # pylint: disable=missing-function-docstring
@@ -159,7 +158,7 @@ class _ComputeIntermediateParameter(om.ExplicitComponent):
 class _ComputeWingLiftEffectCnr(om.ExplicitComponent):
     """
     Roskam data :cite:`roskampart6:1985` to estimate the lift effect in the yaw moment
-    computation result from yaw rate (yaw damping). (figure 10.44)
+    computation resulting from yaw rate (yaw damping). (figure 10.44)
     """
 
     # pylint: disable=missing-function-docstring
