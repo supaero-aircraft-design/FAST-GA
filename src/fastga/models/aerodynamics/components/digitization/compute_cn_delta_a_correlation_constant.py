@@ -1,5 +1,5 @@
 """
-Python module for deflection correlation constant of aileron Cn calculation, part of the aerodynamic
+Python module for aileron deflection correlation constant in Cn calculation, part of the aerodynamic
 component computation.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
@@ -99,7 +99,7 @@ class ComputeAileronYawCorrelationConstant(om.ExplicitComponent):
         span_ratio_clipped = np.clip(span_ratio, 0.09, 1.0)
 
         partials["aileron_correlation_constant", "data:geometry:wing:taper_ratio"] = np.where(
-            taper_ratio == np.clip(taper_ratio, 0.25, 1.0),
+            taper_ratio == taper_ratio_clipped,
             (
                 -0.00050367 * aspect_ratio_clipped**2.0
                 + 0.01379183 * aspect_ratio_clipped * span_ratio_clipped
