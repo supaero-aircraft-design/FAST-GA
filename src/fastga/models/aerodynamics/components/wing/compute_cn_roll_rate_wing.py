@@ -66,12 +66,12 @@ class ComputeCnRollRateWing(om.Group):
         )
         self.add_subsystem(
             name="cn_p_wing_mach_0_" + ls_tag,
-            subsys=_ComputeCnRollRateWithZeroMach(),
+            subsys=ComputeCnRollRateWithZeroMach(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="cn_p_wing_mach_" + ls_tag,
-            subsys=_ComputeCnRollRateWithMach(),
+            subsys=ComputeCnRollRateWithMach(),
             promotes=["data:*"],
         )
         self.add_subsystem(
@@ -81,7 +81,7 @@ class ComputeCnRollRateWing(om.Group):
         )
         self.add_subsystem(
             name="cn_roll_rate_wing_" + ls_tag,
-            subsys=_ComputeCnRollRateWing(low_speed_aero=self.options["low_speed_aero"]),
+            subsys=ComputeCnpWing(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
         )
 
@@ -104,7 +104,7 @@ class ComputeCnRollRateWing(om.Group):
         )
 
 
-class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
+class ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
     """
     Class to compute the wing yaw moment coefficient from the roll rate with lift coefficient
     and Mach number both equal to zero. This calculation is based on
@@ -163,7 +163,7 @@ class _ComputeCnRollRateWithZeroMach(om.ExplicitComponent):
         ) / (12.0 * (wing_ar + 4.0 * np.cos(wing_sweep_25)) ** 2.0)
 
 
-class _ComputeCnRollRateWithMach(om.ExplicitComponent):
+class ComputeCnRollRateWithMach(om.ExplicitComponent):
     """
     Class to compute the wing yaw moment coefficient from the roll rate when the
     lift coefficient is zero with compressibility correction. This calculation is based on
@@ -277,7 +277,7 @@ class _ComputeCnRollRateWithMach(om.ExplicitComponent):
         )
 
 
-class _ComputeCnRollRateWing(om.ExplicitComponent):
+class ComputeCnpWing(om.ExplicitComponent):
     """
     Class to compute the contribution of the wing to the yaw moment coefficient due to roll rate.
     Based on :cite:`roskampart6:1985` section 10.2.6, equation 10.62.

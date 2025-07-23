@@ -1,5 +1,8 @@
+"""
+Python module for wing Cn_r calculation, part of the aerodynamic component computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,17 +15,23 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
+import openmdao.api as om
 import fastoad.api as oad
 
-from ..figure_digitization import FigureDigitization
+from .compute_cl_wing import ComputeWingLiftCoefficient
+from ..digitization.compute_cn_r_wing_lift_effect import (
+    ComputeWingLiftEffectCnr,
+    ComputeIntermediateParameter,
+)
+from ..digitization.compute_cn_r_wing_drag_effect import ComputeWingDragEffectCnr
+
 from ...constants import SUBMODEL_CN_R_WING
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_CN_R_WING, "fastga.submodel.aerodynamics.wing.yaw_moment_yaw_rate.legacy"
 )
-class ComputeCnYawRateWing(FigureDigitization):
+class ComputeCnYawRateWing(om.Group):
     """
     Class to compute the contribution of the wing to the yaw moment coefficient due to yaw rate (
     yaw damping). Depends on the lift coefficient of the wing, hence on the reference angle of
@@ -35,67 +44,122 @@ class ComputeCnYawRateWing(FigureDigitization):
     Based on :cite:`roskampart6:1985` section 10.2.8
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:handling_qualities:stick_fixed_static_margin", val=np.nan)
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:wing:low_speed:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
+        self.add_subsystem(
+            name="wing_lift_coeff_" + ls_tag,
+            subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*", "settings:*"],
+        )
+        self.add_subsystem(
+            name="lift_intermediate_" + ls_tag,
+            subsys=ComputeIntermediateParameter(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="lift_effect_" + ls_tag,
+            subsys=ComputeWingLiftEffectCnr(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="drag_effect_" + ls_tag,
+            subsys=ComputeWingDragEffectCnr(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="cn_yaw_wing_" + ls_tag,
+            subsys=ComputeCnrWing(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*"],
+        )
 
-            self.add_output("data:aerodynamics:wing:low_speed:Cn_r", units="rad**-1")
+        self.connect(
+            "lift_intermediate_" + ls_tag + ".intermediate_coeff",
+            "lift_effect_" + ls_tag + ".intermediate_coeff",
+        )
+        self.connect("wing_lift_coeff_" + ls_tag + ".CL_wing", "cn_yaw_wing_" + ls_tag + ".CL_wing")
+        self.connect(
+            "lift_effect_" + ls_tag + ".lift_effect", "cn_yaw_wing_" + ls_tag + ".lift_effect"
+        )
+        self.connect(
+            "drag_effect_" + ls_tag + ".drag_effect", "cn_yaw_wing_" + ls_tag + ".drag_effect"
+        )
 
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:wing:cruise:CD0", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
 
-            self.add_output("data:aerodynamics:wing:cruise:Cn_r", units="rad**-1")
+class ComputeCnrWing(om.ExplicitComponent):
+    """
+    Class to compute the contribution of the wing to the yaw moment coefficient due to yaw rate (
+    yaw damping). Depends on the lift coefficient of the wing, hence on the reference angle of
+    attack, so the same remark as in ..compute_cy_yaw_rate.py holds. The convention from
+    :cite:`roskampart6:1985` are used, meaning that for lateral derivative, the reference length
+    is the wing span. Another important point is that, for the derivative with respect to yaw and
+    roll, the rotation speed are made dimensionless by multiplying them by the wing span and
+    dividing them by 2 times the airspeed.
 
-        self.declare_partials(of="*", wrt="*", method="fd")
+    Based on :cite:`roskampart6:1985` section 10.2.8
+    """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
+    def setup(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_input("drag_effect", val=np.nan, units="unitless")
+        self.add_input("lift_effect", val=np.nan, units="unitless")
+        self.add_input("CL_wing", val=np.nan, units="unitless")
+        self.add_input("data:aerodynamics:wing:" + ls_tag + ":CD0", val=np.nan)
+
+        self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cn_r", units="rad**-1")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
-        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
-        static_margin = inputs["data:handling_qualities:stick_fixed_static_margin"]
-
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            cd_0_wing = inputs["data:aerodynamics:wing:low_speed:CD0"]
-            cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            cd_0_wing = inputs["data:aerodynamics:wing:cruise:CD0"]
-            cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         # Fuselage contribution neglected
-        cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
+        cl_w = inputs["CL_wing"]
+        cd_0_wing = inputs["data:aerodynamics:wing:" + ls_tag + ":CD0"]
+        lift_effect = inputs["lift_effect"]
+        drag_effect = inputs["drag_effect"]
 
-        lift_effect = self.cn_r_lift_effect(static_margin, wing_sweep_25, wing_ar, wing_taper_ratio)
-        drag_effect = self.cn_r_drag_effect(static_margin, wing_sweep_25, wing_ar)
+        outputs["data:aerodynamics:wing:" + ls_tag + ":Cn_r"] = (
+            lift_effect * cl_w**2.0 + drag_effect * cd_0_wing
+        )
 
-        cn_r_w = lift_effect * cl_w**2.0 + drag_effect * cd_0_wing
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:wing:low_speed:Cn_r"] = cn_r_w
-        else:
-            outputs["data:aerodynamics:wing:cruise:Cn_r"] = cn_r_w
+        cl_w = inputs["CL_wing"]
+        cd_0_wing = inputs["data:aerodynamics:wing:" + ls_tag + ":CD0"]
+        lift_effect = inputs["lift_effect"]
+        drag_effect = inputs["drag_effect"]
+
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cn_r", "lift_effect"] = cl_w**2.0
+
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cn_r", "CL_wing"] = 2.0 * lift_effect * cl_w
+
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cn_r", "drag_effect"] = cd_0_wing
+
+        partials[
+            "data:aerodynamics:wing:" + ls_tag + ":Cn_r",
+            "data:aerodynamics:wing:" + ls_tag + ":CD0",
+        ] = drag_effect

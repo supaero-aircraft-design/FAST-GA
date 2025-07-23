@@ -39,12 +39,12 @@ class ComputeCmAlphaFuselage(om.Group):  # pylint: disable=too-few-public-method
     def setup(self):
         self.add_subsystem(
             name="quarter_root_chord_position",
-            subsys=_ComputeQuarterRootChordPositionRatio(),
+            subsys=ComputeQuarterRootChordPositionRatio(),
             promotes=["data:*"],
         )
         self.add_subsystem(name="k_fuselage", subsys=ComputeFuselagePitchMomentFactor())
         self.add_subsystem(
-            name="cm_alpha_fuselage", subsys=_ComputeCmAlphaFuselageNacelle(), promotes=["data:*"]
+            name="cm_alpha_fuselage", subsys=ComputeCmAlphaFuselageNacelle(), promotes=["data:*"]
         )
 
         self.connect("quarter_root_chord_position.x0_ratio", "k_fuselage.x0_ratio")
@@ -54,7 +54,7 @@ class ComputeCmAlphaFuselage(om.Group):  # pylint: disable=too-few-public-method
         )
 
 
-class _ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
+class ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
     """
     Computation of the position of the quarter wing root chord from the nose divided by the total
     fuselage length.
@@ -102,7 +102,7 @@ class _ComputeQuarterRootChordPositionRatio(om.ExplicitComponent):
         partials["x0_ratio", "data:geometry:wing:root:virtual_chord"] = 0.25 / fus_length
 
 
-class _ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
+class ComputeCmAlphaFuselageNacelle(om.ExplicitComponent):
     """
     Estimation of the fuselage pitching moment using the methodology described in section 16.3.8
     of Raymer :cite:`raymer:2012`.
