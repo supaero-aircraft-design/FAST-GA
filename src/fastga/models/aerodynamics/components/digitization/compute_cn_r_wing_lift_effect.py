@@ -101,7 +101,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         sweep_25_clipped = np.clip(sweep_25, 0.0, 50.0)
 
         partials["intermediate_coeff", "data:geometry:wing:aspect_ratio"] = np.where(
-            aspect_ratio == np.clip(aspect_ratio, 0.7, 10.0),
+            aspect_ratio == aspect_ratio_clipped,
             (
                 1.80469105
                 - 5.91325304 * static_margin_clipped
@@ -119,7 +119,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
         )
 
         partials["intermediate_coeff", "data:geometry:wing:sweep_25"] = np.where(
-            sweep_25 == np.clip(sweep_25, 0.0, 50.0),
+            sweep_25 == sweep_25_clipped,
             (
                 0.00926858 * np.log(aspect_ratio_clipped) ** 2.0
                 - 0.04621831 * np.log(aspect_ratio_clipped) * static_margin_clipped
@@ -137,7 +137,7 @@ class ComputeIntermediateParameter(om.ExplicitComponent):
 
         partials["intermediate_coeff", "data:handling_qualities:stick_fixed_static_margin"] = (
             np.where(
-                static_margin == np.clip(static_margin, 0.0, 0.4),
+                static_margin == static_margin_clipped,
                 (
                     1.5450107 * np.log(aspect_ratio_clipped) ** 2.0
                     + 7.59069438 * np.log(aspect_ratio_clipped) * static_margin_clipped
