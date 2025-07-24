@@ -73,7 +73,7 @@ class ComputeSingleSlottedLiftEffectiveness(om.ExplicitComponent):
         flap_angle = inputs["flap_angle"]
         chord_ratio = inputs["chord_ratio"]
 
-        flap_angle_clipped = np.clip(flap_angle, -0.08, 79.32)
+        flap_angle_clipped = np.clip(flap_angle, 0.0, 80.00)
         chord_ratio_clipped = np.clip(chord_ratio, 0.15, 0.4)
 
         partials["lift_effectiveness", "flap_angle"] = np.where(
