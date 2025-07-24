@@ -74,28 +74,31 @@ class ComputeWingTwistContributionCnp(om.ExplicitComponent):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
 
+        wing_ar_clipped = np.clip(wing_ar, 2.0, 12.0)
+        wing_taper_ratio_clipped = np.clip(wing_taper_ratio, 0.0, 1.0)
+
         partials["twist_contribution_cn_p", "data:geometry:wing:aspect_ratio"] = np.where(
-            wing_ar == np.clip(wing_ar, 2.0, 12.0),
+            wing_ar == wing_ar_clipped,
             (
                 2.411e-04
-                - 3.280e-05 * wing_ar
-                + 2.460e-04 * wing_taper_ratio
-                - 2.380e-06 * wing_taper_ratio * wing_ar
-                - 2.295e-04 * wing_taper_ratio**2.0
-                + 1.6179e-06 * wing_ar**2.0
+                - 3.280e-05 * wing_ar_clipped
+                + 2.460e-04 * wing_taper_ratio_clipped
+                - 2.380e-06 * wing_taper_ratio_clipped * wing_ar_clipped
+                - 2.295e-04 * wing_taper_ratio_clipped**2.0
+                + 1.6179e-06 * wing_ar_clipped**2.0
             ),
             1e-9,
         )
 
         partials["twist_contribution_cn_p", "data:geometry:wing:taper_ratio"] = np.where(
-            wing_taper_ratio == np.clip(wing_taper_ratio, 0.0, 1.0),
+            wing_taper_ratio == wing_taper_ratio_clipped,
             (
                 -3.017e-03
-                + 2.460e-04 * wing_ar
-                - 1.190e-06 * wing_ar**2.0
-                + 5.536e-03 * wing_taper_ratio
-                - 4.59e-04 * wing_taper_ratio * wing_ar
-                - 2.0256e-03 * wing_taper_ratio**2.0
+                + 2.460e-04 * wing_ar_clipped
+                - 1.190e-06 * wing_ar_clipped**2.0
+                + 5.536e-03 * wing_taper_ratio_clipped
+                - 4.59e-04 * wing_taper_ratio_clipped * wing_ar_clipped
+                - 2.0256e-03 * wing_taper_ratio_clipped**2.0
             ),
             1e-9,
         )

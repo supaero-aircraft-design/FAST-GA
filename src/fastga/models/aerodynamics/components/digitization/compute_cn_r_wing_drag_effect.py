@@ -91,7 +91,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         sweep_25_clipped = np.clip(sweep_25, 0.0, 50.0)
 
         partials["drag_effect", "data:geometry:wing:aspect_ratio"] = np.where(
-            aspect_ratio == np.clip(aspect_ratio, 1.0, 8.0),
+            aspect_ratio == aspect_ratio_clipped,
             (
                 0.44131919
                 + 0.37739783 * static_margin_clipped
@@ -103,7 +103,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         )
 
         partials["drag_effect", "data:geometry:wing:sweep_25"] = np.where(
-            sweep_25 == np.clip(sweep_25, 0.0, 50.0),
+            sweep_25 == sweep_25_clipped,
             (
                 -0.00235158 * np.log(aspect_ratio_clipped)
                 + 0.00328669 * static_margin_clipped
@@ -114,7 +114,7 @@ class ComputeWingDragEffectCnr(om.ExplicitComponent):
         )
 
         partials["drag_effect", "data:handling_qualities:stick_fixed_static_margin"] = np.where(
-            static_margin == np.clip(static_margin, 0.0, 0.4),
+            static_margin == static_margin_clipped,
             (
                 0.37739783 * np.log(aspect_ratio_clipped)
                 - 0.11202846 * static_margin_clipped

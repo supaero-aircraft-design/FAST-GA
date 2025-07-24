@@ -3489,6 +3489,8 @@ def yaw_moment_aileron(
         "data:aerodynamics:aileron:low_speed:Cn_delta_a", units="rad**-1"
     ) == pytest.approx(cn_delta_a_low_speed_, rel=1e-3)
 
+    problem.check_partials(compact_print=True)
+
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
         list_inputs(ComputeCnDeltaAileron(low_speed_aero=False)), __file__, XML_FILE
@@ -3499,6 +3501,8 @@ def yaw_moment_aileron(
     assert problem.get_val(
         "data:aerodynamics:aileron:cruise:Cn_delta_a", units="rad**-1"
     ) == pytest.approx(cn_delta_a_cruise_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
 
 
 def yaw_moment_rudder(
