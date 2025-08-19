@@ -350,6 +350,10 @@ def test_vlm_comp_high_speed_neuralfoil():
         cl_alpha_htp=0.59284874,
         cl_alpha_htp_isolated=0.88397051,
         coeff_k_htp=0.28777347,
+        cl_alpha_vector=np.array(
+            [5.69251652, 5.69251652, 5.75815554, 5.84566987, 5.95244226, 6.07946045]
+        ),
+        mach_vector=np.array([0.0, 0.15, 0.21432613, 0.27476331, 0.33175508, 0.38567317]),
     )
 
 
