@@ -1697,7 +1697,7 @@ def test_cn_beta_aircraft():
 
 def test_cn_delta_a_aircraft():
     """Test yaw moment of the aileron."""
-    yaw_moment_aileron(XML_FILE, cn_delta_a_low_speed_=-0.01690296, cn_delta_a_cruise_=-0.0066846)
+    yaw_moment_aileron(XML_FILE, cn_delta_a_low_speed_=-0.01718897, cn_delta_a_cruise_=-0.00679771)
 
 
 def test_cn_delta_r_aircraft():

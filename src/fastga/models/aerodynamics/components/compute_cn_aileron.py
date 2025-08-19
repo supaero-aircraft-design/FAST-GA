@@ -1,6 +1,9 @@
-"""Estimation of rolling moment du to the ailerons."""
+"""
+Python module for calcutaion of rolling moment due to aileron, part of the aerodynamic
+component computation.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -13,87 +16,123 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
 
-from .figure_digitization import FigureDigitization
+
+from .wing.compute_cl_wing import ComputeWingLiftCoefficient
+from .digitization.compute_cn_delta_a_correlation_constant import (
+    ComputeAileronYawCorrelationConstant,
+)
 from ..constants import SUBMODEL_CN_AILERON
 
 
 @oad.RegisterSubmodel(SUBMODEL_CN_AILERON, "fastga.submodel.aerodynamics.aileron.yaw_moment.legacy")
-class ComputeCnDeltaAileron(FigureDigitization):
+class ComputeCnDeltaAileron(om.Group):
     """
     Yaw moment due to aileron deflection (also called adverse aileron yaw). Depends on the wing
     lift, hence on the angle of attack, so the same remark as in ..compute_cy_yaw_rate.py holds.
     The convention from :cite:`roskampart6:1985` are used, meaning that for lateral derivative,
     the reference length is the wing span.
 
-    Based on :cite:`roskampart6:1985` section 10.3.8.
+    Based on :cite:`roskampart6:1985` section 10.3.5.
     """
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aileron:span_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input(
-                "data:aerodynamics:aileron:low_speed:Cl_delta_a", val=np.nan, units="rad**-1"
-            )
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-
-            self.add_output("data:aerodynamics:aileron:low_speed:Cn_delta_a", units="rad**-1")
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input(
-                "data:aerodynamics:aileron:cruise:Cl_delta_a", val=np.nan, units="rad**-1"
-            )
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-
-            self.add_output("data:aerodynamics:aileron:cruise:Cn_delta_a", units="rad**-1")
-
-        self.declare_partials("*", "*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
-        wing_aspect_ratio = inputs["data:geometry:wing:aspect_ratio"]
-        aileron_span_ratio = inputs["data:geometry:wing:aileron:span_ratio"]
-
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            cl_delta_a = inputs["data:aerodynamics:aileron:low_speed:Cl_delta_a"]
-            cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            cl_delta_a = inputs["data:aerodynamics:aileron:cruise:Cl_delta_a"]
-            cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
-
-        aileron_inner_span_ratio = 1.0 - aileron_span_ratio
-
-        cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
-
-        correlation_constant = self.cn_delta_a_correlation_constant(
-            wing_taper_ratio, wing_aspect_ratio, aileron_inner_span_ratio
+        self.add_subsystem(
+            name="cn_d_a_cl_w_" + ls_tag,
+            subsys=ComputeWingLiftCoefficient(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*", "settings:*"],
+        )
+        self.add_subsystem(
+            name="correlation_constant_" + ls_tag,
+            subsys=ComputeAileronYawCorrelationConstant(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="cn_delta_aileron_" + ls_tag,
+            subsys=ComputeCnDeltaAileronDeflection(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*"],
         )
 
-        cn_delta_a = correlation_constant * cl_w * cl_delta_a
+        self.connect(
+            "cn_d_a_cl_w_" + ls_tag + ".CL_wing", "cn_delta_aileron_" + ls_tag + ".CL_wing"
+        )
+        self.connect(
+            "correlation_constant_" + ls_tag + ".aileron_correlation_constant",
+            "cn_delta_aileron_" + ls_tag + ".aileron_correlation_constant",
+        )
 
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:aileron:low_speed:Cn_delta_a"] = cn_delta_a
-        else:
-            outputs["data:aerodynamics:aileron:cruise:Cn_delta_a"] = cn_delta_a
+
+class ComputeCnDeltaAileronDeflection(om.ExplicitComponent):
+    """
+    Yaw moment due to aileron deflection (also called adverse aileron yaw). Depends on the wing
+    lift, hence on the angle of attack, so the same remark as in ..compute_cy_yaw_rate.py holds.
+    The convention from :cite:`roskampart6:1985` are used, meaning that for lateral derivative,
+    the reference length is the wing span.
+
+    Based on :cite:`roskampart6:1985` section 10.3.5.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
+    def setup(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_input("CL_wing", val=np.nan, units="unitless")
+        self.add_input("aileron_correlation_constant", val=np.nan, units="unitless")
+        self.add_input(
+            "data:aerodynamics:aileron:" + ls_tag + ":Cl_delta_a", val=np.nan, units="rad**-1"
+        )
+
+        self.add_output("data:aerodynamics:aileron:" + ls_tag + ":Cn_delta_a", units="rad**-1")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials("*", "*", method="exact")
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        cl_delta_a = inputs["data:aerodynamics:aileron:" + ls_tag + ":Cl_delta_a"]
+        cl_w = inputs["CL_wing"]
+        correlation_constant = inputs["aileron_correlation_constant"]
+
+        outputs["data:aerodynamics:aileron:" + ls_tag + ":Cn_delta_a"] = (
+            correlation_constant * cl_w * cl_delta_a
+        )
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        cl_delta_a = inputs["data:aerodynamics:aileron:" + ls_tag + ":Cl_delta_a"]
+        cl_w = inputs["CL_wing"]
+        correlation_constant = inputs["aileron_correlation_constant"]
+
+        partials[
+            "data:aerodynamics:aileron:" + ls_tag + ":Cn_delta_a", "aileron_correlation_constant"
+        ] = cl_w * cl_delta_a
+
+        partials["data:aerodynamics:aileron:" + ls_tag + ":Cn_delta_a", "CL_wing"] = (
+            correlation_constant * cl_delta_a
+        )
+
+        partials[
+            "data:aerodynamics:aileron:" + ls_tag + ":Cn_delta_a",
+            "data:aerodynamics:aileron:" + ls_tag + ":Cl_delta_a",
+        ] = correlation_constant * cl_w

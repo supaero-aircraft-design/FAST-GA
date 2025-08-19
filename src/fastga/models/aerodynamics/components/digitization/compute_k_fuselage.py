@@ -60,8 +60,8 @@ class ComputeFuselagePitchMomentFactor(om.ExplicitComponent):
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         x0_ratio = inputs["x0_ratio"]
 
+        x0_clipped = np.clip(x0_ratio, 0.1, 0.62)
+
         partials["fuselage_pitch_moment_factor", "x0_ratio"] = np.where(
-            x0_ratio == np.clip(x0_ratio, 0.1, 0.62),
-            (-0.063 + 0.422 * x0_ratio),
-            1e-6,
+            x0_ratio == x0_clipped, (-0.063 + 0.422 * x0_clipped), 1e-6
         )

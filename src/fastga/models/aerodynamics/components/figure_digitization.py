@@ -60,7 +60,6 @@ K_CDI_ROLL_DAMPING = "cl_p_cdi_roll_damping.csv"
 CL_R_LIFT_PART_A = "cl_r_lift_effect_part_a.csv"
 CL_R_LIFT_PART_B = "cl_r_lift_effect_part_b.csv"
 CL_R_TWIST_EFFECT = "cl_r_twist_effect.csv"
-CN_DELTA_A_K_A = "cn_delta_a_correlation_cst.csv"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1623,58 +1622,6 @@ class FigureDigitization(om.ExplicitComponent):
             )
 
         return float(k_twist)
-
-    @staticmethod
-    def cn_delta_a_correlation_constant(taper_ratio, aspect_ratio, eta_i) -> float:
-        """
-        Roskam data to estimate the correlation constant for the computation of the yaw moment
-        due to aileron. (figure 10.48)
-
-        :param taper_ratio: the taper ratio of the lifting surface
-        :param aspect_ratio: the aspect ratio of the lifting surface
-        :param eta_i: aileron inboard span location, as a ratio of the span
-        :return k_a: the correlation constant for the computation of the yaw moment
-        due to aileron
-        """
-
-        file = pth.join(resources.__path__[0], CN_DELTA_A_K_A)
-        db = pd.read_csv(file)
-
-        taper_ratio_data, aspect_ratio_data, eta_i_data, correlation_constant = filter_nans(
-            db, ["TAPER_RATIO", "ASPECT_RATIO", "SPAN_RATIO", "CORRELATION_CONSTANT"]
-        )
-
-        if float(taper_ratio) != np.clip(
-            float(taper_ratio), min(taper_ratio_data), max(taper_ratio_data)
-        ):
-            _LOGGER.warning("Taper ratio is outside of the range in Roskam's book, value clipped")
-        if float(aspect_ratio) != np.clip(
-            float(aspect_ratio), min(aspect_ratio_data), max(aspect_ratio_data)
-        ):
-            _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
-        if float(eta_i) != np.clip(
-            float(eta_i), min(correlation_constant), max(correlation_constant)
-        ):
-            _LOGGER.warning(
-                "Aileron inboard location is outside of the range in Roskam's book, value clipped"
-            )
-
-        # Linear interpolation is preferred, but we put the nearest one as protection
-        k_a = interpolate.griddata(
-            (taper_ratio_data, aspect_ratio_data, eta_i_data),
-            correlation_constant,
-            np.array([taper_ratio, aspect_ratio, eta_i]).T,
-            method="linear",
-        )
-        if np.isnan(k_a):
-            k_a = interpolate.griddata(
-                (taper_ratio_data, aspect_ratio_data, eta_i_data),
-                correlation_constant,
-                np.array([taper_ratio, aspect_ratio, eta_i]).T,
-                method="nearest",
-            )
-
-        return float(k_a)
 
 
 def interpolate_database(database, tag_x: str, tag_y: str, input_x: float):
