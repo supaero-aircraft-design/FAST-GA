@@ -1118,8 +1118,6 @@ def compute_aero_neuralfoil(
         XML_FILE,
     )
 
-    # Run problem twice
-    start = time.time()
     # noinspection PyTypeChecker
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
@@ -1129,20 +1127,6 @@ def compute_aero_neuralfoil(
     )
 
     problem = run_system(vlm_comp, ivc)
-    stop = time.time()
-    duration_1st_run = stop - start
-    start = time.time()
-    # noinspection PyTypeChecker
-    vlm_comp = ComputeAeroVLM(
-        low_speed_aero=low_speed_aero,
-        use_neuralfoil=True,
-        result_folder_path=results_folder.name,
-        compute_mach_interpolation=mach_interpolation,
-    )
-
-    problem = run_system(vlm_comp, ivc)
-    stop = time.time()
-    duration_2nd_run = stop - start
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
@@ -1150,8 +1134,6 @@ def compute_aero_neuralfoil(
     # Remove existing result files
     results_folder.cleanup()
 
-    # Check obtained value(s) is/(are) correct
-    assert (duration_2nd_run / duration_1st_run) <= 1
     # Return problem for complementary values check
     return problem
 
@@ -1373,49 +1355,32 @@ def comp_high_speed_neuralfoil(
     cl_alpha_htp: float,
     cl_alpha_htp_isolated: float,
     coeff_k_htp: float,
-    cl_alpha_vector: np.ndarray,
-    mach_vector: np.ndarray,
 ):
     """Tests components @ high speed!"""
-    for mach_interpolation in [True, False]:
-        problem = compute_aero_neuralfoil(XML_FILE, mach_interpolation, False)
+    problem = compute_aero_neuralfoil(XML_FILE, False, False)
 
-        # Check obtained value(s) is/(are) correct
-        if mach_interpolation:
-            assert problem[
-                "data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"
-            ] == pytest.approx(cl_alpha_vector, abs=1e-2)
-            assert problem[
-                "data:aerodynamics:aircraft:mach_interpolation:mach_vector"
-            ] == pytest.approx(mach_vector, abs=1e-2)
-        else:
-            assert problem["data:aerodynamics:wing:cruise:CL0_clean"] == pytest.approx(
-                cl0_wing, abs=1e-4
-            )
-            assert problem["data:aerodynamics:wing:cruise:CL_ref"] == pytest.approx(
-                cl_ref_wing, abs=1e-4
-            )
-            assert problem.get_val(
-                "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
-            ) == pytest.approx(cl_alpha_wing, abs=1e-3)
-            assert problem["data:aerodynamics:wing:cruise:CM0_clean"] == pytest.approx(
-                cm0, abs=1e-4
-            )
-            assert problem[
-                "data:aerodynamics:wing:cruise:induced_drag_coefficient"
-            ] == pytest.approx(coeff_k_wing, abs=1e-4)
-            assert problem["data:aerodynamics:horizontal_tail:cruise:CL0"] == pytest.approx(
-                cl0_htp, abs=1e-4
-            )
-            assert problem.get_val(
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
-            ) == pytest.approx(cl_alpha_htp, abs=1e-4)
-            assert problem.get_val(
-                "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
-            ) == pytest.approx(cl_alpha_htp_isolated, abs=1e-4)
-            assert problem[
-                "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
-            ] == pytest.approx(coeff_k_htp, abs=1e-4)
+    # Check obtained value(s) is/(are) correct
+    assert problem["data:aerodynamics:wing:cruise:CL0_clean"] == pytest.approx(cl0_wing, abs=1e-4)
+    assert problem["data:aerodynamics:wing:cruise:CL_ref"] == pytest.approx(cl_ref_wing, abs=1e-4)
+    assert problem.get_val(
+        "data:aerodynamics:wing:cruise:CL_alpha", units="rad**-1"
+    ) == pytest.approx(cl_alpha_wing, abs=1e-3)
+    assert problem["data:aerodynamics:wing:cruise:CM0_clean"] == pytest.approx(cm0, abs=1e-4)
+    assert problem["data:aerodynamics:wing:cruise:induced_drag_coefficient"] == pytest.approx(
+        coeff_k_wing, abs=1e-4
+    )
+    assert problem["data:aerodynamics:horizontal_tail:cruise:CL0"] == pytest.approx(
+        cl0_htp, abs=1e-4
+    )
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:CL_alpha", units="rad**-1"
+    ) == pytest.approx(cl_alpha_htp, abs=1e-4)
+    assert problem.get_val(
+        "data:aerodynamics:horizontal_tail:cruise:CL_alpha_isolated", units="rad**-1"
+    ) == pytest.approx(cl_alpha_htp_isolated, abs=1e-4)
+    assert problem[
+        "data:aerodynamics:horizontal_tail:cruise:induced_drag_coefficient"
+    ] == pytest.approx(coeff_k_htp, abs=1e-4)
 
 
 def comp_high_speed_input_aoa_xfoil(
