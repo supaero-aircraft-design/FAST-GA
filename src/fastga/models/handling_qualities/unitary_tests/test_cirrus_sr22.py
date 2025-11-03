@@ -16,6 +16,7 @@ import pytest
 from ..compute_static_margin import ComputeStaticMargin
 from ..tail_sizing.update_vt_area import UpdateVTArea
 from ..tail_sizing.update_ht_area import UpdateHTArea
+from ..tail_sizing.update_tail_areas import UpdateTailAreasVolumetric
 from ..tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
 from ..tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit
 
@@ -78,6 +79,28 @@ def test_update_ht_area():
     problem = run_system(UpdateHTArea(propulsion_id=ENGINE_WRAPPER), ivc)
     ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
     assert ht_area == pytest.approx(3.95, abs=1e-2)
+
+
+def test_update_tail_area_volumetric():
+    """
+    Tests computation of the horizontal tail area and vertical tail area with volumetric coefficient
+    """
+
+    # Research independent input value in .xml file
+    # noinspection PyTypeChecker
+    ivc = get_indep_var_comp(list_inputs(UpdateTailAreasVolumetric()), __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(UpdateTailAreasVolumetric(), ivc)
+
+    ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
+    assert ht_area == pytest.approx(3.95, abs=1e-2)
+
+    vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
+    assert vt_area == pytest.approx(1.41, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_static_margin():

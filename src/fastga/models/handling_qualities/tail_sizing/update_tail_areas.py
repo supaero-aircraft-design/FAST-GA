@@ -33,9 +33,13 @@ class UpdateTailAreas(om.Group):
       conditions and (for bi-motor) maintain trajectory with failed engine @ 5000ft.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
@@ -54,6 +58,13 @@ class UpdateTailAreas(om.Group):
     "fastga.handling_qualities.tail_sizing.volumetric", domain=ModelDomain.HANDLING_QUALITIES
 )
 class UpdateTailAreasVolumetric(om.ExplicitComponent):
+    """
+    Computation of the area of the vertical and horizontal tail with given volumetric coefficient.
+    The formulas are obtained from :cite:`gudmundsson:2013`.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:wing:span", val=np.nan, units="m")
@@ -70,6 +81,8 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
         self.add_output("data:geometry:horizontal_tail:area", val=4.0, units="m**2")
         self.add_output("data:geometry:vertical_tail:area", val=4.0, units="m**2")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(
             of="data:geometry:horizontal_tail:area",
@@ -90,6 +103,8 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
             ],
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         s_wing = inputs["data:geometry:wing:area"]
         b_wing = inputs["data:geometry:wing:span"]
@@ -102,6 +117,8 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
         outputs["data:geometry:horizontal_tail:area"] = vc_ht * s_wing * mac_wing / l_ht
         outputs["data:geometry:vertical_tail:area"] = vc_vt * s_wing * b_wing / l_vt
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         s_wing = inputs["data:geometry:wing:area"]
         b_wing = inputs["data:geometry:wing:span"]
@@ -112,11 +129,11 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
         vc_vt = inputs["data:geometry:vertical_tail:volumetric_coefficient"]
 
         partials["data:geometry:horizontal_tail:area", "data:geometry:wing:area"] = (
-                vc_ht * mac_wing / l_ht
+            vc_ht * mac_wing / l_ht
         )
 
         partials["data:geometry:horizontal_tail:area", "data:geometry:wing:MAC:length"] = (
-                vc_ht * s_wing / l_ht
+            vc_ht * s_wing / l_ht
         )
 
         partials[
@@ -127,14 +144,14 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
         partials[
             "data:geometry:horizontal_tail:area",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = -vc_ht * s_wing * mac_wing / l_ht ** 2.0
+        ] = -vc_ht * s_wing * mac_wing / l_ht**2.0
 
         partials["data:geometry:vertical_tail:area", "data:geometry:wing:area"] = (
-                vc_vt * b_wing / l_vt
+            vc_vt * b_wing / l_vt
         )
 
         partials["data:geometry:vertical_tail:area", "data:geometry:wing:span"] = (
-                vc_vt * s_wing / l_vt
+            vc_vt * s_wing / l_vt
         )
 
         partials[
@@ -144,4 +161,4 @@ class UpdateTailAreasVolumetric(om.ExplicitComponent):
         partials[
             "data:geometry:vertical_tail:area",
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = -vc_vt * s_wing * b_wing / l_vt ** 2.0
+        ] = -vc_vt * s_wing * b_wing / l_vt**2.0
