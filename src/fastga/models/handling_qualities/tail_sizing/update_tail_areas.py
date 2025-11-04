@@ -17,7 +17,7 @@ import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from .constants import SUBMODEL_HT_AREA, SUBMODEL_VT_AREA
+from .constants import SERVICE_HT_AREA, SERVICE_VT_AREA
 
 
 @oad.RegisterOpenMDAOSystem(
@@ -44,11 +44,11 @@ class UpdateTailAreas(om.Group):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "horizontal_tail",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HT_AREA, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "vertical_tail",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SERVICE_VT_AREA, options=propulsion_option),
             promotes=["*"],
         )

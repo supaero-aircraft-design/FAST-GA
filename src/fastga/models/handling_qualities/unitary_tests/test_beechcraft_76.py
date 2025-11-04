@@ -95,9 +95,14 @@ def test_update_tail_area_volume():
     """
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(UpdateVTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
-    )
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:span",
+        "data:geometry:vertical_tail:volume_coefficient",
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+    ]
+
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker
@@ -110,9 +115,14 @@ def test_update_tail_area_volume():
 
     # Research independent input value in .xml file
     # noinspection PyTypeChecker
-    ivc = get_indep_var_comp(
-        list_inputs(UpdateHTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER)), __file__, XML_FILE
-    )
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:horizontal_tail:volume_coefficient",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+    ]
+
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
 
     # Run problem and check obtained value(s) is/(are) correct
     # noinspection PyTypeChecker

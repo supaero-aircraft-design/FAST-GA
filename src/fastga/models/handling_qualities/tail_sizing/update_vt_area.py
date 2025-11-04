@@ -23,16 +23,12 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
-from .constants import SUBMODEL_VT_AREA
+from .constants import SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY, SUBMODEL_VT_AREA_VOLUME_COEFF
 
-oad.RegisterSubmodel.active_models[SUBMODEL_VT_AREA] = (
-    "fastga.submodel.handling_qualities.vertical_tail.area.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_VT_AREA] = SUBMODEL_VT_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY)
 class UpdateVTArea(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
@@ -719,9 +715,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         outputs["data:constraints:vertical_tail:engine_out_landing"] = area_diff_5
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.volume_coeff"
-)
+@oad.RegisterSubmodel(SERVICE_VT_AREA, SUBMODEL_VT_AREA_VOLUME_COEFF)
 class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     """
     Computation of the area of the vertical with given volume coefficient. The formulas and
@@ -753,34 +747,34 @@ class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        s_wing = inputs["data:geometry:wing:area"]
-        b_wing = inputs["data:geometry:wing:span"]
-        l_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_span = inputs["data:geometry:wing:span"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         vc_vt = inputs["data:geometry:vertical_tail:volume_coefficient"]
 
-        outputs["data:geometry:vertical_tail:area"] = vc_vt * s_wing * b_wing / l_vt
+        outputs["data:geometry:vertical_tail:area"] = vc_vt * wing_area * wing_span / lp_vt
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        s_wing = inputs["data:geometry:wing:area"]
-        b_wing = inputs["data:geometry:wing:span"]
-        l_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_span = inputs["data:geometry:wing:span"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
         vc_vt = inputs["data:geometry:vertical_tail:volume_coefficient"]
 
         partials["data:geometry:vertical_tail:area", "data:geometry:wing:area"] = (
-            vc_vt * b_wing / l_vt
+            vc_vt * wing_span / lp_vt
         )
 
         partials["data:geometry:vertical_tail:area", "data:geometry:wing:span"] = (
-            vc_vt * s_wing / l_vt
+            vc_vt * wing_area / lp_vt
         )
 
         partials[
             "data:geometry:vertical_tail:area", "data:geometry:vertical_tail:volume_coefficient"
-        ] = s_wing * b_wing / l_vt
+        ] = wing_area * wing_span / lp_vt
 
         partials[
             "data:geometry:vertical_tail:area",
             "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = -vc_vt * s_wing * b_wing / l_vt**2.0
+        ] = -vc_vt * wing_area * wing_span / lp_vt**2.0

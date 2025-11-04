@@ -16,27 +16,25 @@ import numpy as np
 import openmdao.api as om
 
 from scipy.constants import g
-from stdatm import Atmosphere
 from typing import Union, List, Optional, Tuple
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
+
+from stdatm import Atmosphere
+
 from fastga.command.api import list_inputs, list_outputs
 
-from .constants import SUBMODEL_HT_AREA
+from .constants import SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY, SUBMODEL_HT_AREA_VOLUME_COEFF
 
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
-oad.RegisterSubmodel.active_models[SUBMODEL_HT_AREA] = (
-    "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
-)
+oad.RegisterSubmodel.active_models[SERVICE_HT_AREA] = SUBMODEL_HT_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY)
 class UpdateHTArea(om.Group):
     """
     Computes needed ht area to:
@@ -558,9 +556,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
         return result
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.volume_coeff"
-)
+@oad.RegisterSubmodel(SERVICE_HT_AREA, SUBMODEL_HT_AREA_VOLUME_COEFF)
 class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
     """
     Computation of the area of the horizontal tail with given volume coefficient. The formulas
@@ -592,35 +588,35 @@ class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        s_wing = inputs["data:geometry:wing:area"]
-        mac_wing = inputs["data:geometry:wing:MAC:length"]
-        l_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         vc_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
 
-        outputs["data:geometry:horizontal_tail:area"] = vc_ht * s_wing * mac_wing / l_ht
+        outputs["data:geometry:horizontal_tail:area"] = vc_ht * wing_area * wing_mac / lp_ht
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        s_wing = inputs["data:geometry:wing:area"]
-        mac_wing = inputs["data:geometry:wing:MAC:length"]
-        l_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
         vc_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
 
         partials["data:geometry:horizontal_tail:area", "data:geometry:wing:area"] = (
-            vc_ht * mac_wing / l_ht
+            vc_ht * wing_mac / lp_ht
         )
 
         partials["data:geometry:horizontal_tail:area", "data:geometry:wing:MAC:length"] = (
-            vc_ht * s_wing / l_ht
+            vc_ht * wing_area / lp_ht
         )
 
         partials[
             "data:geometry:horizontal_tail:area",
             "data:geometry:horizontal_tail:volume_coefficient",
-        ] = s_wing * mac_wing / l_ht
+        ] = wing_area * wing_mac / lp_ht
 
         partials[
             "data:geometry:horizontal_tail:area",
             "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
-        ] = -vc_ht * s_wing * mac_wing / l_ht**2.0
+        ] = -vc_ht * wing_area * wing_mac / lp_ht**2.0
