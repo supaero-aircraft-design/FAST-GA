@@ -724,8 +724,8 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
 )
 class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     """
-    Computation of the area of the vertical with given volume coefficient. The formulas are
-    obtained from :cite:`gudmundsson:2013`.
+    Computation of the area of the vertical with given volume coefficient. The formulas and
+    default values are obtained from :cite:`gudmundsson:2013`.
     """
 
     # pylint: disable=missing-function-docstring

@@ -564,7 +564,7 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
 class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
     """
     Computation of the area of the horizontal tail with given volume coefficient. The formulas
-    are obtained from :cite:`gudmundsson:2013`.
+    and default values are obtained from :cite:`gudmundsson:2013`.
     """
 
     # pylint: disable=missing-function-docstring
