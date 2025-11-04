@@ -14,7 +14,6 @@
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from scipy.constants import g
 from stdatm import Atmosphere
@@ -22,6 +21,7 @@ from typing import Union, List, Optional, Tuple
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 from fastga.command.api import list_inputs, list_outputs
 

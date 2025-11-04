@@ -14,13 +14,13 @@
 
 import numpy as np
 import openmdao.api as om
-import fastoad.api as oad
 
 from scipy.optimize import fsolve
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 from .constants import SUBMODEL_VT_AREA
