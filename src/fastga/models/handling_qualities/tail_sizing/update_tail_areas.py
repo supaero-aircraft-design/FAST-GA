@@ -13,8 +13,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import openmdao.api as om
-import fastoad.api as oad
 
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
 from .constants import SUBMODEL_HT_AREA, SUBMODEL_VT_AREA
