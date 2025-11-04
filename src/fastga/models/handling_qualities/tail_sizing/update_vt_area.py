@@ -1,6 +1,6 @@
 """Estimation of vertical tail area."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,6 @@ import numpy as np
 import openmdao.api as om
 
 from scipy.optimize import fsolve
-
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
@@ -24,16 +23,20 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
-from .constants import SUBMODEL_VT_AREA
+from .constants import SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY, SUBMODEL_VT_AREA_VOLUME_COEFF
+
+oad.RegisterSubmodel.active_models[SERVICE_VT_AREA] = SUBMODEL_VT_AREA_LEGACY
 
 
-@oad.RegisterSubmodel(
-    SUBMODEL_VT_AREA, "fastga.submodel.handling_qualities.vertical_tail.area.legacy"
-)
+@oad.RegisterSubmodel(SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY)
 class UpdateVTArea(om.Group):
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "vtp_area", _UpdateVTArea(propulsion_id=self.options["propulsion_id"]), promotes=["*"]
@@ -62,6 +65,8 @@ class VTPConstraints(om.ExplicitComponent):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -452,6 +457,8 @@ class _UpdateVTArea(VTPConstraints):
       - compensate 1-failed engine linear trajectory at landing.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -511,6 +518,8 @@ class _UpdateVTArea(VTPConstraints):
             method="fd",
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Sizing constraints for the vertical tail.
         # Limiting cases: rotating torque objective (cn_beta_goal) during cruise, and
@@ -581,9 +590,13 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -641,6 +654,8 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self.add_output("data:constraints:vertical_tail:engine_out_takeoff", units="m**2")
         self.add_output("data:constraints:vertical_tail:engine_out_landing", units="m**2")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Margin with respect to the sizing constraints for the vertical tail.
 
@@ -698,3 +713,68 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         outputs["data:constraints:vertical_tail:engine_out_climb"] = area_diff_3
         outputs["data:constraints:vertical_tail:engine_out_takeoff"] = area_diff_4
         outputs["data:constraints:vertical_tail:engine_out_landing"] = area_diff_5
+
+
+@oad.RegisterSubmodel(SERVICE_VT_AREA, SUBMODEL_VT_AREA_VOLUME_COEFF)
+class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
+    """
+    Computation of the area of the vertical with given volume coefficient. The formulas and
+    default values are obtained from :cite:`gudmundsson:2013`.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
+    def setup(self):
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:span", val=np.nan, units="m")
+        self.add_input("data:geometry:vertical_tail:volume_coefficient", val=0.04)
+        self.add_input(
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+
+        self.add_output("data:geometry:vertical_tail:area", val=4.0, units="m**2")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_span = inputs["data:geometry:wing:span"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        vc_vt = inputs["data:geometry:vertical_tail:volume_coefficient"]
+
+        outputs["data:geometry:vertical_tail:area"] = vc_vt * wing_area * wing_span / lp_vt
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_span = inputs["data:geometry:wing:span"]
+        lp_vt = inputs["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"]
+        vc_vt = inputs["data:geometry:vertical_tail:volume_coefficient"]
+
+        partials["data:geometry:vertical_tail:area", "data:geometry:wing:area"] = (
+            vc_vt * wing_span / lp_vt
+        )
+
+        partials["data:geometry:vertical_tail:area", "data:geometry:wing:span"] = (
+            vc_vt * wing_area / lp_vt
+        )
+
+        partials[
+            "data:geometry:vertical_tail:area", "data:geometry:vertical_tail:volume_coefficient"
+        ] = wing_area * wing_span / lp_vt
+
+        partials[
+            "data:geometry:vertical_tail:area",
+            "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = -vc_vt * wing_area * wing_span / lp_vt**2.0

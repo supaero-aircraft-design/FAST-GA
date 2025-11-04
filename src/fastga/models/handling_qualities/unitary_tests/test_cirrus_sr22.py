@@ -14,8 +14,8 @@
 import pytest
 
 from ..compute_static_margin import ComputeStaticMargin
-from ..tail_sizing.update_vt_area import UpdateVTArea
-from ..tail_sizing.update_ht_area import UpdateHTArea
+from ..tail_sizing.update_vt_area import UpdateVTArea, UpdateVTAreaVolumeCoefficient
+from ..tail_sizing.update_ht_area import UpdateHTArea, UpdateHTAreaVolumeCoefficient
 from ..tail_sizing.compute_to_rotation_limit import ComputeTORotationLimitGroup
 from ..tail_sizing.compute_balked_landing_limit import ComputeBalkedLandingLimit
 
@@ -78,6 +78,51 @@ def test_update_ht_area():
     problem = run_system(UpdateHTArea(propulsion_id=ENGINE_WRAPPER), ivc)
     ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
     assert ht_area == pytest.approx(3.95, abs=1e-2)
+
+
+def test_update_tail_area_volume():
+    """
+    Tests computation of the horizontal tail area and vertical tail area with volume coefficient
+    """
+    # Research independent input value in .xml file
+    # noinspection PyTypeChecker
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:span",
+        "data:geometry:vertical_tail:volume_coefficient",
+        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25",
+    ]
+
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(UpdateVTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER), ivc)
+
+    vt_area = problem.get_val("data:geometry:vertical_tail:area", units="m**2")
+    assert vt_area == pytest.approx(1.41, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
+
+    # Research independent input value in .xml file
+    # noinspection PyTypeChecker
+    inputs_list = [
+        "data:geometry:wing:area",
+        "data:geometry:wing:MAC:length",
+        "data:geometry:horizontal_tail:volume_coefficient",
+        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+    ]
+
+    ivc = get_indep_var_comp(inputs_list, __file__, XML_FILE)
+
+    # Run problem and check obtained value(s) is/(are) correct
+    # noinspection PyTypeChecker
+    problem = run_system(UpdateHTAreaVolumeCoefficient(propulsion_id=ENGINE_WRAPPER), ivc)
+
+    ht_area = problem.get_val("data:geometry:horizontal_tail:area", units="m**2")
+    assert ht_area == pytest.approx(3.95, abs=1e-2)
+
+    problem.check_partials(compact_print=True)
 
 
 def test_compute_static_margin():

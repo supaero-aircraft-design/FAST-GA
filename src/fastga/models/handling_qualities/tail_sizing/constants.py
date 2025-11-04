@@ -1,6 +1,9 @@
-"""Constants for the tail area update submodels."""
+"""
+Python module for constants of submodels and services naming strings,
+applied in tail sizing calculations.
+"""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,5 +15,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-SUBMODEL_HT_AREA = "submodel.handling_qualities.horizontal_tail.area"
-SUBMODEL_VT_AREA = "submodel.handling_qualities.vertical_tail.area"
+SERVICE_HT_AREA = "service.handling_qualities.horizontal_tail.area"
+SERVICE_VT_AREA = "service.handling_qualities.vertical_tail.area"
+
+SUBMODEL_HT_AREA_LEGACY = "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
+SUBMODEL_HT_AREA_VOLUME_COEFF = (
+    "fastga.submodel.handling_qualities.horizontal_tail.area.volume_coeff"
+)
+SUBMODEL_VT_AREA_LEGACY = "fastga.submodel.handling_qualities.vertical_tail.area.legacy"
+SUBMODEL_VT_AREA_VOLUME_COEFF = "fastga.submodel.handling_qualities.vertical_tail.area.volume_coeff"

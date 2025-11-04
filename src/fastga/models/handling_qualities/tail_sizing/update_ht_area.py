@@ -27,14 +27,14 @@ from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
 
-from .constants import SUBMODEL_HT_AREA
+from .constants import SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY, SUBMODEL_HT_AREA_VOLUME_COEFF
 
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
+oad.RegisterSubmodel.active_models[SERVICE_HT_AREA] = SUBMODEL_HT_AREA_LEGACY
 
-@oad.RegisterSubmodel(
-    SUBMODEL_HT_AREA, "fastga.submodel.handling_qualities.horizontal_tail.area.legacy"
-)
+
+@oad.RegisterSubmodel(SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY)
 class UpdateHTArea(om.Group):
     """
     Computes needed ht area to:
@@ -42,9 +42,13 @@ class UpdateHTArea(om.Group):
       - have enough rotational power during landing phase.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_subsystem(
             "aero_coeff_landing",
@@ -120,6 +124,8 @@ class HTPConstraints(om.ExplicitComponent):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
@@ -288,9 +294,13 @@ class _UpdateArea(HTPConstraints):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -334,6 +344,8 @@ class _UpdateArea(HTPConstraints):
             "*", "*", method="fd"
         )  # FIXME: write partial avoiding discrete parameters
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Sizing constraints for the horizontal tail (methods from Torenbeek).
         # Limiting cases: Rotating power at takeoff/landing, with the most
@@ -363,9 +375,13 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
         super().__init__(**kwargs)
         self._engine_wrapper = None
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default="", types=str)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
         self._engine_wrapper.setup(self)
@@ -407,6 +423,8 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
         self.add_output("data:constraints:horizontal_tail:takeoff_rotation", units="m**2")
         self.add_output("data:constraints:horizontal_tail:landing", units="m**2")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         # Sizing constraints margin for the horizontal tail (methods from Torenbeek).
         # Limiting cases: Rotating power at takeoff/landing, with the most
@@ -435,9 +453,13 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
     Adapts aero-coefficients (reference surface is tail area for cl_ht)
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("landing", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
         self.add_input("data:geometry:horizontal_tail:area", val=2.0, units="m**2")
@@ -467,6 +489,8 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
 
         self.declare_partials("*", "*", method="fd")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_area = inputs["data:geometry:wing:area"]
         ht_area = inputs["data:geometry:horizontal_tail:area"]
@@ -530,3 +554,69 @@ class _ComputeAeroCoeff(om.ExplicitComponent):
             result = np.array([np.nan])
 
         return result
+
+
+@oad.RegisterSubmodel(SERVICE_HT_AREA, SUBMODEL_HT_AREA_VOLUME_COEFF)
+class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
+    """
+    Computation of the area of the horizontal tail with given volume coefficient. The formulas
+    and default values are obtained from :cite:`gudmundsson:2013`.
+    """
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
+    def setup(self):
+        self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
+        self.add_input("data:geometry:wing:MAC:length", val=np.nan, units="m")
+        self.add_input("data:geometry:horizontal_tail:volume_coefficient", val=0.7)
+        self.add_input(
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25", val=np.nan, units="m"
+        )
+
+        self.add_output("data:geometry:horizontal_tail:area", val=4.0, units="m**2")
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        vc_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
+
+        outputs["data:geometry:horizontal_tail:area"] = vc_ht * wing_area * wing_mac / lp_ht
+
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wing_area = inputs["data:geometry:wing:area"]
+        wing_mac = inputs["data:geometry:wing:MAC:length"]
+        lp_ht = inputs["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+        vc_ht = inputs["data:geometry:horizontal_tail:volume_coefficient"]
+
+        partials["data:geometry:horizontal_tail:area", "data:geometry:wing:area"] = (
+            vc_ht * wing_mac / lp_ht
+        )
+
+        partials["data:geometry:horizontal_tail:area", "data:geometry:wing:MAC:length"] = (
+            vc_ht * wing_area / lp_ht
+        )
+
+        partials[
+            "data:geometry:horizontal_tail:area",
+            "data:geometry:horizontal_tail:volume_coefficient",
+        ] = wing_area * wing_mac / lp_ht
+
+        partials[
+            "data:geometry:horizontal_tail:area",
+            "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25",
+        ] = -vc_ht * wing_area * wing_mac / lp_ht**2.0

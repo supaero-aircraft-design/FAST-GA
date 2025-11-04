@@ -1,6 +1,6 @@
 """Computation of tail areas w.r.t. HQ criteria."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -17,7 +17,7 @@ import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
-from .constants import SUBMODEL_HT_AREA, SUBMODEL_VT_AREA
+from .constants import SERVICE_HT_AREA, SERVICE_VT_AREA
 
 
 @oad.RegisterOpenMDAOSystem(
@@ -33,18 +33,22 @@ class UpdateTailAreas(om.Group):
       conditions and (for bi-motor) maintain trajectory with failed engine @ 5000ft.
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(
             "horizontal_tail",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_HT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SERVICE_HT_AREA, options=propulsion_option),
             promotes=["*"],
         )
         self.add_subsystem(
             "vertical_tail",
-            oad.RegisterSubmodel.get_submodel(SUBMODEL_VT_AREA, options=propulsion_option),
+            oad.RegisterSubmodel.get_submodel(SERVICE_VT_AREA, options=propulsion_option),
             promotes=["*"],
         )

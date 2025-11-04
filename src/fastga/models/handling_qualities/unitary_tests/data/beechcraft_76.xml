@@ -52,6 +52,7 @@
         <area units="m**2" is_input="False">3.7139017292000687<!--horizontal tail area--></area>
         <aspect_ratio is_input="True">3.84<!--aspect ratio of horizontal tail--></aspect_ratio>
         <elevator_chord_ratio is_input="True">0.3<!--elevator chord ratio--></elevator_chord_ratio>
+        <volume_coefficient>0.7668</volume_coefficient>
         <span units="m" is_input="False">3.7749872946214444<!--horizontal tail span--></span>
         <sweep_0 units="deg" is_input="False">3.9999999999999925<!--sweep angle at leading edge of horizontal tail--></sweep_0>
         <sweep_100 units="deg" is_input="False">3.9999999999999925<!--sweep angle at trailing edge of horizontal tail--></sweep_100>
@@ -100,6 +101,7 @@
       <vertical_tail>
         <area units="m**2" is_input="False">1.7749320004776685<!--vertical tail area--></area>
         <aspect_ratio is_input="True">1.2<!--aspect ratio of vertical tail--></aspect_ratio>
+        <volume_coefficient>0.039</volume_coefficient>
         <span units="m" is_input="False">1.458396213013796<!--vertical tail span--></span>
         <sweep_0 units="deg" is_input="False">34.02277016960491<!--sweep angle at leading edge of vertical tail--></sweep_0>
         <sweep_100 units="deg" is_input="False">15.861989697667921<!--sweep angle at trailing edge of vertical tail--></sweep_100>
