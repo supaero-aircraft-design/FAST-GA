@@ -30,11 +30,11 @@ def test_interpolation_data_type():
         for index, entry in enumerate(data_frame.loc[label]):
             try:
                 array = string_to_array(entry)
-                if label in ["alpha", "cl", "cd", "cdp", "cm"]:
+            except Exception:
+                assert False, f"Could not convert data extracted from the csv to an array"
+           
+           if label in ["alpha", "cl", "cd", "cdp", "cm"]:
                     assert len(array) > 1
 
                 else:
                     assert len(array) == 1
-
-            except TypeError:
-                assert False, f"Expected {entry} as numpy array, got {type(entry)}"
