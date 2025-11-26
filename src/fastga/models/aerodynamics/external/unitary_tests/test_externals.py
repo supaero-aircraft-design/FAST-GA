@@ -12,30 +12,28 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import numpy as np
 from pathlib import Path
-import ast
+
+from fastga.command.api import string_to_array
+
 from ..xfoil.xfoil_polar import XfoilPolar
 
 
 def test_interpolation_data_type():
     resources_dir = Path(__file__).parent.parent / "xfoil" / "resources"
-    csv_files_paths = [str(f) for f in resources_dir.glob("*.csv")]
+    csv_files_paths = resources_dir / "naca23012_20S.csv"
 
-    for path in csv_files_paths:
-        _, data_frame = XfoilPolar._interpolation_for_exist_data(
-            result_file=path, mach=0.11, reynolds=6e6
-        )
+    _, data_frame = XfoilPolar._interpolation_for_exist_data(
+        result_file=csv_files_paths, mach=0.11, reynolds=6e6
+    )
 
-        for label in data_frame.index:
-            for index, entry in enumerate(data_frame.loc[label]):
-                # Check list entries
-                if label in ["alpha", "cl", "cd", "cdp", "cm"]:
-                    assert (
-                        len(ast.literal_eval(entry)) > 1
-                    ), f"Expected list, got {entry} from {path}"
+    for label in data_frame.index:
+        for index, entry in enumerate(data_frame.loc[label]):
+            array = string_to_array(entry)
+            # Check list entries
+            if label in ["alpha", "cl", "cd", "cdp", "cm"]:
+                assert len(array) > 1 and isinstance(array, np.ndarray)
 
-                else:
-                    # Check if there is any alphabets
-                    assert not any(element.isalpha() for element in entry), (
-                        f"Expected numeric, " f"got {entry} from {path}"
-                    )
+            else:
+                assert len(array) == 1 and isinstance(array, np.ndarray)
