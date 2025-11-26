@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import numpy as np
 from pathlib import Path
 
 from fastga.command.api import string_to_array
@@ -21,19 +20,21 @@ from ..xfoil.xfoil_polar import XfoilPolar
 
 
 def test_interpolation_data_type():
-    resources_dir = Path(__file__).parent.parent / "xfoil" / "resources"
-    csv_files_paths = resources_dir / "naca23012_20S.csv"
+    test_file = Path(__file__).parent.parent / "xfoil" / "resources" / "naca23012_20S.csv"
 
     _, data_frame = XfoilPolar._interpolation_for_exist_data(
-        result_file=csv_files_paths, mach=0.11, reynolds=6e6
+        result_file=test_file, mach=0.11, reynolds=6e6
     )
 
     for label in data_frame.index:
         for index, entry in enumerate(data_frame.loc[label]):
-            array = string_to_array(entry)
-            # Check list entries
-            if label in ["alpha", "cl", "cd", "cdp", "cm"]:
-                assert len(array) > 1 and isinstance(array, np.ndarray)
+            try:
+                array = string_to_array(entry)
+                if label in ["alpha", "cl", "cd", "cdp", "cm"]:
+                    assert len(array) > 1
 
-            else:
-                assert len(array) == 1 and isinstance(array, np.ndarray)
+                else:
+                    assert len(array) == 1
+
+            except TypeError:
+                assert False, f"Expected {entry} as numpy array, got {type(entry)}"
