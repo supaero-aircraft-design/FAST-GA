@@ -644,7 +644,7 @@ class XfoilPolar(ExternalCodeComp):
                             upper_value,
                         )
 
-                    value = list(lower_value * x_ratio + upper_value * (1 - x_ratio))
+                    value = (lower_value * x_ratio + upper_value * (1 - x_ratio)).tolist()
 
                     interpolated_result.loc[label, index_lower_reynolds] = str(value)
 
