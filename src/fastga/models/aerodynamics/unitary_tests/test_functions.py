@@ -3131,9 +3131,12 @@ def roll_moment_yaw_rate_wing(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClYawRateWing(low_speed_aero=True), ivc)
+
     assert problem.get_val(
         "data:aerodynamics:wing:low_speed:Cl_r", units="rad**-1"
     ) == pytest.approx(cl_r_wing_low_speed_, rel=1e-3)
+
+    problem.check_partials(compact_print=True)
 
     # Research independent input value in .xml file
     ivc = get_indep_var_comp(
@@ -3142,9 +3145,12 @@ def roll_moment_yaw_rate_wing(
 
     # Run problem and check obtained value(s) is/(are) correct
     problem = run_system(ComputeClYawRateWing(low_speed_aero=False), ivc)
+
     assert problem.get_val("data:aerodynamics:wing:cruise:Cl_r", units="rad**-1") == pytest.approx(
         cl_r_wing_cruise_, rel=1e-3
     )
+
+    problem.check_partials(compact_print=True)
 
 
 def roll_moment_yaw_rate_vt(

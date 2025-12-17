@@ -3295,7 +3295,7 @@ def test_cl_p():
 def test_cl_r_wing():
     """Test cl r of the wing."""
     roll_moment_yaw_rate_wing(
-        XML_FILE, cl_r_wing_low_speed_=0.11332605, cl_r_wing_cruise_=0.02436741
+        XML_FILE, cl_r_wing_low_speed_=0.1088018, cl_r_wing_cruise_=0.02228149
     )
 
 
@@ -3306,7 +3306,7 @@ def test_cl_r_vt():
 
 def test_cl_r_aircraft():
     """Test cl r of the aircraft."""
-    roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.14272755, cl_r_cruise_=0.05957228)
+    roll_moment_yaw_rate_aircraft(XML_FILE, cl_r_low_speed_=0.1382033, cl_r_cruise_=0.05748635)
 
 
 def test_cl_delta_a_aircraft():

@@ -44,18 +44,40 @@ class ComputeClYawRateWing(om.Group):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         self.add_subsystem(
-            name="b_coeff_" + ls_tag, subsys=_BCoeff(low_speed_aero=self.options["low_speed_aero"])
-        )
-        self.add_subsystem(name="mach_correction_" + ls_tag, subsys=_MachCorrection())
-        self.add_subsystem(name="dihedral_effect_" + ls_tag, subsys=_WingDihedralEffect())
-        self.add_subsystem(name="twist_effect_" + ls_tag, subsys=_ClRollMomentFromTwist())
-        self.add_subsystem(name="lift_effect_part_a_" + ls_tag, subsys=_ClrLiftEffectPartA())
-        self.add_subsystem(name="lift_effect_part_b_" + ls_tag, subsys=_ClrLiftEffectPartB())
-        self.add_subsystem(
-            name="cl_w_" + ls_tag, subsys=_Clw(low_speed_aero=self.options["low_speed_aero"])
+            name="b_coeff_" + ls_tag,
+            subsys=_BCoeff(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*"],
         )
         self.add_subsystem(
-            name="cl_r_wing_" + ls_tag,
+            name="mach_correction_" + ls_tag, subsys=_MachCorrection(), promotes=["data:*"]
+        )
+        self.add_subsystem(
+            name="dihedral_effect_" + ls_tag,
+            subsys=_WingDihedralEffect(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="twist_effect_" + ls_tag,
+            subsys=_ClRollMomentFromTwist(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="lift_effect_part_a_" + ls_tag,
+            subsys=_ClrLiftEffectPartA(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="lift_effect_part_b_" + ls_tag,
+            subsys=_ClrLiftEffectPartB(),
+            promotes=["data:*"],
+        )
+        self.add_subsystem(
+            name="Cl_w_" + ls_tag,
+            subsys=_Clw(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*", "settings:*"],
+        )
+        self.add_subsystem(
+            name="Cl_r_wing_" + ls_tag,
             subsys=_ClrWing(low_speed_aero=self.options["low_speed_aero"]),
             promotes=["data:*"],
         )
@@ -70,23 +92,23 @@ class ComputeClYawRateWing(om.Group):
         )
         self.connect(
             "mach_correction_" + ls_tag + ".mach_correction",
-            "cl_r_wing_" + ls_tag + ".mach_correction",
+            "Cl_r_wing_" + ls_tag + ".mach_correction",
         )
         self.connect(
             "dihedral_effect_" + ls_tag + ".dihedral_effect",
-            "cl_r_wing_" + ls_tag + ".dihedral_effect",
+            "Cl_r_wing_" + ls_tag + ".dihedral_effect",
         )
         self.connect(
             "twist_effect_" + ls_tag + ".cl_r_twist_effect",
-            "cl_r_wing_" + ls_tag + ".cl_r_twist_effect",
+            "Cl_r_wing_" + ls_tag + ".cl_r_twist_effect",
         )
         self.connect(
             "lift_effect_part_b_" + ls_tag + ".lift_effect_mach_0",
-            "cl_r_wing_" + ls_tag + ".lift_effect_mach_0",
+            "Cl_r_wing_" + ls_tag + ".lift_effect_mach_0",
         )
         self.connect(
-            "cl_w_" + ls_tag + ".cl_w",
-            "cl_r_wing_" + ls_tag + ".cl_w",
+            "Cl_w_" + ls_tag + ".cl_w",
+            "Cl_r_wing_" + ls_tag + ".cl_w",
         )
 
 
@@ -294,55 +316,77 @@ class _ClrLiftEffectPartA(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
-        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        wing_ar = np.clip(unclipped_wing_ar, 1.0, 10.0)
+        wing_taper_ratio = np.clip(unclipped_wing_taper_ratio, 0.0, 1.0)
+
+        if unclipped_wing_ar != wing_ar:
+            _LOGGER.warning(
+                "Aspect ratio value outside of the range in Roskam's book, value clipped"
+            )
+
+        if unclipped_wing_taper_ratio != wing_taper_ratio:
+            _LOGGER.warning(
+                "Taper ratio value outside of the range in Roskam's book, value clipped"
+            )
 
         outputs["k_coefficient"] = (
-            -1.7686795509
-            + 0.6505652716 * wing_taper_ratio
-            + 2.5253206987 * wing_ar
-            + 8.3108565905 * wing_taper_ratio**2.0
-            + 1.3803652140 * wing_ar * wing_taper_ratio
-            - 0.5189819216 * wing_ar**2.0
-            + 0.5163378085 * wing_taper_ratio**3.0
-            - 1.4261722014 * wing_taper_ratio**2.0 * wing_ar
-            - 0.0961088864 * wing_taper_ratio * wing_ar**2.0
-            + 0.0520279384 * wing_ar**3.0
-            - 6.2870876928 * wing_taper_ratio**4.0
-            + 0.6890982876 * wing_taper_ratio**3.0 * wing_ar
-            + 0.0229825494 * wing_taper_ratio**2.0 * wing_ar**2.0
-            + 0.0031565949 * wing_taper_ratio * wing_ar**3.0
-            - 0.0019921341 * wing_ar**4.0
+            -1.4015195785
+            + 0.4384930191 * wing_taper_ratio
+            + 2.0066238293 * wing_ar
+            + 5.8435265827 * wing_taper_ratio**2.0
+            + 1.2333250199 * wing_ar * wing_taper_ratio
+            - 0.4127145467 * wing_ar**2.0
+            + 0.4543034387 * wing_taper_ratio**3.0
+            - 1.0655109692 * wing_taper_ratio**2.0 * wing_ar
+            - 0.0929885638 * wing_taper_ratio * wing_ar**2.0
+            + 0.0411290779 * wing_ar**3.0
+            - 4.2632431147 * wing_taper_ratio**4.0
+            + 0.3686232582 * wing_taper_ratio**3.0 * wing_ar
+            + 0.0332327109 * wing_taper_ratio**2.0 * wing_ar**2.0
+            + 0.0024559125 * wing_taper_ratio * wing_ar**3.0
+            - 0.0015529689 * wing_ar**4.0
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
-        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+        wing_ar = np.clip(unclipped_wing_ar, 0.0, 10.0)
+        wing_taper_ratio = np.clip(unclipped_wing_taper_ratio, 0.0, 1.0)
 
-        partials["k_coefficient", "data:geometry:wing:aspect_ratio"] = (
-            2.5253206987
-            + 1.3803652140 * wing_taper_ratio
-            - 1.0379638432 * wing_ar
-            - 1.4261722014 * wing_taper_ratio**2.0
-            - 0.1922177728 * wing_taper_ratio * wing_ar
-            + 0.1560838152 * wing_ar**2.0
-            + 0.6890982876 * wing_taper_ratio**3.0
-            + 0.0459650988 * wing_taper_ratio**2.0 * wing_ar
-            + 0.0094697847 * wing_taper_ratio * wing_ar**2.0
-            - 0.0079685364 * wing_ar**3.0
+        partials["k_coefficient", "data:geometry:wing:aspect_ratio"] = np.where(
+            unclipped_wing_ar == wing_ar,
+            (
+                2.0066238293
+                + 1.2333250199 * wing_taper_ratio
+                - 0.8254290934 * wing_ar
+                - 1.0655109692 * wing_taper_ratio**2.0
+                - 0.1859771276 * wing_taper_ratio * wing_ar
+                + 0.1233872337 * wing_ar**2.0
+                + 0.3686232582 * wing_taper_ratio**3.0
+                + 0.0664654218 * wing_taper_ratio**2.0 * wing_ar
+                + 0.0073677375 * wing_taper_ratio * wing_ar**2.0
+                - 0.0062118756 * wing_ar**3.0
+            ),
+            1e-9,
         )
 
-        partials["k_coefficient", "data:geometry:wing:taper_ratio"] = (
-            0.6505652716
-            + 16.621713181 * wing_taper_ratio
-            + 1.3803652140 * wing_ar
-            + 1.5490134255 * wing_taper_ratio**2.0
-            - 2.8523444028 * wing_taper_ratio * wing_ar
-            - 0.0961088864 * wing_ar**2.0
-            - 25.1483507712 * wing_taper_ratio**3.0
-            + 2.0672948628 * wing_taper_ratio**2.0 * wing_ar
-            + 0.0459650988 * wing_taper_ratio * wing_ar
-            + 0.0031565949 * wing_taper_ratio
+        partials["k_coefficient", "data:geometry:wing:taper_ratio"] = np.where(
+            unclipped_wing_taper_ratio == wing_taper_ratio,
+            (
+                0.4384930191
+                + 11.6870531654 * wing_taper_ratio
+                + 1.2333250199 * wing_ar
+                + 1.3629103161 * wing_taper_ratio**2.0
+                - 2.1310219384 * wing_taper_ratio * wing_ar
+                - 0.0929885638 * wing_ar**2.0
+                - 17.0529724588 * wing_taper_ratio**3.0
+                + 1.1058697746 * wing_taper_ratio**2.0 * wing_ar
+                + 0.0664654218 * wing_taper_ratio * wing_ar**2.0
+                + 0.0024559125 * wing_ar**3.0
+            ),
+            1e-9,
         )
 
 
@@ -357,28 +401,46 @@ class _ClrLiftEffectPartB(om.ExplicitComponent):
         self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        k_coeff = inputs["k_coefficient"]
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        unclipped_k_coeff = inputs["k_coefficient"]
+        k_coeff = np.clip(unclipped_k_coeff, 0.0, 8.0)
+        unclipped_wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        wing_sweep_25 = np.clip(unclipped_wing_sweep_25, 0.0, 60.0)
+
+        if unclipped_k_coeff != k_coeff:
+            _LOGGER.warning(
+                "Intermediate value outside of the range in Roskam's book, value clipped"
+            )
+
+        if unclipped_wing_sweep_25 != wing_sweep_25:
+            _LOGGER.warning(
+                "Sweep angle value outside of the range in Roskam's book, value clipped"
+            )
 
         outputs["lift_effect_mach_0"] = (
-            0.113079
-            + 0.348136 * k_coeff
-            - 0.000294 * wing_sweep_25
-            - 0.033093 * k_coeff**2.0
-            + 0.000423 * k_coeff * wing_sweep_25
-            + 0.000042 * wing_sweep_25**2.0
+            0.110577
+            + 0.023436 * k_coeff
+            - 0.000270 * wing_sweep_25
+            - 0.000104 * k_coeff**2.0
+            + 0.000537 * k_coeff * wing_sweep_25
+            + 0.000040 * wing_sweep_25**2.0
         )
 
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        k_coeff = inputs["k_coefficient"]
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        unclipped_k_coeff = inputs["k_coefficient"]
+        k_coeff = np.clip(unclipped_k_coeff, 0.0, 10.0)
+        unclipped_wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+        wing_sweep_25 = np.clip(unclipped_wing_sweep_25, 0.0, 60.0)
 
-        partials["lift_effect_mach_0", "k_coefficient"] = (
-            0.348136 + 0.000423 * wing_sweep_25 - 0.066186 * k_coeff
+        partials["lift_effect_mach_0", "k_coefficient"] = np.where(
+            unclipped_k_coeff == k_coeff,
+            (0.023436 + 0.000537 * wing_sweep_25 - 0.000208 * k_coeff),
+            1e-9,
         )
 
-        partials["lift_effect_mach_0", "data:geometry:wing:sweep_25"] = (
-            -0.000294 + 0.000423 * k_coeff + 0.000084 * wing_sweep_25
+        partials["lift_effect_mach_0", "data:geometry:wing:sweep_25"] = np.where(
+            unclipped_wing_sweep_25 == wing_sweep_25,
+            (-0.00027 + 0.000537 * k_coeff + 0.00008 * wing_sweep_25),
+            1e-9,
         )
 
 
@@ -411,7 +473,7 @@ class _WingDihedralEffect(om.ExplicitComponent):
             * np.pi
             * wing_ar
             * (wing_ar * np.cos(wing_sweep_25) + 4.0)
-            / (4.0 * np.cos(wing_sweep_25) + wing_sweep_25) ** 2.0
+            / (4.0 * np.cos(wing_sweep_25) + wing_ar) ** 2.0
         )
 
         partials["dihedral_effect", "data:geometry:wing:aspect_ratio"] = (
@@ -419,7 +481,7 @@ class _WingDihedralEffect(om.ExplicitComponent):
             * np.pi
             * np.cos(wing_sweep_25)
             * np.sin(wing_sweep_25)
-            / (4.0 * np.cos(wing_sweep_25) + wing_sweep_25) ** 2.0
+            / (4.0 * np.cos(wing_sweep_25) + wing_ar) ** 2.0
         )
 
 
@@ -513,7 +575,10 @@ class _ClrWing(om.ExplicitComponent):
             desc="Negative twist means tip AOA is smaller than root",
         )
 
-        self.add_output("data:aerodynamics:" + ls_tag + ":cruise:Cl_r", units="rad**-1")
+        self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cl_r", units="rad**-1")
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
 
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
@@ -522,11 +587,11 @@ class _ClrWing(om.ExplicitComponent):
         mach_correction = inputs["mach_correction"]
         lift_effect_mach_0 = inputs["lift_effect_mach_0"]
         dihedral_effect = inputs["dihedral_effect"]
-        wing_dihedral = inputs["data:geometry:wing:dihedral",]
+        wing_dihedral = inputs["data:geometry:wing:dihedral"]
         twist_effect = inputs["cl_r_twist_effect"]
         wing_twist = inputs["data:geometry:wing:twist"]
 
-        outputs["data:aerodynamics:" + ls_tag + ":cruise:Cl_r"] = (
+        outputs["data:aerodynamics:wing:" + ls_tag + ":Cl_r"] = (
             cl_w * mach_correction * lift_effect_mach_0
             + dihedral_effect * wing_dihedral
             + twist_effect * wing_twist
@@ -543,26 +608,26 @@ class _ClrWing(om.ExplicitComponent):
         twist_effect = inputs["cl_r_twist_effect"]
         wing_twist = inputs["data:geometry:wing:twist"]
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "cl_w"] = (
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "cl_w"] = (
             mach_correction * lift_effect_mach_0
         )
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "mach_correction"] = (
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "mach_correction"] = (
             cl_w * lift_effect_mach_0
         )
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "lift_effect_mach_0"] = (
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "lift_effect_mach_0"] = (
             cl_w * mach_correction
         )
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "dihedral_effect"] = wing_dihedral
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "dihedral_effect"] = wing_dihedral
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "data:geometry:wing:dihedral"] = (
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "data:geometry:wing:dihedral"] = (
             dihedral_effect
         )
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "cl_r_twist_effect"] = wing_twist
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "cl_r_twist_effect"] = wing_twist
 
-        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "data:geometry:wing:twist"] = (
+        partials["data:aerodynamics:wing:" + ls_tag + ":Cl_r", "data:geometry:wing:twist"] = (
             twist_effect
         )
