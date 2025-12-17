@@ -16,7 +16,6 @@ import numpy as np
 import openmdao.api as om
 import fastoad.api as oad
 
-from ..figure_digitization import FigureDigitization
 from ...constants import SUBMODEL_CL_R_WING
 
 _LOGGER = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ _LOGGER = logging.getLogger(__name__)
 @oad.RegisterSubmodel(
     SUBMODEL_CL_R_WING, "fastga.submodel.aerodynamics.wing.roll_moment_yaw_rate.legacy"
 )
-class ComputeClYawRateWing(FigureDigitization):
+class ComputeClYawRateWing(om.Group):
     """
     Class to compute the contribution of the wing to the roll moment coefficient due to yaw rate.
     Depends on the lift coefficient of the wing, hence on the reference angle of attack,
@@ -42,102 +41,53 @@ class ComputeClYawRateWing(FigureDigitization):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
     def setup(self):
-        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
-        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
-        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="deg")
-        self.add_input(
-            "data:geometry:wing:twist",
-            val=0.0,
-            units="deg",
-            desc="Negative twist means tip AOA is smaller than root",
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_subsystem(
+            name="b_coeff_" + ls_tag, subsys=_BCoeff(low_speed_aero=self.options["low_speed_aero"])
+        )
+        self.add_subsystem(name="mach_correction_" + ls_tag, subsys=_MachCorrection())
+        self.add_subsystem(name="dihedral_effect_" + ls_tag, subsys=_WingDihedralEffect())
+        self.add_subsystem(name="twist_effect_" + ls_tag, subsys=_ClRollMomentFromTwist())
+        self.add_subsystem(name="lift_effect_part_a_" + ls_tag, subsys=_ClrLiftEffectPartA())
+        self.add_subsystem(name="lift_effect_part_b_" + ls_tag, subsys=_ClrLiftEffectPartB())
+        self.add_subsystem(
+            name="cl_w_" + ls_tag, subsys=_Clw(low_speed_aero=self.options["low_speed_aero"])
+        )
+        self.add_subsystem(
+            name="cl_r_wing_" + ls_tag,
+            subsys=_ClrWing(low_speed_aero=self.options["low_speed_aero"]),
+            promotes=["data:*"],
         )
 
-        if self.options["low_speed_aero"]:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:low_speed:AOA",
-                units="rad",
-                val=5.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:low_speed:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:low_speed:CL_alpha", val=np.nan, units="rad**-1")
-
-            self.add_output("data:aerodynamics:wing:low_speed:Cl_r", units="rad**-1")
-
-        else:
-            self.add_input(
-                "settings:aerodynamics:reference_flight_conditions:cruise:AOA",
-                units="rad",
-                val=1.0 * np.pi / 180.0,
-            )
-            self.add_input("data:aerodynamics:cruise:mach", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL0_clean", val=np.nan)
-            self.add_input("data:aerodynamics:wing:cruise:CL_alpha", val=np.nan, units="rad**-1")
-
-            self.add_output("data:aerodynamics:wing:cruise:Cl_r", units="rad**-1")
-
-        self.declare_partials(of="*", wrt="*", method="fd")
-
-    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
-        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
-        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]  # In rad !!!
-        wing_dihedral = inputs["data:geometry:wing:dihedral"]  # In deg
-        wing_twist = inputs["data:geometry:wing:twist"]  # In deg, not specified in the
-        # formula
-
-        if self.options["low_speed_aero"]:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:low_speed:AOA"]
-            mach = inputs["data:aerodynamics:low_speed:mach"]
-            cl_0_wing = inputs["data:aerodynamics:wing:low_speed:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:low_speed:CL_alpha"]
-        else:
-            aoa_ref = inputs["settings:aerodynamics:reference_flight_conditions:cruise:AOA"]
-            mach = inputs["data:aerodynamics:cruise:mach"]
-            cl_0_wing = inputs["data:aerodynamics:wing:cruise:CL0_clean"]
-            cl_alpha_wing = inputs["data:aerodynamics:wing:cruise:CL_alpha"]
-
-        # Fuselage contribution neglected
-        cl_w = cl_0_wing + cl_alpha_wing * aoa_ref
-        b_coeff = np.sqrt(1.0 - mach**2.0 * np.cos(wing_sweep_25) ** 2.0)
-
-        lift_effect_mach_0 = self.cl_r_lifting_effect(wing_ar, wing_taper_ratio, wing_sweep_25)
-        mach_correction = (
-            1.0
-            + (wing_ar * (1.0 - b_coeff))
-            / (2.0 * b_coeff * (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25)))
-            + (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-            / (wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25))
-            * np.tan(wing_sweep_25) ** 2.0
-            / 8.0
-        ) / (
-            1.0
-            + (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25))
-            / (wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25))
-            * np.tan(wing_sweep_25) ** 2.0
-            / 8.0
+        self.connect(
+            "b_coeff_" + ls_tag + ".b_coeff_mach",
+            "mach_correction_" + ls_tag + ".b_coeff_mach",
         )
-
-        dihedral_effect = (
-            0.083
-            * (np.pi * wing_ar * np.sin(wing_sweep_25))
-            / (wing_ar + 4.0 * np.cos(wing_sweep_25))
+        self.connect(
+            "lift_effect_part_a_" + ls_tag + ".k_coefficient",
+            "lift_effect_part_b_" + ls_tag + ".k_coefficient",
         )
-
-        twist_effect = self.cl_r_twist_effect(wing_taper_ratio, wing_ar)
-
-        # Flap deflection effect neglected
-        cl_r_w = (
-            cl_w * mach_correction * lift_effect_mach_0
-            + dihedral_effect * wing_dihedral
-            + twist_effect * wing_twist
+        self.connect(
+            "mach_correction_" + ls_tag + ".mach_correction",
+            "cl_r_wing_" + ls_tag + ".mach_correction",
         )
-
-        if self.options["low_speed_aero"]:
-            outputs["data:aerodynamics:wing:low_speed:Cl_r"] = cl_r_w
-        else:
-            outputs["data:aerodynamics:wing:cruise:Cl_r"] = cl_r_w
+        self.connect(
+            "dihedral_effect_" + ls_tag + ".dihedral_effect",
+            "cl_r_wing_" + ls_tag + ".dihedral_effect",
+        )
+        self.connect(
+            "twist_effect_" + ls_tag + ".cl_r_twist_effect",
+            "cl_r_wing_" + ls_tag + ".cl_r_twist_effect",
+        )
+        self.connect(
+            "lift_effect_part_b_" + ls_tag + ".lift_effect_mach_0",
+            "cl_r_wing_" + ls_tag + ".lift_effect_mach_0",
+        )
+        self.connect(
+            "cl_w_" + ls_tag + ".cl_w",
+            "cl_r_wing_" + ls_tag + ".cl_w",
+        )
 
 
 class _Clw(om.ExplicitComponent):
@@ -315,48 +265,121 @@ class _MachCorrection(om.ExplicitComponent):
             * common_term
         ) / common_denominator**2.0
 
+        partials["mach_correction", "data:geometry:wing:sweep_25"] = (
+            -wing_ar
+            * (b_coeff - 1.0)
+            * np.sin(wing_sweep_25)
+            / (b_coeff * (wing_ar * b_coeff + 2.0 * np.cos(wing_sweep_25)) ** 2.0)
+            * common_denominator
+            - (
+                wing_ar**2.0 * b_coeff * b_coeff / (np.cos(wing_sweep_25) ** 2.0)
+                - wing_ar * b_coeff * np.cos(wing_sweep_25)
+                + 7.0 * wing_ar * b_coeff / np.cos(wing_sweep_25)
+                + 8.0
+            )
+            * np.tan(wing_sweep_25)
+            / (4.0 * (wing_ar * b_coeff + 4.0 * np.cos(wing_sweep_25)) ** 2.0)
+            * common_term
+        ) / common_denominator**2.0
 
-    # def mach_terms(A, b, s):
-    #     c = np.cos(s)
-    #     t = np.tan(s)
-    #     T1 = A * (1.0 - b) / (2.0 * b * (A * b + 2.0 * c))
-    #     T2 = ((A * b + 2.0 * c) / (A * b + 4.0 * c)) * (t ** 2) / 8.0
-    #     N = 1.0 + T1 + T2
-    #     D = 1.0 + T2
-    #     return T1, T2, N, D, c, t
-    #
-    # def dmach_dwing_ar(A, b, s):
-    #     T1, T2, N, D, c, t = mach_terms(A, b, s)
-    #     # T1_A
-    #     T1_A = (1.0 - b) * c / (b * (A * b + 2.0 * c) ** 2)
-    #     # T2_A
-    #     T2_A = b * c * t ** 2 / (4.0 * (A * b + 4.0 * c) ** 2)
-    #     return (T1_A * D - T2_A * T1) / (D ** 2)
-    #
-    # def dmach_db_coeff(A, b, s):
-    #     T1, T2, N, D, c, t = mach_terms(A, b, s)
-    #     # T1_b
-    #     T1_b = A * (A * b * b - 2.0 * A * b - 2.0 * c) / (2.0 * b * b * (A * b + 2.0 * c) ** 2)
-    #     # T2_b
-    #     T2_b = A * c * t ** 2 / (4.0 * (A * b + 4.0 * c) ** 2)
-    #     return (T1_b * D - T2_b * T1) / (D ** 2)
-    #
-    # def dmach_dwing_sweep(A, b, s):
-    #     T1, T2, N, D, c, t = mach_terms(A, b, s)
-    #     sin_s = np.sin(s)
-    #     cos_s = c
-    #     tan_s = t
-    #     # T1_s
-    #     T1_s = -A * (b - 1.0) * sin_s / (b * (A * b + 2.0 * cos_s) ** 2)
-    #     # T2_s (implemented from the compact expression above)
-    #     # T2_s = ( (A^2 b^2 / cos^2 s - A b cos s + 7 A b / cos s + 8) * tan s )
-    #     #        / (4 * (A b + 4 cos s)^2)
-    #     T2_s = ((A * A * b * b / (cos_s ** 2)
-    #              - A * b * cos_s
-    #              + 7.0 * A * b / cos_s
-    #              + 8.0)
-    #             * tan_s) / (4.0 * (A * b + 4.0 * cos_s) ** 2)
-    #     return (T1_s * D - T2_s * T1) / (D ** 2)
+
+class _ClrLiftEffectPartA(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
+        self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
+
+        self.add_output("k_coefficient", val=0.001)
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+
+        outputs["k_coefficient"] = (
+            -1.7686795509
+            + 0.6505652716 * wing_taper_ratio
+            + 2.5253206987 * wing_ar
+            + 8.3108565905 * wing_taper_ratio**2.0
+            + 1.3803652140 * wing_ar * wing_taper_ratio
+            - 0.5189819216 * wing_ar**2.0
+            + 0.5163378085 * wing_taper_ratio**3.0
+            - 1.4261722014 * wing_taper_ratio**2.0 * wing_ar
+            - 0.0961088864 * wing_taper_ratio * wing_ar**2.0
+            + 0.0520279384 * wing_ar**3.0
+            - 6.2870876928 * wing_taper_ratio**4.0
+            + 0.6890982876 * wing_taper_ratio**3.0 * wing_ar
+            + 0.0229825494 * wing_taper_ratio**2.0 * wing_ar**2.0
+            + 0.0031565949 * wing_taper_ratio * wing_ar**3.0
+            - 0.0019921341 * wing_ar**4.0
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        wing_ar = inputs["data:geometry:wing:aspect_ratio"]
+        wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
+
+        partials["k_coefficient", "data:geometry:wing:aspect_ratio"] = (
+            2.5253206987
+            + 1.3803652140 * wing_taper_ratio
+            - 1.0379638432 * wing_ar
+            - 1.4261722014 * wing_taper_ratio**2.0
+            - 0.1922177728 * wing_taper_ratio * wing_ar
+            + 0.1560838152 * wing_ar**2.0
+            + 0.6890982876 * wing_taper_ratio**3.0
+            + 0.0459650988 * wing_taper_ratio**2.0 * wing_ar
+            + 0.0094697847 * wing_taper_ratio * wing_ar**2.0
+            - 0.0079685364 * wing_ar**3.0
+        )
+
+        partials["k_coefficient", "data:geometry:wing:taper_ratio"] = (
+            0.6505652716
+            + 16.621713181 * wing_taper_ratio
+            + 1.3803652140 * wing_ar
+            + 1.5490134255 * wing_taper_ratio**2.0
+            - 2.8523444028 * wing_taper_ratio * wing_ar
+            - 0.0961088864 * wing_ar**2.0
+            - 25.1483507712 * wing_taper_ratio**3.0
+            + 2.0672948628 * wing_taper_ratio**2.0 * wing_ar
+            + 0.0459650988 * wing_taper_ratio * wing_ar
+            + 0.0031565949 * wing_taper_ratio
+        )
+
+
+class _ClrLiftEffectPartB(om.ExplicitComponent):
+    def setup(self):
+        self.add_input("k_coefficient", val=np.nan)
+        self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
+
+        self.add_output("lift_effect_mach_0", val=0.001)
+
+    def setup_partials(self):
+        self.declare_partials(of="*", wrt="*", method="exact")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        k_coeff = inputs["k_coefficient"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        outputs["lift_effect_mach_0"] = (
+            0.113079
+            + 0.348136 * k_coeff
+            - 0.000294 * wing_sweep_25
+            - 0.033093 * k_coeff**2.0
+            + 0.000423 * k_coeff * wing_sweep_25
+            + 0.000042 * wing_sweep_25**2.0
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        k_coeff = inputs["k_coefficient"]
+        wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
+
+        partials["lift_effect_mach_0", "k_coefficient"] = (
+            0.348136 + 0.000423 * wing_sweep_25 - 0.066186 * k_coeff
+        )
+
+        partials["lift_effect_mach_0", "data:geometry:wing:sweep_25"] = (
+            -0.000294 + 0.000423 * k_coeff + 0.000084 * wing_sweep_25
+        )
 
 
 class _WingDihedralEffect(om.ExplicitComponent):
@@ -467,4 +490,79 @@ class _ClRollMomentFromTwist(om.ExplicitComponent):
                 - 1.401e-7 * wing_ar**2.0
             ),
             1e-9,
+        )
+
+
+class _ClrWing(om.ExplicitComponent):
+    def initialize(self):
+        self.options.declare("low_speed_aero", default=False, types=bool)
+
+    def setup(self):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        self.add_input("cl_w", val=np.nan)
+        self.add_input("mach_correction", val=np.nan)
+        self.add_input("lift_effect_mach_0", val=np.nan)
+        self.add_input("dihedral_effect", val=np.nan)
+        self.add_input("data:geometry:wing:dihedral", val=np.nan, units="deg")
+        self.add_input("cl_r_twist_effect", val=np.nan)
+        self.add_input(
+            "data:geometry:wing:twist",
+            val=0.0,
+            units="deg",
+            desc="Negative twist means tip AOA is smaller than root",
+        )
+
+        self.add_output("data:aerodynamics:" + ls_tag + ":cruise:Cl_r", units="rad**-1")
+
+    def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        cl_w = inputs["cl_w"]
+        mach_correction = inputs["mach_correction"]
+        lift_effect_mach_0 = inputs["lift_effect_mach_0"]
+        dihedral_effect = inputs["dihedral_effect"]
+        wing_dihedral = inputs["data:geometry:wing:dihedral",]
+        twist_effect = inputs["cl_r_twist_effect"]
+        wing_twist = inputs["data:geometry:wing:twist"]
+
+        outputs["data:aerodynamics:" + ls_tag + ":cruise:Cl_r"] = (
+            cl_w * mach_correction * lift_effect_mach_0
+            + dihedral_effect * wing_dihedral
+            + twist_effect * wing_twist
+        )
+
+    def compute_partials(self, inputs, partials, discrete_inputs=None):
+        ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
+
+        cl_w = inputs["cl_w"]
+        mach_correction = inputs["mach_correction"]
+        lift_effect_mach_0 = inputs["lift_effect_mach_0"]
+        dihedral_effect = inputs["dihedral_effect"]
+        wing_dihedral = inputs["data:geometry:wing:dihedral"]
+        twist_effect = inputs["cl_r_twist_effect"]
+        wing_twist = inputs["data:geometry:wing:twist"]
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "cl_w"] = (
+            mach_correction * lift_effect_mach_0
+        )
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "mach_correction"] = (
+            cl_w * lift_effect_mach_0
+        )
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "lift_effect_mach_0"] = (
+            cl_w * mach_correction
+        )
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "dihedral_effect"] = wing_dihedral
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "data:geometry:wing:dihedral"] = (
+            dihedral_effect
+        )
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "cl_r_twist_effect"] = wing_twist
+
+        partials["data:aerodynamics:" + ls_tag + ":cruise:Cl_r", "data:geometry:wing:twist"] = (
+            twist_effect
         )
