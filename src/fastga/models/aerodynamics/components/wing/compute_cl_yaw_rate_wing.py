@@ -37,9 +37,13 @@ class ComputeClYawRateWing(om.Group):
     Based on :cite:`roskampart6:1985` section 10.2.8
     """
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -113,9 +117,14 @@ class ComputeClYawRateWing(om.Group):
 
 
 class _Clw(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -134,12 +143,16 @@ class _Clw(om.ExplicitComponent):
 
         self.add_output("cl_w", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
         self.declare_partials("*", "*", method="exact")
         self.declare_partials("cl_w", "data:aerodynamics:wing:" + ls_tag + ":CL0_clean", val=1.0)
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -149,6 +162,8 @@ class _Clw(om.ExplicitComponent):
 
         outputs["cl_w"] = cl_0_wing + cl_alpha_wing * aoa_ref
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -162,9 +177,14 @@ class _Clw(om.ExplicitComponent):
 
 
 class _BCoeff(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -173,9 +193,13 @@ class _BCoeff(om.ExplicitComponent):
 
         self.add_output("b_coeff_mach", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -185,6 +209,8 @@ class _BCoeff(om.ExplicitComponent):
             * np.cos(inputs["data:geometry:wing:sweep_25"]) ** 2.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -206,6 +232,9 @@ class _BCoeff(om.ExplicitComponent):
 
 
 class _MachCorrection(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("b_coeff_mach", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -213,9 +242,13 @@ class _MachCorrection(om.ExplicitComponent):
 
         self.add_output("mach_correction", val=0.99)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         b_coeff = inputs["b_coeff_mach"]
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
@@ -237,6 +270,8 @@ class _MachCorrection(om.ExplicitComponent):
             / 8.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         b_coeff = inputs["b_coeff_mach"]
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
@@ -306,15 +341,22 @@ class _MachCorrection(om.ExplicitComponent):
 
 
 class _ClrLiftEffectPartA(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
         self.add_output("k_coefficient", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -349,6 +391,8 @@ class _ClrLiftEffectPartA(om.ExplicitComponent):
             - 0.0015529689 * wing_ar**4.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -391,15 +435,22 @@ class _ClrLiftEffectPartA(om.ExplicitComponent):
 
 
 class _ClrLiftEffectPartB(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("k_coefficient", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
 
         self.add_output("lift_effect_mach_0", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         unclipped_k_coeff = inputs["k_coefficient"]
         k_coeff = np.clip(unclipped_k_coeff, 0.0, 8.0)
@@ -425,6 +476,8 @@ class _ClrLiftEffectPartB(om.ExplicitComponent):
             + 0.000040 * wing_sweep_25**2.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         unclipped_k_coeff = inputs["k_coefficient"]
         k_coeff = np.clip(unclipped_k_coeff, 0.0, 10.0)
@@ -445,15 +498,22 @@ class _ClrLiftEffectPartB(om.ExplicitComponent):
 
 
 class _WingDihedralEffect(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="rad")
 
         self.add_output("dihedral_effect", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -464,6 +524,8 @@ class _WingDihedralEffect(om.ExplicitComponent):
             / (wing_ar + 4.0 * np.cos(wing_sweep_25))
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
@@ -486,15 +548,22 @@ class _WingDihedralEffect(om.ExplicitComponent):
 
 
 class _ClRollMomentFromTwist(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
 
         self.add_output("cl_r_twist_effect", val=0.001)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -521,6 +590,8 @@ class _ClRollMomentFromTwist(om.ExplicitComponent):
             + 2.34128e-5 * wing_ar**3.0
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         unclipped_wing_ar = inputs["data:geometry:wing:aspect_ratio"]
         unclipped_wing_taper_ratio = inputs["data:geometry:wing:taper_ratio"]
@@ -556,9 +627,14 @@ class _ClRollMomentFromTwist(om.ExplicitComponent):
 
 
 class _ClrWing(om.ExplicitComponent):
+
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup
     def setup(self):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -577,9 +653,13 @@ class _ClrWing(om.ExplicitComponent):
 
         self.add_output("data:aerodynamics:wing:" + ls_tag + ":Cl_r", units="rad**-1")
 
+    # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO setup_partials
     def setup_partials(self):
         self.declare_partials(of="*", wrt="*", method="exact")
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
@@ -597,6 +677,8 @@ class _ClrWing(om.ExplicitComponent):
             + twist_effect * wing_twist
         )
 
+    # pylint: disable=missing-function-docstring, unused-argument
+    # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         ls_tag = "low_speed" if self.options["low_speed_aero"] else "cruise"
 
