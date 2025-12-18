@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 )
 class ComputeClYawRateWing(om.Group):
     """
-    Group that computes the wing contribution to the roll-moment coefficient due to yaw rate.
+    Group that computes the wing contribution to the roll moment coefficient due to yaw rate.
     Depends on the lift coefficient of the wing, hence on the reference angle of attack,
     so the same remark as in ..compute_cy_yaw_rate.py holds. The convention from
     :cite:`roskampart6:1985` are used, meaning that for lateral derivative, the reference length
