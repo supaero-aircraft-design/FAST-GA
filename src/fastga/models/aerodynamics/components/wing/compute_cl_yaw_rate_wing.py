@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 )
 class ComputeClYawRateWing(om.Group):
     """
-    Class to compute the contribution of the wing to the roll moment coefficient due to yaw rate.
+    Group that computes the wing contribution to the roll-moment coefficient due to yaw rate.
     Depends on the lift coefficient of the wing, hence on the reference angle of attack,
     so the same remark as in ..compute_cy_yaw_rate.py holds. The convention from
     :cite:`roskampart6:1985` are used, meaning that for lateral derivative, the reference length
@@ -57,7 +57,7 @@ class ComputeClYawRateWing(om.Group):
         )
         self.add_subsystem(
             name="dihedral_effect_" + ls_tag,
-            subsys=_WingDihedralEffect(),
+            subsys=_ClRollMomentDihedralEffect(),
             promotes=["data:*"],
         )
         self.add_subsystem(
@@ -67,12 +67,12 @@ class ComputeClYawRateWing(om.Group):
         )
         self.add_subsystem(
             name="lift_effect_part_a_" + ls_tag,
-            subsys=_ClrLiftEffectPartA(),
+            subsys=_ClRollMomentLiftEffectPartA(),
             promotes=["data:*"],
         )
         self.add_subsystem(
             name="lift_effect_part_b_" + ls_tag,
-            subsys=_ClrLiftEffectPartB(),
+            subsys=_ClRollMomentLiftEffectPartB(),
             promotes=["data:*"],
         )
         self.add_subsystem(
@@ -117,6 +117,9 @@ class ComputeClYawRateWing(om.Group):
 
 
 class _Clw(om.ExplicitComponent):
+    """
+    Calculate the wing lift coefficient.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
@@ -177,6 +180,9 @@ class _Clw(om.ExplicitComponent):
 
 
 class _BCoeff(om.ExplicitComponent):
+    """
+    Calculate the Prandtl–Glauert type compressibility correction factor.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
@@ -232,6 +238,9 @@ class _BCoeff(om.ExplicitComponent):
 
 
 class _MachCorrection(om.ExplicitComponent):
+    """
+    Compute the compressibility correction factor for the wing CL_r calculation.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -340,7 +349,11 @@ class _MachCorrection(om.ExplicitComponent):
         ) / common_denominator**2.0
 
 
-class _ClrLiftEffectPartA(om.ExplicitComponent):
+class _ClRollMomentLiftEffectPartA(om.ExplicitComponent):
+    """
+    Compute the intermediate coefficient in the calculation of the slope of the rolling moment
+    due to yaw rate. The calculation is derived from figure 10.41 in :cite:`roskampart6:1985`.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -434,7 +447,12 @@ class _ClrLiftEffectPartA(om.ExplicitComponent):
         )
 
 
-class _ClrLiftEffectPartB(om.ExplicitComponent):
+class _ClRollMomentLiftEffectPartB(om.ExplicitComponent):
+    """
+    Compute the slope of the rolling moment due to yaw rate with the intermediate coefficient
+    from the former part of calculation. The calculation is derived from figure 10.41 in
+    :cite:`roskampart6:1985`.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -480,7 +498,7 @@ class _ClrLiftEffectPartB(om.ExplicitComponent):
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
         unclipped_k_coeff = inputs["k_coefficient"]
-        k_coeff = np.clip(unclipped_k_coeff, 0.0, 10.0)
+        k_coeff = np.clip(unclipped_k_coeff, 0.0, 8.0)
         unclipped_wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
         wing_sweep_25 = np.clip(unclipped_wing_sweep_25, 0.0, 60.0)
 
@@ -497,7 +515,10 @@ class _ClrLiftEffectPartB(om.ExplicitComponent):
         )
 
 
-class _WingDihedralEffect(om.ExplicitComponent):
+class _ClRollMomentDihedralEffect(om.ExplicitComponent):
+    """
+    Compute the contribution to the roll moment coefficient of the wing dihedral.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -548,6 +569,10 @@ class _WingDihedralEffect(om.ExplicitComponent):
 
 
 class _ClRollMomentFromTwist(om.ExplicitComponent):
+    """
+    Compute the contribution to the roll moment coefficient of the wing twist. The calculation is
+    derived from figure 10.42 in :cite:`roskampart6:1985`.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -627,6 +652,9 @@ class _ClRollMomentFromTwist(om.ExplicitComponent):
 
 
 class _ClrWing(om.ExplicitComponent):
+    """
+    Compute the contribution of the wing to the roll moment coefficient due to yaw rate.
+    """
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
