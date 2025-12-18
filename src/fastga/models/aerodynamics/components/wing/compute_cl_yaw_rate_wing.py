@@ -361,15 +361,9 @@ class _ClRollMomentLiftEffectPartB(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute, not all arguments are used
     def compute(self, inputs, outputs, discrete_inputs=None, discrete_outputs=None):
-        unclipped_k_coeff = inputs["k_coefficient"]
-        k_coeff = np.clip(unclipped_k_coeff, 0.0, 8.0)
+        k_coeff = inputs["k_coefficient"]
         unclipped_wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
         wing_sweep_25 = np.clip(unclipped_wing_sweep_25, 0.0, 60.0)
-
-        if unclipped_k_coeff != k_coeff:
-            _LOGGER.warning(
-                "Intermediate value outside of the range in Roskam's book, value clipped"
-            )
 
         if unclipped_wing_sweep_25 != wing_sweep_25:
             _LOGGER.warning(
@@ -377,31 +371,42 @@ class _ClRollMomentLiftEffectPartB(om.ExplicitComponent):
             )
 
         outputs["lift_effect_mach_0"] = (
-            0.110577
-            + 0.023436 * k_coeff
-            - 0.000270 * wing_sweep_25
-            - 0.000104 * k_coeff**2.0
-            + 0.000537 * k_coeff * wing_sweep_25
-            + 0.000040 * wing_sweep_25**2.0
+            0.094639
+            + 0.029760 * k_coeff
+            - 0.001253 * wing_sweep_25
+            - 0.000743 * k_coeff**2.0
+            + 0.000116 * k_coeff * wing_sweep_25
+            + 0.000017 * wing_sweep_25**2.0
+            + 0.000037 * k_coeff**3.0
+            + 0.000007 * k_coeff**2.0 * wing_sweep_25
+            + 0.000006 * k_coeff * wing_sweep_25**2.0
         )
 
     # pylint: disable=missing-function-docstring, unused-argument
     # Overriding OpenMDAO compute_partials, not all arguments are used
     def compute_partials(self, inputs, partials, discrete_inputs=None):
-        unclipped_k_coeff = inputs["k_coefficient"]
-        k_coeff = np.clip(unclipped_k_coeff, 0.0, 8.0)
+        k_coeff = inputs["k_coefficient"]
         unclipped_wing_sweep_25 = inputs["data:geometry:wing:sweep_25"]
         wing_sweep_25 = np.clip(unclipped_wing_sweep_25, 0.0, 60.0)
 
-        partials["lift_effect_mach_0", "k_coefficient"] = np.where(
-            unclipped_k_coeff == k_coeff,
-            (0.023436 + 0.000537 * wing_sweep_25 - 0.000208 * k_coeff),
-            1e-6,
+        partials["lift_effect_mach_0", "k_coefficient"] = (
+            0.029760
+            + 0.000116 * wing_sweep_25
+            - 0.001486 * k_coeff
+            + 0.000111 * k_coeff**2.0
+            + 0.000014 * k_coeff * wing_sweep_25
+            + 0.000006 * wing_sweep_25**2.0
         )
 
         partials["lift_effect_mach_0", "data:geometry:wing:sweep_25"] = np.where(
             unclipped_wing_sweep_25 == wing_sweep_25,
-            (-0.00027 + 0.000537 * k_coeff + 0.00008 * wing_sweep_25),
+            (
+                -0.001253
+                + 0.000116 * k_coeff
+                + 0.000034 * wing_sweep_25
+                + 0.000007 * k_coeff**2.0
+                + 0.000012 * k_coeff * wing_sweep_25
+            ),
             1e-6,
         )
 
