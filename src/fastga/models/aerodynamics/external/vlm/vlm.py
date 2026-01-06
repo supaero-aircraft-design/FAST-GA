@@ -349,22 +349,22 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             # Save results to defined path ---------------------------------------------------------
             if self.options["result_folder_path"] != "":
                 results = [
-                    cl_0_wing,
-                    cl_x_wing,
-                    cl_alpha_wing,
-                    cm_0_wing,
-                    y_vector_wing,
-                    cl_vector_wing,
-                    chord_vector_wing,
-                    coef_k_wing,
-                    cl_0_htp,
-                    cl_aoa_htp,
-                    cl_alpha_htp,
-                    cl_alpha_htp_isolated,
-                    y_vector_htp,
-                    cl_vector_htp,
-                    coef_k_htp,
-                    sref_wing,
+                    float(cl_0_wing),
+                    float(cl_x_wing),
+                    float(cl_alpha_wing),
+                    float(cm_0_wing),
+                    np.array(y_vector_wing).tolist(),
+                    np.array(cl_vector_wing).tolist(),
+                    np.array(chord_vector_wing).tolist(),
+                    float(coef_k_wing),
+                    float(cl_0_htp),
+                    float(cl_aoa_htp),
+                    float(cl_alpha_htp),
+                    float(cl_alpha_htp_isolated),
+                    np.array(y_vector_htp).tolist(),
+                    np.array(cl_vector_htp).tolist(),
+                    float(coef_k_htp),
+                    float(sref_wing),
                 ]
                 self.save_results(result_file_path, results)
 
