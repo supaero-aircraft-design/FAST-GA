@@ -354,7 +354,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     float(cl_alpha_wing),
                     float(cm_0_wing),
                     np.array(y_vector_wing).tolist(),
-                    cl_vector_wing,
+                    np.array(cl_vector_wing).tolist(),
                     np.array(chord_vector_wing).tolist(),
                     float(coef_k_wing),
                     float(cl_0_htp),
@@ -362,7 +362,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     float(cl_alpha_htp),
                     float(cl_alpha_htp_isolated),
                     np.array(y_vector_htp).tolist(),
-                    cl_vector_htp,
+                    np.array(cl_vector_htp).tolist(),
                     float(coef_k_htp),
                     float(sref_wing),
                 ]
