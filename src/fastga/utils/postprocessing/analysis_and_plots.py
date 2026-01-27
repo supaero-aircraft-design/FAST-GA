@@ -72,10 +72,6 @@ def aircraft_geometry_plot(
     )
     wing_tip_chord = _length_unit_convertion(variables["data:geometry:wing:tip:chord"], length_unit)
 
-    # print(variables["data:geometry:wing:tip:chord"])
-    # print(variables["data:geometry:wing:tip:chord"].metadata["val"][0])
-    # print(type(variables["data:geometry:wing:tip:chord"].metadata["units"]))
-
     y_wing = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
     )
