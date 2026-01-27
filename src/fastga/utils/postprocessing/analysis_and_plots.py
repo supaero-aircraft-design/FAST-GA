@@ -2,7 +2,7 @@
 Defines the analysis and plotting functions for postprocessing.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,12 @@ COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
 
 def aircraft_geometry_plot(
-    aircraft_file_path: str, name="", fig=None, plot_nacelle: bool = True, file_formatter=None
+    aircraft_file_path: str,
+    name="",
+    fig=None,
+    plot_nacelle: bool = True,
+    file_formatter=None,
+    length_unit="m",
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the top view of the wing.
@@ -49,14 +54,26 @@ def aircraft_geometry_plot(
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # Wing parameters
-    wing_kink_leading_edge_x = variables["data:geometry:wing:kink:leading_edge:x:local"].value[0]
-    wing_tip_leading_edge_x = variables["data:geometry:wing:tip:leading_edge:x:local"].value[0]
-    wing_root_y = variables["data:geometry:wing:root:y"].value[0]
-    wing_kink_y = variables["data:geometry:wing:kink:y"].value[0]
-    wing_tip_y = variables["data:geometry:wing:tip:y"].value[0]
-    wing_root_chord = variables["data:geometry:wing:root:chord"].value[0]
-    wing_kink_chord = variables["data:geometry:wing:kink:chord"].value[0]
-    wing_tip_chord = variables["data:geometry:wing:tip:chord"].value[0]
+    wing_kink_leading_edge_x = _length_unit_convertion(
+        variables["data:geometry:wing:kink:leading_edge:x:local"], length_unit
+    )
+    wing_tip_leading_edge_x = _length_unit_convertion(
+        variables["data:geometry:wing:tip:leading_edge:x:local"], length_unit
+    )
+    wing_root_y = _length_unit_convertion(variables["data:geometry:wing:root:y"], length_unit)
+    wing_kink_y = _length_unit_convertion(variables["data:geometry:wing:kink:y"], length_unit)
+    wing_tip_y = _length_unit_convertion(variables["data:geometry:wing:tip:y"], length_unit)
+    wing_root_chord = _length_unit_convertion(
+        variables["data:geometry:wing:root:chord"], length_unit
+    )
+    wing_kink_chord = _length_unit_convertion(
+        variables["data:geometry:wing:kink:chord"], length_unit
+    )
+    wing_tip_chord = _length_unit_convertion(variables["data:geometry:wing:tip:chord"], length_unit)
+
+    # print(variables["data:geometry:wing:tip:chord"])
+    # print(variables["data:geometry:wing:tip:chord"].metadata["val"][0])
+    # print(type(variables["data:geometry:wing:tip:chord"].metadata["units"]))
 
     y_wing = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
@@ -77,12 +94,16 @@ def aircraft_geometry_plot(
     )
 
     # Horizontal Tail parameters
-    ht_root_chord = variables["data:geometry:horizontal_tail:root:chord"].value[0]
-    ht_tip_chord = variables["data:geometry:horizontal_tail:tip:chord"].value[0]
-    ht_span = variables["data:geometry:horizontal_tail:span"].value[0]
-    ht_sweep_0 = variables["data:geometry:horizontal_tail:sweep_0"].value[0]
+    ht_root_chord = _length_unit_convertion(
+        variables["data:geometry:horizontal_tail:root:chord"], length_unit
+    )
+    ht_tip_chord = _length_unit_convertion(
+        variables["data:geometry:horizontal_tail:tip:chord"], length_unit
+    )
+    ht_span = _length_unit_convertion(variables["data:geometry:horizontal_tail:span"], length_unit)
+    ht_sweep_0 = _angular_unit_conversion(variables["data:geometry:horizontal_tail:sweep_0"])
 
-    ht_tip_leading_edge_x = ht_span / 2.0 * np.tan(ht_sweep_0 * np.pi / 180.0)
+    ht_tip_leading_edge_x = ht_span / 2.0 * np.tan(ht_sweep_0)
 
     y_ht = np.array([0, ht_span / 2.0, ht_span / 2.0, 0.0, 0.0])
 
@@ -91,10 +112,18 @@ def aircraft_geometry_plot(
     )
 
     # Fuselage parameters
-    fuselage_max_width = variables["data:geometry:fuselage:maximum_width"].value[0]
-    fuselage_length = variables["data:geometry:fuselage:length"].value[0]
-    fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
-    fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
+    fuselage_max_width = _length_unit_convertion(
+        variables["data:geometry:fuselage:maximum_width"], length_unit
+    )
+    fuselage_length = _length_unit_convertion(
+        variables["data:geometry:fuselage:length"], length_unit
+    )
+    fuselage_front_length = _length_unit_convertion(
+        variables["data:geometry:fuselage:front_length"], length_unit
+    )
+    fuselage_rear_length = _length_unit_convertion(
+        variables["data:geometry:fuselage:rear_length"], length_unit
+    )
 
     x_fuselage = np.array(
         [
@@ -119,13 +148,21 @@ def aircraft_geometry_plot(
     )
 
     # CGs
-    wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
-    wing_mac_length = variables["data:geometry:wing:MAC:length"].value[0]
-    local_wing_mac_le_x = variables["data:geometry:wing:MAC:leading_edge:x:local"].value[0]
-    local_ht_25mac_x = variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"].value[0]
-    ht_distance_from_wing = variables[
-        "data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"
-    ].value[0]
+    wing_25mac_x = _length_unit_convertion(
+        variables["data:geometry:wing:MAC:at25percent:x"], length_unit
+    )
+    wing_mac_length = _length_unit_convertion(
+        variables["data:geometry:wing:MAC:length"], length_unit
+    )
+    local_wing_mac_le_x = _length_unit_convertion(
+        variables["data:geometry:wing:MAC:leading_edge:x:local"], length_unit
+    )
+    local_ht_25mac_x = _length_unit_convertion(
+        variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"], length_unit
+    )
+    ht_distance_from_wing = _length_unit_convertion(
+        variables["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"], length_unit
+    )
 
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
@@ -153,11 +190,28 @@ def aircraft_geometry_plot(
 
     # Nacelle + propeller
     prop_layout = variables["data:geometry:propulsion:engine:layout"].value[0]
-    nac_width = variables["data:geometry:propulsion:nacelle:width"].value[0]
-    nac_length = variables["data:geometry:propulsion:nacelle:length"].value[0]
-    prop_diam = variables["data:geometry:propeller:diameter"].value[0]
-    pos_y_nacelle = np.array(variables["data:geometry:propulsion:nacelle:y"].value)
-    pos_x_nacelle = np.array(variables["data:geometry:propulsion:nacelle:x"].value)
+    nac_width = _length_unit_convertion(
+        variables["data:geometry:propulsion:nacelle:width"], length_unit
+    )
+    nac_length = _length_unit_convertion(
+        variables["data:geometry:propulsion:nacelle:length"], length_unit
+    )
+    prop_diam = _length_unit_convertion(variables["data:geometry:propeller:diameter"], length_unit)
+
+    if variables["data:geometry:propulsion:nacelle:y"].metadata["size"] == 1:
+        pos_y_nacelle = np.array(
+            [_length_unit_convertion(variables["data:geometry:propulsion:nacelle:y"], length_unit)]
+        )
+        pos_x_nacelle = np.array(
+            [_length_unit_convertion(variables["data:geometry:propulsion:nacelle:x"], length_unit)]
+        )
+    else:
+        pos_y_nacelle = _length_unit_convertion(
+            variables["data:geometry:propulsion:nacelle:y"], length_unit
+        )
+        pos_x_nacelle = _length_unit_convertion(
+            variables["data:geometry:propulsion:nacelle:x"], length_unit
+        )
 
     if prop_layout == 1.0:
         x_nacelle_plot = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
@@ -1313,3 +1367,22 @@ def aircraft_polar(
     )
 
     return fig
+
+
+def _length_unit_convertion(variable, unit: str) -> float:
+    original_unit = variable.metadata["units"]
+
+    if variable.metadata["size"] == 1:
+        value = variable.metadata["val"][0]
+        return convert_units(value, original_unit, unit)
+
+    else:
+        value = variable.metadata["val"]
+        return np.array([convert_units(v, original_unit, unit) for v in value])
+
+
+def _angular_unit_conversion(variable) -> float:
+    value = variable.metadata["val"][0]
+    original_unit = variable.metadata["units"]
+
+    return convert_units(value, original_unit, "rad")
