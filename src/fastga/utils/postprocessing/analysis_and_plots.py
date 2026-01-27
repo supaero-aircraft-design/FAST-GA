@@ -49,6 +49,7 @@ def aircraft_geometry_plot(
     :param plot_nacelle: boolean to turn on or off the plotting of the nacelles
     :param file_formatter: the formatter that defines the format of data file. If not provided,
     default format will be assumed.
+    :param length_unit: The length unit of the plot, meter is the default unit
     :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
@@ -1377,8 +1378,8 @@ def _length_unit_convertion(variable, unit: str) -> float:
         return convert_units(value, original_unit, unit)
 
     else:
-        value = variable.metadata["val"]
-        return np.array([convert_units(v, original_unit, unit) for v in value])
+        values = variable.metadata["val"]
+        return np.array([convert_units(value, original_unit, unit) for value in values])
 
 
 def _angular_unit_conversion(variable) -> float:
