@@ -15,17 +15,16 @@ Defines the analysis and plotting functions for postprocessing.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from random import SystemRandom
-from typing import Dict
 
 import fastoad.api as oad
 import numpy as np
 import plotly
 import plotly.graph_objects as go
 from fastoad.io import VariableIO
-from openmdao.utils.units import convert_units
 from plotly.subplots import make_subplots
 
 from fastga.models.aerodynamics.constants import FIRST_INVALID_COEFF
+from .postprocessing_utils import _unit_conversion
 
 COLS = plotly.colors.DEFAULT_PLOTLY_COLORS
 
@@ -53,17 +52,20 @@ def aircraft_geometry_plot(
     :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
-    get = _unit_convertion(variables, length_unit)
 
     # Wing parameters
-    wing_kink_leading_edge_x = get["data:geometry:wing:kink:leading_edge:x:local"]
-    wing_tip_leading_edge_x = get["data:geometry:wing:tip:leading_edge:x:local"]
-    wing_root_y = get["data:geometry:wing:root:y"]
-    wing_kink_y = get["data:geometry:wing:kink:y"]
-    wing_tip_y = get["data:geometry:wing:tip:y"]
-    wing_root_chord = get["data:geometry:wing:root:chord"]
-    wing_kink_chord = get["data:geometry:wing:kink:chord"]
-    wing_tip_chord = get["data:geometry:wing:tip:chord"]
+    wing_kink_leading_edge_x = _unit_conversion(
+        variables["data:geometry:wing:kink:leading_edge:x:local"], length_unit
+    )
+    wing_tip_leading_edge_x = _unit_conversion(
+        variables["data:geometry:wing:tip:leading_edge:x:local"], length_unit
+    )
+    wing_root_y = _unit_conversion(variables["data:geometry:wing:root:y"], length_unit)
+    wing_kink_y = _unit_conversion(variables["data:geometry:wing:kink:y"], length_unit)
+    wing_tip_y = _unit_conversion(variables["data:geometry:wing:tip:y"], length_unit)
+    wing_root_chord = _unit_conversion(variables["data:geometry:wing:root:chord"], length_unit)
+    wing_kink_chord = _unit_conversion(variables["data:geometry:wing:kink:chord"], length_unit)
+    wing_tip_chord = _unit_conversion(variables["data:geometry:wing:tip:chord"], length_unit)
 
     y_wing = np.array(
         [0, wing_root_y, wing_kink_y, wing_tip_y, wing_tip_y, wing_kink_y, wing_root_y, 0, 0]
@@ -84,10 +86,14 @@ def aircraft_geometry_plot(
     )
 
     # Horizontal Tail parameters
-    ht_root_chord = get["data:geometry:horizontal_tail:root:chord"]
-    ht_tip_chord = get["data:geometry:horizontal_tail:tip:chord"]
-    ht_span = get["data:geometry:horizontal_tail:span"]
-    ht_sweep_0 = get["data:geometry:horizontal_tail:sweep_0"]
+    ht_root_chord = _unit_conversion(
+        variables["data:geometry:horizontal_tail:root:chord"], length_unit
+    )
+    ht_tip_chord = _unit_conversion(
+        variables["data:geometry:horizontal_tail:tip:chord"], length_unit
+    )
+    ht_span = _unit_conversion(variables["data:geometry:horizontal_tail:span"], length_unit)
+    ht_sweep_0 = _unit_conversion(variables["data:geometry:horizontal_tail:sweep_0"], "rad")
 
     ht_tip_leading_edge_x = ht_span / 2.0 * np.tan(ht_sweep_0)
 
@@ -98,10 +104,16 @@ def aircraft_geometry_plot(
     )
 
     # Fuselage parameters
-    fuselage_max_width = get["data:geometry:fuselage:maximum_width"]
-    fuselage_length = get["data:geometry:fuselage:length"]
-    fuselage_front_length = get["data:geometry:fuselage:front_length"]
-    fuselage_rear_length = get["data:geometry:fuselage:rear_length"]
+    fuselage_max_width = _unit_conversion(
+        variables["data:geometry:fuselage:maximum_width"], length_unit
+    )
+    fuselage_length = _unit_conversion(variables["data:geometry:fuselage:length"], length_unit)
+    fuselage_front_length = _unit_conversion(
+        variables["data:geometry:fuselage:front_length"], length_unit
+    )
+    fuselage_rear_length = _unit_conversion(
+        variables["data:geometry:fuselage:rear_length"], length_unit
+    )
 
     x_fuselage = np.array(
         [
@@ -126,11 +138,17 @@ def aircraft_geometry_plot(
     )
 
     # CGs
-    wing_25mac_x = get["data:geometry:wing:MAC:at25percent:x"]
-    wing_mac_length = get["data:geometry:wing:MAC:length"]
-    local_wing_mac_le_x = get["data:geometry:wing:MAC:leading_edge:x:local"]
-    local_ht_25mac_x = get["data:geometry:horizontal_tail:MAC:at25percent:x:local"]
-    ht_distance_from_wing = get["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"]
+    wing_25mac_x = _unit_conversion(variables["data:geometry:wing:MAC:at25percent:x"], length_unit)
+    wing_mac_length = _unit_conversion(variables["data:geometry:wing:MAC:length"], length_unit)
+    local_wing_mac_le_x = _unit_conversion(
+        variables["data:geometry:wing:MAC:leading_edge:x:local"], length_unit
+    )
+    local_ht_25mac_x = _unit_conversion(
+        variables["data:geometry:horizontal_tail:MAC:at25percent:x:local"], length_unit
+    )
+    ht_distance_from_wing = _unit_conversion(
+        variables["data:geometry:horizontal_tail:MAC:at25percent:x:from_wingMAC25"], length_unit
+    )
 
     x_wing = x_wing + wing_25mac_x - 0.25 * wing_mac_length - local_wing_mac_le_x
     x_ht = x_ht + wing_25mac_x + ht_distance_from_wing - local_ht_25mac_x
@@ -158,16 +176,24 @@ def aircraft_geometry_plot(
 
     # Nacelle + propeller
     prop_layout = variables["data:geometry:propulsion:engine:layout"].value[0]
-    nac_width = get["data:geometry:propulsion:nacelle:width"]
-    nac_length = get["data:geometry:propulsion:nacelle:length"]
-    prop_diam = get["data:geometry:propeller:diameter"]
+    nac_width = _unit_conversion(variables["data:geometry:propulsion:nacelle:width"], length_unit)
+    nac_length = _unit_conversion(variables["data:geometry:propulsion:nacelle:length"], length_unit)
+    prop_diam = _unit_conversion(variables["data:geometry:propeller:diameter"], length_unit)
 
     if variables["data:geometry:propulsion:nacelle:y"].metadata["size"] == 1:
-        pos_y_nacelle = np.array([get["data:geometry:propulsion:nacelle:y"]])
-        pos_x_nacelle = np.array([get["data:geometry:propulsion:nacelle:x"]])
+        pos_y_nacelle = np.array(
+            [_unit_conversion(variables["data:geometry:propulsion:nacelle:y"], length_unit)]
+        )
+        pos_x_nacelle = np.array(
+            [_unit_conversion(variables["data:geometry:propulsion:nacelle:x"], length_unit)]
+        )
     else:
-        pos_y_nacelle = get["data:geometry:propulsion:nacelle:y"]
-        pos_x_nacelle = get["data:geometry:propulsion:nacelle:x"]
+        pos_y_nacelle = _unit_conversion(
+            variables["data:geometry:propulsion:nacelle:y"], length_unit
+        )
+        pos_x_nacelle = _unit_conversion(
+            variables["data:geometry:propulsion:nacelle:x"], length_unit
+        )
 
     if prop_layout == 1.0:
         x_nacelle_plot = np.array([0.0, nac_length, nac_length, 0.0, 0.0, 0.0])
@@ -516,7 +542,12 @@ def cl_wing_diagram(
 
 
 def cg_lateral_diagram(
-    aircraft_file_path: str, name="", fig=None, file_formatter=None, color=None
+    aircraft_file_path: str,
+    name="",
+    fig=None,
+    file_formatter=None,
+    color=None,
+    length_unit="m",
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the lateral view of the plane.
@@ -529,15 +560,22 @@ def cg_lateral_diagram(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
     default format will be assumed.
+    :param length_unit: The length unit of the plot, meter is the default unit
     :return: wing plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
     # Fuselage parameters
-    fuselage_max_height = variables["data:geometry:fuselage:maximum_height"].value[0]
-    fuselage_length = variables["data:geometry:fuselage:length"].value[0]
-    fuselage_front_length = variables["data:geometry:fuselage:front_length"].value[0]
-    fuselage_rear_length = variables["data:geometry:fuselage:rear_length"].value[0]
+    fuselage_max_height = _unit_conversion(
+        variables["data:geometry:fuselage:maximum_height"], length_unit
+    )
+    fuselage_length = _unit_conversion(variables["data:geometry:fuselage:length"], length_unit)
+    fuselage_front_length = _unit_conversion(
+        variables["data:geometry:fuselage:front_length"], length_unit
+    )
+    fuselage_rear_length = _unit_conversion(
+        variables["data:geometry:fuselage:rear_length"], length_unit
+    )
 
     x_fuselage = np.array(
         [
@@ -565,12 +603,14 @@ def cg_lateral_diagram(
     x_fuselage = np.concatenate((x_fuselage, x_fuselage))
 
     # Vertical Tail parameters
-    vt_root_chord = variables["data:geometry:vertical_tail:root:chord"].value[0]
-    vt_tip_chord = variables["data:geometry:vertical_tail:tip:chord"].value[0]
-    vt_span = variables["data:geometry:vertical_tail:span"].value[0]
-    vt_sweep_0 = variables["data:geometry:vertical_tail:sweep_0"].value[0]
+    vt_root_chord = _unit_conversion(
+        variables["data:geometry:vertical_tail:root:chord"], length_unit
+    )
+    vt_tip_chord = _unit_conversion(variables["data:geometry:vertical_tail:tip:chord"], length_unit)
+    vt_span = _unit_conversion(variables["data:geometry:vertical_tail:span"], length_unit)
+    vt_sweep_0 = _unit_conversion(variables["data:geometry:vertical_tail:sweep_0"], "rad")
 
-    vt_tip_leading_edge_x = vt_span * np.tan(vt_sweep_0 * np.pi / 180.0)
+    vt_tip_leading_edge_x = vt_span * np.tan(vt_sweep_0)
 
     x_vt = np.array(
         [0, vt_tip_leading_edge_x, vt_tip_leading_edge_x + vt_tip_chord, vt_root_chord, 0]
@@ -578,21 +618,23 @@ def cg_lateral_diagram(
 
     z_vt = np.array([0, vt_span, vt_span, 0, 0])
 
-    wing_25mac_x = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
-    local_vt_25mac_x = variables["data:geometry:vertical_tail:MAC:at25percent:x:local"].value[0]
-    vt_distance_from_wing = variables[
-        "data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"
-    ].value[0]
+    wing_25mac_x = _unit_conversion(variables["data:geometry:wing:MAC:at25percent:x"], length_unit)
+    local_vt_25mac_x = _unit_conversion(
+        variables["data:geometry:vertical_tail:MAC:at25percent:x:local"], length_unit
+    )
+    vt_distance_from_wing = _unit_conversion(
+        variables["data:geometry:vertical_tail:MAC:at25percent:x:from_wingMAC25"], length_unit
+    )
     x_vt = x_vt + wing_25mac_x + vt_distance_from_wing - local_vt_25mac_x
     z_vt = z_vt + fuselage_max_height / 4.0
 
     # CGs
 
-    cg_aft_x = variables["data:weight:aircraft:CG:aft:x"].value[0]
-    cg_fwd_x = variables["data:weight:aircraft:CG:fwd:x"].value[0]
-    cg_empty_x = variables["data:weight:aircraft_empty:CG:x"].value[0]
-    cg_empty_z = variables["data:weight:aircraft_empty:CG:z"].value[0]
-    lg_height = variables["data:geometry:landing_gear:height"].value[0]
+    cg_aft_x = _unit_conversion(variables["data:weight:aircraft:CG:aft:x"], length_unit)
+    cg_fwd_x = _unit_conversion(variables["data:weight:aircraft:CG:fwd:x"], length_unit)
+    cg_empty_x = _unit_conversion(variables["data:weight:aircraft_empty:CG:x"], length_unit)
+    cg_empty_z = _unit_conversion(variables["data:weight:aircraft_empty:CG:z"], length_unit)
+    lg_height = _unit_conversion(variables["data:geometry:landing_gear:height"], length_unit)
 
     x_cg = np.array([cg_fwd_x, cg_empty_x, cg_aft_x])
     z_cg = np.array([cg_empty_z, cg_empty_z, cg_empty_z])
@@ -600,12 +642,16 @@ def cg_lateral_diagram(
 
     # Stability
 
-    l0 = variables["data:geometry:wing:MAC:length"].value[0]
-    mac_position = variables["data:geometry:wing:MAC:at25percent:x"].value[0]
+    l0 = _unit_conversion(variables["data:geometry:wing:MAC:length"], length_unit)
+    mac_position = _unit_conversion(variables["data:geometry:wing:MAC:at25percent:x"], length_unit)
     stick_fixed_sm = variables["data:handling_qualities:stick_fixed_static_margin"].value[0]
     stick_free_sm = variables["data:handling_qualities:stick_free_static_margin"].value[0]
-    ac_ratio_fixed = variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"].value[0]
-    ac_ratio_free = variables["data:aerodynamics:cruise:neutral_point:stick_free:x"].value[0]
+    ac_ratio_fixed = _unit_conversion(
+        variables["data:aerodynamics:cruise:neutral_point:stick_fixed:x"], length_unit
+    )
+    ac_ratio_free = _unit_conversion(
+        variables["data:aerodynamics:cruise:neutral_point:stick_free:x"], length_unit
+    )
 
     ac_fixed_x = mac_position + (ac_ratio_fixed - 0.25) * l0
     ac_free_x = mac_position + (ac_ratio_free - 0.25) * l0
@@ -720,30 +766,6 @@ def cg_lateral_diagram(
     return fig
 
 
-def _get_variable_values_with_new_units(
-    variables: oad.VariableList, var_names_and_new_units: Dict[str, str]
-):
-    """
-    Returns the value of the requested variable names with respect to their new units in the order
-    in which their were given. This function works only for variable of value with shape=1 or float.
-
-    :param variables: instance containing variables information
-    :param var_names_and_new_units: dictionary of the variable names as keys and units as value
-    :return: values of the requested variables with respect to their new units.
-    """
-    new_values = []
-    for variable_name, unit in var_names_and_new_units.items():
-        new_values.append(
-            convert_units(
-                variables[variable_name].value[0],
-                variables[variable_name].units,
-                unit,
-            )
-        )
-
-    return new_values
-
-
 def _data_weight_decomposition(variables: oad.VariableList, owe=None):
     """
     Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
@@ -763,17 +785,16 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
                 name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
                 and "aircraft" not in name_split[2]
             ):
-                category_values.append(
-                    convert_units(variables[variable].value[0], variables[variable].units, "kg")
-                )
+                value = _unit_conversion(variables[variable], "kg")
+                category_values.append(value)
                 category_names.append(name_split[2])
                 if owe:
                     owe_subcategory_names.append(
                         name_split[2]
                         + "<br>"
-                        + str(int(variables[variable].value[0]))
+                        + str(int(value))
                         + " [kg] ("
-                        + str(round(variables[variable].value[0] / owe * 100, 1))
+                        + str(round(value / owe * 100, 1))
                         + "%)"
                     )
     if owe:
@@ -801,17 +822,10 @@ def mass_breakdown_bar_plot(
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    var_names_and_new_units = {
-        "data:weight:aircraft:MTOW": "kg",
-        "data:weight:aircraft:OWE": "kg",
-        "data:weight:aircraft:payload": "kg",
-        "data:mission:sizing:fuel": "kg",
-    }
-
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    mtow, owe, payload, fuel_mission = _get_variable_values_with_new_units(
-        variables, var_names_and_new_units
-    )
+    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], "kg")
+    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], "kg")
+    payload = _unit_conversion(variables["data:weight:aircraft:payload"], "kg")
+    fuel_mission = _unit_conversion(variables["data:mission:sizing:fuel"], "kg")
 
     if fig is None:
         fig = make_subplots(
@@ -856,17 +870,10 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    var_names_and_new_units = {
-        "data:weight:aircraft:MTOW": "kg",
-        "data:weight:aircraft:OWE": "kg",
-        "data:weight:aircraft:payload": "kg",
-        "data:mission:sizing:fuel": "kg",
-    }
-
-    # pylint: disable=unbalanced-tuple-unpacking # It is balanced for the parameters provided
-    mtow, owe, payload, onboard_fuel_at_takeoff = _get_variable_values_with_new_units(
-        variables, var_names_and_new_units
-    )
+    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], "kg")
+    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], "kg")
+    payload = _unit_conversion(variables["data:weight:aircraft:payload"], "kg")
+    onboard_fuel_at_takeoff = _unit_conversion(variables["data:mission:sizing:fuel"], "kg")
 
     # TODO: Deal with this in a more generic manner ?
     # Looks like if the precise value are not equal then nothing will be displayed which can
@@ -925,10 +932,8 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
-                if variable_name != "unusable_fuel":
-                    sub_categories_values.append(
-                        convert_units(variables[variable].value[0], variables[variable].units, "kg")
-                    )
+                if variable_name != "unusable_fuel" and variable_name != "wing_distributed_mass":
+                    sub_categories_values.append(_unit_conversion(variables[variable], "kg"))
                     sub_categories_parent.append(
                         categories_labels[categories_names.index(parent_name)]
                     )
@@ -1114,10 +1119,11 @@ def payload_range(
     :return: payload range figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
-
-    payload_array = list(variables["data:payload_range:payload_array"].value)
-    range_array = list(variables["data:payload_range:range_array"].value)
-    sr_array = list(variables["data:payload_range:specific_range_array"].value)
+    payload_array = _unit_conversion(variables["data:payload_range:payload_array"], "kg").tolist()
+    range_array = _unit_conversion(variables["data:payload_range:range_array"], "nmi").tolist()
+    sr_array = _unit_conversion(
+        variables["data:payload_range:specific_range_array"], "nmi/kg"
+    ).tolist()
 
     text_plot = [
         "<br>" + "<b>A<b>" + "<br>" + "SR = " + str(round(sr_array[0], 1)) + " nm/kg",
@@ -1323,41 +1329,3 @@ def aircraft_polar(
     )
 
     return fig
-
-
-def _length_unit_convertion(variable, unit: str) -> float:
-    original_unit = variable.metadata["units"]
-
-    if variable.metadata["size"] == 1:
-        value = variable.metadata["val"][0]
-        return convert_units(value, original_unit, unit)
-
-    else:
-        values = variable.metadata["val"]
-        return np.array([convert_units(value, original_unit, unit) for value in values])
-
-
-def _angular_unit_conversion(variable) -> float:
-    value = variable.metadata["val"][0]
-    original_unit = variable.metadata["units"]
-
-    return convert_units(value, original_unit, "rad")
-
-
-class _unit_convertion:
-    """Wrapper for automatic unit conversion with dict-like access"""
-
-    def __init__(self, variables, length_unit="m"):
-        self._variables = variables
-        self._length_unit = length_unit
-
-    def __getitem__(self, var_path: str):
-        """Get variable by path and convert its units"""
-        variable = self._variables[var_path]
-        original_unit = variable.metadata["units"]
-
-        if original_unit == "rad" or original_unit == "deg":
-            return _angular_unit_conversion(variable)
-
-        else:
-            return _length_unit_convertion(variable, self._length_unit)
