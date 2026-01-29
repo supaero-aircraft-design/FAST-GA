@@ -29,8 +29,8 @@ def _unit_conversion(variable, new_unit: str):
     original_unit = variable.metadata["units"]
 
     if len(variable.metadata["val"]) > 1:
-        values = variable.metadata["val"]
-        return np.array([om.convert_units(value, original_unit, new_unit) for value in values])
+        values = np.array(variable.metadata["val"])
+        return om.convert_units(values, original_unit, new_unit)
 
     value = variable.metadata["val"][0]
     return om.convert_units(value, original_unit, new_unit)
