@@ -18,19 +18,19 @@ import numpy as np
 import openmdao.api as om
 
 
-def _unit_conversion(variable, unit: str):
+def _unit_conversion(variable, new_unit: str):
     """
     Returns the value of the requested variable expressed in the new unit.
 
     :param variable: instance containing variable information
-    :param unit: new given units defined by user or functions
+    :param new_unit: new given units defined by user or functions
     :return: values of the requested variables expressed in the new unit
     """
     original_unit = variable.metadata["units"]
 
     if len(variable.metadata["val"]) > 1:
         values = variable.metadata["val"]
-        return np.array([om.convert_units(value, original_unit, unit) for value in values])
+        return np.array([om.convert_units(value, original_unit, new_unit) for value in values])
 
     value = variable.metadata["val"][0]
-    return om.convert_units(value, original_unit, unit)
+    return om.convert_units(value, original_unit, new_unit)

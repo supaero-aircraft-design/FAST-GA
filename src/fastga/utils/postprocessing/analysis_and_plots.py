@@ -766,13 +766,14 @@ def cg_lateral_diagram(
     return fig
 
 
-def _data_weight_decomposition(variables: oad.VariableList, owe=None):
+def _data_weight_decomposition(variables: oad.VariableList, owe=None, weight_unit="kg"):
     """
     Returns the two level weight decomposition of MTOW and optionally the decomposition of owe
     subcategories.
 
     :param variables: instance containing variables information
     :param owe: value of OWE, if provided names of owe subcategories will be provided
+    :param weight_unit: The weight unit of the plot, kilogram is the default unit
     :return: variable values, names and optionally owe subcategories names.
     """
     category_values = []
@@ -785,7 +786,7 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
                 name_split[0] + name_split[1] + name_split[3] == "dataweightmass"
                 and "aircraft" not in name_split[2]
             ):
-                value = _unit_conversion(variables[variable], "kg")
+                value = _unit_conversion(variables[variable], weight_unit)
                 category_values.append(value)
                 category_names.append(name_split[2])
                 if owe:
@@ -793,7 +794,9 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
                         name_split[2]
                         + "<br>"
                         + str(int(value))
-                        + " [kg] ("
+                        + " ["
+                        + weight_unit
+                        + "] ("
                         + str(round(value / owe * 100, 1))
                         + "%)"
                     )
@@ -806,7 +809,7 @@ def _data_weight_decomposition(variables: oad.VariableList, owe=None):
 
 
 def mass_breakdown_bar_plot(
-    aircraft_file_path: str, name=None, fig=None, file_formatter=None
+    aircraft_file_path: str, name=None, fig=None, file_formatter=None, weight_unit="kg"
 ) -> go.FigureWidget:
     """
     Returns a figure plot of the aircraft mass breakdown using bar plots.
@@ -818,14 +821,15 @@ def mass_breakdown_bar_plot(
     :param fig: existing figure to which add the plot
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param weight_unit: The weight unit of the plot, kilogram is the default unit
     :return: bar plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], "kg")
-    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], "kg")
-    payload = _unit_conversion(variables["data:weight:aircraft:payload"], "kg")
-    fuel_mission = _unit_conversion(variables["data:mission:sizing:fuel"], "kg")
+    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], weight_unit)
+    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], weight_unit)
+    payload = _unit_conversion(variables["data:weight:aircraft:payload"], weight_unit)
+    fuel_mission = _unit_conversion(variables["data:mission:sizing:fuel"], weight_unit)
 
     if fig is None:
         fig = make_subplots(
@@ -846,19 +850,21 @@ def mass_breakdown_bar_plot(
     )
 
     # Get data:weight decomposition
-    main_weight_values, main_weight_names, _ = _data_weight_decomposition(variables, owe=None)
+    main_weight_values, main_weight_names, _ = _data_weight_decomposition(
+        variables, owe=None, weight_unit=weight_unit
+    )
     fig.add_trace(
         go.Bar(name=name, x=main_weight_names, y=main_weight_values, marker_color=COLS[i]),
         row=1,
         col=2,
     )
 
-    fig.update_layout(yaxis_title="[kg]")
+    fig.update_layout(yaxis_title="[" + weight_unit + "]")
 
     return fig
 
 
-def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
+def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight_unit="kg"):
     """
     Returns a figure sunburst plot of the mass breakdown.
     On the left a MTOW sunburst and on the right a OWE sunburst.
@@ -866,14 +872,15 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     :param aircraft_file_path: path of data file
     :param file_formatter: the formatter that defines the format of data file. If not provided,
                            default format will be assumed.
+    :param weight_unit: The weight unit of the plot, kilogram is the default unit
     :return: sunburst plot figure.
     """
     variables = VariableIO(aircraft_file_path, file_formatter).read()
 
-    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], "kg")
-    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], "kg")
-    payload = _unit_conversion(variables["data:weight:aircraft:payload"], "kg")
-    onboard_fuel_at_takeoff = _unit_conversion(variables["data:mission:sizing:fuel"], "kg")
+    mtow = _unit_conversion(variables["data:weight:aircraft:MTOW"], weight_unit)
+    owe = _unit_conversion(variables["data:weight:aircraft:OWE"], weight_unit)
+    payload = _unit_conversion(variables["data:weight:aircraft:payload"], weight_unit)
+    onboard_fuel_at_takeoff = _unit_conversion(variables["data:mission:sizing:fuel"], weight_unit)
 
     # TODO: Deal with this in a more generic manner ?
     # Looks like if the precise value are not equal then nothing will be displayed which can
@@ -890,26 +897,37 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
     fig.add_trace(
         go.Sunburst(
             labels=[
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
                 "payload"
                 + "<br>"
                 + str(int(payload))
-                + " [kg] ("
+                + " ["
+                + weight_unit
+                + "] ("
                 + str(round(payload / mtow * 100, 1))
                 + "%)",
                 "onboard_fuel_at_takeoff"
                 + "<br>"
                 + str(int(onboard_fuel_at_takeoff))
-                + " [kg] ("
+                + " ["
+                + weight_unit
+                + "] ("
                 + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
                 + "%)",
-                "OWE" + "<br>" + str(int(owe)) + " [kg] (" + str(round(owe / mtow * 100, 1)) + "%)",
+                "OWE"
+                + "<br>"
+                + str(int(owe))
+                + " ["
+                + weight_unit
+                + "] ("
+                + str(round(owe / mtow * 100, 1))
+                + "%)",
             ],
             parents=[
                 "",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
-                "MTOW" + "<br>" + str(int(mtow)) + " [kg]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
+                "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
             ],
             values=[mtow, payload, onboard_fuel_at_takeoff, owe],
             branchvalues="total",
@@ -920,7 +938,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
 
     # Get data:weight 2-levels decomposition
     categories_values, categories_names, categories_labels = _data_weight_decomposition(
-        variables, owe=owe
+        variables, owe=owe, weight_unit=weight_unit
     )
 
     sub_categories_values = []
@@ -933,19 +951,19 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None):
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
                 if variable_name != "unusable_fuel" and variable_name != "wing_distributed_mass":
-                    sub_categories_values.append(_unit_conversion(variables[variable], "kg"))
+                    sub_categories_values.append(_unit_conversion(variables[variable], weight_unit))
                     sub_categories_parent.append(
                         categories_labels[categories_names.index(parent_name)]
                     )
                     sub_categories_names.append(variable_name)
 
     # Define figure data
-    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [kg]"]
+    figure_labels = ["OWE" + "<br>" + str(int(owe)) + " [" + weight_unit + "]"]
     figure_labels.extend(categories_labels)
     figure_labels.extend(sub_categories_names)
     figure_parents = [""]
     for _ in categories_names:
-        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [kg]")
+        figure_parents.append("OWE" + "<br>" + str(int(owe)) + " [" + weight_unit + "]")
     figure_parents.extend(sub_categories_parent)
     figure_values = [owe]
     figure_values.extend(categories_values)
