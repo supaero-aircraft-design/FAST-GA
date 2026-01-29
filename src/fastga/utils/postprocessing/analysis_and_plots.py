@@ -864,6 +864,7 @@ def mass_breakdown_bar_plot(
     return fig
 
 
+# pylint: disable=too-many-locals
 def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight_unit="kg"):
     """
     Returns a figure sunburst plot of the mass breakdown.
@@ -950,7 +951,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
             parent_name = name_split[2]
             if parent_name in categories_names and name_split[-1] == "mass":
                 variable_name = "_".join(name_split[3:-1])
-                if variable_name != "unusable_fuel" and variable_name != "wing_distributed_mass":
+                if variable_name not in ("unusable_fuel", "wing_distributed_mass"):
                     sub_categories_values.append(_unit_conversion(variables[variable], weight_unit))
                     sub_categories_parent.append(
                         categories_labels[categories_names.index(parent_name)]
