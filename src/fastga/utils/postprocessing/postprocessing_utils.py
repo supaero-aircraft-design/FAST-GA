@@ -20,11 +20,11 @@ import openmdao.api as om
 
 def _unit_conversion(variable, unit: str):
     """
-    Returns the value of the requested variable names with respect to new given units.
+    Returns the value of the requested variable expressed in the new unit.
 
     :param variable: instance containing variable information
     :param unit: new given units defined by user or functions
-    :return: values of the requested variables with respect to their new units
+    :return: values of the requested variables expressed in the new unit
     """
     original_unit = variable.metadata["units"]
 
