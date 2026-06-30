@@ -38,6 +38,8 @@ _LOGGER = logging.getLogger(__name__)
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
+    _cache = {}
+
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
         super().__init__(**kwargs)
@@ -1005,8 +1007,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
-    @staticmethod
-    def search_results(result_folder_path, geometry_set):
+    @classmethod
+    def search_results(cls, result_folder_path, geometry_set):
         """Search the results folder to see if the geometry has already been calculated."""
         # default value
         result_file_path = None
@@ -1024,17 +1026,24 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 "mach",
                 "area_ratio",
             ]
+            # Cache bucket for this result folder, keyed by category ("geometry", "vlm", ...)
+            folder_cache = cls._cache.setdefault(result_folder_path, {})
+            geometry_cache = folder_cache.setdefault("geometry", {})
             # If some results already stored search for corresponding geometry
             if pth.exists(pth.join(result_folder_path, "geometry_0.csv")):
                 idx = 0
                 while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
                     if pth.exists(pth.join(result_folder_path, "vlm_" + str(idx) + ".csv")):
-                        data = pd.read_csv(
-                            pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")
-                        )
-                        values = data.to_numpy()[:, 1].tolist()
-                        labels = data.to_numpy()[:, 0].tolist()
-                        data = pd.DataFrame(values, index=labels)
+                        if idx in geometry_cache:
+                            data = geometry_cache[idx]
+                        else:
+                            data = pd.read_csv(
+                                pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")
+                            )
+                            values = data.to_numpy()[:, 1].tolist()
+                            labels = data.to_numpy()[:, 0].tolist()
+                            data = pd.DataFrame(values, index=labels)
+                            geometry_cache[idx] = data
                         # noinspection PyBroadException
                         try:
                             if (
@@ -1059,8 +1068,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         return result_file_path, saved_area_ratio
 
-    @staticmethod
-    def save_geometry(result_folder_path, geometry_set):
+    @classmethod
+    def save_geometry(cls, result_folder_path, geometry_set):
         """Save geometry if not already computed by finding first available index."""
         geometry_set_labels = [
             "sweep25_wing",
@@ -1078,13 +1087,27 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         idx = 0
         while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
             idx += 1
-        data.to_csv(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv"))
+        geometry_file_path = pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")
         result_file_path = pth.join(result_folder_path, "vlm_" + str(idx) + ".csv")
+
+        # The index walk above already guarantees idx is free, so the CSV can't exist yet;
+        # the check is kept for safety/clarity and to avoid a redundant write if it does.
+        if not pth.exists(geometry_file_path):
+            data.to_csv(geometry_file_path)
+
+        # Ensure the cache has an entry for this index either way, so a later
+        # search_results/read_results call doesn't need to re-read it from disk.
+        folder_cache = cls._cache.setdefault(result_folder_path, {})
+        geometry_cache = folder_cache.setdefault("geometry", {})
+        if idx not in geometry_cache:
+            cached_data = data.copy()
+            cached_data.columns = [0]
+            geometry_cache[idx] = cached_data
 
         return result_file_path
 
-    @staticmethod
-    def save_results(result_file_path, results):
+    @classmethod
+    def save_results(cls, result_file_path, results):
         """Reads saved results."""
         labels = [
             "cl_0_wing",
@@ -1105,15 +1128,52 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "saved_ref_area",
         ]
         data = pd.DataFrame(results, index=labels)
-        data.to_csv(result_file_path)
 
-    @staticmethod
-    def read_results(result_file_path):
+        # Skip the disk write if the file is already there with this content.
+        if not pth.exists(result_file_path):
+            data.to_csv(result_file_path)
+
+        # Ensure the cache has an entry for this file either way, so the next
+        # read_results call for this file is served from memory instead of disk.
+        result_folder_path, file_name = pth.split(result_file_path)
+        folder_cache = cls._cache.setdefault(result_folder_path, {})
+        vlm_cache = folder_cache.setdefault("vlm", {})
+        idx = cls._index_from_file_name(file_name)
+        if idx not in vlm_cache:
+            cached_data = data.copy()
+            cached_data.columns = [0]
+            vlm_cache[idx] = cached_data
+
+    @classmethod
+    def read_results(cls, result_file_path):
+        result_folder_path, file_name = pth.split(result_file_path)
+        idx = cls._index_from_file_name(file_name)
+
+        folder_cache = cls._cache.setdefault(result_folder_path, {})
+        vlm_cache = folder_cache.setdefault("vlm", {})
+
+        if idx in vlm_cache:
+            return vlm_cache[idx]
+
+        # Not cached yet: read from disk (saving it first if it somehow doesn't exist),
+        # then store the parsed result in the cache for subsequent calls.
+        if not pth.exists(result_file_path):
+            data = pd.DataFrame(columns=[0])
+            data.to_csv(result_file_path)
+
         data = pd.read_csv(result_file_path)
         values = data.to_numpy()[:, 1].tolist()
         labels = data.to_numpy()[:, 0].tolist()
+        data = pd.DataFrame(values, index=labels)
 
-        return pd.DataFrame(values, index=labels)
+        vlm_cache[idx] = data
+
+        return data
+
+    @staticmethod
+    def _index_from_file_name(file_name):
+        """Extract the numerical index out of a 'geometry_{idx}.csv'/'vlm_{idx}.csv' file name."""
+        return int(pth.splitext(file_name)[0].split("_")[-1])
 
     def post_processing_wing(
         self,
