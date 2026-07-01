@@ -15,7 +15,6 @@
 import copy
 import logging
 import os
-import os.path as pth
 import warnings
 from typing import Optional
 
@@ -25,7 +24,6 @@ import pandas as pd
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-from fastga.command.api import string_to_array
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
 DEFAULT_NX = 19
@@ -114,8 +112,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array)
 
-        # Create the result folder if it does not exist. This is to prevent compatibility issue
-        # for later computation.
+        # Create the workdir folder to ensure compatebility.
         os.makedirs(self.options["result_folder_path"], exist_ok=True)
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
@@ -1025,10 +1022,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     saved_set = np.around(
                         data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
                     )
-                    if (
-                        np.sum(saved_set == geometry_set[0:-1])
-                        == len(geometry_set_labels) - 1
-                    ):
+                    if np.sum(saved_set == geometry_set[0:-1]) == len(geometry_set_labels) - 1:
                         saved_area_ratio = data.loc["area_ratio", 0]
                         return idx, saved_area_ratio
             except Exception:
