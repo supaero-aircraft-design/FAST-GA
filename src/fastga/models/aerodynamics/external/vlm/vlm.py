@@ -112,7 +112,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array)
 
-        # Create the workdir folder to ensure compatebility.
+        # Create the workdir folder to ensure compatiblity.
         os.makedirs(self.options["result_folder_path"], exist_ok=True)
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
