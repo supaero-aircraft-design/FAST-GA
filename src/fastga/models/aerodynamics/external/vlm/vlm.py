@@ -30,45 +30,13 @@ DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
 
-GEOMETRY_SET_LABELS = [
-    "sweep25_wing",
-    "taper_ratio_wing",
-    "aspect_ratio_wing",
-    "dihedral_angle_wing",
-    "twist_angle_wing",
-    "sweep25_htp",
-    "taper_ratio_htp",
-    "aspect_ratio_htp",
-    "mach",
-    "area_ratio",
-]
-
-VLM_RESULT_LABELS = [
-    "cl_0_wing",
-    "cl_X_wing",
-    "cl_alpha_wing",
-    "cm_0_wing",
-    "y_vector_wing",
-    "cl_vector_wing",
-    "chord_vector_wing",
-    "coef_k_wing",
-    "cl_0_htp",
-    "cl_X_htp",
-    "cl_alpha_htp",
-    "cl_alpha_htp_isolated",
-    "y_vector_htp",
-    "cl_vector_htp",
-    "coef_k_htp",
-    "saved_ref_area",
-]
-
 _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
-    _cache: dict = {}
+    _cache: dict = {}  # idx -> {"geometry": DataFrame, "vlm": DataFrame}
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
@@ -144,9 +112,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array)
 
-        aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
-
-        self._cache.setdefault(aero_type_key, {})
+        # Create the workdir folder to ensure compatiblity.
+        os.makedirs(self.options["result_folder_path"], exist_ok=True)
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """
@@ -268,11 +235,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )
 
         # Search if results already exist:
-        result_existed, saved_area_ratio = self.search_results()
+        cached_idx, saved_area_ratio = self.search_results(geometry_set)
 
         # If no result saved for that geometry under this mach condition, computation is done
-        if not result_existed:
-            self.save_geometry(geometry_set)
+        if cached_idx is None:
+            cached_idx = self.save_geometry(geometry_set)
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_wing(
@@ -388,7 +355,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 float(coef_k_htp),
                 float(sref_wing),
             ]
-            self.save_results(results)
+            self.save_results(cached_idx, results)
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
@@ -409,7 +376,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_htp,
                 cl_vector_htp,
                 coef_k_htp,
-            ) = self.read_value_from_data(sref_wing, area_ratio, saved_area_ratio)
+            ) = self.read_value_from_data(cached_idx, sref_wing, area_ratio, saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -1027,35 +994,88 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
-    def search_results(self):
+    @classmethod
+    def search_results(cls, geometry_set):
         """Search the in-memory cache to see if the geometry has already been calculated."""
-        aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
+        geometry_set_labels = [
+            "sweep25_wing",
+            "taper_ratio_wing",
+            "aspect_ratio_wing",
+            "dihedral_angle_wing",
+            "twist_angle_wing",
+            "sweep25_htp",
+            "taper_ratio_htp",
+            "aspect_ratio_htp",
+            "mach",
+            "area_ratio",
+        ]
+        for idx, entry in cls._cache.items():
+            if "vlm" not in entry:
+                continue
+            data = entry["geometry"]
+            # noinspection PyBroadException
+            try:
+                if (
+                    np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
+                    == len(geometry_set_labels) - 1
+                ):
+                    saved_set = np.around(
+                        data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
+                    )
+                    if np.sum(saved_set == geometry_set[0:-1]) == len(geometry_set_labels) - 1:
+                        saved_area_ratio = data.loc["area_ratio", 0]
+                        return idx, saved_area_ratio
+            except Exception:
+                break
 
-        if aero_type_key in self._cache and self._cache[aero_type_key] != {}:
-            geometry_data = self._cache[aero_type_key]["geometry"]
-            return True, geometry_data.get("area_ratio")
+        return None, 1.0
 
-        else:
-            return False, 1.0
-
-    def save_geometry(self, geometry_set):
+    @classmethod
+    def save_geometry(cls, geometry_set):
         """Store geometry in the in-memory cache and return its index."""
+        geometry_set_labels = [
+            "sweep25_wing",
+            "taper_ratio_wing",
+            "aspect_ratio_wing",
+            "dihedral_angle_wing",
+            "twist_angle_wing",
+            "sweep25_htp",
+            "taper_ratio_htp",
+            "aspect_ratio_htp",
+            "mach",
+            "area_ratio",
+        ]
+        idx = len(cls._cache)
+        cls._cache[idx] = {"geometry": pd.DataFrame(geometry_set, index=geometry_set_labels)}
+        return idx
 
-        aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
-
-        self._cache[aero_type_key]["geometry"] = dict(zip(GEOMETRY_SET_LABELS, geometry_set))
-
-    def save_results(self, results):
+    @classmethod
+    def save_results(cls, idx, results):
         """Store VLM results in the in-memory cache."""
-        aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
+        labels = [
+            "cl_0_wing",
+            "cl_X_wing",
+            "cl_alpha_wing",
+            "cm_0_wing",
+            "y_vector_wing",
+            "cl_vector_wing",
+            "chord_vector_wing",
+            "coef_k_wing",
+            "cl_0_htp",
+            "cl_X_htp",
+            "cl_alpha_htp",
+            "cl_alpha_htp_isolated",
+            "y_vector_htp",
+            "cl_vector_htp",
+            "coef_k_htp",
+            "saved_ref_area",
+        ]
+        cls._cache[idx]["vlm"] = pd.DataFrame(results, index=labels)
 
-        self._cache[aero_type_key]["vlm"] = dict(zip(VLM_RESULT_LABELS, results))
-
-    def read_results(self):
+    @classmethod
+    def read_results(cls, idx):
         """Retrieve VLM results from the in-memory cache."""
-        aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
-
-        return self._cache[aero_type_key]["vlm"]
+        return cls._cache[idx]["vlm"]
 
     def post_processing_wing(
         self,
@@ -1177,40 +1197,40 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
         )
 
-    def read_value_from_data(self, sref_wing, area_ratio, saved_area_ratio):
+    def read_value_from_data(self, cached_idx, sref_wing, area_ratio, saved_area_ratio):
         """
         Read cached data to speed up the process
 
+        :param cached_idx: cache index returned by search_results
         :param sref_wing: wing reference area
         :param area_ratio: area ratio between wing and horizontal stabilizer
         :param saved_area_ratio: area ratio between wing and horizontal stabilizer in cached data
 
         :return: existing data
         """
-
-        data = self.read_results()
-        saved_area_wing = float(data.get("saved_ref_area"))
-        cl_0_wing = float(data.get("cl_0_wing"))
-        cl_x_wing = float(data.get("cl_X_wing"))
-        cl_alpha_wing = float(data.get("cl_alpha_wing"))
-        cm_0_wing = float(data.get("cm_0_wing"))
-        y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(
+        data = self.read_results(cached_idx)
+        saved_area_wing = float(data.loc["saved_ref_area", 0])
+        cl_0_wing = float(data.loc["cl_0_wing", 0])
+        cl_x_wing = float(data.loc["cl_X_wing", 0])
+        cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
+        cm_0_wing = float(data.loc["cm_0_wing", 0])
+        y_vector_wing = np.array(data.loc["y_vector_wing", 0]) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        cl_vector_wing = np.array(data.get("cl_vector_wing"))
-        chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
+        cl_vector_wing = np.array(data.loc["cl_vector_wing", 0])
+        chord_vector_wing = np.array(data.loc["chord_vector_wing", 0]) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        coef_k_wing = float(data.get("coef_k_wing"))
-        cl_0_htp = float(data.get("cl_0_htp")) * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = float(data.get("cl_X_htp")) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = float(data.get("cl_alpha_htp")) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = float(data.get("cl_alpha_htp_isolated")) * (
+        coef_k_wing = float(data.loc["coef_k_wing", 0])
+        cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
             area_ratio / saved_area_ratio
         )
-        y_vector_htp = np.array(data.get("y_vector_htp"))
-        cl_vector_htp = np.array(data.get("cl_vector_htp"))
-        coef_k_htp = float(data.get("coef_k_htp")) * (area_ratio / saved_area_ratio)
+        y_vector_htp = np.array(data.loc["y_vector_htp", 0])
+        cl_vector_htp = np.array(data.loc["cl_vector_htp", 0])
+        coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
