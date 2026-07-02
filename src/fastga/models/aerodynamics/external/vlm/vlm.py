@@ -69,7 +69,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     # Cache is nested by "scope" (the result_folder_path) so that independent
     # component runs never share results: {scope: {idx: entry}}.
     _cache: dict = {}
-    _CACHE_MAX_SIZE = 1000
+    _CACHE_MAX_SIZE = 10
     # Next free index PER SCOPE, so indices restart at 0 for every new scope
     # instead of climbing indefinitely across the whole process: {scope: next_idx}.
     _cache_next_idx: dict = {}
@@ -270,7 +270,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # Search if results already exist:
         cached_idx, saved_area_ratio = self.search_results(geometry_set)
 
-        # If no result saved for that geometry under this mach condition, computation is done
+        # Compute results if not already in cache, else retrieve them and adapt to new area ratio
         if cached_idx is None:
             cached_idx = self.save_geometry(geometry_set)
 
@@ -1032,11 +1032,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         Namespace the in-memory cache by the result folder.
 
         The legacy CSV cache stored/searched results inside ``result_folder_path`` and
-        was only active when that option was set. Independent component runs therefore
-        used independent folders and never shared results (e.g. a run at the default AoA
-        vs. a run at ``input_angle_of_attack``). Because ``aoa_angle`` is deliberately not
-        part of the geometry key, that per-folder isolation is what keeps cached results
-        consistent. Reproduce it here by keying the in-memory cache on the folder path.
+        was only active when that option was set.
         """
         return self.options["result_folder_path"]
 
@@ -1047,7 +1043,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         if scope == "":
             return None, 1.0
         scope_cache = self._cache.get(scope, {})
-        print(scope_cache.keys())
         for idx, entry in scope_cache.items():
             if "vlm" not in entry:
                 continue
