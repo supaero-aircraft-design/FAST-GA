@@ -13,7 +13,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import logging
-
+import os
 import numpy as np
 import openmdao.api as om
 
@@ -56,6 +56,11 @@ class Mission(om.Group):
         self.options.declare("out_file", default="", types=str)
 
     def setup(self):
+        # Create workdir folder if it does not exist
+        if self.options["out_file"]:
+            result_folder_path = self.options["out_file"].rsplit("/", 1)[0]
+            os.makedirs(result_folder_path, exist_ok=True)
+
         self.add_subsystem("in_flight_cg_variation", InFlightCGVariation(), promotes=["*"])
         taxi_out_options = {"taxi_out": True, "propulsion_id": self.options["propulsion_id"]}
         self.add_subsystem(

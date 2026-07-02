@@ -147,8 +147,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         aero_type_key = "low_speed" if self.options["low_speed_aero"] else "high_speed"
 
         self._cache.setdefault(aero_type_key, {})
-        # Create the workdir folder to ensure compatiblity.
-        # os.makedirs(self.options["result_folder_path"], exist_ok=True)
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """
