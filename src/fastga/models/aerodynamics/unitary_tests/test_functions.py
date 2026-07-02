@@ -107,7 +107,7 @@ from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM, VLMSimpleGeometry
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
@@ -122,6 +122,13 @@ xfoil_path = None if system() == "Windows" else get_xfoil_path()
 
 _LOGGER = logging.getLogger(__name__)
 
+@pytest.fixture(autouse=True)
+def _reset_vlm_cache():
+    VLMSimpleGeometry._cache.clear()
+    VLMSimpleGeometry._cache_next_idx.clear()
+    yield
+    VLMSimpleGeometry._cache.clear()
+    VLMSimpleGeometry._cache_next_idx.clear()
 
 def _create_tmp_directory() -> TemporaryDirectory:
     """Provide temporary directory for calculation!"""

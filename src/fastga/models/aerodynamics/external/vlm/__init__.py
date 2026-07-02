@@ -15,3 +15,4 @@
 # flake8: noqa
 
 from .compute_aero import ComputeAeroVLM
+from .vlm import VLMSimpleGeometry

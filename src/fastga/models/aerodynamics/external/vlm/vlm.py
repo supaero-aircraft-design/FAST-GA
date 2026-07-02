@@ -14,13 +14,11 @@
 
 import copy
 import logging
-import os
 import warnings
 from typing import Optional
 
 import numpy as np
 import openmdao.api as om
-import pandas as pd
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
@@ -30,13 +28,51 @@ DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
 
+GEOMETRY_SET_LABELS = [
+    "sweep25_wing",
+    "taper_ratio_wing",
+    "aspect_ratio_wing",
+    "dihedral_angle_wing",
+    "twist_angle_wing",
+    "sweep25_htp",
+    "taper_ratio_htp",
+    "aspect_ratio_htp",
+    "mach",
+    "area_ratio",
+]
+
+VLM_RESULT_LABELS = [
+    "cl_0_wing",
+    "cl_X_wing",
+    "cl_alpha_wing",
+    "cm_0_wing",
+    "y_vector_wing",
+    "cl_vector_wing",
+    "chord_vector_wing",
+    "coef_k_wing",
+    "cl_0_htp",
+    "cl_X_htp",
+    "cl_alpha_htp",
+    "cl_alpha_htp_isolated",
+    "y_vector_htp",
+    "cl_vector_htp",
+    "coef_k_htp",
+    "saved_ref_area",
+]
+
 _LOGGER = logging.getLogger(__name__)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
-    _cache: dict = {}  # idx -> {"geometry": DataFrame, "vlm": DataFrame}
+    # Cache is nested by "scope" (the result_folder_path) so that independent
+    # component runs never share results: {scope: {idx: entry}}.
+    _cache: dict = {}
+    _CACHE_MAX_SIZE = 1000
+    # Next free index PER SCOPE, so indices restart at 0 for every new scope
+    # instead of climbing indefinitely across the whole process: {scope: next_idx}.
+    _cache_next_idx: dict = {}
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
@@ -111,9 +147,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             self.add_input("data:aerodynamics:wing:cruise:CDp", val=nans_array)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CL", val=nans_array)
             self.add_input("data:aerodynamics:horizontal_tail:cruise:CDp", val=nans_array)
-
-        # Create the workdir folder to ensure compatiblity.
-        os.makedirs(self.options["result_folder_path"], exist_ok=True)
 
     def compute_cl_alpha_aircraft(self, inputs, altitude, mach, aoa_angle):
         """
@@ -994,88 +1027,76 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
-    @classmethod
-    def search_results(cls, geometry_set):
+    def _cache_scope(self):
+        """
+        Namespace the in-memory cache by the result folder.
+
+        The legacy CSV cache stored/searched results inside ``result_folder_path`` and
+        was only active when that option was set. Independent component runs therefore
+        used independent folders and never shared results (e.g. a run at the default AoA
+        vs. a run at ``input_angle_of_attack``). Because ``aoa_angle`` is deliberately not
+        part of the geometry key, that per-folder isolation is what keeps cached results
+        consistent. Reproduce it here by keying the in-memory cache on the folder path.
+        """
+        return self.options["result_folder_path"]
+
+    def search_results(self, geometry_set):
         """Search the in-memory cache to see if the geometry has already been calculated."""
-        geometry_set_labels = [
-            "sweep25_wing",
-            "taper_ratio_wing",
-            "aspect_ratio_wing",
-            "dihedral_angle_wing",
-            "twist_angle_wing",
-            "sweep25_htp",
-            "taper_ratio_htp",
-            "aspect_ratio_htp",
-            "mach",
-            "area_ratio",
-        ]
-        for idx, entry in cls._cache.items():
+        scope = self._cache_scope()
+        # Caching disabled when no result folder is provided (matches legacy behaviour).
+        if scope == "":
+            return None, 1.0
+        scope_cache = self._cache.get(scope, {})
+        print(scope_cache.keys())
+        for idx, entry in scope_cache.items():
             if "vlm" not in entry:
                 continue
             data = entry["geometry"]
             # noinspection PyBroadException
             try:
-                if (
-                    np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
-                    == len(geometry_set_labels) - 1
-                ):
+                if all(label in data for label in GEOMETRY_SET_LABELS[0:-1]):
                     saved_set = np.around(
-                        data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
+                        np.array([data[label] for label in GEOMETRY_SET_LABELS[0:-1]]),
+                        decimals=6,
                     )
-                    if np.sum(saved_set == geometry_set[0:-1]) == len(geometry_set_labels) - 1:
-                        saved_area_ratio = data.loc["area_ratio", 0]
+                    # Check if the saved geometry matches the current geometry (except area ratio)
+                    if np.sum(saved_set == geometry_set[0:-1]) == len(GEOMETRY_SET_LABELS) - 1:
+                        saved_area_ratio = data["area_ratio"]
                         return idx, saved_area_ratio
             except Exception:
                 break
 
         return None, 1.0
 
-    @classmethod
-    def save_geometry(cls, geometry_set):
+    def save_geometry(self, geometry_set):
         """Store geometry in the in-memory cache and return its index."""
-        geometry_set_labels = [
-            "sweep25_wing",
-            "taper_ratio_wing",
-            "aspect_ratio_wing",
-            "dihedral_angle_wing",
-            "twist_angle_wing",
-            "sweep25_htp",
-            "taper_ratio_htp",
-            "aspect_ratio_htp",
-            "mach",
-            "area_ratio",
-        ]
-        idx = len(cls._cache)
-        cls._cache[idx] = {"geometry": pd.DataFrame(geometry_set, index=geometry_set_labels)}
+        scope = self._cache_scope()
+        if scope == "":
+            return None
+        scope_cache = self._cache.setdefault(scope, {})
+        next_idx_map = type(self)._cache_next_idx
+        idx = next_idx_map.get(scope, 0)
+        next_idx_map[scope] = idx + 1
+        scope_cache[idx] = {"geometry": dict(zip(GEOMETRY_SET_LABELS, geometry_set))}
+
+        # Evict the oldest entry *within this scope* if we've exceeded the cap
+        if len(scope_cache) > self._CACHE_MAX_SIZE:
+            oldest_idx = next(iter(scope_cache))
+            del scope_cache[oldest_idx]
+
         return idx
 
-    @classmethod
-    def save_results(cls, idx, results):
+    def save_results(self, idx, results):
         """Store VLM results in the in-memory cache."""
-        labels = [
-            "cl_0_wing",
-            "cl_X_wing",
-            "cl_alpha_wing",
-            "cm_0_wing",
-            "y_vector_wing",
-            "cl_vector_wing",
-            "chord_vector_wing",
-            "coef_k_wing",
-            "cl_0_htp",
-            "cl_X_htp",
-            "cl_alpha_htp",
-            "cl_alpha_htp_isolated",
-            "y_vector_htp",
-            "cl_vector_htp",
-            "coef_k_htp",
-            "saved_ref_area",
-        ]
-        cls._cache[idx]["vlm"] = pd.DataFrame(results, index=labels)
+        scope = self._cache_scope()
+        if scope == "" or idx is None:
+            return
+        self._cache[scope][idx]["vlm"] = dict(zip(VLM_RESULT_LABELS, results))
 
-    @classmethod
-    def read_results(cls, idx):
+    def read_results(self, idx):
         """Retrieve VLM results from the in-memory cache."""
-        return cls._cache[idx]["vlm"]
+        scope = self._cache_scope()
+        return self._cache[scope][idx]["vlm"]
 
     def post_processing_wing(
         self,
@@ -1209,28 +1230,26 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :return: existing data
         """
         data = self.read_results(cached_idx)
-        saved_area_wing = float(data.loc["saved_ref_area", 0])
-        cl_0_wing = float(data.loc["cl_0_wing", 0])
-        cl_x_wing = float(data.loc["cl_X_wing", 0])
-        cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
-        cm_0_wing = float(data.loc["cm_0_wing", 0])
-        y_vector_wing = np.array(data.loc["y_vector_wing", 0]) * np.sqrt(
+        saved_area_wing = float(data.get("saved_ref_area"))
+        cl_0_wing = float(data.get("cl_0_wing"))
+        cl_x_wing = float(data.get("cl_X_wing"))
+        cl_alpha_wing = float(data.get("cl_alpha_wing"))
+        cm_0_wing = float(data.get("cm_0_wing"))
+        y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(sref_wing / saved_area_wing)
+        cl_vector_wing = np.array(data.get("cl_vector_wing"))
+        chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        cl_vector_wing = np.array(data.loc["cl_vector_wing", 0])
-        chord_vector_wing = np.array(data.loc["chord_vector_wing", 0]) * np.sqrt(
-            sref_wing / saved_area_wing
-        )
-        coef_k_wing = float(data.loc["coef_k_wing", 0])
-        cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
+        coef_k_wing = float(data.get("coef_k_wing"))
+        cl_0_htp = float(data.get("cl_0_htp")) * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = float(data.get("cl_X_htp")) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = float(data.get("cl_alpha_htp")) * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = float(data.get("cl_alpha_htp_isolated")) * (
             area_ratio / saved_area_ratio
         )
-        y_vector_htp = np.array(data.loc["y_vector_htp", 0])
-        cl_vector_htp = np.array(data.loc["cl_vector_htp", 0])
-        coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
+        y_vector_htp = np.array(data.get("y_vector_htp"))
+        cl_vector_htp = np.array(data.get("cl_vector_htp"))
+        coef_k_htp = float(data.get("coef_k_htp")) * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
