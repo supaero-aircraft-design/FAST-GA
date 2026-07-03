@@ -1044,22 +1044,20 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             return None, 1.0
         scope_cache = self._cache.get(scope, {})
         for idx, entry in scope_cache.items():
+            # Check if the entry has VLM results, otherwise skip it.
             if "vlm" not in entry:
                 continue
+
             data = entry["geometry"]
-            # noinspection PyBroadException
-            try:
-                if all(label in data for label in GEOMETRY_SET_LABELS[0:-1]):
-                    saved_set = np.around(
-                        np.array([data[label] for label in GEOMETRY_SET_LABELS[0:-1]]),
-                        decimals=6,
-                    )
-                    # Check if the saved geometry matches the current geometry (except area ratio)
-                    if np.sum(saved_set == geometry_set[0:-1]) == len(GEOMETRY_SET_LABELS) - 1:
-                        saved_area_ratio = data["area_ratio"]
-                        return idx, saved_area_ratio
-            except Exception:
-                break
+            if all(label in data for label in GEOMETRY_SET_LABELS[0:-1]):
+                saved_set = np.around(
+                    np.array([data[label] for label in GEOMETRY_SET_LABELS[0:-1]]),
+                    decimals=6,
+                )
+                # Check if the saved geometry matches the current geometry (except area ratio)
+                if np.sum(saved_set == geometry_set[0:-1]) == len(GEOMETRY_SET_LABELS) - 1:
+                    saved_area_ratio = data["area_ratio"]
+                    return idx, saved_area_ratio
 
         return None, 1.0
 
