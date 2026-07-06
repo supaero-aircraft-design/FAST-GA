@@ -35,7 +35,6 @@ DEFAULT_HTP_AIRFOIL = "naca0012.af"
 class ComputeAeroVLM(Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
-        self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -107,7 +106,6 @@ class ComputeAeroVLM(Group):
             "aero_vlm",
             _ComputeAeroVLM(
                 low_speed_aero=self.options["low_speed_aero"],
-                result_folder_path=self.options["result_folder_path"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -206,7 +204,6 @@ class ComputeLocalReynolds(ExplicitComponent):
 class _ComputeAeroVLM(VLMSimpleGeometry):
     def initialize(self):
         super().initialize()
-        self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 

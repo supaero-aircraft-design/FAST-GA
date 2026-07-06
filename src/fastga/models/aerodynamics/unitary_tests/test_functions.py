@@ -1071,7 +1071,6 @@ def compute_aero(
         # noinspection PyTypeChecker
         vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
-            result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
         )
 
@@ -1082,7 +1081,6 @@ def compute_aero(
         # noinspection PyTypeChecker
         vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
-            result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
         )
 
@@ -1111,8 +1109,6 @@ def compute_aero_neuralfoil(
     low_speed_aero: bool,
 ):
     """Compute aero components!"""
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -1129,7 +1125,6 @@ def compute_aero_neuralfoil(
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
         use_neuralfoil=True,
-        result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
     )
 
@@ -1137,9 +1132,6 @@ def compute_aero_neuralfoil(
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
-
-    # Remove existing result files
-    results_folder.cleanup()
 
     # Return problem for complementary values check
     return problem
@@ -1200,7 +1192,6 @@ def comp_aero_input_aoa(
         # noinspection PyTypeChecker
         vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
-            result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
             input_angle_of_attack=10.5,
         )
@@ -1212,7 +1203,6 @@ def comp_aero_input_aoa(
         # noinspection PyTypeChecker
         vlm_comp = ComputeAeroVLM(
             low_speed_aero=low_speed_aero,
-            result_folder_path=results_folder.name,
             compute_mach_interpolation=mach_interpolation,
             input_angle_of_attack=10.5,
         )
@@ -1242,8 +1232,6 @@ def comp_aero_input_aoa_neuralfoil(
     low_speed_aero: bool,
 ):
     """Compute aero components!"""
-    # Create result temporary directory
-    results_folder = _create_tmp_directory()
 
     # Transfer saved polar results to temporary folder
     tmp_folder = polar_result_transfer()
@@ -1258,7 +1246,6 @@ def comp_aero_input_aoa_neuralfoil(
     # noinspection PyTypeChecker
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
-        result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
         input_angle_of_attack=10.5,
         use_neuralfoil=True,
@@ -1271,7 +1258,6 @@ def comp_aero_input_aoa_neuralfoil(
     # noinspection PyTypeChecker
     vlm_comp = ComputeAeroVLM(
         low_speed_aero=low_speed_aero,
-        result_folder_path=results_folder.name,
         compute_mach_interpolation=mach_interpolation,
         input_angle_of_attack=10.5,
         use_neuralfoil=True,
@@ -1283,9 +1269,6 @@ def comp_aero_input_aoa_neuralfoil(
 
     # Retrieve polar results from temporary folder
     polar_result_retrieve(tmp_folder)
-
-    # Remove existing result files
-    results_folder.cleanup()
 
     # Check obtained value(s) is/(are) correct
 

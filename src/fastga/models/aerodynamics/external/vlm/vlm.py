@@ -92,7 +92,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
-        self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
