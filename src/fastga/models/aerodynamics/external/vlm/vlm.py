@@ -65,13 +65,7 @@ _LOGGER = logging.getLogger(__name__)
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
-    # Cache is nested by "scope" (the result_folder_path) so that independent
-    # component runs never share results: {scope: {idx: entry}}.
     _cache: dict = {}
-    _CACHE_MAX_SIZE = 10
-    # Next free index PER SCOPE, so indices restart at 0 for every new scope
-    # instead of climbing indefinitely across the whole process: {scope: next_idx}.
-    _cache_next_idx: dict = {}
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
