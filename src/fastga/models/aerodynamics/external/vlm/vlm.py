@@ -1,6 +1,6 @@
 """Vortex Lattice Method implementation."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -37,8 +37,6 @@ GEOMETRY_SET_LABELS = [
     "sweep25_htp",
     "taper_ratio_htp",
     "aspect_ratio_htp",
-    "mach",
-    "area_ratio",
 ]
 
 VLM_RESULT_LABELS = [
@@ -58,6 +56,7 @@ VLM_RESULT_LABELS = [
     "cl_vector_htp",
     "coef_k_htp",
     "saved_ref_area",
+    "area_ratio",
 ]
 
 _LOGGER = logging.getLogger(__name__)
@@ -260,19 +259,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
-                    mach,
-                    area_ratio,
                 ]
             ),
             decimals=6,
         )
 
-        # Search if results already exist:
-        cached_idx, saved_area_ratio = self.search_results(geometry_set)
+        # Create a key to store/retrieve results in cache
+        key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # Compute results if not already in cache, else retrieve them and adapt to new area ratio
-        if cached_idx is None:
-            cached_idx = self.save_geometry(geometry_set)
+        if self._cache.get(key) is None or self._cache[key].get(self.mach_key(mach)) is None:
+            self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_wing(
@@ -387,8 +384,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 np.array(cl_vector_htp).tolist(),
                 float(coef_k_htp),
                 float(sref_wing),
+                float(area_ratio),
             ]
-            self.save_results(cached_idx, results)
+            self.save_results(key, results, mach)
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
@@ -409,7 +407,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_htp,
                 cl_vector_htp,
                 coef_k_htp,
-            ) = self.read_value_from_data(cached_idx, sref_wing, area_ratio, saved_area_ratio)
+            ) = self.read_value_from_data(key, mach, sref_wing, area_ratio)
 
         return (
             cl_0_wing,
@@ -1027,69 +1025,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
-    def _cache_scope(self):
-        """
-        Namespace the in-memory cache by the result folder.
+    def register_geometry(self, key):
+        """Register the geometry set as a key in the in-memory cache."""
+        self._cache.setdefault(key, {})
 
-        The legacy CSV cache stored/searched results inside ``result_folder_path`` and
-        was only active when that option was set.
-        """
-        return self.options["result_folder_path"]
-
-    def search_results(self, geometry_set):
-        """Search the in-memory cache to see if the geometry has already been calculated."""
-        scope = self._cache_scope()
-        # Caching disabled when no result folder is provided (matches legacy behaviour).
-        if scope == "":
-            return None, 1.0
-        scope_cache = self._cache.get(scope, {})
-        for idx, entry in scope_cache.items():
-            # Check if the entry has VLM results, otherwise skip it.
-            if "vlm" not in entry:
-                continue
-
-            data = entry["geometry"]
-            if all(label in data for label in GEOMETRY_SET_LABELS[0:-1]):
-                saved_set = np.around(
-                    np.array([data[label] for label in GEOMETRY_SET_LABELS[0:-1]]),
-                    decimals=6,
-                )
-                # Check if the saved geometry matches the current geometry (except area ratio)
-                if np.sum(saved_set == geometry_set[0:-1]) == len(GEOMETRY_SET_LABELS) - 1:
-                    saved_area_ratio = data["area_ratio"]
-                    return idx, saved_area_ratio
-
-        return None, 1.0
-
-    def save_geometry(self, geometry_set):
-        """Store geometry in the in-memory cache and return its index."""
-        scope = self._cache_scope()
-        if scope == "":
-            return None
-        scope_cache = self._cache.setdefault(scope, {})
-        next_idx_map = type(self)._cache_next_idx
-        idx = next_idx_map.get(scope, 0)
-        next_idx_map[scope] = idx + 1
-        scope_cache[idx] = {"geometry": dict(zip(GEOMETRY_SET_LABELS, geometry_set))}
-
-        # Evict the oldest entry *within this scope* if we've exceeded the cap
-        if len(scope_cache) > self._CACHE_MAX_SIZE:
-            oldest_idx = next(iter(scope_cache))
-            del scope_cache[oldest_idx]
-
-        return idx
-
-    def save_results(self, idx, results):
+    def save_results(self, key, results, mach):
         """Store VLM results in the in-memory cache."""
-        scope = self._cache_scope()
-        if scope == "" or idx is None:
-            return
-        self._cache[scope][idx]["vlm"] = dict(zip(VLM_RESULT_LABELS, results))
-
-    def read_results(self, idx):
-        """Retrieve VLM results from the in-memory cache."""
-        scope = self._cache_scope()
-        return self._cache[scope][idx]["vlm"]
+        self._cache[key][self.mach_key(mach)] = dict(zip(VLM_RESULT_LABELS, results))
 
     def post_processing_wing(
         self,
@@ -1211,19 +1153,20 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
         )
 
-    def read_value_from_data(self, cached_idx, sref_wing, area_ratio, saved_area_ratio):
+    def read_value_from_data(self, key, mach, sref_wing, area_ratio):
         """
         Read cached data to speed up the process
 
-        :param cached_idx: cache index returned by search_results
+        :param key: cache key created by geometry set
+        :param mach: Mach number
         :param sref_wing: wing reference area
         :param area_ratio: area ratio between wing and horizontal stabilizer
-        :param saved_area_ratio: area ratio between wing and horizontal stabilizer in cached data
 
         :return: existing data
         """
-        data = self.read_results(cached_idx)
+        data = self._cache[key][self.mach_key(mach)]
         saved_area_wing = float(data.get("saved_ref_area"))
+        saved_area_ratio = float(data.get("area_ratio"))
         cl_0_wing = float(data.get("cl_0_wing"))
         cl_x_wing = float(data.get("cl_X_wing"))
         cl_alpha_wing = float(data.get("cl_alpha_wing"))
@@ -1261,6 +1204,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
             coef_k_htp,
         )
+
+    @staticmethod
+    def mach_key(m: float) -> str:
+        return f"{m:.6f}"
 
     @staticmethod
     def resize_vector(vectors):
