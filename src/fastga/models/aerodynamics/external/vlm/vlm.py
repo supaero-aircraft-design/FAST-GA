@@ -12,10 +12,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import atexit
 import copy
 import logging
+import pickle
 import warnings
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 import numpy as np
 import openmdao.api as om
@@ -66,6 +69,87 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
     _cache: dict = {}
+    # Path the cache was last loaded from/should be saved to. Class-level so that
+    # save_cache() can be called (e.g. from an end-of-run hook) without having to
+    # thread the path through every component instance.
+    _cache_file: Optional[str] = None
+    # Guards against registering the atexit save more than once, since setup() may
+    # run for several instances (wing/aircraft, low_speed/cruise) in one process.
+    _atexit_registered: bool = False
+
+    @classmethod
+    def load_cache(cls, cache_file: Union[str, Path]) -> None:
+        """
+        Loads a previously saved VLM result cache from disk and merges it into the
+        in-memory cache, so results computed in an earlier run (MDA, MDO or MDAO)
+        can be reused instead of recomputed.
+
+        Safe to call even if the file doesn't exist yet (e.g. first run) or has
+        already been loaded. Remembers `cache_file` so a later `save_cache()` call
+        (with no argument) writes back to the same location.
+
+        :param cache_file: path to the pickle file used to persist the cache.
+        """
+        cls._cache_file = str(cache_file)
+        path = Path(cache_file)
+        if not path.exists():
+            _LOGGER.info("No existing VLM cache found at %s, starting empty.", path)
+            return
+
+        with open(path, "rb") as cache_fp:
+            saved_cache = pickle.load(cache_fp)
+
+        cls._cache.update(saved_cache)
+        _LOGGER.info("Loaded VLM cache from %s (%d geometry entries).", path, len(saved_cache))
+
+    @classmethod
+    def save_cache(cls, cache_file: Optional[Union[str, Path]] = None) -> None:
+        """
+        Persists the current in-memory VLM result cache to disk so it can be reused
+        by a later run via `load_cache`. Intended to be called once, at the end of
+        a run, regardless of whether that run was an MDA (`run_model`) or an
+        MDO/MDAO (`run_driver`).
+
+        :param cache_file: path to write the cache to. If omitted, falls back to
+            the path previously given to `load_cache`. If neither is available,
+            this is a no-op (nothing to save to).
+        """
+        target = cache_file or cls._cache_file
+        if target is None:
+            _LOGGER.warning("save_cache() called with no cache_file and none set; skipping.")
+            return
+
+        path = Path(target)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "wb") as cache_fp:
+            pickle.dump(cls._cache, cache_fp)
+
+        cls._cache_file = str(path)
+        _LOGGER.info("Saved VLM cache to %s (%d geometry entries).", path, len(cls._cache))
+
+    def _setup_cache_persistence(self) -> None:
+        """
+        Wires up cross-run cache persistence for this component, entirely from
+        within the class: if a `cache_file` option was given, loads any existing
+        cache from it once, and registers an `atexit` callback (once per process,
+        regardless of how many VLM instances get set up) that writes the cache
+        back out when the process ends.
+
+        Using `atexit` rather than an OpenMDAO end-of-run hook means this doesn't
+        care whether the run is an MDA (`run_model`), an MDO, or an MDAO
+        (`run_driver`) — it just fires once, whenever the interpreter exits
+        normally, no matter how the run was invoked or how many times.
+        """
+        cache_file = self.options["cache_file"]
+        if cache_file is None:
+            return
+
+        if VLMSimpleGeometry._cache_file != cache_file:
+            VLMSimpleGeometry.load_cache(cache_file)
+
+        if not VLMSimpleGeometry._atexit_registered:
+            atexit.register(VLMSimpleGeometry.save_cache)
+            VLMSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
@@ -97,8 +181,19 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
+        self.options.declare(
+            "cache_file",
+            default=None,
+            types=str,
+            allow_none=True,
+            desc="If set, path to a pickle file used to persist the VLM result cache "
+            "across runs (MDA, MDO or MDAO alike). Loaded once on first setup() and "
+            "saved automatically when the Python process exits.",
+        )
 
     def setup(self):
+        self._setup_cache_persistence()
+
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -261,7 +356,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # Compute results if not already in cache, else retrieve them and adapt to new area ratio
-        if self._cache.get(key) is None or self._cache[key].get(self.mach_key(mach)) is None:
+        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
             self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
@@ -1024,7 +1119,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def save_results(self, key, results, mach):
         """Store VLM results in the in-memory cache."""
-        self._cache[key][self.mach_key(mach)] = dict(zip(VLM_RESULT_LABELS, results))
+        self._cache[key][str(mach)] = dict(zip(VLM_RESULT_LABELS, results))
 
     def post_processing_wing(
         self,
@@ -1157,28 +1252,26 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         :return: existing data
         """
-        data = self._cache[key][self.mach_key(mach)]
-        saved_area_wing = float(data.get("saved_ref_area"))
-        saved_area_ratio = float(data.get("area_ratio"))
-        cl_0_wing = float(data.get("cl_0_wing"))
-        cl_x_wing = float(data.get("cl_X_wing"))
-        cl_alpha_wing = float(data.get("cl_alpha_wing"))
-        cm_0_wing = float(data.get("cm_0_wing"))
+        data = self._cache[key][str(mach)]
+        saved_area_wing = data.get("saved_ref_area")
+        saved_area_ratio = data.get("area_ratio")
+        cl_0_wing = data.get("cl_0_wing")
+        cl_x_wing = data.get("cl_X_wing")
+        cl_alpha_wing = data.get("cl_alpha_wing")
+        cm_0_wing = data.get("cm_0_wing")
         y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(sref_wing / saved_area_wing)
         cl_vector_wing = np.array(data.get("cl_vector_wing"))
         chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        coef_k_wing = float(data.get("coef_k_wing"))
-        cl_0_htp = float(data.get("cl_0_htp")) * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = float(data.get("cl_X_htp")) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = float(data.get("cl_alpha_htp")) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = float(data.get("cl_alpha_htp_isolated")) * (
-            area_ratio / saved_area_ratio
-        )
+        coef_k_wing = data.get("coef_k_wing")
+        cl_0_htp = data.get("cl_0_htp") * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = data.get("cl_X_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = data.get("cl_alpha_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = data.get("cl_alpha_htp_isolated") * (area_ratio / saved_area_ratio)
         y_vector_htp = np.array(data.get("y_vector_htp"))
         cl_vector_htp = np.array(data.get("cl_vector_htp"))
-        coef_k_htp = float(data.get("coef_k_htp")) * (area_ratio / saved_area_ratio)
+        coef_k_htp = data.get("coef_k_htp") * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -1197,10 +1290,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
             coef_k_htp,
         )
-
-    @staticmethod
-    def mach_key(m: float) -> str:
-        return f"{m:.6f}"
 
     @staticmethod
     def resize_vector(vectors):
