@@ -62,10 +62,6 @@ VLM_RESULT_LABELS = [
     "area_ratio",
 ]
 
-# Used when `cache_file` points at an existing directory rather than a specific
-# file, so save_cache()/load_cache() don't blow up trying to open a folder.
-DEFAULT_CACHE_FILENAME = "vlm_cache.json"
-
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -86,55 +82,90 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     _cache: dict = {}
 
-    # Path the cache was last loaded from/should be saved to.
+    # File the cache should be saved to (only set when a `result_file_name` is
+    # configured).
     _cache_file: Optional[str] = None
+
+    # Folder/file the cache was last loaded from, used only to avoid redundant
+    # reloads on repeated component instantiation. Distinct from `_cache_file`:
+    # this is set even when no `result_file_name` is configured (folder-only mode).
+    _cache_loaded_from: Optional[str] = None
 
     # Guards against registering the atexit save more than once.
     _atexit_registered: bool = False
 
     @staticmethod
-    def _resolve_cache_path(folder_path: Union[str, Path]) -> Path:
+    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
         """
-        Turns the `result_folder_path` option (always a folder) into the full cache file path
-        with default file name.
+        Turns the `result_folder_path`/`result_file_name` options into the full cache
+        file path.
         """
-        return (Path(folder_path) / DEFAULT_CACHE_FILENAME).resolve()
+        return (Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+    def load_cache(cls, folder_path: Union[str, Path], file_name: str) -> None:
         """
         Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
         :param folder_path: the result folder (e.g. `result_folder_path`) inside
-            which the cache file lives. Must be a raw folder path, NOT an
-            already-resolved cache file path (`_resolve_cache_path` always
-            appends the filename).
+            which the cache file lives.
+        :param file_name: the cache file name (e.g. `result_file_name`) inside
+            `folder_path`. If empty, no single file is designated as the save
+            target, but every VLM cache JSON file found directly in `folder_path` is
+            still gathered and merged into the in-memory cache.
         """
-        path = cls._resolve_cache_path(folder_path)
-        cls._cache_file = str(path)
-        if not path.exists():
-            _LOGGER.info("No existing VLM cache found at %s, starting empty.", path)
-            return
+        if file_name:
+            path = cls._resolve_cache_path(folder_path, file_name)
+            cls._cache_file = str(path)
+            search_folder = path.parent
+        else:
+            search_folder = Path(folder_path).resolve()
 
-        with open(path, "r", encoding="utf8") as cache_fp:
-            saved_cache = json.load(cache_fp)
+        cls._cache_loaded_from = str(search_folder)
 
-        cls._cache.update(saved_cache)
-        _LOGGER.info("Loaded VLM cache from %s (%d geometry entries).", path, len(saved_cache))
+        no_vlm_cache = True
+
+        for file in search_folder.glob("*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as cache_fp:
+                    saved_cache = json.load(cache_fp)
+            except (json.JSONDecodeError, OSError) as exc:
+                # The result folder may contain JSON files unrelated to the VLM cache.
+                # Skip them rather than aborting the whole load.
+                _LOGGER.warning("Skipping unreadable cache file %s: %s", file, exc)
+                continue
+
+            if isinstance(saved_cache, dict):
+                for key, _ in saved_cache.items():
+                    # Register in cache only if the key contains all the geometry labels
+                    if all(label in key for label in GEOMETRY_SET_LABELS):
+                        cls._cache.update(saved_cache)
+                        no_vlm_cache = False
+
+        if no_vlm_cache:
+            _LOGGER.info("No existing VLM cache found in %s, starting empty.", search_folder)
+        else:
+            _LOGGER.info(
+                "Loaded VLM cache from %s (%d geometry entries).", search_folder, len(cls._cache)
+            )
 
     @classmethod
-    def save_cache(cls, folder_path: Optional[Union[str, Path]] = None) -> None:
+    def save_cache(
+        cls,
+        folder_path: Optional[Union[str, Path]] = None,
+        file_name: Optional[str] = None,
+    ) -> None:
         """
         Persists the current in-memory VLM result cache to disk so it can be reused
         by a later run via `load_cache`. Intended to be called once, at the end of
         a run.
 
-        :param folder_path: raw result folder to save into.  Must be a raw folder
-            path, NOT an already-resolved cache file path (`_resolve_cache_path`
-            always appends the filename).
+        :param folder_path: raw result folder to save into, together with `file_name`.
+             Ignored unless `file_name` is given.
+        :param file_name: cache file name to use together with `folder_path`.
         """
-        if folder_path is not None:
-            path = cls._resolve_cache_path(folder_path)
+        if folder_path is not None and file_name:
+            path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
             path = Path(cls._cache_file)
         else:
@@ -150,18 +181,29 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def _setup_cache_persistence(self) -> None:
         """
-        Loads any existing cache from `result_folder_path` and registers an `atexit`
-        callback process that writes the cache into the json file when the process ends.
+        Loads any existing cache from `result_folder_path`/`result_file_name` and
+        registers an `atexit` callback process that writes the cache into the
+        json file when the process ends.
         """
         folder_path = self.options["result_folder_path"]
-        resolved = VLMSimpleGeometry._resolve_cache_path(folder_path)
+        file_name = self.options["result_file_name"]
+
+        # The resolved folder path
+        resolved = (
+            VLMSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
+            if file_name
+            else Path(folder_path).resolve()
+        )
+
         # Prevent reloading the cache if it's already been loaded from the same path.
-        if VLMSimpleGeometry._cache_file != str(resolved):
-            VLMSimpleGeometry.load_cache(folder_path)
+        if VLMSimpleGeometry._cache_loaded_from != str(resolved):
+            VLMSimpleGeometry.load_cache(folder_path, file_name)
+
         # Register the atexit callback process only once, since multiple instances of this
-        # component may be created.
+        # component may be created. Only register it when `result_file_name` is set.
         if not VLMSimpleGeometry._atexit_registered:
-            atexit.register(VLMSimpleGeometry.save_cache)
+            if resolved is not None and file_name:
+                atexit.register(VLMSimpleGeometry.save_cache)
             VLMSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
@@ -190,6 +232,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare("result_file_name", default="", types=str)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
@@ -197,6 +240,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
+        # Setup cache persistence, placed under setup() due to options usage.
         self._setup_cache_persistence()
 
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")

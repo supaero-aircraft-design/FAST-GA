@@ -123,13 +123,6 @@ xfoil_path = None if system() == "Windows" else get_xfoil_path()
 _LOGGER = logging.getLogger(__name__)
 
 
-@pytest.fixture(autouse=True)
-def _reset_vlm_cache():
-    VLMSimpleGeometry._cache.clear()
-    yield
-    VLMSimpleGeometry._cache.clear()
-
-
 def _create_tmp_directory() -> TemporaryDirectory:
     """Provide temporary directory for calculation!"""
     for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
