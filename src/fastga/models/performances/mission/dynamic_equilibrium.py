@@ -305,6 +305,8 @@ class DynamicEquilibrium(om.ExplicitComponent):
         # Save and recycle data if a file is already present.
         if not os.path.exists(self.options["out_file"]):
             dataframe_to_add.index = range(len(dataframe_to_add))
+            # Create the directory if it doesn't exist, skipping the creation if it already exists
+            os.makedirs(os.path.dirname(self.options["out_file"]), exist_ok=True)
             dataframe_to_add.to_csv(self.options["out_file"])
         else:
             dataframe_existing = pd.read_csv(self.options["out_file"])

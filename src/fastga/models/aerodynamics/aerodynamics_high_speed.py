@@ -66,6 +66,7 @@ class AerodynamicsHighSpeed(Group):
                     "aero_vlm",
                     ComputeAeroVLM(
                         low_speed_aero=False,
+                        result_folder_path=self.options["result_folder_path"],
                         compute_mach_interpolation=True,
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
@@ -80,6 +81,7 @@ class AerodynamicsHighSpeed(Group):
                     "aero_vlm",
                     ComputeAeroVLM(
                         low_speed_aero=False,
+                        result_folder_path=self.options["result_folder_path"],
                         compute_mach_interpolation=False,
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],

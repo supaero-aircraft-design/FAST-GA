@@ -14,8 +14,8 @@
 
 import atexit
 import copy
+import json
 import logging
-import pickle
 import warnings
 from pathlib import Path
 from typing import Optional, Union
@@ -62,91 +62,104 @@ VLM_RESULT_LABELS = [
     "area_ratio",
 ]
 
+# Used when `cache_file` points at an existing directory rather than a specific
+# file, so save_cache()/load_cache() don't blow up trying to open a folder.
+DEFAULT_CACHE_FILENAME = "vlm_cache.json"
+
 _LOGGER = logging.getLogger(__name__)
+
+
+class _NumpyJSONEncoder(json.JSONEncoder):
+    """JSON encoder that also knows how to serialize numpy arrays/scalars, which
+    the VLM result cache stores (e.g. y_vector_wing, cl_vector_wing)."""
+
+    def default(self, o):
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, np.generic):
+            return o.item()
+        return super().default(o)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
 
     _cache: dict = {}
-    # Path the cache was last loaded from/should be saved to. Class-level so that
-    # save_cache() can be called (e.g. from an end-of-run hook) without having to
-    # thread the path through every component instance.
+
+    # Path the cache was last loaded from/should be saved to.
     _cache_file: Optional[str] = None
-    # Guards against registering the atexit save more than once, since setup() may
-    # run for several instances (wing/aircraft, low_speed/cruise) in one process.
+
+    # Guards against registering the atexit save more than once.
     _atexit_registered: bool = False
 
+    @staticmethod
+    def _resolve_cache_path(folder_path: Union[str, Path]) -> Path:
+        """
+        Turns the `result_folder_path` option (always a folder) into the full cache file path
+        with default file name.
+        """
+        return (Path(folder_path) / DEFAULT_CACHE_FILENAME).resolve()
+
     @classmethod
-    def load_cache(cls, cache_file: Union[str, Path]) -> None:
+    def load_cache(cls, folder_path: Union[str, Path]) -> None:
         """
-        Loads a previously saved VLM result cache from disk and merges it into the
-        in-memory cache, so results computed in an earlier run (MDA, MDO or MDAO)
-        can be reused instead of recomputed.
+        Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
-        Safe to call even if the file doesn't exist yet (e.g. first run) or has
-        already been loaded. Remembers `cache_file` so a later `save_cache()` call
-        (with no argument) writes back to the same location.
-
-        :param cache_file: path to the pickle file used to persist the cache.
+        :param folder_path: the result folder (e.g. `result_folder_path`) inside
+            which the cache file lives. Must be a raw folder path, NOT an
+            already-resolved cache file path (`_resolve_cache_path` always
+            appends the filename).
         """
-        cls._cache_file = str(cache_file)
-        path = Path(cache_file)
+        path = cls._resolve_cache_path(folder_path)
+        cls._cache_file = str(path)
         if not path.exists():
             _LOGGER.info("No existing VLM cache found at %s, starting empty.", path)
             return
 
-        with open(path, "rb") as cache_fp:
-            saved_cache = pickle.load(cache_fp)
+        with open(path, "r", encoding="utf8") as cache_fp:
+            saved_cache = json.load(cache_fp)
 
         cls._cache.update(saved_cache)
         _LOGGER.info("Loaded VLM cache from %s (%d geometry entries).", path, len(saved_cache))
 
     @classmethod
-    def save_cache(cls, cache_file: Optional[Union[str, Path]] = None) -> None:
+    def save_cache(cls, folder_path: Optional[Union[str, Path]] = None) -> None:
         """
         Persists the current in-memory VLM result cache to disk so it can be reused
         by a later run via `load_cache`. Intended to be called once, at the end of
-        a run, regardless of whether that run was an MDA (`run_model`) or an
-        MDO/MDAO (`run_driver`).
+        a run.
 
-        :param cache_file: path to write the cache to. If omitted, falls back to
-            the path previously given to `load_cache`. If neither is available,
-            this is a no-op (nothing to save to).
+        :param folder_path: raw result folder to save into.  Must be a raw folder
+            path, NOT an already-resolved cache file path (`_resolve_cache_path`
+            always appends the filename).
         """
-        target = cache_file or cls._cache_file
-        if target is None:
-            _LOGGER.warning("save_cache() called with no cache_file and none set; skipping.")
+        if folder_path is not None:
+            path = cls._resolve_cache_path(folder_path)
+        elif cls._cache_file is not None:
+            path = Path(cls._cache_file)
+        else:
+            _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
             return
 
-        path = Path(target)
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "wb") as cache_fp:
-            pickle.dump(cls._cache, cache_fp)
+        with open(path, "w", encoding="utf8") as cache_fp:
+            json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
 
         cls._cache_file = str(path)
         _LOGGER.info("Saved VLM cache to %s (%d geometry entries).", path, len(cls._cache))
 
     def _setup_cache_persistence(self) -> None:
         """
-        Wires up cross-run cache persistence for this component, entirely from
-        within the class: if a `cache_file` option was given, loads any existing
-        cache from it once, and registers an `atexit` callback (once per process,
-        regardless of how many VLM instances get set up) that writes the cache
-        back out when the process ends.
-
-        Using `atexit` rather than an OpenMDAO end-of-run hook means this doesn't
-        care whether the run is an MDA (`run_model`), an MDO, or an MDAO
-        (`run_driver`) — it just fires once, whenever the interpreter exits
-        normally, no matter how the run was invoked or how many times.
+        Loads any existing cache from `result_folder_path` and registers an `atexit`
+        callback process that writes the cache into the json file when the process ends.
         """
-        cache_file = self.options["cache_file"]
-        if cache_file is None:
-            return
-
-        if VLMSimpleGeometry._cache_file != cache_file:
-            VLMSimpleGeometry.load_cache(cache_file)
-
+        folder_path = self.options["result_folder_path"]
+        resolved = VLMSimpleGeometry._resolve_cache_path(folder_path)
+        # Prevent reloading the cache if it's already been loaded from the same path.
+        if VLMSimpleGeometry._cache_file != str(resolved):
+            VLMSimpleGeometry.load_cache(folder_path)
+        # Register the atexit callback process only once, since multiple instances of this
+        # component may be created.
         if not VLMSimpleGeometry._atexit_registered:
             atexit.register(VLMSimpleGeometry.save_cache)
             VLMSimpleGeometry._atexit_registered = True
@@ -176,20 +189,12 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
+        self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
         )
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
-        self.options.declare(
-            "cache_file",
-            default=None,
-            types=str,
-            allow_none=True,
-            desc="If set, path to a pickle file used to persist the VLM result cache "
-            "across runs (MDA, MDO or MDAO alike). Loaded once on first setup() and "
-            "saved automatically when the Python process exits.",
-        )
 
     def setup(self):
         self._setup_cache_persistence()
