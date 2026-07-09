@@ -1,6 +1,6 @@
 """Test module for aerodynamics groups."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -107,7 +107,7 @@ from fastga.models.aerodynamics.external.openvsp import ComputeAeroOpenVSP
 from fastga.models.aerodynamics.external.openvsp.compute_aero_slipstream import (
     ComputeSlipstreamOpenvsp,
 )
-from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM
+from fastga.models.aerodynamics.external.vlm import ComputeAeroVLM, VLMSimpleGeometry
 from fastga.models.aerodynamics.external.xfoil import resources
 from fastga.models.aerodynamics.external.xfoil.xfoil_polar import XfoilPolar
 from fastga.models.aerodynamics.external.neuralfoil.neuralfoil_polar import NeuralfoilPolar
@@ -1450,6 +1450,7 @@ def comp_high_speed_input_aoa_neuralfoil(XML_FILE: str):
     """Tests components @ high speed!"""
     for mach_interpolation in [True, False]:
         problem = compute_aero_neuralfoil(XML_FILE, mach_interpolation, False)
+        VLMSimpleGeometry._cache.clear()
         problem_input_aoa = comp_aero_input_aoa_neuralfoil(XML_FILE, mach_interpolation, False)
         # Check obtained value(s) is/(are) correct
         if mach_interpolation:
@@ -1669,6 +1670,7 @@ def comp_low_speed_input_aoa_xfoil(
 def comp_low_speed_input_aoa_neuralfoil(XML_FILE: str):
     """Tests components @ low speed!"""
     problem = compute_aero_neuralfoil(XML_FILE, False, True)
+    VLMSimpleGeometry._cache.clear()
     problem_input_aoa = comp_aero_input_aoa_neuralfoil(XML_FILE, False, True)
     # Check obtained value(s) is/(are) correct
 

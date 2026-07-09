@@ -2,7 +2,7 @@
 Estimation of cl/cm/oswald aero coefficients using VLM.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -38,6 +38,13 @@ class ComputeAeroVLM(Group):
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare(
             "wing_airfoil_file", default=DEFAULT_WING_AIRFOIL, types=str, allow_none=True
         )
@@ -108,6 +115,7 @@ class ComputeAeroVLM(Group):
             _ComputeAeroVLM(
                 low_speed_aero=self.options["low_speed_aero"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -207,6 +215,13 @@ class _ComputeAeroVLM(VLMSimpleGeometry):
     def initialize(self):
         super().initialize()
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("input_angle_of_attack", default=DEFAULT_INPUT_AOA, types=float)
 

@@ -2,7 +2,7 @@
 FAST - Copyright (c) 2016 ONERA ISAE.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -303,9 +303,15 @@ class DynamicEquilibrium(om.ExplicitComponent):
         dataframe_to_add.rename(columns=rename_dict, inplace=True)
 
         # Save and recycle data if a file is already present.
-        if not os.path.exists(self.options["out_file"]):
+        out_file = self.options["out_file"]
+        if not out_file:
+            return
+        if not os.path.exists(out_file):
             dataframe_to_add.index = range(len(dataframe_to_add))
-            dataframe_to_add.to_csv(self.options["out_file"])
+            out_dir = os.path.dirname(out_file)
+            if out_dir:
+                os.makedirs(out_dir, exist_ok=True)
+            dataframe_to_add.to_csv(out_file)
         else:
             dataframe_existing = pd.read_csv(self.options["out_file"])
             if "Unnamed: 0" in dataframe_existing.columns:

@@ -1,6 +1,6 @@
 """FAST - Copyright (c) 2016 ONERA ISAE."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -51,6 +51,13 @@ class AerodynamicsLowSpeed(om.Group):
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare("wing_airfoil", default="naca23012.af", types=str, allow_none=True)
@@ -69,6 +76,7 @@ class AerodynamicsLowSpeed(om.Group):
                     compute_mach_interpolation=False,
                     result_folder_path=self.options["result_folder_path"],
                     airfoil_folder_path=self.options["airfoil_folder_path"],
+                    result_file_name=self.options["result_file_name"],
                     wing_airfoil_file=self.options["wing_airfoil"],
                     htp_airfoil_file=self.options["htp_airfoil"],
                     input_angle_of_attack=self.options["input_angle_of_attack"],

@@ -1,6 +1,6 @@
 """Vortex Lattice Method implementation."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -12,31 +12,193 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import atexit
 import copy
+import json
 import logging
-import os
-import os.path as pth
 import warnings
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Union
 
 import numpy as np
 import openmdao.api as om
-import pandas as pd
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-from fastga.command.api import string_to_array
 from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
 
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
 
+GEOMETRY_SET_LABELS = [
+    "sweep25_wing",
+    "taper_ratio_wing",
+    "aspect_ratio_wing",
+    "dihedral_angle_wing",
+    "twist_angle_wing",
+    "sweep25_htp",
+    "taper_ratio_htp",
+    "aspect_ratio_htp",
+]
+
+VLM_RESULT_LABELS = [
+    "cl_0_wing",
+    "cl_X_wing",
+    "cl_alpha_wing",
+    "cm_0_wing",
+    "y_vector_wing",
+    "cl_vector_wing",
+    "chord_vector_wing",
+    "coef_k_wing",
+    "cl_0_htp",
+    "cl_X_htp",
+    "cl_alpha_htp",
+    "cl_alpha_htp_isolated",
+    "y_vector_htp",
+    "cl_vector_htp",
+    "coef_k_htp",
+    "saved_ref_area",
+    "area_ratio",
+]
+
 _LOGGER = logging.getLogger(__name__)
+
+
+class _NumpyJSONEncoder(json.JSONEncoder):
+    """JSON encoder that also knows how to serialize numpy arrays/scalars, which
+    the VLM result cache stores (e.g. y_vector_wing, cl_vector_wing)."""
+
+    def default(self, o):
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, np.generic):
+            return o.item()
+        return super().default(o)
 
 
 class VLMSimpleGeometry(om.ExplicitComponent):
     """Computation of the aerodynamics properties using the in-house VLM code."""
+
+    _cache: dict = {}
+
+    # File the cache should be saved to (only set when a `result_file_name` is
+    # configured).
+    _cache_file: Optional[str] = None
+
+    # Folder/file the cache was last loaded from, used only to avoid redundant
+    # reloads on repeated component instantiation. Distinct from `_cache_file`:
+    # this is set even when no `result_file_name` is configured (folder-only mode).
+    _cache_loaded_from: Optional[str] = None
+
+    # Guards against registering the atexit save more than once.
+    _atexit_registered: bool = False
+
+    @staticmethod
+    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
+        """
+        Turns the `result_folder_path`/`result_file_name` options into the full cache
+        file path.
+        """
+        return (Path(folder_path) / file_name).resolve()
+
+    @classmethod
+    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+        """
+        Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
+
+        :param folder_path: the result folder (e.g. `result_folder_path`) inside
+            which the cache file lives.
+        """
+
+        search_folder = Path(folder_path).resolve()
+        cls._cache_loaded_from = str(search_folder)
+
+        no_vlm_cache = True
+
+        for file in search_folder.glob("*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as cache_fp:
+                    saved_cache = json.load(cache_fp)
+            except (json.JSONDecodeError, OSError) as exc:
+                # The result folder may contain JSON files unrelated to the VLM cache.
+                # Skip them rather than aborting the whole load.
+                _LOGGER.warning("Skipping unreadable cache file %s: %s", file, exc)
+                continue
+
+            if isinstance(saved_cache, dict):
+                for key, value in saved_cache.items():
+                    # Register in cache only if the key contains all the geometry labels
+                    if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
+                        value, dict
+                    ):
+                        cls._cache[key] = value
+                        no_vlm_cache = False
+
+        if no_vlm_cache:
+            _LOGGER.info("No existing VLM cache found in %s, starting empty.", search_folder)
+        else:
+            _LOGGER.info(
+                "Loaded VLM cache from %s (%d geometry entries).", search_folder, len(cls._cache)
+            )
+
+    @classmethod
+    def save_cache(
+        cls,
+        folder_path: Optional[Union[str, Path]] = None,
+        file_name: Optional[str] = None,
+    ) -> None:
+        """
+        Persists the current in-memory VLM result cache to disk so it can be reused
+        by a later run via `load_cache`. Intended to be called once, at the end of
+        a run.
+
+        :param folder_path: raw result folder to save into, together with `file_name`.
+             Ignored unless `file_name` is given.
+        :param file_name: cache file name to use together with `folder_path`.
+        """
+        if folder_path is not None and file_name:
+            path = cls._resolve_cache_path(folder_path, file_name)
+        elif cls._cache_file is not None:
+            path = Path(cls._cache_file)
+        else:
+            _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
+            return
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf8") as cache_fp:
+            json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
+
+        cls._cache_file = str(path)
+        _LOGGER.info("Saved VLM cache to %s (%d geometry entries).", path, len(cls._cache))
+
+    def _setup_cache_persistence(self) -> None:
+        """
+        Loads any existing cache from `result_folder_path`/`result_file_name` and
+        registers an `atexit` callback process that writes the cache into the
+        json file when the process ends.
+        """
+        folder_path = self.options["result_folder_path"]
+        file_name = self.options["result_file_name"]
+        if not folder_path and not file_name:
+            return
+        # The resolved folder path
+        resolved = (
+            VLMSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
+            if file_name
+            else Path(folder_path).resolve()
+        )
+
+        # Prevent reloading the cache if it's already been loaded from the same path.
+        if VLMSimpleGeometry._cache_loaded_from is None:
+            VLMSimpleGeometry.load_cache(folder_path)
+
+        # Register the atexit callback process only once, since multiple instances of this
+        # component may be created. Only register it when `result_file_name` is set.
+        if not VLMSimpleGeometry._atexit_registered:
+            if resolved is not None and file_name:
+                atexit.register(VLMSimpleGeometry.save_cache)
+            VLMSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
         """Initializing parameters used in VLM computation."""
@@ -64,6 +226,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
@@ -71,6 +240,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         self.options.declare("htp_airfoil_file", default="naca0012.af", types=str, allow_none=True)
 
     def setup(self):
+        # Setup cache persistence, placed under setup() due to options usage.
+        self._setup_cache_persistence()
+
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -224,32 +396,17 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
-                    mach,
-                    area_ratio,
                 ]
             ),
             decimals=6,
         )
 
-        # Search if results already exist:
-        result_folder_path = self.options["result_folder_path"]
-        result_file_path = None
-        saved_area_ratio = 1.0
-        if result_folder_path != "":
-            result_file_path, saved_area_ratio = self.search_results(
-                result_folder_path, geometry_set
-            )
+        # Create a key to store/retrieve results in cache
+        key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
-        # If no result saved for that geometry under this mach condition, computation is done
-        if result_file_path is None:
-            # Create result folder first (if it must fail, let it fail as soon as possible)
-            if result_folder_path != "":
-                if not os.path.exists(result_folder_path):
-                    os.makedirs(pth.join(result_folder_path), exist_ok=True)
-
-            # Save the geometry (result_file_path is None entering the function)
-            if self.options["result_folder_path"] != "":
-                result_file_path = self.save_geometry(result_folder_path, geometry_set)
+        # Compute results if not already in cache, else retrieve them and adapt to new area ratio
+        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
+            self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_wing(
@@ -346,27 +503,27 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             )
             y_vector_htp, cl_vector_htp = self.resize_vector([y_vector_htp, cl_vector_htp])
 
-            # Save results to defined path ---------------------------------------------------------
-            if self.options["result_folder_path"] != "":
-                results = [
-                    float(cl_0_wing),
-                    float(cl_x_wing),
-                    float(cl_alpha_wing),
-                    float(cm_0_wing),
-                    np.array(y_vector_wing).tolist(),
-                    np.array(cl_vector_wing).tolist(),
-                    np.array(chord_vector_wing).tolist(),
-                    float(coef_k_wing),
-                    float(cl_0_htp),
-                    float(cl_aoa_htp),
-                    float(cl_alpha_htp),
-                    float(cl_alpha_htp_isolated),
-                    np.array(y_vector_htp).tolist(),
-                    np.array(cl_vector_htp).tolist(),
-                    float(coef_k_htp),
-                    float(sref_wing),
-                ]
-                self.save_results(result_file_path, results)
+            # Save results to cache ----------------------------------------------------------------
+            results = [
+                float(cl_0_wing),
+                float(cl_x_wing),
+                float(cl_alpha_wing),
+                float(cm_0_wing),
+                np.array(y_vector_wing).tolist(),
+                np.array(cl_vector_wing).tolist(),
+                np.array(chord_vector_wing).tolist(),
+                float(coef_k_wing),
+                float(cl_0_htp),
+                float(cl_aoa_htp),
+                float(cl_alpha_htp),
+                float(cl_alpha_htp_isolated),
+                np.array(y_vector_htp).tolist(),
+                np.array(cl_vector_htp).tolist(),
+                float(coef_k_htp),
+                float(sref_wing),
+                float(area_ratio),
+            ]
+            self.save_results(key, results, mach)
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
@@ -387,7 +544,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_htp,
                 cl_vector_htp,
                 coef_k_htp,
-            ) = self.read_value_from_data(result_file_path, sref_wing, area_ratio, saved_area_ratio)
+            ) = self.read_value_from_data(key, mach, sref_wing, area_ratio)
 
         return (
             cl_0_wing,
@@ -1005,115 +1162,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         _LOGGER.warning("CL not in range. Linear extrapolation of CDp value %f", cdp)
         return cdp
 
-    @staticmethod
-    def search_results(result_folder_path, geometry_set):
-        """Search the results folder to see if the geometry has already been calculated."""
-        # default value
-        result_file_path = None
-        saved_area_ratio = 1.0
-        if os.path.exists(result_folder_path):
-            geometry_set_labels = [
-                "sweep25_wing",
-                "taper_ratio_wing",
-                "aspect_ratio_wing",
-                "dihedral_angle_wing",
-                "twist_angle_wing",
-                "sweep25_htp",
-                "taper_ratio_htp",
-                "aspect_ratio_htp",
-                "mach",
-                "area_ratio",
-            ]
-            # If some results already stored search for corresponding geometry
-            if pth.exists(pth.join(result_folder_path, "geometry_0.csv")):
-                idx = 0
-                while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
-                    if pth.exists(pth.join(result_folder_path, "vlm_" + str(idx) + ".csv")):
-                        data = pd.read_csv(
-                            pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")
-                        )
-                        values = data.to_numpy()[:, 1].tolist()
-                        labels = data.to_numpy()[:, 0].tolist()
-                        data = pd.DataFrame(values, index=labels)
-                        # noinspection PyBroadException
-                        try:
-                            if (
-                                np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
-                                == len(geometry_set_labels) - 1
-                            ):
-                                saved_set = np.around(
-                                    data.loc[geometry_set_labels[0:-1], 0].to_numpy(), decimals=6
-                                )
-                                if (
-                                    np.sum(saved_set == geometry_set[0:-1])
-                                    == len(geometry_set_labels) - 1
-                                ):
-                                    result_file_path = pth.join(
-                                        result_folder_path, "vlm_" + str(idx) + ".csv"
-                                    )
-                                    saved_area_ratio = data.loc["area_ratio", 0]
-                                    return result_file_path, saved_area_ratio
-                        except Exception:
-                            break
-                    idx += 1
+    def register_geometry(self, key):
+        """Register the geometry set as a key in the in-memory cache."""
+        self._cache.setdefault(key, {})
 
-        return result_file_path, saved_area_ratio
-
-    @staticmethod
-    def save_geometry(result_folder_path, geometry_set):
-        """Save geometry if not already computed by finding first available index."""
-        geometry_set_labels = [
-            "sweep25_wing",
-            "taper_ratio_wing",
-            "aspect_ratio_wing",
-            "dihedral_angle_wing",
-            "twist_angle_wing",
-            "sweep25_htp",
-            "taper_ratio_htp",
-            "aspect_ratio_htp",
-            "mach",
-            "area_ratio",
-        ]
-        data = pd.DataFrame(geometry_set, index=geometry_set_labels)
-        idx = 0
-        while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
-            idx += 1
-        data.to_csv(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv"))
-        result_file_path = pth.join(result_folder_path, "vlm_" + str(idx) + ".csv")
-
-        return result_file_path
-
-    @staticmethod
-    def save_results(result_file_path, results):
-        """Reads saved results."""
-        labels = [
-            "cl_0_wing",
-            "cl_X_wing",
-            "cl_alpha_wing",
-            "cm_0_wing",
-            "y_vector_wing",
-            "cl_vector_wing",
-            "chord_vector_wing",
-            "coef_k_wing",
-            "cl_0_htp",
-            "cl_X_htp",
-            "cl_alpha_htp",
-            "cl_alpha_htp_isolated",
-            "y_vector_htp",
-            "cl_vector_htp",
-            "coef_k_htp",
-            "saved_ref_area",
-        ]
-        data = pd.DataFrame(results, index=labels)
-        data.to_csv(result_file_path)
-
-    @staticmethod
-    def read_results(result_file_path):
-        data = pd.read_csv(result_file_path)
-        values = data.to_numpy()[:, 1].tolist()
-        labels = data.to_numpy()[:, 0].tolist()
-
-        return pd.DataFrame(values, index=labels)
+    def save_results(self, key, results, mach):
+        """Store VLM results in the in-memory cache."""
+        self._cache[key][str(mach)] = dict(zip(VLM_RESULT_LABELS, results))
 
     def post_processing_wing(
         self,
@@ -1235,40 +1290,37 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_vector_htp,
         )
 
-    def read_value_from_data(self, result_file_path, sref_wing, area_ratio, saved_area_ratio):
+    def read_value_from_data(self, key, mach, sref_wing, area_ratio):
         """
-        Read existed data to speed up the process
+        Read cached data to speed up the process
 
-        :param result_file_path: path to the file with existing data
+        :param key: cache key created by geometry set
+        :param mach: Mach number
         :param sref_wing: wing reference area
         :param area_ratio: area ratio between wing and horizontal stabilizer
-        :param saved_area_ratio:  area ratio between wing and horizontal stabilizer in existing data
 
         :return: existing data
         """
-        data = self.read_results(result_file_path)
-        saved_area_wing = float(data.loc["saved_ref_area", 0])
-        cl_0_wing = float(data.loc["cl_0_wing", 0])
-        cl_x_wing = float(data.loc["cl_X_wing", 0])
-        cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
-        cm_0_wing = float(data.loc["cm_0_wing", 0])
-        y_vector_wing = string_to_array(data.loc["y_vector_wing", 0][1:-2]) * np.sqrt(
+        data = self._cache[key][str(mach)]
+        saved_area_wing = data.get("saved_ref_area")
+        saved_area_ratio = data.get("area_ratio")
+        cl_0_wing = data.get("cl_0_wing")
+        cl_x_wing = data.get("cl_X_wing")
+        cl_alpha_wing = data.get("cl_alpha_wing")
+        cm_0_wing = data.get("cm_0_wing")
+        y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(sref_wing / saved_area_wing)
+        cl_vector_wing = np.array(data.get("cl_vector_wing"))
+        chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        cl_vector_wing = string_to_array(data.loc["cl_vector_wing", 0][1:-2])
-        chord_vector_wing = string_to_array(data.loc["chord_vector_wing", 0][1:-2]) * np.sqrt(
-            sref_wing / saved_area_wing
-        )
-        coef_k_wing = float(data.loc["coef_k_wing", 0])
-        cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
-            area_ratio / saved_area_ratio
-        )
-        y_vector_htp = string_to_array(data.loc["y_vector_htp", 0][1:-2])
-        cl_vector_htp = string_to_array(data.loc["cl_vector_htp", 0][1:-2])
-        coef_k_htp = float(data.loc["coef_k_htp", 0]) * (area_ratio / saved_area_ratio)
+        coef_k_wing = data.get("coef_k_wing")
+        cl_0_htp = data.get("cl_0_htp") * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = data.get("cl_X_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = data.get("cl_alpha_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = data.get("cl_alpha_htp_isolated") * (area_ratio / saved_area_ratio)
+        y_vector_htp = np.array(data.get("y_vector_htp"))
+        cl_vector_htp = np.array(data.get("cl_vector_htp"))
+        coef_k_htp = data.get("coef_k_htp") * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
