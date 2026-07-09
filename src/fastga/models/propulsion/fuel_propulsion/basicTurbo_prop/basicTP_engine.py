@@ -16,7 +16,7 @@
 import logging
 from collections import OrderedDict
 from typing import Union, Sequence, Tuple, Optional
-from scipy.interpolate import interp1d, RectBivariateSpline
+from scipy.interpolate import RectBivariateSpline
 import numpy as np
 
 import openmdao.api as om
@@ -1431,7 +1431,7 @@ class BasicTPEngine(AbstractFuelPropulsion):
         # Compute engine dimensions
         if max_thermal_power_in_kw < 850.0:
             self.engine.height = (
-                interp1d([500.0, 850.0], [21.0, 25.0])(max_thermal_power_in_kw) * 0.0254
+                np.interp(max_thermal_power_in_kw, [500.0, 850.0], [21.0, 25.0]) * 0.0254
             )
             self.engine.width = 21.5 * 0.0254
         else:

@@ -278,9 +278,11 @@ class ComputeDeltaHighLift(FigureDigitization):
             k1_0_30 = (
                 -0.000 * chord_ratio**3 + 4.694 * chord_ratio**2 + 4.372 * chord_ratio - 0.0031
             )
-            flap_chord_contribution = interpolate.interp1d(
-                [0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)]
-            )(np.clip(thickness_ratio, 0.12, 0.30))
+            flap_chord_contribution = np.interp(
+                np.clip(thickness_ratio, 0.12, 0.30),
+                [0.12, 0.21, 0.30],
+                [float(k1_0_12), float(k1_0_21), float(k1_0_30)],
+            )
             flap_deflection_contribution = (
                 -3.795e-7 * flap_angle**3
                 + 5.387e-5 * flap_angle**2
@@ -303,9 +305,9 @@ class ComputeDeltaHighLift(FigureDigitization):
                 + 3.4564 * chord_ratio
                 - 0.0054
             )
-            flap_chord_contribution = interpolate.interp1d(
-                [0.12, 0.21], [float(k1_0_12), float(k1_0_21)]
-            )(np.clip(thickness_ratio, 0.12, 0.21))
+            flap_chord_contribution = np.interp(
+                np.clip(thickness_ratio, 0.12, 0.21), [0.12, 0.21], [float(k1_0_12), float(k1_0_21)]
+            )
             k2_0_12 = (
                 -3.9877e-12 * flap_angle**6
                 + 1.1685e-9 * flap_angle**5
@@ -333,9 +335,11 @@ class ComputeDeltaHighLift(FigureDigitization):
                 - 41677e-3 * flap_angle
                 + 6.749e-4
             )
-            flap_deflection_contribution = interpolate.interp1d(
-                [0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)]
-            )(np.clip(thickness_ratio, 0.12, 0.30))
+            flap_deflection_contribution = np.interp(
+                np.clip(thickness_ratio, 0.12, 0.30),
+                [0.12, 0.21, 0.30],
+                [float(k2_0_12), float(k2_0_21), float(k2_0_30)],
+            )
 
         else:  # Split flap
             k1_0_12 = (
@@ -347,9 +351,11 @@ class ComputeDeltaHighLift(FigureDigitization):
             k1_0_30 = (
                 -0.000 * chord_ratio**3 + 4.694 * chord_ratio**2 + 4.372 * chord_ratio - 0.0031
             )
-            flap_chord_contribution = interpolate.interp1d(
-                [0.12, 0.21, 0.30], [float(k1_0_12), float(k1_0_21), float(k1_0_30)]
-            )(np.clip(thickness_ratio, 0.12, 0.30))
+            flap_chord_contribution = np.interp(
+                np.clip(thickness_ratio, 0.12, 0.30),
+                [0.12, 0.21, 0.30],
+                [float(k1_0_12), float(k1_0_21), float(k1_0_30)],
+            )
             k2_0_12 = (
                 -4.161e-7 * flap_angle**3
                 + 5.5496e-5 * flap_angle**2
@@ -368,9 +374,11 @@ class ComputeDeltaHighLift(FigureDigitization):
                 - 1.2443e-4 * flap_angle
                 + 5.1647e-4
             )
-            flap_deflection_contribution = interpolate.interp1d(
-                [0.12, 0.21, 0.30], [float(k2_0_12), float(k2_0_21), float(k2_0_30)]
-            )(np.clip(thickness_ratio, 0.12, 0.30))
+            flap_deflection_contribution = np.interp(
+                np.clip(thickness_ratio, 0.12, 0.30),
+                [0.12, 0.21, 0.30],
+                [float(k2_0_12), float(k2_0_21), float(k2_0_30)],
+            )
         delta_cd_flaps = flap_chord_contribution * flap_deflection_contribution * area_ratio
 
         return delta_cd_flaps

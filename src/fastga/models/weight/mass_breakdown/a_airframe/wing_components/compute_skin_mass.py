@@ -17,7 +17,7 @@ in her MAE research project report.
 
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import interp1d
+from scipy.interpolate import CubicSpline
 from stdatm import Atmosphere
 
 
@@ -131,9 +131,7 @@ class ComputeSkinMass(om.ExplicitComponent):
         for mach in mach_interp:
             v_interp.append(float(mach * atm.speed_of_sound))
         cl_alpha_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
-        cl_alpha_fct = interp1d(
-            v_interp, cl_alpha_interp, fill_value="extrapolate", kind="quadratic"
-        )
+        cl_alpha_fct = CubicSpline(v_interp, cl_alpha_interp)
 
         cl_alpha_ac = cl_alpha_fct(atm.true_airspeed)
 
