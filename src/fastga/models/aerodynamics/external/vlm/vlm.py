@@ -187,7 +187,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         folder_path = self.options["result_folder_path"]
         file_name = self.options["result_file_name"]
-
+        if not folder_path and not file_name:
+            return
         # The resolved folder path
         resolved = (
             VLMSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
