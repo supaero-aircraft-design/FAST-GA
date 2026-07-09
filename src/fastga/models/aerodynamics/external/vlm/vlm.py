@@ -103,24 +103,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         return (Path(folder_path) / file_name).resolve()
 
     @classmethod
-    def load_cache(cls, folder_path: Union[str, Path], file_name: str) -> None:
+    def load_cache(cls, folder_path: Union[str, Path]) -> None:
         """
         Loads a previously saved VLM result cache from disk and merges it into the in-memory cache.
 
         :param folder_path: the result folder (e.g. `result_folder_path`) inside
             which the cache file lives.
-        :param file_name: the cache file name (e.g. `result_file_name`) inside
-            `folder_path`. If empty, no single file is designated as the save
-            target, but every VLM cache JSON file found directly in `folder_path` is
-            still gathered and merged into the in-memory cache.
         """
-        if file_name:
-            path = cls._resolve_cache_path(folder_path, file_name)
-            cls._cache_file = str(path)
-            search_folder = path.parent
-        else:
-            search_folder = Path(folder_path).resolve()
 
+        search_folder = Path(folder_path).resolve()
         cls._cache_loaded_from = str(search_folder)
 
         no_vlm_cache = True
@@ -138,7 +129,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             if isinstance(saved_cache, dict):
                 for key, value in saved_cache.items():
                     # Register in cache only if the key contains all the geometry labels
-                    if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(value, dict):
+                    if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
+                        value, dict
+                    ):
                         cls._cache[key] = value
                         no_vlm_cache = False
 
@@ -197,8 +190,8 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         )
 
         # Prevent reloading the cache if it's already been loaded from the same path.
-        if VLMSimpleGeometry._cache_loaded_from != str(resolved):
-            VLMSimpleGeometry.load_cache(folder_path, file_name)
+        if VLMSimpleGeometry._cache_loaded_from is None:
+            VLMSimpleGeometry.load_cache(folder_path)
 
         # Register the atexit callback process only once, since multiple instances of this
         # component may be created. Only register it when `result_file_name` is set.
@@ -233,7 +226,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
-        self.options.declare("result_file_name", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
             "wing_airfoil_file", default="naca23012.af", types=str, allow_none=True
