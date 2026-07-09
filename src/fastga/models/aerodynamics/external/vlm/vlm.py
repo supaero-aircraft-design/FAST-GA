@@ -136,10 +136,10 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 continue
 
             if isinstance(saved_cache, dict):
-                for key, _ in saved_cache.items():
+                for key, value in saved_cache.items():
                     # Register in cache only if the key contains all the geometry labels
-                    if all(label in key for label in GEOMETRY_SET_LABELS):
-                        cls._cache.update(saved_cache)
+                    if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(value, dict):
+                        cls._cache[key] = value
                         no_vlm_cache = False
 
         if no_vlm_cache:
