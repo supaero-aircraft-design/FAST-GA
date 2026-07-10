@@ -19,7 +19,6 @@ import numpy as np
 import openmdao.api as om
 
 from scipy.constants import g
-from scipy.interpolate import interp1d
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
@@ -138,8 +137,8 @@ class ComputeClimb(DynamicEquilibrium):
                 name="sizing:main_route:climb",
             )
 
-            climb_rate = interp1d([0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl])(
-                altitude_t
+            climb_rate = np.interp(
+                altitude_t, [0.0, float(cruise_altitude)], [climb_rate_sl, climb_rate_cl]
             )
 
             self.complete_flight_point(flight_point, v_cas=v_cas, climb_rate=climb_rate)

@@ -16,7 +16,7 @@
 import logging
 from typing import Union, Sequence, Tuple, Optional
 import numpy as np
-from scipy.interpolate import interp1d, LinearNDInterpolator
+from scipy.interpolate import LinearNDInterpolator
 
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
@@ -509,40 +509,47 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
         if altitude > self.intermediate_altitude:
             mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
             mach_cl = np.clip(atmosphere.mach, min(self.turbo_mach_CL), max(self.turbo_mach_CL))
-            max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
-            max_thrust_interp_CL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)
             thrust_interp_IL = np.clip(
-                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(mach_il)
+                thrust,
+                min(self.turbo_thrust_IL),
+                np.interp(mach_il, self.turbo_mach_IL, self.turbo_thrust_max_IL),
             )
             thrust_interp_CL = np.clip(
-                thrust, min(self.turbo_thrust_CL), max_thrust_interp_CL(mach_cl)
+                thrust,
+                min(self.turbo_thrust_CL),
+                np.interp(mach_cl, self.turbo_mach_CL, self.turbo_thrust_max_CL),
             )
             # lower_bound = float(sfc_interp_IL(thrust_interp_IL, mach_il))
             lower_bound = float(self.sfc_interpolator_il((thrust_interp_IL, mach_il)))
             # upper_bound = float(sfc_interp_CL(thrust_interp_CL, mach_cl))
             upper_bound = float(self.sfc_interpolator_cl((thrust_interp_CL, mach_cl)))
             sfc = float(
-                interp1d(
+                np.interp(
+                    max(float(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
                     [lower_bound, upper_bound],
-                )(max(float(altitude), 0.0))
+                )
             )
         else:
             mach_sl = np.clip(atmosphere.mach, min(self.turbo_mach_SL), max(self.turbo_mach_SL))
             mach_il = np.clip(atmosphere.mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
-            max_thrust_interp_SL = interp1d(self.turbo_mach_SL, self.turbo_thrust_max_SL)
-            max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             thrust_interp_SL = np.clip(
-                thrust, min(self.turbo_thrust_SL), max_thrust_interp_SL(mach_sl)
+                thrust,
+                min(self.turbo_thrust_SL),
+                np.interp(mach_sl, self.turbo_mach_SL, self.turbo_thrust_max_SL),
             )
             thrust_interp_IL = np.clip(
-                thrust, min(self.turbo_thrust_IL), max_thrust_interp_IL(mach_il)
+                thrust,
+                min(self.turbo_thrust_IL),
+                np.interp(mach_il, self.turbo_mach_IL, self.turbo_thrust_max_IL),
             )
             lower_bound = float(self.sfc_interpolator_sl((thrust_interp_SL, mach_sl)))
             upper_bound = float(self.sfc_interpolator_il((thrust_interp_IL, mach_il)))
             sfc = float(
-                interp1d([0.0, self.intermediate_altitude], [lower_bound, upper_bound])(
-                    max(float(altitude), 0.0)
+                np.interp(
+                    max(float(altitude), 0.0),
+                    [0.0, self.intermediate_altitude],
+                    [lower_bound, upper_bound],
                 )
             )
 
@@ -603,40 +610,47 @@ class BasicTPEngineMapped(AbstractFuelPropulsion):
 
     def _max_thrust(self, altitude: float, mach: float) -> float:
         if altitude > self.intermediate_altitude:
-            max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
-            max_thrust_interp_CL = interp1d(self.turbo_mach_CL, self.turbo_thrust_max_CL)
             max_thrust_IL = float(
-                max_thrust_interp_IL(
-                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
+                np.interp(
+                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL)),
+                    self.turbo_mach_IL,
+                    self.turbo_thrust_max_IL,
                 )
             )
             max_thrust_CL = float(
-                max_thrust_interp_CL(
-                    np.clip(mach, min(self.turbo_mach_CL), max(self.turbo_mach_CL))
+                np.interp(
+                    np.clip(mach, min(self.turbo_mach_CL), max(self.turbo_mach_CL)),
+                    self.turbo_mach_CL,
+                    self.turbo_thrust_max_CL,
                 )
             )
             max_thrust = float(
-                interp1d(
+                np.interp(
+                    max(float(altitude), 0.0),
                     [self.intermediate_altitude, self.cruise_altitude_propeller],
                     [max_thrust_IL, max_thrust_CL],
-                )(max(float(altitude), 0.0))
+                )
             )
         else:
-            max_thrust_interp_SL = interp1d(self.turbo_mach_SL, self.turbo_thrust_max_SL)
-            max_thrust_interp_IL = interp1d(self.turbo_mach_IL, self.turbo_thrust_max_IL)
             max_thrust_SL = float(
-                max_thrust_interp_SL(
-                    np.clip(mach, min(self.turbo_mach_SL), max(self.turbo_mach_SL))
+                np.interp(
+                    np.clip(mach, min(self.turbo_mach_SL), max(self.turbo_mach_SL)),
+                    self.turbo_mach_SL,
+                    self.turbo_thrust_max_SL,
                 )
             )
             max_thrust_IL = float(
-                max_thrust_interp_IL(
-                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL))
+                np.interp(
+                    np.clip(mach, min(self.turbo_mach_IL), max(self.turbo_mach_IL)),
+                    self.turbo_mach_IL,
+                    self.turbo_thrust_max_IL,
                 )
             )
             max_thrust = float(
-                interp1d([0.0, self.intermediate_altitude], [max_thrust_SL, max_thrust_IL])(
-                    max(float(altitude), 0.0)
+                np.interp(
+                    max(float(altitude), 0.0),
+                    [0.0, self.intermediate_altitude],
+                    [max_thrust_SL, max_thrust_IL],
                 )
             )
 

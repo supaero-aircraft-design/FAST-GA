@@ -14,7 +14,6 @@
 
 import numpy as np
 import openmdao.api as om
-import scipy.interpolate as inter
 
 import fastoad.api as oad
 from stdatm import Atmosphere
@@ -147,8 +146,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
         elif balance_ratio > 0.5:
             balance_ratio = 0.5
 
-        k_ch_alpha_balance_inter = inter.interp1d([0.15, 0.50], [0.93, 0.2])
-        k_ch_alpha_balance = k_ch_alpha_balance_inter(balance_ratio)
+        k_ch_alpha_balance = np.interp(balance_ratio, [0.15, 0.50], [0.93, 0.2])
 
         ch_alpha_balance = k_ch_alpha_balance * ch_prime_prime_alpha
 
@@ -196,7 +194,7 @@ class Compute2DHingeMomentsTail(FigureDigitization):
 
         # Step 4. Same assumption as the step 4. of the previous section. Only this time we only
         # take the curve for the NACA 0009
-        k_ch_delta_balance = inter.interp1d([0.15, 0.50], [0.93, 0.2])(balance_ratio)
+        k_ch_delta_balance = np.interp(balance_ratio, [0.15, 0.50], [0.93, 0.2])
 
         ch_delta_balance = k_ch_delta_balance * ch_prime_prime_delta
 

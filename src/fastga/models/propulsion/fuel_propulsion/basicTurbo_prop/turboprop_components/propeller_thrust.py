@@ -1,6 +1,6 @@
 import numpy as np
 import openmdao.api as om
-from scipy.interpolate import RectBivariateSpline, interp1d
+from scipy.interpolate import RectBivariateSpline, CubicSpline
 from stdatm import Atmosphere
 
 THRUST_PTS_NB = 30
@@ -235,12 +235,8 @@ class PropellerMaxThrust(om.ExplicitComponent):
         thrust_limit_cl = inputs["data:aerodynamics:propeller:cruise_level:thrust_limit"]
         speed_cl = inputs["data:aerodynamics:propeller:cruise_level:speed"]
 
-        propeller_max_thrust_sl_func = interp1d(
-            speed_sl, thrust_limit_sl, kind="cubic", bounds_error=False, fill_value="extrapolate"
-        )
-        propeller_max_thrust_cl_func = interp1d(
-            speed_cl, thrust_limit_cl, kind="cubic", bounds_error=False, fill_value="extrapolate"
-        )
+        propeller_max_thrust_sl_func = CubicSpline(speed_sl, thrust_limit_sl)
+        propeller_max_thrust_cl_func = CubicSpline(speed_cl, thrust_limit_cl)
 
         lower_bound_thrust_limit = propeller_max_thrust_sl_func(
             true_airspeed

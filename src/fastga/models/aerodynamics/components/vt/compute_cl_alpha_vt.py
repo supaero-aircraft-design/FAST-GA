@@ -13,7 +13,6 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-import scipy.interpolate as interp
 import fastoad.api as oad
 
 from ..figure_digitization import FigureDigitization
@@ -94,7 +93,7 @@ class ComputeClAlphaVerticalTail(FigureDigitization):
         if span_vt / avg_fus_depth < 2.0:
             kv = 0.75
         elif span_vt / avg_fus_depth < 3.5:
-            kv = interp.interp1d([2.0, 3.5], [0.75, 1.0])(float(span_vt / avg_fus_depth))
+            kv = np.interp(float(span_vt / avg_fus_depth), [2.0, 3.5], [0.75, 1.0])
         else:
             kv = 1.0
 
