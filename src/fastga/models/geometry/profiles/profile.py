@@ -18,7 +18,6 @@ from typing import Sequence, Tuple
 
 import numpy as np
 import pandas as pd
-from scipy.interpolate import CubicSpline
 
 Coordinates2D = namedtuple("Coordinates2D", ["x", "y"])
 
@@ -164,10 +163,11 @@ class Profile:
             0.1 - max(min(x_up_vect), min(x_lo_vect))
         ) + max(min(x_up_vect), min(x_lo_vect))
         x_interp = np.append(x_start, np.linspace(0.13, min(max(x_up_vect), max(x_lo_vect)), 25))
-        interp_lower = CubicSpline(lower_side_points[X], lower_side_points[Z])
-        interp_upper = CubicSpline(upper_side_points[X], upper_side_points[Z])
         z_sides = pd.DataFrame(
-            {"z_lower": interp_lower(x_interp), "z_upper": interp_upper(x_interp)}
+            {
+                "z_lower": np.interp(x_interp, lower_side_points[X], lower_side_points[Z]),
+                "z_upper": np.interp(x_interp, upper_side_points[X], upper_side_points[Z]),
+            }
         )
         z = z_sides.mean(axis=1)
         thickness = z_sides.diff(axis=1).iloc[:, -1]

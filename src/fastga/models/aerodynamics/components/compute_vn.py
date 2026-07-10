@@ -18,7 +18,7 @@ import warnings
 import numpy as np
 import openmdao.api as om
 import scipy.optimize as optimize
-from scipy.interpolate import CubicSpline
+from scipy.interpolate import make_interp_spline
 from scipy.constants import g, knot, foot, lbf
 
 # noinspection PyProtectedMember
@@ -334,7 +334,7 @@ class ComputeVN(om.ExplicitComponent):
         for mach in mach_interp:
             v_interp.append(float(mach * atm.speed_of_sound))
         cl_alpha_interp = inputs["data:aerodynamics:aircraft:mach_interpolation:CL_alpha_vector"]
-        cl_alpha_fct = CubicSpline(v_interp, cl_alpha_interp)
+        cl_alpha_fct = make_interp_spline(v_interp, cl_alpha_interp, k=2)
 
         # We will now establish the minimum limit maneuvering load factors outside of gust load
         # factors. Th designer can take higher load factor if he so wish. As will later be done
