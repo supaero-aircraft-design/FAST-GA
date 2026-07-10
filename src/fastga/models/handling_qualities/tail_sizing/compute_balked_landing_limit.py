@@ -153,18 +153,22 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         cl_alpha_isolated_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha"]
         cl_alpha_htp = inputs["data:aerodynamics:horizontal_tail:low_speed:CL_alpha_isolated"]
 
-        elevator_chord_ratio_list = np.array([0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0])
+        elevator_chord_ratio_list = np.array(
+            [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        )
         elevator_deflection_list = np.array([0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0])
 
-        stall_angle_reduction_list = np.array([
-            [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            [0.0, 0.3, 0.5, 1.1, 1.6, 2.2, 2.7, 3.3, 3.9, 4.4, 5.0],
-            [0.0, 0.6, 1.0, 2.1, 3.2, 4.4, 5.5, 6.6, 7.7, 8.9, 10.0],
-            [0.0, 0.9, 1.5, 3.2, 4.9, 6.5, 8.2, 9.9, 11.6, 13.3, 15.0],
-            [0.0, 1.2, 2.0, 4.2, 6.5, 8.7, 11.0, 13.2, 15.5, 17.7, 20.0],
-            [0.0, 1.6, 2.5, 5.3, 8.1, 11.0, 13.7, 16.5, 19.4, 22.2, 25.0],
-            [0.0, 1.9, 3.0, 6.4, 9.7, 13.1, 16.5, 19.9, 23.2, 26.6, 30.0],
-        ])
+        stall_angle_reduction_list = np.array(
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.3, 0.5, 1.1, 1.6, 2.2, 2.7, 3.3, 3.9, 4.4, 5.0],
+                [0.0, 0.6, 1.0, 2.1, 3.2, 4.4, 5.5, 6.6, 7.7, 8.9, 10.0],
+                [0.0, 0.9, 1.5, 3.2, 4.9, 6.5, 8.2, 9.9, 11.6, 13.3, 15.0],
+                [0.0, 1.2, 2.0, 4.2, 6.5, 8.7, 11.0, 13.2, 15.5, 17.7, 20.0],
+                [0.0, 1.6, 2.5, 5.3, 8.1, 11.0, 13.7, 16.5, 19.4, 22.2, 25.0],
+                [0.0, 1.9, 3.0, 6.4, 9.7, 13.1, 16.5, 19.9, 23.2, 26.6, 30.0],
+            ]
+        )
 
         stall_angle_inter = RectBivariateSpline(
             elevator_chord_ratio_list, elevator_deflection_list, stall_angle_reduction_list.T
