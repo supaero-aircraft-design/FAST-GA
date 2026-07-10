@@ -16,7 +16,6 @@ from typing import Union, Tuple
 
 import numpy as np
 import fastoad.api as oad
-from scipy import interpolate
 
 from .figure_digitization import FigureDigitization
 from ..constants import SUBMODEL_DELTA_HIGH_LIFT
