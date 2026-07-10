@@ -31,6 +31,13 @@ class ComputeAeroOpenVSP(Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -53,6 +60,7 @@ class ComputeAeroOpenVSP(Group):
                 low_speed_aero=self.options["low_speed_aero"],
                 compute_mach_interpolation=self.options["compute_mach_interpolation"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],

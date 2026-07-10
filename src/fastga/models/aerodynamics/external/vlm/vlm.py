@@ -25,42 +25,17 @@ import openmdao.api as om
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
+from ...constants import (
+    SPAN_MESH_POINT,
+    POLAR_POINT_COUNT,
+    MACH_NB_PTS,
+    GEOMETRY_SET_LABELS,
+    RESULT_LABELS,
+)
 
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
-
-GEOMETRY_SET_LABELS = [
-    "sweep25_wing",
-    "taper_ratio_wing",
-    "aspect_ratio_wing",
-    "dihedral_angle_wing",
-    "twist_angle_wing",
-    "sweep25_htp",
-    "taper_ratio_htp",
-    "aspect_ratio_htp",
-]
-
-VLM_RESULT_LABELS = [
-    "cl_0_wing",
-    "cl_X_wing",
-    "cl_alpha_wing",
-    "cm_0_wing",
-    "y_vector_wing",
-    "cl_vector_wing",
-    "chord_vector_wing",
-    "coef_k_wing",
-    "cl_0_htp",
-    "cl_X_htp",
-    "cl_alpha_htp",
-    "cl_alpha_htp_isolated",
-    "y_vector_htp",
-    "cl_vector_htp",
-    "coef_k_htp",
-    "saved_ref_area",
-    "area_ratio",
-]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -1168,7 +1143,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def save_results(self, key, results, mach):
         """Store VLM results in the in-memory cache."""
-        self._cache[key][str(mach)] = dict(zip(VLM_RESULT_LABELS, results))
+        self._cache[key][str(mach)] = dict(zip(RESULT_LABELS, results))
 
     def post_processing_wing(
         self,

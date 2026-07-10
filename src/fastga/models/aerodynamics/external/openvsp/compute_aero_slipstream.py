@@ -45,6 +45,13 @@ class ComputeSlipstreamOpenvsp(om.Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -62,6 +69,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
             ComputeSlipstreamOpenvspSubGroup(
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -83,6 +91,13 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default="", types=str)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -115,6 +130,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
             _ComputeSlipstreamOpenvsp(
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -228,12 +244,16 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         # will appear, this is taken as the angle for which the clean wing is at its max angle of
         # attack
 
-        alpha_max = (cl_max_clean - cl0) / cl_alpha
+        alpha_max = round(float((cl_max_clean - cl0) / cl_alpha), 2)
+        thrust = round(float(inputs["thrust"]), 1)
+        shaft_power = round(float(inputs["shaft_power"]), 1)
 
         wing_rotor = self.compute_wing_rotor(
-            inputs, outputs, altitude, mach, alpha_max, inputs["thrust"], inputs["shaft_power"]
+            inputs, outputs, altitude, mach, alpha_max, thrust, shaft_power
         )
-        wing = self.compute_aero(inputs, outputs, altitude, mach, alpha_max, comp_opt="wing")
+        wing = self.compute_aero(
+            inputs, outputs, altitude, mach, alpha_max, comp_opt="wing", use_cache=True
+        )
 
         cl_vector_prop_on = wing_rotor["cl_vector"]
         y_vector_prop_on = wing_rotor["y_vector"]

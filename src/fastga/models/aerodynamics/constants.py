@@ -26,6 +26,37 @@ _DEFAULT_AIRFOIL_FILE = "naca23012.af"
 DEFAULT_2D_CL_MAX = 1.9
 DEFAULT_2D_CL_MIN = -1.7
 
+GEOMETRY_SET_LABELS = [
+    "sweep25_wing",
+    "taper_ratio_wing",
+    "aspect_ratio_wing",
+    "dihedral_angle_wing",
+    "twist_angle_wing",
+    "sweep25_htp",
+    "taper_ratio_htp",
+    "aspect_ratio_htp",
+]
+
+RESULT_LABELS = [
+    "cl_0_wing",
+    "cl_X_wing",
+    "cl_alpha_wing",
+    "cm_0_wing",
+    "y_vector_wing",
+    "cl_vector_wing",
+    "chord_vector_wing",
+    "coef_k_wing",
+    "cl_0_htp",
+    "cl_X_htp",
+    "cl_alpha_htp",
+    "cl_alpha_htp_isolated",
+    "y_vector_htp",
+    "cl_vector_htp",
+    "coef_k_htp",
+    "saved_ref_area",
+    "area_ratio",
+]
+
 SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
 SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"
 SUBMODEL_CD0_FUSELAGE = "submodel.aerodynamics.fuselage.cd0"

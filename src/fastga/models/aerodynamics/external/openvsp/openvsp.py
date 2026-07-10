@@ -1,6 +1,6 @@
 """Estimation of cl/cm/oswald aero coefficients using OPENVSP."""
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -14,13 +14,17 @@
 
 import os
 import os.path as pth
+from pathlib import Path
 import warnings
 from importlib.resources import path
-
+import json
+import copy
+import atexit
+import logging
 import numpy as np
-import pandas as pd
 
 from distutils.dir_util import copy_tree
+from typing import Optional, Union
 
 # noinspection PyProtectedMember
 from fastoad._utils.resource_management.copy import copy_resource
@@ -30,12 +34,12 @@ from openmdao.utils.file_wrap import InputFileGenerator
 from stdatm import Atmosphere
 
 # noinspection PyProtectedMember
-from fastga.command.api import _create_tmp_directory, string_to_array
+from fastga.command.api import _create_tmp_directory
 from fastga.utils.resource_management.copy import copy_resource_from_path
 from . import openvsp3201
 from . import resources as local_resources
 from ... import airfoil_folder
-from ...constants import SPAN_MESH_POINT, MACH_NB_PTS
+from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, GEOMETRY_SET_LABELS, RESULT_LABELS
 
 DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
@@ -47,9 +51,168 @@ STDERR_FILE_NAME = "vspaero_calc.err"
 VSPSCRIPT_EXE_NAME = "vspscript.exe"
 VSPAERO_EXE_NAME = "vspaero.exe"
 
+# Sub-dictionary names used inside a geometry cache entry, next to the mach-keyed
+# post-processed results of compute_aero_coeff. They can never collide with a mach
+# key since mach keys are string representations of floats.
+RAW_AERO_CACHE_NAMESPACE = "raw_aero"
+ROTOR_CACHE_NAMESPACE = "wing_rotor"
+WING_ROTOR_CONDITION_LABELS = [
+    "altitude",
+    "mach",
+    "AoA",
+    "thrust_coefficient",
+    "power_coefficient",
+    "engine_count",
+    "engine_config",
+    "engine_rpm",
+    "propeller_diameter",
+    "nac_length",
+    "y_ratio_key",
+]
+RAW_AERO_CONDITION_LABELS = ["comp_opt", "altitude", "mach", "AoA"]
+
+
+_LOGGER = logging.getLogger(__name__)
+
+
+class _NumpyJSONEncoder(json.JSONEncoder):
+    """JSON encoder that also knows how to serialize numpy arrays/scalars, which
+    the OpenVSP result cache stores (e.g. y_vector_wing, cl_vector_wing)."""
+
+    def default(self, o):
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        if isinstance(o, np.generic):
+            return o.item()
+        return super().default(o)
+
 
 class OpenVSPSimpleGeometry(ExternalCodeComp):
     """Execution of OpenVSP for clean surfaces."""
+
+    _cache: dict = {}
+
+    # File the cache should be saved to (only set when a `result_file_name` is
+    # configured).
+    _cache_file: Optional[str] = None
+
+    # Folder/file the cache was last loaded from, used only to avoid redundant
+    # reloads on repeated component instantiation. Distinct from `_cache_file`:
+    # this is set even when no `result_file_name` is configured (folder-only mode).
+    _cache_loaded_from: Optional[str] = None
+
+    # Guards against registering the atexit save more than once.
+    _atexit_registered: bool = False
+
+    @staticmethod
+    def _resolve_cache_path(folder_path: Union[str, Path], file_name: str) -> Path:
+        """
+        Turns the `result_folder_path`/`result_file_name` options into the full cache
+        file path.
+        """
+        return (Path(folder_path) / file_name).resolve()
+
+    @classmethod
+    def load_cache(cls, folder_path: Union[str, Path]) -> None:
+        """
+        Loads a previously saved OpenVSP result cache from disk and merges it into the in-memory cache.
+
+        :param folder_path: the result folder (e.g. `result_folder_path`) inside
+            which the cache file lives.
+        """
+
+        search_folder = Path(folder_path).resolve()
+        cls._cache_loaded_from = str(search_folder)
+
+        no_openvsp_cache = True
+
+        for file in search_folder.glob("*.json"):
+            try:
+                with open(file, "r", encoding="utf-8") as cache_fp:
+                    saved_cache = json.load(cache_fp)
+            except (json.JSONDecodeError, OSError) as exc:
+                # The result folder may contain JSON files unrelated to the OpenVSP cache.
+                # Skip them rather than aborting the whole load.
+                _LOGGER.warning("Skipping unreadable cache file %s: %s", file, exc)
+                continue
+
+            if isinstance(saved_cache, dict):
+                for key, value in saved_cache.items():
+                    # Register in cache only if the key contains all the geometry labels
+                    if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
+                        value, dict
+                    ):
+                        cls._cache[key] = value
+                        no_openvsp_cache = False
+
+        if no_openvsp_cache:
+            _LOGGER.info("No existing OpenVSP cache found in %s, starting empty.", search_folder)
+        else:
+            _LOGGER.info(
+                "Loaded OpenVSP cache from %s (%d geometry entries).",
+                search_folder,
+                len(cls._cache),
+            )
+
+    @classmethod
+    def save_cache(
+        cls,
+        folder_path: Optional[Union[str, Path]] = None,
+        file_name: Optional[str] = None,
+    ) -> None:
+        """
+        Persists the current in-memory OpenVSP result cache to disk so it can be reused
+        by a later run via `load_cache`. Intended to be called once, at the end of
+        a run.
+
+        :param folder_path: raw result folder to save into, together with `file_name`.
+             Ignored unless `file_name` is given.
+        :param file_name: cache file name to use together with `folder_path`.
+        """
+        if folder_path is not None and file_name:
+            path = cls._resolve_cache_path(folder_path, file_name)
+        elif cls._cache_file is not None:
+            path = Path(cls._cache_file)
+        else:
+            _LOGGER.warning("save_cache() called with no folder_path and none set; skipping.")
+            return
+
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf8") as cache_fp:
+            json.dump(cls._cache, cache_fp, cls=_NumpyJSONEncoder, indent=2)
+
+        cls._cache_file = str(path)
+        _LOGGER.info("Saved OpenVSP cache to %s (%d geometry entries).", path, len(cls._cache))
+
+    def _setup_cache_persistence(self) -> None:
+        """
+        Loads any existing cache from `result_folder_path`/`result_file_name` and
+        registers an `atexit` callback process that writes the cache into the
+        json file when the process ends.
+        """
+        folder_path = self.options["result_folder_path"]
+        file_name = self.options["result_file_name"]
+        if not folder_path and not file_name:
+            return
+        # The resolved folder path
+        resolved = (
+            OpenVSPSimpleGeometry._resolve_cache_path(folder_path, file_name).parent
+            if file_name
+            else Path(folder_path).resolve()
+        )
+
+        # Prevent reloading the cache if it's already been loaded from the same path.
+        if OpenVSPSimpleGeometry._cache_loaded_from is None:
+            OpenVSPSimpleGeometry.load_cache(folder_path)
+
+        # Register the atexit callback process only once, since multiple instances of this
+        # component may be created. Only register it when `result_file_name` is set.
+        if not OpenVSPSimpleGeometry._atexit_registered:
+            if resolved is not None and file_name:
+                atexit.register(
+                    OpenVSPSimpleGeometry.save_cache, folder_path=folder_path, file_name=file_name
+                )
+            OpenVSPSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -57,6 +220,13 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
     def initialize(self):
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -67,6 +237,9 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         )
 
     def setup(self):
+        # Setup cache persistence, placed under setup() due to options usage.
+        self._setup_cache_persistence()
+
         self.add_input("data:geometry:wing:sweep_25", val=np.nan, units="deg")
         self.add_input("data:geometry:wing:taper_ratio", val=np.nan)
         self.add_input("data:geometry:wing:aspect_ratio", val=np.nan)
@@ -165,37 +338,24 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
+        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
-        coeff_k_htp parameters.
+        coef_k_htp parameters.
         """
         # initialize
-        results = [None] * 16
+        results = [None] * 17
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
 
         # Get inputs necessary to define global geometry
-        s_ref_wing, area_ratio, geometry_set = self.define_geometry(inputs, mach)
+        s_ref_wing, area_ratio, geometry_set = self.define_geometry(inputs)
 
-        # Search if results already exist:
-        result_folder_path = self.options["result_folder_path"]
-        result_file_path = None
-        saved_area_ratio = 1.0
-        if result_folder_path != "":
-            result_file_path, saved_area_ratio = self.search_results(
-                result_folder_path, geometry_set
-            )
+        # Create a key to store/retrieve results in cache
+        key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # If no result saved for that geometry under this mach condition, computation is done
-        if result_file_path is None:
-            # Create result folder first (if it must fail, let it fail as soon as possible)
-            if result_folder_path != "":
-                if not os.path.exists(result_folder_path):
-                    os.makedirs(pth.join(result_folder_path), exist_ok=True)
-
-            # Save the geometry (result_file_path is None entering the function)
-            if self.options["result_folder_path"] != "":
-                result_file_path = self.save_geometry(result_folder_path, geometry_set)
+        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
+            self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
             wing_0 = self.compute_aero(inputs, outputs, altitude, mach, 0.0, comp_opt="wing")
@@ -228,7 +388,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 y_vector_wing,
                 cl_vector_wing,
                 chord_vector_wing,
-                coeff_k_wing,
+                coef_k_wing,
             ) = self.post_process_wing(inputs, wing_0, wing_aoa, s_ref_wing, aoa_angle)
 
             # Post-process HTP data ----------------------------------------------------------------
@@ -239,7 +399,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 cl_alpha_htp_isolated,
                 y_vector_htp,
                 cl_vector_htp,
-                coeff_k_htp,
+                coef_k_htp,
             ) = self.post_process_htp(
                 htp_0, htp_aoa, htp_0_isolated, htp_aoa_isolated, aoa_angle, area_ratio
             )
@@ -251,39 +411,107 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             y_vector_htp, cl_vector_htp = self.resize_vector(vector_htp)
 
             # Save results to defined path ---------------------------------------------------------
-            if self.options["result_folder_path"] != "":
-                results = [
-                    float(cl_0_wing),
-                    float(cl_x_wing),
-                    float(cl_alpha_wing),
-                    float(cm_0_wing),
-                    np.array(y_vector_wing).tolist(),
-                    np.array(cl_vector_wing).tolist(),
-                    np.array(chord_vector_wing).tolist(),
-                    float(coeff_k_wing),
-                    float(cl_0_htp),
-                    float(cl_aoa_htp),
-                    float(cl_alpha_htp),
-                    float(cl_alpha_htp_isolated),
-                    np.array(y_vector_htp).tolist(),
-                    np.array(cl_vector_htp).tolist(),
-                    float(coeff_k_htp),
-                    float(s_ref_wing),
-                ]
-                self.save_results(result_file_path, results)
+            results = [
+                float(cl_0_wing),
+                float(cl_x_wing),
+                float(cl_alpha_wing),
+                float(cm_0_wing),
+                np.array(y_vector_wing).tolist(),
+                np.array(cl_vector_wing).tolist(),
+                np.array(chord_vector_wing).tolist(),
+                float(coef_k_wing),
+                float(cl_0_htp),
+                float(cl_aoa_htp),
+                float(cl_alpha_htp),
+                float(cl_alpha_htp_isolated),
+                np.array(y_vector_htp).tolist(),
+                np.array(cl_vector_htp).tolist(),
+                float(coef_k_htp),
+                float(s_ref_wing),
+                float(area_ratio),
+            ]
+
+            self.save_results(key, results, mach)
 
         # Else retrieved results are used, eventually adapted with new area ratio
         else:
             # Read values from result file ---------------------------------------------------------
-            data = self.read_results(result_file_path)
-            results = self.assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing)
-        return results
+            results = self.assign_read_data(key, mach, s_ref_wing, area_ratio)
 
-    def compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
+        # last two values are s_ref_wing and area_ratio, not needed in return
+
+        return results[:-1]
+
+    def compute_aero(
+        self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing", use_cache=False
+    ):
+        """
+        Thin cache-checking wrapper around :meth:`_compute_aero_impl`, which does the
+        actual OpenVSP run. Mirrors the compute_wing_rotor / _compute_wing_rotor split:
+        this method itself never runs OpenVSP - it either calls the impl directly
+        (use_cache=False) or looks the result up in (and stores it into) the in-memory
+        cache before calling the impl on a miss (use_cache=True). Keeping the cache
+        check and the actual computation in two separate methods means the cache-miss
+        branch can call the impl unconditionally, with no risk of accidentally
+        re-entering the cache-check branch and recursing forever.
+
+        :param inputs: inputs parameters defined within FAST-OAD-GA
+        :param outputs: outputs parameters defined within FAST-OAD-GA
+        :param altitude: altitude for aerodynamic calculation in meters
+        :param mach: air speed expressed in mach
+        :param aoa_angle: air speed angle of attack with respect to aircraft
+        :param comp_opt: component to evaluate can be "wing", "htp" or "ac"
+        :param use_cache: if True, the raw OpenVSP result is looked up in (and stored
+            into) the in-memory cache, keyed by geometry, comp_opt, altitude, mach and
+            aoa_angle, so the OpenVSP run is skipped when an identical combination has
+            already been computed. Defaults to False so the calls made by
+            compute_aero_coeff (which caches its own post-processed results) are
+            unaffected.
+
+        :return: wing/htp and aircraft dictionaries including their respective aerodynamic
+        coefficients
+        """
+        if not use_cache:
+            return self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt)
+
+        # Fix mach number of digits to consider similar results (same rounding as
+        # compute_aero_coeff)
+        mach = round(float(mach) * 1e3) / 1e3
+
+        _, _, geometry_set = self.define_geometry(inputs)
+        key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
+        condition_values = [
+            comp_opt,
+            round(float(altitude), 1),
+            mach,
+            round(float(aoa_angle), 2),
+        ]
+
+        condition_key = str(dict(zip(RAW_AERO_CONDITION_LABELS, condition_values)))
+
+        result = self.get_or_compute_cached(
+            key,
+            RAW_AERO_CACHE_NAMESPACE,
+            condition_key,
+            lambda: self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt),
+        )
+        # The "ac" option returns a (wing, htp, aircraft) tuple, which a JSON
+        # save/load round-trip of the cache turns into a list. Normalize back so
+        # the return type does not depend on where the result came from.
+        if comp_opt == "ac" and isinstance(result, list):
+            result = tuple(result)
+        return result
+
+    def _compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
         """
         Function that computes in OpenVSP environment the wing, horizontal stablizer(htp),
         and complete aircraft (considering wing and horizontal tail plan) and returns the
         different aerodynamic parameters. The downwash is done by OpenVSP considering far field.
+
+        This is the actual (expensive) OpenVSP run, with no `use_cache` parameter by
+        design. Call `compute_aero` instead, which decides whether to consult the cache
+        before reaching this method - that keeps this method itself free of any cache
+        logic it could recurse into.
 
         :param inputs: inputs parameters defined within FAST-OAD-GA
         :param outputs: outputs parameters defined within FAST-OAD-GA
@@ -295,6 +523,10 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         :return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
+        _LOGGER.info(
+            "Entring OpenVSP aerodynamic evaluation for %s at altitude %.1f m, Mach %.3f, AoA %.2f°",
+        )
+
         output_result = {}
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
@@ -710,7 +942,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 "cl": cl_wing,
                 "cdi": cdi_wing,
                 "cm": cm_wing,
-                "coeff_e": wing_e,
+                "coef_e": wing_e,
             }
             output_result = wing
         elif comp_opt == "htp":
@@ -757,7 +989,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 "cl": cl_htp,
                 "cdi": cdi_htp,
                 "cm": cm_htp,
-                "coeff_e": htp_e,
+                "coef_e": htp_e,
             }
             output_result = htp
         elif comp_opt == "ac":
@@ -839,130 +1071,18 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 "cl": aircraft_cl,
                 "cd0": aircraft_cd0,
                 "cdi": aircraft_cdi,
-                "coeff_e": aircraft_e,
+                "coef_e": aircraft_e,
             }
             output_result = wing, htp, aircraft
 
         return output_result
 
     @staticmethod
-    def search_results(result_folder_path, geometry_set):
-        """Search the results folder to see if the geometry has already been calculated."""
-        result_file_path = None
-        saved_area_ratio = 1.0
-        if os.path.exists(result_folder_path):
-            geometry_set_labels = [
-                "sweep25_wing",
-                "taper_ratio_wing",
-                "aspect_ratio_wing",
-                "dihedral_angle_wing",
-                "twist_angle_wing",
-                "sweep25_htp",
-                "taper_ratio_htp",
-                "aspect_ratio_htp",
-                "mach",
-                "area_ratio",
-            ]
-            # If some results already stored search for corresponding geometry
-            if pth.exists(pth.join(result_folder_path, "geometry_0.csv")):
-                idx = 0
-                while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
-                    if pth.exists(pth.join(result_folder_path, "openvsp_" + str(idx) + ".csv")):
-                        data = pd.read_csv(
-                            pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")
-                        )
-                        values = data.to_numpy()[:, 1].tolist()
-                        labels = data.to_numpy()[:, 0].tolist()
-                        data = pd.DataFrame(values, index=labels)
-                        # noinspection PyBroadException
-                        try:
-                            if (
-                                np.size(data.loc[geometry_set_labels[0:-1], 0].to_numpy())
-                                == len(geometry_set_labels) - 1
-                            ):
-                                saved_set = np.around(
-                                    data.loc[geometry_set_labels[0:-1], 0].to_numpy(),
-                                    decimals=6,
-                                )
-                                if (
-                                    np.sum(saved_set == geometry_set[0:-1])
-                                    == len(geometry_set_labels) - 1
-                                ):
-                                    result_file_path = pth.join(
-                                        result_folder_path,
-                                        "openvsp_" + str(idx) + ".csv",
-                                    )
-                                    saved_area_ratio = data.loc["area_ratio", 0]
-                                    return result_file_path, saved_area_ratio
-                        except Exception:
-                            break
-                    idx += 1
-
-        return result_file_path, saved_area_ratio
-
-    @staticmethod
-    def save_geometry(result_folder_path, geometry_set):
-        """Save geometry if not already computed by finding first available index."""
-        geometry_set_labels = [
-            "sweep25_wing",
-            "taper_ratio_wing",
-            "aspect_ratio_wing",
-            "dihedral_angle_wing",
-            "twist_angle_wing",
-            "sweep25_htp",
-            "taper_ratio_htp",
-            "aspect_ratio_htp",
-            "mach",
-            "area_ratio",
-        ]
-        data = pd.DataFrame(geometry_set, index=geometry_set_labels)
-        idx = 0
-        while pth.exists(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv")):
-            idx += 1
-        data.to_csv(pth.join(result_folder_path, "geometry_" + str(idx) + ".csv"))
-        result_file_path = pth.join(result_folder_path, "openvsp_" + str(idx) + ".csv")
-
-        return result_file_path
-
-    @staticmethod
-    def save_results(result_file_path, results):
-        """Reads saved results."""
-        labels = [
-            "cl_0_wing",
-            "cl_X_wing",
-            "cl_alpha_wing",
-            "cm_0_wing",
-            "y_vector_wing",
-            "cl_vector_wing",
-            "chord_vector_wing",
-            "coeff_k_wing",
-            "cl_0_htp",
-            "cl_X_htp",
-            "cl_alpha_htp",
-            "cl_alpha_htp_isolated",
-            "y_vector_htp",
-            "cl_vector_htp",
-            "coeff_k_htp",
-            "saved_ref_area",
-        ]
-        data = pd.DataFrame(results, index=labels)
-        data.to_csv(result_file_path)
-
-    @staticmethod
-    def read_results(result_file_path):
-        data = pd.read_csv(result_file_path)
-        values = data.to_numpy()[:, 1].tolist()
-        labels = data.to_numpy()[:, 0].tolist()
-
-        return pd.DataFrame(values, index=labels)
-
-    @staticmethod
-    def define_geometry(inputs, mach):
+    def define_geometry(inputs):
         """
         Extract geometrical parameters
 
         :param inputs: inputs in the OpenMDAO format
-        :param mach: Mach number
 
         :return s_ref_wing: wing reference surface area
         :return area_ratio: rea ratio between wing and horizontal stabilizer
@@ -990,14 +1110,47 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                     sweep25_htp,
                     taper_ratio_htp,
                     aspect_ratio_htp,
-                    mach,
-                    area_ratio,
                 ]
             ),
             decimals=6,
         )
 
         return s_ref_wing, area_ratio, geometry_set
+
+    def register_geometry(self, key):
+        """Register the geometry set as a key in the in-memory cache."""
+        self._cache.setdefault(key, {})
+
+    def save_results(self, key, results, mach):
+        """Store OpenVSP results in the in-memory cache."""
+        self._cache[key][str(mach)] = dict(zip(RESULT_LABELS, results))
+
+    def get_or_compute_cached(self, key, namespace, condition_key, compute_fn):
+        """
+        Generic check-cache/compute-on-miss/store helper for raw OpenVSP results.
+
+        Results are stored under ``self._cache[key][namespace][condition_key]`` so
+        that they live next to the mach-keyed post-processed results used by
+        :meth:`compute_aero_coeff` and are persisted/reloaded by the same
+        ``save_cache``/``load_cache`` mechanism without any change.
+
+        A deep copy of the cached value is returned so that callers mutating the
+        result in place (e.g. padding vectors with ``list.extend``) cannot corrupt
+        the cache for subsequent retrievals.
+
+        :param key: geometry cache key, as built from GEOMETRY_SET_LABELS
+        :param namespace: sub-dictionary name (e.g. RAW_AERO_CACHE_NAMESPACE)
+        :param condition_key: string key identifying the run conditions
+        :param compute_fn: zero-argument callable performing the actual (costly)
+            computation, only invoked on a cache miss
+        :return: the (copied) cached result
+        """
+        self.register_geometry(key)
+        namespace_cache = self._cache[key].setdefault(namespace, {})
+
+        if condition_key not in namespace_cache:
+            namespace_cache[condition_key] = compute_fn()
+        return copy.deepcopy(namespace_cache[condition_key])
 
     @staticmethod
     def post_process_wing(inputs, wing_0, wing_aoa, s_ref_wing, aoa_angle):
@@ -1025,8 +1178,8 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         cl_vector_wing = (np.array(wing_aoa["cl_vector"]) * k_fus).tolist()
         chord_vector_wing = wing_aoa["chord_vector"]
         k_fus = 1 - 2 * (width_max / span_wing) ** 2  # Fuselage correction
-        coeff_e = float(wing_aoa["coeff_e"] * k_fus)
-        coeff_k_wing = float(1.0 / (np.pi * span_wing**2 / s_ref_wing * coeff_e))
+        coef_e = float(wing_aoa["coef_e"] * k_fus)
+        coef_k_wing = float(1.0 / (np.pi * span_wing**2 / s_ref_wing * coef_e))
 
         return (
             cl_0_wing,
@@ -1036,7 +1189,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coeff_k_wing,
+            coef_k_wing,
         )
 
     @staticmethod
@@ -1060,7 +1213,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp = float(htp_0["cl"])
         cl_aoa_htp = float(htp_aoa["cl"])
         cl_alpha_htp = float((cl_aoa_htp - cl_0_htp) / (aoa_angle * np.pi / 180))
-        coeff_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp**2  # area ratio missing ?
+        coef_k_htp = float(htp_aoa["cdi"]) / cl_aoa_htp**2  # area ratio missing ?
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) * area_ratio).tolist()
 
@@ -1078,7 +1231,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             cl_alpha_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
-            coeff_k_htp,
+            coef_k_htp,
         )
 
     @staticmethod
@@ -1121,8 +1274,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         return resized_vectors
 
-    @staticmethod
-    def assign_read_data(data, area_ratio, saved_area_ratio, s_ref_wing):
+    def assign_read_data(self, key, mach, s_ref_wing, area_ratio):
         """
         When results already exists, read and assign existing data and apply the new area ratio
 
@@ -1134,30 +1286,26 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         :return: aerodynamic characteristic parameters of wing and horizontal stabilizer
         """
-        saved_area_wing = float(data.loc["saved_ref_area", 0])
-        cl_0_wing = float(data.loc["cl_0_wing", 0])
-        cl_x_wing = float(data.loc["cl_X_wing", 0])
-        cl_alpha_wing = float(data.loc["cl_alpha_wing", 0])
-        cm_0_wing = float(data.loc["cm_0_wing", 0])
-        y_vector_wing = string_to_array(data.loc["y_vector_wing", 0][1:-2]) * np.sqrt(
+        data = self._cache[key][str(mach)]
+        saved_area_wing = data.get("saved_ref_area")
+        saved_area_ratio = data.get("area_ratio")
+        cl_0_wing = data.get("cl_0_wing")
+        cl_x_wing = data.get("cl_X_wing")
+        cl_alpha_wing = data.get("cl_alpha_wing")
+        cm_0_wing = data.get("cm_0_wing")
+        y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(s_ref_wing / saved_area_wing)
+        cl_vector_wing = np.array(data.get("cl_vector_wing"))
+        chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
             s_ref_wing / saved_area_wing
         )
-        cl_vector_wing = string_to_array(data.loc["cl_vector_wing", 0][1:-2])
-        chord_vector_wing = string_to_array(data.loc["chord_vector_wing", 0][1:-2]) * np.sqrt(
-            s_ref_wing / saved_area_wing
-        )
-        coeff_k_wing = float(data.loc["coeff_k_wing", 0])
-        cl_0_htp = float(data.loc["cl_0_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = float(data.loc["cl_X_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = float(data.loc["cl_alpha_htp", 0]) * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = float(data.loc["cl_alpha_htp_isolated", 0]) * (
-            area_ratio / saved_area_ratio
-        )
-        y_vector_htp = string_to_array(data.loc["y_vector_htp", 0][1:-2])
-        cl_vector_htp = string_to_array(data.loc["cl_vector_htp", 0][1:-2]) * (
-            area_ratio / saved_area_ratio
-        )
-        coeff_k_htp = float(data.loc["coeff_k_htp", 0]) * (area_ratio / saved_area_ratio)
+        coef_k_wing = data.get("coef_k_wing")
+        cl_0_htp = data.get("cl_0_htp") * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = data.get("cl_X_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = data.get("cl_alpha_htp") * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = data.get("cl_alpha_htp_isolated") * (area_ratio / saved_area_ratio)
+        y_vector_htp = np.array(data.get("y_vector_htp"))
+        cl_vector_htp = np.array(data.get("cl_vector_htp")) * (area_ratio / saved_area_ratio)
+        coef_k_htp = data.get("coef_k_htp") * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -1167,15 +1315,16 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coeff_k_wing,
+            coef_k_wing,
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
-            coeff_k_htp,
+            coef_k_htp,
             s_ref_wing,
+            area_ratio,
         )
 
 
@@ -1205,6 +1354,83 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
     def compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust, power):
         """
+        Cached wrapper around :meth:`_compute_wing_rotor`.
+
+        Skips the OpenVSP run when an identical combination of geometry, flight
+        condition and propulsion state has already been computed (in this process
+        or in a reloaded cache file). Thrust and power are not cached on their raw
+        values but through the derived, rounded thrust/power coefficients, so that
+        negligible variations between iterations (e.g. finite-difference steps)
+        still produce cache hits, mirroring the mach rounding of
+        :meth:`compute_aero_coeff`.
+
+        Parameters and return value are identical to :meth:`_compute_wing_rotor`.
+        """
+        # Fix mach number of digits to consider similar results (same rounding as
+        # compute_aero_coeff)
+        mach = round(float(mach) * 1e3) / 1e3
+
+        _, _, geometry_set = self.define_geometry(inputs)
+        key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
+
+        # Propulsion state, part of the cache key since the base geometry_set only
+        # describes the wing and HTP planform
+        engine_count = int(float(inputs["data:geometry:propulsion:engine:count"]))
+        engine_config = float(inputs["data:geometry:propulsion:engine:layout"])
+        engine_rpm = float(inputs["data:propulsion:max_rpm"])
+        propeller_diameter = float(inputs["data:geometry:propeller:diameter"])
+        nac_length = float(inputs["data:geometry:propulsion:nacelle:length"])
+        if engine_config != 1.0:
+            y_ratio_key = (0.0,)
+        else:
+            y_ratio_key = tuple(
+                np.around(
+                    np.atleast_1d(inputs["data:geometry:propulsion:engine:y_ratio"]).astype(float),
+                    6,
+                ).tolist()
+            )
+
+        # Same derivation and rounding as in _compute_wing_rotor
+        atm = Atmosphere(altitude, altitude_in_feet=False)
+        engine_rps = engine_rpm / 60.0
+        thrust_coefficient = round(
+            float(
+                thrust / engine_count / (atm.density * engine_rps**2.0 * propeller_diameter**4.0)
+            ),
+            5,
+        )
+        power_coefficient = round(
+            float(power / engine_count / (atm.density * engine_rps**3.0 * propeller_diameter**5.0)),
+            5,
+        )
+
+        condition_values = [
+            round(float(altitude), 1),
+            mach,
+            round(float(aoa_angle), 2),
+            thrust_coefficient,
+            power_coefficient,
+            engine_count,
+            engine_config,
+            round(engine_rpm, 1),
+            round(propeller_diameter, 3),
+            round(nac_length, 3),
+            y_ratio_key,
+        ]
+
+        condition_key = str(dict(zip(WING_ROTOR_CONDITION_LABELS, condition_values)))
+
+        return self.get_or_compute_cached(
+            key,
+            ROTOR_CACHE_NAMESPACE,
+            condition_key,
+            lambda: self._compute_wing_rotor(
+                inputs, outputs, altitude, mach, aoa_angle, thrust, power
+            ),
+        )
+
+    def _compute_wing_rotor(self, inputs, outputs, altitude, mach, aoa_angle, thrust, power):
+        """
         Function that computes in OpenVSP environment the wing with a rotor and returns the
         different aerodynamic parameters.
 
@@ -1218,13 +1444,22 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         @param power: total aircraft power for computation of power coefficient (will be divided
         by engine count)
         @return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coeff_e
+        cm_vector, cl, cdi, cm, coef_e
         """
 
         # TODO : Check for rules that would allow the scaling of these results i.e, same D/span
         #  gives same results...
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
+
+        _LOGGER.info(
+            "Computing OpenVSP wing+rotor for altitude=%s, mach=%s, aoa=%s, thrust=%s, power=%s",
+            altitude,
+            mach,
+            aoa_angle,
+            thrust,
+            power,
+        )
 
         # Get inputs (and calculate missing ones)
         s_ref_wing = float(inputs["data:geometry:wing:area"])
@@ -1578,7 +1813,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             "cl": cl_wing,
             "cdi": cdi_wing,
             "cm": cm_wing,
-            "coeff_e": wing_e,
+            "coef_e": wing_e,
             "ct": thrust_coefficient,
         }
         return wing_rotor
