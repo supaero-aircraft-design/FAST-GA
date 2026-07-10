@@ -171,7 +171,11 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         )
 
         stall_angle_inter = RectBivariateSpline(
-            elevator_chord_ratio_list, elevator_deflection_list, stall_angle_reduction_list.T, kx=1, ky=1
+            elevator_chord_ratio_list,
+            elevator_deflection_list,
+            stall_angle_reduction_list.T,
+            kx=1,
+            ky=1,
         )
         stall_angle_reduction = stall_angle_inter(elevator_chord_ratio, elevator_deflection)[0, 0]
 
