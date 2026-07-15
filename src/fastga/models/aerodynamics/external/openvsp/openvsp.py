@@ -352,8 +352,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         cl_0_htp,  cl_aoa_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
         coef_k_htp parameters.
         """
-        # initialize
-        results = [None] * 17
+
         # Fix mach number of digits to consider similar results
         mach = round(float(mach) * 1e3) / 1e3
 
