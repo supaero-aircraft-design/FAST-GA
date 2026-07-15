@@ -107,7 +107,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
                         value, dict
                     ):
-                        cls._cache[key] = value
+                        # Preserve both branches from the file (not just "vlm"): this class
+                        # only ever populates/overwrites the "vlm" branch during a run, so
+                        # the "openvsp" branch must be carried through untouched or it would
+                        # be wiped out (replaced by an empty dict) when this class's
+                        # save_cache() writes the in-memory cache back at exit.
+                        entry = cls._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
+                        entry["vlm"] = value.get("vlm", value)
+                        entry["openvsp"] = value.get("openvsp", entry["openvsp"])
                         no_vlm_cache = False
 
         if no_vlm_cache:
@@ -172,7 +179,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # component may be created. Only register it when `result_file_name` is set.
         if not VLMSimpleGeometry._atexit_registered:
             if resolved is not None and file_name:
-                atexit.register(VLMSimpleGeometry.save_cache)
+                atexit.register(
+                    VLMSimpleGeometry.save_cache, folder_path=folder_path, file_name=file_name
+                )
             VLMSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
@@ -380,7 +389,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # Compute results if not already in cache, else retrieve them and adapt to new area ratio
-        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
+        if self._cache.get(key) is None or self._cache[key]["vlm"].get(str(mach)) is None:
             self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
@@ -1139,11 +1148,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def register_geometry(self, key):
         """Register the geometry set as a key in the in-memory cache."""
-        self._cache.setdefault(key, {})
+        self._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
 
     def save_results(self, key, results, mach):
         """Store VLM results in the in-memory cache."""
-        self._cache[key][str(mach)] = dict(zip(RESULT_LABELS, results))
+        self._cache[key]["vlm"][str(mach)] = dict(zip(RESULT_LABELS, results))
 
     def post_processing_wing(
         self,
@@ -1276,7 +1285,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         :return: existing data
         """
-        data = self._cache[key][str(mach)]
+        data = self._cache[key]["vlm"][str(mach)]
         saved_area_wing = data.get("saved_ref_area")
         saved_area_ratio = data.get("area_ratio")
         cl_0_wing = data.get("cl_0_wing")

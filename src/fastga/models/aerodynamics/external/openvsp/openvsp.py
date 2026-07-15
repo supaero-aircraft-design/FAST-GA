@@ -17,6 +17,7 @@ import os.path as pth
 from pathlib import Path
 import warnings
 from importlib.resources import path
+import ast
 import json
 import copy
 import atexit
@@ -51,11 +52,13 @@ STDERR_FILE_NAME = "vspaero_calc.err"
 VSPSCRIPT_EXE_NAME = "vspscript.exe"
 VSPAERO_EXE_NAME = "vspaero.exe"
 
-# Sub-dictionary names used inside a geometry cache entry, next to the mach-keyed
-# post-processed results of compute_aero_coeff. They can never collide with a mach
-# key since mach keys are string representations of floats.
+# Sub-dictionary names used inside a geometry cache entry, next to the mach-keyed results.
 RAW_AERO_CACHE_NAMESPACE = "raw_aero"
 ROTOR_CACHE_NAMESPACE = "wing_rotor"
+# Iterative solves (e.g. a trim/AoA search) tend to call compute_aero / compute_wing_rotor
+# several times with AoA values that only differ by convergence noise (a few hundredths of a
+# degree). Snapping the requested AoA onto an already-cached nearby value.
+AOA_SNAP_TOLERANCE_DEG = 0.05
 WING_ROTOR_CONDITION_LABELS = [
     "altitude",
     "mach",
@@ -142,7 +145,14 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                     if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
                         value, dict
                     ):
-                        cls._cache[key] = value
+                        # Preserve both branches from the file (not just "openvsp"): this
+                        # class only ever populates/overwrites the "openvsp" branch during a
+                        # run, so the "vlm" branch must be carried through untouched or it
+                        # would be wiped out (replaced by an empty dict) when this class's
+                        # save_cache() writes the in-memory cache back at exit.
+                        entry = cls._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
+                        entry["openvsp"] = value.get("openvsp", value)
+                        entry["vlm"] = value.get("vlm", entry["vlm"])
                         no_openvsp_cache = False
 
         if no_openvsp_cache:
@@ -354,7 +364,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # If no result saved for that geometry under this mach condition, computation is done
-        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
+        if self._cache.get(key) is None or self._cache[key]["openvsp"].get(str(mach)) is None:
             self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
@@ -487,6 +497,13 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             round(float(aoa_angle), 2),
         ]
 
+        self.register_geometry(key)
+        namespace_cache = self._cache[key]["openvsp"].setdefault(RAW_AERO_CACHE_NAMESPACE, {})
+        aoa_index = RAW_AERO_CONDITION_LABELS.index("AoA")
+        condition_values[aoa_index] = self._snap_to_cached_aoa(
+            namespace_cache, RAW_AERO_CONDITION_LABELS, condition_values
+        )
+
         condition_key = str(dict(zip(RAW_AERO_CONDITION_LABELS, condition_values)))
 
         result = self.get_or_compute_cached(
@@ -523,9 +540,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         :return: wing/htp and aircraft dictionaries including their respective aerodynamic
         coefficients
         """
-        _LOGGER.info(
-            "Entring OpenVSP aerodynamic evaluation for %s at altitude %.1f m, Mach %.3f, AoA %.2f°",
-        )
 
         output_result = {}
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
@@ -1119,20 +1133,88 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
     def register_geometry(self, key):
         """Register the geometry set as a key in the in-memory cache."""
-        self._cache.setdefault(key, {})
+        self._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
 
     def save_results(self, key, results, mach):
         """Store OpenVSP results in the in-memory cache."""
-        self._cache[key][str(mach)] = dict(zip(RESULT_LABELS, results))
+        self._cache[key]["openvsp"][str(mach)] = dict(zip(RESULT_LABELS, results))
+
+    @staticmethod
+    def _snap_to_cached_aoa(
+        namespace_cache,
+        condition_labels,
+        condition_values,
+        tolerance=AOA_SNAP_TOLERANCE_DEG,
+        aoa_label="AoA",
+    ):
+        """
+        Look for an already-cached condition, in `namespace_cache`, that matches
+        `condition_values` on every field except AoA, and whose AoA is within
+        `tolerance` degrees of the requested one. If found, return that stored
+        AoA value instead of the requested one so that building the condition_key
+        from it collapses onto the existing entry (a cache hit) rather than
+        creating a new, near-duplicate one.
+
+        :param namespace_cache: the ``self._cache[key]["openvsp"][namespace]`` dict,
+            mapping existing condition_key strings to their cached results
+        :param condition_labels: ordered field names used to build condition_key
+            (e.g. RAW_AERO_CONDITION_LABELS)
+        :param condition_values: ordered field values for the condition being
+            looked up, matching `condition_labels`
+        :param tolerance: maximum AoA difference, in degrees, for two conditions
+            to be considered the same
+        :param aoa_label: the label identifying the AoA field within
+            `condition_labels`
+        :return: the AoA value to use when building condition_key - either the
+            requested one unchanged (no close-enough match found) or a
+            previously-cached nearby AoA (match found)
+        """
+        aoa_index = condition_labels.index(aoa_label)
+        requested_aoa = condition_values[aoa_index]
+
+        best_aoa = None
+        best_diff = tolerance
+
+        for stored_key in namespace_cache:
+            try:
+                stored_condition = ast.literal_eval(stored_key)
+            except (ValueError, SyntaxError):
+                # Not a condition_key we can parse back (shouldn't happen for
+                # entries this class wrote itself); skip rather than fail.
+                continue
+
+            stored_values = [stored_condition.get(label) for label in condition_labels]
+
+            # Every field but AoA must match exactly for the two conditions to
+            # represent the same physical case.
+            others_match = all(
+                stored_values[i] == condition_values[i]
+                for i in range(len(condition_labels))
+                if i != aoa_index
+            )
+            if not others_match:
+                continue
+
+            stored_aoa = stored_values[aoa_index]
+            if stored_aoa is None:
+                continue
+
+            diff = abs(stored_aoa - requested_aoa)
+            if diff <= best_diff:
+                best_diff = diff
+                best_aoa = stored_aoa
+
+        return best_aoa if best_aoa is not None else requested_aoa
 
     def get_or_compute_cached(self, key, namespace, condition_key, compute_fn):
         """
         Generic check-cache/compute-on-miss/store helper for raw OpenVSP results.
 
-        Results are stored under ``self._cache[key][namespace][condition_key]`` so
-        that they live next to the mach-keyed post-processed results used by
-        :meth:`compute_aero_coeff` and are persisted/reloaded by the same
-        ``save_cache``/``load_cache`` mechanism without any change.
+        Results are stored under ``self._cache[key]["openvsp"][namespace][condition_key]``
+        so that they live nested under the OpenVSP slot of the cache (alongside the
+        mach-keyed post-processed results used by :meth:`compute_aero_coeff`) and are
+        persisted/reloaded by the same ``save_cache``/``load_cache`` mechanism without
+        any change.
 
         A deep copy of the cached value is returned so that callers mutating the
         result in place (e.g. padding vectors with ``list.extend``) cannot corrupt
@@ -1146,7 +1228,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         :return: the (copied) cached result
         """
         self.register_geometry(key)
-        namespace_cache = self._cache[key].setdefault(namespace, {})
+        namespace_cache = self._cache[key]["openvsp"].setdefault(namespace, {})
 
         if condition_key not in namespace_cache:
             namespace_cache[condition_key] = compute_fn()
@@ -1286,7 +1368,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         :return: aerodynamic characteristic parameters of wing and horizontal stabilizer
         """
-        data = self._cache[key][str(mach)]
+        data = self._cache[key]["openvsp"][str(mach)]
         saved_area_wing = data.get("saved_ref_area")
         saved_area_ratio = data.get("area_ratio")
         cl_0_wing = data.get("cl_0_wing")
@@ -1418,6 +1500,13 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
             y_ratio_key,
         ]
 
+        self.register_geometry(key)
+        namespace_cache = self._cache[key]["openvsp"].setdefault(ROTOR_CACHE_NAMESPACE, {})
+        aoa_index = WING_ROTOR_CONDITION_LABELS.index("AoA")
+        condition_values[aoa_index] = self._snap_to_cached_aoa(
+            namespace_cache, WING_ROTOR_CONDITION_LABELS, condition_values
+        )
+
         condition_key = str(dict(zip(WING_ROTOR_CONDITION_LABELS, condition_values)))
 
         return self.get_or_compute_cached(
@@ -1451,15 +1540,6 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
         #  gives same results...
         # STEP 1/XX - DEFINE OR CALCULATE INPUT DATA FOR AERODYNAMIC EVALUATION ####################
         ############################################################################################
-
-        _LOGGER.info(
-            "Computing OpenVSP wing+rotor for altitude=%s, mach=%s, aoa=%s, thrust=%s, power=%s",
-            altitude,
-            mach,
-            aoa_angle,
-            thrust,
-            power,
-        )
 
         # Get inputs (and calculate missing ones)
         s_ref_wing = float(inputs["data:geometry:wing:area"])
