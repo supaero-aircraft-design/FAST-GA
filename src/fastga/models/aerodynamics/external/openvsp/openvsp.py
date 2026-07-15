@@ -213,7 +213,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         # Prevent reloading the cache if it's already been loaded from the same path.
         if OpenVSPSimpleGeometry._cache_loaded_from is None:
-            OpenVSPSimpleGeometry.load_cache(folder_path)
+            OpenVSPSimpleGeometry.load_cache(resolved)
 
         # Register the atexit callback process only once, since multiple instances of this
         # component may be created. Only register it when `result_file_name` is set.
