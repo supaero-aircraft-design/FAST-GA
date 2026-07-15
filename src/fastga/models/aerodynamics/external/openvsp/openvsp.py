@@ -512,11 +512,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
             condition_key,
             lambda: self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt),
         )
-        # The "ac" option returns a (wing, htp, aircraft) tuple, which a JSON
-        # save/load round-trip of the cache turns into a list. Normalize back so
-        # the return type does not depend on where the result came from.
-        if comp_opt == "ac" and isinstance(result, list):
-            result = tuple(result)
+
         return result
 
     def _compute_aero(self, inputs, outputs, altitude, mach, aoa_angle, comp_opt="wing"):
