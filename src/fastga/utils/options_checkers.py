@@ -11,6 +11,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+
 def check_propulsion_id(name: str, value):
     if value is None:
         raise ValueError(f"Option '{name}' is expected to be a string, not None")

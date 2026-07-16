@@ -718,6 +718,7 @@ class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     Computation of the area of the vertical with given volume coefficient. The formulas and
     default values are obtained from :cite:`gudmundsson:2013`.
     """
+
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
