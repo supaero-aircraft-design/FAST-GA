@@ -43,7 +43,7 @@ class ComputeVNAndVH(om.Group):
     """Group containing the computation of the V_h and the V-n diagram"""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
@@ -71,7 +71,7 @@ class ComputeVh(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

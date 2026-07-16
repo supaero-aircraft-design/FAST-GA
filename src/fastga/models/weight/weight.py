@@ -36,7 +36,7 @@ class Weight(om.Group):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}

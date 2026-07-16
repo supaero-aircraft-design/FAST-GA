@@ -41,7 +41,7 @@ class ComputeTaxi(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
         self.options.declare("taxi_out", default=True, types=bool)
 
     def setup(self):

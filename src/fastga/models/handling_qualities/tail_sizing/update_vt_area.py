@@ -68,7 +68,7 @@ class VTPConstraints(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     @staticmethod
     def lateral_equilibrium(x, inputs, beta, rudder_angle, eta_v):
@@ -593,7 +593,7 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

@@ -39,7 +39,7 @@ class ComputePayloadRange(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     def setup(self):
         variables = api_cs23.list_variables(Mission(propulsion_id=self.options["propulsion_id"]))

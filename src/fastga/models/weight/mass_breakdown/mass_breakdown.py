@@ -57,7 +57,7 @@ class MassBreakdown(om.Group):
 
     def initialize(self):
         self.options.declare(PAYLOAD_FROM_NPAX, types=bool, default=True)
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
         if self.options[PAYLOAD_FROM_NPAX]:
@@ -93,7 +93,7 @@ class ComputeOperatingWeightEmpty(om.Group):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
         # Airframe

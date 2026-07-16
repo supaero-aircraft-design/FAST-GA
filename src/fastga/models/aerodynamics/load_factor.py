@@ -1,5 +1,3 @@
-"""FAST - Copyright (c) 2016 ONERA ISAE."""
-
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -31,7 +29,7 @@ class LoadFactor(Group):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     def setup(self):
         self.add_subsystem(

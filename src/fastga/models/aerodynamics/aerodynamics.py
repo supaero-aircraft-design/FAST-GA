@@ -33,7 +33,7 @@ class Aerodynamics(om.Group):
 
     def initialize(self):
         """Definition of the options for the group."""
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("compute_slipstream_low_speed", default=False, types=bool)

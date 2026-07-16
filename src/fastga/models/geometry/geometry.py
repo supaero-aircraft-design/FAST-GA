@@ -55,7 +55,7 @@ class GeometryFixedFuselage(om.Group):
     # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -123,7 +123,7 @@ class GeometryFixedTailDistance(om.Group):
     # Overriding OpenMDAO initialize
     def initialize(self):
         self.options.declare(CABIN_SIZING_OPTION, types=float, default=1.0)
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

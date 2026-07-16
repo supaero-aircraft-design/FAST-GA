@@ -45,7 +45,7 @@ class UpdateHTArea(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -127,7 +127,7 @@ class HTPConstraints(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     def takeoff_rotation(self, inputs):
         n_engines = inputs["data:geometry:propulsion:engine:count"]
@@ -297,7 +297,7 @@ class _UpdateArea(HTPConstraints):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -378,7 +378,7 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

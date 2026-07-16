@@ -196,7 +196,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     def setup(self):
         super().setup()

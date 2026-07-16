@@ -49,7 +49,7 @@ class ComputeCruise(DynamicEquilibrium):
 
     def initialize(self):
         super().initialize()
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, types=str)
 
     def setup(self):
         super().setup()
