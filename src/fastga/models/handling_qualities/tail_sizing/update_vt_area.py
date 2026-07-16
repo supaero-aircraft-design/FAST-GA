@@ -720,6 +720,11 @@ class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     """
 
     # pylint: disable=missing-function-docstring
+    # Overriding OpenMDAO initialize
+    def initialize(self):
+        self.options.declare("propulsion_id", default=None, allow_none=True)
+
+    # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self.add_input("data:geometry:wing:area", val=np.nan, units="m**2")
