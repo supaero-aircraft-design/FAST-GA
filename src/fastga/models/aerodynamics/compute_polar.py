@@ -14,8 +14,7 @@ Computation of the aircraft polars
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.api import Group
-
+import openmdao.api as om
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
 
@@ -28,7 +27,7 @@ from fastga.models.aerodynamics.components.compute_non_equilibrated_polar import
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.cl_cd_polar", domain=ModelDomain.AERODYNAMICS)
-class ComputePolar(Group):
+class ComputePolar(om.Group):
     def initialize(self):
         self.options.declare("cg_ratio", default=-0.0, types=float)
 

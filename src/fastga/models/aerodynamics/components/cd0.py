@@ -15,8 +15,8 @@ its components.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.group import Group
 
 from ..constants import (
     SUBMODEL_CD0_WING,
@@ -32,7 +32,7 @@ from ..constants import (
 
 
 @oad.RegisterSubmodel(SUBMODEL_CD0, "fastga.submodel.aerodynamics.aircraft.cd0.legacy")
-class Cd0(Group):
+class Cd0(om.Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default=None, types=str, allow_none=True)

@@ -17,7 +17,7 @@ Estimation of aero coefficients using OPENVSP.
 import logging
 
 import numpy as np
-from openmdao.core.group import Group
+import openmdao.api as om
 
 from .openvsp import OpenVSPSimpleGeometry, DEFAULT_WING_AIRFOIL, DEFAULT_HTP_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
@@ -26,7 +26,7 @@ from ...constants import SPAN_MESH_POINT, MACH_NB_PTS, DEFAULT_INPUT_AOA
 _LOGGER = logging.getLogger(__name__)
 
 
-class ComputeAeroOpenVSP(Group):
+class ComputeAeroOpenVSP(om.Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)

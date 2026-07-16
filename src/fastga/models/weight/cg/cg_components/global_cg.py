@@ -12,8 +12,8 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.api import Group
 
 from .constants import (
     SUBMODEL_AIRCRAFT_X_CG_RATIO,
@@ -25,7 +25,7 @@ from .max_cg_ratio import ComputeMaxMinCGRatio
 
 
 @oad.RegisterSubmodel(SUBMODEL_AIRCRAFT_CG_EXTREME, "fastga.submodel.weight.cg.aircraft.x.legacy")
-class ComputeGlobalCG(Group):
+class ComputeGlobalCG(om.Group):
     # TODO: Document equations. Cite sources
     """Global center of gravity estimation."""
 
