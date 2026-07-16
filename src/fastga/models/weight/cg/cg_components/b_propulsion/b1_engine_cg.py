@@ -15,10 +15,10 @@
 import warnings
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeEngineCG(ExplicitComponent):
+class ComputeEngineCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Engine(s) center of gravity estimation"""
 

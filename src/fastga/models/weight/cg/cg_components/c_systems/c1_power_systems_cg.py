@@ -13,9 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 
@@ -23,7 +23,7 @@ from ..constants import SUBMODEL_POWER_SYSTEMS_CG
 @oad.RegisterSubmodel(
     SUBMODEL_POWER_SYSTEMS_CG, "fastga.submodel.weight.cg.system.power_system.legacy"
 )
-class ComputePowerSystemsCG(ExplicitComponent):
+class ComputePowerSystemsCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Power systems center(s) of gravity estimation."""
 

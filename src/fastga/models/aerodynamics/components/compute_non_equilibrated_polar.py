@@ -15,12 +15,12 @@ Computation of the non-equilibrated aircraft polars
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 from fastga.models.aerodynamics.constants import POLAR_POINT_COUNT
 
 
-class ComputeNonEquilibratedPolar(ExplicitComponent):
+class ComputeNonEquilibratedPolar(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

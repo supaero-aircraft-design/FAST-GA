@@ -14,8 +14,8 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 
@@ -23,7 +23,7 @@ from ...constants import SUBMODEL_CN_BETA_FUSELAGE
 @oad.RegisterSubmodel(
     SUBMODEL_CN_BETA_FUSELAGE, "fastga.submodel.aerodynamics.fuselage.yawing_moment_beta.legacy"
 )
-class ComputeCnBetaFuselage(ExplicitComponent):
+class ComputeCnBetaFuselage(om.ExplicitComponent):
     """
     Yawing moment due to side-slip estimation.
 

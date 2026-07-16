@@ -14,14 +14,14 @@ Main component for mass breakdown.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
+import openmdao.api as om
+import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 
 @oad.RegisterOpenMDAOSystem("fastga.loop.mtow", domain=ModelDomain.OTHER)
-class UpdateMTOW(ExplicitComponent):
+class UpdateMTOW(om.ExplicitComponent):
     """
     Computes Maximum Take-Off Weight from Maximum Zero Fuel Weight and fuel weight.
     """

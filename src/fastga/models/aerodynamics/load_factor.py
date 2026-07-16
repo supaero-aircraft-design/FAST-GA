@@ -12,9 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -23,7 +21,7 @@ from .components.compute_vn import ComputeVNAndVH, DOMAIN_PTS_NB
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
-class LoadFactor(Group):
+class LoadFactor(om.Group):
     """
     Models for computing the loads and characteristic speed and load factor of the aircraft
     """
@@ -40,7 +38,7 @@ class LoadFactor(Group):
         self.add_subsystem("sizing_load_factor", _LoadFactorIdentification(), promotes=["*"])
 
 
-class _LoadFactorIdentification(ExplicitComponent):
+class _LoadFactorIdentification(om.ExplicitComponent):
     def setup(self):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
         self.add_input(

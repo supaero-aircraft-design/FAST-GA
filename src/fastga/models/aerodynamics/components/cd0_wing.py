@@ -13,15 +13,15 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 from fastga.models.geometry.profiles.get_profile import get_profile
 from ..constants import SUBMODEL_CD0_WING
 
 
 @oad.RegisterSubmodel(SUBMODEL_CD0_WING, "fastga.submodel.aerodynamics.wing.cd0.legacy")
-class Cd0Wing(ExplicitComponent):
+class Cd0Wing(om.ExplicitComponent):
     """
     Profile drag estimation for the wing
 
