@@ -26,6 +26,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import g
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
 from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
 
 
@@ -111,7 +112,7 @@ class ComputeFlightCGCase(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

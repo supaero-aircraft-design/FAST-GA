@@ -25,6 +25,7 @@ from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
 from fastga.command.api import list_inputs_metadata
+from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
@@ -43,7 +44,7 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -114,7 +115,7 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")

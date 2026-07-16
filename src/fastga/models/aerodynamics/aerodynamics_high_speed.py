@@ -45,7 +45,7 @@ class AerodynamicsHighSpeed(om.Group):
     """Models for high speed aerodynamics."""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)

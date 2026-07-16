@@ -30,7 +30,7 @@ class ComputeGlobalCG(om.Group):
     """Global center of gravity estimation."""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(

@@ -30,7 +30,7 @@ class MissionCore(om.Group):
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         number_of_points = self.options["number_of_points"]

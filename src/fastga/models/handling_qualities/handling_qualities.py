@@ -39,7 +39,7 @@ class ComputeHandlingQualities(om.Group):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem("aero_center", ComputeAeroCenter(), promotes=["*"])

@@ -37,7 +37,7 @@ class UpdateWingAreaGroup(om.Group):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         """Adding the update groups, the selection of the maximum and the constraints."""

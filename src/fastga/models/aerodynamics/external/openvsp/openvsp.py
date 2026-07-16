@@ -32,6 +32,7 @@ from stdatm import Atmosphere
 # noinspection PyProtectedMember
 from fastga.command.api import _create_tmp_directory, string_to_array
 from fastga.utils.resource_management.copy import copy_resource_from_path
+from fastga.utils.options_checkers import check_propulsion_id
 from . import openvsp3201
 from . import resources as local_resources
 from ... import airfoil_folder
@@ -1188,7 +1189,7 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
     def initialize(self):
         super().initialize()
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         super().setup()

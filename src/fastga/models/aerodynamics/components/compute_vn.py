@@ -28,6 +28,8 @@ import fastoad.api as oad
 
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 from ..constants import SUBMODEL_VH
 
 DOMAIN_PTS_NB = 19  # number of (V,n) calculated for the flight domain
@@ -43,7 +45,7 @@ class ComputeVNAndVH(om.Group):
     """Group containing the computation of the V_h and the V-n diagram"""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}
@@ -71,7 +73,7 @@ class ComputeVh(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

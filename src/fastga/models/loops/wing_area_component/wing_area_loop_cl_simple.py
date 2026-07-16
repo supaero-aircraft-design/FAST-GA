@@ -40,7 +40,7 @@ class UpdateWingAreaLiftSimple(om.ExplicitComponent):
 
     def initialize(self):
         # Needed for compatibility with other, more complex, module for wing sizing
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -93,7 +93,7 @@ class ConstraintWingAreaLiftSimple(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")

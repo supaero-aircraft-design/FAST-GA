@@ -26,6 +26,7 @@ from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
+from fastga.utils.options_checkers import check_propulsion_id
 
 from .constants import SERVICE_HT_AREA, SUBMODEL_HT_AREA_LEGACY, SUBMODEL_HT_AREA_VOLUME_COEFF
 
@@ -45,7 +46,7 @@ class UpdateHTArea(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -127,7 +128,7 @@ class HTPConstraints(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def takeoff_rotation(self, inputs):
         n_engines = inputs["data:geometry:propulsion:engine:count"]
@@ -295,11 +296,6 @@ class _UpdateArea(HTPConstraints):
         self._engine_wrapper = None
 
     # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
-
-    # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -374,11 +370,6 @@ class _ComputeHTPAreaConstraints(HTPConstraints):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._engine_wrapper = None
-
-    # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -566,7 +557,7 @@ class UpdateHTAreaVolumeCoefficient(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

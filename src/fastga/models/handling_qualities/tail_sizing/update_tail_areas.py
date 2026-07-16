@@ -36,7 +36,7 @@ class UpdateTailAreas(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

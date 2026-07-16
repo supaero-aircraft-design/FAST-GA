@@ -22,6 +22,7 @@ import fastoad.api as oad
 from fastoad.module_management._bundle_loader import BundleLoader
 
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.utils.options_checkers import check_propulsion_id
 from ..constants import SUBMODEL_CD0_NACELLE
 
 
@@ -40,7 +41,7 @@ class Cd0Nacelle(om.ExplicitComponent):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

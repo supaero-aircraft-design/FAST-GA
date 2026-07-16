@@ -38,7 +38,7 @@ class CG(om.Group):
         self.linear_solver = om.LinearBlockGS()
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(
