@@ -23,6 +23,7 @@ from fastoad.constants import EngineSetting
 from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import lbf
 
+from fastga.utils.options_checkers import check_propulsion_id
 from .constants import SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_UNUSABLE_FUEL_MASS] = SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
@@ -43,7 +44,7 @@ class ComputeUnusableFuelWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

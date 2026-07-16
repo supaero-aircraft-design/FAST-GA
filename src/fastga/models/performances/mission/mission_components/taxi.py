@@ -23,6 +23,8 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 from ..constants import SUBMODEL_TAXI
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,7 +43,7 @@ class ComputeTaxi(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
         self.options.declare("taxi_out", default=True, types=bool)
 
     def setup(self):

@@ -23,6 +23,8 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 from ..dynamic_equilibrium import DynamicEquilibrium
 from ..constants import SUBMODEL_CRUISE
 
@@ -49,7 +51,7 @@ class ComputeCruise(DynamicEquilibrium):
 
     def initialize(self):
         super().initialize()
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         super().setup()

@@ -26,4 +26,6 @@ def check_propulsion_id(name: str, value):
     if value is None:
         raise ValueError(f"Option '{name}' is expected to be a string, not None")
     if not isinstance(value, str):
-        raise ValueError(f"Option '{name}' is expected to be a string, not a {type(value).__name__}")
+        raise ValueError(
+            f"Option '{name}' is expected to be a string, not a {type(value).__name__}"
+        )

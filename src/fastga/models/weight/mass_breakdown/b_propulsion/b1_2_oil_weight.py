@@ -22,6 +22,8 @@ from fastoad.constants import EngineSetting
 from fastoad.module_management._bundle_loader import BundleLoader
 from scipy.constants import lbf
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 
 class ComputeOilWeight(om.ExplicitComponent):
     """
@@ -37,7 +39,7 @@ class ComputeOilWeight(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
