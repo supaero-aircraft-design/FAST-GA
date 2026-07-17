@@ -14,22 +14,23 @@ Python module for unsuable fuel weight calculation, part of the propulsion syste
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
+import openmdao.api as om
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import lbf
 
+from fastga.utils.options_checkers import check_propulsion_id
 from .constants import SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 oad.RegisterSubmodel.active_models[SERVICE_UNUSABLE_FUEL_MASS] = SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY
 
 
 @oad.RegisterSubmodel(SERVICE_UNUSABLE_FUEL_MASS, SUBMODEL_UNUSABLE_FUEL_MASS_LEGACY)
-class ComputeUnusableFuelWeight(ExplicitComponent):
+class ComputeUnusableFuelWeight(om.ExplicitComponent):
     """
     Weight estimation for motor oil
 
@@ -43,7 +44,7 @@ class ComputeUnusableFuelWeight(ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

@@ -13,10 +13,10 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeFuelLinesCG(ExplicitComponent):
+class ComputeFuelLinesCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Fuel lines center of gravity estimation"""
 

@@ -27,6 +27,7 @@ from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
+from fastga.utils.options_checkers import check_propulsion_id
 
 ALPHA_LIMIT = 13.5 * np.pi / 180.0  # Limit angle to touch tail on ground in rad
 ALPHA_RATE = 3.0 * np.pi / 180.0  # Angular rotation speed in rad/s
@@ -39,7 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 
 class TakeOffPhase(om.Group):
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(
@@ -125,7 +126,7 @@ class _v2(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -219,7 +220,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -391,7 +392,7 @@ class _vr_from_v2(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -483,7 +484,7 @@ class _simulate_takeoff(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

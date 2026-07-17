@@ -14,9 +14,9 @@ Python module for recording systems weight calculation, part of the systems mass
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from .constants import SERVICE_RECORDING_SYSTEM_MASS, SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM
 
@@ -29,7 +29,7 @@ oad.RegisterSubmodel.active_models[SERVICE_RECORDING_SYSTEM_MASS] = (
     SERVICE_RECORDING_SYSTEM_MASS,
     SUBMODEL_RECORDING_SYSTEM_MASS_MINIMUM,
 )
-class ComputeRecordingSystemsWeight(ExplicitComponent):
+class ComputeRecordingSystemsWeight(om.ExplicitComponent):
     """
     Weight estimation for recording systems, not mandatory for airplane with weight under 5600 kg
     but the designer can add them. Indicative values are used based on the weight of DFDR and CVR

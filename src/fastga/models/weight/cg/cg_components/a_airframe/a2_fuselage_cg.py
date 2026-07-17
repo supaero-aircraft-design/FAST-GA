@@ -16,9 +16,9 @@ Estimation of fuselage center of gravity.
 
 import logging
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_FUSELAGE_CG
 
@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 @oad.RegisterSubmodel(SUBMODEL_FUSELAGE_CG, "fastga.submodel.weight.cg.airframe.fuselage.legacy")
-class ComputeFuselageCG(ExplicitComponent):
+class ComputeFuselageCG(om.ExplicitComponent):
     """
     Wing center of gravity estimation
 

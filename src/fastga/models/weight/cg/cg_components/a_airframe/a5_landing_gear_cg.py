@@ -13,9 +13,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from ..constants import SUBMODEL_LANDING_GEAR_CG
 
@@ -27,7 +27,7 @@ oad.RegisterSubmodel.active_models[SUBMODEL_LANDING_GEAR_CG] = (
 @oad.RegisterSubmodel(
     SUBMODEL_LANDING_GEAR_CG, "fastga.submodel.weight.cg.airframe.landing_gear.legacy"
 )
-class ComputeLandingGearCG(ExplicitComponent):
+class ComputeLandingGearCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """
     Landing gear center of gravity estimation based on the ratio of weight supported by each

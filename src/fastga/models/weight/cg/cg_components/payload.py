@@ -15,15 +15,15 @@ Estimation of payload center(s) of gravity.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from .constants import SUBMODEL_PAYLOAD_CG
 
 
 @oad.RegisterSubmodel(SUBMODEL_PAYLOAD_CG, "fastga.submodel.weight.cg.payload.legacy")
-class ComputePayloadCG(ExplicitComponent):
+class ComputePayloadCG(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Payload center(s) of gravity estimation"""
 

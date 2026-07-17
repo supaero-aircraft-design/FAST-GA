@@ -14,10 +14,10 @@ Python module for life support systems weight calculation, part of the systems m
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 from stdatm import Atmosphere
+import fastoad.api as oad
 
 from .constants import (
     SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
@@ -34,7 +34,7 @@ oad.RegisterSubmodel.active_models[SERVICE_LIFE_SUPPORT_SYSTEM_MASS] = (
     SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_LEGACY,
 )
-class ComputeLifeSupportSystemsWeight(ExplicitComponent):
+class ComputeLifeSupportSystemsWeight(om.ExplicitComponent):
     """
     Weight estimation for life support systems
 
@@ -168,7 +168,7 @@ class ComputeLifeSupportSystemsWeight(ExplicitComponent):
     SERVICE_LIFE_SUPPORT_SYSTEM_MASS,
     SUBMODEL_LIFE_SUPPORT_SYSTEM_MASS_FLOPS,
 )
-class ComputeLifeSupportSystemsWeightFLOPS(ExplicitComponent):
+class ComputeLifeSupportSystemsWeightFLOPS(om.ExplicitComponent):
     """
     Weight estimation for life support systems
 

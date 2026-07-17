@@ -19,6 +19,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_ENERGY_CONSUMPTION
 
 oad.RegisterSubmodel.active_models[SUBMODEL_ENERGY_CONSUMPTION] = (
@@ -40,7 +41,7 @@ class FuelConsumed(om.ExplicitComponent):
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

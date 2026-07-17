@@ -28,7 +28,7 @@ from fastga.models.weight.cg.cg_variation import InFlightCGVariation
 )
 class PrepareMissionBuilder(om.Group):
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(

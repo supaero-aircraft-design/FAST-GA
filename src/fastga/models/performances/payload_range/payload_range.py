@@ -25,6 +25,7 @@ from fastoad.module_management.constants import ModelDomain
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 
 from fastga.command import api as api_cs23
+from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission.mission import Mission
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,7 +40,7 @@ class ComputePayloadRange(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         variables = api_cs23.list_variables(Mission(propulsion_id=self.options["propulsion_id"]))

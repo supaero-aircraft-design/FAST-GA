@@ -12,7 +12,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -41,11 +41,11 @@ from .constants import (
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.highspeed.legacy", domain=ModelDomain.AERODYNAMICS)
-class AerodynamicsHighSpeed(Group):
+class AerodynamicsHighSpeed(om.Group):
     """Models for high speed aerodynamics."""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_mach_interpolation", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)

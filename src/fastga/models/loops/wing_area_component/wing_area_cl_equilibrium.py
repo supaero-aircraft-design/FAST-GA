@@ -25,6 +25,7 @@ from fastoad.openmdao.problem import AutoUnitsDefaultGroup
 from scipy.constants import g
 
 from fastga.command.api import list_inputs_metadata
+from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.performances.mission_vector.constants import SUBMODEL_EQUILIBRIUM
 from fastga.models.performances.mission_vector.mission.dep_equilibrium import (
     DEPEquilibrium,
@@ -43,7 +44,7 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")
@@ -94,7 +95,6 @@ class UpdateWingAreaLiftEquilibrium(om.ExplicitComponent):
         wing_area_approach = compute_wing_area(inputs, self.options["propulsion_id"])
 
         if wing_area_approach > 1.2 * wing_area_landing_init_guess:
-            print("Vrai valeur", wing_area_approach)
             wing_area_approach = wing_area_landing_init_guess
             _LOGGER.info(
                 "Wing area too far from potential data, taking backup value for this iteration"
@@ -115,7 +115,7 @@ class ConstraintWingAreaLiftEquilibrium(om.ExplicitComponent):
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self.add_input("data:TLAR:v_approach", val=np.nan, units="m/s")

@@ -16,9 +16,9 @@ Python module for fuel lines weight calculation, part of the propulsion system m
 
 import warnings
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from .constants import (
     SERVICE_FUEL_SYSTEM_MASS,
@@ -30,7 +30,7 @@ oad.RegisterSubmodel.active_models[SERVICE_FUEL_SYSTEM_MASS] = SUBMODEL_FUEL_SYS
 
 
 @oad.RegisterSubmodel(SERVICE_FUEL_SYSTEM_MASS, SUBMODEL_FUEL_SYSTEM_MASS_LEGACY)
-class ComputeFuelLinesWeight(ExplicitComponent):
+class ComputeFuelLinesWeight(om.ExplicitComponent):
     """
     Weight estimation for fuel lines
 
@@ -131,7 +131,7 @@ class ComputeFuelLinesWeight(ExplicitComponent):
 
 
 @oad.RegisterSubmodel(SERVICE_FUEL_SYSTEM_MASS, SUBMODEL_FUEL_SYSTEM_MASS_FLOPS)
-class ComputeFuelLinesWeightFLOPS(ExplicitComponent):
+class ComputeFuelLinesWeightFLOPS(om.ExplicitComponent):
     """
     Weight estimation for fuel lines
 

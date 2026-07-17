@@ -14,9 +14,9 @@ Python module for navigation systems weight calculation, part of the systems mas
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
+import fastoad.api as oad
 
 from .constants import (
     SERVICE_AVIONICS_SYSTEM_MASS,
@@ -33,7 +33,7 @@ oad.RegisterSubmodel.active_models[SERVICE_AVIONICS_SYSTEM_MASS] = (
     SERVICE_AVIONICS_SYSTEM_MASS,
     SUBMODEL_AVIONICS_SYSTEM_MASS_LEGACY,
 )
-class ComputeAvionicsSystemsWeight(ExplicitComponent):
+class ComputeAvionicsSystemsWeight(om.ExplicitComponent):
     """
     Weight estimation for avionics systems. Takes into account the weight of:
     - Instrumentation
@@ -98,7 +98,7 @@ class ComputeAvionicsSystemsWeight(ExplicitComponent):
     SERVICE_AVIONICS_SYSTEM_MASS,
     SUBMODEL_AVIONICS_SYSTEM_MASS_FROM_UNINSTALLED,
 )
-class ComputeAvionicsSystemsWeightFromUninstalled(ExplicitComponent):
+class ComputeAvionicsSystemsWeightFromUninstalled(om.ExplicitComponent):
     """
     Weight estimation for avionics systems. Takes into account the weight of:
     - Instrumentation

@@ -14,16 +14,18 @@ Python module for oil weight calculation, part of the propulsion system mass com
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import openmdao.api as om
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import lbf
 
+from fastga.utils.options_checkers import check_propulsion_id
 
-class ComputeOilWeight(ExplicitComponent):
+
+class ComputeOilWeight(om.ExplicitComponent):
     """
     Weight estimation for motor oil.
 
@@ -37,7 +39,7 @@ class ComputeOilWeight(ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

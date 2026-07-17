@@ -13,14 +13,14 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
+import openmdao.api as om
 import fastoad.api as oad
-from openmdao.core.explicitcomponent import ExplicitComponent
 
 from ..constants import SUBMODEL_MAX_L_D
 
 
 @oad.RegisterSubmodel(SUBMODEL_MAX_L_D, "fastga.submodel.aerodynamics.aircraft.l_d_max.legacy")
-class ComputeLDMax(ExplicitComponent):
+class ComputeLDMax(om.ExplicitComponent):
     """
     Computes optimal CL/CD aerodynamic performance of the aircraft in cruise conditions.
 

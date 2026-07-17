@@ -20,6 +20,7 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
 
 
@@ -31,7 +32,7 @@ class ThrustTaxi(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

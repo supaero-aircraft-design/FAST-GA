@@ -27,6 +27,8 @@ from fastoad.constants import EngineSetting
 
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 
 class aircraft_equilibrium_limit(om.ExplicitComponent):
     """
@@ -196,7 +198,7 @@ class ComputeBalkedLandingLimit(aircraft_equilibrium_limit):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         super().setup()

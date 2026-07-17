@@ -20,6 +20,7 @@ import fastoad.api as oad
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastga.models.propulsion.fuel_propulsion.base import FuelEngineSet
+from fastga.utils.options_checkers import check_propulsion_id
 
 from ...constants import SERVICE_NACELLE_DIMENSION, SUBMODEL_NACELLE_DIMENSION_LEGACY
 
@@ -36,7 +37,7 @@ class ComputeNacelleDimension(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

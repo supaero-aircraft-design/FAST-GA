@@ -16,11 +16,11 @@ Computes Mach number and unitary Reynolds.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 from stdatm import Atmosphere
 
 
-class ComputeUnitReynolds(ExplicitComponent):
+class ComputeUnitReynolds(om.ExplicitComponent):
     """
     Computes the mach number and reynolds number based on inputs and the ISA model.
     """

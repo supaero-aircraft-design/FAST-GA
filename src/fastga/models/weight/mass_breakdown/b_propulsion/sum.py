@@ -31,7 +31,7 @@ class PropulsionWeight(om.Group):
     """Computes mass of propulsion system."""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         propulsion_option = {"propulsion_id": self.options["propulsion_id"]}

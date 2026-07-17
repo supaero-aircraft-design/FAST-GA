@@ -23,6 +23,8 @@ from fastoad.module_management._bundle_loader import BundleLoader
 import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 from .constants import SERVICE_VT_AREA, SUBMODEL_VT_AREA_LEGACY, SUBMODEL_VT_AREA_VOLUME_COEFF
 
 oad.RegisterSubmodel.active_models[SERVICE_VT_AREA] = SUBMODEL_VT_AREA_LEGACY
@@ -33,7 +35,7 @@ class UpdateVTArea(om.Group):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
@@ -68,7 +70,7 @@ class VTPConstraints(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     @staticmethod
     def lateral_equilibrium(x, inputs, beta, rudder_angle, eta_v):
@@ -591,11 +593,6 @@ class _ComputeVTPAreaConstraints(VTPConstraints):
         self._engine_wrapper = None
 
     # pylint: disable=missing-function-docstring
-    # Overriding OpenMDAO initialize
-    def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
-
-    # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
@@ -725,7 +722,7 @@ class UpdateVTAreaVolumeCoefficient(om.ExplicitComponent):
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO initialize
     def initialize(self):
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     # pylint: disable=missing-function-docstring
     # Overriding OpenMDAO setup

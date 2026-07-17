@@ -15,10 +15,10 @@ Main component for mass breakdown.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class UpdateMLWandMZFW(ExplicitComponent):
+class UpdateMLWandMZFW(om.ExplicitComponent):
     """
     Computes Maximum Landing Weight and Maximum Zero Fuel Weight from
     Overall Empty Weight and Maximum Payload.

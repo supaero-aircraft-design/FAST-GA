@@ -14,11 +14,11 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 from stdatm import Atmosphere
 
 
-class ComputeAeroCenter(ExplicitComponent):
+class ComputeAeroCenter(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Aerodynamic center estimation."""
 

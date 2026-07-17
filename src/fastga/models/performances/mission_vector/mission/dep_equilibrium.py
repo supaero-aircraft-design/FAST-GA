@@ -34,7 +34,7 @@ class DEPEquilibrium(om.Group):
         self.options.declare(
             "number_of_points", default=1, desc="number of equilibrium to be treated"
         )
-        self.options.declare("propulsion_id", default=None, types=str, allow_none=True)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare(
             "promotes_all_variables",
             default=False,

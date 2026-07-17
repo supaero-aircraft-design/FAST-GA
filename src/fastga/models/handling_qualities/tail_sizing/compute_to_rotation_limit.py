@@ -25,6 +25,7 @@ from fastoad.constants import EngineSetting
 from stdatm import Atmosphere
 
 from fastga.command.api import list_inputs, list_outputs
+from fastga.utils.options_checkers import check_propulsion_id
 
 _ANG_VEL = 12 * np.pi / 180  # 12 deg/s (typical for light aircraft)
 
@@ -35,7 +36,7 @@ class ComputeTORotationLimitGroup(om.Group):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(
@@ -90,7 +91,7 @@ class ComputeTORotationLimit(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

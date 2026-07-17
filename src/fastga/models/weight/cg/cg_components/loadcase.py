@@ -15,24 +15,25 @@ New estimation method of center of gravity for all load cases.
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import fastoad.api as oad
 import numpy as np
 import scipy.optimize as optimize
+import openmdao.api as om
+import fastoad.api as oad
 from fastoad.constants import EngineSetting
 
 # noinspection PyProtectedMember
 from fastoad.module_management._bundle_loader import BundleLoader
-from openmdao.core.explicitcomponent import ExplicitComponent
 from scipy.constants import g
 from stdatm import Atmosphere
 
+from fastga.utils.options_checkers import check_propulsion_id
 from .constants import SUBMODEL_LOADCASE_GROUND_X, SUBMODEL_LOADCASE_FLIGHT_X
 
 
 @oad.RegisterSubmodel(
     SUBMODEL_LOADCASE_GROUND_X, "fastga.submodel.weight.cg.loadcase.ground.legacy"
 )
-class ComputeGroundCGCase(ExplicitComponent):
+class ComputeGroundCGCase(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Center of gravity estimation for all load cases on ground."""
 
@@ -103,7 +104,7 @@ class ComputeGroundCGCase(ExplicitComponent):
 @oad.RegisterSubmodel(
     SUBMODEL_LOADCASE_FLIGHT_X, "fastga.submodel.weight.cg.loadcase.flight.legacy"
 )
-class ComputeFlightCGCase(ExplicitComponent):
+class ComputeFlightCGCase(om.ExplicitComponent):
     """Center of gravity estimation for all load cases in flight"""
 
     def __init__(self, **kwargs):
@@ -111,7 +112,7 @@ class ComputeFlightCGCase(ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])

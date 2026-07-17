@@ -16,10 +16,10 @@ Estimation of maximum center of gravity ratio.
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
+import openmdao.api as om
 
 
-class ComputeMaxMinCGRatio(ExplicitComponent):
+class ComputeMaxMinCGRatio(om.ExplicitComponent):
     # TODO: Document equations. Cite sources
     """Extrema center of gravity ratio estimation"""
 

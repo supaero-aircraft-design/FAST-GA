@@ -17,8 +17,7 @@ Estimation of cl/cm/oswald aero coefficients using VLM.
 import logging
 
 import numpy as np
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
+import openmdao.api as om
 
 from .vlm import VLMSimpleGeometry
 from ..xfoil.xfoil_polar import XfoilPolar
@@ -32,7 +31,7 @@ DEFAULT_WING_AIRFOIL = "naca23012.af"
 DEFAULT_HTP_AIRFOIL = "naca0012.af"
 
 
-class ComputeAeroVLM(Group):
+class ComputeAeroVLM(om.Group):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)
@@ -169,7 +168,7 @@ class ComputeAeroVLM(Group):
             )
 
 
-class ComputeLocalReynolds(ExplicitComponent):
+class ComputeLocalReynolds(om.ExplicitComponent):
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
 

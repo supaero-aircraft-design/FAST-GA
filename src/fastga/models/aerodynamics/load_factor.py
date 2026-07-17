@@ -1,5 +1,3 @@
-"""FAST - Copyright (c) 2016 ONERA ISAE."""
-
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
 #  Copyright (C) 2022  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
@@ -14,9 +12,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import numpy as np
-
-from openmdao.core.explicitcomponent import ExplicitComponent
-from openmdao.core.group import Group
+import openmdao.api as om
 
 import fastoad.api as oad
 from fastoad.module_management.constants import ModelDomain
@@ -25,13 +21,13 @@ from .components.compute_vn import ComputeVNAndVH, DOMAIN_PTS_NB
 
 
 @oad.RegisterOpenMDAOSystem("fastga.aerodynamics.load_factor", domain=ModelDomain.AERODYNAMICS)
-class LoadFactor(Group):
+class LoadFactor(om.Group):
     """
     Models for computing the loads and characteristic speed and load factor of the aircraft
     """
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
 
     def setup(self):
         self.add_subsystem(
@@ -42,7 +38,7 @@ class LoadFactor(Group):
         self.add_subsystem("sizing_load_factor", _LoadFactorIdentification(), promotes=["*"])
 
 
-class _LoadFactorIdentification(ExplicitComponent):
+class _LoadFactorIdentification(om.ExplicitComponent):
     def setup(self):
         nan_array = np.full(DOMAIN_PTS_NB, np.nan)
         self.add_input(

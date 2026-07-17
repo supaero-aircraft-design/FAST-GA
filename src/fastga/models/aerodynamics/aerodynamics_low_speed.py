@@ -47,7 +47,7 @@ class AerodynamicsLowSpeed(om.Group):
     """Models for low speed aerodynamics."""
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("use_openvsp", default=False, types=bool)
         self.options.declare("compute_slipstream", default=False, types=bool)
         self.options.declare("result_folder_path", default="", types=str)

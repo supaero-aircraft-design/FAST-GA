@@ -24,6 +24,8 @@ import fastoad.api as oad
 from fastoad.module_management._bundle_loader import BundleLoader
 from fastoad.constants import EngineSetting
 
+from fastga.utils.options_checkers import check_propulsion_id
+
 from .openvsp import OpenVSPSimpleGeometryDP, DEFAULT_WING_AIRFOIL
 from ...components.compute_reynolds import ComputeUnitReynolds
 from ...constants import SPAN_MESH_POINT, SUBMODEL_THRUST_POWER_SLIPSTREAM
@@ -43,7 +45,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
@@ -81,7 +83,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
 
     def initialize(self):
         self.options.declare("low_speed_aero", default=False, types=bool)
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("result_folder_path", default="", types=str)
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
@@ -330,7 +332,7 @@ class PropulsionForDPComputation(om.ExplicitComponent):
         self._engine_wrapper = None
 
     def initialize(self):
-        self.options.declare("propulsion_id", default="", types=str)
+        self.options.declare("propulsion_id", check_valid=check_propulsion_id)
 
     def setup(self):
         self._engine_wrapper = BundleLoader().instantiate_component(self.options["propulsion_id"])
