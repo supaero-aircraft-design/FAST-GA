@@ -53,11 +53,9 @@ VSPAERO_EXE_NAME = "vspaero.exe"
 
 # Sub-dictionary names used inside a geometry cache entry, next to the mach-keyed results under
 # OpenVSP.
-RAW_AERO_CACHE_NAMESPACE = "raw_aero"
+CLEAN_AERO_CACHE_NAMESPACE = "clean_aero"
 WING_ROTOR_CACHE_NAMESPACE = "wing_rotor"
-# Iterative solves (e.g. a trim/AoA search) tend to call compute_aero / compute_wing_rotor
-# several times with AoA values that only differ by convergence noise (a few hundredths of a
-# degree). Snapping the requested AoA onto an already-cached nearby value.
+# Snapping the requested AoA onto an already-cached nearby value due to small result variation.
 AOA_SNAP_TOLERANCE_DEG = 0.05
 WING_ROTOR_CONDITION_LABELS = [
     "altitude",
@@ -152,26 +150,18 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                         # save_cache() writes the in-memory cache back at exit.
                         entry = cls._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
 
-                        is_legacy_cache = "vlm" not in value and "openvsp" not in value
-                        if is_legacy_cache:
-                            entry["openvsp"] = value
-                        else:
-                            if value.get("openvsp"):
-                                entry["openvsp"] = value["openvsp"]
+                        if value.get("openvsp"):
+                            entry["openvsp"] = value["openvsp"]
 
-                            if value.get("vlm"):
-                                entry["vlm"] = value["vlm"]
+                        if value.get("vlm"):
+                            entry["vlm"] = value["vlm"]
 
                         no_openvsp_cache = False
 
         if no_openvsp_cache:
-            _LOGGER.info("No existing OpenVSP cache found in %s, starting empty.", search_folder)
+            _LOGGER.info("No existing OpenVSP cache, starting empty.")
         else:
-            _LOGGER.info(
-                "Loaded OpenVSP cache from %s (%d geometry entries).",
-                search_folder,
-                len(cls._cache),
-            )
+            _LOGGER.info("Loading OpenVSP cache (%d geometry entries).", len(cls._cache))
 
     @classmethod
     def save_cache(
@@ -188,7 +178,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
              Ignored unless `file_name` is given.
         :param file_name: cache file name to use together with `folder_path`.
         """
-        if folder_path is not None and file_name:
+        if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
             path = Path(cls._cache_file)
@@ -363,7 +353,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         """
 
         # Fix mach number of digits to consider similar results
-        mach = round(float(mach) * 1e3) / 1e3
+        mach = round(mach.item(), 3)
 
         # Get inputs necessary to define global geometry
         s_ref_wing, area_ratio, geometry_set = self.define_geometry(inputs)
@@ -492,10 +482,6 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         if not use_cache:
             return self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt)
 
-        # Fix mach number of digits to consider similar results (same rounding as
-        # compute_aero_coeff)
-        mach = round(float(mach) * 1e3) / 1e3
-
         _, _, geometry_set = self.define_geometry(inputs)
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
         condition_values = [
@@ -506,7 +492,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         ]
 
         self.register_geometry(key)
-        namespace_cache = self._cache[key]["openvsp"].setdefault(RAW_AERO_CACHE_NAMESPACE, {})
+        namespace_cache = self._cache[key]["openvsp"].setdefault(CLEAN_AERO_CACHE_NAMESPACE, {})
         clean_aero_condition = dict(zip(RAW_AERO_CONDITION_LABELS, condition_values))
         clean_aero_condition["AoA"] = self._snap_to_cached_aoa(
             namespace_cache, clean_aero_condition
@@ -516,7 +502,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         result = self.get_or_compute_cached(
             key,
-            RAW_AERO_CACHE_NAMESPACE,
+            CLEAN_AERO_CACHE_NAMESPACE,
             condition_key,
             lambda: self._compute_aero(inputs, outputs, altitude, mach, aoa_angle, comp_opt),
         )
@@ -1216,7 +1202,7 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
         any change.
 
         :param key: geometry cache key, as built from GEOMETRY_SET_LABELS
-        :param namespace: sub-dictionary name (e.g. RAW_AERO_CACHE_NAMESPACE)
+        :param namespace: sub-dictionary name (e.g. CLEAN_AERO_CACHE_NAMESPACE)
         :param condition_key: string key identifying the run conditions
         :param compute_fn: zero-argument callable performing the actual (costly)
             computation, only invoked on a cache miss
@@ -1444,9 +1430,6 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
         Parameters and return value are identical to :meth:`_compute_wing_rotor`.
         """
-        # Fix mach number of digits to consider similar results (same rounding as
-        # compute_aero_coeff)
-        mach = round(float(mach) * 1e3) / 1e3
 
         _, _, geometry_set = self.define_geometry(inputs)
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))

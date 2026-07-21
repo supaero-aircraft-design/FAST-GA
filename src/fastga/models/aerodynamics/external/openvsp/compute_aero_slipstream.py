@@ -247,6 +247,7 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         alpha_max = round((cl_max_clean.item() - cl0.item()) / cl_alpha.item(), 2)
         thrust = round(inputs["thrust"].item(), 1)
         shaft_power = round(inputs["shaft_power"].item(), 1)
+        mach = round(mach.item(), 3)
 
         wing_rotor = self.compute_wing_rotor(
             inputs, outputs, altitude, mach, alpha_max, thrust, shaft_power

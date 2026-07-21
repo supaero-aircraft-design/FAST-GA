@@ -113,24 +113,18 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                         # save_cache() writes the in-memory cache back at exit.
                         entry = cls._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
 
-                        is_legacy_cache = "vlm" not in value and "openvsp" not in value
-                        if is_legacy_cache:
-                            entry["vlm"] = value
-                        else:
-                            if value.get("openvsp"):
-                                entry["openvsp"] = value["openvsp"]
+                        if value.get("openvsp"):
+                            entry["openvsp"] = value["openvsp"]
 
-                            if value.get("vlm"):
-                                entry["vlm"] = value["vlm"]
+                        if value.get("vlm"):
+                            entry["vlm"] = value["vlm"]
 
                         no_vlm_cache = False
 
         if no_vlm_cache:
-            _LOGGER.info("No existing VLM cache found in %s, starting empty.", search_folder)
+            _LOGGER.info("No existing VLM cache found, starting empty.")
         else:
-            _LOGGER.info(
-                "Loaded VLM cache from %s (%d geometry entries).", search_folder, len(cls._cache)
-            )
+            _LOGGER.info("Loading VLM cache (%d geometry entries).", len(cls._cache))
 
     @classmethod
     def save_cache(
@@ -147,7 +141,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
              Ignored unless `file_name` is given.
         :param file_name: cache file name to use together with `folder_path`.
         """
-        if folder_path is not None and file_name:
+        if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
             path = Path(cls._cache_file)
