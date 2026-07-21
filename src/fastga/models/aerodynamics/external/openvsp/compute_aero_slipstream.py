@@ -263,46 +263,48 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         y_vector_prop_off = wing["y_vector"]
 
         additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(cl_vector_prop_on)))
-        cl_vector_prop_on.extend(additional_zeros)
-        y_vector_prop_on.extend(additional_zeros)
-        cl_vector_prop_off.extend(additional_zeros)
-        y_vector_prop_off.extend(additional_zeros)
+        cl_vector_prop_on_extended = cl_vector_prop_on + additional_zeros
+        y_vector_prop_on_extended = y_vector_prop_on + additional_zeros
+        cl_vector_prop_off_extended = cl_vector_prop_off + additional_zeros
+        y_vector_prop_off_extended = y_vector_prop_off + additional_zeros
 
         cl_diff = np.round(
-            np.asarray(cl_vector_prop_on) - np.asarray(cl_vector_prop_off), 4
+            np.asarray(cl_vector_prop_on_extended) - np.asarray(cl_vector_prop_off_extended), 4
         ).tolist()
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector"] = (
-                y_vector_prop_on
+                y_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector"] = (
-                cl_vector_prop_on
+                cl_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref"] = wing_rotor["ct"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CL"] = wing_rotor["cl"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity"] = velocity
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:Y_vector"] = (
-                y_vector_prop_off
+                y_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector"] = (
-                cl_vector_prop_off
+                cl_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:CL"] = wing["cl"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector"] = cl_diff
         else:
-            outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"] = y_vector_prop_on
+            outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"] = (
+                y_vector_prop_on_extended
+            )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"] = (
-                cl_vector_prop_on
+                cl_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref"] = wing_rotor["ct"]
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CL"] = wing_rotor["cl"]
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"] = velocity
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"] = (
-                y_vector_prop_off
+                y_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"] = (
-                cl_vector_prop_off
+                cl_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:CL"] = wing["cl"]
             outputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"] = cl_diff
