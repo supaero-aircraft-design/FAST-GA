@@ -244,9 +244,9 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         # will appear, this is taken as the angle for which the clean wing is at its max angle of
         # attack
 
-        alpha_max = round(float((cl_max_clean - cl0) / cl_alpha), 2)
-        thrust = round(float(inputs["thrust"]), 1)
-        shaft_power = round(float(inputs["shaft_power"]), 1)
+        alpha_max = round((cl_max_clean.item() - cl0.item()) / cl_alpha.item(), 2)
+        thrust = round(inputs["thrust"].item(), 1)
+        shaft_power = round(inputs["shaft_power"].item(), 1)
 
         wing_rotor = self.compute_wing_rotor(
             inputs, outputs, altitude, mach, alpha_max, thrust, shaft_power
