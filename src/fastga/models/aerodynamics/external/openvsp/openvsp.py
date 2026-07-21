@@ -507,11 +507,12 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
 
         self.register_geometry(key)
         namespace_cache = self._cache[key]["openvsp"].setdefault(RAW_AERO_CACHE_NAMESPACE, {})
-        condition_values[3] = self._snap_to_cached_aoa(
-            namespace_cache, RAW_AERO_CONDITION_LABELS, condition_values
+        clean_aero_condition = dict(zip(RAW_AERO_CONDITION_LABELS, condition_values))
+        clean_aero_condition["AoA"] = self._snap_to_cached_aoa(
+            namespace_cache, clean_aero_condition
         )
 
-        condition_key = str(dict(zip(RAW_AERO_CONDITION_LABELS, condition_values)))
+        condition_key = str(clean_aero_condition)
 
         result = self.get_or_compute_cached(
             key,
@@ -1145,35 +1146,32 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
     @staticmethod
     def _snap_to_cached_aoa(
         namespace_cache,
-        condition_labels,
-        condition_values,
+        condition_dict,
         tolerance=AOA_SNAP_TOLERANCE_DEG,
         aoa_label="AoA",
     ):
         """
         Look for an already-cached condition, in `namespace_cache`, that matches
-        `condition_values` on every field except AoA, and whose AoA is within
-        `tolerance` degrees of the requested one. If found, return that stored
-        AoA value instead of the requested one so that building the condition_key
-        from it collapses onto the existing entry (a cache hit) rather than
-        creating a new, near-duplicate one.
+        `condition_dict` on every field except AoA, and whose AoA is within
+        `tolerance` degrees of the requested one If found, return that
+        stored AoA value instead of the requested one so that building the
+        condition_key from it collapses onto the existing entry (a cache hit)
+        rather than creating a new, near-duplicate one.
 
         :param namespace_cache: the ``self._cache[key]["openvsp"][namespace]`` dict,
             mapping existing condition_key strings to their cached results
-        :param condition_labels: ordered field names used to build condition_key
-            (e.g. RAW_AERO_CONDITION_LABELS)
-        :param condition_values: ordered field values for the condition being
-            looked up, matching `condition_labels`
+        :param condition_dict: the requested condition, as a dict mapping each
+            condition label to its value (including the AoA field identified by
+            `aoa_label`), used to compare against each stored condition
         :param tolerance: maximum AoA difference, in degrees, for two conditions
             to be considered the same
-        :param aoa_label: the label identifying the AoA field within
-            `condition_labels`
+        :param aoa_label: the key identifying the AoA field within
+            `condition_dict` (and within each stored condition)
         :return: the AoA value to use when building condition_key - either the
-            requested one unchanged (no close-enough match found) or a
-            previously-cached nearby AoA (match found)
+            requested one unchanged (no close-enough match found) or the
+            closest previously-cached AoA within `tolerance` (match found)
         """
-        aoa_index = condition_labels.index(aoa_label)
-        requested_aoa = condition_values[aoa_index]
+        requested_aoa = condition_dict[aoa_label]
 
         best_aoa = None
         best_diff = tolerance
@@ -1186,19 +1184,17 @@ class OpenVSPSimpleGeometry(ExternalCodeComp):
                 # entries this class wrote itself); skip rather than fail.
                 continue
 
-            stored_values = [stored_condition.get(label) for label in condition_labels]
-
             # Every field but AoA must match exactly for the two conditions to
             # represent the same physical case.
             others_match = all(
-                stored_values[i] == condition_values[i]
-                for i in range(len(condition_labels))
-                if i != aoa_index
+                condition_dict[key] == value
+                for key, value in stored_condition.items()
+                if key != aoa_label
             )
             if not others_match:
                 continue
 
-            stored_aoa = stored_values[aoa_index]
+            stored_aoa = stored_condition.get(aoa_label)
             if stored_aoa is None:
                 continue
 
@@ -1502,11 +1498,12 @@ class OpenVSPSimpleGeometryDP(OpenVSPSimpleGeometry):
 
         self.register_geometry(key)
         namespace_cache = self._cache[key]["openvsp"].setdefault(WING_ROTOR_CACHE_NAMESPACE, {})
-        condition_values[2] = self._snap_to_cached_aoa(
-            namespace_cache, WING_ROTOR_CONDITION_LABELS, condition_values
+        wing_rotor_condition = dict(zip(WING_ROTOR_CONDITION_LABELS, condition_values))
+        wing_rotor_condition["AoA"] = self._snap_to_cached_aoa(
+            namespace_cache, wing_rotor_condition
         )
 
-        condition_key = str(dict(zip(WING_ROTOR_CONDITION_LABELS, condition_values)))
+        condition_key = str(wing_rotor_condition)
 
         return self.get_or_compute_cached(
             key,
