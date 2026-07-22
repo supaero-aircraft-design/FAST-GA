@@ -25,42 +25,17 @@ import openmdao.api as om
 from stdatm import Atmosphere
 
 from fastga.models.geometry.profiles.get_profile import get_profile
-from ...constants import SPAN_MESH_POINT, POLAR_POINT_COUNT, MACH_NB_PTS
+from ...constants import (
+    SPAN_MESH_POINT,
+    POLAR_POINT_COUNT,
+    MACH_NB_PTS,
+    GEOMETRY_SET_LABELS,
+    RESULT_LABELS,
+)
 
 DEFAULT_NX = 19
 DEFAULT_NY1 = 3
 DEFAULT_NY2 = 14
-
-GEOMETRY_SET_LABELS = [
-    "sweep25_wing",
-    "taper_ratio_wing",
-    "aspect_ratio_wing",
-    "dihedral_angle_wing",
-    "twist_angle_wing",
-    "sweep25_htp",
-    "taper_ratio_htp",
-    "aspect_ratio_htp",
-]
-
-VLM_RESULT_LABELS = [
-    "cl_0_wing",
-    "cl_X_wing",
-    "cl_alpha_wing",
-    "cm_0_wing",
-    "y_vector_wing",
-    "cl_vector_wing",
-    "chord_vector_wing",
-    "coef_k_wing",
-    "cl_0_htp",
-    "cl_X_htp",
-    "cl_alpha_htp",
-    "cl_alpha_htp_isolated",
-    "y_vector_htp",
-    "cl_vector_htp",
-    "coef_k_htp",
-    "saved_ref_area",
-    "area_ratio",
-]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -115,7 +90,6 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cls._cache_loaded_from = str(search_folder)
 
         no_vlm_cache = True
-
         for file in search_folder.glob("*.json"):
             try:
                 with open(file, "r", encoding="utf-8") as cache_fp:
@@ -132,15 +106,25 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                     if all(label in key for label in GEOMETRY_SET_LABELS) and isinstance(
                         value, dict
                     ):
-                        cls._cache[key] = value
+                        # Preserve both branches from the file (not just "vlm"): this class
+                        # only ever populates/overwrites the "vlm" branch during a run, so
+                        # the "openvsp" branch must be carried through untouched or it would
+                        # be wiped out (replaced by an empty dict) when this class's
+                        # save_cache() writes the in-memory cache back at exit.
+                        entry = cls._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
+
+                        if value.get("openvsp"):
+                            entry["openvsp"] = value["openvsp"]
+
+                        if value.get("vlm"):
+                            entry["vlm"] = value["vlm"]
+
                         no_vlm_cache = False
 
         if no_vlm_cache:
-            _LOGGER.info("No existing VLM cache found in %s, starting empty.", search_folder)
+            _LOGGER.info("No existing VLM cache found, starting empty.")
         else:
-            _LOGGER.info(
-                "Loaded VLM cache from %s (%d geometry entries).", search_folder, len(cls._cache)
-            )
+            _LOGGER.info("Loading VLM cache (%d geometry entries).", len(cls._cache))
 
     @classmethod
     def save_cache(
@@ -157,7 +141,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
              Ignored unless `file_name` is given.
         :param file_name: cache file name to use together with `folder_path`.
         """
-        if folder_path is not None and file_name:
+        if folder_path and file_name:
             path = cls._resolve_cache_path(folder_path, file_name)
         elif cls._cache_file is not None:
             path = Path(cls._cache_file)
@@ -197,7 +181,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         # component may be created. Only register it when `result_file_name` is set.
         if not VLMSimpleGeometry._atexit_registered:
             if resolved is not None and file_name:
-                atexit.register(VLMSimpleGeometry.save_cache)
+                atexit.register(
+                    VLMSimpleGeometry.save_cache, folder_path=folder_path, file_name=file_name
+                )
             VLMSimpleGeometry._atexit_registered = True
 
     def __init__(self, **kwargs):
@@ -342,9 +328,9 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         @param altitude: altitude for aerodynamic calculation in meters
         @param mach: air speed expressed in mach
         @param aoa_angle: air speed angle of attack with respect to aircraft
-        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coef_k_wing,
+        @return: cl_0_wing, cl_alpha_wing, cm_0_wing, y_vector_wing, cl_vector_wing, coeff_k_wing,
         cl_0_htp, cl_X_htp, cl_alpha_htp, cl_alpha_htp_isolated, y_vector_htp, cl_vector_htp,
-        coef_k_htp parameters.
+        coeff_k_htp parameters.
 
                 ^
               y |                Points defining the panel
@@ -405,7 +391,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         key = str(dict(zip(GEOMETRY_SET_LABELS, geometry_set)))
 
         # Compute results if not already in cache, else retrieve them and adapt to new area ratio
-        if self._cache.get(key) is None or self._cache[key].get(str(mach)) is None:
+        if self._cache.get(key) is None or self._cache[key]["vlm"].get(str(mach)) is None:
             self.register_geometry(key)
 
             # Compute wing alone @ 0°/X° angle of attack
@@ -454,7 +440,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_wing,
                 cl_vector_wing,
                 chord_vector_wing,
-                coef_k_wing,
+                coeff_k_wing,
             ) = self.post_processing_wing(
                 width_max,
                 span_wing,
@@ -473,7 +459,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 cl_0_htp,
                 cl_aoa_htp,
                 cl_alpha_htp,
-                coef_k_htp,
+                coeff_k_htp,
                 y_vector_htp,
                 cl_vector_htp,
             ) = self.post_processing_htp_ac(
@@ -512,14 +498,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 np.array(y_vector_wing).tolist(),
                 np.array(cl_vector_wing).tolist(),
                 np.array(chord_vector_wing).tolist(),
-                float(coef_k_wing),
+                float(coeff_k_wing),
                 float(cl_0_htp),
                 float(cl_aoa_htp),
                 float(cl_alpha_htp),
                 float(cl_alpha_htp_isolated),
                 np.array(y_vector_htp).tolist(),
                 np.array(cl_vector_htp).tolist(),
-                float(coef_k_htp),
+                float(coeff_k_htp),
                 float(sref_wing),
                 float(area_ratio),
             ]
@@ -536,14 +522,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
                 y_vector_wing,
                 cl_vector_wing,
                 chord_vector_wing,
-                coef_k_wing,
+                coeff_k_wing,
                 cl_0_htp,
                 cl_aoa_htp,
                 cl_alpha_htp,
                 cl_alpha_htp_isolated,
                 y_vector_htp,
                 cl_vector_htp,
-                coef_k_htp,
+                coeff_k_htp,
             ) = self.read_value_from_data(key, mach, sref_wing, area_ratio)
 
         return (
@@ -554,14 +540,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coef_k_wing,
+            coeff_k_wing,
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
-            coef_k_htp,
+            coeff_k_htp,
         )
 
     def compute_wing(
@@ -583,7 +569,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param flaps_angle: flaps angle in Deg (default=0.0: i.e. no deflection)
         :param use_airfoil: adds the camber line coordinates of the selected airfoil (default=True)
         :return: wing dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e
+        cm_vector, cl, cdi, cm, coeff_e
         """
 
         # Generate geometries
@@ -649,7 +635,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "cl": cl_wing,
             "cdi": cdi_wing,
             "cm": cm_wing,
-            "coef_e": wing_e,
+            "coeff_e": wing_e,
         }
 
         return wing
@@ -671,7 +657,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         :param aoa_angle: air speed angle of attack with respect to aircraft (degree).
         :param use_airfoil: adds the camber line coordinates of the selected airfoil (default=True).
         :return: htp dictionary including aero parameters as keys: y_vector, cl_vector, cd_vector,
-        cm_vector, cl, cdi, cm, coef_e.
+        cm_vector, cl, cdi, cm, coeff_e.
         """
 
         # Generate geometries
@@ -730,7 +716,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             "cl": cl_htp,
             "cdi": cdi_htp,
             "cm": cm_htp,
-            "coef_e": htp_e,
+            "coeff_e": htp_e,
         }
 
         return htp
@@ -781,7 +767,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         htp = self.compute_htp(inputs, altitude, mach, aoa_angle_corrected, use_airfoil=True)
 
         # Save results at aircraft level
-        aircraft = {"cl": wing["cl"] + htp["cl"], "cd0": None, "cdi": None, "coef_e": None}
+        aircraft = {"cl": wing["cl"] + htp["cl"], "cd0": None, "cdi": None, "coeff_e": None}
 
         return wing, htp, aircraft
 
@@ -1164,11 +1150,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
     def register_geometry(self, key):
         """Register the geometry set as a key in the in-memory cache."""
-        self._cache.setdefault(key, {})
+        self._cache.setdefault(key, {"vlm": {}, "openvsp": {}})
 
     def save_results(self, key, results, mach):
         """Store VLM results in the in-memory cache."""
-        self._cache[key][str(mach)] = dict(zip(VLM_RESULT_LABELS, results))
+        self._cache[key]["vlm"][str(mach)] = dict(zip(RESULT_LABELS, results))
 
     def post_processing_wing(
         self,
@@ -1218,15 +1204,15 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cdp_foil = self._interpolate_cdp(cl_wing_airfoil, cdp_wing_airfoil, cl_x_wing)
         # Mach correction
         if mach <= 0.4:
-            coef_e = wing_aoa["coef_e"]
+            coeff_e = wing_aoa["coeff_e"]
         else:
-            coef_e = wing_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
-        cdi = cl_x_wing**2 / (np.pi * aspect_ratio_wing * coef_e) + cdp_foil
-        coef_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
+            coeff_e = wing_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
+        cdi = cl_x_wing**2 / (np.pi * aspect_ratio_wing * coeff_e) + cdp_foil
+        coeff_e = wing_aoa["cl"] ** 2 / (np.pi * aspect_ratio_wing * cdi)
         # Fuselage correction
         k_fus = 1 - 2 * (width_max / span_wing) ** 2
-        coef_e = float(coef_e * k_fus)
-        coef_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coef_e))
+        coeff_e = float(coeff_e * k_fus)
+        coeff_k_wing = float(1.0 / (np.pi * aspect_ratio_wing * coeff_e))
 
         return (
             beta,
@@ -1237,7 +1223,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coef_k_wing,
+            coeff_k_wing,
         )
 
     def post_processing_htp_ac(
@@ -1273,11 +1259,11 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         cdp_foil = self._interpolate_cdp(cl_htp_airfoil, cdp_htp_airfoil, htp_aoa["cl"] / beta)
         # Mach correction
         if mach <= 0.4:
-            coef_e = htp_aoa["coef_e"]
+            coeff_e = htp_aoa["coeff_e"]
         else:
-            coef_e = htp_aoa["coef_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
-        cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coef_e) + cdp_foil
-        coef_k_htp = float(cdi / cl_aoa_htp**2 * area_ratio)
+            coeff_e = htp_aoa["coeff_e"] * (-0.001521 * ((mach - 0.05) / 0.3 - 1) ** 10.82 + 1)
+        cdi = (htp_aoa["cl"] / beta) ** 2 / (np.pi * aspect_ratio_htp * coeff_e) + cdp_foil
+        coeff_k_htp = float(cdi / cl_aoa_htp**2 * area_ratio)
         y_vector_htp = htp_aoa["y_vector"]
         cl_vector_htp = (np.array(htp_aoa["cl_vector"]) / beta * area_ratio).tolist()
 
@@ -1285,7 +1271,7 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
-            coef_k_htp,
+            coeff_k_htp,
             y_vector_htp,
             cl_vector_htp,
         )
@@ -1301,26 +1287,26 @@ class VLMSimpleGeometry(om.ExplicitComponent):
 
         :return: existing data
         """
-        data = self._cache[key][str(mach)]
-        saved_area_wing = data.get("saved_ref_area")
-        saved_area_ratio = data.get("area_ratio")
-        cl_0_wing = data.get("cl_0_wing")
-        cl_x_wing = data.get("cl_X_wing")
-        cl_alpha_wing = data.get("cl_alpha_wing")
-        cm_0_wing = data.get("cm_0_wing")
-        y_vector_wing = np.array(data.get("y_vector_wing")) * np.sqrt(sref_wing / saved_area_wing)
-        cl_vector_wing = np.array(data.get("cl_vector_wing"))
-        chord_vector_wing = np.array(data.get("chord_vector_wing")) * np.sqrt(
+        data = self._cache[key]["vlm"][str(mach)]
+        saved_area_wing = data["saved_ref_area"]
+        saved_area_ratio = data["area_ratio"]
+        cl_0_wing = data["cl_0_wing"]
+        cl_x_wing = data["cl_X_wing"]
+        cl_alpha_wing = data["cl_alpha_wing"]
+        cm_0_wing = data["cm_0_wing"]
+        y_vector_wing = np.array(data["y_vector_wing"]) * np.sqrt(sref_wing / saved_area_wing)
+        cl_vector_wing = np.array(data["cl_vector_wing"])
+        chord_vector_wing = np.array(data["chord_vector_wing"]) * np.sqrt(
             sref_wing / saved_area_wing
         )
-        coef_k_wing = data.get("coef_k_wing")
-        cl_0_htp = data.get("cl_0_htp") * (area_ratio / saved_area_ratio)
-        cl_aoa_htp = data.get("cl_X_htp") * (area_ratio / saved_area_ratio)
-        cl_alpha_htp = data.get("cl_alpha_htp") * (area_ratio / saved_area_ratio)
-        cl_alpha_htp_isolated = data.get("cl_alpha_htp_isolated") * (area_ratio / saved_area_ratio)
-        y_vector_htp = np.array(data.get("y_vector_htp"))
-        cl_vector_htp = np.array(data.get("cl_vector_htp"))
-        coef_k_htp = data.get("coef_k_htp") * (area_ratio / saved_area_ratio)
+        coeff_k_wing = data["coeff_k_wing"]
+        cl_0_htp = data["cl_0_htp"] * (area_ratio / saved_area_ratio)
+        cl_aoa_htp = data["cl_X_htp"] * (area_ratio / saved_area_ratio)
+        cl_alpha_htp = data["cl_alpha_htp"] * (area_ratio / saved_area_ratio)
+        cl_alpha_htp_isolated = data["cl_alpha_htp_isolated"] * (area_ratio / saved_area_ratio)
+        y_vector_htp = np.array(data["y_vector_htp"])
+        cl_vector_htp = np.array(data["cl_vector_htp"])
+        coeff_k_htp = data["coeff_k_htp"] * (area_ratio / saved_area_ratio)
 
         return (
             cl_0_wing,
@@ -1330,14 +1316,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
             y_vector_wing,
             cl_vector_wing,
             chord_vector_wing,
-            coef_k_wing,
+            coeff_k_wing,
             cl_0_htp,
             cl_aoa_htp,
             cl_alpha_htp,
             cl_alpha_htp_isolated,
             y_vector_htp,
             cl_vector_htp,
-            coef_k_htp,
+            coeff_k_htp,
         )
 
     @staticmethod

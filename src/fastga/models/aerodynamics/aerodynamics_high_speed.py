@@ -118,6 +118,7 @@ class AerodynamicsHighSpeed(om.Group):
                         low_speed_aero=False,
                         compute_mach_interpolation=True,
                         result_folder_path=self.options["result_folder_path"],
+                        result_file_name=self.options["result_file_name"],
                         openvsp_exe_path=self.options["openvsp_exe_path"],
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
@@ -133,6 +134,7 @@ class AerodynamicsHighSpeed(om.Group):
                         low_speed_aero=False,
                         compute_mach_interpolation=False,
                         result_folder_path=self.options["result_folder_path"],
+                        result_file_name=self.options["result_file_name"],
                         airfoil_folder_path=self.options["airfoil_folder_path"],
                         openvsp_exe_path=self.options["openvsp_exe_path"],
                         wing_airfoil_file=self.options["wing_airfoil"],
@@ -225,6 +227,7 @@ class AerodynamicsHighSpeed(om.Group):
                 ComputeSlipstreamOpenvspSubGroup(
                     propulsion_id=self.options["propulsion_id"],
                     result_folder_path=self.options["result_folder_path"],
+                    result_file_name=self.options["result_file_name"],
                     airfoil_folder_path=self.options["airfoil_folder_path"],
                     openvsp_exe_path=self.options["openvsp_exe_path"],
                     wing_airfoil_file=self.options["wing_airfoil"],

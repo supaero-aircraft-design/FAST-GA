@@ -1,5 +1,5 @@
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2025  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -25,6 +25,37 @@ ALPHA_STEP = 0.5
 _DEFAULT_AIRFOIL_FILE = "naca23012.af"
 DEFAULT_2D_CL_MAX = 1.9
 DEFAULT_2D_CL_MIN = -1.7
+
+GEOMETRY_SET_LABELS = [
+    "sweep25_wing",
+    "taper_ratio_wing",
+    "aspect_ratio_wing",
+    "dihedral_angle_wing",
+    "twist_angle_wing",
+    "sweep25_htp",
+    "taper_ratio_htp",
+    "aspect_ratio_htp",
+]
+
+RESULT_LABELS = [
+    "cl_0_wing",
+    "cl_X_wing",
+    "cl_alpha_wing",
+    "cm_0_wing",
+    "y_vector_wing",
+    "cl_vector_wing",
+    "chord_vector_wing",
+    "coeff_k_wing",
+    "cl_0_htp",
+    "cl_X_htp",
+    "cl_alpha_htp",
+    "cl_alpha_htp_isolated",
+    "y_vector_htp",
+    "cl_vector_htp",
+    "coeff_k_htp",
+    "saved_ref_area",
+    "area_ratio",
+]
 
 SUBMODEL_CD0 = "submodel.aerodynamics.aircraft.cd0"
 SUBMODEL_CD0_WING = "submodel.aerodynamics.wing.cd0"

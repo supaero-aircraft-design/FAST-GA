@@ -2,7 +2,7 @@
 Estimation of slipstream effects using OPENVSP.
 """
 #  This file is part of FAST-OAD_CS23 : A framework for rapid Overall Aircraft Design
-#  Copyright (C) 2022  ONERA & ISAE-SUPAERO
+#  Copyright (C) 2026  ONERA & ISAE-SUPAERO
 #  FAST is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or
@@ -47,6 +47,13 @@ class ComputeSlipstreamOpenvsp(om.Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -64,6 +71,7 @@ class ComputeSlipstreamOpenvsp(om.Group):
             ComputeSlipstreamOpenvspSubGroup(
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -85,6 +93,13 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
         self.options.declare("low_speed_aero", default=False, types=bool)
         self.options.declare("propulsion_id", default=None, allow_none=True)
         self.options.declare("result_folder_path", default="", types=str)
+        self.options.declare(
+            "result_file_name",
+            default="",
+            types=str,
+            desc="Name of the file to store the results cache as a JSON file. If not set, "
+            "the cache will not be saved to disk.",
+        )
         self.options.declare("openvsp_exe_path", default="", types=str, allow_none=True)
         self.options.declare("airfoil_folder_path", default=None, types=str, allow_none=True)
         self.options.declare(
@@ -117,6 +132,7 @@ class ComputeSlipstreamOpenvspSubGroup(om.Group):
             _ComputeSlipstreamOpenvsp(
                 propulsion_id=self.options["propulsion_id"],
                 result_folder_path=self.options["result_folder_path"],
+                result_file_name=self.options["result_file_name"],
                 openvsp_exe_path=self.options["openvsp_exe_path"],
                 airfoil_folder_path=self.options["airfoil_folder_path"],
                 wing_airfoil_file=self.options["wing_airfoil_file"],
@@ -230,12 +246,18 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         # will appear, this is taken as the angle for which the clean wing is at its max angle of
         # attack
 
-        alpha_max = (cl_max_clean - cl0) / cl_alpha
+        alpha_max = round((cl_max_clean.item() - cl0.item()) / cl_alpha.item(), 2)
+        thrust = round(inputs["thrust"].item(), 1)
+        shaft_power = round(inputs["shaft_power"].item(), 1)
+        mach = round(mach.item(), 3)
 
         wing_rotor = self.compute_wing_rotor(
-            inputs, outputs, altitude, mach, alpha_max, inputs["thrust"], inputs["shaft_power"]
+            inputs, outputs, altitude, mach, alpha_max, thrust, shaft_power
         )
-        wing = self.compute_aero(inputs, outputs, altitude, mach, alpha_max, comp_opt="wing")
+
+        wing = self.compute_aero(
+            inputs, outputs, altitude, mach, alpha_max, comp_opt="wing", use_cache=True
+        )
 
         cl_vector_prop_on = wing_rotor["cl_vector"]
         y_vector_prop_on = wing_rotor["y_vector"]
@@ -244,46 +266,48 @@ class _ComputeSlipstreamOpenvsp(OpenVSPSimpleGeometryDP):
         y_vector_prop_off = wing["y_vector"]
 
         additional_zeros = list(np.zeros(SPAN_MESH_POINT - len(cl_vector_prop_on)))
-        cl_vector_prop_on.extend(additional_zeros)
-        y_vector_prop_on.extend(additional_zeros)
-        cl_vector_prop_off.extend(additional_zeros)
-        y_vector_prop_off.extend(additional_zeros)
+        cl_vector_prop_on_extended = cl_vector_prop_on + additional_zeros
+        y_vector_prop_on_extended = y_vector_prop_on + additional_zeros
+        cl_vector_prop_off_extended = cl_vector_prop_off + additional_zeros
+        y_vector_prop_off_extended = y_vector_prop_off + additional_zeros
 
         cl_diff = np.round(
-            np.asarray(cl_vector_prop_on) - np.asarray(cl_vector_prop_off), 4
+            np.asarray(cl_vector_prop_on_extended) - np.asarray(cl_vector_prop_off_extended), 4
         ).tolist()
 
         if self.options["low_speed_aero"]:
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:Y_vector"] = (
-                y_vector_prop_on
+                y_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CL_vector"] = (
-                cl_vector_prop_on
+                cl_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CT_ref"] = wing_rotor["ct"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:CL"] = wing_rotor["cl"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_on:velocity"] = velocity
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:Y_vector"] = (
-                y_vector_prop_off
+                y_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:CL_vector"] = (
-                cl_vector_prop_off
+                cl_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:low_speed:prop_off:CL"] = wing["cl"]
             outputs["data:aerodynamics:slipstream:wing:low_speed:only_prop:CL_vector"] = cl_diff
         else:
-            outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"] = y_vector_prop_on
+            outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:Y_vector"] = (
+                y_vector_prop_on_extended
+            )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CL_vector"] = (
-                cl_vector_prop_on
+                cl_vector_prop_on_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CT_ref"] = wing_rotor["ct"]
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:CL"] = wing_rotor["cl"]
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_on:velocity"] = velocity
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:Y_vector"] = (
-                y_vector_prop_off
+                y_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:CL_vector"] = (
-                cl_vector_prop_off
+                cl_vector_prop_off_extended
             )
             outputs["data:aerodynamics:slipstream:wing:cruise:prop_off:CL"] = wing["cl"]
             outputs["data:aerodynamics:slipstream:wing:cruise:only_prop:CL_vector"] = cl_diff
