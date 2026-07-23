@@ -74,8 +74,7 @@ class ComputeNacelleYPosition(om.ExplicitComponent):
         else:
             y_nacelle_array = 0.0
             warnings.warn(
-                f"Propulsion layout {prop_layout} not implemented in model, "
-                f"replaced by layout 3!",
+                f"Propulsion layout {prop_layout} not implemented in model, replaced by layout 3!",
                 category=UserWarning,
             )
 

@@ -712,7 +712,7 @@ class FigureDigitization(om.ExplicitComponent):
 
         if thickness_ratio != np.clip(thickness_ratio, 0.03, 0.4):
             _LOGGER.warning(
-                "Thickness to chord ratio outside of the range in Roskam's book, " "value clipped"
+                "Thickness to chord ratio outside of the range in Roskam's book, value clipped"
             )
 
         k = float(np.interp(np.clip(thickness_ratio, 0.03, 0.4), toc_array, k_array))
@@ -1054,7 +1054,7 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
         if float(sweep_50) != np.clip(float(sweep_50), min(sweep_50_data), max(sweep_50_data)):
             _LOGGER.warning(
-                "Sweep at 50% chord is outside of the range in Roskam's book, " "value clipped"
+                "Sweep at 50% chord is outside of the range in Roskam's book, value clipped"
             )
 
         # Linear interpolation is preferred, but we put the nearest one as protection
@@ -1246,7 +1246,7 @@ class FigureDigitization(om.ExplicitComponent):
             _LOGGER.warning("Aspect ratio is outside of the range in Roskam's book, value clipped")
         if float(sweep_50) != np.clip(float(sweep_50), min(sweep_50_data), max(sweep_50_data)):
             _LOGGER.warning(
-                "Sweep at 50% chord is outside of the range in Roskam's book, " "value clipped"
+                "Sweep at 50% chord is outside of the range in Roskam's book, value clipped"
             )
 
         # Linear interpolation is preferred, but we put the nearest one as protection
