@@ -2,6 +2,25 @@
 Changelog
 =========
 
+Version 1.3.2
+==================
+
+- Introduce Analytical Lift Effectiveness in Aerodynamics Model by @johnathanasd
+- Add NeuralFoil as an alternative to XFOIL for 2D Airfoil Analysis by @johnathanasd
+- Introduce Analytical Fuselage Pitch Moment Factor in Aerodynamics Model by @johnathanasd
+- Introduce Analytical Cn_p wing twist contribution in Aerodynamics Model by @johnathanasd
+- Introduce Analytical lift and drag effects of wing  Cn_r in Aerodynamics Model by @johnathanasd
+- Introduce Analytical Aileron Yaw Correlation Constant in Aerodynamics Model by @johnathanasd
+- Introduce volumetric tail sizing  by @johnathanasd
+- Hotfix: Resolve Data Type Error in Aerodynamics Interpolation by @johnathanasd
+- Introduce Analytical Partial Derivatives for the Wing  `CL_r` in Aerodynamics Model by @johnathanasd
+- Hotfix: variable types in aerodynamics external file by @florentLutz
+- Fix Unit Inconsistency in Aircraft Geometry Postprocessing Plot by @johnathanasd
+- Replace constant CSV I/O actions in VLM with caching by @johnathanasd
+- Dev abandon interp1d by @florentLutz
+- Propulsion ID rework + removal of direct OpenMDAO imports by @florentLutz
+- Replace constant CSV I/O actions in OpenVSP with caching by @johnathanasd
+
 Version 1.3.1
 ==================
 
