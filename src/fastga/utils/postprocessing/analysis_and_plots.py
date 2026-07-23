@@ -726,12 +726,7 @@ def cg_lateral_diagram(
     scatter = go.Scatter(
         x=[ac_fixed_x],
         y=[z_cg[0]],
-        text=" Neutral Point"
-         "<br>"
-         "Stick Fixed"
-         "<br>"
-         "Static Margin = "
-        + str(round(stick_fixed_sm, 3)),
+        text=" Neutral Point<br>Stick Fixed<br>Static Margin = " + str(round(stick_fixed_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
         line=dict(color="DarkRed"),
@@ -743,12 +738,7 @@ def cg_lateral_diagram(
     scatter = go.Scatter(
         x=[ac_free_x],
         y=[z_cg[0]],
-        text="Neutral Point"
-         "<br>"
-         "Stick Free"
-         "<br>"
-         "Static Margin = "
-        + str(round(stick_free_sm, 3)),
+        text="Neutral Point<br>Stick Free<br>Static Margin = " + str(round(stick_free_sm, 3)),
         textposition="bottom center",
         mode="markers+text",
         line=dict(color="DodgerBlue"),
@@ -901,7 +891,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
             labels=[
                 "MTOW" + "<br>" + str(int(mtow)) + " [" + weight_unit + "]",
                 "payload"
-                 "<br>"
+                "<br>"
                 + str(int(payload))
                 + " ["
                 + weight_unit
@@ -909,7 +899,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(payload / mtow * 100, 1))
                 + "%)",
                 "onboard_fuel_at_takeoff"
-                 "<br>"
+                "<br>"
                 + str(int(onboard_fuel_at_takeoff))
                 + " ["
                 + weight_unit
@@ -917,7 +907,7 @@ def mass_breakdown_sun_plot(aircraft_file_path: str, file_formatter=None, weight
                 + str(round(onboard_fuel_at_takeoff / mtow * 100, 1))
                 + "%)",
                 "OWE"
-                 "<br>"
+                "<br>"
                 + str(int(owe))
                 + " ["
                 + weight_unit

@@ -12,18 +12,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import importlib
-import inspect
 import logging
-import os
-import os.path as pth
+import pathlib
 import shutil
 import tempfile
-import warnings
 from copy import deepcopy
-from itertools import product
-from pathlib import Path
-from platform import system
 from tempfile import TemporaryDirectory
 
 import fastoad.api as oad
@@ -32,8 +25,6 @@ import openmdao.api as om
 from deprecated import deprecated
 
 # noinspection PyProtectedMember
-from fastoad.cmd.api import _get_simple_system_list
-from fastoad.cmd.exceptions import FastPathExistsError
 from fastoad.io import IVariableIOFormatter, VariableIO
 from fastoad.io.xml import VariableXmlStandardFormatter
 from fastoad.openmdao.problem import AutoUnitsDefaultGroup
@@ -42,10 +33,6 @@ from openmdao.core.group import Group
 from openmdao.core.implicitcomponent import ImplicitComponent
 from openmdao.core.indepvarcomp import IndepVarComp
 from openmdao.core.system import System
-
-from fastga.utils.warnings import VariableDescriptionWarning
-
-from . import resources
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,336 +48,57 @@ BOOLEAN_OPTIONS = [
 
 def _create_tmp_directory() -> TemporaryDirectory:
     """Provide temporary directory."""
-    for tmp_base_path in [None, pth.join(str(Path.home()), ".fast")]:
+    for tmp_base_path in [None, pathlib.Path.home() / ".fast"]:
         if tmp_base_path is not None:
-            os.makedirs(tmp_base_path, exist_ok=True)
+            tmp_base_path.mkdir(parents=True)
         tmp_directory = tempfile.TemporaryDirectory(prefix="x", dir=tmp_base_path)
         break
 
     return tmp_directory
 
 
-def file_temporary_transfer(file_path: str):
+def file_temporary_transfer(file_path: pathlib.Path):
     """
     Put a copy of original python file into temporary directory and remove plugin registration
     from current file.
     """
     tmp_folder = _create_tmp_directory()
-    file_name = pth.split(file_path)[-1]
-    shutil.copy(file_path, pth.join(tmp_folder.name, file_name))
-    file = open(file_path)
-    lines = file.read()
-    lines = lines.split("\n")
-    idx_to_remove = []
-    for idx, _ in enumerate(lines):
-        if "@oad.RegisterOpenMDAOSystem" in lines[idx]:
-            idx_to_remove.append(idx)
-    for idx in sorted(idx_to_remove, reverse=True):
-        del lines[idx]
-    file.close()
-    file = open(file_path, "w")
-    for line in lines:
-        file.write(line + "\n")
-    file.close()
+    file_name = file_path.name
+    shutil.copy(file_path, tmp_folder.name / file_name)
+
+    with file_path.open(encoding="utf-8") as file:
+        lines = file.read()
+        lines = lines.split("\n")
+        idx_to_remove = []
+        for idx, _ in enumerate(lines):
+            if "@oad.RegisterOpenMDAOSystem" in lines[idx]:
+                idx_to_remove.append(idx)
+        for idx in sorted(idx_to_remove, reverse=True):
+            del lines[idx]
+
+    with file_path.open(encoding="utf-8") as file:
+        for line in lines:
+            file.write(line + "\n")
 
     return tmp_folder
 
 
-def retrieve_original_file(tmp_folder, file_path: str):
+def retrieve_original_file(tmp_folder, file_path: pathlib.Path):
     """Retrieve the original file."""
-    file_name = pth.split(file_path)[-1]
-    shutil.copy(pth.join(tmp_folder.name, file_name), file_path)
+    file_name = file_path.name
+    shutil.copy(tmp_folder.name / file_name, file_path)
 
     tmp_folder.cleanup()
-
-
-def generate_variables_description(subpackage_path: str, overwrite: bool = False):
-    """
-    Generates/append the variable descriptions file for a given subpackage.
-
-    To use it simply type:
-    from fastga.command.api import generate_variables_description
-    import my_package
-
-    generate_variables_description(my_package.__path__[0], overwrite=True).
-
-    :param subpackage_path: the path of the subpackage to explore
-    :param overwrite: if True, the file will be written, even if it already exists
-    :raise FastPathExistsError: if overwrite==False and subpackage_path already exists.
-    """
-
-    if not overwrite and pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
-        # noinspection PyStringFormat
-        raise FastPathExistsError(
-            "Variable descriptions file is not written because it already exists. "
-            "Use overwrite=True to bypass."
-            % pth.join(subpackage_path, "variable_descriptions.txt"),
-            pth.join(subpackage_path, "variable_descriptions.txt"),
-        )
-
-    if not pth.exists(subpackage_path):
-        _LOGGER.info("Sub-package path %s not found!", subpackage_path)
-    else:
-        # Read file and construct dictionary of variables name index
-        saved_dict = {}
-        if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"))
-            for line in file:
-                if line[0] != "#" and len(line.split("||")) == 2:
-                    variable_name, variable_description = line.split("||")
-                    variable_name_length = len(variable_name)
-                    variable_name = variable_name.replace(" ", "")
-                    while variable_name_length != len(variable_name):
-                        variable_name = variable_name.replace(" ", "")
-                        variable_name_length = len(variable_name)
-                    saved_dict[variable_name] = (variable_description, subpackage_path)
-            file.close()
-
-        # If path point to ./models directory list output variables described in the different
-        # models
-        if pth.split(subpackage_path)[-1] == "models":
-            for root, _, files in os.walk(subpackage_path, topdown=False):
-                vd_file_empty_description = False
-                empty_description_variables = []
-                for name in files:
-                    if name == "variable_descriptions.txt":
-                        file = open(pth.join(root, name))
-                        for line in file:
-                            if line[0] != "#" and len(line.split("||")) == 2:
-                                variable_name, variable_description = line.split("||")
-                                if variable_description.replace(" ", "") == "\n":
-                                    vd_file_empty_description = True
-                                    empty_description_variables.append(
-                                        variable_name.replace(" ", "")
-                                    )
-                                variable_name_length = len(variable_name)
-                                variable_name = variable_name.replace(" ", "")
-                                while variable_name_length != len(variable_name):
-                                    variable_name = variable_name.replace(" ", "")
-                                    variable_name_length = len(variable_name)
-                                if variable_name not in saved_dict:
-                                    saved_dict[variable_name] = (variable_description, root)
-                                elif not (
-                                    pth.split(root)[-1]
-                                    == pth.split(saved_dict[variable_name][1])[-1]
-                                ):
-                                    warnings.warn(
-                                        "file variable_descriptions.txt from subpackage "
-                                        + pth.split(root)[-1]
-                                        + " contains parameter "
-                                        + variable_name
-                                        + " already saved in "
-                                        + pth.split(saved_dict[variable_name][1])[-1]
-                                        + " subpackage!",
-                                        category=VariableDescriptionWarning,
-                                    )
-                        file.close()
-                if vd_file_empty_description:
-                    warnings.warn(
-                        "file variable_descriptions.txt from %s subpackage contains empty"
-                        " descriptions! \n"
-                        % pth.split(root)[-1]
-                        + "\tFollowing variables have empty descriptions : "
-                        + ", ".join(empty_description_variables),
-                        category=VariableDescriptionWarning,
-                    )
-
-        # Explore subpackage models and find the output variables and store them in a dictionary
-        dict_to_be_saved = {}
-        for root, _, files in os.walk(subpackage_path, topdown=False):
-            for name in files:
-                if name[-3:] == ".py":
-                    spec = importlib.util.spec_from_file_location(
-                        name.replace(".py", ""), pth.join(root, name)
-                    )
-                    module = importlib.util.module_from_spec(spec)
-                    tmp_folder = None
-                    # noinspection PyBroadException
-                    try:
-                        # if register decorator in module, temporary replace file removing
-                        # decorators
-                        # noinspection PyBroadException
-                        try:
-                            spec.loader.exec_module(module)
-                        except Exception:
-                            _LOGGER.info(
-                                "Trying to load %s, but it is not a module!", pth.join(root, name)
-                            )
-                        if "oad.RegisterOpenMDAOSystem" in dir(module):
-                            tmp_folder = file_temporary_transfer(pth.join(root, name))
-                        spec.loader.exec_module(module)
-                        total_class_list = [
-                            x for x in dir(module) if inspect.isclass(getattr(module, x))
-                        ]
-                        class_list = []
-                        for class_name in total_class_list:
-                            address = getattr(module, class_name).__module__
-                            if len(address.split(".")) <= 2 or pth.split(subpackage_path)[-1] == address.split(".")[2]:
-                                class_list.append(class_name)
-                        # noinspection PyUnboundLocalVariable
-                        retrieve_original_file(tmp_folder, pth.join(root, name))
-                        if system() != "Windows":
-                            root_lib = ".".join(root.split("/")[root.split("/").index("fastga") :])
-                        else:
-                            root_lib = ".".join(
-                                root.split("\\")[root.split("\\").index("fastga") :]
-                            )
-                        root_lib += "." + name.replace(".py", "")
-                        for class_name in class_list:
-                            # noinspection PyBroadException
-                            try:
-                                my_class = getattr(importlib.import_module(root_lib), class_name)
-                                options_dictionary = {}
-                                if "propulsion_id" in my_class().options:
-                                    available_id_list = _get_simple_system_list()
-                                    idx_to_remove = []
-                                    for idx, _ in enumerate(available_id_list):
-                                        available_id_list[idx] = available_id_list[idx][0]
-                                        if "PROPULSION" in available_id_list[idx]:
-                                            idx_to_remove.extend(list(range(idx + 1)))
-                                        if "fastga" not in available_id_list[idx]:
-                                            idx_to_remove.append(idx)
-                                    idx_to_remove = list(dict.fromkeys(idx_to_remove))
-                                    for idx in sorted(idx_to_remove, reverse=True):
-                                        del available_id_list[idx]
-                                    options_dictionary["propulsion_id"] = available_id_list[0]
-                                variables = list_variables(my_class(**options_dictionary))
-                                local_options = []
-                                for option_name in BOOLEAN_OPTIONS:
-                                    # noinspection PyProtectedMember
-                                    if option_name in my_class().options._dict.keys():
-                                        local_options.append(option_name)
-                                # If no boolean options alternatives to be tested, search for
-                                # input variables in models and output variables for subpackages
-                                # (including ivc)
-                                if not local_options:
-                                    if pth.split(subpackage_path)[-1] == "models":
-                                        var_names = [var.name for var in variables if var.is_input]
-                                    else:
-                                        var_names = [
-                                            var.name for var in variables if not var.is_input
-                                        ]
-                                        if list_ivc_outputs_name(my_class(**options_dictionary)):
-                                            var_names.append(
-                                                list_ivc_outputs_name(
-                                                    my_class(**options_dictionary)
-                                                )
-                                            )
-                                    # Remove duplicates
-                                    var_names = list(dict.fromkeys(var_names))
-                                    # Add to dictionary only variable name including data:,
-                                    # settings: or tuning:
-                                    for key in var_names:
-                                        if (
-                                            ("data:" in key)
-                                            or ("settings:" in key)
-                                            or ("tuning:" in key)
-                                        ):
-                                            if key not in dict_to_be_saved:
-                                                dict_to_be_saved[key] = ""
-                                # If boolean options alternatives encountered, all alternatives
-                                # have to be tested to ensure complete coverage of variables.
-                                # Working principle is similar to previous one.
-                                else:
-                                    for options_tuple in list(
-                                        product([True, False], repeat=len(local_options))
-                                    ):
-                                        # Define local option dictionary
-                                        for idx, _ in enumerate(local_options):
-                                            options_dictionary[local_options[idx]] = options_tuple[
-                                                idx
-                                            ]
-                                        variables = list_variables(my_class(**options_dictionary))
-                                        if pth.split(subpackage_path)[-1] == "models":
-                                            var_names = [
-                                                var.name for var in variables if var.is_input
-                                            ]
-                                        else:
-                                            var_names = [
-                                                var.name for var in variables if not var.is_input
-                                            ]
-                                            if (
-                                                len(
-                                                    list_ivc_outputs_name(
-                                                        my_class(**options_dictionary)
-                                                    )
-                                                )
-                                                != 0
-                                            ):
-                                                var_names.append(
-                                                    list_ivc_outputs_name(
-                                                        my_class(**options_dictionary)
-                                                    )
-                                                )
-                                        # Remove duplicates
-                                        var_names = list(dict.fromkeys(var_names))
-                                        # Add to dictionary only variable name including data:,
-                                        # settings: or tuning:
-                                        for key in var_names:
-                                            if (
-                                                ("data:" in key)
-                                                or ("settings:" in key)
-                                                or ("tuning:" in key)
-                                            ):
-                                                if key not in dict_to_be_saved:
-                                                    dict_to_be_saved[key] = ""
-                            except Exception:
-                                _LOGGER.info(
-                                    "Failed to read %s.%s class parameters!", root_lib, class_name
-                                )
-                    except Exception:
-                        if tmp_folder is not None:
-                            # noinspection PyUnboundLocalVariable
-                            retrieve_original_file(tmp_folder, pth.join(root, name))
-
-        # Complete the variable descriptions file with missing outputs
-        if pth.exists(pth.join(subpackage_path, "variable_descriptions.txt")):
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
-            if len(
-                set(list(dict_to_be_saved.keys())).intersection(set(list(saved_dict.keys())))
-            ) != len(dict_to_be_saved.keys()):
-                file.write("\n")
-            file.close()
-        elif dict_to_be_saved.keys():
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "w")
-            file.write("# Documentation of variables used in FAST-GA models\n")
-            file.write("# Each line should be like:\n")
-            file.write(
-                "# my:variable||The description of my:variable, as long as needed, but on one "
-                "line.\n "
-            )
-            file.write(
-                '# The separator "||" can be surrounded with spaces (that will be ignored)\n\n'
-            )
-            file.close()
-        if len(dict_to_be_saved.keys()) != 0:
-            file = open(pth.join(subpackage_path, "variable_descriptions.txt"), "a")
-            sorted_keys = sorted(dict_to_be_saved.keys(), key=lambda x: x.lower())
-            added_key = False
-            added_key_names = []
-            for key in sorted_keys:
-                if key not in saved_dict:
-                    # noinspection PyUnboundLocalVariable
-                    file.write(key + " || \n")
-                    added_key = True
-                    added_key_names.append(key)
-            file.close()
-            if added_key:
-                warnings.warn(
-                    f"file variable_descriptions.txt from {pth.split(subpackage_path)[-1]} subpackage contains empty "
-                    "descriptions! \n"
-                     "\tFollowing variables have empty descriptions : "
-                    + ", ".join(added_key_names),
-                    category=VariableDescriptionWarning,
-                )
 
 
 @deprecated(
     version="0.2.0",
     reason="Will be removed in version 1.0. Please use the generate_configuration_file from "
-    'fast-oad-core api with the distribution_name="fast-oad-cs23" instead',
+    "fast-oad-core api with the distribution_name='fast-oad-cs23' and sample_file_name="
+    + SAMPLE_FILENAME
+    + " instead",
 )
-def generate_configuration_file(configuration_file_path: str, overwrite: bool = False):
+def generate_configuration_file(configuration_file_path: pathlib.Path, *, overwrite: bool = False):
     """
     Generates a sample configuration file.
 
@@ -398,21 +106,19 @@ def generate_configuration_file(configuration_file_path: str, overwrite: bool = 
     :param overwrite: if True, the file will be written, even if it already exists
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
-    if not overwrite and pth.exists(configuration_file_path):
-        raise FastPathExistsError(
-            "Configuration file is not written because it already exists. "
-            "Use overwrite=True to bypass." % configuration_file_path,
-            configuration_file_path,
-        )
-
-    if not pth.exists(pth.split(configuration_file_path)[0]):
-        os.mkdir(pth.split(configuration_file_path)[0])
-    shutil.copy(pth.join(resources.__path__[0], SAMPLE_FILENAME), configuration_file_path)
-
-    _LOGGER.info("Sample configuration written in %s", configuration_file_path)
+    oad.generate_configuration_file(
+        configuration_file_path, overwrite, "fast-oad-cs23", SAMPLE_FILENAME
+    )
 
 
-def generate_xml_file(xml_file_path: str, overwrite: bool = False):
+@deprecated(
+    version="1.3.2",
+    reason="Will be removed in version 1.0. Please use the generate_source_data_file from "
+    "fast-oad-core api with the distribution_name='fast-oad-cs23' and sample_file_name="
+    + SAMPLE_FILENAME
+    + " instead",
+)
+def generate_xml_file(xml_file_path: pathlib.Path, *, overwrite: bool = False):
     """
     Generates a sample XML file.
 
@@ -420,22 +126,13 @@ def generate_xml_file(xml_file_path: str, overwrite: bool = False):
     :param overwrite: if True, the file will be written, even if it already exists
     :raise FastPathExistsError: if overwrite==False and configuration_file_path already exists
     """
-    if not overwrite and pth.exists(xml_file_path):
-        raise FastPathExistsError(
-            "Configuration file is not written because it already exists. "
-            "Use overwrite=True to bypass." % xml_file_path,
-            xml_file_path,
-        )
-
-    if not pth.exists(pth.split(xml_file_path)[0]):
-        os.mkdir(pth.split(xml_file_path)[0])
-    shutil.copy(pth.join(resources.__path__[0], SAMPLE_XML_NAME), xml_file_path)
-
-    _LOGGER.info("Sample configuration written in %s", xml_file_path)
+    oad.generate_source_data_file(xml_file_path, overwrite, "fast-oad-cs23", SAMPLE_FILENAME)
 
 
 def write_needed_inputs(
-    problem: oad.FASTOADProblem, xml_file_path: str, source_formatter: IVariableIOFormatter = None
+    problem: oad.FASTOADProblem,
+    xml_file_path: pathlib.Path,
+    source_formatter: IVariableIOFormatter = None,
 ):
     """
     Writes the input file of the problem with unconnected inputs of the configured problem.
@@ -491,7 +188,7 @@ def list_ivc_outputs_name(local_system: ExplicitComponent | ImplicitComponent | 
     ivc_outputs_names = []
 
     # Find the outputs of all of those systems that are IndepVarComp
-    for sub_system_keys in dict_sub_system.keys():
+    for sub_system_keys in dict_sub_system:
         if (
             dict_sub_system[sub_system_keys] == "IndepVarComp"
             and sub_system_keys.split(".")[-1] != "fastoad_shaper"
@@ -508,11 +205,12 @@ def list_ivc_outputs_name(local_system: ExplicitComponent | ImplicitComponent | 
     return ivc_outputs_names
 
 
-def generate_block_analysis(
-    local_system: ExplicitComponent | ImplicitComponent | Group | str,
+def generate_block_analysis(  # noqa: PLR0915, function is inherently complex and should be reworked
+    local_system: ExplicitComponent | ImplicitComponent | Group | str | pathlib.Path,
     var_inputs: list,
-    xml_file_path: str,
-    options: dict = None,
+    xml_file_path: pathlib.Path,
+    options: dict | None = None,
+    *,
     overwrite: bool = False,
 ):
     """
@@ -534,15 +232,15 @@ def generate_block_analysis(
     :return patched_function: the function constructed based on the provided system which takes
     var_inputs as inputs under the form of a dictionary {"var_name": (var_value, var_units)}
     """
+    xml_file_path = pathlib.Path(xml_file_path)
 
     # If a valid ID or a path to a configuration file is provided, build a system based on that ID
-    if isinstance(local_system, str):
-        if local_system.endswith(".yml"):
-            configurator = oad.FASTOADProblemConfigurator(local_system)
-            dummy_problem = configurator.get_problem(read_inputs=False)
-            local_system = dummy_problem.model
-        else:
-            local_system = oad.RegisterOpenMDAOSystem.get_system(local_system, options=options)
+    if isinstance(local_system, pathlib.Path):
+        configurator = oad.FASTOADProblemConfigurator(local_system)
+        dummy_problem = configurator.get_problem(read_inputs=False)
+        local_system = dummy_problem.model
+    elif isinstance(local_system, str):
+        local_system = oad.RegisterOpenMDAOSystem.get_system(local_system, options=options)
 
     # Search what are the component/group outputs
     variables = list_variables(local_system)
@@ -558,10 +256,11 @@ def generate_block_analysis(
 
     # Check that variable inputs are in the group/component list
     if not (set(var_inputs) == set(inputs_names).intersection(set(var_inputs))):
+        # TODO: Shouldn't be raising bare exceptions
         raise Exception("The input list contains name(s) out of component/group input list!")
 
     # Perform some tests on the .xml availability and completeness
-    if not (os.path.exists(xml_file_path)) and not (set(var_inputs) == set(inputs_names)):
+    if not xml_file_path.exists() and set(var_inputs) != set(inputs_names):
         # If no input file and some inputs are missing, generate it and return None
         group = AutoUnitsDefaultGroup()
         group.add_subsystem("system", local_system, promotes=["*"])
@@ -569,21 +268,21 @@ def generate_block_analysis(
         problem.model = group
         problem.setup()
         write_needed_inputs(problem, xml_file_path, VariableXmlStandardFormatter())
+        # TODO: Shouldn't be raising bare exceptions
         raise Exception(
             "Input .xml file not found, a default file has been created with default NaN values, "
             "but no function is returned!\nConsider defining proper values before second execution!"
         )
 
-    if os.path.exists(xml_file_path):
+    if xml_file_path.exists():
         reader = VariableIO(xml_file_path, VariableXmlStandardFormatter()).read(
             ignore=(var_inputs + outputs_names + ivc_outputs_names)
         )
         xml_inputs = reader.names()
     else:
         xml_inputs = []
-    if not (
-        set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names))
-        == set(inputs_names)
+    if set(xml_inputs + var_inputs + ivc_outputs_names).intersection(set(inputs_names)) != set(
+        inputs_names
     ):
         # If some inputs are missing write an error message and add them to the problem if
         # authorized
@@ -613,23 +312,26 @@ def generate_block_analysis(
                 f"Default values have been added to {xml_file_path} file. "
                 "Consider modifying them for a second run!"
             )
+            # TODO: Shouldn't be raising bare exceptions
             raise Exception(message)
+        # TODO: Shouldn't be raising bare exceptions
         raise Exception(message)
+
     # If all inputs addressed either by .xml or var_inputs or in an IVC, construct the
     # function
     def patched_function(inputs_dict: dict) -> dict:
         """
-                The patched function perform a run of an openmdao component or group applying
-                FASTOAD formalism.
+        The patched function perform a run of an openmdao component or group applying
+        FASTOAD formalism.
 
-                @param inputs_dict: dictionary of input (values, units) saved with their key name,
-                as an example: inputs_dict = {'in1': (3.0, "m")}.
-                @return: dictionary of the component/group outputs saving names as keys and (value,
-                units) as tuple.
-                """
+        @param inputs_dict: dictionary of input (values, units) saved with their key name,
+        as an example: inputs_dict = {'in1': (3.0, "m")}.
+        @return: dictionary of the component/group outputs saving names as keys and (value,
+        units) as tuple.
+        """
 
         # Read .xml file and construct Independent Variable Component excluding outputs
-        if os.path.exists(xml_file_path):
+        if xml_file_path.exists():
             reader.path_separator = ":"
             ivc_local = reader.to_ivc()
         else:
@@ -676,9 +378,7 @@ def list_all_subsystem(model, model_address, dict_subsystems):
 def get_type(model):
     raw_type = model.msginfo.split("<")[-1]
     type_alone = raw_type.split(" ")[-1]
-    model_type = type_alone[:-1]
-
-    return model_type
+    return type_alone[:-1]
 
 
 class VariableListLocal(oad.VariableList):
@@ -720,17 +420,13 @@ def list_variables(component: om.ExplicitComponent | om.Group) -> list:
         new_component = AutoUnitsDefaultGroup()
         new_component.add_subsystem("system", component, promotes=["*"])
         component = new_component
-    variables = VariableListLocal.from_system(component)
-
-    return variables
+    return VariableListLocal.from_system(component)
 
 
 def list_inputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads all variables from a component/problem and returns inputs as a list."""
     variables = list_variables(component)
-    input_names = [var.name for var in variables if var.is_input]
-
-    return input_names
+    return [var.name for var in variables if var.is_input]
 
 
 def list_inputs_metadata(component: om.ExplicitComponent | om.Group) -> tuple:
@@ -791,9 +487,7 @@ def list_inputs_metadata(component: om.ExplicitComponent | om.Group) -> tuple:
 def list_outputs(component: om.ExplicitComponent | om.Group) -> list:
     """Reads all variables from a component/problem and returns outputs as a list."""
     variables = list_variables(component)
-    output_names = [var.name for var in variables if not var.is_input]
-
-    return output_names
+    return [var.name for var in variables if not var.is_input]
 
 
 def string_to_array(arr):

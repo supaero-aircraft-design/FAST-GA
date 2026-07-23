@@ -300,8 +300,7 @@ class _v_lift_off_from_v2(om.ExplicitComponent):
                 if thrust * np.sin(alpha[i]) > mtow * g:
                     break
                 v = np.sqrt(
-                    (mtow * g - thrust * np.sin(alpha[i]))
-                    / (0.5 * atm_0.density * wing_area * cl)
+                    (mtow * g - thrust * np.sin(alpha[i])) / (0.5 * atm_0.density * wing_area * cl)
                 )
                 rel_error = abs(v - v_lift_off[i]) / v
                 v_lift_off[i] = v

@@ -12,7 +12,6 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import fastoad.api as oad
 import numpy as np
 
@@ -70,9 +69,7 @@ class ComputeDeltaElevator(FigureDigitization):
             / wing_area
         )
 
-    def _get_elevator_delta_cl(
-        self, inputs, elevator_angle: float | np.array
-    ) -> float | np.array:
+    def _get_elevator_delta_cl(self, inputs, elevator_angle: float | np.array) -> float | np.array:
         """
         Computes the elevator lift increment as a plain flap following the method presented in
         Roskam part 6, section 8.1.2.1.a.

@@ -135,7 +135,12 @@ class aircraft_equilibrium_limit(om.ExplicitComponent):
         stall_angle_min_htp = stall_angle_min + delta_alpha_stall
         stall_angle_max_htp = stall_angle_max - delta_alpha_stall
 
-        if abs(delta_e) > abs(max_elevator_deflection) or alpha_avion > stall_angle_max_htp or alpha_avion < stall_angle_min_htp or CL[0] > cl_max_landing:
+        if (
+            abs(delta_e) > abs(max_elevator_deflection)
+            or alpha_avion > stall_angle_max_htp
+            or alpha_avion < stall_angle_min_htp
+            or CL[0] > cl_max_landing
+        ):
             equilibrium_found = False
         else:
             equilibrium_found = True

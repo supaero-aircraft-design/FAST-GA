@@ -841,13 +841,13 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         Generates the coordinates for VLM calculations and aic matrix of the wing.
            Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-              | \            and chords 1 and 2 representing a wing segment
-              |  \           that complies with the VLM theory, returns the
-              |   + Pf       points and panels of the mesh:
-        chord1|   |
-              |   |             - Points are given as a list of Np elements,
-              |   |chord2         being Np the number of points of the mesh.
-              +---+
+              || \\            and chords 1 and 2 representing a wing segment
+              ||  \\           that complies with the VLM theory, returns the
+              ||   + Pf       points and panels of the mesh:
+        chord1||   ||
+              ||   ||             - Points are given as a list of Np elements,
+              ||   ||chord2         being Np the number of points of the mesh.
+              +====+
               |                 - Panels are given as a list of list of NP
               x 				      elements, each element composed of 4 points,
                                   where NP is the number of panels of the mesh.
@@ -921,14 +921,14 @@ class VLMSimpleGeometry(om.ExplicitComponent):
         """
         Generates the coordinates for VLM calculations and AIC matrix of the htp.
            Pi +......> y     Given a trapezoid defined by vertices Pi and Pf
-              | \            and chords 1 and 2 representing a wing segment
-              |  \           that complies with the VLM theory, returns the
-              |   + Pf       points and panels of the mesh:
-        chord1|   |
-              |   |             - Points are given as a list of Np elements,
-              |   |chord2         being Np the number of points of the mesh.
-              +---+
-              |                 - Panels are given as a list of list of NP
+              || \\            and chords 1 and 2 representing a wing segment
+              ||  \\           that complies with the VLM theory, returns the
+              ||   + Pf       points and panels of the mesh:
+        chord1||   ||
+              ||   ||             - Points are given as a list of Np elements,
+              ||   ||chord2         being Np the number of points of the mesh.
+              +====+
+              ||                 - Panels are given as a list of list of NP
               x 				      elements, each element composed of 4 points,
                                   where NP is the number of panels of the mesh.
               x - chord wise direction
